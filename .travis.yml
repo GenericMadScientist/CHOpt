@@ -33,14 +33,14 @@ install:
   - |
     if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
       CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.16.5/cmake-3.16.5-Linux-x86_64.tar.gz"
-      mkdir ${DEPS_DIR}/cmake
+      mkdir -p ${DEPS_DIR}/cmake
       travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${DEPS_DIR}/cmake
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
     fi
 
 script:
   - ${CXX} --version
-  - mkdir build
+  - mkdir -p build
   - cd build
   - cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
   - cmake --build . --verbose
