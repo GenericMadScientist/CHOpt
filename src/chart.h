@@ -54,8 +54,9 @@ struct NoteTrack {
 };
 
 class Chart {
-public:
-    std::vector<std::string> song_header_lines;
+private:
+    float offset = 0;
+    float resolution = 192;
     std::vector<std::string> sync_track_lines;
     std::vector<std::string> event_lines;
     std::map<Difficulty, NoteTrack> note_tracks;

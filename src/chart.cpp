@@ -24,6 +24,15 @@
 
 #include "chart.h"
 
+static bool string_starts_with(std::string_view input, std::string_view pattern)
+{
+    if (input.size() < pattern.size()) {
+        return false;
+    }
+
+    return input.substr(0, pattern.size()) == pattern;
+}
+
 static std::string_view skip_whitespace(std::string_view input)
 {
     const auto first_non_ws_location = input.find_first_not_of(" \f\n\r\t\v");
@@ -93,6 +102,19 @@ static int32_t string_view_to_int(std::string_view input)
     return result;
 }
 
+// Convert a string_view to a float. If there are any problems with the
+// input, this function throws.
+static float string_view_to_float(std::string_view input)
+{
+    float result;
+    const char* last = input.data() + input.size();
+    auto [p, ec] = std::from_chars(input.data(), last, result);
+    if ((ec != std::errc()) || (p != last)) {
+        throw std::invalid_argument("string_view does not convert to uint");
+    }
+    return result;
+}
+
 std::string_view Chart::read_song_header(std::string_view input)
 {
     auto next_line = break_off_newline(input);
@@ -100,12 +122,24 @@ std::string_view Chart::read_song_header(std::string_view input)
         throw std::runtime_error("[Song] does not open with {");
     }
 
+    std::vector<std::string_view> lines;
+
     while (1) {
         next_line = break_off_newline(input);
         if (next_line == "}") {
             break;
         }
-        song_header_lines.push_back(std::string(next_line));
+        lines.push_back(next_line);
+    }
+
+    for (auto line : lines) {
+        if (string_starts_with(line, "Offset = ")) {
+            line.remove_prefix(9);
+            offset = string_view_to_float(line);
+        } else if (string_starts_with(line, "Resolution = ")) {
+            line.remove_prefix(13);
+            resolution = string_view_to_float(line);
+        }
     }
 
     return input;
