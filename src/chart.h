@@ -29,6 +29,11 @@ enum class Difficulty { Easy, Medium, Hard, Expert };
 
 enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
 
+struct Section {
+    uint32_t position;
+    std::string name;
+};
+
 struct Note {
     uint32_t position;
     uint32_t length;
@@ -58,7 +63,7 @@ private:
     float offset = 0;
     float resolution = 192;
     std::vector<std::string> sync_track_lines;
-    std::vector<std::string> event_lines;
+    std::vector<Section> sections;
     std::map<Difficulty, NoteTrack> note_tracks;
 
     std::string_view read_song_header(std::string_view input);

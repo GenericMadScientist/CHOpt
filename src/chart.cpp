@@ -76,6 +76,17 @@ static std::vector<std::string_view> split_by_space(std::string_view input)
     return substrings;
 }
 
+// Return the substring with no leading or trailing quotation marks.
+static std::string_view trim_quotes(std::string_view input)
+{
+    const auto first_non_quote = input.find_first_not_of('"');
+    if (first_non_quote == std::string_view::npos) {
+        return input.substr(0, 0);
+    }
+    const auto last_non_quote = input.find_last_not_of('"');
+    return input.substr(first_non_quote, last_non_quote + 1);
+}
+
 // Convert a string_view to a uint32_t. If there are any problems with the
 // input, this function throws.
 static uint32_t string_view_to_uint(std::string_view input)
@@ -182,12 +193,35 @@ std::string_view Chart::read_events(std::string_view input)
         throw std::runtime_error("[Events] does not open with {");
     }
 
+    std::vector<std::string> lines;
+
     while (1) {
         next_line = break_off_newline(input);
         if (next_line == "}") {
             break;
         }
-        event_lines.push_back(std::string(next_line));
+        lines.push_back(std::string(next_line));
+    }
+
+    for (const auto& line : lines) {
+        const auto split_string = split_by_space(line);
+        if (split_string.size() < 4) {
+            throw std::invalid_argument("Event missing data");
+        }
+        const auto position = string_view_to_uint(split_string[0]);
+
+        auto type = split_string[2];
+
+        if (type == "E") {
+            if ((split_string[3] == "\"section") || (split_string.size() > 4)) {
+                std::string section_name(trim_quotes(split_string[4]));
+                for (auto i = 5u; i < split_string.size(); ++i) {
+                    section_name += " ";
+                    section_name += trim_quotes(split_string[i]);
+                }
+                sections.push_back({position, section_name});
+            }
+        }
     }
 
     return input;
