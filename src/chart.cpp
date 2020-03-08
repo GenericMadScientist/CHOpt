@@ -18,9 +18,9 @@
 
 #include <algorithm>
 #include <charconv>
+#include <cstdlib>
 #include <set>
 #include <stdexcept>
-#include <utility>
 
 #include "chart.h"
 
@@ -97,7 +97,7 @@ static int32_t string_view_to_int(std::string_view input)
     const char* last = input.data() + input.size();
     auto [p, ec] = std::from_chars(input.data(), last, result);
     if ((ec != std::errc()) || (p != last)) {
-        throw std::invalid_argument("string_view does not convert to uint");
+        throw std::invalid_argument("string_view does not convert to int");
     }
     return result;
 }
@@ -106,13 +106,25 @@ static int32_t string_view_to_int(std::string_view input)
 // input, this function throws.
 static float string_view_to_float(std::string_view input)
 {
-    float result;
-    const char* last = input.data() + input.size();
-    auto [p, ec] = std::from_chars(input.data(), last, result);
-    if ((ec != std::errc()) || (p != last)) {
-        throw std::invalid_argument("string_view does not convert to uint");
-    }
-    return result;
+    // We need to do this conditional because for now only MSVC's STL
+    // implements std::from_chars for floats.
+    #if defined(_MSC_VER) && _MSC_VER >= 1924
+        float result;
+        const char* last = input.data() + input.size();
+        auto [p, ec] = std::from_chars(input.data(), last, result);
+        if ((ec != std::errc()) || (p != last)) {
+            throw std::invalid_argument("string_view does not convert to float");
+        }
+        return result;
+    #else
+        std::string null_terminated_input(input);
+        char* end = nullptr;
+        float result = std::strtod(null_terminated_input.c_str(), &end);
+        if (end != input.end()) {
+            throw std::invalid_argument("string_view does not convert to float");
+        }
+        return result;
+    #endif
 }
 
 std::string_view Chart::read_song_header(std::string_view input)
