@@ -19,6 +19,7 @@
 #ifndef CHOPT_CHART_H
 #define CHOPT_CHART_H
 
+#include <cstdint>
 #include <map>
 #include <string>
 #include <string_view>
@@ -26,12 +27,38 @@
 
 enum class Difficulty { Easy, Medium, Hard, Expert };
 
+enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
+
+struct Note {
+    uint32_t position;
+    uint32_t length;
+    NoteColour colour;
+    bool is_forced = false;
+    bool is_tap = false;
+};
+
+struct StarPower {
+    uint32_t position;
+    uint32_t length;
+};
+
+struct ChartEvent {
+    uint32_t position;
+    std::string name;
+};
+
+struct NoteTrack {
+    std::vector<Note> notes;
+    std::vector<StarPower> sp_phrases;
+    std::vector<ChartEvent> events;
+};
+
 class Chart {
-private:
+public:
     std::vector<std::string> song_header_lines;
     std::vector<std::string> sync_track_lines;
     std::vector<std::string> event_lines;
-    std::map<Difficulty, std::vector<std::string>> single_track_lines;
+    std::map<Difficulty, NoteTrack> note_tracks;
 
     std::string_view read_song_header(std::string_view input);
     std::string_view read_sync_track(std::string_view input);

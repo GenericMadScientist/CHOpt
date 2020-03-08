@@ -17,7 +17,10 @@
  */
 
 #include <algorithm>
+#include <charconv>
+#include <set>
 #include <stdexcept>
+#include <utility>
 
 #include "chart.h"
 
@@ -42,6 +45,52 @@ static std::string_view break_off_newline(std::string_view& input)
     input.remove_prefix(newline_location);
     input = skip_whitespace(input);
     return line;
+}
+
+// Split input by space characters, similar to .Split(' ') in C#. Note that
+// the lifetime of the string_views in the output is the same as that of the
+// input.
+static std::vector<std::string_view> split_by_space(std::string_view input)
+{
+    std::vector<std::string_view> substrings;
+
+    while (1) {
+        auto space_location = input.find(' ');
+        if (space_location == std::string_view::npos) {
+            break;
+        }
+        substrings.push_back(input.substr(0, space_location));
+        input.remove_prefix(space_location + 1);
+    }
+
+    substrings.push_back(input);
+    return substrings;
+}
+
+// Convert a string_view to a uint32_t. If there are any problems with the
+// input, this function throws.
+static uint32_t string_view_to_uint(std::string_view input)
+{
+    uint32_t result;
+    const char* last = input.data() + input.size();
+    auto [p, ec] = std::from_chars(input.data(), last, result);
+    if ((ec != std::errc()) || (p != last)) {
+        throw std::invalid_argument("string_view does not convert to uint");
+    }
+    return result;
+}
+
+// Convert a string_view to an int32_t. If there are any problems with the
+// input, this function throws.
+static int32_t string_view_to_int(std::string_view input)
+{
+    int32_t result;
+    const char* last = input.data() + input.size();
+    auto [p, ec] = std::from_chars(input.data(), last, result);
+    if ((ec != std::errc()) || (p != last)) {
+        throw std::invalid_argument("string_view does not convert to uint");
+    }
+    return result;
 }
 
 std::string_view Chart::read_song_header(std::string_view input)
@@ -105,14 +154,83 @@ std::string_view Chart::read_single_track(std::string_view input, Difficulty dif
         throw std::runtime_error("A [*Single] track does not open with {");
     }
 
+    std::vector<std::string> lines;
+
     while (1) {
         next_line = break_off_newline(input);
         if (next_line == "}") {
             break;
         }
-        // We are exploiting the std::map::operator[] behaviour of default
-        // initialising map[key] if it does not exist.
-        single_track_lines[diff].push_back(std::string(next_line));
+        lines.push_back(std::string(next_line));
+    }
+
+    std::set<uint32_t> forced_flags;
+    std::set<uint32_t> tap_flags;
+
+    for (const auto& line : lines) {
+        const auto split_string = split_by_space(line);
+        if (split_string.size() < 4) {
+            throw std::invalid_argument("Event missing data");
+        }
+        const auto position = string_view_to_uint(split_string[0]);
+        auto type = split_string[2];
+
+        if (type == "N") {
+            if (split_string.size() < 5) {
+                throw std::invalid_argument("Note event missing data");
+            }
+            const auto fret_type = string_view_to_int(split_string[3]);
+            const auto length = string_view_to_uint(split_string[4]);
+            switch (fret_type) {
+            case 0:
+                note_tracks[diff].notes.push_back({position, length, NoteColour::Green});
+                break;
+            case 1:
+                note_tracks[diff].notes.push_back({position, length, NoteColour::Red});
+                break;
+            case 2:
+                note_tracks[diff].notes.push_back({position, length, NoteColour::Yellow});
+                break;
+            case 3:
+                note_tracks[diff].notes.push_back({position, length, NoteColour::Blue});
+                break;
+            case 4:
+                note_tracks[diff].notes.push_back({position, length, NoteColour::Orange});
+                break;
+            case 5:
+                forced_flags.insert(position);
+                break;
+            case 6:
+                tap_flags.insert(position);
+                break;
+            case 7:
+                note_tracks[diff].notes.push_back({position, length, NoteColour::Open});
+                break;
+            default:
+                throw std::invalid_argument("Invalid note type");
+            }
+        } else if (type == "S") {
+            if (split_string.size() < 5) {
+                throw std::invalid_argument("SP event missing data");
+            }
+            if (string_view_to_int(split_string[3]) != 2) {
+                continue;
+            }
+            const auto length = string_view_to_uint(split_string[4]);
+            note_tracks[diff].sp_phrases.push_back({position, length});
+        } else if (type == "E") {
+            const auto event_name = split_string[3];
+            note_tracks[diff].events.push_back({position, std::string(event_name)});
+        }
+    }
+
+    for (auto& note : note_tracks[diff].notes) {
+        if (forced_flags.count(note.position)) {
+            note.is_forced = true;
+        }
+        if (tap_flags.count(note.position)) {
+            note.is_tap = true;
+        }
     }
 
     return input;
