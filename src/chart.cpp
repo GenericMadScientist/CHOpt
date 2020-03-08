@@ -175,12 +175,36 @@ std::string_view Chart::read_sync_track(std::string_view input)
         throw std::runtime_error("[SyncTrack] does not open with {");
     }
 
+    std::vector<std::string> lines;
+
     while (1) {
         next_line = break_off_newline(input);
         if (next_line == "}") {
             break;
         }
-        sync_track_lines.push_back(std::string(next_line));
+        lines.push_back(std::string(next_line));
+    }
+
+    for (const auto& line : lines) {
+        const auto split_string = split_by_space(line);
+        if (split_string.size() < 4) {
+            throw std::invalid_argument("Event missing data");
+        }
+        const auto position = string_view_to_uint(split_string[0]);
+
+        auto type = split_string[2];
+
+        if (type == "TS") {
+            const auto numerator = string_view_to_uint(split_string[3]);
+            uint32_t denominator = 2;
+            if (split_string.size() > 4) {
+                denominator = string_view_to_uint(split_string[4]);
+            }
+            time_sigs.push_back({position, numerator, 1U << denominator});
+        } else if (type == "B") {
+            const auto bpm = string_view_to_uint(split_string[3]);
+            bpms.push_back({position, bpm});
+        }
     }
 
     return input;

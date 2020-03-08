@@ -29,6 +29,17 @@ enum class Difficulty { Easy, Medium, Hard, Expert };
 
 enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
 
+struct TimeSignature {
+    uint32_t position;
+    uint32_t numerator;
+    uint32_t denominator;
+};
+
+struct BPM {
+    uint32_t position;
+    uint32_t bpm;
+};
+
 struct Section {
     uint32_t position;
     std::string name;
@@ -62,7 +73,8 @@ class Chart {
 private:
     float offset = 0;
     float resolution = 192;
-    std::vector<std::string> sync_track_lines;
+    std::vector<TimeSignature> time_sigs;
+    std::vector<BPM> bpms;
     std::vector<Section> sections;
     std::map<Difficulty, NoteTrack> note_tracks;
 
