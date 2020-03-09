@@ -62,4 +62,5 @@ script:
       cd build
       cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
       cmake --build . --verbose
+      ctest --verbose
     fi
