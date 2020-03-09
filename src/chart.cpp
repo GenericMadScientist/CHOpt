@@ -129,11 +129,9 @@ static float string_view_to_float(std::string_view input)
     return result;
 #else
     std::string null_terminated_input(input);
-    char* end = nullptr;
-    const char *buffer = null_terminated_input.c_str();
-    const char *desired_end = buffer + null_terminated_input.size();
-    float result = std::strtof(buffer, &end);
-    if (end != desired_end) {
+    size_t chars_processed = 0;
+    float result = std::stof(null_terminated_input, &chars_processed);
+    if (chars_processed != null_terminated_input.size()) {
         throw std::invalid_argument("string_view does not convert to float");
     }
     return result;
