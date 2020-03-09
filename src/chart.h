@@ -71,7 +71,7 @@ struct NoteTrack {
 
 class Chart {
 private:
-    float offset = 0;
+        float offset = 0;
     float resolution = 192;
     std::vector<TimeSignature> time_sigs;
     std::vector<BPM> bpms;

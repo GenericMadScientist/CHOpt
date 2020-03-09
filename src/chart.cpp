@@ -26,7 +26,7 @@
 
 static bool string_starts_with(std::string_view input, std::string_view pattern)
 {
-    if (input.size() < pattern.size()) {
+        if (input.size() < pattern.size()) {
         return false;
     }
 
