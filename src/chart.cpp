@@ -157,8 +157,8 @@ std::string_view Chart::read_song_header(std::string_view input)
 
     for (auto line : lines) {
         if (string_starts_with(line, "Offset = ")) {
-            constexpr auto OFFSET_LEN = 9;
-            line.remove_prefix(OFFSET_LEN);
+            // constexpr auto OFFSET_LEN = 9;
+            line.remove_prefix(9);
             offset = string_view_to_float(line);
         } else if (string_starts_with(line, "Resolution = ")) {
             constexpr auto RESOLUTION_LEN = 13;
