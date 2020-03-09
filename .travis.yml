@@ -31,6 +31,7 @@ matrix:
         apt:
           packages:
             - clang-format-9
+            - clang-tidy-9
       env:
         - MATRIX_EVAL="STATIC_CHECKS=yes"
 
@@ -52,6 +53,8 @@ script:
       clang-format-9 --version
       clang-format-9 -i src/*.cpp src/*.hpp
       git diff --color --exit-code
+      clang-tidy-9 --version
+      clang-tidy-9 src/*.cpp src/*.hpp -- -std=c++17
     else
       ${CXX} --version
       mkdir -p build
