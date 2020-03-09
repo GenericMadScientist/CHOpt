@@ -16,17 +16,5 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-
-#include "chart.hpp"
-
-TEST_CASE("Chart reads resolution and offset", "[Song]")
-{
-    auto text = "[Song]\n{\nResolution = 200\nOffset = "
-                "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
-    const auto chart = Chart(text);
-    const auto RESOLUTION = 200.F;
-
-    REQUIRE(chart.get_resolution() == RESOLUTION);
-    REQUIRE(chart.get_offset() == 100.F);
-}

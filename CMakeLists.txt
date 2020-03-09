@@ -5,20 +5,27 @@ project(chopt
     DESCRIPTION "A tool to generate optimal SP paths in Clone Hero"
     LANGUAGES CXX)
 
-add_executable(chopt src/main.cpp src/chart.cpp)
-
 # Require standard C++17
-set_target_properties(chopt PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
-)
+function(set_cpp_standard TARGET)
+    set_target_properties(${TARGET} PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+endfunction()
 
 # Set warning flags
-target_compile_options(chopt PRIVATE
-    $<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>: -Wall -Wextra -Werror -Wno-c++98-compat>
-    $<$<CXX_COMPILER_ID:MSVC>: /W4 /WX>
-)
+function(set_warnings TARGET)
+    target_compile_options(${TARGET} PRIVATE
+        $<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>: -Wall -Wextra -Werror -Wno-c++98-compat>
+        $<$<CXX_COMPILER_ID:MSVC>: /W4 /WX>
+    )
+endfunction()
+
+add_executable(chopt src/main.cpp src/chart.cpp)
+
+set_cpp_standard(chopt)
+set_warnings(chopt)
 
 include(CTest)
 

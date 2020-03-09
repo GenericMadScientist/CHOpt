@@ -16,8 +16,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef CHOPT_CHART_H
-#define CHOPT_CHART_H
+#ifndef CHOPT_CHART_HPP
+#define CHOPT_CHART_HPP
 
 #include <cstdint>
 #include <map>
@@ -86,6 +86,8 @@ private:
 
 public:
     explicit Chart(std::string_view input);
+    [[nodiscard]] float get_offset() const { return offset; }
+    [[nodiscard]] float get_resolution() const { return resolution; }
 };
 
 #endif
