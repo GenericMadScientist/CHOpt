@@ -49,6 +49,7 @@ install:
 script:
   - |
     if [[ ${STATIC_CHECKS} == "yes" ]]; then
+      clang-format --version
       clang-format -i src/*.cpp src/*.h
       git diff --color --exit-code
     else
