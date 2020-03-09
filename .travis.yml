@@ -25,6 +25,14 @@ matrix:
             - libc++abi-9-dev
       env:
         - MATRIX_EVAL="CC=clang-9 && CXX=clang++-9 && CXX_FLAGS=-stdlib=libc++"
+    - os: linux
+      dist: bionic
+      addons:
+        apt:
+          packages:
+            - clang-format-9
+      env:
+        - MATRIX_EVAL="STATIC_CHECKS=yes"
 
 before_install:
   - eval "${MATRIX_EVAL}"
@@ -39,8 +47,14 @@ install:
     fi
 
 script:
-  - ${CXX} --version
-  - mkdir -p build
-  - cd build
-  - cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
-  - cmake --build . --verbose
+  - |
+    if [[ ${STATIC_CHECKS} == "yes" ]]; then
+      clang-format -i src/*.cpp src/*.h
+      git diff --color --exit-code
+    else
+      ${CXX} --version
+      mkdir -p build
+      cd build
+      cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
+      cmake --build . --verbose
+    fi
