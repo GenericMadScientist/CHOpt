@@ -241,7 +241,7 @@ std::string_view Chart::read_events(std::string_view input)
         if (type == "E") {
             if ((split_string[3] == "\"section") || (split_string.size() > 4)) {
                 std::string section_name(trim_quotes(split_string[4]));
-                constexpr auto NAME_START = 5;
+                constexpr auto NAME_START = 5U;
                 for (auto i = NAME_START; i < split_string.size(); ++i) {
                     section_name += " ";
                     section_name += trim_quotes(split_string[i]);
