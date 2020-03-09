@@ -46,9 +46,9 @@ struct Section {
 };
 
 struct Note {
-    uint32_t position;
-    uint32_t length;
-    NoteColour colour;
+    uint32_t position = 0;
+    uint32_t length = 0;
+    NoteColour colour = NoteColour::Green;
     bool is_forced = false;
     bool is_tap = false;
 };
@@ -71,8 +71,9 @@ struct NoteTrack {
 
 class Chart {
 private:
+    static constexpr float DEFAULT_RESOLUTION = 192;
     float offset = 0;
-    float resolution = 192;
+    float resolution = DEFAULT_RESOLUTION;
     std::vector<TimeSignature> time_sigs;
     std::vector<BPM> bpms;
     std::vector<Section> sections;
@@ -82,10 +83,9 @@ private:
     std::string_view read_sync_track(std::string_view input);
     std::string_view read_events(std::string_view input);
     std::string_view read_single_track(std::string_view input, Difficulty diff);
-    std::string_view skip_unrecognised_section(std::string_view input) const;
 
 public:
-    Chart(std::string_view input);
+    explicit Chart(std::string_view input);
 };
 
 #endif

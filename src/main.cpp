@@ -20,7 +20,7 @@
 #include <iostream>
 #include <string>
 
-#include "chart.h"
+#include "chart.hpp"
 
 int main()
 {

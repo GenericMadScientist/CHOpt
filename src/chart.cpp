@@ -22,7 +22,7 @@
 #include <set>
 #include <stdexcept>
 
-#include "chart.h"
+#include "chart.hpp"
 
 static bool string_starts_with(std::string_view input, std::string_view pattern)
 {
@@ -63,7 +63,7 @@ static std::vector<std::string_view> split_by_space(std::string_view input)
 {
     std::vector<std::string_view> substrings;
 
-    while (1) {
+    while (true) {
         auto space_location = input.find(' ');
         if (space_location == std::string_view::npos) {
             break;
@@ -147,7 +147,7 @@ std::string_view Chart::read_song_header(std::string_view input)
 
     std::vector<std::string_view> lines;
 
-    while (1) {
+    while (true) {
         next_line = break_off_newline(input);
         if (next_line == "}") {
             break;
@@ -157,10 +157,12 @@ std::string_view Chart::read_song_header(std::string_view input)
 
     for (auto line : lines) {
         if (string_starts_with(line, "Offset = ")) {
-            line.remove_prefix(9);
+            constexpr auto OFFSET_LEN = 9;
+            line.remove_prefix(OFFSET_LEN);
             offset = string_view_to_float(line);
         } else if (string_starts_with(line, "Resolution = ")) {
-            line.remove_prefix(13);
+            constexpr auto RESOLUTION_LEN = 13;
+            line.remove_prefix(RESOLUTION_LEN);
             resolution = string_view_to_float(line);
         }
     }
@@ -177,12 +179,12 @@ std::string_view Chart::read_sync_track(std::string_view input)
 
     std::vector<std::string> lines;
 
-    while (1) {
+    while (true) {
         next_line = break_off_newline(input);
         if (next_line == "}") {
             break;
         }
-        lines.push_back(std::string(next_line));
+        lines.emplace_back(next_line);
     }
 
     for (const auto& line : lines) {
@@ -219,12 +221,12 @@ std::string_view Chart::read_events(std::string_view input)
 
     std::vector<std::string> lines;
 
-    while (1) {
+    while (true) {
         next_line = break_off_newline(input);
         if (next_line == "}") {
             break;
         }
-        lines.push_back(std::string(next_line));
+        lines.emplace_back(next_line);
     }
 
     for (const auto& line : lines) {
@@ -239,7 +241,8 @@ std::string_view Chart::read_events(std::string_view input)
         if (type == "E") {
             if ((split_string[3] == "\"section") || (split_string.size() > 4)) {
                 std::string section_name(trim_quotes(split_string[4]));
-                for (auto i = 5u; i < split_string.size(); ++i) {
+                constexpr auto NAME_START = 5;
+                for (auto i = NAME_START; i < split_string.size(); ++i) {
                     section_name += " ";
                     section_name += trim_quotes(split_string[i]);
                 }
@@ -254,6 +257,15 @@ std::string_view Chart::read_events(std::string_view input)
 std::string_view Chart::read_single_track(std::string_view input,
                                           Difficulty diff)
 {
+    constexpr auto GREEN_CODE = 0;
+    constexpr auto RED_CODE = 1;
+    constexpr auto YELLOW_CODE = 2;
+    constexpr auto BLUE_CODE = 3;
+    constexpr auto ORANGE_CODE = 4;
+    constexpr auto FORCED_CODE = 5;
+    constexpr auto TAP_CODE = 6;
+    constexpr auto OPEN_CODE = 7;
+
     auto next_line = break_off_newline(input);
     if (next_line != "{") {
         throw std::runtime_error("A [*Single] track does not open with {");
@@ -261,12 +273,12 @@ std::string_view Chart::read_single_track(std::string_view input,
 
     std::vector<std::string> lines;
 
-    while (1) {
+    while (true) {
         next_line = break_off_newline(input);
         if (next_line == "}") {
             break;
         }
-        lines.push_back(std::string(next_line));
+        lines.emplace_back(next_line);
     }
 
     std::set<uint32_t> forced_flags;
@@ -281,39 +293,40 @@ std::string_view Chart::read_single_track(std::string_view input,
         auto type = split_string[2];
 
         if (type == "N") {
-            if (split_string.size() < 5) {
+            constexpr auto NOTE_EVENT_LENGTH = 5;
+            if (split_string.size() < NOTE_EVENT_LENGTH) {
                 throw std::invalid_argument("Note event missing data");
             }
             const auto fret_type = string_view_to_int(split_string[3]);
             const auto length = string_view_to_uint(split_string[4]);
             switch (fret_type) {
-            case 0:
+            case GREEN_CODE:
                 note_tracks[diff].notes.push_back(
                     {position, length, NoteColour::Green});
                 break;
-            case 1:
+            case RED_CODE:
                 note_tracks[diff].notes.push_back(
                     {position, length, NoteColour::Red});
                 break;
-            case 2:
+            case YELLOW_CODE:
                 note_tracks[diff].notes.push_back(
                     {position, length, NoteColour::Yellow});
                 break;
-            case 3:
+            case BLUE_CODE:
                 note_tracks[diff].notes.push_back(
                     {position, length, NoteColour::Blue});
                 break;
-            case 4:
+            case ORANGE_CODE:
                 note_tracks[diff].notes.push_back(
                     {position, length, NoteColour::Orange});
                 break;
-            case 5:
+            case FORCED_CODE:
                 forced_flags.insert(position);
                 break;
-            case 6:
+            case TAP_CODE:
                 tap_flags.insert(position);
                 break;
-            case 7:
+            case OPEN_CODE:
                 note_tracks[diff].notes.push_back(
                     {position, length, NoteColour::Open});
                 break;
@@ -321,7 +334,8 @@ std::string_view Chart::read_single_track(std::string_view input,
                 throw std::invalid_argument("Invalid note type");
             }
         } else if (type == "S") {
-            if (split_string.size() < 5) {
+            constexpr auto SP_EVENT_LENGTH = 5;
+            if (split_string.size() < SP_EVENT_LENGTH) {
                 throw std::invalid_argument("SP event missing data");
             }
             if (string_view_to_int(split_string[3]) != 2) {
@@ -337,10 +351,10 @@ std::string_view Chart::read_single_track(std::string_view input,
     }
 
     for (auto& note : note_tracks[diff].notes) {
-        if (forced_flags.count(note.position)) {
+        if (forced_flags.count(note.position) != 0) {
             note.is_forced = true;
         }
-        if (tap_flags.count(note.position)) {
+        if (tap_flags.count(note.position) != 0) {
             note.is_tap = true;
         }
     }
@@ -348,7 +362,7 @@ std::string_view Chart::read_single_track(std::string_view input,
     return input;
 }
 
-std::string_view Chart::skip_unrecognised_section(std::string_view input) const
+static std::string_view skip_unrecognised_section(std::string_view input)
 {
     auto next_line = break_off_newline(input);
     if (next_line != "{") {
