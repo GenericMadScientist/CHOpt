@@ -1,4 +1,4 @@
-Checks:          '*,-fuchsia-*,-google-*,-llvm-*,-modernize-use-trailing-return-type'
+Checks: '*,-fuchsia-*,-google-*,-llvm-*,-modernize-use-trailing-return-type'
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle:     none

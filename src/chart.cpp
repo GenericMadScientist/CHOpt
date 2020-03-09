@@ -130,7 +130,7 @@ static float string_view_to_float(std::string_view input)
 #else
     std::string null_terminated_input(input);
     char* end = nullptr;
-    float result = std::strtod(null_terminated_input.c_str(), &end);
+    float result = std::strtof(null_terminated_input.c_str(), &end);
     if (end != input.end()) {
         throw std::invalid_argument("string_view does not convert to float");
     }
@@ -157,8 +157,8 @@ std::string_view Chart::read_song_header(std::string_view input)
 
     for (auto line : lines) {
         if (string_starts_with(line, "Offset = ")) {
-            // constexpr auto OFFSET_LEN = 9;
-            line.remove_prefix(9);
+            constexpr auto OFFSET_LEN = 9;
+            line.remove_prefix(OFFSET_LEN);
             offset = string_view_to_float(line);
         } else if (string_starts_with(line, "Resolution = ")) {
             constexpr auto RESOLUTION_LEN = 13;
