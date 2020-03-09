@@ -52,10 +52,10 @@ script:
   - |
     if [[ ${STATIC_CHECKS} == "yes" ]]; then
       clang-format-9 --version
-      clang-format-9 -i src/*.cpp src/*.hpp
+      clang-format-9 -i src/*.cpp src/*.hpp tests/*.cpp
       git diff --color --exit-code
       clang-tidy-9 --version
-      clang-tidy-9 src/*.cpp src/*.hpp -- -std=c++17 -stdlib=libc++
+      clang-tidy-9 src/*.cpp src/*.hpp tests/*.cpp -- -std=c++17 -stdlib=libc++
     else
       ${CXX} --version
       mkdir -p build

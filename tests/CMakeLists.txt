@@ -1,0 +1,3 @@
+add_executable(chart_unittest chart_unittest.cpp)
+add_test(NAME chart_unittest COMMAND chart_unittest)
+set_target_properties(chart_unittest PROPERTIES FOLDER tests)

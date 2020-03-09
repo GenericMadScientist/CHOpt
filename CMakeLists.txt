@@ -19,3 +19,11 @@ target_compile_options(chopt PRIVATE
     $<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>: -Wall -Wextra -Werror -Wno-c++98-compat>
     $<$<CXX_COMPILER_ID:MSVC>: /W4 /WX>
 )
+
+include(CTest)
+
+option(PACKAGE_TESTS "Build the tests" ON)
+if(PACKAGE_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
