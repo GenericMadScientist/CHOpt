@@ -1,17 +1,17 @@
-/* 
+/*
  *  chopt - Star Power optimiser for Clone Hero
  *  Copyright (C) 2020  Raymond Wright
- *  
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -117,25 +117,25 @@ static int32_t string_view_to_int(std::string_view input)
 // input, this function throws.
 static float string_view_to_float(std::string_view input)
 {
-    // We need to do this conditional because for now only MSVC's STL
-    // implements std::from_chars for floats.
-    #if defined(_MSC_VER) && _MSC_VER >= 1924
-        float result;
-        const char* last = input.data() + input.size();
-        auto [p, ec] = std::from_chars(input.data(), last, result);
-        if ((ec != std::errc()) || (p != last)) {
-            throw std::invalid_argument("string_view does not convert to float");
-        }
-        return result;
-    #else
-        std::string null_terminated_input(input);
-        char* end = nullptr;
-        float result = std::strtod(null_terminated_input.c_str(), &end);
-        if (end != input.end()) {
-            throw std::invalid_argument("string_view does not convert to float");
-        }
-        return result;
-    #endif
+// We need to do this conditional because for now only MSVC's STL
+// implements std::from_chars for floats.
+#if defined(_MSC_VER) && _MSC_VER >= 1924
+    float result;
+    const char* last = input.data() + input.size();
+    auto [p, ec] = std::from_chars(input.data(), last, result);
+    if ((ec != std::errc()) || (p != last)) {
+        throw std::invalid_argument("string_view does not convert to float");
+    }
+    return result;
+#else
+    std::string null_terminated_input(input);
+    char* end = nullptr;
+    float result = std::strtod(null_terminated_input.c_str(), &end);
+    if (end != input.end()) {
+        throw std::invalid_argument("string_view does not convert to float");
+    }
+    return result;
+#endif
 }
 
 std::string_view Chart::read_song_header(std::string_view input)
@@ -251,7 +251,8 @@ std::string_view Chart::read_events(std::string_view input)
     return input;
 }
 
-std::string_view Chart::read_single_track(std::string_view input, Difficulty diff)
+std::string_view Chart::read_single_track(std::string_view input,
+                                          Difficulty diff)
 {
     auto next_line = break_off_newline(input);
     if (next_line != "{") {
@@ -287,19 +288,24 @@ std::string_view Chart::read_single_track(std::string_view input, Difficulty dif
             const auto length = string_view_to_uint(split_string[4]);
             switch (fret_type) {
             case 0:
-                note_tracks[diff].notes.push_back({position, length, NoteColour::Green});
+                note_tracks[diff].notes.push_back(
+                    {position, length, NoteColour::Green});
                 break;
             case 1:
-                note_tracks[diff].notes.push_back({position, length, NoteColour::Red});
+                note_tracks[diff].notes.push_back(
+                    {position, length, NoteColour::Red});
                 break;
             case 2:
-                note_tracks[diff].notes.push_back({position, length, NoteColour::Yellow});
+                note_tracks[diff].notes.push_back(
+                    {position, length, NoteColour::Yellow});
                 break;
             case 3:
-                note_tracks[diff].notes.push_back({position, length, NoteColour::Blue});
+                note_tracks[diff].notes.push_back(
+                    {position, length, NoteColour::Blue});
                 break;
             case 4:
-                note_tracks[diff].notes.push_back({position, length, NoteColour::Orange});
+                note_tracks[diff].notes.push_back(
+                    {position, length, NoteColour::Orange});
                 break;
             case 5:
                 forced_flags.insert(position);
@@ -308,7 +314,8 @@ std::string_view Chart::read_single_track(std::string_view input, Difficulty dif
                 tap_flags.insert(position);
                 break;
             case 7:
-                note_tracks[diff].notes.push_back({position, length, NoteColour::Open});
+                note_tracks[diff].notes.push_back(
+                    {position, length, NoteColour::Open});
                 break;
             default:
                 throw std::invalid_argument("Invalid note type");
@@ -324,7 +331,8 @@ std::string_view Chart::read_single_track(std::string_view input, Difficulty dif
             note_tracks[diff].sp_phrases.push_back({position, length});
         } else if (type == "E") {
             const auto event_name = split_string[3];
-            note_tracks[diff].events.push_back({position, std::string(event_name)});
+            note_tracks[diff].events.push_back(
+                {position, std::string(event_name)});
         }
     }
 
@@ -357,17 +365,17 @@ std::string_view Chart::skip_unrecognised_section(std::string_view input) const
 Chart::Chart(std::string_view input)
 {
     if (break_off_newline(input) != "[Song]") {
-        throw std::runtime_error("Chart does not start with [Song] section");
+        throw std::runtime_error("Chart missing [Song] section");
     }
     input = read_song_header(input);
 
     if (break_off_newline(input) != "[SyncTrack]") {
-        throw std::runtime_error("Chart does not start with [SyncTrack] section");
+        throw std::runtime_error("Chart missing [SyncTrack] section");
     }
     input = read_sync_track(input);
 
     if (break_off_newline(input) != "[Events]") {
-        throw std::runtime_error("Chart does not start with [Events] section");
+        throw std::runtime_error("Chart missing [Events] section");
     }
     input = read_events(input);
 
