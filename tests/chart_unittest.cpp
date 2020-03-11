@@ -54,3 +54,24 @@ TEST_CASE("Chart reads sync track correctly", "[SyncTrack]")
     REQUIRE(chart.get_time_sigs() == time_sigs);
     REQUIRE(chart.get_bpms() == bpms);
 }
+
+TEST_CASE("Chart reads events correctly", "[Events]")
+{
+    auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n768 = E "
+                "\"section intro\"\n}\n";
+    const auto chart = Chart(text);
+    const auto sections = std::vector<Section>({{768, "intro"}});
+
+    REQUIRE(chart.get_sections() == sections);
+}
+
+TEST_CASE("Chart reads easy note track correctly", "[Easy]")
+{
+    auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[EasySingle]"
+                "\n{\n768 = N 0 0\n768 = S 2 100\n}\n";
+    const auto chart = Chart(text);
+    const auto note_track
+        = NoteTrack {{{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
+
+    REQUIRE(chart.get_note_track(Difficulty::Easy) == note_track);
+}

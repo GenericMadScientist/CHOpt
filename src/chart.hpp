@@ -56,6 +56,12 @@ struct BPM {
 struct Section {
     uint32_t position;
     std::string name;
+
+    friend bool operator==(const Section& lhs, const Section& rhs)
+    {
+        return std::tie(lhs.position, lhs.name)
+            == std::tie(rhs.position, rhs.name);
+    }
 };
 
 struct Note {
@@ -64,27 +70,53 @@ struct Note {
     NoteColour colour = NoteColour::Green;
     bool is_forced = false;
     bool is_tap = false;
+
+    friend bool operator==(const Note& lhs, const Note& rhs)
+    {
+        return std::tie(lhs.position, lhs.length, lhs.colour, lhs.is_forced,
+                        lhs.is_tap)
+            == std::tie(rhs.position, rhs.length, rhs.colour, rhs.is_forced,
+                        rhs.is_tap);
+    }
 };
 
 struct StarPower {
     uint32_t position;
     uint32_t length;
+
+    friend bool operator==(const StarPower& lhs, const StarPower& rhs)
+    {
+        return std::tie(lhs.position, lhs.length)
+            == std::tie(rhs.position, rhs.length);
+    }
 };
 
 struct ChartEvent {
     uint32_t position;
     std::string name;
+
+    friend bool operator==(const ChartEvent& lhs, const ChartEvent& rhs)
+    {
+        return std::tie(lhs.position, lhs.name)
+            == std::tie(rhs.position, rhs.name);
+    }
 };
 
 struct NoteTrack {
     std::vector<Note> notes;
     std::vector<StarPower> sp_phrases;
     std::vector<ChartEvent> events;
+
+    friend bool operator==(const NoteTrack& lhs, const NoteTrack& rhs)
+    {
+        return std::tie(lhs.notes, lhs.sp_phrases, lhs.events)
+            == std::tie(rhs.notes, rhs.sp_phrases, rhs.events);
+    }
 };
 
 class Chart {
 private:
-    static constexpr float DEFAULT_RESOLUTION = 192;
+    static constexpr float DEFAULT_RESOLUTION = 192.F;
     float offset = 0;
     float resolution = DEFAULT_RESOLUTION;
     std::vector<TimeSignature> time_sigs;
@@ -106,6 +138,14 @@ public:
         return time_sigs;
     }
     [[nodiscard]] const std::vector<BPM>& get_bpms() const { return bpms; }
+    [[nodiscard]] const std::vector<Section>& get_sections() const
+    {
+        return sections;
+    }
+    [[nodiscard]] const NoteTrack& get_note_track(Difficulty diff) const
+    {
+        return note_tracks.at(diff);
+    }
 };
 
 #endif
