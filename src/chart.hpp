@@ -23,6 +23,7 @@
 #include <map>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 enum class Difficulty { Easy, Medium, Hard, Expert };
@@ -33,11 +34,23 @@ struct TimeSignature {
     uint32_t position;
     uint32_t numerator;
     uint32_t denominator;
+
+    friend bool operator==(const TimeSignature& lhs, const TimeSignature& rhs)
+    {
+        return std::tie(lhs.position, lhs.numerator, lhs.denominator)
+            == std::tie(rhs.position, rhs.numerator, rhs.denominator);
+    }
 };
 
 struct BPM {
     uint32_t position;
     uint32_t bpm;
+
+    friend bool operator==(const BPM& lhs, const BPM& rhs)
+    {
+        return std::tie(lhs.position, lhs.bpm)
+            == std::tie(rhs.position, rhs.bpm);
+    }
 };
 
 struct Section {
@@ -88,6 +101,11 @@ public:
     explicit Chart(std::string_view input);
     [[nodiscard]] float get_offset() const { return offset; }
     [[nodiscard]] float get_resolution() const { return resolution; }
+    [[nodiscard]] const std::vector<TimeSignature>& get_time_sigs() const
+    {
+        return time_sigs;
+    }
+    [[nodiscard]] const std::vector<BPM>& get_bpms() const { return bpms; }
 };
 
 #endif

@@ -42,3 +42,15 @@ TEST_CASE("Chart reads resolution and offset", "[Song]")
         REQUIRE(chart.get_offset() == 100.F);
     }
 }
+
+TEST_CASE("Chart reads sync track correctly", "[SyncTrack]")
+{
+    auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
+                "TS 4 1\n}\n[Events]\n{\n}\n";
+    const auto chart = Chart(text);
+    const auto time_sigs = std::vector<TimeSignature>({{0, 4, 4}, {768, 4, 2}});
+    const auto bpms = std::vector<BPM>({{0, 200000}});
+
+    REQUIRE(chart.get_time_sigs() == time_sigs);
+    REQUIRE(chart.get_bpms() == bpms);
+}
