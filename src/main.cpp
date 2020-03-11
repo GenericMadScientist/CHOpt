@@ -16,18 +16,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <string>
 
 #include "chart.hpp"
 
-int main()
+int main(int argc, char* argv[])
 {
-    std::ifstream in("test_charts/soulless.chart");
+    if (argc < 2) {
+        std::cout << "Please specify a file!" << std::endl;
+        return EXIT_FAILURE;
+    }
+    // clang-tidy complains about the following pointer arithmetic, but using
+    // gsl::span just for this is overkill.
+    std::ifstream in(argv[1]); // NOLINT
     std::string contents((std::istreambuf_iterator<char>(in)),
                          std::istreambuf_iterator<char>());
     std::cout << contents.size() << std::endl;
     Chart chart(contents);
     (void)chart;
+    return EXIT_SUCCESS;
 }
