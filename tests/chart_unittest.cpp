@@ -28,7 +28,7 @@ TEST_CASE("Chart reads resolution and offset", "Song")
         const auto chart = Chart(text);
         const auto DEFAULT_RESOLUTION = 192.F;
 
-        REQUIRE(chart.get_resolution() == DEFAULT_RESOLUTION);
+        REQUIRE(chart.get_resolution() == Approx(DEFAULT_RESOLUTION));
         REQUIRE(chart.get_offset() == 0.F);
     }
     SECTION("Defaults are overriden by specified values")
@@ -38,7 +38,7 @@ TEST_CASE("Chart reads resolution and offset", "Song")
         const auto chart = Chart(text);
         const auto RESOLUTION = 200.F;
 
-        REQUIRE(chart.get_resolution() == RESOLUTION);
+        REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
         REQUIRE(chart.get_offset() == 100.F);
     }
 }
@@ -83,7 +83,7 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
     const auto chart = Chart(text);
     const auto RESOLUTION = 192.F;
 
-    REQUIRE(chart.get_resolution() == RESOLUTION);
+    REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
     REQUIRE(chart.get_offset() == 100.F);
 }
 
@@ -94,6 +94,6 @@ TEST_CASE("Chart can end without a newline", "End-NL")
     const auto chart = Chart(text);
     const auto RESOLUTION = 192.F;
 
-    REQUIRE(chart.get_resolution() == RESOLUTION);
+    REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
     REQUIRE(chart.get_offset() == 100.F);
 }
