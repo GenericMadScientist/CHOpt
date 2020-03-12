@@ -75,3 +75,14 @@ TEST_CASE("Chart reads easy note track correctly", "[Easy]")
 
     REQUIRE(chart.get_note_track(Difficulty::Easy) == note_track);
 }
+
+TEST_CASE("Chart skips UTF-8 BOM", "[BOM]")
+{
+    auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
+                "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
+    const auto chart = Chart(text);
+    const auto RESOLUTION = 192.F;
+
+    REQUIRE(chart.get_resolution() == RESOLUTION);
+    REQUIRE(chart.get_offset() == 100.F);
+}

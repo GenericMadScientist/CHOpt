@@ -378,6 +378,11 @@ static std::string_view skip_unrecognised_section(std::string_view input)
 
 Chart::Chart(std::string_view input)
 {
+    // Trim off UTF-8 BOM if present
+    if (input.size() >= 3 && input.substr(0, 3) == "\xEF\xBB\xBF") {
+        input.remove_prefix(3);
+    }
+
     if (break_off_newline(input) != "[Song]") {
         throw std::runtime_error("Chart missing [Song] section");
     }
