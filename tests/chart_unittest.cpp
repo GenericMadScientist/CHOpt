@@ -20,7 +20,7 @@
 
 #include "chart.hpp"
 
-TEST_CASE("Chart reads resolution and offset", "[Song]")
+TEST_CASE("Chart reads resolution and offset", "Song")
 {
     SECTION("Defaults are 192 Res and 0 Offset")
     {
@@ -43,7 +43,7 @@ TEST_CASE("Chart reads resolution and offset", "[Song]")
     }
 }
 
-TEST_CASE("Chart reads sync track correctly", "[SyncTrack]")
+TEST_CASE("Chart reads sync track correctly", "SyncTrack")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
                 "TS 4 1\n}\n[Events]\n{\n}\n";
@@ -55,7 +55,7 @@ TEST_CASE("Chart reads sync track correctly", "[SyncTrack]")
     REQUIRE(chart.get_bpms() == bpms);
 }
 
-TEST_CASE("Chart reads events correctly", "[Events]")
+TEST_CASE("Chart reads events correctly", "Events")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n768 = E "
                 "\"section intro\"\n}\n";
@@ -65,7 +65,7 @@ TEST_CASE("Chart reads events correctly", "[Events]")
     REQUIRE(chart.get_sections() == sections);
 }
 
-TEST_CASE("Chart reads easy note track correctly", "[Easy]")
+TEST_CASE("Chart reads easy note track correctly", "Easy")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[EasySingle]"
                 "\n{\n768 = N 0 0\n768 = S 2 100\n}\n";
@@ -76,10 +76,21 @@ TEST_CASE("Chart reads easy note track correctly", "[Easy]")
     REQUIRE(chart.get_note_track(Difficulty::Easy) == note_track);
 }
 
-TEST_CASE("Chart skips UTF-8 BOM", "[BOM]")
+TEST_CASE("Chart skips UTF-8 BOM", "BOM")
 {
     auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
                 "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
+    const auto chart = Chart(text);
+    const auto RESOLUTION = 192.F;
+
+    REQUIRE(chart.get_resolution() == RESOLUTION);
+    REQUIRE(chart.get_offset() == 100.F);
+}
+
+TEST_CASE("Chart can end without a newline", "End-NL")
+{
+    auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
+                "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}";
     const auto chart = Chart(text);
     const auto RESOLUTION = 192.F;
 

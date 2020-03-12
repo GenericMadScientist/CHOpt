@@ -47,7 +47,9 @@ static std::string_view break_off_newline(std::string_view& input)
 {
     const auto newline_location = input.find_first_of("\r\n");
     if (newline_location == std::string_view::npos) {
-        throw std::runtime_error("Missing newline");
+        const auto line = input;
+        input.remove_prefix(input.size());
+        return line;
     }
 
     const auto line = input.substr(0, newline_location);
