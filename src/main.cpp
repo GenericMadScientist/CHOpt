@@ -26,25 +26,30 @@
 
 int main(int argc, char* argv[])
 {
-    if (argc < 2) {
-        std::cout << "Please specify a file!" << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    // clang-tidy complains about the following pointer arithmetic, but using
-    // gsl::span just for this is overkill.
-    std::ifstream in(argv[1]); // NOLINT
-    std::string contents((std::istreambuf_iterator<char>(in)),
-                         std::istreambuf_iterator<char>());
-    std::cout << contents.size() << std::endl;
-
     try {
+        if (argc < 2) {
+            std::cout << "Please specify a file!" << std::endl;
+            return EXIT_FAILURE;
+        }
+        // clang-tidy complains about the following pointer arithmetic, but
+        // using gsl::span just for this is overkill.
+        std::ifstream in(argv[1]); // NOLINT
+        if (!in.is_open()) {
+            std::cout << "File did not open, please specify a valid file!"
+                      << std::endl;
+            return EXIT_FAILURE;
+        }
+        std::string contents((std::istreambuf_iterator<char>(in)),
+                             std::istreambuf_iterator<char>());
+        std::cout << contents.size() << std::endl;
         Chart chart(contents);
         (void)chart;
-    } catch (std::exception& e) {
+        return EXIT_SUCCESS;
+    } catch (const std::exception& e) {
         std::cout << e.what() << std::endl;
         return EXIT_FAILURE;
+    } catch (...) {
+        std::cout << "Unexpected non-exception error!" << std::endl;
+        return EXIT_FAILURE;
     }
-
-    return EXIT_SUCCESS;
 }
