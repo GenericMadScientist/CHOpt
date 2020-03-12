@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include "chart.hpp"
@@ -29,13 +30,21 @@ int main(int argc, char* argv[])
         std::cout << "Please specify a file!" << std::endl;
         return EXIT_FAILURE;
     }
+
     // clang-tidy complains about the following pointer arithmetic, but using
     // gsl::span just for this is overkill.
     std::ifstream in(argv[1]); // NOLINT
     std::string contents((std::istreambuf_iterator<char>(in)),
                          std::istreambuf_iterator<char>());
     std::cout << contents.size() << std::endl;
-    Chart chart(contents);
-    (void)chart;
+
+    try {
+        Chart chart(contents);
+        (void)chart;
+    } catch (std::exception& e) {
+        std::cout << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+
     return EXIT_SUCCESS;
 }
