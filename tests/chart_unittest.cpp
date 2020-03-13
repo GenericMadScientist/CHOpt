@@ -26,17 +26,18 @@ TEST_CASE("Chart reads resolution and offset", "Song")
     {
         auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
         const auto chart = Chart(text);
-        const auto DEFAULT_RESOLUTION = 192.F;
+        constexpr auto DEFAULT_RESOLUTION = 192.F;
 
         REQUIRE(chart.get_resolution() == Approx(DEFAULT_RESOLUTION));
         REQUIRE(chart.get_offset() == 0.F);
     }
+
     SECTION("Defaults are overriden by specified values")
     {
         auto text = "[Song]\n{\nResolution = 200\nOffset = "
                     "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
         const auto chart = Chart(text);
-        const auto RESOLUTION = 200.F;
+        constexpr auto RESOLUTION = 200.F;
 
         REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
         REQUIRE(chart.get_offset() == 100.F);
@@ -81,7 +82,7 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
     auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
                 "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
     const auto chart = Chart(text);
-    const auto RESOLUTION = 192.F;
+    constexpr auto RESOLUTION = 192.F;
 
     REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
     REQUIRE(chart.get_offset() == 100.F);
@@ -92,8 +93,33 @@ TEST_CASE("Chart can end without a newline", "End-NL")
     auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
                 "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}";
     const auto chart = Chart(text);
-    const auto RESOLUTION = 192.F;
+    constexpr auto RESOLUTION = 192.F;
 
     REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
     REQUIRE(chart.get_offset() == 100.F);
+}
+
+TEST_CASE("Chart does not need sections in usual order", "Section order")
+{
+    SECTION("Non note sections need not be present")
+    {
+        const auto chart = Chart("");
+        constexpr auto RESOLUTION = 192.F;
+
+        REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
+    }
+
+    SECTION("Non note sections can be in any order")
+    {
+        auto text = "[SyncTrack]\n{\n0 = B 200000\n}\n[Events]\n{\n768 = E "
+                    "\"section intro\"\n}\n[Song]\n{\nResolution = 200\n}";
+        const auto chart = Chart(text);
+        const auto sections = std::vector<Section>({{768, "intro"}});
+        const auto bpms = std::vector<BPM>({{0, 200000}});
+        constexpr auto RESOLUTION = 200.F;
+
+        REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
+        REQUIRE(chart.get_sections() == sections);
+        REQUIRE(chart.get_bpms() == bpms);
+    }
 }

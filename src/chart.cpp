@@ -361,24 +361,15 @@ Chart::Chart(std::string_view input)
         input.remove_prefix(3);
     }
 
-    if (break_off_newline(input) != "[Song]") {
-        throw std::runtime_error("Chart missing [Song] section");
-    }
-    input = read_song_header(input);
-
-    if (break_off_newline(input) != "[SyncTrack]") {
-        throw std::runtime_error("Chart missing [SyncTrack] section");
-    }
-    input = read_sync_track(input);
-
-    if (break_off_newline(input) != "[Events]") {
-        throw std::runtime_error("Chart missing [Events] section");
-    }
-    input = read_events(input);
-
     while (!input.empty()) {
         const auto header = break_off_newline(input);
-        if (header == "[EasySingle]") {
+        if (header == "[Song]") {
+            input = read_song_header(input);
+        } else if (header == "[SyncTrack]") {
+            input = read_sync_track(input);
+        } else if (header == "[Events]") {
+            input = read_events(input);
+        } else if (header == "[EasySingle]") {
             input = read_single_track(input, Difficulty::Easy);
         } else if (header == "[MediumSingle]") {
             input = read_single_track(input, Difficulty::Medium);
