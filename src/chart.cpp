@@ -66,7 +66,7 @@ static std::vector<std::string_view> split_by_space(std::string_view input)
     std::vector<std::string_view> substrings;
 
     while (true) {
-        auto space_location = input.find(' ');
+        const auto space_location = input.find(' ');
         if (space_location == std::string_view::npos) {
             break;
         }
@@ -142,22 +142,16 @@ static float string_view_to_float(std::string_view input)
 
 std::string_view Chart::read_song_header(std::string_view input)
 {
-    auto next_line = break_off_newline(input);
-    if (next_line != "{") {
+    if (break_off_newline(input) != "{") {
         throw std::runtime_error("[Song] does not open with {");
     }
 
-    std::vector<std::string_view> lines;
-
     while (true) {
-        next_line = break_off_newline(input);
-        if (next_line == "}") {
+        auto line = break_off_newline(input);
+        if (line == "}") {
             break;
         }
-        lines.push_back(next_line);
-    }
 
-    for (auto line : lines) {
         if (string_starts_with(line, "Offset = ")) {
             constexpr auto OFFSET_LEN = 9;
             line.remove_prefix(OFFSET_LEN);
@@ -174,29 +168,23 @@ std::string_view Chart::read_song_header(std::string_view input)
 
 std::string_view Chart::read_sync_track(std::string_view input)
 {
-    auto next_line = break_off_newline(input);
-    if (next_line != "{") {
+    if (break_off_newline(input) != "{") {
         throw std::runtime_error("[SyncTrack] does not open with {");
     }
 
-    std::vector<std::string> lines;
-
     while (true) {
-        next_line = break_off_newline(input);
-        if (next_line == "}") {
+        const auto line = break_off_newline(input);
+        if (line == "}") {
             break;
         }
-        lines.emplace_back(next_line);
-    }
 
-    for (const auto& line : lines) {
         const auto split_string = split_by_space(line);
         if (split_string.size() < 4) {
             throw std::invalid_argument("Event missing data");
         }
         const auto position = string_view_to_uint(split_string[0]);
 
-        auto type = split_string[2];
+        const auto type = split_string[2];
 
         if (type == "TS") {
             const auto numerator = string_view_to_uint(split_string[3]);
@@ -216,29 +204,23 @@ std::string_view Chart::read_sync_track(std::string_view input)
 
 std::string_view Chart::read_events(std::string_view input)
 {
-    auto next_line = break_off_newline(input);
-    if (next_line != "{") {
+    if (break_off_newline(input) != "{") {
         throw std::runtime_error("[Events] does not open with {");
     }
 
-    std::vector<std::string> lines;
-
     while (true) {
-        next_line = break_off_newline(input);
-        if (next_line == "}") {
+        const auto line = break_off_newline(input);
+        if (line == "}") {
             break;
         }
-        lines.emplace_back(next_line);
-    }
 
-    for (const auto& line : lines) {
         const auto split_string = split_by_space(line);
         if (split_string.size() < 4) {
             throw std::invalid_argument("Event missing data");
         }
         const auto position = string_view_to_uint(split_string[0]);
 
-        auto type = split_string[2];
+        const auto type = split_string[2];
 
         if (type == "E") {
             if ((split_string[3] == "\"section") || (split_string.size() > 4)) {
@@ -268,31 +250,25 @@ std::string_view Chart::read_single_track(std::string_view input,
     constexpr auto TAP_CODE = 6;
     constexpr auto OPEN_CODE = 7;
 
-    auto next_line = break_off_newline(input);
-    if (next_line != "{") {
+    if (break_off_newline(input) != "{") {
         throw std::runtime_error("A [*Single] track does not open with {");
-    }
-
-    std::vector<std::string> lines;
-
-    while (true) {
-        next_line = break_off_newline(input);
-        if (next_line == "}") {
-            break;
-        }
-        lines.emplace_back(next_line);
     }
 
     std::set<uint32_t> forced_flags;
     std::set<uint32_t> tap_flags;
 
-    for (const auto& line : lines) {
+    while (true) {
+        const auto line = break_off_newline(input);
+        if (line == "}") {
+            break;
+        }
+
         const auto split_string = split_by_space(line);
         if (split_string.size() < 4) {
             throw std::invalid_argument("Event missing data");
         }
         const auto position = string_view_to_uint(split_string[0]);
-        auto type = split_string[2];
+        const auto type = split_string[2];
 
         if (type == "N") {
             constexpr auto NOTE_EVENT_LENGTH = 5;
@@ -381,7 +357,7 @@ static std::string_view skip_unrecognised_section(std::string_view input)
 Chart::Chart(std::string_view input)
 {
     // Trim off UTF-8 BOM if present
-    if (input.size() >= 3 && input.substr(0, 3) == "\xEF\xBB\xBF") {
+    if (string_starts_with(input, "\xEF\xBB\xBF")) {
         input.remove_prefix(3);
     }
 
