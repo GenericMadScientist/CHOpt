@@ -123,3 +123,24 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
         REQUIRE(chart.get_bpms() == bpms);
     }
 }
+
+TEST_CASE("Note section can be split in multiple parts", "Note split")
+{
+    auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 = N "
+                "1 0\n}";
+    const auto chart = Chart(text);
+    const auto notes = std::vector<Note>(
+        {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}});
+
+    REQUIRE(chart.get_note_track(Difficulty::Expert).notes == notes);
+}
+
+TEST_CASE("Notes should be sorted")
+{
+    auto text = "[ExpertSingle]\n{\n768 = N 0 0\n384 = N 0 0\n}";
+    const auto chart = Chart(text);
+    const auto notes = std::vector<Note>(
+        {{384, 0, NoteColour::Green}, {768, 0, NoteColour::Green}});
+
+    REQUIRE(chart.get_note_track(Difficulty::Expert).notes == notes);
+}

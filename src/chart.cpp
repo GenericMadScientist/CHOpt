@@ -381,4 +381,12 @@ Chart::Chart(std::string_view input)
             input = skip_unrecognised_section(input);
         }
     }
+
+    for (auto& key_track : note_tracks) {
+        auto& notes = key_track.second.notes;
+        std::stable_sort(notes.begin(), notes.end(),
+                         [](const auto& lhs, const auto& rhs) {
+                             return lhs.position < rhs.position;
+                         });
+    }
 }
