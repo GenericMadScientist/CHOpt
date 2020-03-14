@@ -135,7 +135,7 @@ TEST_CASE("Note section can be split in multiple parts", "Note split")
     REQUIRE(chart.get_note_track(Difficulty::Expert).notes == notes);
 }
 
-TEST_CASE("Notes should be sorted")
+TEST_CASE("Notes should be sorted", "NoteSort")
 {
     auto text = "[ExpertSingle]\n{\n768 = N 0 0\n384 = N 0 0\n}";
     const auto chart = Chart(text);
@@ -143,4 +143,33 @@ TEST_CASE("Notes should be sorted")
         {{384, 0, NoteColour::Green}, {768, 0, NoteColour::Green}});
 
     REQUIRE(chart.get_note_track(Difficulty::Expert).notes == notes);
+}
+
+TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
+{
+    SECTION("Tap flags apply to earlier sections")
+    {
+        auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
+                    "= N 6 0\n}";
+        const auto chart = Chart(text);
+
+        REQUIRE(chart.get_note_track(Difficulty::Expert).notes[0].is_tap);
+    }
+
+    SECTION("Tap flags do not apply to later sections")
+    {
+        auto text = "[ExpertSingle]\n{\n768 = N 6 0\n}\n[ExpertSingle]\n{\n768 "
+                    "= N 0 0\n}";
+        const auto chart = Chart(text);
+
+        REQUIRE(!chart.get_note_track(Difficulty::Expert).notes[0].is_tap);
+    }
+}
+
+TEST_CASE("Notes with extra spaces are ignored", "NoteSpaceSkip")
+{
+    auto text = "[ExpertSingle]\n{\n768 = N  0 0\n768 = N 0  0\n}";
+    const auto chart = Chart(text);
+
+    REQUIRE(chart.get_note_track(Difficulty::Expert).notes.empty());
 }

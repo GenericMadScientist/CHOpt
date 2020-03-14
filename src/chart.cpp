@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <charconv>
 #include <cstdlib>
+#include <optional>
 #include <set>
 #include <stdexcept>
 
@@ -91,33 +92,33 @@ static std::string_view trim_quotes(std::string_view input)
 
 // Convert a string_view to a uint32_t. If there are any problems with the
 // input, this function throws.
-static uint32_t string_view_to_uint(std::string_view input)
+static std::optional<uint32_t> string_view_to_uint(std::string_view input)
 {
     uint32_t result;
     const char* last = input.data() + input.size();
     auto [p, ec] = std::from_chars(input.data(), last, result);
     if ((ec != std::errc()) || (p != last)) {
-        throw std::invalid_argument("string_view does not convert to uint");
+        return {};
     }
     return result;
 }
 
 // Convert a string_view to an int32_t. If there are any problems with the
 // input, this function throws.
-static int32_t string_view_to_int(std::string_view input)
+static std::optional<int32_t> string_view_to_int(std::string_view input)
 {
     int32_t result;
     const char* last = input.data() + input.size();
     auto [p, ec] = std::from_chars(input.data(), last, result);
     if ((ec != std::errc()) || (p != last)) {
-        throw std::invalid_argument("string_view does not convert to int");
+        return {};
     }
     return result;
 }
 
 // Convert a string_view to a float. If there are any problems with the
 // input, this function throws.
-static float string_view_to_float(std::string_view input)
+static std::optional<float> string_view_to_float(std::string_view input)
 {
 // We need to do this conditional because for now only MSVC's STL
 // implements std::from_chars for floats.
@@ -126,7 +127,7 @@ static float string_view_to_float(std::string_view input)
     const char* last = input.data() + input.size();
     auto [p, ec] = std::from_chars(input.data(), last, result);
     if ((ec != std::errc()) || (p != last)) {
-        throw std::invalid_argument("string_view does not convert to float");
+        return {};
     }
     return result;
 #else
@@ -134,7 +135,7 @@ static float string_view_to_float(std::string_view input)
     size_t chars_processed = 0;
     float result = std::stof(null_terminated_input, &chars_processed);
     if (chars_processed != null_terminated_input.size()) {
-        throw std::invalid_argument("string_view does not convert to float");
+        return {};
     }
     return result;
 #endif
@@ -155,11 +156,17 @@ std::string_view Chart::read_song_header(std::string_view input)
         if (string_starts_with(line, "Offset = ")) {
             constexpr auto OFFSET_LEN = 9;
             line.remove_prefix(OFFSET_LEN);
-            offset = string_view_to_float(line);
+            const auto result = string_view_to_float(line);
+            if (result) {
+                offset = *result;
+            }
         } else if (string_starts_with(line, "Resolution = ")) {
             constexpr auto RESOLUTION_LEN = 13;
             line.remove_prefix(RESOLUTION_LEN);
-            resolution = string_view_to_float(line);
+            const auto result = string_view_to_float(line);
+            if (result) {
+                resolution = *result;
+            }
         }
     }
 
@@ -182,20 +189,35 @@ std::string_view Chart::read_sync_track(std::string_view input)
         if (split_string.size() < 4) {
             throw std::invalid_argument("Event missing data");
         }
-        const auto position = string_view_to_uint(split_string[0]);
+        const auto pre_position = string_view_to_uint(split_string[0]);
+        if (!pre_position) {
+            continue;
+        }
+        const auto position = *pre_position;
 
         const auto type = split_string[2];
 
         if (type == "TS") {
             const auto numerator = string_view_to_uint(split_string[3]);
+            if (!numerator) {
+                continue;
+            }
             uint32_t denominator = 2;
             if (split_string.size() > 4) {
-                denominator = string_view_to_uint(split_string[4]);
+                const auto result = string_view_to_uint(split_string[4]);
+                if (result) {
+                    denominator = *result;
+                } else {
+                    continue;
+                }
             }
-            time_sigs.push_back({position, numerator, 1U << denominator});
+            time_sigs.push_back({position, *numerator, 1U << denominator});
         } else if (type == "B") {
             const auto bpm = string_view_to_uint(split_string[3]);
-            bpms.push_back({position, bpm});
+            if (!bpm) {
+                continue;
+            }
+            bpms.push_back({position, *bpm});
         }
     }
 
@@ -222,7 +244,7 @@ std::string_view Chart::read_events(std::string_view input)
 
         const auto type = split_string[2];
 
-        if (type == "E") {
+        if (type == "E" && position) {
             if ((split_string[3] == "\"section") || (split_string.size() > 4)) {
                 std::string section_name(trim_quotes(split_string[4]));
                 constexpr auto NAME_START = 5U;
@@ -230,7 +252,7 @@ std::string_view Chart::read_events(std::string_view input)
                     section_name += " ";
                     section_name += trim_quotes(split_string[i]);
                 }
-                sections.push_back({position, section_name});
+                sections.push_back({*position, section_name});
             }
         }
     }
@@ -267,7 +289,11 @@ std::string_view Chart::read_single_track(std::string_view input,
         if (split_string.size() < 4) {
             throw std::invalid_argument("Event missing data");
         }
-        const auto position = string_view_to_uint(split_string[0]);
+        const auto pre_position = string_view_to_uint(split_string[0]);
+        if (!pre_position) {
+            continue;
+        }
+        const auto position = *pre_position;
         const auto type = split_string[2];
 
         if (type == "N") {
@@ -276,8 +302,15 @@ std::string_view Chart::read_single_track(std::string_view input,
                 throw std::invalid_argument("Note event missing data");
             }
             const auto fret_type = string_view_to_int(split_string[3]);
-            const auto length = string_view_to_uint(split_string[4]);
-            switch (fret_type) {
+            if (!fret_type) {
+                continue;
+            }
+            const auto pre_length = string_view_to_uint(split_string[4]);
+            if (!pre_length) {
+                continue;
+            }
+            const auto length = *pre_length;
+            switch (*fret_type) {
             case GREEN_CODE:
                 note_tracks[diff].notes.push_back(
                     {position, length, NoteColour::Green});
@@ -319,7 +352,11 @@ std::string_view Chart::read_single_track(std::string_view input,
             if (string_view_to_int(split_string[3]) != 2) {
                 continue;
             }
-            const auto length = string_view_to_uint(split_string[4]);
+            const auto pre_length = string_view_to_uint(split_string[4]);
+            if (!pre_length) {
+                continue;
+            }
+            const auto length = *pre_length;
             note_tracks[diff].sp_phrases.push_back({position, length});
         } else if (type == "E") {
             const auto event_name = split_string[3];
