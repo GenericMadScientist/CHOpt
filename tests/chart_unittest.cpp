@@ -20,6 +20,18 @@
 
 #include "chart.hpp"
 
+TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
+{
+    SECTION("Notes are sorted")
+    {
+        const auto notes = std::vector<Note>({{768}, {384}});
+        const auto track = NoteTrack(notes, {}, {});
+        const auto sorted_notes = std::vector<Note>({{384}, {768}});
+
+        REQUIRE(track.notes() == sorted_notes);
+    }
+}
+
 TEST_CASE("Chart reads resolution and offset", "Song")
 {
     SECTION("Defaults are 192 Res and 0 Offset")
@@ -132,7 +144,7 @@ TEST_CASE("Note section can be split in multiple parts", "Note split")
     const auto notes = std::vector<Note>(
         {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}});
 
-    REQUIRE(chart.get_note_track(Difficulty::Expert).notes == notes);
+    REQUIRE(chart.get_note_track(Difficulty::Expert).notes() == notes);
 }
 
 TEST_CASE("Notes should be sorted", "NoteSort")
@@ -142,7 +154,7 @@ TEST_CASE("Notes should be sorted", "NoteSort")
     const auto notes = std::vector<Note>(
         {{384, 0, NoteColour::Green}, {768, 0, NoteColour::Green}});
 
-    REQUIRE(chart.get_note_track(Difficulty::Expert).notes == notes);
+    REQUIRE(chart.get_note_track(Difficulty::Expert).notes() == notes);
 }
 
 TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
@@ -153,7 +165,7 @@ TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
                     "= N 6 0\n}";
         const auto chart = Chart(text);
 
-        REQUIRE(chart.get_note_track(Difficulty::Expert).notes[0].is_tap);
+        REQUIRE(chart.get_note_track(Difficulty::Expert).notes()[0].is_tap);
     }
 
     SECTION("Tap flags do not apply to later sections")
@@ -162,7 +174,7 @@ TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
                     "= N 0 0\n}";
         const auto chart = Chart(text);
 
-        REQUIRE(!chart.get_note_track(Difficulty::Expert).notes[0].is_tap);
+        REQUIRE(!chart.get_note_track(Difficulty::Expert).notes()[0].is_tap);
     }
 }
 
@@ -171,5 +183,5 @@ TEST_CASE("Notes with extra spaces are ignored", "NoteSpaceSkip")
     auto text = "[ExpertSingle]\n{\n768 = N  0 0\n768 = N 0  0\n}";
     const auto chart = Chart(text);
 
-    REQUIRE(chart.get_note_track(Difficulty::Expert).notes.empty());
+    REQUIRE(chart.get_note_track(Difficulty::Expert).notes().empty());
 }

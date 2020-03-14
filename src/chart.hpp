@@ -102,15 +102,25 @@ struct ChartEvent {
     }
 };
 
-struct NoteTrack {
-    std::vector<Note> notes;
-    std::vector<StarPower> sp_phrases;
-    std::vector<ChartEvent> events;
+// Invariants:
+// notes() will always return a vector of sorted notes.
+class NoteTrack {
+private:
+    std::vector<Note> m_notes;
+    std::vector<StarPower> m_sp_phrases;
+    std::vector<ChartEvent> m_events;
+
+public:
+    NoteTrack() = default;
+    NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
+              std::vector<ChartEvent> events);
+
+    [[nodiscard]] const std::vector<Note>& notes() const { return m_notes; }
 
     friend bool operator==(const NoteTrack& lhs, const NoteTrack& rhs)
     {
-        return std::tie(lhs.notes, lhs.sp_phrases, lhs.events)
-            == std::tie(rhs.notes, rhs.sp_phrases, rhs.events);
+        return std::tie(lhs.m_notes, lhs.m_sp_phrases, lhs.m_events)
+            == std::tie(rhs.m_notes, rhs.m_sp_phrases, rhs.m_events);
     }
 };
 
@@ -127,7 +137,6 @@ private:
     std::string_view read_song_header(std::string_view input);
     std::string_view read_sync_track(std::string_view input);
     std::string_view read_events(std::string_view input);
-    std::string_view read_single_track(std::string_view input, Difficulty diff);
 
 public:
     explicit Chart(std::string_view input);

@@ -22,8 +22,29 @@
 #include <optional>
 #include <set>
 #include <stdexcept>
+#include <utility>
 
 #include "chart.hpp"
+
+// This represents a bundle of data akin to a NoteTrack, except it is only for
+// mid-parser usage. Unlike a NoteTrack, there are no invariants.
+struct PreNoteTrack {
+    std::vector<Note> notes;
+    std::vector<StarPower> sp_phrases;
+    std::vector<ChartEvent> events;
+};
+
+NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
+                     std::vector<ChartEvent> events)
+    : m_notes {std::move(notes)}
+    , m_sp_phrases {std::move(sp_phrases)}
+    , m_events {std::move(events)}
+{
+    std::stable_sort(m_notes.begin(), m_notes.end(),
+                     [](const auto& lhs, const auto& rhs) {
+                         return lhs.position < rhs.position;
+                     });
+}
 
 static bool string_starts_with(std::string_view input, std::string_view pattern)
 {
@@ -260,8 +281,8 @@ std::string_view Chart::read_events(std::string_view input)
     return input;
 }
 
-std::string_view Chart::read_single_track(std::string_view input,
-                                          Difficulty diff)
+static std::string_view read_single_track(std::string_view input,
+                                          PreNoteTrack& track)
 {
     constexpr auto GREEN_CODE = 0;
     constexpr auto RED_CODE = 1;
@@ -312,24 +333,19 @@ std::string_view Chart::read_single_track(std::string_view input,
             const auto length = *pre_length;
             switch (*fret_type) {
             case GREEN_CODE:
-                note_tracks[diff].notes.push_back(
-                    {position, length, NoteColour::Green});
+                track.notes.push_back({position, length, NoteColour::Green});
                 break;
             case RED_CODE:
-                note_tracks[diff].notes.push_back(
-                    {position, length, NoteColour::Red});
+                track.notes.push_back({position, length, NoteColour::Red});
                 break;
             case YELLOW_CODE:
-                note_tracks[diff].notes.push_back(
-                    {position, length, NoteColour::Yellow});
+                track.notes.push_back({position, length, NoteColour::Yellow});
                 break;
             case BLUE_CODE:
-                note_tracks[diff].notes.push_back(
-                    {position, length, NoteColour::Blue});
+                track.notes.push_back({position, length, NoteColour::Blue});
                 break;
             case ORANGE_CODE:
-                note_tracks[diff].notes.push_back(
-                    {position, length, NoteColour::Orange});
+                track.notes.push_back({position, length, NoteColour::Orange});
                 break;
             case FORCED_CODE:
                 forced_flags.insert(position);
@@ -338,8 +354,7 @@ std::string_view Chart::read_single_track(std::string_view input,
                 tap_flags.insert(position);
                 break;
             case OPEN_CODE:
-                note_tracks[diff].notes.push_back(
-                    {position, length, NoteColour::Open});
+                track.notes.push_back({position, length, NoteColour::Open});
                 break;
             default:
                 throw std::invalid_argument("Invalid note type");
@@ -357,15 +372,14 @@ std::string_view Chart::read_single_track(std::string_view input,
                 continue;
             }
             const auto length = *pre_length;
-            note_tracks[diff].sp_phrases.push_back({position, length});
+            track.sp_phrases.push_back({position, length});
         } else if (type == "E") {
             const auto event_name = split_string[3];
-            note_tracks[diff].events.push_back(
-                {position, std::string(event_name)});
+            track.events.push_back({position, std::string(event_name)});
         }
     }
 
-    for (auto& note : note_tracks[diff].notes) {
+    for (auto& note : track.notes) {
         if (forced_flags.count(note.position) != 0) {
             note.is_forced = true;
         }
@@ -393,6 +407,8 @@ static std::string_view skip_unrecognised_section(std::string_view input)
 
 Chart::Chart(std::string_view input)
 {
+    std::map<Difficulty, PreNoteTrack> pre_tracks;
+
     // Trim off UTF-8 BOM if present
     if (string_starts_with(input, "\xEF\xBB\xBF")) {
         input.remove_prefix(3);
@@ -407,23 +423,24 @@ Chart::Chart(std::string_view input)
         } else if (header == "[Events]") {
             input = read_events(input);
         } else if (header == "[EasySingle]") {
-            input = read_single_track(input, Difficulty::Easy);
+            input = read_single_track(input, pre_tracks[Difficulty::Easy]);
         } else if (header == "[MediumSingle]") {
-            input = read_single_track(input, Difficulty::Medium);
+            input = read_single_track(input, pre_tracks[Difficulty::Medium]);
         } else if (header == "[HardSingle]") {
-            input = read_single_track(input, Difficulty::Hard);
+            input = read_single_track(input, pre_tracks[Difficulty::Hard]);
         } else if (header == "[ExpertSingle]") {
-            input = read_single_track(input, Difficulty::Expert);
+            input = read_single_track(input, pre_tracks[Difficulty::Expert]);
         } else {
             input = skip_unrecognised_section(input);
         }
     }
 
-    for (auto& key_track : note_tracks) {
-        auto& notes = key_track.second.notes;
-        std::stable_sort(notes.begin(), notes.end(),
-                         [](const auto& lhs, const auto& rhs) {
-                             return lhs.position < rhs.position;
-                         });
+    for (auto& key_track : pre_tracks) {
+        auto diff = key_track.first;
+        auto& track = key_track.second;
+        auto new_track
+            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
+                        std::move(track.events));
+        note_tracks.emplace(diff, std::move(new_track));
     }
 }
