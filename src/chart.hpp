@@ -127,12 +127,12 @@ public:
 class Chart {
 private:
     static constexpr float DEFAULT_RESOLUTION = 192.F;
-    float offset = 0;
-    float resolution = DEFAULT_RESOLUTION;
-    std::vector<TimeSignature> time_sigs;
-    std::vector<BPM> bpms;
-    std::vector<Section> sections;
-    std::map<Difficulty, NoteTrack> note_tracks;
+    float m_offset = 0;
+    float m_resolution = DEFAULT_RESOLUTION;
+    std::vector<TimeSignature> m_time_sigs;
+    std::vector<BPM> m_bpms;
+    std::vector<Section> m_sections;
+    std::map<Difficulty, NoteTrack> m_note_tracks;
 
     std::string_view read_song_header(std::string_view input);
     std::string_view read_sync_track(std::string_view input);
@@ -140,20 +140,20 @@ private:
 
 public:
     explicit Chart(std::string_view input);
-    [[nodiscard]] float get_offset() const { return offset; }
-    [[nodiscard]] float get_resolution() const { return resolution; }
-    [[nodiscard]] const std::vector<TimeSignature>& get_time_sigs() const
+    [[nodiscard]] float offset() const { return m_offset; }
+    [[nodiscard]] float resolution() const { return m_resolution; }
+    [[nodiscard]] const std::vector<TimeSignature>& time_sigs() const
     {
-        return time_sigs;
+        return m_time_sigs;
     }
-    [[nodiscard]] const std::vector<BPM>& get_bpms() const { return bpms; }
-    [[nodiscard]] const std::vector<Section>& get_sections() const
+    [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
+    [[nodiscard]] const std::vector<Section>& sections() const
     {
-        return sections;
+        return m_sections;
     }
-    [[nodiscard]] const NoteTrack& get_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack& note_track(Difficulty diff) const
     {
-        return note_tracks.at(diff);
+        return m_note_tracks.at(diff);
     }
 };
 

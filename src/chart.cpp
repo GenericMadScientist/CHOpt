@@ -179,14 +179,14 @@ std::string_view Chart::read_song_header(std::string_view input)
             line.remove_prefix(OFFSET_LEN);
             const auto result = string_view_to_float(line);
             if (result) {
-                offset = *result;
+                m_offset = *result;
             }
         } else if (string_starts_with(line, "Resolution = ")) {
             constexpr auto RESOLUTION_LEN = 13;
             line.remove_prefix(RESOLUTION_LEN);
             const auto result = string_view_to_float(line);
             if (result) {
-                resolution = *result;
+                m_resolution = *result;
             }
         }
     }
@@ -232,13 +232,13 @@ std::string_view Chart::read_sync_track(std::string_view input)
                     continue;
                 }
             }
-            time_sigs.push_back({position, *numerator, 1U << denominator});
+            m_time_sigs.push_back({position, *numerator, 1U << denominator});
         } else if (type == "B") {
             const auto bpm = string_view_to_uint(split_string[3]);
             if (!bpm) {
                 continue;
             }
-            bpms.push_back({position, *bpm});
+            m_bpms.push_back({position, *bpm});
         }
     }
 
@@ -273,7 +273,7 @@ std::string_view Chart::read_events(std::string_view input)
                     section_name += " ";
                     section_name += trim_quotes(split_string[i]);
                 }
-                sections.push_back({*position, section_name});
+                m_sections.push_back({*position, section_name});
             }
         }
     }
@@ -441,6 +441,6 @@ Chart::Chart(std::string_view input)
         auto new_track
             = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
                         std::move(track.events));
-        note_tracks.emplace(diff, std::move(new_track));
+        m_note_tracks.emplace(diff, std::move(new_track));
     }
 }

@@ -40,8 +40,8 @@ TEST_CASE("Chart reads resolution and offset", "Song")
         const auto chart = Chart(text);
         constexpr auto DEFAULT_RESOLUTION = 192.F;
 
-        REQUIRE(chart.get_resolution() == Approx(DEFAULT_RESOLUTION));
-        REQUIRE(chart.get_offset() == 0.F);
+        REQUIRE(chart.resolution() == Approx(DEFAULT_RESOLUTION));
+        REQUIRE(chart.offset() == 0.F);
     }
 
     SECTION("Defaults are overriden by specified values")
@@ -51,8 +51,8 @@ TEST_CASE("Chart reads resolution and offset", "Song")
         const auto chart = Chart(text);
         constexpr auto RESOLUTION = 200.F;
 
-        REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
-        REQUIRE(chart.get_offset() == 100.F);
+        REQUIRE(chart.resolution() == Approx(RESOLUTION));
+        REQUIRE(chart.offset() == 100.F);
     }
 }
 
@@ -64,8 +64,8 @@ TEST_CASE("Chart reads sync track correctly", "SyncTrack")
     const auto time_sigs = std::vector<TimeSignature>({{0, 4, 4}, {768, 4, 2}});
     const auto bpms = std::vector<BPM>({{0, 200000}});
 
-    REQUIRE(chart.get_time_sigs() == time_sigs);
-    REQUIRE(chart.get_bpms() == bpms);
+    REQUIRE(chart.time_sigs() == time_sigs);
+    REQUIRE(chart.bpms() == bpms);
 }
 
 TEST_CASE("Chart reads events correctly", "Events")
@@ -75,7 +75,7 @@ TEST_CASE("Chart reads events correctly", "Events")
     const auto chart = Chart(text);
     const auto sections = std::vector<Section>({{768, "intro"}});
 
-    REQUIRE(chart.get_sections() == sections);
+    REQUIRE(chart.sections() == sections);
 }
 
 TEST_CASE("Chart reads easy note track correctly", "Easy")
@@ -86,7 +86,7 @@ TEST_CASE("Chart reads easy note track correctly", "Easy")
     const auto note_track
         = NoteTrack {{{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
 
-    REQUIRE(chart.get_note_track(Difficulty::Easy) == note_track);
+    REQUIRE(chart.note_track(Difficulty::Easy) == note_track);
 }
 
 TEST_CASE("Chart skips UTF-8 BOM", "BOM")
@@ -96,8 +96,8 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
     const auto chart = Chart(text);
     constexpr auto RESOLUTION = 192.F;
 
-    REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
-    REQUIRE(chart.get_offset() == 100.F);
+    REQUIRE(chart.resolution() == Approx(RESOLUTION));
+    REQUIRE(chart.offset() == 100.F);
 }
 
 TEST_CASE("Chart can end without a newline", "End-NL")
@@ -107,8 +107,8 @@ TEST_CASE("Chart can end without a newline", "End-NL")
     const auto chart = Chart(text);
     constexpr auto RESOLUTION = 192.F;
 
-    REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
-    REQUIRE(chart.get_offset() == 100.F);
+    REQUIRE(chart.resolution() == Approx(RESOLUTION));
+    REQUIRE(chart.offset() == 100.F);
 }
 
 TEST_CASE("Chart does not need sections in usual order", "Section order")
@@ -118,7 +118,7 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
         const auto chart = Chart("");
         constexpr auto RESOLUTION = 192.F;
 
-        REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
+        REQUIRE(chart.resolution() == Approx(RESOLUTION));
     }
 
     SECTION("Non note sections can be in any order")
@@ -130,9 +130,9 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
         const auto bpms = std::vector<BPM>({{0, 200000}});
         constexpr auto RESOLUTION = 200.F;
 
-        REQUIRE(chart.get_resolution() == Approx(RESOLUTION));
-        REQUIRE(chart.get_sections() == sections);
-        REQUIRE(chart.get_bpms() == bpms);
+        REQUIRE(chart.resolution() == Approx(RESOLUTION));
+        REQUIRE(chart.sections() == sections);
+        REQUIRE(chart.bpms() == bpms);
     }
 }
 
@@ -144,7 +144,7 @@ TEST_CASE("Note section can be split in multiple parts", "Note split")
     const auto notes = std::vector<Note>(
         {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}});
 
-    REQUIRE(chart.get_note_track(Difficulty::Expert).notes() == notes);
+    REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
 }
 
 TEST_CASE("Notes should be sorted", "NoteSort")
@@ -154,7 +154,7 @@ TEST_CASE("Notes should be sorted", "NoteSort")
     const auto notes = std::vector<Note>(
         {{384, 0, NoteColour::Green}, {768, 0, NoteColour::Green}});
 
-    REQUIRE(chart.get_note_track(Difficulty::Expert).notes() == notes);
+    REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
 }
 
 TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
@@ -165,7 +165,7 @@ TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
                     "= N 6 0\n}";
         const auto chart = Chart(text);
 
-        REQUIRE(chart.get_note_track(Difficulty::Expert).notes()[0].is_tap);
+        REQUIRE(chart.note_track(Difficulty::Expert).notes()[0].is_tap);
     }
 
     SECTION("Tap flags do not apply to later sections")
@@ -174,7 +174,7 @@ TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
                     "= N 0 0\n}";
         const auto chart = Chart(text);
 
-        REQUIRE(!chart.get_note_track(Difficulty::Expert).notes()[0].is_tap);
+        REQUIRE(!chart.note_track(Difficulty::Expert).notes()[0].is_tap);
     }
 }
 
@@ -183,5 +183,5 @@ TEST_CASE("Notes with extra spaces are ignored", "NoteSpaceSkip")
     auto text = "[ExpertSingle]\n{\n768 = N  0 0\n768 = N 0  0\n}";
     const auto chart = Chart(text);
 
-    REQUIRE(chart.get_note_track(Difficulty::Expert).notes().empty());
+    REQUIRE(chart.note_track(Difficulty::Expert).notes().empty());
 }
