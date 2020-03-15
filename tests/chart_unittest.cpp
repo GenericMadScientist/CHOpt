@@ -30,6 +30,33 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
 
         REQUIRE(track.notes() == sorted_notes);
     }
+
+    SECTION("Notes of the same colour and position are merged")
+    {
+        const auto notes = std::vector<Note>({{768, 0}, {768, 768}});
+        const auto track = NoteTrack(notes, {}, {});
+        const auto required_notes = std::vector<Note>({{768, 768}});
+
+        REQUIRE(track.notes() == required_notes);
+
+        const auto second_notes = std::vector<Note>({{768, 768}, {768, 0}});
+        const auto second_track = NoteTrack(second_notes, {}, {});
+        const auto second_required_notes = std::vector<Note>({{768, 0}});
+
+        REQUIRE(second_track.notes() == second_required_notes);
+    }
+
+    SECTION("Notes of different colours are dealt with separately")
+    {
+        const auto notes = std::vector<Note>({{768, 0, NoteColour::Green},
+                                              {768, 0, NoteColour::Red},
+                                              {768, 768, NoteColour::Green}});
+        const auto track = NoteTrack(notes, {}, {});
+        const auto required_notes = std::vector<Note>(
+            {{768, 768, NoteColour::Green}, {768, 0, NoteColour::Red}});
+
+        REQUIRE(track.notes() == required_notes);
+    }
 }
 
 TEST_CASE("Chart reads resolution and offset", "Song")

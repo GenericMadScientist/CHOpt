@@ -117,6 +117,8 @@ struct ChartEvent {
 
 // Invariants:
 // notes() will always return a vector of sorted notes.
+// notes() will not return a vector with two notes of the same colour with the
+// same position.
 class NoteTrack {
 private:
     std::vector<Note> m_notes;
