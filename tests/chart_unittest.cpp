@@ -64,8 +64,8 @@ TEST_CASE("Chart reads sync track correctly", "SyncTrack")
     const auto time_sigs = std::vector<TimeSignature>({{0, 4, 4}, {768, 4, 2}});
     const auto bpms = std::vector<BPM>({{0, 200000}});
 
-    REQUIRE(chart.time_sigs() == time_sigs);
-    REQUIRE(chart.bpms() == bpms);
+    REQUIRE(chart.sync_track().time_sigs() == time_sigs);
+    REQUIRE(chart.sync_track().bpms() == bpms);
 }
 
 TEST_CASE("Chart reads events correctly", "Events")
@@ -132,7 +132,7 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
 
         REQUIRE(chart.resolution() == Approx(RESOLUTION));
         REQUIRE(chart.sections() == sections);
-        REQUIRE(chart.bpms() == bpms);
+        REQUIRE(chart.sync_track().bpms() == bpms);
     }
 }
 

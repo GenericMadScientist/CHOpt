@@ -124,29 +124,38 @@ public:
     }
 };
 
+class SyncTrack {
+private:
+    std::vector<TimeSignature> m_time_sigs;
+    std::vector<BPM> m_bpms;
+
+public:
+    SyncTrack() = default;
+    SyncTrack(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms);
+    [[nodiscard]] const std::vector<TimeSignature>& time_sigs() const
+    {
+        return m_time_sigs;
+    }
+    [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
+};
+
 class Chart {
 private:
     static constexpr float DEFAULT_RESOLUTION = 192.F;
     float m_offset = 0;
     float m_resolution = DEFAULT_RESOLUTION;
-    std::vector<TimeSignature> m_time_sigs;
-    std::vector<BPM> m_bpms;
+    SyncTrack m_sync_track;
     std::vector<Section> m_sections;
     std::map<Difficulty, NoteTrack> m_note_tracks;
 
     std::string_view read_song_header(std::string_view input);
-    std::string_view read_sync_track(std::string_view input);
     std::string_view read_events(std::string_view input);
 
 public:
     explicit Chart(std::string_view input);
     [[nodiscard]] float offset() const { return m_offset; }
     [[nodiscard]] float resolution() const { return m_resolution; }
-    [[nodiscard]] const std::vector<TimeSignature>& time_sigs() const
-    {
-        return m_time_sigs;
-    }
-    [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
+    [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
     [[nodiscard]] const std::vector<Section>& sections() const
     {
         return m_sections;

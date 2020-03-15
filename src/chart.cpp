@@ -34,6 +34,13 @@ struct PreNoteTrack {
     std::vector<ChartEvent> events;
 };
 
+// This represents a bundle of data akin to a SyncTrack, except it is only for
+// mid-parser usage. Unlike a SyncTrack, there are no invariants.
+struct PreSyncTrack {
+    std::vector<TimeSignature> time_sigs;
+    std::vector<BPM> bpms;
+};
+
 NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
                      std::vector<ChartEvent> events)
     : m_notes {std::move(notes)}
@@ -44,6 +51,13 @@ NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
                      [](const auto& lhs, const auto& rhs) {
                          return lhs.position < rhs.position;
                      });
+}
+
+SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
+                     std::vector<BPM> bpms)
+    : m_time_sigs {std::move(time_sigs)}
+    , m_bpms {std::move(bpms)}
+{
 }
 
 static bool string_starts_with(std::string_view input, std::string_view pattern)
@@ -194,7 +208,8 @@ std::string_view Chart::read_song_header(std::string_view input)
     return input;
 }
 
-std::string_view Chart::read_sync_track(std::string_view input)
+static std::string_view read_sync_track(std::string_view input,
+                                        PreSyncTrack& sync_track)
 {
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("[SyncTrack] does not open with {");
@@ -232,13 +247,14 @@ std::string_view Chart::read_sync_track(std::string_view input)
                     continue;
                 }
             }
-            m_time_sigs.push_back({position, *numerator, 1U << denominator});
+            sync_track.time_sigs.push_back(
+                {position, *numerator, 1U << denominator});
         } else if (type == "B") {
             const auto bpm = string_view_to_uint(split_string[3]);
             if (!bpm) {
                 continue;
             }
-            m_bpms.push_back({position, *bpm});
+            sync_track.bpms.push_back({position, *bpm});
         }
     }
 
@@ -408,6 +424,7 @@ static std::string_view skip_unrecognised_section(std::string_view input)
 Chart::Chart(std::string_view input)
 {
     std::map<Difficulty, PreNoteTrack> pre_tracks;
+    PreSyncTrack pre_sync_track;
 
     // Trim off UTF-8 BOM if present
     if (string_starts_with(input, "\xEF\xBB\xBF")) {
@@ -419,7 +436,7 @@ Chart::Chart(std::string_view input)
         if (header == "[Song]") {
             input = read_song_header(input);
         } else if (header == "[SyncTrack]") {
-            input = read_sync_track(input);
+            input = read_sync_track(input, pre_sync_track);
         } else if (header == "[Events]") {
             input = read_events(input);
         } else if (header == "[EasySingle]") {
@@ -434,6 +451,9 @@ Chart::Chart(std::string_view input)
             input = skip_unrecognised_section(input);
         }
     }
+
+    m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs),
+                             std::move(pre_sync_track.bpms));
 
     for (auto& key_track : pre_tracks) {
         auto diff = key_track.first;
