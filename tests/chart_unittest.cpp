@@ -37,22 +37,22 @@ TEST_CASE("Chart reads resolution and offset", "Song")
     SECTION("Defaults are 192 Res and 0 Offset")
     {
         auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
-        const auto chart = Chart(text);
+        const auto header = Chart(text).header();
         constexpr auto DEFAULT_RESOLUTION = 192.F;
 
-        REQUIRE(chart.resolution() == Approx(DEFAULT_RESOLUTION));
-        REQUIRE(chart.offset() == 0.F);
+        REQUIRE(header.resolution() == Approx(DEFAULT_RESOLUTION));
+        REQUIRE(header.offset() == 0.F);
     }
 
     SECTION("Defaults are overriden by specified values")
     {
         auto text = "[Song]\n{\nResolution = 200\nOffset = "
                     "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
-        const auto chart = Chart(text);
+        const auto header = Chart(text).header();
         constexpr auto RESOLUTION = 200.F;
 
-        REQUIRE(chart.resolution() == Approx(RESOLUTION));
-        REQUIRE(chart.offset() == 100.F);
+        REQUIRE(header.resolution() == Approx(RESOLUTION));
+        REQUIRE(header.offset() == 100.F);
     }
 }
 
@@ -60,12 +60,12 @@ TEST_CASE("Chart reads sync track correctly", "SyncTrack")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
                 "TS 4 1\n}\n[Events]\n{\n}\n";
-    const auto chart = Chart(text);
+    const auto sync_track = Chart(text).sync_track();
     const auto time_sigs = std::vector<TimeSignature>({{0, 4, 4}, {768, 4, 2}});
     const auto bpms = std::vector<BPM>({{0, 200000}});
 
-    REQUIRE(chart.sync_track().time_sigs() == time_sigs);
-    REQUIRE(chart.sync_track().bpms() == bpms);
+    REQUIRE(sync_track.time_sigs() == time_sigs);
+    REQUIRE(sync_track.bpms() == bpms);
 }
 
 TEST_CASE("Chart reads events correctly", "Events")
@@ -93,22 +93,22 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
 {
     auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
                 "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
-    const auto chart = Chart(text);
+    const auto header = Chart(text).header();
     constexpr auto RESOLUTION = 192.F;
 
-    REQUIRE(chart.resolution() == Approx(RESOLUTION));
-    REQUIRE(chart.offset() == 100.F);
+    REQUIRE(header.resolution() == Approx(RESOLUTION));
+    REQUIRE(header.offset() == 100.F);
 }
 
 TEST_CASE("Chart can end without a newline", "End-NL")
 {
     auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
                 "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}";
-    const auto chart = Chart(text);
+    const auto header = Chart(text).header();
     constexpr auto RESOLUTION = 192.F;
 
-    REQUIRE(chart.resolution() == Approx(RESOLUTION));
-    REQUIRE(chart.offset() == 100.F);
+    REQUIRE(header.resolution() == Approx(RESOLUTION));
+    REQUIRE(header.offset() == 100.F);
 }
 
 TEST_CASE("Chart does not need sections in usual order", "Section order")
@@ -118,7 +118,7 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
         const auto chart = Chart("");
         constexpr auto RESOLUTION = 192.F;
 
-        REQUIRE(chart.resolution() == Approx(RESOLUTION));
+        REQUIRE(chart.header().resolution() == Approx(RESOLUTION));
     }
 
     SECTION("Non note sections can be in any order")
@@ -130,7 +130,7 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
         const auto bpms = std::vector<BPM>({{0, 200000}});
         constexpr auto RESOLUTION = 200.F;
 
-        REQUIRE(chart.resolution() == Approx(RESOLUTION));
+        REQUIRE(chart.header().resolution() == Approx(RESOLUTION));
         REQUIRE(chart.sections() == sections);
         REQUIRE(chart.sync_track().bpms() == bpms);
     }

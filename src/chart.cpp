@@ -26,6 +26,14 @@
 
 #include "chart.hpp"
 
+// This represents a bundle of data akin to a SongHeader, except it is only for
+// mid-parser usage. Unlike a SongHeader, there are no invariants.
+struct PreSongHeader {
+    static constexpr float DEFAULT_RESOLUTION = 192.F;
+    float offset = 0.F;
+    float resolution = DEFAULT_RESOLUTION;
+};
+
 // This represents a bundle of data akin to a NoteTrack, except it is only for
 // mid-parser usage. Unlike a NoteTrack, there are no invariants.
 struct PreNoteTrack {
@@ -40,6 +48,12 @@ struct PreSyncTrack {
     std::vector<TimeSignature> time_sigs;
     std::vector<BPM> bpms;
 };
+
+SongHeader::SongHeader(float offset, float resolution)
+    : m_offset {offset}
+    , m_resolution {resolution}
+{
+}
 
 NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
                      std::vector<ChartEvent> events)
@@ -176,7 +190,8 @@ static std::optional<float> string_view_to_float(std::string_view input)
 #endif
 }
 
-std::string_view Chart::read_song_header(std::string_view input)
+static std::string_view read_song_header(std::string_view input,
+                                         PreSongHeader& header)
 {
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("[Song] does not open with {");
@@ -193,14 +208,14 @@ std::string_view Chart::read_song_header(std::string_view input)
             line.remove_prefix(OFFSET_LEN);
             const auto result = string_view_to_float(line);
             if (result) {
-                m_offset = *result;
+                header.offset = *result;
             }
         } else if (string_starts_with(line, "Resolution = ")) {
             constexpr auto RESOLUTION_LEN = 13;
             line.remove_prefix(RESOLUTION_LEN);
             const auto result = string_view_to_float(line);
             if (result) {
-                m_resolution = *result;
+                header.resolution = *result;
             }
         }
     }
@@ -261,7 +276,8 @@ static std::string_view read_sync_track(std::string_view input,
     return input;
 }
 
-std::string_view Chart::read_events(std::string_view input)
+static std::string_view read_events(std::string_view input,
+                                    std::vector<Section>& sections)
 {
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("[Events] does not open with {");
@@ -289,7 +305,7 @@ std::string_view Chart::read_events(std::string_view input)
                     section_name += " ";
                     section_name += trim_quotes(split_string[i]);
                 }
-                m_sections.push_back({*position, section_name});
+                sections.push_back({*position, section_name});
             }
         }
     }
@@ -423,8 +439,9 @@ static std::string_view skip_unrecognised_section(std::string_view input)
 
 Chart::Chart(std::string_view input)
 {
-    std::map<Difficulty, PreNoteTrack> pre_tracks;
+    PreSongHeader pre_header;
     PreSyncTrack pre_sync_track;
+    std::map<Difficulty, PreNoteTrack> pre_tracks;
 
     // Trim off UTF-8 BOM if present
     if (string_starts_with(input, "\xEF\xBB\xBF")) {
@@ -434,11 +451,11 @@ Chart::Chart(std::string_view input)
     while (!input.empty()) {
         const auto header = break_off_newline(input);
         if (header == "[Song]") {
-            input = read_song_header(input);
+            input = read_song_header(input, pre_header);
         } else if (header == "[SyncTrack]") {
             input = read_sync_track(input, pre_sync_track);
         } else if (header == "[Events]") {
-            input = read_events(input);
+            input = read_events(input, m_sections);
         } else if (header == "[EasySingle]") {
             input = read_single_track(input, pre_tracks[Difficulty::Easy]);
         } else if (header == "[MediumSingle]") {
@@ -452,6 +469,7 @@ Chart::Chart(std::string_view input)
         }
     }
 
+    m_header = SongHeader(pre_header.offset, pre_header.resolution);
     m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs),
                              std::move(pre_sync_track.bpms));
 
