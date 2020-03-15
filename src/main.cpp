@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
         std::string contents((std::istreambuf_iterator<char>(in)),
                              std::istreambuf_iterator<char>());
         std::cout << contents.size() << std::endl;
-        Chart chart(contents);
+        const auto chart = Chart::parse_chart(contents);
         (void)chart;
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {

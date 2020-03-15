@@ -437,8 +437,10 @@ static std::string_view skip_unrecognised_section(std::string_view input)
     return input;
 }
 
-Chart::Chart(std::string_view input)
+Chart Chart::parse_chart(std::string_view input)
 {
+    Chart chart;
+
     PreSongHeader pre_header;
     PreSyncTrack pre_sync_track;
     std::map<Difficulty, PreNoteTrack> pre_tracks;
@@ -455,7 +457,7 @@ Chart::Chart(std::string_view input)
         } else if (header == "[SyncTrack]") {
             input = read_sync_track(input, pre_sync_track);
         } else if (header == "[Events]") {
-            input = read_events(input, m_sections);
+            input = read_events(input, chart.m_sections);
         } else if (header == "[EasySingle]") {
             input = read_single_track(input, pre_tracks[Difficulty::Easy]);
         } else if (header == "[MediumSingle]") {
@@ -469,9 +471,9 @@ Chart::Chart(std::string_view input)
         }
     }
 
-    m_header = SongHeader(pre_header.offset, pre_header.resolution);
-    m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs),
-                             std::move(pre_sync_track.bpms));
+    chart.m_header = SongHeader(pre_header.offset, pre_header.resolution);
+    chart.m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs),
+                                   std::move(pre_sync_track.bpms));
 
     for (auto& key_track : pre_tracks) {
         auto diff = key_track.first;
@@ -479,6 +481,8 @@ Chart::Chart(std::string_view input)
         auto new_track
             = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
                         std::move(track.events));
-        m_note_tracks.emplace(diff, std::move(new_track));
+        chart.m_note_tracks.emplace(diff, std::move(new_track));
     }
+
+    return chart;
 }

@@ -158,9 +158,10 @@ private:
     SyncTrack m_sync_track;
     std::vector<Section> m_sections;
     std::map<Difficulty, NoteTrack> m_note_tracks;
+    Chart() = default;
 
 public:
-    explicit Chart(std::string_view input);
+    static Chart parse_chart(std::string_view input);
     [[nodiscard]] const SongHeader& header() const { return m_header; }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
     [[nodiscard]] const std::vector<Section>& sections() const
