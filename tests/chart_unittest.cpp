@@ -76,9 +76,9 @@ TEST_CASE("Chart reads resolution and offset", "Song")
         auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n["
                     "ExpertSingle]\n{\n768 = N 0 0\n}";
         const auto header = Chart::parse_chart(text).header();
-        constexpr auto DEFAULT_RESOLUTION = 192.F;
+        constexpr auto DEFAULT_RESOLUTION = 192;
 
-        REQUIRE(header.resolution() == Approx(DEFAULT_RESOLUTION));
+        REQUIRE(header.resolution() == DEFAULT_RESOLUTION);
         REQUIRE(header.offset() == 0.F);
     }
 
@@ -88,9 +88,9 @@ TEST_CASE("Chart reads resolution and offset", "Song")
                     "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]"
                     "\n{\n768 = N 0 0\n}";
         const auto header = Chart::parse_chart(text).header();
-        constexpr auto RESOLUTION = 200.F;
+        constexpr auto RESOLUTION = 200;
 
-        REQUIRE(header.resolution() == Approx(RESOLUTION));
+        REQUIRE(header.resolution() == RESOLUTION);
         REQUIRE(header.offset() == 100.F);
     }
 }
@@ -138,9 +138,9 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
                 "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
                 "\n768 = N 0 0\n}";
     const auto header = Chart::parse_chart(text).header();
-    constexpr auto RESOLUTION = 192.F;
+    constexpr auto RESOLUTION = 192;
 
-    REQUIRE(header.resolution() == Approx(RESOLUTION));
+    REQUIRE(header.resolution() == RESOLUTION);
     REQUIRE(header.offset() == 100.F);
 }
 
@@ -151,9 +151,9 @@ TEST_CASE("Chart can end without a newline", "End-NL")
                 "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
                 "\n768 = N 0 0\n}";
     const auto header = Chart::parse_chart(text).header();
-    constexpr auto RESOLUTION = 192.F;
+    constexpr auto RESOLUTION = 192;
 
-    REQUIRE(header.resolution() == Approx(RESOLUTION));
+    REQUIRE(header.resolution() == RESOLUTION);
     REQUIRE(header.offset() == 100.F);
 }
 
@@ -164,9 +164,9 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
     {
         auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}";
         const auto chart = Chart::parse_chart(text);
-        constexpr auto RESOLUTION = 192.F;
+        constexpr auto RESOLUTION = 192;
 
-        REQUIRE(chart.header().resolution() == Approx(RESOLUTION));
+        REQUIRE(chart.header().resolution() == RESOLUTION);
     }
 
     SECTION("At least one non-empty note section must be present")
@@ -184,9 +184,9 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
         const auto chart = Chart::parse_chart(text);
         const auto notes = std::vector<Note>({{768}});
         const auto bpms = std::vector<BPM>({{0, 200000}});
-        constexpr auto RESOLUTION = 200.F;
+        constexpr auto RESOLUTION = 200;
 
-        REQUIRE(chart.header().resolution() == Approx(RESOLUTION));
+        REQUIRE(chart.header().resolution() == RESOLUTION);
         REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
         REQUIRE(chart.sync_track().bpms() == bpms);
     }
