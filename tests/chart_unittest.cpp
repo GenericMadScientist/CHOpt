@@ -68,7 +68,7 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
     }
 }
 
-// Last checked: 23.2.2
+// Last checked: 24.0.1555-master
 TEST_CASE("Chart reads resolution and offset", "Song")
 {
     SECTION("Defaults are 192 Res and 0 Offset")
@@ -95,7 +95,7 @@ TEST_CASE("Chart reads resolution and offset", "Song")
     }
 }
 
-// Last checked: 23.2.2
+// Last checked: 24.0.1555-master
 TEST_CASE("Chart reads sync track correctly", "SyncTrack")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
@@ -108,7 +108,7 @@ TEST_CASE("Chart reads sync track correctly", "SyncTrack")
     REQUIRE(sync_track.bpms() == bpms);
 }
 
-// Last checked: 23.2.2
+// Last checked: 24.0.1555-master
 TEST_CASE("Chart reads events correctly", "Events")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n768 = E "
