@@ -53,6 +53,9 @@ SongHeader::SongHeader(float offset, float resolution)
     : m_offset {offset}
     , m_resolution {resolution}
 {
+    if (m_resolution <= 0.F) {
+        throw std::invalid_argument("Songs with resolution < 0 are invalid");
+    }
 }
 
 NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,

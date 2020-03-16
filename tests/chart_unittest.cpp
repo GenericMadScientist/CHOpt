@@ -20,6 +20,15 @@
 
 #include "chart.hpp"
 
+// Last checked: 24.0.1555-master
+TEST_CASE("SongHeader ctor maintains invariants", "SongHeader")
+{
+    // Throw if resolution is <= 0. Clone Hero misbehaves in this case and it's
+    // nonsense anyway.
+    REQUIRE_THROWS([]() { return SongHeader(0.F, 0.F); }());
+}
+
+// Last checked: 23.2.2
 TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
 {
     SECTION("Notes are sorted")
@@ -59,6 +68,7 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
     }
 }
 
+// Last checked: 23.2.2
 TEST_CASE("Chart reads resolution and offset", "Song")
 {
     SECTION("Defaults are 192 Res and 0 Offset")
@@ -83,6 +93,7 @@ TEST_CASE("Chart reads resolution and offset", "Song")
     }
 }
 
+// Last checked: 23.2.2
 TEST_CASE("Chart reads sync track correctly", "SyncTrack")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
@@ -95,6 +106,7 @@ TEST_CASE("Chart reads sync track correctly", "SyncTrack")
     REQUIRE(sync_track.bpms() == bpms);
 }
 
+// Last checked: 23.2.2
 TEST_CASE("Chart reads events correctly", "Events")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n768 = E "
@@ -105,6 +117,7 @@ TEST_CASE("Chart reads events correctly", "Events")
     REQUIRE(chart.sections() == sections);
 }
 
+// Last checked: 23.2.2
 TEST_CASE("Chart reads easy note track correctly", "Easy")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[EasySingle]"
@@ -116,6 +129,7 @@ TEST_CASE("Chart reads easy note track correctly", "Easy")
     REQUIRE(chart.note_track(Difficulty::Easy) == note_track);
 }
 
+// Last checked: 23.2.2
 TEST_CASE("Chart skips UTF-8 BOM", "BOM")
 {
     auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
@@ -127,6 +141,7 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
     REQUIRE(header.offset() == 100.F);
 }
 
+// Last checked: 23.2.2
 TEST_CASE("Chart can end without a newline", "End-NL")
 {
     auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
@@ -138,6 +153,7 @@ TEST_CASE("Chart can end without a newline", "End-NL")
     REQUIRE(header.offset() == 100.F);
 }
 
+// Last checked: 23.2.2
 TEST_CASE("Chart does not need sections in usual order", "Section order")
 {
     SECTION("Non note sections need not be present")
@@ -163,6 +179,7 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
     }
 }
 
+// Last checked: 23.2.2
 TEST_CASE("Note section can be split in multiple parts", "Note split")
 {
     auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 = N "
@@ -174,6 +191,7 @@ TEST_CASE("Note section can be split in multiple parts", "Note split")
     REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
 }
 
+// Last checked: 23.2.2
 TEST_CASE("Notes should be sorted", "NoteSort")
 {
     auto text = "[ExpertSingle]\n{\n768 = N 0 0\n384 = N 0 0\n}";
@@ -184,6 +202,7 @@ TEST_CASE("Notes should be sorted", "NoteSort")
     REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
 }
 
+// Last checked: 23.2.2
 TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
 {
     SECTION("Tap flags apply to earlier sections")
@@ -205,6 +224,7 @@ TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
     }
 }
 
+// Last checked: 23.2.2
 TEST_CASE("Notes with extra spaces are ignored", "NoteSpaceSkip")
 {
     auto text = "[ExpertSingle]\n{\n768 = N  0 0\n768 = N 0  0\n}";
