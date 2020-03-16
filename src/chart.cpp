@@ -29,9 +29,9 @@
 // This represents a bundle of data akin to a SongHeader, except it is only for
 // mid-parser usage. Unlike a SongHeader, there are no invariants.
 struct PreSongHeader {
-    static constexpr float DEFAULT_RESOLUTION = 192.F;
+    static constexpr int32_t DEFAULT_RESOLUTION = 192;
     float offset = 0.F;
-    float resolution = DEFAULT_RESOLUTION;
+    int32_t resolution = DEFAULT_RESOLUTION;
 };
 
 // This represents a bundle of data akin to a NoteTrack, except it is only for
@@ -55,7 +55,7 @@ struct PreSyncTrack {
     std::vector<BPM> bpms;
 };
 
-SongHeader::SongHeader(float offset, float resolution)
+SongHeader::SongHeader(float offset, int32_t resolution)
     : m_offset {offset}
     , m_resolution {resolution}
 {
@@ -248,7 +248,7 @@ static std::string_view read_song_header(std::string_view input,
         } else if (string_starts_with(line, "Resolution = ")) {
             constexpr auto RESOLUTION_LEN = 13;
             line.remove_prefix(RESOLUTION_LEN);
-            const auto result = string_view_to_float(line);
+            const auto result = string_view_to_int(line);
             if (result) {
                 header.resolution = *result;
             }

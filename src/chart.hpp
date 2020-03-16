@@ -32,15 +32,15 @@ enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
 
 class SongHeader {
 private:
-    static constexpr float DEFAULT_RESOLUTION = 192.F;
+    static constexpr int32_t DEFAULT_RESOLUTION = 192;
     float m_offset = 0.F;
-    float m_resolution = DEFAULT_RESOLUTION;
+    int32_t m_resolution = DEFAULT_RESOLUTION;
 
 public:
     SongHeader() = default;
-    SongHeader(float offset, float resolution);
+    SongHeader(float offset, int32_t resolution);
     [[nodiscard]] float offset() const { return m_offset; }
-    [[nodiscard]] float resolution() const { return m_resolution; }
+    [[nodiscard]] int32_t resolution() const { return m_resolution; }
 };
 
 struct TimeSignature {
