@@ -25,7 +25,7 @@ TEST_CASE("SongHeader ctor maintains invariants", "SongHeader")
 {
     // Throw if resolution is <= 0. Clone Hero misbehaves in this case and it's
     // nonsense anyway.
-    REQUIRE_THROWS([]() { return SongHeader(0.F, 0.F); }());
+    REQUIRE_THROWS([] { return SongHeader(0.F, 0.F); }());
 }
 
 // Last checked: 23.2.2
@@ -236,11 +236,23 @@ TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
     }
 }
 
-// Last checked: 23.2.2
-TEST_CASE("Notes with extra spaces are ignored", "NoteSpaceSkip")
+// Last checked: 24.0.1555-master
+TEST_CASE("Notes with extra spaces", "NoteSpaceSkip")
 {
-    auto text = "[ExpertSingle]\n{\n768 = N  0 0\n768 = N 0  0\n}";
-    const auto chart = Chart::parse_chart(text);
+    SECTION("Leading non-empty sections with notes with spaces cause a throw")
+    {
+        auto text = "[ExpertSingle]\n{\n768 = N  0 0\n}";
 
-    REQUIRE(chart.note_track(Difficulty::Expert).notes().empty());
+        REQUIRE_THROWS([&] { return Chart::parse_chart(text); }());
+    }
+
+    SECTION("Non-leading non-empty sections with broken notes are ignored")
+    {
+        auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
+                    "= N  1 0\n}";
+        const auto chart = Chart::parse_chart(text);
+        const auto required_notes = std::vector<Note>({{768}});
+
+        REQUIRE(chart.note_track(Difficulty::Expert).notes() == required_notes);
+    }
 }

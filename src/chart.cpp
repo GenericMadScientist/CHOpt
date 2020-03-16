@@ -395,11 +395,11 @@ static std::string_view read_single_track(std::string_view input,
             }
             const auto fret_type = string_view_to_int(split_string[3]);
             if (!fret_type) {
-                continue;
+                throw std::invalid_argument("Note has invalid fret");
             }
             const auto pre_length = string_view_to_uint(split_string[4]);
             if (!pre_length) {
-                continue;
+                throw std::invalid_argument("Note has invalid length");
             }
             const auto length = *pre_length;
             switch (*fret_type) {
