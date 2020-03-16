@@ -42,6 +42,12 @@ struct PreNoteTrack {
     std::vector<ChartEvent> events;
 };
 
+static bool is_empty(const PreNoteTrack& track)
+{
+    return track.notes.empty() && track.sp_phrases.empty()
+        && track.events.empty();
+}
+
 // This represents a bundle of data akin to a SyncTrack, except it is only for
 // mid-parser usage. Unlike a SyncTrack, there are no invariants.
 struct PreSyncTrack {
@@ -205,6 +211,20 @@ static std::optional<float> string_view_to_float(std::string_view input)
 #endif
 }
 
+static std::string_view skip_section(std::string_view input)
+{
+    auto next_line = break_off_newline(input);
+    if (next_line != "{") {
+        throw std::runtime_error("Section does not open with {");
+    }
+
+    do {
+        next_line = break_off_newline(input);
+    } while (next_line != "}");
+
+    return input;
+}
+
 static std::string_view read_song_header(std::string_view input,
                                          PreSongHeader& header)
 {
@@ -331,6 +351,10 @@ static std::string_view read_events(std::string_view input,
 static std::string_view read_single_track(std::string_view input,
                                           PreNoteTrack& track)
 {
+    if (!is_empty(track)) {
+        return skip_section(input);
+    }
+
     constexpr auto GREEN_CODE = 0;
     constexpr auto RED_CODE = 1;
     constexpr auto YELLOW_CODE = 2;
@@ -438,20 +462,6 @@ static std::string_view read_single_track(std::string_view input,
     return input;
 }
 
-static std::string_view skip_unrecognised_section(std::string_view input)
-{
-    auto next_line = break_off_newline(input);
-    if (next_line != "{") {
-        throw std::runtime_error("Unrecognised track does not open with {");
-    }
-
-    do {
-        next_line = break_off_newline(input);
-    } while (next_line != "}");
-
-    return input;
-}
-
 Chart Chart::parse_chart(std::string_view input)
 {
     Chart chart;
@@ -482,7 +492,7 @@ Chart Chart::parse_chart(std::string_view input)
         } else if (header == "[ExpertSingle]") {
             input = read_single_track(input, pre_tracks[Difficulty::Expert]);
         } else {
-            input = skip_unrecognised_section(input);
+            input = skip_section(input);
         }
     }
 

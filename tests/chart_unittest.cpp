@@ -117,7 +117,7 @@ TEST_CASE("Chart reads events correctly", "Events")
     REQUIRE(chart.sections() == sections);
 }
 
-// Last checked: 23.2.2
+// Last checked: 24.0.1555-master
 TEST_CASE("Chart reads easy note track correctly", "Easy")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[EasySingle]"
@@ -129,7 +129,7 @@ TEST_CASE("Chart reads easy note track correctly", "Easy")
     REQUIRE(chart.note_track(Difficulty::Easy) == note_track);
 }
 
-// Last checked: 23.2.2
+// Last checked: 24.0.1555-master
 TEST_CASE("Chart skips UTF-8 BOM", "BOM")
 {
     auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
@@ -141,7 +141,7 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
     REQUIRE(header.offset() == 100.F);
 }
 
-// Last checked: 23.2.2
+// Last checked: 24.0.1555-master
 TEST_CASE("Chart can end without a newline", "End-NL")
 {
     auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
@@ -179,16 +179,28 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
     }
 }
 
-// Last checked: 23.2.2
-TEST_CASE("Note section can be split in multiple parts", "Note split")
+// Last checked: 24.0.1555-master
+TEST_CASE("Only first non-empty part of note sections matter", "Note split")
 {
-    auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 = N "
-                "1 0\n}";
-    const auto chart = Chart::parse_chart(text);
-    const auto notes = std::vector<Note>(
-        {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}});
+    SECTION("Later non-empty sections are ignored")
+    {
+        auto text
+            = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 = N "
+              "1 0\n}";
+        const auto chart = Chart::parse_chart(text);
+        const auto notes = std::vector<Note>({{768, 0, NoteColour::Green}});
 
-    REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
+        REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
+    }
+
+    SECTION("Leading empty sections are ignored")
+    {
+        auto text = "[ExpertSingle]\n{\n}\n[ExpertSingle]\n{\n768 = N 1 0\n}";
+        const auto chart = Chart::parse_chart(text);
+        const auto notes = std::vector<Note>({{768, 0, NoteColour::Red}});
+
+        REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
+    }
 }
 
 // Last checked: 23.2.2
@@ -202,19 +214,19 @@ TEST_CASE("Notes should be sorted", "NoteSort")
     REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
 }
 
-// Last checked: 23.2.2
+// Last checked: 24.0.1555-master
 TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
 {
-    SECTION("Tap flags apply to earlier sections")
+    SECTION("Tap flags do not apply to earlier sections")
     {
         auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
                     "= N 6 0\n}";
         const auto chart = Chart::parse_chart(text);
 
-        REQUIRE(chart.note_track(Difficulty::Expert).notes()[0].is_tap);
+        REQUIRE(!chart.note_track(Difficulty::Expert).notes()[0].is_tap);
     }
 
-    SECTION("Tap flags do not apply to later sections")
+    SECTION("Tap flags do not apply to or prevent later sections")
     {
         auto text = "[ExpertSingle]\n{\n768 = N 6 0\n}\n[ExpertSingle]\n{\n768 "
                     "= N 0 0\n}";
