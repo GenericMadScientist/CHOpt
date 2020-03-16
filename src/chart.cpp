@@ -503,10 +503,17 @@ Chart Chart::parse_chart(std::string_view input)
     for (auto& key_track : pre_tracks) {
         auto diff = key_track.first;
         auto& track = key_track.second;
+        if (track.notes.empty()) {
+            continue;
+        }
         auto new_track
             = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
                         std::move(track.events));
         chart.m_note_tracks.emplace(diff, std::move(new_track));
+    }
+
+    if (chart.m_note_tracks.empty()) {
+        throw std::invalid_argument("Chart has no notes");
     }
 
     return chart;

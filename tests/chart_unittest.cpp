@@ -73,7 +73,8 @@ TEST_CASE("Chart reads resolution and offset", "Song")
 {
     SECTION("Defaults are 192 Res and 0 Offset")
     {
-        auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
+        auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n["
+                    "ExpertSingle]\n{\n768 = N 0 0\n}";
         const auto header = Chart::parse_chart(text).header();
         constexpr auto DEFAULT_RESOLUTION = 192.F;
 
@@ -84,7 +85,8 @@ TEST_CASE("Chart reads resolution and offset", "Song")
     SECTION("Defaults are overriden by specified values")
     {
         auto text = "[Song]\n{\nResolution = 200\nOffset = "
-                    "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
+                    "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]"
+                    "\n{\n768 = N 0 0\n}";
         const auto header = Chart::parse_chart(text).header();
         constexpr auto RESOLUTION = 200.F;
 
@@ -97,7 +99,7 @@ TEST_CASE("Chart reads resolution and offset", "Song")
 TEST_CASE("Chart reads sync track correctly", "SyncTrack")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
-                "TS 4 1\n}\n[Events]\n{\n}\n";
+                "TS 4 1\n}\n[Events]\n{\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
     const auto sync_track = Chart::parse_chart(text).sync_track();
     const auto time_sigs = std::vector<TimeSignature>({{0, 4, 4}, {768, 4, 2}});
     const auto bpms = std::vector<BPM>({{0, 200000}});
@@ -110,7 +112,7 @@ TEST_CASE("Chart reads sync track correctly", "SyncTrack")
 TEST_CASE("Chart reads events correctly", "Events")
 {
     auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n768 = E "
-                "\"section intro\"\n}\n";
+                "\"section intro\"\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
     const auto chart = Chart::parse_chart(text);
     const auto sections = std::vector<Section>({{768, "intro"}});
 
@@ -133,7 +135,8 @@ TEST_CASE("Chart reads easy note track correctly", "Easy")
 TEST_CASE("Chart skips UTF-8 BOM", "BOM")
 {
     auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
-                "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n";
+                "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
+                "\n768 = N 0 0\n}";
     const auto header = Chart::parse_chart(text).header();
     constexpr auto RESOLUTION = 192.F;
 
@@ -145,7 +148,8 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
 TEST_CASE("Chart can end without a newline", "End-NL")
 {
     auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
-                "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}";
+                "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
+                "\n768 = N 0 0\n}";
     const auto header = Chart::parse_chart(text).header();
     constexpr auto RESOLUTION = 192.F;
 
@@ -153,28 +157,37 @@ TEST_CASE("Chart can end without a newline", "End-NL")
     REQUIRE(header.offset() == 100.F);
 }
 
-// Last checked: 23.2.2
+// Last checked: 24.0.1555-master
 TEST_CASE("Chart does not need sections in usual order", "Section order")
 {
     SECTION("Non note sections need not be present")
     {
-        const auto chart = Chart::parse_chart("");
+        auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}";
+        const auto chart = Chart::parse_chart(text);
         constexpr auto RESOLUTION = 192.F;
 
         REQUIRE(chart.header().resolution() == Approx(RESOLUTION));
     }
 
+    SECTION("At least one non-empty note section must be present")
+    {
+        auto text = "[ExpertSingle]\n{\n768 = S 2 100\n}";
+
+        REQUIRE_THROWS([] { return Chart::parse_chart(""); }());
+        REQUIRE_THROWS([&] { return Chart::parse_chart(text); }());
+    }
+
     SECTION("Non note sections can be in any order")
     {
-        auto text = "[SyncTrack]\n{\n0 = B 200000\n}\n[Events]\n{\n768 = E "
-                    "\"section intro\"\n}\n[Song]\n{\nResolution = 200\n}";
+        auto text = "[SyncTrack]\n{\n0 = B 200000\n}\n[ExpertSingle]\n{\n768 = "
+                    "N 0 0\n}\n[Song]\n{\nResolution = 200\n}";
         const auto chart = Chart::parse_chart(text);
-        const auto sections = std::vector<Section>({{768, "intro"}});
+        const auto notes = std::vector<Note>({{768}});
         const auto bpms = std::vector<BPM>({{0, 200000}});
         constexpr auto RESOLUTION = 200.F;
 
         REQUIRE(chart.header().resolution() == Approx(RESOLUTION));
-        REQUIRE(chart.sections() == sections);
+        REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
         REQUIRE(chart.sync_track().bpms() == bpms);
     }
 }
