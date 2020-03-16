@@ -18,6 +18,7 @@
 
 #include "catch.hpp"
 
+#include "chart.hpp"
 #include "optimiser.hpp"
 
 // Last checked: 24.0.1555-master
@@ -26,8 +27,7 @@ TEST_CASE("Non-hold notes", "Non hold")
     SECTION("Single notes give 50 points")
     {
         const auto track = NoteTrack({{768}, {1000}}, {}, {});
-        const auto resolution = 192;
-        const auto points = notes_to_points(track, resolution);
+        const auto points = notes_to_points(track, SongHeader());
         const auto expected_points
             = std::vector<Point>({{768, 50}, {1000, 50}});
 
@@ -38,8 +38,7 @@ TEST_CASE("Non-hold notes", "Non hold")
     {
         const auto track = NoteTrack(
             {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}}, {}, {});
-        const auto resolution = 192;
-        const auto points = notes_to_points(track, resolution);
+        const auto points = notes_to_points(track, SongHeader());
         const auto expected_points = std::vector<Point>({{768, 100}});
 
         REQUIRE(points == expected_points);
@@ -52,12 +51,11 @@ TEST_CASE("Hold notes", "Hold")
     SECTION("Hold note points depend on resolution")
     {
         const auto track = NoteTrack({{768, 15}}, {}, {});
-        const auto first_resolution = 192;
-        const auto first_points = notes_to_points(track, first_resolution);
+        const auto first_points = notes_to_points(track, SongHeader());
         const auto first_expected_points
             = std::vector<Point>({{768, 50}, {775, 1}, {782, 1}, {789, 1}});
-        const auto second_resolution = 200;
-        const auto second_points = notes_to_points(track, second_resolution);
+        const auto header = SongHeader(0.F, 200);
+        const auto second_points = notes_to_points(track, header);
         const auto second_expected_points
             = std::vector<Point>({{768, 50}, {776, 1}, {784, 1}});
 
@@ -69,8 +67,7 @@ TEST_CASE("Hold notes", "Hold")
     {
         const auto track = NoteTrack(
             {{768, 7, NoteColour::Green}, {768, 8, NoteColour::Red}}, {}, {});
-        const auto resolution = 192;
-        const auto points = notes_to_points(track, resolution);
+        const auto points = notes_to_points(track, SongHeader());
         const auto expected_points
             = std::vector<Point>({{768, 100}, {775, 1}, {782, 1}});
 
@@ -80,8 +77,8 @@ TEST_CASE("Hold notes", "Hold")
     SECTION("Resolutions below 25 do not enter an infinite loop")
     {
         const auto track = NoteTrack({{768, 2}}, {}, {});
-        const auto resolution = 1;
-        const auto points = notes_to_points(track, resolution);
+        const auto header = SongHeader(0.F, 1);
+        const auto points = notes_to_points(track, header);
         const auto expected_points
             = std::vector<Point>({{768, 50}, {769, 1}, {770, 1}});
 
@@ -93,8 +90,7 @@ TEST_CASE("Hold notes", "Hold")
 TEST_CASE("Points are sorted", "Sorted")
 {
     const auto track = NoteTrack({{768, 15}, {770, 0}}, {}, {});
-    const auto resolution = 192;
-    const auto points = notes_to_points(track, resolution);
+    const auto points = notes_to_points(track, SongHeader());
     const auto expected_points = std::vector<Point>(
         {{768, 50}, {770, 50}, {775, 1}, {782, 1}, {789, 1}});
 

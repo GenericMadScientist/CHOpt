@@ -20,10 +20,11 @@
 
 #include "optimiser.hpp"
 
-std::vector<Point> notes_to_points(const NoteTrack& track, int32_t resolution)
+std::vector<Point> notes_to_points(const NoteTrack& track,
+                                   const SongHeader& header)
 {
     constexpr auto NOTE_VALUE = 50U;
-    const auto tick_gap = std::max(resolution / 25, 1);
+    const auto tick_gap = std::max(header.resolution() / 25, 1);
     std::vector<Point> points;
 
     const auto& notes = track.notes();

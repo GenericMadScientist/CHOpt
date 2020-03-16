@@ -45,9 +45,7 @@ int main(int argc, char* argv[])
         std::cout << contents.size() << std::endl;
         const auto chart = Chart::parse_chart(contents);
         const auto& track = chart.note_track(Difficulty::Expert);
-        const auto resolution
-            = static_cast<int32_t>(chart.header().resolution());
-        const auto points = notes_to_points(track, resolution);
+        const auto points = notes_to_points(track, chart.header());
         (void)points;
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {

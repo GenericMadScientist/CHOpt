@@ -35,6 +35,7 @@ struct Point {
     }
 };
 
-std::vector<Point> notes_to_points(const NoteTrack& track, int32_t resolution);
+std::vector<Point> notes_to_points(const NoteTrack& track,
+                                   const SongHeader& header);
 
 #endif
