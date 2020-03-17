@@ -23,7 +23,7 @@
 #include "chart.hpp"
 #include "optimiser.hpp"
 
-TEST_CASE("Beats to seconds conversion", "Beats->S")
+TEST_CASE("Beats to seconds conversion", "Beats<->S")
 {
     const auto track = SyncTrack({{0, 4, 4}}, {{0, 150000}, {800, 200000}});
     const auto header = SongHeader(0.F, 200);
@@ -34,6 +34,11 @@ TEST_CASE("Beats to seconds conversion", "Beats->S")
     for (auto i = 0U; i < beats.size(); ++i) {
         REQUIRE(converter.beats_to_seconds(beats.at(i))
                 == Approx(seconds.at(i)));
+    }
+
+    for (auto i = 0U; i < beats.size(); ++i) {
+        REQUIRE(converter.seconds_to_beats(seconds.at(i))
+                == Approx(beats.at(i)));
     }
 }
 

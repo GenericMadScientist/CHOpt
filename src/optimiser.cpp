@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <cassert>
 
 #include "optimiser.hpp"
 
@@ -38,6 +39,8 @@ TimeConverter::TimeConverter(const SyncTrack& sync_track,
     }
 
     m_last_bpm = last_bpm;
+
+    assert(!m_beat_timestamps.empty());
 }
 
 double TimeConverter::beats_to_seconds(double beats) const
@@ -56,6 +59,25 @@ double TimeConverter::beats_to_seconds(double beats) const
     return prev->time
         + (pos->time - prev->time) * (beats - prev->beat)
         / (pos->beat - prev->beat);
+}
+
+double TimeConverter::seconds_to_beats(double seconds) const
+{
+    const auto pos = std::lower_bound(
+        m_beat_timestamps.cbegin(), m_beat_timestamps.cend(), seconds,
+        [](const auto& x, const auto& y) { return x.time < y; });
+    if (pos == m_beat_timestamps.cend()) {
+        const auto& back = m_beat_timestamps.back();
+        return back.beat + ((seconds - back.time) * m_last_bpm) / MS_PER_MINUTE;
+    }
+    if (pos == m_beat_timestamps.cbegin()) {
+        return pos->beat
+            - ((pos->time - seconds) * DEFAULT_BPM) / MS_PER_MINUTE;
+    }
+    const auto prev = pos - 1;
+    return prev->beat
+        + (pos->beat - prev->beat) * (seconds - prev->time)
+        / (pos->time - prev->time);
 }
 
 std::vector<Point> notes_to_points(const NoteTrack& track,

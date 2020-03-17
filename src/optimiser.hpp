@@ -39,6 +39,7 @@ private:
 public:
     TimeConverter(const SyncTrack& sync_track, const SongHeader& header);
     [[nodiscard]] double beats_to_seconds(double beats) const;
+    [[nodiscard]] double seconds_to_beats(double seconds) const;
 };
 
 struct Point {
