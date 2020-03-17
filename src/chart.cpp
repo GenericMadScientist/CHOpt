@@ -59,7 +59,7 @@ SongHeader::SongHeader(float offset, int32_t resolution)
     : m_offset {offset}
     , m_resolution {resolution}
 {
-    if (m_resolution <= 0.F) {
+    if (m_resolution <= 0) {
         throw std::invalid_argument("Songs with resolution < 0 are invalid");
     }
 }
@@ -77,7 +77,7 @@ NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
 
     if (!notes.empty()) {
         auto prev_note = notes.cbegin();
-        for (auto p = notes.cbegin(); p < notes.cend(); ++p) {
+        for (auto p = notes.cbegin() + 1; p < notes.cend(); ++p) {
             if (p->position != prev_note->position
                 || p->colour != prev_note->colour) {
                 m_notes.push_back(*prev_note);
@@ -90,9 +90,32 @@ NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
 
 SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
                      std::vector<BPM> bpms)
-    : m_time_sigs {std::move(time_sigs)}
-    , m_bpms {std::move(bpms)}
 {
+    constexpr auto DEFAULT_BPM = 120000;
+
+    std::stable_sort(
+        bpms.begin(), bpms.end(),
+        [](const auto& x, const auto& y) { return x.position < y.position; });
+    BPM prev_bpm {0, DEFAULT_BPM};
+    for (auto p = bpms.cbegin(); p < bpms.cend(); ++p) {
+        if (p->position != prev_bpm.position) {
+            m_bpms.push_back(prev_bpm);
+        }
+        prev_bpm = *p;
+    }
+    m_bpms.push_back(prev_bpm);
+
+    std::stable_sort(
+        time_sigs.begin(), time_sigs.end(),
+        [](const auto& x, const auto& y) { return x.position < y.position; });
+    TimeSignature prev_ts {0, 4, 4};
+    for (auto p = time_sigs.cbegin(); p < time_sigs.cend(); ++p) {
+        if (p->position != prev_ts.position) {
+            m_time_sigs.push_back(prev_ts);
+        }
+        prev_ts = *p;
+    }
+    m_time_sigs.push_back(prev_ts);
 }
 
 static bool string_starts_with(std::string_view input, std::string_view pattern)

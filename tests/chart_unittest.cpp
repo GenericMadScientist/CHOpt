@@ -69,6 +69,62 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
 }
 
 // Last checked: 24.0.1555-master
+TEST_CASE("SyncTrack ctor maintains invariants", "SyncTrack")
+{
+    SECTION("BPMs are sorted by position")
+    {
+        const auto track
+            = SyncTrack({}, {{0, 150000}, {2000, 200000}, {1000, 225000}});
+        const auto expected_bpms
+            = std::vector<BPM>({{0, 150000}, {1000, 225000}, {2000, 200000}});
+
+        REQUIRE(track.bpms() == expected_bpms);
+    }
+
+    SECTION("No two BPMs have the same position")
+    {
+        const auto track = SyncTrack({}, {{0, 150000}, {0, 200000}});
+        const auto expected_bpms = std::vector<BPM>({{0, 200000}});
+
+        REQUIRE(track.bpms() == expected_bpms);
+    }
+
+    SECTION("bpms() is never empty")
+    {
+        const auto track = SyncTrack();
+        const auto expected_bpms = std::vector<BPM>({{0, 120000}});
+
+        REQUIRE(track.bpms() == expected_bpms);
+    }
+
+    SECTION("TimeSignatures are sorted by position")
+    {
+        const auto track
+            = SyncTrack({{0, 4, 4}, {2000, 3, 3}, {1000, 2, 2}}, {});
+        const auto expected_tses = std::vector<TimeSignature>(
+            {{0, 4, 4}, {1000, 2, 2}, {2000, 3, 3}});
+
+        REQUIRE(track.time_sigs() == expected_tses);
+    }
+
+    SECTION("No two TimeSignatures have the same position")
+    {
+        const auto track = SyncTrack({{0, 4, 4}, {0, 3, 4}}, {});
+        const auto expected_tses = std::vector<TimeSignature>({{0, 3, 4}});
+
+        REQUIRE(track.time_sigs() == expected_tses);
+    }
+
+    SECTION("time_sigs() is never empty")
+    {
+        const auto track = SyncTrack();
+        const auto expected_tses = std::vector<TimeSignature>({{0, 4, 4}});
+
+        REQUIRE(track.time_sigs() == expected_tses);
+    }
+}
+
+// Last checked: 24.0.1555-master
 TEST_CASE("Chart reads resolution and offset", "Song")
 {
     SECTION("Defaults are 192 Res and 0 Offset")

@@ -30,6 +30,8 @@ enum class Difficulty { Easy, Medium, Hard, Expert };
 
 enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
 
+// Invariants:
+// resolution() > 0.
 class SongHeader {
 private:
     static constexpr int32_t DEFAULT_RESOLUTION = 192;
@@ -139,13 +141,23 @@ public:
     }
 };
 
+// Invariants:
+// bpms() are sorted by position.
+// bpms() never has two BPMs with the same position.
+// bpms() is never empty.
+// time_sigs() are sorted by position.
+// time_sigs() never has two TimeSignatures with the same poisition.
+// time_sigs() is never empty.
 class SyncTrack {
 private:
     std::vector<TimeSignature> m_time_sigs;
     std::vector<BPM> m_bpms;
 
 public:
-    SyncTrack() = default;
+    SyncTrack()
+        : SyncTrack({}, {})
+    {
+    }
     SyncTrack(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms);
     [[nodiscard]] const std::vector<TimeSignature>& time_sigs() const
     {
