@@ -16,10 +16,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <array>
+
 #include "catch.hpp"
 
 #include "chart.hpp"
 #include "optimiser.hpp"
+
+TEST_CASE("Beats to seconds conversion", "Beats->S")
+{
+    const auto track = SyncTrack({{0, 4, 4}}, {{0, 150000}, {800, 200000}});
+    const auto header = SongHeader(0.F, 200);
+    const auto converter = TimeConverter(track, header);
+    constexpr std::array beats {-1.0, 0.0, 3.0, 5.0};
+    constexpr std::array seconds {-0.5, 0.0, 1.2, 1.9};
+
+    for (auto i = 0U; i < beats.size(); ++i) {
+        REQUIRE(converter.beats_to_seconds(beats.at(i))
+                == Approx(seconds.at(i)));
+    }
+}
 
 // Last checked: 24.0.1555-master
 TEST_CASE("Non-hold notes", "Non hold")

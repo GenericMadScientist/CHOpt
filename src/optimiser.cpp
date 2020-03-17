@@ -20,6 +20,44 @@
 
 #include "optimiser.hpp"
 
+TimeConverter::TimeConverter(const SyncTrack& sync_track,
+                             const SongHeader& header)
+{
+    auto last_tick = 0U;
+    auto last_bpm = DEFAULT_BPM;
+    auto last_time = 0.0;
+
+    for (const auto& bpm : sync_track.bpms()) {
+        last_time += ((bpm.position - last_tick) * MS_PER_MINUTE)
+            / (static_cast<uint32_t>(header.resolution()) * last_bpm);
+        const auto beat
+            = static_cast<double>(bpm.position) / header.resolution();
+        m_beat_timestamps.push_back({beat, last_time});
+        last_bpm = bpm.bpm;
+        last_tick = bpm.position;
+    }
+
+    m_last_bpm = last_bpm;
+}
+
+double TimeConverter::beats_to_seconds(double beats) const
+{
+    const auto pos = std::lower_bound(
+        m_beat_timestamps.cbegin(), m_beat_timestamps.cend(), beats,
+        [](const auto& x, const auto& y) { return x.beat < y; });
+    if (pos == m_beat_timestamps.cend()) {
+        const auto& back = m_beat_timestamps.back();
+        return back.time + ((beats - back.beat) * MS_PER_MINUTE) / m_last_bpm;
+    }
+    if (pos == m_beat_timestamps.cbegin()) {
+        return pos->time - ((pos->beat - beats) * MS_PER_MINUTE) / DEFAULT_BPM;
+    }
+    const auto prev = pos - 1;
+    return prev->time
+        + (pos->time - prev->time) * (beats - prev->beat)
+        / (pos->beat - prev->beat);
+}
+
 std::vector<Point> notes_to_points(const NoteTrack& track,
                                    const SongHeader& header)
 {

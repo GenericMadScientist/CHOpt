@@ -24,6 +24,23 @@
 
 #include "chart.hpp"
 
+struct BeatTimestamp {
+    double beat;
+    double time;
+};
+
+class TimeConverter {
+private:
+    static constexpr double MS_PER_MINUTE = 60000.0;
+    static constexpr uint32_t DEFAULT_BPM = 120000;
+    std::vector<BeatTimestamp> m_beat_timestamps;
+    uint32_t m_last_bpm;
+
+public:
+    TimeConverter(const SyncTrack& sync_track, const SongHeader& header);
+    [[nodiscard]] double beats_to_seconds(double beats) const;
+};
+
 struct Point {
     uint32_t position;
     uint32_t value;
@@ -35,6 +52,10 @@ struct Point {
     }
 };
 
+// Splits a collection of notes into the points a player can get. This function
+// should only fail if the program cannot allocate the vector for the return
+// value: any invariants on the song are supposed to be upheld by the
+// constructors of NoteTrack and SongHeader.
 std::vector<Point> notes_to_points(const NoteTrack& track,
                                    const SongHeader& header);
 
