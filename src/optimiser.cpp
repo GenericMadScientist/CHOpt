@@ -85,6 +85,7 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
 {
     constexpr auto NOTE_VALUE = 50U;
     const auto tick_gap = std::max(header.resolution() / 25, 1);
+    const double resolution = header.resolution();
     std::vector<Point> points;
 
     const auto& notes = track.notes();
@@ -100,11 +101,12 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
                 chord_length
                     = std::max(chord_length, static_cast<int32_t>(p->length));
             } else {
-                points.push_back({current_position, NOTE_VALUE * chord_size});
+                points.push_back(
+                    {current_position / resolution, NOTE_VALUE * chord_size});
                 while (chord_length > 0) {
                     current_position += static_cast<uint32_t>(tick_gap);
                     chord_length -= tick_gap;
-                    points.push_back({current_position, 1});
+                    points.push_back({current_position / resolution, 1});
                 }
                 chord_size = 1;
                 chord_length = static_cast<int32_t>(p->length);
@@ -112,17 +114,19 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
             }
         }
 
-        points.push_back({current_position, NOTE_VALUE * chord_size});
+        points.push_back(
+            {current_position / resolution, NOTE_VALUE * chord_size});
         while (chord_length > 0) {
             current_position += static_cast<uint32_t>(tick_gap);
             chord_length -= tick_gap;
-            points.push_back({current_position, 1});
+            points.push_back({current_position / resolution, 1});
         }
     }
 
-    std::stable_sort(
-        points.begin(), points.end(),
-        [](const auto& x, const auto& y) { return x.position < y.position; });
+    std::stable_sort(points.begin(), points.end(),
+                     [](const auto& x, const auto& y) {
+                         return x.beat_position < y.beat_position;
+                     });
 
     return points;
 }

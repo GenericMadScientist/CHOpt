@@ -23,6 +23,7 @@
 #include "chart.hpp"
 #include "optimiser.hpp"
 
+// Last checked: 24.0.1555-master
 TEST_CASE("Beats to seconds conversion", "Beats<->S")
 {
     const auto track = SyncTrack({{0, 4, 4}}, {{0, 150000}, {800, 200000}});
@@ -47,10 +48,9 @@ TEST_CASE("Non-hold notes", "Non hold")
 {
     SECTION("Single notes give 50 points")
     {
-        const auto track = NoteTrack({{768}, {1000}}, {}, {});
+        const auto track = NoteTrack({{768}, {960}}, {}, {});
         const auto points = notes_to_points(track, SongHeader());
-        const auto expected_points
-            = std::vector<Point>({{768, 50}, {1000, 50}});
+        const auto expected_points = std::vector<Point>({{4.0, 50}, {5.0, 50}});
 
         REQUIRE(points == expected_points);
     }
@@ -60,7 +60,7 @@ TEST_CASE("Non-hold notes", "Non hold")
         const auto track = NoteTrack(
             {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}}, {}, {});
         const auto points = notes_to_points(track, SongHeader());
-        const auto expected_points = std::vector<Point>({{768, 100}});
+        const auto expected_points = std::vector<Point>({{4.0, 100}});
 
         REQUIRE(points == expected_points);
     }
@@ -74,11 +74,14 @@ TEST_CASE("Hold notes", "Hold")
         const auto track = NoteTrack({{768, 15}}, {}, {});
         const auto first_points = notes_to_points(track, SongHeader());
         const auto first_expected_points
-            = std::vector<Point>({{768, 50}, {775, 1}, {782, 1}, {789, 1}});
+            = std::vector<Point>({{4.0, 50},
+                                  {775.0 / 192.0, 1},
+                                  {782.0 / 192.0, 1},
+                                  {789.0 / 192.0, 1}});
         const auto header = SongHeader(0.F, 200);
         const auto second_points = notes_to_points(track, header);
-        const auto second_expected_points
-            = std::vector<Point>({{768, 50}, {776, 1}, {784, 1}});
+        const auto second_expected_points = std::vector<Point>(
+            {{768.0 / 200.0, 50}, {776.0 / 200.0, 1}, {784.0 / 200.0, 1}});
 
         REQUIRE(first_points == first_expected_points);
         REQUIRE(second_points == second_expected_points);
@@ -89,8 +92,8 @@ TEST_CASE("Hold notes", "Hold")
         const auto track = NoteTrack(
             {{768, 7, NoteColour::Green}, {768, 8, NoteColour::Red}}, {}, {});
         const auto points = notes_to_points(track, SongHeader());
-        const auto expected_points
-            = std::vector<Point>({{768, 100}, {775, 1}, {782, 1}});
+        const auto expected_points = std::vector<Point>(
+            {{4.0, 100}, {775.0 / 192.0, 1}, {782.0 / 192.0, 1}});
 
         REQUIRE(points == expected_points);
     }
@@ -101,7 +104,7 @@ TEST_CASE("Hold notes", "Hold")
         const auto header = SongHeader(0.F, 1);
         const auto points = notes_to_points(track, header);
         const auto expected_points
-            = std::vector<Point>({{768, 50}, {769, 1}, {770, 1}});
+            = std::vector<Point>({{768.0, 50}, {769.0, 1}, {770.0, 1}});
 
         REQUIRE(points == expected_points);
     }
@@ -112,8 +115,11 @@ TEST_CASE("Points are sorted", "Sorted")
 {
     const auto track = NoteTrack({{768, 15}, {770, 0}}, {}, {});
     const auto points = notes_to_points(track, SongHeader());
-    const auto expected_points = std::vector<Point>(
-        {{768, 50}, {770, 50}, {775, 1}, {782, 1}, {789, 1}});
+    const auto expected_points = std::vector<Point>({{4.0, 50},
+                                                     {770.0 / 192.0, 50},
+                                                     {775.0 / 192.0, 1},
+                                                     {782.0 / 192.0, 1},
+                                                     {789.0 / 192.0, 1}});
 
     REQUIRE(points == expected_points);
 }

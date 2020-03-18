@@ -20,6 +20,7 @@
 #define CHOPT_OPTIMISER_HPP
 
 #include <cstdint>
+#include <tuple>
 #include <vector>
 
 #include "chart.hpp"
@@ -43,13 +44,13 @@ public:
 };
 
 struct Point {
-    uint32_t position;
+    double beat_position;
     uint32_t value;
 
     friend bool operator==(const Point& lhs, const Point& rhs)
     {
-        return std::tie(lhs.position, lhs.value)
-            == std::tie(rhs.position, rhs.value);
+        return std::tie(lhs.beat_position, lhs.value)
+            == std::tie(rhs.beat_position, rhs.value);
     }
 };
 
