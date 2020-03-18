@@ -101,12 +101,12 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
                 chord_length
                     = std::max(chord_length, static_cast<int32_t>(p->length));
             } else {
-                points.push_back(
-                    {current_position / resolution, NOTE_VALUE * chord_size});
+                points.push_back({current_position / resolution,
+                                  NOTE_VALUE * chord_size, false});
                 while (chord_length > 0) {
                     current_position += static_cast<uint32_t>(tick_gap);
                     chord_length -= tick_gap;
-                    points.push_back({current_position / resolution, 1});
+                    points.push_back({current_position / resolution, 1, true});
                 }
                 chord_size = 1;
                 chord_length = static_cast<int32_t>(p->length);
@@ -115,11 +115,11 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
         }
 
         points.push_back(
-            {current_position / resolution, NOTE_VALUE * chord_size});
+            {current_position / resolution, NOTE_VALUE * chord_size, false});
         while (chord_length > 0) {
             current_position += static_cast<uint32_t>(tick_gap);
             chord_length -= tick_gap;
-            points.push_back({current_position / resolution, 1});
+            points.push_back({current_position / resolution, 1, true});
         }
     }
 
@@ -129,4 +129,30 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
                      });
 
     return points;
+}
+
+double front_end(const Point& point, const TimeConverter& converter)
+{
+    constexpr double FRONT_END = 0.07;
+
+    if (point.is_hold_point) {
+        return point.beat_position;
+    }
+
+    auto time = converter.beats_to_seconds(point.beat_position);
+    time -= FRONT_END;
+    return converter.seconds_to_beats(time);
+}
+
+double back_end(const Point& point, const TimeConverter& converter)
+{
+    constexpr double BACK_END = 0.07;
+
+    if (point.is_hold_point) {
+        return point.beat_position;
+    }
+
+    auto time = converter.beats_to_seconds(point.beat_position);
+    time += BACK_END;
+    return converter.seconds_to_beats(time);
 }

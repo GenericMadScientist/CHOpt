@@ -46,11 +46,12 @@ public:
 struct Point {
     double beat_position;
     uint32_t value;
+    bool is_hold_point;
 
     friend bool operator==(const Point& lhs, const Point& rhs)
     {
-        return std::tie(lhs.beat_position, lhs.value)
-            == std::tie(rhs.beat_position, rhs.value);
+        return std::tie(lhs.beat_position, lhs.value, lhs.is_hold_point)
+            == std::tie(rhs.beat_position, rhs.value, lhs.is_hold_point);
     }
 };
 
@@ -60,5 +61,9 @@ struct Point {
 // constructors of NoteTrack and SongHeader.
 std::vector<Point> notes_to_points(const NoteTrack& track,
                                    const SongHeader& header);
+
+// Return the earliest and latest times a point can be hit, in beats.
+double front_end(const Point& point, const TimeConverter& converter);
+double back_end(const Point& point, const TimeConverter& converter);
 
 #endif

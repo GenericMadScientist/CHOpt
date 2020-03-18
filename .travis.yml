@@ -56,7 +56,7 @@ script:
       git diff --color --exit-code
       clang-tidy-9 --version
       clang-tidy-9 src/*.cpp src/*.hpp -- -Isrc -std=c++17 -stdlib=libc++
-      clang-tidy-9 tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers -- -Isrc -std=c++17 -stdlib=libc++
+      clang-tidy-9 tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Isrc -std=c++17 -stdlib=libc++
     else
       ${CXX} --version
       mkdir -p build
