@@ -40,7 +40,7 @@ TimeConverter::TimeConverter(const SyncTrack& sync_track,
 
     m_last_bpm = last_bpm;
 
-    assert(!m_beat_timestamps.empty());
+    assert(!m_beat_timestamps.empty()); // NOLINT
 }
 
 double TimeConverter::beats_to_seconds(double beats) const

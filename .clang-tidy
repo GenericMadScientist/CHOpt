@@ -1,4 +1,4 @@
-Checks: '*,-fuchsia-*,-google-*,-llvm-*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-modernize-use-trailing-return-type'
+Checks: '*,-fuchsia-*,-google-*,-llvm-*,-modernize-use-trailing-return-type'
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle: none
