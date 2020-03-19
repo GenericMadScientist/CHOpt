@@ -25,7 +25,7 @@ TEST_CASE("SongHeader ctor maintains invariants", "SongHeader")
 {
     // Throw if resolution is <= 0. Clone Hero misbehaves in this case and it's
     // nonsense anyway.
-    REQUIRE_THROWS([] { return SongHeader(0.F, 0.F); }());
+    REQUIRE_THROWS([] { return SongHeader(0.F, 0); }());
 }
 
 // Last checked: 23.2.2
@@ -65,6 +65,28 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
             {{768, 768, NoteColour::Green}, {768, 0, NoteColour::Red}});
 
         REQUIRE(track.notes() == required_notes);
+    }
+
+    SECTION("Empty SP phrases are culled")
+    {
+        const auto notes = std::vector<Note>({{768}});
+        const auto phrases
+            = std::vector<StarPower>({{0, 100}, {700, 100}, {1000, 100}});
+        const auto track = NoteTrack(notes, phrases, {});
+        const auto required_phrases = std::vector<StarPower>({{700, 100}});
+
+        REQUIRE(track.sp_phrases() == required_phrases);
+    }
+
+    SECTION("SP phrases are sorted")
+    {
+        const auto notes = std::vector<Note>({{768}, {1000}});
+        const auto phrases = std::vector<StarPower>({{1000, 1}, {768, 1}});
+        const auto track = NoteTrack(notes, phrases, {});
+        const auto required_phrases
+            = std::vector<StarPower>({{768, 1}, {1000, 1}});
+
+        REQUIRE(track.sp_phrases() == required_phrases);
     }
 }
 
@@ -132,9 +154,8 @@ TEST_CASE("Chart reads resolution and offset", "Song")
         auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n["
                     "ExpertSingle]\n{\n768 = N 0 0\n}";
         const auto header = Chart::parse_chart(text).header();
-        constexpr auto DEFAULT_RESOLUTION = 192;
 
-        REQUIRE(header.resolution() == DEFAULT_RESOLUTION);
+        REQUIRE(header.resolution() == 192);
         REQUIRE(header.offset() == 0.F);
     }
 
@@ -144,9 +165,8 @@ TEST_CASE("Chart reads resolution and offset", "Song")
                     "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]"
                     "\n{\n768 = N 0 0\n}";
         const auto header = Chart::parse_chart(text).header();
-        constexpr auto RESOLUTION = 200;
 
-        REQUIRE(header.resolution() == RESOLUTION);
+        REQUIRE(header.resolution() == 200);
         REQUIRE(header.offset() == 100.F);
     }
 }
@@ -194,9 +214,8 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
                 "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
                 "\n768 = N 0 0\n}";
     const auto header = Chart::parse_chart(text).header();
-    constexpr auto RESOLUTION = 192;
 
-    REQUIRE(header.resolution() == RESOLUTION);
+    REQUIRE(header.resolution() == 192);
     REQUIRE(header.offset() == 100.F);
 }
 
@@ -207,9 +226,8 @@ TEST_CASE("Chart can end without a newline", "End-NL")
                 "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
                 "\n768 = N 0 0\n}";
     const auto header = Chart::parse_chart(text).header();
-    constexpr auto RESOLUTION = 192;
 
-    REQUIRE(header.resolution() == RESOLUTION);
+    REQUIRE(header.resolution() == 192);
     REQUIRE(header.offset() == 100.F);
 }
 
@@ -220,9 +238,8 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
     {
         auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}";
         const auto chart = Chart::parse_chart(text);
-        constexpr auto RESOLUTION = 192;
 
-        REQUIRE(chart.header().resolution() == RESOLUTION);
+        REQUIRE(chart.header().resolution() == 192);
     }
 
     SECTION("At least one non-empty note section must be present")
@@ -240,9 +257,8 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
         const auto chart = Chart::parse_chart(text);
         const auto notes = std::vector<Note>({{768}});
         const auto bpms = std::vector<BPM>({{0, 200000}});
-        constexpr auto RESOLUTION = 200;
 
-        REQUIRE(chart.header().resolution() == RESOLUTION);
+        REQUIRE(chart.header().resolution() == 200);
         REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
         REQUIRE(chart.sync_track().bpms() == bpms);
     }

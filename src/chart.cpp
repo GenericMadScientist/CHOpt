@@ -66,8 +66,7 @@ SongHeader::SongHeader(float offset, int32_t resolution)
 
 NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
                      std::vector<ChartEvent> events)
-    : m_sp_phrases {std::move(sp_phrases)}
-    , m_events {std::move(events)}
+    : m_events {std::move(events)}
 {
     std::stable_sort(notes.begin(), notes.end(),
                      [](const auto& lhs, const auto& rhs) {
@@ -85,6 +84,23 @@ NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
             prev_note = p;
         }
         m_notes.push_back(*prev_note);
+    }
+
+    std::stable_sort(sp_phrases.begin(), sp_phrases.end(),
+                     [](const auto& lhs, const auto& rhs) {
+                         return lhs.position < rhs.position;
+                     });
+
+    for (const auto& phrase : sp_phrases) {
+        const auto first_note = std::lower_bound(
+            m_notes.cbegin(), m_notes.cend(), phrase.position,
+            [](const auto& lhs, const auto& rhs) {
+                return lhs.position < rhs;
+            });
+        if ((first_note != m_notes.cend())
+            && (first_note->position < (phrase.position + phrase.length))) {
+            m_sp_phrases.push_back(phrase);
+        }
     }
 }
 

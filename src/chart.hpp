@@ -121,6 +121,8 @@ struct ChartEvent {
 // notes() will always return a vector of sorted notes.
 // notes() will not return a vector with two notes of the same colour with the
 // same position.
+// sp_phrases() will always return a vector of sorted SP phrases.
+// sp_phrases() will only return phrases with a note in their range.
 class NoteTrack {
 private:
     std::vector<Note> m_notes;
@@ -133,6 +135,10 @@ public:
               std::vector<ChartEvent> events);
 
     [[nodiscard]] const std::vector<Note>& notes() const { return m_notes; }
+    [[nodiscard]] const std::vector<StarPower>& sp_phrases() const
+    {
+        return m_sp_phrases;
+    }
 
     friend bool operator==(const NoteTrack& lhs, const NoteTrack& rhs)
     {
