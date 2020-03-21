@@ -123,6 +123,7 @@ struct ChartEvent {
 // same position.
 // sp_phrases() will always return a vector of sorted SP phrases.
 // sp_phrases() will only return phrases with a note in their range.
+// sp_phrases() will return non-overlapping phrases.
 class NoteTrack {
 private:
     std::vector<Note> m_notes;

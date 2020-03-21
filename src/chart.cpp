@@ -91,6 +91,14 @@ NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
                          return lhs.position < rhs.position;
                      });
 
+    for (auto p = sp_phrases.begin(); p < sp_phrases.end(); ++p) {
+        const auto next_phrase = p + 1;
+        if (next_phrase == sp_phrases.end()) {
+            continue;
+        }
+        p->length = std::min(p->length, next_phrase->position - p->position);
+    }
+
     for (const auto& phrase : sp_phrases) {
         const auto first_note = std::lower_bound(
             m_notes.cbegin(), m_notes.cend(), phrase.position,

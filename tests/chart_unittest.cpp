@@ -88,6 +88,17 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
 
         REQUIRE(track.sp_phrases() == required_phrases);
     }
+
+    SECTION("SP phrases do not overlap")
+    {
+        const auto notes = std::vector<Note>({{768}, {1000}});
+        const auto phrases = std::vector<StarPower>({{768, 1000}, {900, 150}});
+        const auto track = NoteTrack(notes, phrases, {});
+        const auto required_phrases
+            = std::vector<StarPower>({{768, 132}, {900, 150}});
+
+        REQUIRE(track.sp_phrases() == required_phrases);
+    }
 }
 
 // Last checked: 24.0.1555-master
