@@ -94,6 +94,7 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
         auto current_position = notes[0].position;
         auto chord_size = 1U;
         auto chord_length = static_cast<int32_t>(notes[0].length);
+        auto current_phrase = track.sp_phrases().cbegin();
 
         for (auto p = notes.cbegin() + 1; p < notes.cend(); ++p) {
             if (p->position == current_position) {
@@ -101,12 +102,26 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
                 chord_length
                     = std::max(chord_length, static_cast<int32_t>(p->length));
             } else {
+                auto is_note_sp_ender = false;
+                if (current_phrase != track.sp_phrases().cend()) {
+                    const auto phrase_start = current_phrase->position;
+                    const auto phrase_end
+                        = phrase_start + current_phrase->length;
+                    if (current_position >= phrase_start
+                        && current_position < phrase_end
+                        && p->position >= phrase_end) {
+                        is_note_sp_ender = true;
+                        ++current_phrase;
+                    }
+                }
                 points.push_back({current_position / resolution,
-                                  NOTE_VALUE * chord_size, false});
+                                  NOTE_VALUE * chord_size, false,
+                                  is_note_sp_ender});
                 while (chord_length > 0) {
                     current_position += static_cast<uint32_t>(tick_gap);
                     chord_length -= tick_gap;
-                    points.push_back({current_position / resolution, 1, true});
+                    points.push_back(
+                        {current_position / resolution, 1, true, false});
                 }
                 chord_size = 1;
                 chord_length = static_cast<int32_t>(p->length);
@@ -114,12 +129,14 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
             }
         }
 
-        points.push_back(
-            {current_position / resolution, NOTE_VALUE * chord_size, false});
+        const auto is_note_sp_ender
+            = current_phrase != track.sp_phrases().cend();
+        points.push_back({current_position / resolution,
+                          NOTE_VALUE * chord_size, false, is_note_sp_ender});
         while (chord_length > 0) {
             current_position += static_cast<uint32_t>(tick_gap);
             chord_length -= tick_gap;
-            points.push_back({current_position / resolution, 1, true});
+            points.push_back({current_position / resolution, 1, true, false});
         }
     }
 

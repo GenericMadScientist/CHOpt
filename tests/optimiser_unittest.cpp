@@ -50,8 +50,8 @@ TEST_CASE("Non-hold notes", "Non hold")
     {
         const auto track = NoteTrack({{768}, {960}}, {}, {});
         const auto points = notes_to_points(track, SongHeader());
-        const auto expected_points
-            = std::vector<Point>({{4.0, 50, false}, {5.0, 50, false}});
+        const auto expected_points = std::vector<Point>(
+            {{4.0, 50, false, false}, {5.0, 50, false, false}});
 
         REQUIRE(points == expected_points);
     }
@@ -61,7 +61,8 @@ TEST_CASE("Non-hold notes", "Non hold")
         const auto track = NoteTrack(
             {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}}, {}, {});
         const auto points = notes_to_points(track, SongHeader());
-        const auto expected_points = std::vector<Point>({{4.0, 100, false}});
+        const auto expected_points
+            = std::vector<Point>({{4.0, 100, false, false}});
 
         REQUIRE(points == expected_points);
     }
@@ -75,16 +76,16 @@ TEST_CASE("Hold notes", "Hold")
         const auto track = NoteTrack({{768, 15}}, {}, {});
         const auto first_points = notes_to_points(track, SongHeader());
         const auto first_expected_points
-            = std::vector<Point>({{4.0, 50, false},
-                                  {775.0 / 192.0, 1, true},
-                                  {782.0 / 192.0, 1, true},
-                                  {789.0 / 192.0, 1, true}});
+            = std::vector<Point>({{4.0, 50, false, false},
+                                  {775.0 / 192.0, 1, true, false},
+                                  {782.0 / 192.0, 1, true, false},
+                                  {789.0 / 192.0, 1, true, false}});
         const auto header = SongHeader(0.F, 200);
         const auto second_points = notes_to_points(track, header);
         const auto second_expected_points
-            = std::vector<Point>({{768.0 / 200.0, 50, false},
-                                  {776.0 / 200.0, 1, true},
-                                  {784.0 / 200.0, 1, true}});
+            = std::vector<Point>({{768.0 / 200.0, 50, false, false},
+                                  {776.0 / 200.0, 1, true, false},
+                                  {784.0 / 200.0, 1, true, false}});
 
         REQUIRE(first_points == first_expected_points);
         REQUIRE(second_points == second_expected_points);
@@ -96,9 +97,9 @@ TEST_CASE("Hold notes", "Hold")
             {{768, 7, NoteColour::Green}, {768, 8, NoteColour::Red}}, {}, {});
         const auto points = notes_to_points(track, SongHeader());
         const auto expected_points
-            = std::vector<Point>({{4.0, 100, false},
-                                  {775.0 / 192.0, 1, true},
-                                  {782.0 / 192.0, 1, true}});
+            = std::vector<Point>({{4.0, 100, false, false},
+                                  {775.0 / 192.0, 1, true, false},
+                                  {782.0 / 192.0, 1, true, false}});
 
         REQUIRE(points == expected_points);
     }
@@ -108,8 +109,10 @@ TEST_CASE("Hold notes", "Hold")
         const auto track = NoteTrack({{768, 2}}, {}, {});
         const auto header = SongHeader(0.F, 1);
         const auto points = notes_to_points(track, header);
-        const auto expected_points = std::vector<Point>(
-            {{768.0, 50, false}, {769.0, 1, true}, {770.0, 1, true}});
+        const auto expected_points
+            = std::vector<Point>({{768.0, 50, false, false},
+                                  {769.0, 1, true, false},
+                                  {770.0, 1, true, false}});
 
         REQUIRE(points == expected_points);
     }
@@ -120,11 +123,25 @@ TEST_CASE("Points are sorted", "Sorted")
 {
     const auto track = NoteTrack({{768, 15}, {770, 0}}, {}, {});
     const auto points = notes_to_points(track, SongHeader());
-    const auto expected_points = std::vector<Point>({{4.0, 50, false},
-                                                     {770.0 / 192.0, 50, false},
-                                                     {775.0 / 192.0, 1, true},
-                                                     {782.0 / 192.0, 1, true},
-                                                     {789.0 / 192.0, 1, true}});
+    const auto expected_points
+        = std::vector<Point>({{4.0, 50, false, false},
+                              {770.0 / 192.0, 50, false, false},
+                              {775.0 / 192.0, 1, true, false},
+                              {782.0 / 192.0, 1, true, false},
+                              {789.0 / 192.0, 1, true, false}});
+
+    REQUIRE(points == expected_points);
+}
+
+// Last checked: 24.0.1555-master
+TEST_CASE("End of SP phrase points", "End of SP")
+{
+    const auto track = NoteTrack({{768}, {960}, {1152}},
+                                 {{768, 1}, {900, 50}, {1100, 53}}, {});
+    const auto points = notes_to_points(track, SongHeader());
+    const auto expected_points = std::vector<Point>({{4.0, 50, false, true},
+                                                     {5.0, 50, false, false},
+                                                     {6.0, 50, false, true}});
 
     REQUIRE(points == expected_points);
 }
@@ -137,20 +154,19 @@ TEST_CASE("front_end and back_end work correctly", "Timing window")
 
     SECTION("Front ends for notes are correct")
     {
-        REQUIRE(front_end({1.0, 50, false}, converter) == Approx(0.825));
-        REQUIRE(front_end({4.1, 50, false}, converter) == Approx(3.9));
+        REQUIRE(front_end({1.0, 50, false, false}, converter) == Approx(0.825));
+        REQUIRE(front_end({4.1, 50, false, false}, converter) == Approx(3.9));
     }
 
     SECTION("Back ends for notes are correct")
     {
-
-        REQUIRE(back_end({1.0, 50, false}, converter) == Approx(1.175));
-        REQUIRE(back_end({3.9, 50, false}, converter) == Approx(4.1));
+        REQUIRE(back_end({1.0, 50, false, false}, converter) == Approx(1.175));
+        REQUIRE(back_end({3.9, 50, false, false}, converter) == Approx(4.1));
     }
 
     SECTION("Front and back ends for hold points are correct")
     {
-        REQUIRE(front_end({4.1, 50, true}, converter) == Approx(4.1));
-        REQUIRE(back_end({3.9, 50, true}, converter) == Approx(3.9));
+        REQUIRE(front_end({4.1, 50, true, false}, converter) == Approx(4.1));
+        REQUIRE(back_end({3.9, 50, true, false}, converter) == Approx(3.9));
     }
 }
