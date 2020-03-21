@@ -80,6 +80,14 @@ double TimeConverter::seconds_to_beats(double seconds) const
         / (pos->time - prev->time);
 }
 
+static bool phrase_contains_pos(const StarPower& phrase, uint32_t position)
+{
+    if (position < phrase.position) {
+        return false;
+    }
+    return position < (phrase.position + phrase.length);
+}
+
 std::vector<Point> notes_to_points(const NoteTrack& track,
                                    const SongHeader& header)
 {
@@ -90,54 +98,50 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
 
     const auto& notes = track.notes();
 
-    if (!notes.empty()) {
-        auto current_position = notes[0].position;
-        auto chord_size = 1U;
-        auto chord_length = static_cast<int32_t>(notes[0].length);
-        auto current_phrase = track.sp_phrases().cbegin();
+    if (notes.empty()) {
+        return points;
+    }
 
-        for (auto p = notes.cbegin() + 1; p < notes.cend(); ++p) {
-            if (p->position == current_position) {
-                ++chord_size;
-                chord_length
-                    = std::max(chord_length, static_cast<int32_t>(p->length));
-            } else {
-                auto is_note_sp_ender = false;
-                if (current_phrase != track.sp_phrases().cend()) {
-                    const auto phrase_start = current_phrase->position;
-                    const auto phrase_end
-                        = phrase_start + current_phrase->length;
-                    if (current_position >= phrase_start
-                        && current_position < phrase_end
-                        && p->position >= phrase_end) {
-                        is_note_sp_ender = true;
-                        ++current_phrase;
-                    }
-                }
-                points.push_back({current_position / resolution,
-                                  NOTE_VALUE * chord_size, false,
-                                  is_note_sp_ender});
-                while (chord_length > 0) {
-                    current_position += static_cast<uint32_t>(tick_gap);
-                    chord_length -= tick_gap;
-                    points.push_back(
-                        {current_position / resolution, 1, true, false});
-                }
-                chord_size = 1;
-                chord_length = static_cast<int32_t>(p->length);
-                current_position = p->position;
+    auto current_position = notes[0].position;
+    auto chord_size = 1U;
+    auto chord_length = static_cast<int32_t>(notes[0].length);
+    auto current_phrase = track.sp_phrases().cbegin();
+
+    for (auto p = notes.cbegin() + 1; p < notes.cend(); ++p) {
+        if (p->position == current_position) {
+            ++chord_size;
+            chord_length
+                = std::max(chord_length, static_cast<int32_t>(p->length));
+        } else {
+            auto is_note_sp_ender = false;
+            if (current_phrase != track.sp_phrases().cend()
+                && phrase_contains_pos(*current_phrase, current_position)
+                && !phrase_contains_pos(*current_phrase, p->position)) {
+                is_note_sp_ender = true;
+                ++current_phrase;
             }
+            points.push_back({current_position / resolution,
+                              NOTE_VALUE * chord_size, false,
+                              is_note_sp_ender});
+            while (chord_length > 0) {
+                current_position += static_cast<uint32_t>(tick_gap);
+                chord_length -= tick_gap;
+                points.push_back(
+                    {current_position / resolution, 1, true, false});
+            }
+            chord_size = 1;
+            chord_length = static_cast<int32_t>(p->length);
+            current_position = p->position;
         }
+    }
 
-        const auto is_note_sp_ender
-            = current_phrase != track.sp_phrases().cend();
-        points.push_back({current_position / resolution,
-                          NOTE_VALUE * chord_size, false, is_note_sp_ender});
-        while (chord_length > 0) {
-            current_position += static_cast<uint32_t>(tick_gap);
-            chord_length -= tick_gap;
-            points.push_back({current_position / resolution, 1, true, false});
-        }
+    const auto is_note_sp_ender = current_phrase != track.sp_phrases().cend();
+    points.push_back({current_position / resolution, NOTE_VALUE * chord_size,
+                      false, is_note_sp_ender});
+    while (chord_length > 0) {
+        current_position += static_cast<uint32_t>(tick_gap);
+        chord_length -= tick_gap;
+        points.push_back({current_position / resolution, 1, true, false});
     }
 
     std::stable_sort(points.begin(), points.end(),
