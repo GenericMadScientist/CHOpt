@@ -30,17 +30,29 @@ struct BeatTimestamp {
     double time;
 };
 
+struct MeasureTimestamp {
+    double measure;
+    double beat;
+};
+
 class TimeConverter {
 private:
     static constexpr double MS_PER_MINUTE = 60000.0;
     static constexpr uint32_t DEFAULT_BPM = 120000;
+    static constexpr double DEFAULT_BEAT_RATE = 4.0;
     std::vector<BeatTimestamp> m_beat_timestamps;
+    std::vector<MeasureTimestamp> m_measure_timestamps;
+    double m_last_beat_rate;
     uint32_t m_last_bpm;
 
 public:
     TimeConverter(const SyncTrack& sync_track, const SongHeader& header);
     [[nodiscard]] double beats_to_seconds(double beats) const;
     [[nodiscard]] double seconds_to_beats(double seconds) const;
+    [[nodiscard]] double beats_to_measures(double beats) const;
+    [[nodiscard]] double measures_to_beats(double measures) const;
+    [[nodiscard]] double measures_to_seconds(double measures) const;
+    [[nodiscard]] double seconds_to_measures(double seconds) const;
 };
 
 struct Point {
