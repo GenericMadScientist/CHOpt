@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iterator>
 
 #include "optimiser.hpp"
 
@@ -88,60 +89,62 @@ static bool phrase_contains_pos(const StarPower& phrase, uint32_t position)
     return position < (phrase.position + phrase.length);
 }
 
+// Returns the iterator one past the end of a chord.
+template <class ForwardIt>
+static ForwardIt end_of_chord(ForwardIt first, ForwardIt last)
+{
+    if (first == last) {
+        return first;
+    }
+    const auto position = first->position;
+    return std::find_if_not(
+        first, last, [=](const auto& x) { return x.position == position; });
+}
+
+template <class InputIt, class OutputIt>
+static void append_note_points(InputIt first, InputIt last, OutputIt points,
+                               const SongHeader& header, bool is_note_sp_ender)
+{
+    constexpr auto NOTE_VALUE = 50U;
+    const double resolution = header.resolution();
+    const auto tick_gap = std::max(header.resolution() / 25, 1);
+
+    const auto chord_size = static_cast<uint32_t>(std::distance(first, last));
+    auto chord_length = static_cast<int32_t>(
+        std::max_element(first, last, [](const auto& x, const auto& y) {
+            return x.length < y.length;
+        })->length);
+    auto pos = first->position;
+    *points++
+        = {pos / resolution, NOTE_VALUE * chord_size, false, is_note_sp_ender};
+    while (chord_length > 0) {
+        pos += static_cast<uint32_t>(tick_gap);
+        chord_length -= tick_gap;
+        *points++ = {pos / resolution, 1, true, false};
+    }
+}
+
 std::vector<Point> notes_to_points(const NoteTrack& track,
                                    const SongHeader& header)
 {
-    constexpr auto NOTE_VALUE = 50U;
-    const auto tick_gap = std::max(header.resolution() / 25, 1);
-    const double resolution = header.resolution();
     std::vector<Point> points;
 
     const auto& notes = track.notes();
 
-    if (notes.empty()) {
-        return points;
-    }
-
-    auto current_position = notes[0].position;
-    auto chord_size = 1U;
-    auto chord_length = static_cast<int32_t>(notes[0].length);
     auto current_phrase = track.sp_phrases().cbegin();
-
-    for (auto p = notes.cbegin() + 1; p < notes.cend(); ++p) {
-        if (p->position == current_position) {
-            ++chord_size;
-            chord_length
-                = std::max(chord_length, static_cast<int32_t>(p->length));
-        } else {
-            auto is_note_sp_ender = false;
-            if (current_phrase != track.sp_phrases().cend()
-                && phrase_contains_pos(*current_phrase, current_position)
-                && !phrase_contains_pos(*current_phrase, p->position)) {
-                is_note_sp_ender = true;
-                ++current_phrase;
-            }
-            points.push_back({current_position / resolution,
-                              NOTE_VALUE * chord_size, false,
-                              is_note_sp_ender});
-            while (chord_length > 0) {
-                current_position += static_cast<uint32_t>(tick_gap);
-                chord_length -= tick_gap;
-                points.push_back(
-                    {current_position / resolution, 1, true, false});
-            }
-            chord_size = 1;
-            chord_length = static_cast<int32_t>(p->length);
-            current_position = p->position;
+    for (auto p = notes.cbegin(); p != notes.cend();) {
+        const auto q = end_of_chord(p, notes.cend());
+        auto is_note_sp_ender = false;
+        if (current_phrase != track.sp_phrases().cend()
+            && phrase_contains_pos(*current_phrase, p->position)
+            && ((q == notes.cend())
+                || !phrase_contains_pos(*current_phrase, q->position))) {
+            is_note_sp_ender = true;
+            ++current_phrase;
         }
-    }
-
-    const auto is_note_sp_ender = current_phrase != track.sp_phrases().cend();
-    points.push_back({current_position / resolution, NOTE_VALUE * chord_size,
-                      false, is_note_sp_ender});
-    while (chord_length > 0) {
-        current_position += static_cast<uint32_t>(tick_gap);
-        chord_length -= tick_gap;
-        points.push_back({current_position / resolution, 1, true, false});
+        append_note_points(p, q, std::back_inserter(points), header,
+                           is_note_sp_ender);
+        p = q;
     }
 
     std::stable_sort(points.begin(), points.end(),
