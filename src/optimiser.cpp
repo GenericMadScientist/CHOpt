@@ -89,18 +89,6 @@ static bool phrase_contains_pos(const StarPower& phrase, uint32_t position)
     return position < (phrase.position + phrase.length);
 }
 
-// Returns the iterator one past the end of a chord.
-template <class ForwardIt>
-static ForwardIt end_of_chord(ForwardIt first, ForwardIt last)
-{
-    if (first == last) {
-        return first;
-    }
-    const auto position = first->position;
-    return std::find_if_not(
-        first, last, [=](const auto& x) { return x.position == position; });
-}
-
 template <class InputIt, class OutputIt>
 static void append_note_points(InputIt first, InputIt last, OutputIt points,
                                const SongHeader& header, bool is_note_sp_ender)
@@ -133,7 +121,9 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
 
     auto current_phrase = track.sp_phrases().cbegin();
     for (auto p = notes.cbegin(); p != notes.cend();) {
-        const auto q = end_of_chord(p, notes.cend());
+        const auto q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
+            return x.position == p->position;
+        });
         auto is_note_sp_ender = false;
         if (current_phrase != track.sp_phrases().cend()
             && phrase_contains_pos(*current_phrase, p->position)
