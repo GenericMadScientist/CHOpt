@@ -27,7 +27,6 @@
 
 int main(int argc, char* argv[])
 {
-    x;
     try {
         if (argc < 2) {
             std::cout << "Please specify a file!" << std::endl;
