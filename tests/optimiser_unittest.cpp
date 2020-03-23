@@ -207,7 +207,7 @@ TEST_CASE("front_end and back_end work correctly", "Timing window")
 
     SECTION("Front and back ends for hold points are correct")
     {
-        REQUIRE(front_end({4.1, 50, true, false}, converter) == Approx(0.1));
+        REQUIRE(front_end({4.1, 50, true, false}, converter) == Approx(4.1));
         REQUIRE(back_end({3.9, 50, true, false}, converter) == Approx(3.9));
     }
 }
