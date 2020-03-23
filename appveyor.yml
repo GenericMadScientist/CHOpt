@@ -15,14 +15,7 @@ before_build:
   - mkdir build
   - cd build
   - echo %APPVEYOR_BUILD_WORKER_IMAGE%
-  - |
-    if %%APPVEYOR_BUILD_WORKER_IMAGE%% == "Visual Studio 2017" (
-      echo "A"
-      cmake -G "Visual Studio 15 2017 Win64" ..
-    ) else if %%APPVEYOR_BUILD_WORKER_IMAGE%% == "Visual Studio 2019" (
-      echo "B"
-      cmake -G "Visual Studio 16 2019" ..
-    )
+  - if %%APPVEYOR_BUILD_WORKER_IMAGE%% == "Visual Studio 2017" (echo "A") else if %%APPVEYOR_BUILD_WORKER_IMAGE%% == "Visual Studio 2019" (echo "B")
 
 test_script:
   - ctest --verbose -C %CONFIGURATION%
