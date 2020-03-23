@@ -1,4 +1,4 @@
-version: 0.1.{build}-{branch}
+version: 0.1.0.{build}-{branch}
 
 image: Visual Studio 2017
 
@@ -15,4 +15,4 @@ before_build:
   - cmake -G "Visual Studio 15 2017 Win64" ..
 
 test_script:
-  - ctest --verbose
+  - ctest --verbose -C %CONFIGURATION%
