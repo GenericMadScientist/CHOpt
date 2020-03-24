@@ -40,7 +40,7 @@ before_build:
 
 build_script:
   - if "%COMPILER%" == "Clang" (
-      cmake --build . --versbose
+      cmake --build . --verbose
     ) else (
       cmake --build . --verbose --config %CONFIGURATION%
     )
