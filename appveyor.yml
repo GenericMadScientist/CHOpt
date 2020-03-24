@@ -1,14 +1,18 @@
 version: 0.1.0.{build}-{branch}
 
-image:
-  - Visual Studio 2017
-  - Visual Studio 2019
-
 environment:
   matrix:
     - platform: x64
+      image: Visual Studio 2017
       configuration: Debug
     - platform: x64
+      image: Visual Studio 2017
+      configuration: Release
+    - platform: x64
+      image: Visual Studio 2019
+      configuration: Debug
+    - platform: x64
+      image: Visual Studio 2019
       configuration: Release
 
 before_build:
