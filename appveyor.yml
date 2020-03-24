@@ -5,27 +5,49 @@ environment:
     - platform: x64
       image: Visual Studio 2017
       configuration: Debug
+      COMPILER: VS2017
     - platform: x64
       image: Visual Studio 2017
       configuration: Release
+      COMPILER: VS2017
     - platform: x64
       image: Visual Studio 2019
       configuration: Debug
+      COMPILER: VS2019
     - platform: x64
       image: Visual Studio 2019
       configuration: Release
+      COMPILER: VS2019
+    - platform: x64
+      image: Visual Studio 2019
+      configuration: Debug
+      COMPILER: Clang
+    - platform: x64
+      image: Visual Studio 2019
+      configuration: Release
+      COMPILER: Clang
 
 before_build:
   - mkdir build
   - cd build
-  - if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" (
+  - if "%COMPILER%" == "VS2017" (
       cmake -G "Visual Studio 15 2017 Win64" ..
-    ) else if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2019" (
+    ) else if "%COMPILER%" == "VS2019" (
       cmake -G "Visual Studio 16 2019" ..
+    ) else if "%COMPILER%" == "Clang" (
+      cmake -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_COMPILER=clang -G Ninja ..
     )
 
 build_script:
-  - cmake --build . --verbose --config %CONFIGURATION%
+  - if "%COMPILER%" == "Clang" (
+      cmake --build . --versbose
+    ) else (
+      cmake --build . --verbose --config %CONFIGURATION%
+    )
 
 test_script:
-  - ctest --verbose -C %CONFIGURATION%
+  - if "%COMPILER%" == "Clang" (
+      ctest --verbose
+    ) else (
+      ctest --verbose -C %CONFIGURATION%
+    )
