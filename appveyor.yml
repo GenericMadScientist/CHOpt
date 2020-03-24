@@ -21,7 +21,7 @@ before_build:
     )
 
 build_script:
-  - cmake --build . --verbose -C %CONFIGURATION%
+  - cmake --build . --verbose --config %CONFIGURATION%
 
 test_script:
   - ctest --verbose -C %CONFIGURATION%
