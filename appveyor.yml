@@ -24,10 +24,12 @@ before_build:
   - cd build
   - if "%COMPILER%" == "Clang" (
       cmake -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_COMPILER=clang -G Ninja ..
-    ) else if "%COMPILER%" == "Visual Studio" and "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" (
-      cmake -G "Visual Studio 15 2017 Win64" ..
-    ) else if "%COMPILER%" == "Visual Studio" and "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" (
-      cmake -G "Visual Studio 16 2019" ..
+    ) else if "%COMPILER%" == "Visual Studio" (
+      if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" (
+        cmake -G "Visual Studio 15 2017 Win64" ..
+      ) else if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2019" (
+        cmake -G "Visual Studio 16 2019" ..
+      )
     )
 
 build_script:
