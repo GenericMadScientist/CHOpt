@@ -1,53 +1,45 @@
 version: 0.1.0.{build}-{branch}
 
+image:
+  - Visual Studio 2017
+  - Visual Studio 2019
+
 environment:
   matrix:
     - platform: x64
-      image: Visual Studio 2017
       configuration: Debug
-      COMPILER: VS2017
+      COMPILER: Visual Studio
     - platform: x64
-      image: Visual Studio 2017
       configuration: Release
-      COMPILER: VS2017
+      COMPILER: Visual Studio
     - platform: x64
-      image: Visual Studio 2019
-      configuration: Debug
-      COMPILER: VS2019
-    - platform: x64
-      image: Visual Studio 2019
-      configuration: Release
-      COMPILER: VS2019
-    - platform: x64
-      image: Visual Studio 2019
       configuration: Debug
       COMPILER: Clang
     - platform: x64
-      image: Visual Studio 2019
       configuration: Release
       COMPILER: Clang
 
 before_build:
   - mkdir build
   - cd build
-  - if "%COMPILER%" == "VS2017" (
-      cmake -G "Visual Studio 15 2017 Win64" ..
-    ) else if "%COMPILER%" == "VS2019" (
-      cmake -G "Visual Studio 16 2019" ..
-    ) else if "%COMPILER%" == "Clang" (
+  - if "%COMPILER%" == "Clang" (
       cmake -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_COMPILER=clang -G Ninja ..
+    ) else if "%COMPILER%" == "Visual Studio" and "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" (
+      cmake -G "Visual Studio 15 2017 Win64" ..
+    ) else if "%COMPILER%" == "Visual Studio" and "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" (
+      cmake -G "Visual Studio 16 2019" ..
     )
 
 build_script:
   - if "%COMPILER%" == "Clang" (
       cmake --build . --verbose
-    ) else (
+    ) else if "%COMPILER%" == "Visual Studio" (
       cmake --build . --verbose --config %CONFIGURATION%
     )
 
 test_script:
   - if "%COMPILER%" == "Clang" (
       ctest --verbose
-    ) else (
+    ) else if "%COMPILER%" == "Visual Studio" (
       ctest --verbose -C %CONFIGURATION%
     )
