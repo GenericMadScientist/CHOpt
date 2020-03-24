@@ -4,20 +4,17 @@ image:
   - Visual Studio 2017
   - Visual Studio 2019
 
+configuration:
+  - Debug
+  - Release
+
+platform:
+  - x64
+
 environment:
   matrix:
-    - platform: x64
-      configuration: Debug
-      COMPILER: Visual Studio
-    - platform: x64
-      configuration: Release
-      COMPILER: Visual Studio
-    - platform: x64
-      configuration: Debug
-      COMPILER: Clang
-    - platform: x64
-      configuration: Release
-      COMPILER: Clang
+    - COMPILER: Visual Studio
+    - COMPILER: Clang
 
 before_build:
   - mkdir build
