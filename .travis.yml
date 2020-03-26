@@ -15,6 +15,7 @@ matrix:
             - g++-8
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && CXX_FLAGS="
+
     - os: linux
       dist: bionic
       addons:
@@ -25,6 +26,12 @@ matrix:
             - libc++abi-9-dev
       env:
         - MATRIX_EVAL="CC=clang-9 && CXX=clang++-9 && CXX_FLAGS=-stdlib=libc++"
+
+    - os: osx
+      osx_image: xcode11.3
+      env:
+        - MATRIX_EVAL="CC=clang && CXX=clang++"
+
     - os: linux
       dist: bionic
       addons:
@@ -46,6 +53,8 @@ install:
       mkdir -p ${DEPS_DIR}/cmake
       travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${DEPS_DIR}/cmake
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+    elif [[ ${TRAVIS_OS_NAME} == "osx" ]]; then
+      which cmake || brew install cmake;
     fi
 
 script:
