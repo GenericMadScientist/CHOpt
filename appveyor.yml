@@ -1,9 +1,5 @@
 version: 0.1.0.{build}-{branch}
 
-image:
-  - Visual Studio 2017
-  - Visual Studio 2019
-
 configuration:
   - Debug
   - Release
@@ -13,32 +9,68 @@ platform:
 
 environment:
   matrix:
-    - COMPILER: Visual Studio
-    - COMPILER: Clang
+    - job_name: VS 2017 build
+      appveyor_build_worker_image: Visual Studio 2017
+    - job_name: VS 2019 build
+      appveyor_build_worker_image: Visual Studio 2019
+    - job_name: Clang build
+      appveyor_build_worker_image: Visual Studio 2019
+    - job_name: MinGW build
+      appveyor_build_worker_image: Visual Studio 2019
+
+matrix:
+  fast_finish: true
 
 before_build:
   - mkdir build
   - cd build
-  - if "%COMPILER%" == "Clang" (
-      cmake -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_COMPILER=clang -G Ninja ..
-    ) else if "%COMPILER%" == "Visual Studio" (
-      if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" (
-        cmake -G "Visual Studio 15 2017 Win64" ..
-      ) else if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2019" (
-        cmake -G "Visual Studio 16 2019" ..
-      )
-    )
 
-build_script:
-  - if "%COMPILER%" == "Clang" (
-      cmake --build . --verbose
-    ) else if "%COMPILER%" == "Visual Studio" (
-      cmake --build . --verbose --config %CONFIGURATION%
-    )
+for:
+  -
+    matrix:
+      only:
+        - job_name: VS 2017 build
 
-test_script:
-  - if "%COMPILER%" == "Clang" (
-      ctest --verbose
-    ) else if "%COMPILER%" == "Visual Studio" (
-      ctest --verbose -C %CONFIGURATION%
-    )
+    build_script:
+    - cmd: cmake -G "Visual Studio 15 2017 Win64" ..
+    - cmd: cmake --build . --verbose --config %CONFIGURATION%
+
+    test_script:
+    - cmd: ctest --verbose -C %CONFIGURATION%
+
+  -
+    matrix:
+      only:
+        - job_name: VS 2019 build
+
+    build_script:
+    - cmd: cmake -G "Visual Studio 16 2019" ..
+    - cmd: cmake --build . --verbose --config %CONFIGURATION%
+
+    test_script:
+    - cmd: ctest --verbose -C %CONFIGURATION%
+
+  -
+    matrix:
+      only:
+        - job_name: Clang build
+
+    build_script:
+    - cmd: cmake -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_COMPILER=Clang -G Ninja ..
+    - cmd: cmake --build . --verbose
+
+    test_script:
+    - cmd: ctest --verbose
+
+  -
+    matrix:
+      only:
+        - job_name: MinGW build
+
+    build_script:
+    - cmd: set "PATH=C:/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin;%PATH%"
+    - cmd: cmake -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_CXX_COMPILER=g++ -G Ninja ..
+    - cmd: cmake --build . --verbose
+
+    test_script:
+    - cmd: ctest --verbose
