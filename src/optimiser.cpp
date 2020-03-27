@@ -218,6 +218,7 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, const SongHeader& header,
 bool ProcessedTrack::is_candidate_valid(
     const ActivationCandidate& activation) const
 {
+    constexpr double MEASURES_IN_FULL_BAR = 8.0;
     constexpr double MINIMUM_SP_AMOUNT = 0.5;
     constexpr double SP_PHRASE_AMOUNT = 0.25;
 
@@ -225,19 +226,24 @@ bool ProcessedTrack::is_candidate_valid(
         return false;
     }
 
-    auto extra_sp = 0.0;
-    for (auto p = activation.act_start; p <= activation.act_end; ++p) {
-        if (p->is_sp_granting_note) {
-            extra_sp += SP_PHRASE_AMOUNT;
-        }
-    }
-
     const auto latest_start_in_beats
         = back_end(*activation.act_start, m_converter);
     const auto latest_start_in_measures
         = m_converter.beats_to_measures(latest_start_in_beats);
-    const auto latest_end_in_measures = latest_start_in_measures
-        + 8.0 * (activation.sp_bar_amount + extra_sp);
+    auto latest_end_in_measures = latest_start_in_measures
+        + MEASURES_IN_FULL_BAR * activation.sp_bar_amount;
+
+    for (auto p = activation.act_start; p < activation.act_end; ++p) {
+        if (p->is_sp_granting_note) {
+            const auto latest_end_in_beats
+                = m_converter.measures_to_beats(latest_end_in_measures);
+            if (front_end(*p, m_converter) > latest_end_in_beats) {
+                return false;
+            }
+            latest_end_in_measures += MEASURES_IN_FULL_BAR * SP_PHRASE_AMOUNT;
+        }
+    }
+
     const auto latest_end_in_beats
         = m_converter.measures_to_beats(latest_end_in_measures);
     if (front_end(*activation.act_end, m_converter) > latest_end_in_beats) {

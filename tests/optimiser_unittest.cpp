@@ -269,4 +269,17 @@ TEST_CASE("is_activation_valid works correctly", "Valid acts")
 
         REQUIRE(overlap_track.is_candidate_valid(overlap_candidate));
     }
+
+    SECTION("Check only reached intermediate SP is accounted for")
+    {
+        notes[2].position = 6000;
+        std::vector<StarPower> phrases {{6000, 100}};
+        NoteTrack overlap_notes(notes, phrases, {});
+        ProcessedTrack overlap_track(overlap_notes, {}, {});
+        const auto& overlap_points = overlap_track.points();
+        ActivationCandidate overlap_candidate {
+            overlap_points.cbegin(), overlap_points.cbegin() + 3, 0.0, 0.8};
+
+        REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
+    }
 }
