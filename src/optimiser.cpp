@@ -175,8 +175,8 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
     }
 }
 
-std::vector<Point> notes_to_points(const NoteTrack& track,
-                                   const SongHeader& header)
+static std::vector<Point> notes_to_points(const NoteTrack& track,
+                                          const SongHeader& header)
 {
     std::vector<Point> points;
 
@@ -208,6 +208,33 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
     return points;
 }
 
+ProcessedTrack::ProcessedTrack(const NoteTrack& track, const SongHeader& header,
+                               const SyncTrack& sync_track)
+    : m_points {notes_to_points(track, header)}
+    , m_converter {TimeConverter(sync_track, header)}
+{
+}
+
+bool ProcessedTrack::is_candidate_valid(
+    const ActivationCandidate& activation) const
+{
+    constexpr double MINIMUM_SP_AMOUNT = 0.5;
+
+    if (activation.sp_bar_amount < MINIMUM_SP_AMOUNT) {
+        return false;
+    }
+
+    const auto latest_start_in_beats
+        = back_end(*activation.act_start, m_converter);
+    const auto latest_start_in_measures
+        = m_converter.beats_to_measures(latest_start_in_beats);
+    const auto latest_end_in_measures
+        = latest_start_in_measures + 8.0 * activation.sp_bar_amount;
+    const auto latest_end_in_beats
+        = m_converter.measures_to_beats(latest_end_in_measures);
+    return front_end(*activation.act_end, m_converter) <= latest_end_in_beats;
+}
+
 double front_end(const Point& point, const TimeConverter& converter)
 {
     constexpr double FRONT_END = 0.07;
@@ -232,24 +259,4 @@ double back_end(const Point& point, const TimeConverter& converter)
     auto time = converter.beats_to_seconds(point.beat_position);
     time += BACK_END;
     return converter.seconds_to_beats(time);
-}
-
-bool is_candidate_valid(const ActivationCandidate& activation,
-                        const TimeConverter& converter)
-{
-    constexpr double MINIMUM_SP_AMOUNT = 0.5;
-
-    if (activation.sp_bar_amount < MINIMUM_SP_AMOUNT) {
-        return false;
-    }
-
-    const auto latest_start_in_beats
-        = back_end(*activation.act_start, converter);
-    const auto latest_start_in_measures
-        = converter.beats_to_measures(latest_start_in_beats);
-    const auto latest_end_in_measures
-        = latest_start_in_measures + 8.0 * activation.sp_bar_amount;
-    const auto latest_end_in_beats
-        = converter.measures_to_beats(latest_end_in_measures);
-    return front_end(*activation.act_end, converter) <= latest_end_in_beats;
 }

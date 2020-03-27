@@ -90,7 +90,7 @@ TEST_CASE("Non-hold notes", "Non hold")
     SECTION("Single notes give 50 points")
     {
         const auto track = NoteTrack({{768}, {960}}, {}, {});
-        const auto points = notes_to_points(track, SongHeader());
+        const auto points = ProcessedTrack(track, {}, {}).points();
         const auto expected_points = std::vector<Point>(
             {{4.0, 50, false, false}, {5.0, 50, false, false}});
 
@@ -101,7 +101,7 @@ TEST_CASE("Non-hold notes", "Non hold")
     {
         const auto track = NoteTrack(
             {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}}, {}, {});
-        const auto points = notes_to_points(track, SongHeader());
+        const auto points = ProcessedTrack(track, {}, {}).points();
         const auto expected_points
             = std::vector<Point>({{4.0, 100, false, false}});
 
@@ -115,14 +115,14 @@ TEST_CASE("Hold notes", "Hold")
     SECTION("Hold note points depend on resolution")
     {
         const auto track = NoteTrack({{768, 15}}, {}, {});
-        const auto first_points = notes_to_points(track, SongHeader());
+        const auto first_points = ProcessedTrack(track, {}, {}).points();
         const auto first_expected_points
             = std::vector<Point>({{4.0, 50, false, false},
                                   {775.0 / 192.0, 1, true, false},
                                   {782.0 / 192.0, 1, true, false},
                                   {789.0 / 192.0, 1, true, false}});
         const auto header = SongHeader(0.F, 200);
-        const auto second_points = notes_to_points(track, header);
+        const auto second_points = ProcessedTrack(track, header, {}).points();
         const auto second_expected_points
             = std::vector<Point>({{768.0 / 200.0, 50, false, false},
                                   {776.0 / 200.0, 1, true, false},
@@ -136,7 +136,7 @@ TEST_CASE("Hold notes", "Hold")
     {
         const auto track = NoteTrack(
             {{768, 7, NoteColour::Green}, {768, 8, NoteColour::Red}}, {}, {});
-        const auto points = notes_to_points(track, SongHeader());
+        const auto points = ProcessedTrack(track, {}, {}).points();
         const auto expected_points
             = std::vector<Point>({{4.0, 100, false, false},
                                   {775.0 / 192.0, 1, true, false},
@@ -149,7 +149,7 @@ TEST_CASE("Hold notes", "Hold")
     {
         const auto track = NoteTrack({{768, 2}}, {}, {});
         const auto header = SongHeader(0.F, 1);
-        const auto points = notes_to_points(track, header);
+        const auto points = ProcessedTrack(track, header, {}).points();
         const auto expected_points
             = std::vector<Point>({{768.0, 50, false, false},
                                   {769.0, 1, true, false},
@@ -163,7 +163,7 @@ TEST_CASE("Hold notes", "Hold")
 TEST_CASE("Points are sorted", "Sorted")
 {
     const auto track = NoteTrack({{768, 15}, {770, 0}}, {}, {});
-    const auto points = notes_to_points(track, SongHeader());
+    const auto points = ProcessedTrack(track, {}, {}).points();
     const auto expected_points
         = std::vector<Point>({{4.0, 50, false, false},
                               {770.0 / 192.0, 50, false, false},
@@ -179,7 +179,7 @@ TEST_CASE("End of SP phrase points", "End of SP")
 {
     const auto track = NoteTrack({{768}, {960}, {1152}},
                                  {{768, 1}, {900, 50}, {1100, 53}}, {});
-    const auto points = notes_to_points(track, SongHeader());
+    const auto points = ProcessedTrack(track, {}, {}).points();
     const auto expected_points = std::vector<Point>({{4.0, 50, false, true},
                                                      {5.0, 50, false, false},
                                                      {6.0, 50, false, true}});
@@ -190,8 +190,8 @@ TEST_CASE("End of SP phrase points", "End of SP")
 // Last checked: 24.0.1555-master
 TEST_CASE("front_end and back_end work correctly", "Timing window")
 {
-    const auto converter = TimeConverter(
-        SyncTrack({}, {{0, 150000}, {768, 200000}}), SongHeader());
+    const auto converter
+        = TimeConverter(SyncTrack({}, {{0, 150000}, {768, 200000}}), {});
 
     SECTION("Front ends for notes are correct")
     {
@@ -215,28 +215,32 @@ TEST_CASE("front_end and back_end work correctly", "Timing window")
 // Last checked: 24.0.1555-master
 TEST_CASE("is_activation_valid works correctly", "Valid acts")
 {
-    std::vector<Point> points {{0.0, 50, false, false},
-                               {8.0, 50, false, false},
-                               {16.0, 50, false, false},
-                               {32.0, 50, false, false}};
-    ActivationCandidate candidate {points.cbegin(), points.cbegin() + 3,
-                                   points.cend(), 0.0, 1.0};
-    std::vector<TimeSignature> quicker_time_sig {{0, 3, 4}};
-    TimeConverter quicker_measures(SyncTrack(quicker_time_sig, {}), {});
+    std::vector<Note> notes {{0}, {1536}, {3072}, {6144}};
+    NoteTrack note_track(notes, {}, {});
+    ProcessedTrack track(note_track, {}, {});
+    const auto& points = track.points();
+    ActivationCandidate candidate {points.cbegin(), points.cbegin() + 3, 0.0,
+                                   1.0};
+    ProcessedTrack second_track(note_track, {}, SyncTrack({{0, 3, 4}}, {}));
+    const auto& second_points = second_track.points();
+    ActivationCandidate second_candidate {second_points.cbegin(),
+                                          second_points.cbegin() + 3, 0.0, 1.0};
 
     SECTION("Full bar works with time signatures")
     {
-        REQUIRE(is_candidate_valid(candidate, TimeConverter({}, {})));
-        REQUIRE(!is_candidate_valid(candidate, quicker_measures));
+        REQUIRE(track.is_candidate_valid(candidate));
+        REQUIRE(!second_track.is_candidate_valid(second_candidate));
     }
 
     SECTION("Half bar works with time signatures")
     {
         candidate.act_end = points.cbegin() + 2;
         candidate.sp_bar_amount = 0.5;
+        second_candidate.act_end = second_points.cbegin() + 2;
+        second_candidate.sp_bar_amount = 0.5;
 
-        REQUIRE(is_candidate_valid(candidate, TimeConverter({}, {})));
-        REQUIRE(!is_candidate_valid(candidate, quicker_measures));
+        REQUIRE(track.is_candidate_valid(candidate));
+        REQUIRE(!second_track.is_candidate_valid(second_candidate));
     }
 
     SECTION("Below half bar never works")
@@ -244,6 +248,6 @@ TEST_CASE("is_activation_valid works correctly", "Valid acts")
         candidate.act_end = points.cbegin() + 1;
         candidate.sp_bar_amount = 0.25;
 
-        REQUIRE(!is_candidate_valid(candidate, TimeConverter({}, {})));
+        REQUIRE(!track.is_candidate_valid(candidate));
     }
 }
