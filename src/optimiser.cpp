@@ -219,20 +219,36 @@ bool ProcessedTrack::is_candidate_valid(
     const ActivationCandidate& activation) const
 {
     constexpr double MINIMUM_SP_AMOUNT = 0.5;
+    constexpr double SP_PHRASE_AMOUNT = 0.25;
 
     if (activation.sp_bar_amount < MINIMUM_SP_AMOUNT) {
         return false;
+    }
+
+    auto extra_sp = 0.0;
+    for (auto p = activation.act_start; p <= activation.act_end; ++p) {
+        if (p->is_sp_granting_note) {
+            extra_sp += SP_PHRASE_AMOUNT;
+        }
     }
 
     const auto latest_start_in_beats
         = back_end(*activation.act_start, m_converter);
     const auto latest_start_in_measures
         = m_converter.beats_to_measures(latest_start_in_beats);
-    const auto latest_end_in_measures
-        = latest_start_in_measures + 8.0 * activation.sp_bar_amount;
+    const auto latest_end_in_measures = latest_start_in_measures
+        + 8.0 * (activation.sp_bar_amount + extra_sp);
     const auto latest_end_in_beats
         = m_converter.measures_to_beats(latest_end_in_measures);
-    return front_end(*activation.act_end, m_converter) <= latest_end_in_beats;
+    if (front_end(*activation.act_end, m_converter) > latest_end_in_beats) {
+        return false;
+    }
+
+    const auto next_point = activation.act_end + 1;
+    if (next_point == m_points.cend()) {
+        return true;
+    }
+    return back_end(*next_point, m_converter) > latest_end_in_beats;
 }
 
 double front_end(const Point& point, const TimeConverter& converter)

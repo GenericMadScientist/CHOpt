@@ -250,4 +250,23 @@ TEST_CASE("is_activation_valid works correctly", "Valid acts")
 
         REQUIRE(!track.is_candidate_valid(candidate));
     }
+
+    SECTION("Check next point need not lie in activation")
+    {
+        candidate.act_end = points.cbegin() + 1;
+
+        REQUIRE(!track.is_candidate_valid(candidate));
+    }
+
+    SECTION("Check intermediate SP is accounted for")
+    {
+        std::vector<StarPower> phrases {{3000, 100}};
+        NoteTrack overlap_notes(notes, phrases, {});
+        ProcessedTrack overlap_track(overlap_notes, {}, {});
+        const auto& overlap_points = overlap_track.points();
+        ActivationCandidate overlap_candidate {
+            overlap_points.cbegin(), overlap_points.cbegin() + 3, 0.0, 0.8};
+
+        REQUIRE(overlap_track.is_candidate_valid(overlap_candidate));
+    }
 }
