@@ -70,6 +70,14 @@ struct Point {
     }
 };
 
+struct ActivationCandidate {
+    std::vector<Point>::const_iterator act_start;
+    std::vector<Point>::const_iterator act_end;
+    std::vector<Point>::const_iterator points_end;
+    double earliest_activation_point = 0.0;
+    double sp_bar_amount = 0.0;
+};
+
 // Splits a collection of notes into the points a player can get. This function
 // should only fail if the program cannot allocate the vector for the return
 // value: any invariants on the song are supposed to be upheld by the
@@ -80,5 +88,9 @@ std::vector<Point> notes_to_points(const NoteTrack& track,
 // Return the earliest and latest times a point can be hit, in beats.
 double front_end(const Point& point, const TimeConverter& converter);
 double back_end(const Point& point, const TimeConverter& converter);
+
+// Return if an ActivationCandidate is valid.
+bool is_candidate_valid(const ActivationCandidate& activation,
+                        const TimeConverter& converter);
 
 #endif

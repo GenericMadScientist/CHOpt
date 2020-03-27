@@ -233,3 +233,23 @@ double back_end(const Point& point, const TimeConverter& converter)
     time += BACK_END;
     return converter.seconds_to_beats(time);
 }
+
+bool is_candidate_valid(const ActivationCandidate& activation,
+                        const TimeConverter& converter)
+{
+    constexpr double MINIMUM_SP_AMOUNT = 0.5;
+
+    if (activation.sp_bar_amount < MINIMUM_SP_AMOUNT) {
+        return false;
+    }
+
+    const auto latest_start_in_beats
+        = back_end(*activation.act_start, converter);
+    const auto latest_start_in_measures
+        = converter.beats_to_measures(latest_start_in_beats);
+    const auto latest_end_in_measures
+        = latest_start_in_measures + 8.0 * activation.sp_bar_amount;
+    const auto latest_end_in_beats
+        = converter.measures_to_beats(latest_end_in_measures);
+    return front_end(*activation.act_end, converter) <= latest_end_in_beats;
+}

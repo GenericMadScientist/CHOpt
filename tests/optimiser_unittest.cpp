@@ -211,3 +211,39 @@ TEST_CASE("front_end and back_end work correctly", "Timing window")
         REQUIRE(back_end({3.9, 50, true, false}, converter) == Approx(3.9));
     }
 }
+
+// Last checked: 24.0.1555-master
+TEST_CASE("is_activation_valid works correctly", "Valid acts")
+{
+    std::vector<Point> points {{0.0, 50, false, false},
+                               {8.0, 50, false, false},
+                               {16.0, 50, false, false},
+                               {32.0, 50, false, false}};
+    ActivationCandidate candidate {points.cbegin(), points.cbegin() + 3,
+                                   points.cend(), 0.0, 1.0};
+    std::vector<TimeSignature> quicker_time_sig {{0, 3, 4}};
+    TimeConverter quicker_measures(SyncTrack(quicker_time_sig, {}), {});
+
+    SECTION("Full bar works with time signatures")
+    {
+        REQUIRE(is_candidate_valid(candidate, TimeConverter({}, {})));
+        REQUIRE(!is_candidate_valid(candidate, quicker_measures));
+    }
+
+    SECTION("Half bar works with time signatures")
+    {
+        candidate.act_end = points.cbegin() + 2;
+        candidate.sp_bar_amount = 0.5;
+
+        REQUIRE(is_candidate_valid(candidate, TimeConverter({}, {})));
+        REQUIRE(!is_candidate_valid(candidate, quicker_measures));
+    }
+
+    SECTION("Below half bar never works")
+    {
+        candidate.act_end = points.cbegin() + 1;
+        candidate.sp_bar_amount = 0.25;
+
+        REQUIRE(!is_candidate_valid(candidate, TimeConverter({}, {})));
+    }
+}
