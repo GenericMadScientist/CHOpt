@@ -250,7 +250,7 @@ bool ProcessedTrack::is_candidate_valid(
         return false;
     }
 
-    const auto next_point = activation.act_end + 1;
+    const auto next_point = std::next(activation.act_end);
     if (next_point == m_points.cend()) {
         return true;
     }
@@ -281,4 +281,50 @@ double back_end(const Point& point, const TimeConverter& converter)
     auto time = converter.beats_to_seconds(point.beat_position);
     time += BACK_END;
     return converter.seconds_to_beats(time);
+}
+
+double propagate_sp_over_whammy(double start, double end, double sp_bar_amount,
+                                const std::vector<TimeSignature>& time_sigs,
+                                const SongHeader& header)
+{
+    constexpr double DEFAULT_BEAT_RATE = 4.0;
+    constexpr double MEASURES_PER_BAR = 8.0;
+    constexpr double SP_GAIN_RATE = 1 / 30.0;
+
+    auto p = std::find_if(
+        time_sigs.cbegin(), time_sigs.cend(), [=](const auto& ts) {
+            return static_cast<double>(ts.position) / header.resolution()
+                >= start;
+        });
+    if (p != time_sigs.cbegin()) {
+        --p;
+    } else {
+        double subrange_end = std::min(
+            end, static_cast<double>(p->position) / header.resolution());
+        sp_bar_amount += (subrange_end - start)
+            * (SP_GAIN_RATE - 1 / (MEASURES_PER_BAR * DEFAULT_BEAT_RATE));
+        if (sp_bar_amount < 0.0) {
+            return -1.0;
+        }
+        start = subrange_end;
+    }
+    while (start < end) {
+        const double measure_rate
+            = p->numerator * DEFAULT_BEAT_RATE / p->denominator;
+        double subrange_end = end;
+        if (std::next(p) != time_sigs.cend()) {
+            subrange_end = std::min(end,
+                                    static_cast<double>(std::next(p)->position)
+                                        / header.resolution());
+        }
+        sp_bar_amount += (subrange_end - start)
+            * (SP_GAIN_RATE - 1 / (MEASURES_PER_BAR * measure_rate));
+        if (sp_bar_amount < 0.0) {
+            return -1.0;
+        }
+        start = subrange_end;
+        ++p;
+    }
+
+    return sp_bar_amount;
 }

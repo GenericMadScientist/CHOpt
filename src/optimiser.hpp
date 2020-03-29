@@ -97,4 +97,10 @@ public:
 double front_end(const Point& point, const TimeConverter& converter);
 double back_end(const Point& point, const TimeConverter& converter);
 
+// Return how much SP is available at the end after propagating over a range, or
+// -1 if SP runs out at any point.
+double propagate_sp_over_whammy(double start, double end, double sp_bar_amount,
+                                const std::vector<TimeSignature>& time_sigs,
+                                const SongHeader& header);
+
 #endif
