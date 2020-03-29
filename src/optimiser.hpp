@@ -82,10 +82,17 @@ struct ActivationCandidate {
 // upheld by the constructors of the arguments.
 class ProcessedTrack {
 private:
+    struct BeatRate {
+        double position;
+        double net_sp_gain_rate;
+    };
+
     std::vector<Point> m_points;
     TimeConverter m_converter;
-    std::vector<TimeSignature> m_time_sigs;
-    int32_t m_resolution;
+    std::vector<BeatRate> m_beat_rates;
+
+    static std::vector<BeatRate> form_beat_rates(const SongHeader& header,
+                                                 const SyncTrack& sync_track);
 
 public:
     ProcessedTrack(const NoteTrack& track, const SongHeader& header,

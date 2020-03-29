@@ -208,12 +208,34 @@ static std::vector<Point> notes_to_points(const NoteTrack& track,
     return points;
 }
 
+std::vector<ProcessedTrack::BeatRate>
+ProcessedTrack::form_beat_rates(const SongHeader& header,
+                                const SyncTrack& sync_track)
+{
+    constexpr double DEFAULT_BEAT_RATE = 4.0;
+    constexpr double MEASURES_PER_BAR = 8.0;
+    constexpr double SP_GAIN_RATE = 1 / 30.0;
+
+    std::vector<BeatRate> beat_rates;
+    beat_rates.reserve(sync_track.time_sigs().size());
+
+    for (const auto& ts : sync_track.time_sigs()) {
+        const auto pos = static_cast<double>(ts.position) / header.resolution();
+        const auto measure_rate
+            = ts.numerator * DEFAULT_BEAT_RATE / ts.denominator;
+        const auto drain_rate
+            = SP_GAIN_RATE - 1 / (MEASURES_PER_BAR * measure_rate);
+        beat_rates.push_back({pos, drain_rate});
+    }
+
+    return beat_rates;
+}
+
 ProcessedTrack::ProcessedTrack(const NoteTrack& track, const SongHeader& header,
                                const SyncTrack& sync_track)
     : m_points {notes_to_points(track, header)}
     , m_converter {TimeConverter(sync_track, header)}
-    , m_time_sigs {sync_track.time_sigs()}
-    , m_resolution {header.resolution()}
+    , m_beat_rates {form_beat_rates(header, sync_track)}
 {
 }
 
@@ -262,37 +284,26 @@ bool ProcessedTrack::is_candidate_valid(
 double ProcessedTrack::propagate_sp_over_whammy(double start, double end,
                                                 double sp_bar_amount) const
 {
-    constexpr double DEFAULT_BEAT_RATE = 4.0;
-    constexpr double MEASURES_PER_BAR = 8.0;
-    constexpr double SP_GAIN_RATE = 1 / 30.0;
+    constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
 
-    auto p = std::find_if(
-        m_time_sigs.cbegin(), m_time_sigs.cend(), [=](const auto& ts) {
-            return static_cast<double>(ts.position) / m_resolution >= start;
-        });
-    if (p != m_time_sigs.cbegin()) {
+    auto p = std::find_if(m_beat_rates.cbegin(), m_beat_rates.cend(),
+                          [=](const auto& ts) { return ts.position >= start; });
+    if (p != m_beat_rates.cbegin()) {
         --p;
     } else {
-        double subrange_end
-            = std::min(end, static_cast<double>(p->position) / m_resolution);
-        sp_bar_amount += (subrange_end - start)
-            * (SP_GAIN_RATE - 1 / (MEASURES_PER_BAR * DEFAULT_BEAT_RATE));
+        double subrange_end = std::min(end, p->position);
+        sp_bar_amount += (subrange_end - start) * DEFAULT_NET_SP_GAIN_RATE;
         if (sp_bar_amount < 0.0) {
             return -1.0;
         }
         start = subrange_end;
     }
     while (start < end) {
-        const double measure_rate
-            = p->numerator * DEFAULT_BEAT_RATE / p->denominator;
         double subrange_end = end;
-        if (std::next(p) != m_time_sigs.cend()) {
-            subrange_end = std::min(end,
-                                    static_cast<double>(std::next(p)->position)
-                                        / m_resolution);
+        if (std::next(p) != m_beat_rates.cend()) {
+            subrange_end = std::min(end, std::next(p)->position);
         }
-        sp_bar_amount += (subrange_end - start)
-            * (SP_GAIN_RATE - 1 / (MEASURES_PER_BAR * measure_rate));
+        sp_bar_amount += (subrange_end - start) * p->net_sp_gain_rate;
         if (sp_bar_amount < 0.0) {
             return -1.0;
         }
