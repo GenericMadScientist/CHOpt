@@ -84,6 +84,8 @@ class ProcessedTrack {
 private:
     std::vector<Point> m_points;
     TimeConverter m_converter;
+    std::vector<TimeSignature> m_time_sigs;
+    int32_t m_resolution;
 
 public:
     ProcessedTrack(const NoteTrack& track, const SongHeader& header,
@@ -91,16 +93,14 @@ public:
     [[nodiscard]] const std::vector<Point>& points() const { return m_points; }
     [[nodiscard]] bool
     is_candidate_valid(const ActivationCandidate& activation) const;
+    // Return how much SP is available at the end after propagating over a
+    // range, or -1 if SP runs out at any point.
+    [[nodiscard]] double propagate_sp_over_whammy(double start, double end,
+                                                  double sp_bar_amount) const;
 };
 
 // Return the earliest and latest times a point can be hit, in beats.
 double front_end(const Point& point, const TimeConverter& converter);
 double back_end(const Point& point, const TimeConverter& converter);
-
-// Return how much SP is available at the end after propagating over a range, or
-// -1 if SP runs out at any point.
-double propagate_sp_over_whammy(double start, double end, double sp_bar_amount,
-                                const std::vector<TimeSignature>& time_sigs,
-                                const SongHeader& header);
 
 #endif
