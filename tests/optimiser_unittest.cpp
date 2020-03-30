@@ -356,5 +356,14 @@ TEST_CASE("is_activation_valid works with whammy", "Valid whammy acts")
     ActivationCandidate candidate {points.cbegin(), points.cend() - 2, 0.0,
                                    0.5};
 
-    REQUIRE(track.is_candidate_valid(candidate));
+    SECTION("Check whammy is counted")
+    {
+        REQUIRE(track.is_candidate_valid(candidate));
+    }
+
+    SECTION("Check compressed activations are counted")
+    {
+        candidate.sp_bar_amount = 0.9;
+        REQUIRE(track.is_candidate_valid(candidate));
+    }
 }
