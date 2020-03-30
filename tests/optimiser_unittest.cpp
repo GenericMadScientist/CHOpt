@@ -213,9 +213,11 @@ TEST_CASE("front_end and back_end work correctly", "Timing window")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("propagate_sp_over_whammy works correctly", "Single whammy range")
+TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
 {
-    NoteTrack note_track({}, {}, {});
+    std::vector<Note> notes {{0, 1920}, {2112, 576}, {3000}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack note_track(notes, phrases, {});
 
     SECTION("Works correctly over 4/4")
     {
@@ -223,9 +225,9 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Single whammy range")
         ProcessedTrack track(note_track, {}, {time_sigs, {}});
 
         REQUIRE(track.propagate_sp_over_whammy(0.0, 4.0, 0.5)
-                == Approx(0.5 + 1 / 120.0));
+                == Approx(0.508333));
         REQUIRE(track.propagate_sp_over_whammy(1.0, 4.0, 0.5)
-                == Approx(0.5 + 1 / 160.0));
+                == Approx(0.50625));
     }
 
     SECTION("Works correctly over 3/4")
@@ -234,9 +236,9 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Single whammy range")
         ProcessedTrack track(note_track, {}, {time_sigs, {}});
 
         REQUIRE(track.propagate_sp_over_whammy(0.0, 4.0, 0.5)
-                == Approx(0.5 - 1 / 30.0));
+                == Approx(0.466667));
         REQUIRE(track.propagate_sp_over_whammy(-1.0, 4.0, 0.5)
-                == Approx(0.5 - 1 / 32.0));
+                == Approx(0.435417));
     }
 
     SECTION("Works correctly over changing time signatures")
@@ -245,9 +247,9 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Single whammy range")
         ProcessedTrack track(note_track, {}, {time_sigs, {}});
 
         REQUIRE(track.propagate_sp_over_whammy(0.0, 4.0, 0.5)
-                == Approx(0.5 - 1 / 80.0));
+                == Approx(0.4875));
         REQUIRE(track.propagate_sp_over_whammy(1.0, 4.0, 0.5)
-                == Approx(0.5 - 7 / 480.0));
+                == Approx(0.485417));
     }
 
     SECTION("Returns -1 if SP runs out")
@@ -259,6 +261,14 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Single whammy range")
                 == Approx(-1.0));
         REQUIRE(track.propagate_sp_over_whammy(0.0, 10.0, 0.015)
                 == Approx(-1.0));
+    }
+
+    SECTION("Works even if some of the range isn't whammyable")
+    {
+        ProcessedTrack track(note_track, {}, {});
+
+        REQUIRE(track.propagate_sp_over_whammy(0.0, 12.0, 0.5)
+                == Approx(0.491667));
     }
 }
 

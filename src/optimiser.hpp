@@ -87,9 +87,19 @@ private:
         double net_sp_gain_rate;
     };
 
+    struct WhammyRange {
+        double start_beat;
+        double end_beat;
+    };
+
     std::vector<Point> m_points;
     TimeConverter m_converter;
     std::vector<BeatRate> m_beat_rates;
+    std::vector<WhammyRange> m_whammy_ranges;
+
+    [[nodiscard]] double
+    propagate_over_whammy_range(double start, double end,
+                                double sp_bar_amount) const;
 
     static std::vector<BeatRate> form_beat_rates(const SongHeader& header,
                                                  const SyncTrack& sync_track);
@@ -101,7 +111,8 @@ public:
     [[nodiscard]] bool
     is_candidate_valid(const ActivationCandidate& activation) const;
     // Return how much SP is available at the end after propagating over a
-    // range, or -1 if SP runs out at any point.
+    // range, or -1 if SP runs out at any point. Only includes SP gain from
+    // whammy.
     [[nodiscard]] double propagate_sp_over_whammy(double start, double end,
                                                   double sp_bar_amount) const;
 };

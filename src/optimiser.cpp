@@ -237,6 +237,77 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, const SongHeader& header,
     , m_converter {TimeConverter(sync_track, header)}
     , m_beat_rates {form_beat_rates(header, sync_track)}
 {
+    std::vector<std::tuple<uint32_t, uint32_t>> ranges_as_ticks;
+    for (const auto& note : track.notes()) {
+        if (note.length > 0) {
+            ranges_as_ticks.emplace_back(note.position,
+                                         note.position + note.length);
+        }
+    }
+    std::sort(ranges_as_ticks.begin(), ranges_as_ticks.end());
+
+    if (!ranges_as_ticks.empty()) {
+        std::vector<std::tuple<uint32_t, uint32_t>> merged_ranges;
+        auto pair = ranges_as_ticks[0];
+        for (auto p = std::next(ranges_as_ticks.cbegin());
+             p < ranges_as_ticks.cend(); ++p) {
+            if (std::get<0>(*p) <= std::get<1>(pair)) {
+                std::get<1>(pair)
+                    = std::max(std::get<1>(pair), std::get<1>(*p));
+            } else {
+                merged_ranges.push_back(pair);
+                pair = *p;
+            }
+        }
+        merged_ranges.push_back(pair);
+
+        for (const auto& range : merged_ranges) {
+            auto start
+                = static_cast<double>(std::get<0>(range)) / header.resolution();
+            auto end
+                = static_cast<double>(std::get<1>(range)) / header.resolution();
+            m_whammy_ranges.push_back({start, end});
+        }
+    }
+}
+
+double ProcessedTrack::propagate_sp_over_whammy(double start, double end,
+                                                double sp_bar_amount) const
+{
+    constexpr double MEASURES_PER_BAR = 8.0;
+
+    auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
+                          [=](const auto& x) { return x.end_beat > start; });
+    while (p != m_whammy_ranges.cend()) {
+        if (p->start_beat > start) {
+            auto meas_diff = m_converter.beats_to_measures(p->start_beat)
+                - m_converter.beats_to_measures(start);
+            sp_bar_amount -= meas_diff / MEASURES_PER_BAR;
+            if (sp_bar_amount < 0.0) {
+                return -1.0;
+            }
+            start = p->start_beat;
+        }
+        auto range_end = std::min(end, p->end_beat);
+        sp_bar_amount
+            = propagate_over_whammy_range(start, range_end, sp_bar_amount);
+        if (sp_bar_amount < 0.0) {
+            return -1.0;
+        }
+        start = p->end_beat;
+        if (start >= end) {
+            return sp_bar_amount;
+        }
+        ++p;
+    }
+
+    auto meas_diff = m_converter.beats_to_measures(end)
+        - m_converter.beats_to_measures(start);
+    sp_bar_amount -= meas_diff / MEASURES_PER_BAR;
+    if (sp_bar_amount < 0.0) {
+        return -1.0;
+    }
+    return sp_bar_amount;
 }
 
 bool ProcessedTrack::is_candidate_valid(
@@ -281,8 +352,8 @@ bool ProcessedTrack::is_candidate_valid(
     return back_end(*next_point, m_converter) > latest_end_in_beats;
 }
 
-double ProcessedTrack::propagate_sp_over_whammy(double start, double end,
-                                                double sp_bar_amount) const
+double ProcessedTrack::propagate_over_whammy_range(double start, double end,
+                                                   double sp_bar_amount) const
 {
     constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
 
