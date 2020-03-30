@@ -322,7 +322,7 @@ bool ProcessedTrack::is_candidate_valid(
     }
 
     const auto latest_start_in_beats
-        = back_end(*activation.act_start, m_converter);
+        = activation.act_start->beat_position;
     const auto latest_start_in_measures
         = m_converter.beats_to_measures(latest_start_in_beats);
     auto latest_end_in_measures = latest_start_in_measures
@@ -332,7 +332,7 @@ bool ProcessedTrack::is_candidate_valid(
         if (p->is_sp_granting_note) {
             const auto latest_end_in_beats
                 = m_converter.measures_to_beats(latest_end_in_measures);
-            if (front_end(*p, m_converter) > latest_end_in_beats) {
+            if (p->beat_position > latest_end_in_beats) {
                 return false;
             }
             latest_end_in_measures += MEASURES_IN_FULL_BAR * SP_PHRASE_AMOUNT;
@@ -341,7 +341,7 @@ bool ProcessedTrack::is_candidate_valid(
 
     const auto latest_end_in_beats
         = m_converter.measures_to_beats(latest_end_in_measures);
-    if (front_end(*activation.act_end, m_converter) > latest_end_in_beats) {
+    if (activation.act_end->beat_position > latest_end_in_beats) {
         return false;
     }
 
@@ -349,7 +349,7 @@ bool ProcessedTrack::is_candidate_valid(
     if (next_point == m_points.cend()) {
         return true;
     }
-    return back_end(*next_point, m_converter) > latest_end_in_beats;
+    return next_point->beat_position > latest_end_in_beats;
 }
 
 double ProcessedTrack::propagate_over_whammy_range(double start, double end,
