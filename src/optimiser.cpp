@@ -313,7 +313,6 @@ double ProcessedTrack::propagate_sp_over_whammy(double start, double end,
 bool ProcessedTrack::is_candidate_valid(
     const ActivationCandidate& activation) const
 {
-    constexpr double MEASURES_IN_FULL_BAR = 8.0;
     constexpr double MINIMUM_SP_AMOUNT = 0.5;
     constexpr double SP_PHRASE_AMOUNT = 0.25;
 
@@ -321,27 +320,24 @@ bool ProcessedTrack::is_candidate_valid(
         return false;
     }
 
-    const auto latest_start_in_beats
-        = activation.act_start->beat_position;
-    const auto latest_start_in_measures
-        = m_converter.beats_to_measures(latest_start_in_beats);
-    auto latest_end_in_measures = latest_start_in_measures
-        + MEASURES_IN_FULL_BAR * activation.sp_bar_amount;
+    auto current_position = activation.act_start->beat_position;
+    auto current_sp = activation.sp_bar_amount;
 
     for (auto p = activation.act_start; p < activation.act_end; ++p) {
         if (p->is_sp_granting_note) {
-            const auto latest_end_in_beats
-                = m_converter.measures_to_beats(latest_end_in_measures);
-            if (p->beat_position > latest_end_in_beats) {
+            current_sp = propagate_sp_over_whammy(current_position,
+                                                  p->beat_position, current_sp);
+            if (current_sp < 0.0) {
                 return false;
             }
-            latest_end_in_measures += MEASURES_IN_FULL_BAR * SP_PHRASE_AMOUNT;
+            current_sp += SP_PHRASE_AMOUNT;
+            current_position = p->beat_position;
         }
     }
 
-    const auto latest_end_in_beats
-        = m_converter.measures_to_beats(latest_end_in_measures);
-    if (activation.act_end->beat_position > latest_end_in_beats) {
+    current_sp = propagate_sp_over_whammy(
+        current_position, activation.act_end->beat_position, current_sp);
+    if (current_sp < 0.0) {
         return false;
     }
 
@@ -349,7 +345,11 @@ bool ProcessedTrack::is_candidate_valid(
     if (next_point == m_points.cend()) {
         return true;
     }
-    return next_point->beat_position > latest_end_in_beats;
+
+    current_position = activation.act_end->beat_position;
+    current_sp = propagate_sp_over_whammy(
+        current_position, next_point->beat_position, current_sp);
+    return current_sp < 0.0;
 }
 
 double ProcessedTrack::propagate_over_whammy_range(double start, double end,

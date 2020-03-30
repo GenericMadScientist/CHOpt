@@ -273,7 +273,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("is_activation_valid works correctly", "Valid acts")
+TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
 {
     std::vector<Note> notes {{0}, {1536}, {3072}, {6144}};
     NoteTrack note_track(notes, {}, {});
@@ -311,9 +311,10 @@ TEST_CASE("is_activation_valid works correctly", "Valid acts")
         REQUIRE(!track.is_candidate_valid(candidate));
     }
 
-    SECTION("Check next point need not lie in activation")
+    SECTION("Check next point needs to not lie in activation")
     {
         candidate.act_end = points.cbegin() + 1;
+        candidate.sp_bar_amount = 0.6;
 
         REQUIRE(!track.is_candidate_valid(candidate));
     }
@@ -342,4 +343,18 @@ TEST_CASE("is_activation_valid works correctly", "Valid acts")
 
         REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
     }
+}
+
+// Last checked: 24.0.1555-master
+TEST_CASE("is_activation_valid works with whammy", "Valid whammy acts")
+{
+    std::vector<Note> notes {{0, 960}, {3840}, {6144}};
+    std::vector<StarPower> phrases {{0, 7000}};
+    NoteTrack note_track(notes, phrases, {});
+    ProcessedTrack track(note_track, {}, {});
+    const auto& points = track.points();
+    ActivationCandidate candidate {points.cbegin(), points.cend() - 2, 0.0,
+                                   0.5};
+
+    REQUIRE(track.is_candidate_valid(candidate));
 }
