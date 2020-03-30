@@ -270,6 +270,15 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         REQUIRE(track.propagate_sp_over_whammy(0.0, 12.0, 0.5)
                 == Approx(0.491667));
     }
+
+    SECTION("SP bar does not exceed full bar")
+    {
+        ProcessedTrack track(note_track, {}, {});
+
+        REQUIRE(track.propagate_sp_over_whammy(0.0, 10.0, 1.0) == Approx(1.0));
+        REQUIRE(track.propagate_sp_over_whammy(0.0, 10.5, 1.0)
+                == Approx(0.984375));
+    }
 }
 
 // Last checked: 24.0.1555-master
@@ -340,6 +349,19 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {
             overlap_points.cbegin(), overlap_points.cbegin() + 3, 0.0, 0.8};
+
+        REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
+    }
+
+    SECTION("SP bar does not exceed full bar")
+    {
+        std::vector<Note> overlap_notes {{0}, {2}, {7000}};
+        std::vector<StarPower> phrases {{0, 1}, {2, 1}};
+        NoteTrack overlap_note_track(overlap_notes, phrases, {});
+        ProcessedTrack overlap_track(overlap_note_track, {}, {});
+        const auto& overlap_points = overlap_track.points();
+        ActivationCandidate overlap_candidate {
+            overlap_points.cbegin(), overlap_points.cbegin() + 2, 0.0, 1.0};
 
         REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
     }

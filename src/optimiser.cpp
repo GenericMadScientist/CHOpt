@@ -278,7 +278,7 @@ double ProcessedTrack::propagate_sp_over_whammy(double start, double end,
 
     auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
                           [=](const auto& x) { return x.end_beat > start; });
-    while (p != m_whammy_ranges.cend()) {
+    while ((p != m_whammy_ranges.cend()) && (p->start_beat < end)) {
         if (p->start_beat > start) {
             auto meas_diff = m_converter.beats_to_measures(p->start_beat)
                 - m_converter.beats_to_measures(start);
@@ -335,8 +335,8 @@ bool ProcessedTrack::is_candidate_valid(
             auto meas_diff = m_converter.beats_to_measures(p->beat_position)
                 - m_converter.beats_to_measures(current_position);
             min_sp = std::max(min_sp - meas_diff / MEASURES_PER_BAR, 0.0);
-            min_sp += SP_PHRASE_AMOUNT;
-            max_sp += SP_PHRASE_AMOUNT;
+            min_sp = std::min(min_sp + SP_PHRASE_AMOUNT, 1.0);
+            max_sp = std::min(max_sp + SP_PHRASE_AMOUNT, 1.0);
             current_position = p->beat_position;
         }
     }
@@ -371,6 +371,7 @@ double ProcessedTrack::propagate_over_whammy_range(double start, double end,
     } else {
         double subrange_end = std::min(end, p->position);
         sp_bar_amount += (subrange_end - start) * DEFAULT_NET_SP_GAIN_RATE;
+        sp_bar_amount = std::min(sp_bar_amount, 1.0);
         if (sp_bar_amount < 0.0) {
             return -1.0;
         }
@@ -385,6 +386,7 @@ double ProcessedTrack::propagate_over_whammy_range(double start, double end,
         if (sp_bar_amount < 0.0) {
             return -1.0;
         }
+        sp_bar_amount = std::min(sp_bar_amount, 1.0);
         start = subrange_end;
         ++p;
     }
