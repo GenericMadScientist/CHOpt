@@ -324,6 +324,10 @@ bool ProcessedTrack::is_candidate_valid(
     auto current_position = activation.act_start->beat_position;
     auto min_sp = activation.sp_bar_amount;
     auto max_sp = activation.sp_bar_amount;
+    auto starting_meas_diff = m_converter.beats_to_measures(current_position)
+        - m_converter.beats_to_measures(activation.earliest_activation_point);
+    min_sp -= starting_meas_diff / MEASURES_PER_BAR;
+    min_sp = std::max(min_sp, 0.0);
 
     for (auto p = activation.act_start; p < activation.act_end; ++p) {
         if (p->is_sp_granting_note) {

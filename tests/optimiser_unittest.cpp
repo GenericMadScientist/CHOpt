@@ -365,6 +365,15 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
 
         REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
     }
+
+    SECTION("Earliest activation point is considered")
+    {
+        candidate.act_end = points.cbegin() + 1;
+        candidate.sp_bar_amount = 0.53125;
+        candidate.earliest_activation_point = -2.0;
+
+        REQUIRE(track.is_candidate_valid(candidate));
+    }
 }
 
 // Last checked: 24.0.1555-master
