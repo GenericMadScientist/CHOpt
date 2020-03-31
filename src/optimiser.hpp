@@ -89,7 +89,7 @@ public:
 };
 
 // Return the earliest and latest times a point can be hit, in beats.
-double front_end(const Point& point, const TimeConverter& converter);
-double back_end(const Point& point, const TimeConverter& converter);
+Beat front_end(const Point& point, const TimeConverter& converter);
+Beat back_end(const Point& point, const TimeConverter& converter);
 
 #endif

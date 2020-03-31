@@ -133,22 +133,26 @@ TEST_CASE("front_end and back_end work correctly", "Timing window")
 
     SECTION("Front ends for notes are correct")
     {
-        REQUIRE(front_end({{1.0}, 50, false, false}, converter)
+        REQUIRE(front_end({{1.0}, 50, false, false}, converter).value
                 == Approx(0.825));
-        REQUIRE(front_end({{4.1}, 50, false, false}, converter) == Approx(3.9));
+        REQUIRE(front_end({{4.1}, 50, false, false}, converter).value
+                == Approx(3.9));
     }
 
     SECTION("Back ends for notes are correct")
     {
-        REQUIRE(back_end({{1.0}, 50, false, false}, converter)
+        REQUIRE(back_end({{1.0}, 50, false, false}, converter).value
                 == Approx(1.175));
-        REQUIRE(back_end({{3.9}, 50, false, false}, converter) == Approx(4.1));
+        REQUIRE(back_end({{3.9}, 50, false, false}, converter).value
+                == Approx(4.1));
     }
 
     SECTION("Front and back ends for hold points are correct")
     {
-        REQUIRE(front_end({{4.1}, 50, true, false}, converter) == Approx(4.1));
-        REQUIRE(back_end({{3.9}, 50, true, false}, converter) == Approx(3.9));
+        REQUIRE(front_end({{4.1}, 50, true, false}, converter).value
+                == Approx(4.1));
+        REQUIRE(back_end({{3.9}, 50, true, false}, converter).value
+                == Approx(3.9));
     }
 }
 

@@ -278,28 +278,28 @@ double ProcessedTrack::propagate_over_whammy_range(Beat start, Beat end,
     return sp_bar_amount;
 }
 
-double front_end(const Point& point, const TimeConverter& converter)
+Beat front_end(const Point& point, const TimeConverter& converter)
 {
     constexpr double FRONT_END = 0.07;
 
     if (point.is_hold_point) {
-        return point.beat_position.value;
+        return point.beat_position;
     }
 
-    auto time = converter.beats_to_seconds({point.beat_position});
+    auto time = converter.beats_to_seconds({point.beat_position}).value;
     time -= FRONT_END;
-    return converter.seconds_to_beats(time).value;
+    return converter.seconds_to_beats({time});
 }
 
-double back_end(const Point& point, const TimeConverter& converter)
+Beat back_end(const Point& point, const TimeConverter& converter)
 {
     constexpr double BACK_END = 0.07;
 
     if (point.is_hold_point) {
-        return point.beat_position.value;
+        return point.beat_position;
     }
 
-    auto time = converter.beats_to_seconds({point.beat_position});
+    auto time = converter.beats_to_seconds({point.beat_position}).value;
     time += BACK_END;
-    return converter.seconds_to_beats(time).value;
+    return converter.seconds_to_beats({time});
 }
