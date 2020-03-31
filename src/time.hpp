@@ -24,9 +24,10 @@
 #include "chart.hpp"
 
 // We really do want to be able to compare Beats for equality in tests.
-
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wfloat-equal"
+#endif
 
 struct Beat {
 private:
@@ -89,7 +90,9 @@ public:
     }
 };
 
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif
 
 struct Measure {
     double value;
