@@ -285,9 +285,9 @@ Beat front_end(const Point& point, const TimeConverter& converter)
         return point.beat_position;
     }
 
-    auto time = converter.beats_to_seconds({point.beat_position}).value;
+    auto time = converter.beats_to_seconds(point.beat_position).value();
     time -= FRONT_END;
-    return converter.seconds_to_beats({time});
+    return converter.seconds_to_beats(Second(time));
 }
 
 Beat back_end(const Point& point, const TimeConverter& converter)
@@ -298,7 +298,7 @@ Beat back_end(const Point& point, const TimeConverter& converter)
         return point.beat_position;
     }
 
-    auto time = converter.beats_to_seconds({point.beat_position}).value;
+    auto time = converter.beats_to_seconds(point.beat_position).value();
     time += BACK_END;
-    return converter.seconds_to_beats({time});
+    return converter.seconds_to_beats(Second(time));
 }

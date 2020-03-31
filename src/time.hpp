@@ -23,7 +23,8 @@
 
 #include "chart.hpp"
 
-// We really do want to be able to compare Beats for equality in tests.
+// We really do want to be able to compare Beats, Measures, and Seconds for
+// equality in tests.
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wfloat-equal"
@@ -151,13 +152,70 @@ public:
     }
 };
 
+struct Second {
+private:
+    double m_value;
+
+public:
+    explicit Second(double value)
+        : m_value {value}
+    {
+    }
+    [[nodiscard]] double value() const { return m_value; }
+
+    friend bool operator<(const Second& lhs, const Second& rhs)
+    {
+        return lhs.m_value < rhs.m_value;
+    }
+    friend bool operator>(const Second& lhs, const Second& rhs)
+    {
+        return rhs < lhs;
+    }
+    friend bool operator<=(const Second& lhs, const Second& rhs)
+    {
+        return !(lhs > rhs);
+    }
+    friend bool operator>=(const Second& lhs, const Second& rhs)
+    {
+        return !(lhs < rhs);
+    }
+    friend bool operator==(const Second& lhs, const Second& rhs)
+    {
+        return lhs.m_value == rhs.m_value;
+    }
+    friend bool operator!=(const Second& lhs, const Second& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    Second& operator+=(const Second& rhs)
+    {
+        m_value += rhs.m_value;
+        return *this;
+    }
+
+    Second& operator-=(const Second& rhs)
+    {
+        m_value -= rhs.m_value;
+        return *this;
+    }
+
+    friend Second operator+(Second lhs, const Second& rhs)
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    friend Second operator-(Second lhs, const Second& rhs)
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+};
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-
-struct Second {
-    double value;
-};
 
 class TimeConverter {
 private:

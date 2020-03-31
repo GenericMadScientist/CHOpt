@@ -88,6 +88,34 @@ TEST_CASE("Measure operations", "Measure")
         REQUIRE(Measure(-1.0).value() == Approx(-1.0));
     }
 
+    SECTION("< and > work correctly")
+    {
+        REQUIRE(Measure(1.0) < Measure(2.0));
+        REQUIRE(!(Measure(1.0) > Measure(2.0)));
+        REQUIRE(!(Measure(1.0) < Measure(0.5)));
+        REQUIRE(Measure(1.0) > Measure(0.5));
+        REQUIRE(!(Measure(1.0) < Measure(1.0)));
+        REQUIRE(!(Measure(1.0) > Measure(1.0)));
+    }
+
+    SECTION("<= and >= work correctly")
+    {
+        REQUIRE(Measure(1.0) <= Measure(2.0));
+        REQUIRE(!(Measure(1.0) >= Measure(2.0)));
+        REQUIRE(!(Measure(1.0) <= Measure(0.5)));
+        REQUIRE(Measure(1.0) >= Measure(0.5));
+        REQUIRE(Measure(1.0) <= Measure(1.0));
+        REQUIRE(Measure(1.0) >= Measure(1.0));
+    }
+
+    SECTION("== and != work correctly")
+    {
+        REQUIRE(Measure(1.0) == Measure(1.0));
+        REQUIRE(!(Measure(-1.0) == Measure(1.0)));
+        REQUIRE(Measure(-1.0) != Measure(1.0));
+        REQUIRE(!(Measure(1.0) != Measure(1.0)));
+    }
+
     SECTION("+= and + work correctly")
     {
         Measure lhs {1.0};
@@ -109,6 +137,63 @@ TEST_CASE("Measure operations", "Measure")
     }
 }
 
+TEST_CASE("Second operations", "Second")
+{
+    SECTION(".value() works correctly")
+    {
+        REQUIRE(Second(1.0).value() == Approx(1.0));
+        REQUIRE(Second(-1.0).value() == Approx(-1.0));
+    }
+
+    SECTION("< and > work correctly")
+    {
+        REQUIRE(Second(1.0) < Second(2.0));
+        REQUIRE(!(Second(1.0) > Second(2.0)));
+        REQUIRE(!(Second(1.0) < Second(0.5)));
+        REQUIRE(Second(1.0) > Second(0.5));
+        REQUIRE(!(Second(1.0) < Second(1.0)));
+        REQUIRE(!(Second(1.0) > Second(1.0)));
+    }
+
+    SECTION("<= and >= work correctly")
+    {
+        REQUIRE(Second(1.0) <= Second(2.0));
+        REQUIRE(!(Second(1.0) >= Second(2.0)));
+        REQUIRE(!(Second(1.0) <= Second(0.5)));
+        REQUIRE(Second(1.0) >= Second(0.5));
+        REQUIRE(Second(1.0) <= Second(1.0));
+        REQUIRE(Second(1.0) >= Second(1.0));
+    }
+
+    SECTION("== and != work correctly")
+    {
+        REQUIRE(Second(1.0) == Second(1.0));
+        REQUIRE(!(Second(-1.0) == Second(1.0)));
+        REQUIRE(Second(-1.0) != Second(1.0));
+        REQUIRE(!(Second(1.0) != Second(1.0)));
+    }
+
+    SECTION("+= and + work correctly")
+    {
+        Second lhs {1.0};
+        Second rhs {0.5};
+        lhs += rhs;
+
+        REQUIRE(lhs == Second(1.5));
+        REQUIRE(Second(1.0) + Second(0.5) == Second(1.5));
+    }
+
+    SECTION("-= and - work correctly")
+    {
+        Second lhs {1.0};
+        Second rhs {0.5};
+        lhs -= rhs;
+
+        REQUIRE(lhs == Second(0.5));
+        REQUIRE(Second(1.0) - Second(0.5) == Second(0.5));
+    }
+}
+
 // Last checked: 24.0.1555-master
 TEST_CASE("Beats to seconds conversion", "Beats<->S")
 {
@@ -119,12 +204,12 @@ TEST_CASE("Beats to seconds conversion", "Beats<->S")
     constexpr std::array seconds {-0.5, 0.0, 1.2, 1.9};
 
     for (auto i = 0U; i < beats.size(); ++i) {
-        REQUIRE(converter.beats_to_seconds(Beat(beats.at(i))).value
+        REQUIRE(converter.beats_to_seconds(Beat(beats.at(i))).value()
                 == Approx(seconds.at(i)));
     }
 
     for (auto i = 0U; i < beats.size(); ++i) {
-        REQUIRE(converter.seconds_to_beats({seconds.at(i)}).value()
+        REQUIRE(converter.seconds_to_beats(Second(seconds.at(i))).value()
                 == Approx(beats.at(i)));
     }
 }
@@ -160,12 +245,12 @@ TEST_CASE("Measures to seconds conversion", "Measures<->S")
     constexpr std::array seconds {-0.5, 0.0, 1.2, 2.05, 2.35};
 
     for (auto i = 0U; i < measures.size(); ++i) {
-        REQUIRE(converter.measures_to_seconds(Measure(measures.at(i))).value
+        REQUIRE(converter.measures_to_seconds(Measure(measures.at(i))).value()
                 == Approx(seconds.at(i)));
     }
 
     for (auto i = 0U; i < measures.size(); ++i) {
-        REQUIRE(converter.seconds_to_measures({seconds.at(i)}).value()
+        REQUIRE(converter.seconds_to_measures(Second(seconds.at(i))).value()
                 == Approx(measures.at(i)));
     }
 }
