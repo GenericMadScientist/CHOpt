@@ -19,6 +19,7 @@
 #ifndef CHOPT_TIME_HPP
 #define CHOPT_TIME_HPP
 
+#include <cstdint>
 #include <vector>
 
 #include "chart.hpp"
@@ -30,6 +31,9 @@
 #pragma clang diagnostic ignored "-Wfloat-equal"
 #endif
 
+struct Measure;
+struct Second;
+
 struct Beat {
 private:
     double m_value;
@@ -40,6 +44,8 @@ public:
     {
     }
     [[nodiscard]] double value() const { return m_value; }
+    [[nodiscard]] Second to_second(uint32_t bpm) const;
+    [[nodiscard]] Measure to_measure(double beat_rate) const;
 
     friend bool operator<(const Beat& lhs, const Beat& rhs)
     {
@@ -78,6 +84,12 @@ public:
         return *this;
     }
 
+    Beat& operator*=(double rhs)
+    {
+        m_value *= rhs;
+        return *this;
+    }
+
     friend Beat operator+(Beat lhs, const Beat& rhs)
     {
         lhs += rhs;
@@ -88,6 +100,17 @@ public:
     {
         lhs -= rhs;
         return lhs;
+    }
+
+    friend Beat operator*(Beat lhs, double rhs)
+    {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    friend double operator/(const Beat& lhs, const Beat& rhs)
+    {
+        return lhs.m_value / rhs.m_value;
     }
 };
 
@@ -101,6 +124,10 @@ public:
     {
     }
     [[nodiscard]] double value() const { return m_value; }
+    [[nodiscard]] Beat to_beat(double beat_rate) const
+    {
+        return Beat(m_value * beat_rate);
+    }
 
     friend bool operator<(const Measure& lhs, const Measure& rhs)
     {
@@ -139,6 +166,12 @@ public:
         return *this;
     }
 
+    Measure& operator*=(double rhs)
+    {
+        m_value *= rhs;
+        return *this;
+    }
+
     friend Measure operator+(Measure lhs, const Measure& rhs)
     {
         lhs += rhs;
@@ -149,6 +182,17 @@ public:
     {
         lhs -= rhs;
         return lhs;
+    }
+
+    friend Measure operator*(Measure lhs, double rhs)
+    {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    friend double operator/(const Measure& lhs, const Measure& rhs)
+    {
+        return lhs.m_value / rhs.m_value;
     }
 };
 
@@ -162,6 +206,11 @@ public:
     {
     }
     [[nodiscard]] double value() const { return m_value; }
+    [[nodiscard]] Beat to_beat(uint32_t bpm) const
+    {
+        constexpr double MS_PER_MINUTE = 60000.0;
+        return Beat(m_value * bpm / MS_PER_MINUTE);
+    }
 
     friend bool operator<(const Second& lhs, const Second& rhs)
     {
@@ -200,6 +249,12 @@ public:
         return *this;
     }
 
+    Second& operator*=(double rhs)
+    {
+        m_value *= rhs;
+        return *this;
+    }
+
     friend Second operator+(Second lhs, const Second& rhs)
     {
         lhs += rhs;
@@ -211,7 +266,29 @@ public:
         lhs -= rhs;
         return lhs;
     }
+
+    friend Second operator*(Second lhs, double rhs)
+    {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    friend double operator/(const Second& lhs, const Second& rhs)
+    {
+        return lhs.m_value / rhs.m_value;
+    }
 };
+
+inline Measure Beat::to_measure(double beat_rate) const
+{
+    return Measure(m_value / beat_rate);
+}
+
+inline Second Beat::to_second(uint32_t bpm) const
+{
+    constexpr double MS_PER_MINUTE = 60000.0;
+    return Second(m_value * MS_PER_MINUTE / bpm);
+}
 
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -229,7 +306,6 @@ private:
         Beat beat;
     };
 
-    static constexpr double MS_PER_MINUTE = 60000.0;
     static constexpr uint32_t DEFAULT_BPM = 120000;
     static constexpr double DEFAULT_BEAT_RATE = 4.0;
     std::vector<BeatTimestamp> m_beat_timestamps;

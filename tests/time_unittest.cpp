@@ -31,6 +31,18 @@ TEST_CASE("Beat operations", "Beat")
         REQUIRE(Beat(-1.0).value() == Approx(-1.0));
     }
 
+    SECTION(".to_second() works correctly")
+    {
+        REQUIRE(Beat(2.0).to_second(120000) == Second(1.0));
+        REQUIRE(Beat(8.0).to_second(240000) == Second(2.0));
+    }
+
+    SECTION(".to_measure() works correctly")
+    {
+        REQUIRE(Beat(2.0).to_measure(4.0) == Measure(0.5));
+        REQUIRE(Beat(8.0).to_measure(2.0) == Measure(4.0));
+    }
+
     SECTION("< and > work correctly")
     {
         REQUIRE(Beat(1.0) < Beat(2.0));
@@ -78,6 +90,22 @@ TEST_CASE("Beat operations", "Beat")
         REQUIRE(lhs == Beat(0.5));
         REQUIRE(Beat(1.0) - Beat(0.5) == Beat(0.5));
     }
+
+    SECTION("*= and * work correctly")
+    {
+        Beat lhs {1.0};
+        double rhs {0.5};
+        lhs *= rhs;
+
+        REQUIRE(lhs == Beat(0.5));
+        REQUIRE(Beat(1.0) * 0.5 == Beat(0.5));
+    }
+
+    SECTION("/ works correctly")
+    {
+        REQUIRE(Beat(1.0) / Beat(2.0) == Approx(0.5));
+        REQUIRE(Beat(2.0) / Beat(1.0) == Approx(2.0));
+    }
 }
 
 TEST_CASE("Measure operations", "Measure")
@@ -86,6 +114,12 @@ TEST_CASE("Measure operations", "Measure")
     {
         REQUIRE(Measure(1.0).value() == Approx(1.0));
         REQUIRE(Measure(-1.0).value() == Approx(-1.0));
+    }
+
+    SECTION(".to_beat() works correctly")
+    {
+        REQUIRE(Measure(1.0).to_beat(4.0) == Beat(4.0));
+        REQUIRE(Measure(2.0).to_beat(3.0) == Beat(6.0));
     }
 
     SECTION("< and > work correctly")
@@ -135,6 +169,22 @@ TEST_CASE("Measure operations", "Measure")
         REQUIRE(lhs == Measure(0.5));
         REQUIRE(Measure(1.0) - Measure(0.5) == Measure(0.5));
     }
+
+    SECTION("*= and * work correctly")
+    {
+        Measure lhs {1.0};
+        double rhs {0.5};
+        lhs *= rhs;
+
+        REQUIRE(lhs == Measure(0.5));
+        REQUIRE(Measure(1.0) * 0.5 == Measure(0.5));
+    }
+
+    SECTION("/ works correctly")
+    {
+        REQUIRE(Measure(1.0) / Measure(2.0) == Approx(0.5));
+        REQUIRE(Measure(2.0) / Measure(1.0) == Approx(2.0));
+    }
 }
 
 TEST_CASE("Second operations", "Second")
@@ -143,6 +193,12 @@ TEST_CASE("Second operations", "Second")
     {
         REQUIRE(Second(1.0).value() == Approx(1.0));
         REQUIRE(Second(-1.0).value() == Approx(-1.0));
+    }
+
+    SECTION(".to_beat() works correctly")
+    {
+        REQUIRE(Second(1.0).to_beat(120000) == Beat(2.0));
+        REQUIRE(Second(2.0).to_beat(240000) == Beat(8.0));
     }
 
     SECTION("< and > work correctly")
@@ -191,6 +247,22 @@ TEST_CASE("Second operations", "Second")
 
         REQUIRE(lhs == Second(0.5));
         REQUIRE(Second(1.0) - Second(0.5) == Second(0.5));
+    }
+
+    SECTION("*= and * work correctly")
+    {
+        Second lhs {1.0};
+        double rhs {0.5};
+        lhs *= rhs;
+
+        REQUIRE(lhs == Second(0.5));
+        REQUIRE(Second(1.0) * 0.5 == Second(0.5));
+    }
+
+    SECTION("/ works correctly")
+    {
+        REQUIRE(Second(1.0) / Second(2.0) == Approx(0.5));
+        REQUIRE(Second(2.0) / Second(1.0) == Approx(2.0));
     }
 }
 

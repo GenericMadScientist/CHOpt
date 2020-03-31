@@ -24,6 +24,8 @@
 TimeConverter::TimeConverter(const SyncTrack& sync_track,
                              const SongHeader& header)
 {
+    constexpr double MS_PER_MINUTE = 60000.0;
+
     auto last_tick = 0U;
     auto last_bpm = DEFAULT_BPM;
     auto last_time = 0.0;
@@ -67,19 +69,15 @@ Second TimeConverter::beats_to_seconds(Beat beats) const
         [](const auto& x, const auto& y) { return x.beat < y; });
     if (pos == m_beat_timestamps.cend()) {
         const auto& back = m_beat_timestamps.back();
-        return back.time
-            + Second(((beats - back.beat).value() * MS_PER_MINUTE)
-                     / m_last_bpm);
+        return back.time + (beats - back.beat).to_second(m_last_bpm);
     }
     if (pos == m_beat_timestamps.cbegin()) {
-        return pos->time
-            - Second(((pos->beat - beats).value() * MS_PER_MINUTE)
-                     / DEFAULT_BPM);
+        return pos->time - (pos->beat - beats).to_second(DEFAULT_BPM);
     }
     const auto prev = pos - 1;
     return prev->time
-        + Second((pos->time - prev->time).value() * (beats - prev->beat).value()
-                 / (pos->beat - prev->beat).value());
+        + (pos->time - prev->time)
+        * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
 Beat TimeConverter::seconds_to_beats(Second seconds) const
@@ -89,19 +87,15 @@ Beat TimeConverter::seconds_to_beats(Second seconds) const
         [](const auto& x, const auto& y) { return x.time < y; });
     if (pos == m_beat_timestamps.cend()) {
         const auto& back = m_beat_timestamps.back();
-        return back.beat
-            + Beat(((seconds - back.time).value() * m_last_bpm)
-                   / MS_PER_MINUTE);
+        return back.beat + (seconds - back.time).to_beat(m_last_bpm);
     }
     if (pos == m_beat_timestamps.cbegin()) {
-        return pos->beat
-            - Beat(((pos->time - seconds).value() * DEFAULT_BPM)
-                   / MS_PER_MINUTE);
+        return pos->beat - (pos->time - seconds).to_beat(DEFAULT_BPM);
     }
     const auto prev = pos - 1;
     return prev->beat
-        + Beat((pos->beat - prev->beat).value() * (seconds - prev->time).value()
-               / (pos->time - prev->time).value());
+        + (pos->beat - prev->beat)
+        * ((seconds - prev->time) / (pos->time - prev->time));
 }
 
 Measure TimeConverter::beats_to_measures(Beat beats) const
@@ -111,18 +105,15 @@ Measure TimeConverter::beats_to_measures(Beat beats) const
         [](const auto& x, const auto& y) { return x.beat < y; });
     if (pos == m_measure_timestamps.cend()) {
         const auto& back = m_measure_timestamps.back();
-        return back.measure
-            + Measure((beats - back.beat).value() / m_last_beat_rate);
+        return back.measure + (beats - back.beat).to_measure(m_last_beat_rate);
     }
     if (pos == m_measure_timestamps.cbegin()) {
-        return pos->measure
-            - Measure((pos->beat - beats).value() / DEFAULT_BEAT_RATE);
+        return pos->measure - (pos->beat - beats).to_measure(DEFAULT_BEAT_RATE);
     }
     const auto prev = pos - 1;
     return prev->measure
-        + Measure((pos->measure - prev->measure).value()
-                  * (beats - prev->beat).value()
-                  / (pos->beat - prev->beat).value());
+        + (pos->measure - prev->measure)
+        * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
 Beat TimeConverter::measures_to_beats(Measure measures) const
@@ -132,18 +123,15 @@ Beat TimeConverter::measures_to_beats(Measure measures) const
         [](const auto& x, const auto& y) { return x.measure < y; });
     if (pos == m_measure_timestamps.cend()) {
         const auto& back = m_measure_timestamps.back();
-        return back.beat
-            + Beat((measures - back.measure).value() * m_last_beat_rate);
+        return back.beat + (measures - back.measure).to_beat(m_last_beat_rate);
     }
     if (pos == m_measure_timestamps.cbegin()) {
-        return pos->beat
-            - Beat((pos->measure - measures).value() * DEFAULT_BEAT_RATE);
+        return pos->beat - (pos->measure - measures).to_beat(DEFAULT_BEAT_RATE);
     }
     const auto prev = pos - 1;
     return prev->beat
-        + Beat((pos->beat - prev->beat).value()
-               * (measures - prev->measure).value()
-               / (pos->measure - prev->measure).value());
+        + (pos->beat - prev->beat)
+        * ((measures - prev->measure) / (pos->measure - prev->measure));
 }
 
 Second TimeConverter::measures_to_seconds(Measure measures) const
