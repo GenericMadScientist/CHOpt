@@ -34,9 +34,9 @@ struct Point {
 
     friend bool operator==(const Point& lhs, const Point& rhs)
     {
-        return std::tie(lhs.beat_position.value, lhs.value, lhs.is_hold_point,
+        return std::tie(lhs.beat_position, lhs.value, lhs.is_hold_point,
                         lhs.is_sp_granting_note)
-            == std::tie(rhs.beat_position.value, rhs.value, rhs.is_hold_point,
+            == std::tie(rhs.beat_position, rhs.value, rhs.is_hold_point,
                         rhs.is_sp_granting_note);
     }
 };

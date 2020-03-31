@@ -23,9 +23,73 @@
 
 #include "chart.hpp"
 
+// We really do want to be able to compare Beats for equality in tests.
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wfloat-equal"
+
 struct Beat {
-    double value;
+private:
+    double m_value;
+
+public:
+    explicit Beat(double value)
+        : m_value {value}
+    {
+    }
+    [[nodiscard]] double value() const { return m_value; }
+
+    friend bool operator<(const Beat& lhs, const Beat& rhs)
+    {
+        return lhs.m_value < rhs.m_value;
+    }
+    friend bool operator>(const Beat& lhs, const Beat& rhs)
+    {
+        return rhs < lhs;
+    }
+    friend bool operator<=(const Beat& lhs, const Beat& rhs)
+    {
+        return !(lhs > rhs);
+    }
+    friend bool operator>=(const Beat& lhs, const Beat& rhs)
+    {
+        return !(lhs < rhs);
+    }
+    friend bool operator==(const Beat& lhs, const Beat& rhs)
+    {
+        return lhs.m_value == rhs.m_value;
+    }
+    friend bool operator!=(const Beat& lhs, const Beat& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    Beat& operator+=(const Beat& rhs)
+    {
+        m_value += rhs.m_value;
+        return *this;
+    }
+
+    Beat& operator-=(const Beat& rhs)
+    {
+        m_value -= rhs.m_value;
+        return *this;
+    }
+
+    friend Beat operator+(Beat lhs, const Beat& rhs)
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    friend Beat operator-(Beat lhs, const Beat& rhs)
+    {
+        lhs -= rhs;
+        return lhs;
+    }
 };
+
+#pragma clang diagnostic pop
 
 struct Measure {
     double value;

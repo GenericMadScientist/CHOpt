@@ -23,6 +23,63 @@
 #include "chart.hpp"
 #include "time.hpp"
 
+TEST_CASE("Beat operations", "Beat")
+{
+    SECTION(".value() works correctly")
+    {
+        REQUIRE(Beat(1.0).value() == Approx(1.0));
+        REQUIRE(Beat(-1.0).value() == Approx(-1.0));
+    }
+
+    SECTION("< and > work correctly")
+    {
+        REQUIRE(Beat(1.0) < Beat(2.0));
+        REQUIRE(!(Beat(1.0) > Beat(2.0)));
+        REQUIRE(!(Beat(1.0) < Beat(0.5)));
+        REQUIRE(Beat(1.0) > Beat(0.5));
+        REQUIRE(!(Beat(1.0) < Beat(1.0)));
+        REQUIRE(!(Beat(1.0) > Beat(1.0)));
+    }
+
+    SECTION("<= and >= work correctly")
+    {
+        REQUIRE(Beat(1.0) <= Beat(2.0));
+        REQUIRE(!(Beat(1.0) >= Beat(2.0)));
+        REQUIRE(!(Beat(1.0) <= Beat(0.5)));
+        REQUIRE(Beat(1.0) >= Beat(0.5));
+        REQUIRE(Beat(1.0) <= Beat(1.0));
+        REQUIRE(Beat(1.0) >= Beat(1.0));
+    }
+
+    SECTION("== and != work correctly")
+    {
+        REQUIRE(Beat(1.0) == Beat(1.0));
+        REQUIRE(!(Beat(-1.0) == Beat(1.0)));
+        REQUIRE(Beat(-1.0) != Beat(1.0));
+        REQUIRE(!(Beat(1.0) != Beat(1.0)));
+    }
+
+    SECTION("+= and + work correctly")
+    {
+        Beat lhs {1.0};
+        Beat rhs {0.5};
+        lhs += rhs;
+
+        REQUIRE(lhs == Beat(1.5));
+        REQUIRE(Beat(1.0) + Beat(0.5) == Beat(1.5));
+    }
+
+    SECTION("-= and - work correctly")
+    {
+        Beat lhs {1.0};
+        Beat rhs {0.5};
+        lhs -= rhs;
+
+        REQUIRE(lhs == Beat(0.5));
+        REQUIRE(Beat(1.0) - Beat(0.5) == Beat(0.5));
+    }
+}
+
 // Last checked: 24.0.1555-master
 TEST_CASE("Beats to seconds conversion", "Beats<->S")
 {
@@ -33,12 +90,12 @@ TEST_CASE("Beats to seconds conversion", "Beats<->S")
     constexpr std::array seconds {-0.5, 0.0, 1.2, 1.9};
 
     for (auto i = 0U; i < beats.size(); ++i) {
-        REQUIRE(converter.beats_to_seconds({beats.at(i)}).value
+        REQUIRE(converter.beats_to_seconds(Beat(beats.at(i))).value
                 == Approx(seconds.at(i)));
     }
 
     for (auto i = 0U; i < beats.size(); ++i) {
-        REQUIRE(converter.seconds_to_beats({seconds.at(i)}).value
+        REQUIRE(converter.seconds_to_beats({seconds.at(i)}).value()
                 == Approx(beats.at(i)));
     }
 }
@@ -53,12 +110,12 @@ TEST_CASE("Beats to measures conversion", "Beats<->Measures")
     constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
 
     for (auto i = 0U; i < beats.size(); ++i) {
-        REQUIRE(converter.beats_to_measures({beats.at(i)}).value
+        REQUIRE(converter.beats_to_measures(Beat(beats.at(i))).value
                 == Approx(measures.at(i)));
     }
 
     for (auto i = 0U; i < beats.size(); ++i) {
-        REQUIRE(converter.measures_to_beats({measures.at(i)}).value
+        REQUIRE(converter.measures_to_beats({measures.at(i)}).value()
                 == Approx(beats.at(i)));
     }
 }

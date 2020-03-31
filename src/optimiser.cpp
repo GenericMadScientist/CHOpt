@@ -43,12 +43,12 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
             return x.length < y.length;
         })->length);
     auto pos = first->position;
-    *points++ = {
-        {pos / resolution}, NOTE_VALUE * chord_size, false, is_note_sp_ender};
+    *points++ = {Beat(pos / resolution), NOTE_VALUE * chord_size, false,
+                 is_note_sp_ender};
     while (chord_length > 0) {
         pos += static_cast<uint32_t>(tick_gap);
         chord_length -= tick_gap;
-        *points++ = {{pos / resolution}, 1, true, false};
+        *points++ = {Beat(pos / resolution), 1, true, false};
     }
 }
 
@@ -79,7 +79,7 @@ static std::vector<Point> notes_to_points(const NoteTrack& track,
 
     std::stable_sort(points.begin(), points.end(),
                      [](const auto& x, const auto& y) {
-                         return x.beat_position.value < y.beat_position.value;
+                         return x.beat_position < y.beat_position;
                      });
 
     return points;
@@ -102,7 +102,7 @@ ProcessedTrack::form_beat_rates(const SongHeader& header,
             = ts.numerator * DEFAULT_BEAT_RATE / ts.denominator;
         const auto drain_rate
             = SP_GAIN_RATE - 1 / (MEASURES_PER_BAR * measure_rate);
-        beat_rates.push_back({{pos}, drain_rate});
+        beat_rates.push_back({Beat(pos), drain_rate});
     }
 
     return beat_rates;
@@ -143,7 +143,7 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, const SongHeader& header,
                 = static_cast<double>(std::get<0>(range)) / header.resolution();
             auto end
                 = static_cast<double>(std::get<1>(range)) / header.resolution();
-            m_whammy_ranges.push_back({{start}, {end}});
+            m_whammy_ranges.push_back({Beat(start), Beat(end)});
         }
     }
 }
@@ -153,28 +153,26 @@ double ProcessedTrack::propagate_sp_over_whammy(Beat start, Beat end,
 {
     constexpr double MEASURES_PER_BAR = 8.0;
 
-    auto p = std::find_if(
-        m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
-        [=](const auto& x) { return x.end_beat.value > start.value; });
-    while ((p != m_whammy_ranges.cend()) && (p->start_beat.value < end.value)) {
-        if (p->start_beat.value > start.value) {
-            auto meas_diff
-                = m_converter.beats_to_measures({p->start_beat}).value
-                - m_converter.beats_to_measures({start}).value;
+    auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
+                          [=](const auto& x) { return x.end_beat > start; });
+    while ((p != m_whammy_ranges.cend()) && (p->start_beat < end)) {
+        if (p->start_beat > start) {
+            auto meas_diff = m_converter.beats_to_measures(p->start_beat).value
+                - m_converter.beats_to_measures(start).value;
             sp_bar_amount -= meas_diff / MEASURES_PER_BAR;
             if (sp_bar_amount < 0.0) {
                 return -1.0;
             }
             start = p->start_beat;
         }
-        auto range_end = std::min(end.value, p->end_beat.value);
+        auto range_end = std::min(end, p->end_beat);
         sp_bar_amount
-            = propagate_over_whammy_range({start}, {range_end}, sp_bar_amount);
+            = propagate_over_whammy_range(start, range_end, sp_bar_amount);
         if (sp_bar_amount < 0.0) {
             return -1.0;
         }
         start = p->end_beat;
-        if (start.value >= end.value) {
+        if (start >= end) {
             return sp_bar_amount;
         }
         ++p;
@@ -251,32 +249,31 @@ double ProcessedTrack::propagate_over_whammy_range(Beat start, Beat end,
 {
     constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
 
-    auto p = std::find_if(
-        m_beat_rates.cbegin(), m_beat_rates.cend(),
-        [=](const auto& ts) { return ts.position.value >= start.value; });
+    auto p = std::find_if(m_beat_rates.cbegin(), m_beat_rates.cend(),
+                          [=](const auto& ts) { return ts.position >= start; });
     if (p != m_beat_rates.cbegin()) {
         --p;
     } else {
-        double subrange_end = std::min(end.value, p->position.value);
+        auto subrange_end = std::min(end, p->position);
         sp_bar_amount
-            += (subrange_end - start.value) * DEFAULT_NET_SP_GAIN_RATE;
+            += (subrange_end - start).value() * DEFAULT_NET_SP_GAIN_RATE;
         sp_bar_amount = std::min(sp_bar_amount, 1.0);
         if (sp_bar_amount < 0.0) {
             return -1.0;
         }
-        start = {subrange_end};
+        start = subrange_end;
     }
-    while (start.value < end.value) {
-        double subrange_end = end.value;
+    while (start < end) {
+        auto subrange_end = end;
         if (std::next(p) != m_beat_rates.cend()) {
-            subrange_end = std::min(end.value, std::next(p)->position.value);
+            subrange_end = std::min(end, std::next(p)->position);
         }
-        sp_bar_amount += (subrange_end - start.value) * p->net_sp_gain_rate;
+        sp_bar_amount += (subrange_end - start).value() * p->net_sp_gain_rate;
         if (sp_bar_amount < 0.0) {
             return -1.0;
         }
         sp_bar_amount = std::min(sp_bar_amount, 1.0);
-        start = {subrange_end};
+        start = subrange_end;
         ++p;
     }
 
