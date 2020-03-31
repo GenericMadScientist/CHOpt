@@ -23,16 +23,20 @@
 
 #include "chart.hpp"
 
+struct Beat {
+    double value;
+};
+
 class TimeConverter {
 private:
     struct BeatTimestamp {
-        double beat;
+        Beat beat;
         double time;
     };
 
     struct MeasureTimestamp {
         double measure;
-        double beat;
+        Beat beat;
     };
 
     static constexpr double MS_PER_MINUTE = 60000.0;
@@ -45,10 +49,10 @@ private:
 
 public:
     TimeConverter(const SyncTrack& sync_track, const SongHeader& header);
-    [[nodiscard]] double beats_to_seconds(double beats) const;
-    [[nodiscard]] double seconds_to_beats(double seconds) const;
-    [[nodiscard]] double beats_to_measures(double beats) const;
-    [[nodiscard]] double measures_to_beats(double measures) const;
+    [[nodiscard]] double beats_to_seconds(Beat beats) const;
+    [[nodiscard]] Beat seconds_to_beats(double seconds) const;
+    [[nodiscard]] double beats_to_measures(Beat beats) const;
+    [[nodiscard]] Beat measures_to_beats(double measures) const;
     [[nodiscard]] double measures_to_seconds(double measures) const;
     [[nodiscard]] double seconds_to_measures(double seconds) const;
 };

@@ -27,16 +27,16 @@
 #include "time.hpp"
 
 struct Point {
-    double beat_position;
+    Beat beat_position;
     uint32_t value;
     bool is_hold_point;
     bool is_sp_granting_note;
 
     friend bool operator==(const Point& lhs, const Point& rhs)
     {
-        return std::tie(lhs.beat_position, lhs.value, lhs.is_hold_point,
+        return std::tie(lhs.beat_position.value, lhs.value, lhs.is_hold_point,
                         lhs.is_sp_granting_note)
-            == std::tie(rhs.beat_position, rhs.value, rhs.is_hold_point,
+            == std::tie(rhs.beat_position.value, rhs.value, rhs.is_hold_point,
                         rhs.is_sp_granting_note);
     }
 };
@@ -44,8 +44,8 @@ struct Point {
 struct ActivationCandidate {
     std::vector<Point>::const_iterator act_start;
     std::vector<Point>::const_iterator act_end;
-    double earliest_activation_point = 0.0;
-    double sp_bar_amount = 0.0;
+    Beat earliest_activation_point {0.0};
+    double sp_bar_amount {0.0};
 };
 
 // Represents a song processed for Star Power optimisation. The constructor
@@ -54,13 +54,13 @@ struct ActivationCandidate {
 class ProcessedTrack {
 private:
     struct BeatRate {
-        double position;
+        Beat position;
         double net_sp_gain_rate;
     };
 
     struct WhammyRange {
-        double start_beat;
-        double end_beat;
+        Beat start_beat;
+        Beat end_beat;
     };
 
     std::vector<Point> m_points;
@@ -69,7 +69,7 @@ private:
     std::vector<WhammyRange> m_whammy_ranges;
 
     [[nodiscard]] double
-    propagate_over_whammy_range(double start, double end,
+    propagate_over_whammy_range(Beat start, Beat end,
                                 double sp_bar_amount) const;
 
     static std::vector<BeatRate> form_beat_rates(const SongHeader& header,
@@ -84,7 +84,7 @@ public:
     // Return how much SP is available at the end after propagating over a
     // range, or -1 if SP runs out at any point. Only includes SP gain from
     // whammy.
-    [[nodiscard]] double propagate_sp_over_whammy(double start, double end,
+    [[nodiscard]] double propagate_sp_over_whammy(Beat start, Beat end,
                                                   double sp_bar_amount) const;
 };
 
