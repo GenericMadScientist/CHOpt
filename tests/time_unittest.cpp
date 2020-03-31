@@ -80,6 +80,35 @@ TEST_CASE("Beat operations", "Beat")
     }
 }
 
+TEST_CASE("Measure operations", "Measure")
+{
+    SECTION(".value() works correctly")
+    {
+        REQUIRE(Measure(1.0).value() == Approx(1.0));
+        REQUIRE(Measure(-1.0).value() == Approx(-1.0));
+    }
+
+    SECTION("+= and + work correctly")
+    {
+        Measure lhs {1.0};
+        Measure rhs {0.5};
+        lhs += rhs;
+
+        REQUIRE(lhs == Measure(1.5));
+        REQUIRE(Measure(1.0) + Measure(0.5) == Measure(1.5));
+    }
+
+    SECTION("-= and - work correctly")
+    {
+        Measure lhs {1.0};
+        Measure rhs {0.5};
+        lhs -= rhs;
+
+        REQUIRE(lhs == Measure(0.5));
+        REQUIRE(Measure(1.0) - Measure(0.5) == Measure(0.5));
+    }
+}
+
 // Last checked: 24.0.1555-master
 TEST_CASE("Beats to seconds conversion", "Beats<->S")
 {
@@ -110,12 +139,12 @@ TEST_CASE("Beats to measures conversion", "Beats<->Measures")
     constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
 
     for (auto i = 0U; i < beats.size(); ++i) {
-        REQUIRE(converter.beats_to_measures(Beat(beats.at(i))).value
+        REQUIRE(converter.beats_to_measures(Beat(beats.at(i))).value()
                 == Approx(measures.at(i)));
     }
 
     for (auto i = 0U; i < beats.size(); ++i) {
-        REQUIRE(converter.measures_to_beats({measures.at(i)}).value()
+        REQUIRE(converter.measures_to_beats(Measure(measures.at(i))).value()
                 == Approx(beats.at(i)));
     }
 }
@@ -131,12 +160,12 @@ TEST_CASE("Measures to seconds conversion", "Measures<->S")
     constexpr std::array seconds {-0.5, 0.0, 1.2, 2.05, 2.35};
 
     for (auto i = 0U; i < measures.size(); ++i) {
-        REQUIRE(converter.measures_to_seconds({measures.at(i)}).value
+        REQUIRE(converter.measures_to_seconds(Measure(measures.at(i))).value
                 == Approx(seconds.at(i)));
     }
 
     for (auto i = 0U; i < measures.size(); ++i) {
-        REQUIRE(converter.seconds_to_measures({seconds.at(i)}).value
+        REQUIRE(converter.seconds_to_measures({seconds.at(i)}).value()
                 == Approx(measures.at(i)));
     }
 }

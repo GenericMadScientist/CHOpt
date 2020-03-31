@@ -157,9 +157,9 @@ double ProcessedTrack::propagate_sp_over_whammy(Beat start, Beat end,
                           [=](const auto& x) { return x.end_beat > start; });
     while ((p != m_whammy_ranges.cend()) && (p->start_beat < end)) {
         if (p->start_beat > start) {
-            auto meas_diff = m_converter.beats_to_measures(p->start_beat).value
-                - m_converter.beats_to_measures(start).value;
-            sp_bar_amount -= meas_diff / MEASURES_PER_BAR;
+            auto meas_diff = m_converter.beats_to_measures(p->start_beat)
+                - m_converter.beats_to_measures(start);
+            sp_bar_amount -= meas_diff.value() / MEASURES_PER_BAR;
             if (sp_bar_amount < 0.0) {
                 return -1.0;
             }
@@ -178,9 +178,9 @@ double ProcessedTrack::propagate_sp_over_whammy(Beat start, Beat end,
         ++p;
     }
 
-    auto meas_diff = m_converter.beats_to_measures({end}).value
-        - m_converter.beats_to_measures({start}).value;
-    sp_bar_amount -= meas_diff / MEASURES_PER_BAR;
+    auto meas_diff = m_converter.beats_to_measures(end)
+        - m_converter.beats_to_measures(start);
+    sp_bar_amount -= meas_diff.value() / MEASURES_PER_BAR;
     if (sp_bar_amount < 0.0) {
         return -1.0;
     }
@@ -201,11 +201,9 @@ bool ProcessedTrack::is_candidate_valid(
     auto current_position = activation.act_start->beat_position;
     auto min_sp = activation.sp_bar_amount;
     auto max_sp = activation.sp_bar_amount;
-    auto starting_meas_diff
-        = m_converter.beats_to_measures({current_position}).value
-        - m_converter.beats_to_measures({activation.earliest_activation_point})
-              .value;
-    min_sp -= starting_meas_diff / MEASURES_PER_BAR;
+    auto starting_meas_diff = m_converter.beats_to_measures(current_position)
+        - m_converter.beats_to_measures(activation.earliest_activation_point);
+    min_sp -= starting_meas_diff.value() / MEASURES_PER_BAR;
     min_sp = std::max(min_sp, 0.0);
 
     for (auto p = activation.act_start; p < activation.act_end; ++p) {
@@ -215,10 +213,10 @@ bool ProcessedTrack::is_candidate_valid(
             if (max_sp < 0.0) {
                 return false;
             }
-            auto meas_diff
-                = m_converter.beats_to_measures({p->beat_position}).value
-                - m_converter.beats_to_measures({current_position}).value;
-            min_sp = std::max(min_sp - meas_diff / MEASURES_PER_BAR, 0.0);
+            auto meas_diff = m_converter.beats_to_measures(p->beat_position)
+                - m_converter.beats_to_measures(current_position);
+            min_sp
+                = std::max(min_sp - meas_diff.value() / MEASURES_PER_BAR, 0.0);
             min_sp = std::min(min_sp + SP_PHRASE_AMOUNT, 1.0);
             max_sp = std::min(max_sp + SP_PHRASE_AMOUNT, 1.0);
             current_position = p->beat_position;
@@ -236,10 +234,9 @@ bool ProcessedTrack::is_candidate_valid(
         return true;
     }
 
-    auto meas_diff
-        = m_converter.beats_to_measures({next_point->beat_position}).value
-        - m_converter.beats_to_measures({current_position}).value;
-    min_sp -= meas_diff / MEASURES_PER_BAR;
+    auto meas_diff = m_converter.beats_to_measures(next_point->beat_position)
+        - m_converter.beats_to_measures(current_position);
+    min_sp -= meas_diff.value() / MEASURES_PER_BAR;
 
     return min_sp < 0.0;
 }

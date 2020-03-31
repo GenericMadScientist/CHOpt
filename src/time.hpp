@@ -90,13 +90,70 @@ public:
     }
 };
 
+struct Measure {
+private:
+    double m_value;
+
+public:
+    explicit Measure(double value)
+        : m_value {value}
+    {
+    }
+    [[nodiscard]] double value() const { return m_value; }
+
+    friend bool operator<(const Measure& lhs, const Measure& rhs)
+    {
+        return lhs.m_value < rhs.m_value;
+    }
+    friend bool operator>(const Measure& lhs, const Measure& rhs)
+    {
+        return rhs < lhs;
+    }
+    friend bool operator<=(const Measure& lhs, const Measure& rhs)
+    {
+        return !(lhs > rhs);
+    }
+    friend bool operator>=(const Measure& lhs, const Measure& rhs)
+    {
+        return !(lhs < rhs);
+    }
+    friend bool operator==(const Measure& lhs, const Measure& rhs)
+    {
+        return lhs.m_value == rhs.m_value;
+    }
+    friend bool operator!=(const Measure& lhs, const Measure& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    Measure& operator+=(const Measure& rhs)
+    {
+        m_value += rhs.m_value;
+        return *this;
+    }
+
+    Measure& operator-=(const Measure& rhs)
+    {
+        m_value -= rhs.m_value;
+        return *this;
+    }
+
+    friend Measure operator+(Measure lhs, const Measure& rhs)
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    friend Measure operator-(Measure lhs, const Measure& rhs)
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+};
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-
-struct Measure {
-    double value;
-};
 
 struct Second {
     double value;
