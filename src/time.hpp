@@ -27,7 +27,11 @@ struct Beat {
     double value;
 };
 
-struct Seconds {
+struct Measure {
+    double value;
+};
+
+struct Second {
     double value;
 };
 
@@ -35,11 +39,11 @@ class TimeConverter {
 private:
     struct BeatTimestamp {
         Beat beat;
-        Seconds time;
+        Second time;
     };
 
     struct MeasureTimestamp {
-        double measure;
+        Measure measure;
         Beat beat;
     };
 
@@ -53,12 +57,12 @@ private:
 
 public:
     TimeConverter(const SyncTrack& sync_track, const SongHeader& header);
-    [[nodiscard]] Seconds beats_to_seconds(Beat beats) const;
-    [[nodiscard]] Beat seconds_to_beats(Seconds seconds) const;
-    [[nodiscard]] double beats_to_measures(Beat beats) const;
-    [[nodiscard]] Beat measures_to_beats(double measures) const;
-    [[nodiscard]] Seconds measures_to_seconds(double measures) const;
-    [[nodiscard]] double seconds_to_measures(Seconds seconds) const;
+    [[nodiscard]] Second beats_to_seconds(Beat beats) const;
+    [[nodiscard]] Beat seconds_to_beats(Second seconds) const;
+    [[nodiscard]] Measure beats_to_measures(Beat beats) const;
+    [[nodiscard]] Beat measures_to_beats(Measure measures) const;
+    [[nodiscard]] Second measures_to_seconds(Measure measures) const;
+    [[nodiscard]] Measure seconds_to_measures(Second seconds) const;
 };
 
 #endif

@@ -88,7 +88,7 @@ public:
                                                   double sp_bar_amount) const;
 };
 
-// Return the earliest and latest times a point can be hit, in beats.
+// Return the earliest and latest times a point can be hit.
 Beat front_end(const Point& point, const TimeConverter& converter);
 Beat back_end(const Point& point, const TimeConverter& converter);
 
