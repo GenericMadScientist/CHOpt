@@ -67,8 +67,6 @@ matrix:
             - clang-format-10
             - clang-tidy-10
             - libc++-10-dev
-      env:
-        - MATRIX_EVAL="STATIC_CHECKS=yes"
       script:
         - clang-format-10 --version
         - clang-format-10 -i src/*.cpp src/*.hpp tests/*.cpp
@@ -92,19 +90,9 @@ install:
     fi
 
 script:
-  - |
-    if [[ ${STATIC_CHECKS} == "yes" ]]; then
-      clang-format-10 --version
-      clang-format-10 -i src/*.cpp src/*.hpp tests/*.cpp
-      git diff --color --exit-code
-      clang-tidy-10 --version
-      clang-tidy-10 src/*.cpp src/*.hpp -- -std=c++17 -stdlib=libc++
-      clang-tidy-10 tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Isrc -std=c++17 -stdlib=libc++
-    else
-      ${CXX} --version
-      mkdir -p build
-      cd build
-      cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
-      cmake --build . --verbose
-      ctest --verbose
-    fi
+  - ${CXX} --version
+  - mkdir -p build
+  - cd build
+  - cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
+  - cmake --build . --verbose
+  - ctest --verbose
