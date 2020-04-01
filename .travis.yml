@@ -20,6 +20,18 @@ matrix:
       dist: bionic
       addons:
         apt:
+          sources:
+            - ubuntu-toolchain-r/test
+          packages:
+            - gcc-9
+            - g++-9
+      env:
+        - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9 && CXX_FLAGS="
+
+    - os: linux
+      dist: bionic
+      addons:
+        apt:
           packages:
             - clang-9
             - libc++-9-dev
