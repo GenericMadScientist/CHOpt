@@ -11,10 +11,9 @@ matrix:
       addons:
         apt:
           packages:
-            - gcc-8
             - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && CXX_FLAGS="
+        - MATRIX_EVAL="CXX=g++-8 && CXX_FLAGS="
 
     - os: linux
       dist: bionic
@@ -23,10 +22,9 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - gcc-9
             - g++-9
       env:
-        - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9 && CXX_FLAGS="
+        - MATRIX_EVAL="CXX=g++-9 && CXX_FLAGS="
 
     - os: linux
       dist: bionic
@@ -37,7 +35,7 @@ matrix:
             - libc++-9-dev
             - libc++abi-9-dev
       env:
-        - MATRIX_EVAL="CC=clang-9 && CXX=clang++-9 && CXX_FLAGS=-stdlib=libc++"
+        - MATRIX_EVAL="CXX=clang++-9 && CXX_FLAGS=-stdlib=libc++"
 
     - os: linux
       dist: bionic
@@ -51,12 +49,12 @@ matrix:
             - libc++-10-dev
             - libc++abi-10-dev
       env:
-        - MATRIX_EVAL="CC=clang-10 && CXX=clang++-10 && CXX_FLAGS=-stdlib=libc++"
+        - MATRIX_EVAL="CXX=clang++-10 && CXX_FLAGS=-stdlib=libc++"
 
     - os: osx
       osx_image: xcode11.3
       env:
-        - MATRIX_EVAL="CC=clang && CXX=clang++"
+        - MATRIX_EVAL="CXX=clang++"
 
     - os: linux
       dist: bionic
