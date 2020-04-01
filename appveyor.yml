@@ -2,7 +2,6 @@ version: 0.1.0.{build}-{branch}
 
 configuration:
   - Debug
-  - Release
 
 platform:
   - x64

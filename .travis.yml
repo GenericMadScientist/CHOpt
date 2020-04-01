@@ -67,6 +67,7 @@ matrix:
             - clang-format-10
             - clang-tidy-10
             - libc++-10-dev
+      install:
       script:
         - clang-format-10 --version
         - clang-format-10 -i src/*.cpp src/*.hpp tests/*.cpp
