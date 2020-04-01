@@ -68,6 +68,7 @@ matrix:
             - clang-tidy-10
             - libc++-10-dev
       install:
+        - echo "CMake not required for static analysis job"
       script:
         - clang-format-10 --version
         - clang-format-10 -i src/*.cpp src/*.hpp tests/*.cpp
