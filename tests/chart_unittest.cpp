@@ -162,8 +162,8 @@ TEST_CASE("Chart reads resolution and offset", "Song")
 {
     SECTION("Defaults are 192 Res and 0 Offset")
     {
-        auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n["
-                    "ExpertSingle]\n{\n768 = N 0 0\n}";
+        const char* text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n["
+                           "ExpertSingle]\n{\n768 = N 0 0\n}";
         const auto header = Chart::parse_chart(text).header();
 
         REQUIRE(header.resolution() == 192);
@@ -172,9 +172,10 @@ TEST_CASE("Chart reads resolution and offset", "Song")
 
     SECTION("Defaults are overriden by specified values")
     {
-        auto text = "[Song]\n{\nResolution = 200\nOffset = "
-                    "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]"
-                    "\n{\n768 = N 0 0\n}";
+        const char* text
+            = "[Song]\n{\nResolution = 200\nOffset = "
+              "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]"
+              "\n{\n768 = N 0 0\n}";
         const auto header = Chart::parse_chart(text).header();
 
         REQUIRE(header.resolution() == 200);
@@ -185,8 +186,9 @@ TEST_CASE("Chart reads resolution and offset", "Song")
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart reads sync track correctly", "SyncTrack")
 {
-    auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
-                "TS 4 1\n}\n[Events]\n{\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
+    const char* text
+        = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
+          "TS 4 1\n}\n[Events]\n{\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
     const auto sync_track = Chart::parse_chart(text).sync_track();
     const auto time_sigs = std::vector<TimeSignature>({{0, 4, 4}, {768, 4, 2}});
     const auto bpms = std::vector<BPM>({{0, 200000}});
@@ -198,8 +200,9 @@ TEST_CASE("Chart reads sync track correctly", "SyncTrack")
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart reads events correctly", "Events")
 {
-    auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n768 = E "
-                "\"section intro\"\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
+    const char* text
+        = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n768 = E "
+          "\"section intro\"\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
     const auto chart = Chart::parse_chart(text);
     const auto sections = std::vector<Section>({{768, "intro"}});
 
@@ -209,8 +212,9 @@ TEST_CASE("Chart reads events correctly", "Events")
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart reads easy note track correctly", "Easy")
 {
-    auto text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[EasySingle]"
-                "\n{\n768 = N 0 0\n768 = S 2 100\n}\n";
+    const char* text
+        = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[EasySingle]"
+          "\n{\n768 = N 0 0\n768 = S 2 100\n}\n";
     const auto chart = Chart::parse_chart(text);
     const auto note_track
         = NoteTrack {{{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
@@ -221,9 +225,10 @@ TEST_CASE("Chart reads easy note track correctly", "Easy")
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart skips UTF-8 BOM", "BOM")
 {
-    auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
-                "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
-                "\n768 = N 0 0\n}";
+    const char* text
+        = "\xEF\xBB\xBF[Song]\n{\nOffset = "
+          "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
+          "\n768 = N 0 0\n}";
     const auto header = Chart::parse_chart(text).header();
 
     REQUIRE(header.resolution() == 192);
@@ -233,9 +238,10 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart can end without a newline", "End-NL")
 {
-    auto text = "\xEF\xBB\xBF[Song]\n{\nOffset = "
-                "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
-                "\n768 = N 0 0\n}";
+    const char* text
+        = "\xEF\xBB\xBF[Song]\n{\nOffset = "
+          "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
+          "\n768 = N 0 0\n}";
     const auto header = Chart::parse_chart(text).header();
 
     REQUIRE(header.resolution() == 192);
@@ -247,7 +253,7 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
 {
     SECTION("Non note sections need not be present")
     {
-        auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}";
+        const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n}";
         const auto chart = Chart::parse_chart(text);
 
         REQUIRE(chart.header().resolution() == 192);
@@ -255,7 +261,7 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
 
     SECTION("At least one non-empty note section must be present")
     {
-        auto text = "[ExpertSingle]\n{\n768 = S 2 100\n}";
+        const char* text = "[ExpertSingle]\n{\n768 = S 2 100\n}";
 
         REQUIRE_THROWS([] { return Chart::parse_chart(""); }());
         REQUIRE_THROWS([&] { return Chart::parse_chart(text); }());
@@ -263,8 +269,9 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
 
     SECTION("Non note sections can be in any order")
     {
-        auto text = "[SyncTrack]\n{\n0 = B 200000\n}\n[ExpertSingle]\n{\n768 = "
-                    "N 0 0\n}\n[Song]\n{\nResolution = 200\n}";
+        const char* text
+            = "[SyncTrack]\n{\n0 = B 200000\n}\n[ExpertSingle]\n{\n768 = "
+              "N 0 0\n}\n[Song]\n{\nResolution = 200\n}";
         const auto chart = Chart::parse_chart(text);
         const auto notes = std::vector<Note>({{768}});
         const auto bpms = std::vector<BPM>({{0, 200000}});
@@ -280,7 +287,7 @@ TEST_CASE("Only first non-empty part of note sections matter", "Note split")
 {
     SECTION("Later non-empty sections are ignored")
     {
-        auto text
+        const char* text
             = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 = N "
               "1 0\n}";
         const auto chart = Chart::parse_chart(text);
@@ -291,7 +298,8 @@ TEST_CASE("Only first non-empty part of note sections matter", "Note split")
 
     SECTION("Leading empty sections are ignored")
     {
-        auto text = "[ExpertSingle]\n{\n}\n[ExpertSingle]\n{\n768 = N 1 0\n}";
+        const char* text
+            = "[ExpertSingle]\n{\n}\n[ExpertSingle]\n{\n768 = N 1 0\n}";
         const auto chart = Chart::parse_chart(text);
         const auto notes = std::vector<Note>({{768, 0, NoteColour::Red}});
 
@@ -302,7 +310,7 @@ TEST_CASE("Only first non-empty part of note sections matter", "Note split")
 // Last checked: 23.2.2
 TEST_CASE("Notes should be sorted", "NoteSort")
 {
-    auto text = "[ExpertSingle]\n{\n768 = N 0 0\n384 = N 0 0\n}";
+    const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n384 = N 0 0\n}";
     const auto chart = Chart::parse_chart(text);
     const auto notes = std::vector<Note>(
         {{384, 0, NoteColour::Green}, {768, 0, NoteColour::Green}});
@@ -315,8 +323,9 @@ TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
 {
     SECTION("Tap flags do not apply to earlier sections")
     {
-        auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
-                    "= N 6 0\n}";
+        const char* text
+            = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
+              "= N 6 0\n}";
         const auto chart = Chart::parse_chart(text);
 
         REQUIRE(!chart.note_track(Difficulty::Expert).notes()[0].is_tap);
@@ -324,8 +333,9 @@ TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
 
     SECTION("Tap flags do not apply to or prevent later sections")
     {
-        auto text = "[ExpertSingle]\n{\n768 = N 6 0\n}\n[ExpertSingle]\n{\n768 "
-                    "= N 0 0\n}";
+        const char* text
+            = "[ExpertSingle]\n{\n768 = N 6 0\n}\n[ExpertSingle]\n{\n768 "
+              "= N 0 0\n}";
         const auto chart = Chart::parse_chart(text);
 
         REQUIRE(!chart.note_track(Difficulty::Expert).notes()[0].is_tap);
@@ -337,15 +347,16 @@ TEST_CASE("Notes with extra spaces", "NoteSpaceSkip")
 {
     SECTION("Leading non-empty sections with notes with spaces cause a throw")
     {
-        auto text = "[ExpertSingle]\n{\n768 = N  0 0\n}";
+        const char* text = "[ExpertSingle]\n{\n768 = N  0 0\n}";
 
         REQUIRE_THROWS([&] { return Chart::parse_chart(text); }());
     }
 
     SECTION("Non-leading non-empty sections with broken notes are ignored")
     {
-        auto text = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
-                    "= N  1 0\n}";
+        const char* text
+            = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
+              "= N  1 0\n}";
         const auto chart = Chart::parse_chart(text);
         const auto required_notes = std::vector<Note>({{768}});
 

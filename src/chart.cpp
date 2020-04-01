@@ -211,7 +211,7 @@ static std::string_view trim_quotes(std::string_view input)
 // input, this function throws.
 static std::optional<uint32_t> string_view_to_uint(std::string_view input)
 {
-    uint32_t result;
+    uint32_t result = 0;
     const char* last = input.data() + input.size();
     auto [p, ec] = std::from_chars(input.data(), last, result);
     if ((ec != std::errc()) || (p != last)) {
@@ -224,7 +224,7 @@ static std::optional<uint32_t> string_view_to_uint(std::string_view input)
 // input, this function throws.
 static std::optional<int32_t> string_view_to_int(std::string_view input)
 {
-    int32_t result;
+    int32_t result = 0;
     const char* last = input.data() + input.size();
     auto [p, ec] = std::from_chars(input.data(), last, result);
     if ((ec != std::errc()) || (p != last)) {
