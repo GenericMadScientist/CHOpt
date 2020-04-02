@@ -64,6 +64,9 @@ private:
         Beat end_beat;
     };
 
+    static constexpr double SP_GAIN_RATE = 1 / 30.0;
+    static constexpr double SP_PHRASE_AMOUNT = 0.25;
+
     std::vector<Point> m_points;
     TimeConverter m_converter;
     std::vector<BeatRate> m_beat_rates;
@@ -87,6 +90,11 @@ public:
     // whammy.
     [[nodiscard]] double propagate_sp_over_whammy(Beat start, Beat end,
                                                   double sp_bar_amount) const;
+    // Return the minimum and maximum amount of SP can be acquired between two
+    // points. Does not include SP from the point act_start.
+    [[nodiscard]] std::tuple<double, double>
+    total_available_sp(Beat start,
+                       std::vector<Point>::const_iterator act_start) const;
 };
 
 // Return the earliest and latest times a point can be hit.

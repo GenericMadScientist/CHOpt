@@ -428,3 +428,36 @@ TEST_CASE("is_activation_valid takes into account minimum SP", "Min SP")
         REQUIRE(!track.is_candidate_valid(candidate));
     }
 }
+
+TEST_CASE("total_available_sp counts SP correctly", "Available SP")
+{
+    std::vector<Note> notes {{0},        {192},  {384},  {576},
+                             {768, 192}, {1152}, {1344}, {1536}};
+    std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
+    NoteTrack note_track(notes, phrases, {});
+    ProcessedTrack track(note_track, {}, {});
+    const auto& points = track.points();
+
+    SECTION("Phrases are counted correctly")
+    {
+        REQUIRE(track.total_available_sp(Beat(0.0), points.cbegin() + 1)
+                == std::tuple {0.25, 0.25});
+        REQUIRE(track.total_available_sp(Beat(0.0), points.cbegin() + 2)
+                == std::tuple {0.25, 0.25});
+        REQUIRE(track.total_available_sp(Beat(0.5), points.cbegin() + 3)
+                == std::tuple {0.25, 0.25});
+    }
+
+    SECTION("Whammy is counted correctly")
+    {
+        auto result = track.total_available_sp(Beat(4.0), points.cbegin() + 5);
+        REQUIRE(std::get<0>(result) == Approx(0.0));
+        REQUIRE(std::get<1>(result) == Approx(0.00121528));
+    }
+
+    SECTION("SP does not exceed full bar")
+    {
+        REQUIRE(track.total_available_sp(Beat(0.0), points.cend() - 1)
+                == std::tuple {1.0, 1.0});
+    }
+}

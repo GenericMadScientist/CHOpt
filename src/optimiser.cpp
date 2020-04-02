@@ -100,7 +100,6 @@ ProcessedTrack::form_beat_rates(const SongHeader& header,
 {
     constexpr double DEFAULT_BEAT_RATE = 4.0;
     constexpr double MEASURES_PER_BAR = 8.0;
-    constexpr double SP_GAIN_RATE = 1 / 30.0;
 
     std::vector<BeatRate> beat_rates;
     beat_rates.reserve(sync_track.time_sigs().size());
@@ -201,7 +200,6 @@ bool ProcessedTrack::is_candidate_valid(
 {
     constexpr double MEASURES_PER_BAR = 8.0;
     constexpr double MINIMUM_SP_AMOUNT = 0.5;
-    constexpr double SP_PHRASE_AMOUNT = 0.25;
 
     if (activation.max_sp_bar_amount < MINIMUM_SP_AMOUNT) {
         return false;
@@ -284,6 +282,37 @@ double ProcessedTrack::propagate_over_whammy_range(Beat start, Beat end,
     }
 
     return sp_bar_amount;
+}
+
+std::tuple<double, double> ProcessedTrack::total_available_sp(
+    Beat start, std::vector<Point>::const_iterator act_start) const
+{
+    auto min_sp = 0.0;
+    auto p
+        = std::find_if(m_points.cbegin(), m_points.cend(),
+                       [=](const auto& x) { return x.beat_position >= start; });
+    for (; p < act_start; ++p) {
+        if (p->is_sp_granting_note) {
+            min_sp += SP_PHRASE_AMOUNT;
+        }
+    }
+
+    auto max_sp = min_sp;
+    auto q = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
+                          [=](const auto& x) { return x.end_beat > start; });
+    while (q < m_whammy_ranges.cend()) {
+        if (q->start_beat >= act_start->beat_position) {
+            break;
+        }
+        auto end = std::min(q->end_beat, act_start->beat_position);
+        max_sp += (end - q->start_beat).value() * SP_GAIN_RATE;
+        ++q;
+    }
+
+    min_sp = std::min(min_sp, 1.0);
+    max_sp = std::min(max_sp, 1.0);
+
+    return {min_sp, max_sp};
 }
 
 Beat front_end(const Point& point, const TimeConverter& converter)
