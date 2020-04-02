@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <array>
 
 #include "catch.hpp"
@@ -124,6 +125,58 @@ TEST_CASE("End of SP phrase points", "End of SP")
                               {Beat(6.0), 50, false, true}});
 
     REQUIRE(points == expected_points);
+}
+
+// Last checked: 24.0.1555-master
+TEST_CASE("Combo multiplier is taken into account", "Multiplier")
+{
+    SECTION("Multiplier applies to non-holds")
+    {
+        std::vector<Note> notes;
+        notes.reserve(50);
+        for (auto i = 0U; i < 50U; ++i) {
+            notes.push_back({192 * i});
+        }
+        const auto track = NoteTrack(notes, {}, {});
+        std::vector<Point> expected_points;
+        expected_points.reserve(50);
+        for (auto i = 0U; i < 50U; ++i) {
+            const auto mult = 1U + std::min((i + 1) / 10, 3U);
+            expected_points.push_back({Beat(i), 50 * mult, false, false});
+        }
+
+        REQUIRE(ProcessedTrack(track, {}, {}).points() == expected_points);
+    }
+
+    SECTION("Hold points are multiplied")
+    {
+        std::vector<Note> notes;
+        notes.reserve(50);
+        for (auto i = 0U; i < 50U; ++i) {
+            notes.push_back({192 * i});
+        }
+        notes.push_back({9600, 192});
+
+        const auto track = NoteTrack(notes, {}, {});
+        const auto points = ProcessedTrack(track, {}, {}).points();
+
+        REQUIRE(points.back().value == 4);
+    }
+
+    SECTION("Later hold points in extended sustains are multiplied")
+    {
+        std::vector<Note> notes;
+        notes.reserve(10);
+        for (auto i = 0U; i < 10U; ++i) {
+            notes.push_back({192 * i});
+        }
+        notes[0].length = 2000;
+
+        const auto track = NoteTrack(notes, {}, {});
+        const auto points = ProcessedTrack(track, {}, {}).points();
+
+        REQUIRE(points.back().value == 2);
+    }
 }
 
 // Last checked: 24.0.1555-master

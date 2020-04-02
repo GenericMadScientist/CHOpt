@@ -82,6 +82,15 @@ static std::vector<Point> notes_to_points(const NoteTrack& track,
                          return x.beat_position < y.beat_position;
                      });
 
+    auto combo = 0U;
+    for (auto& point : points) {
+        if (!point.is_hold_point) {
+            ++combo;
+        }
+        const auto multiplier = 1 + std::min(combo / 10, 3U);
+        point.value *= multiplier;
+    }
+
     return points;
 }
 
