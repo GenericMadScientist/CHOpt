@@ -199,7 +199,6 @@ bool ProcessedTrack::is_candidate_valid(
     const ActivationCandidate& activation) const
 {
     constexpr double MEASURES_PER_BAR = 8.0;
-    constexpr double MINIMUM_SP_AMOUNT = 0.5;
 
     if (activation.max_sp_bar_amount < MINIMUM_SP_AMOUNT) {
         return false;
@@ -313,6 +312,35 @@ std::tuple<double, double> ProcessedTrack::total_available_sp(
     max_sp = std::min(max_sp, 1.0);
 
     return {min_sp, max_sp};
+}
+
+std::vector<Activation> ProcessedTrack::optimal_path() const
+{
+    std::vector<Activation> activations;
+
+    auto starting_beat = Beat(0.0);
+    for (auto p = m_points.cbegin(); p < m_points.cend();) {
+        auto [min_sp, max_sp] = total_available_sp(starting_beat, p);
+        if (max_sp < MINIMUM_SP_AMOUNT) {
+            ++p;
+            continue;
+        }
+        auto q = m_points.cend() - 1;
+        while (true) {
+            ActivationCandidate candidate {p, q, starting_beat, min_sp, max_sp};
+            if (is_candidate_valid(candidate)) {
+                break;
+            }
+            --q;
+        }
+        activations.push_back({p, q});
+        p = std::next(q);
+        if (p != m_points.cend()) {
+            starting_beat = p->beat_position;
+        }
+    }
+
+    return activations;
 }
 
 Beat front_end(const Point& point, const TimeConverter& converter)

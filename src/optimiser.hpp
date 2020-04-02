@@ -49,6 +49,17 @@ struct ActivationCandidate {
     double max_sp_bar_amount {0.0};
 };
 
+struct Activation {
+    std::vector<Point>::const_iterator act_start;
+    std::vector<Point>::const_iterator act_end;
+
+    friend bool operator==(const Activation& lhs, const Activation& rhs)
+    {
+        return std::tie(lhs.act_start, lhs.act_end)
+            == std::tie(rhs.act_start, rhs.act_end);
+    }
+};
+
 // Represents a song processed for Star Power optimisation. The constructor
 // should only fail due to OOM; invariants on the song are supposed to be
 // upheld by the constructors of the arguments.
@@ -64,6 +75,7 @@ private:
         Beat end_beat;
     };
 
+    static constexpr double MINIMUM_SP_AMOUNT = 0.5;
     static constexpr double SP_GAIN_RATE = 1 / 30.0;
     static constexpr double SP_PHRASE_AMOUNT = 0.25;
 
@@ -95,6 +107,8 @@ public:
     [[nodiscard]] std::tuple<double, double>
     total_available_sp(Beat start,
                        std::vector<Point>::const_iterator act_start) const;
+    // Return the optimal Star Power path.
+    [[nodiscard]] std::vector<Activation> optimal_path() const;
 };
 
 // Return the earliest and latest times a point can be hit.
