@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16.2)
+cmake_minimum_required(VERSION 3.15.0)
 
 project(chopt
     VERSION 0.1.0
