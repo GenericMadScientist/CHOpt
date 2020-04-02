@@ -45,7 +45,8 @@ struct ActivationCandidate {
     std::vector<Point>::const_iterator act_start;
     std::vector<Point>::const_iterator act_end;
     Beat earliest_activation_point {0.0};
-    double sp_bar_amount {0.0};
+    double min_sp_bar_amount {0.0};
+    double max_sp_bar_amount {0.0};
 };
 
 // Represents a song processed for Star Power optimisation. The constructor
