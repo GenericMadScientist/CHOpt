@@ -126,10 +126,19 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, const SongHeader& header,
 {
     std::vector<std::tuple<uint32_t, uint32_t>> ranges_as_ticks;
     for (const auto& note : track.notes()) {
-        if (note.length > 0) {
-            ranges_as_ticks.emplace_back(note.position,
-                                         note.position + note.length);
+        if (note.length == 0) {
+            continue;
         }
+        auto phrase
+            = std::find_if(track.sp_phrases().cbegin(),
+                           track.sp_phrases().cend(), [&](const auto& p) {
+                               return phrase_contains_pos(p, note.position);
+                           });
+        if (phrase == track.sp_phrases().cend()) {
+            continue;
+        }
+        ranges_as_ticks.emplace_back(note.position,
+                                     note.position + note.length);
     }
     std::sort(ranges_as_ticks.begin(), ranges_as_ticks.end());
 

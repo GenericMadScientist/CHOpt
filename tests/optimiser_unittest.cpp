@@ -278,6 +278,15 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(10.5), 1.0)
                 == Approx(0.984375));
     }
+
+    SECTION("Hold notes not in a phrase do not contribute SP")
+    {
+        NoteTrack no_sp_note_track(notes, {}, {});
+        ProcessedTrack track(no_sp_note_track, {}, {});
+
+        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(4.0), 1.0)
+                == Approx(0.875));
+    }
 }
 
 // Last checked: 24.0.1555-master
