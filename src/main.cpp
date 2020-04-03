@@ -29,32 +29,35 @@ int main(int argc, char* argv[])
 {
     try {
         if (argc < 2) {
-            std::cout << "Please specify a file!" << std::endl;
+            std::cerr << "Please specify a file!\n";
             return EXIT_FAILURE;
         }
         // clang-tidy complains about the following pointer arithmetic, but
         // using gsl::span just for this is overkill.
         std::ifstream in(argv[1]); // NOLINT
         if (!in.is_open()) {
-            std::cout << "File did not open, please specify a valid file!"
-                      << std::endl;
+            std::cerr << "File did not open, please specify a valid file!\n";
             return EXIT_FAILURE;
         }
         std::string contents((std::istreambuf_iterator<char>(in)),
                              std::istreambuf_iterator<char>());
-        std::cout << contents.size() << std::endl;
         const auto chart = Chart::parse_chart(contents);
         const auto& track = chart.note_track(Difficulty::Expert);
-        const auto points
-            = ProcessedTrack(track, chart.header(), chart.sync_track())
-                  .points();
-        (void)points;
+        const auto processed_track
+            = ProcessedTrack(track, chart.header(), chart.sync_track());
+        const auto path = processed_track.optimal_path();
+        std::cout << "Number of activations: " << path.size() << '\n';
+        for (const auto& act : path) {
+            std::cout << "Beat " << act.act_start->beat_position.value()
+                      << " to Beat " << act.act_end->beat_position.value()
+                      << '\n';
+        }
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     } catch (...) {
-        std::cout << "Unexpected non-exception error!" << std::endl;
+        std::cerr << "Unexpected non-exception error!" << std::endl;
         return EXIT_FAILURE;
     }
 }
