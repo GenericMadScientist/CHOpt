@@ -355,7 +355,7 @@ void ProcessedTrack::add_point_to_partial_acts(
                 }
                 --q;
             }
-            assert(start <= q);
+            assert(start <= q); // NOLINT
             auto act_score = std::accumulate(
                 start, q + 1, 0U,
                 [](const auto& sum, const auto& x) { return sum + x.value; });
