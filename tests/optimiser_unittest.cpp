@@ -477,7 +477,7 @@ TEST_CASE("optimal_path produces the correct path")
         REQUIRE(track.optimal_path() == optimal_path);
     }
 
-    SECTION("Simplest song with multiple actss")
+    SECTION("Simplest song with multiple acts")
     {
         std::vector<Note> notes {{0},
                                  {192},
@@ -523,6 +523,20 @@ TEST_CASE("optimal_path produces the correct path")
         const auto& points = track.points();
         std::vector<Activation> optimal_path {
             {points.cbegin() + 2, points.cbegin() + 3}};
+
+        REQUIRE(track.optimal_path() == optimal_path);
+    }
+
+    SECTION("Simplest song where greedy algorithm fails")
+    {
+        std::vector<Note> notes {
+            {0}, {192}, {384}, {3840}, {3840, 0, NoteColour::Red}};
+        std::vector<StarPower> phrases {{0, 50}, {192, 50}};
+        NoteTrack note_track(notes, phrases, {});
+        ProcessedTrack track(note_track, {}, {});
+        const auto& points = track.points();
+        std::vector<Activation> optimal_path {
+            {points.cbegin() + 3, points.cbegin() + 3}};
 
         REQUIRE(track.optimal_path() == optimal_path);
     }

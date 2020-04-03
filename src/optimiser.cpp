@@ -17,7 +17,9 @@
  */
 
 #include <algorithm>
+#include <cassert>
 #include <iterator>
+#include <numeric>
 
 #include "optimiser.hpp"
 
@@ -314,33 +316,76 @@ std::tuple<double, double> ProcessedTrack::total_available_sp(
     return {min_sp, max_sp};
 }
 
-std::vector<Activation> ProcessedTrack::optimal_path() const
+std::tuple<uint32_t, std::vector<Activation>> ProcessedTrack::get_partial_path(
+    std::vector<Point>::const_iterator point,
+    std::map<std::vector<Point>::const_iterator,
+             std::tuple<uint32_t, std::vector<Activation>>>& partial_paths)
+    const
 {
-    std::vector<Activation> activations;
+    if (partial_paths.find(point) == partial_paths.end()) {
+        add_point_to_partial_acts(point, partial_paths);
+    }
+    return partial_paths.at(point);
+}
 
-    auto starting_beat = Beat(0.0);
-    for (auto p = m_points.cbegin(); p < m_points.cend();) {
+void ProcessedTrack::add_point_to_partial_acts(
+    std::vector<Point>::const_iterator point,
+    std::map<std::vector<Point>::const_iterator,
+             std::tuple<uint32_t, std::vector<Activation>>>& partial_paths)
+    const
+{
+    auto starting_beat = point->beat_position;
+    std::vector<std::tuple<uint32_t, std::vector<Activation>>> paths;
+
+    for (auto p = point; p < m_points.cend(); ++p) {
         auto [min_sp, max_sp] = total_available_sp(starting_beat, p);
         if (max_sp < MINIMUM_SP_AMOUNT) {
-            ++p;
             continue;
         }
-        auto q = m_points.cend() - 1;
-        while (true) {
-            ActivationCandidate candidate {p, q, starting_beat, min_sp, max_sp};
-            if (is_candidate_valid(candidate)) {
-                break;
+        std::vector<std::tuple<uint32_t, std::vector<Point>::const_iterator,
+                               std::vector<Point>::const_iterator>>
+            acts;
+        for (auto start = p; start < m_points.cend(); ++start) {
+            auto q = m_points.cend() - 1;
+            while (true) {
+                ActivationCandidate candidate {start, q, starting_beat, min_sp,
+                                               max_sp};
+                if (is_candidate_valid(candidate)) {
+                    break;
+                }
+                --q;
             }
-            --q;
-        }
-        activations.push_back({p, q});
-        p = std::next(q);
-        if (p != m_points.cend()) {
-            starting_beat = p->beat_position;
+            assert(start <= q);
+            auto act_score = std::accumulate(
+                start, q + 1, 0U,
+                [](const auto& sum, const auto& x) { return sum + x.value; });
+            auto rest_of_path = get_partial_path(q + 1, partial_paths);
+            auto score = act_score + std::get<0>(rest_of_path);
+            auto act_set = std::get<1>(rest_of_path);
+            act_set.insert(act_set.begin(), {start, q});
+            paths.emplace_back(score, act_set);
         }
     }
 
-    return activations;
+    auto final_act = std::max_element(
+        paths.cbegin(), paths.cend(), [](const auto& x, const auto& y) {
+            return std::get<0>(x) < std::get<0>(y);
+        });
+    if (final_act != paths.cend()) {
+        partial_paths[point] = *final_act;
+    } else {
+        partial_paths[point] = {0, {}};
+    }
+}
+
+std::vector<Activation> ProcessedTrack::optimal_path() const
+{
+    std::map<std::vector<Point>::const_iterator,
+             std::tuple<uint32_t, std::vector<Activation>>>
+        partial_paths;
+    partial_paths[m_points.cend()] = {0, {}};
+
+    return std::get<1>(get_partial_path(m_points.cbegin(), partial_paths));
 }
 
 Beat front_end(const Point& point, const TimeConverter& converter)

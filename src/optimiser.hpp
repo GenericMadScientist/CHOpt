@@ -20,6 +20,7 @@
 #define CHOPT_OPTIMISER_HPP
 
 #include <cstdint>
+#include <map>
 #include <tuple>
 #include <vector>
 
@@ -87,6 +88,16 @@ private:
     [[nodiscard]] double
     propagate_over_whammy_range(Beat start, Beat end,
                                 double sp_bar_amount) const;
+    std::tuple<uint32_t, std::vector<Activation>>
+    get_partial_path(std::vector<Point>::const_iterator point,
+                     std::map<std::vector<Point>::const_iterator,
+                              std::tuple<uint32_t, std::vector<Activation>>>&
+                         partial_paths) const;
+    void add_point_to_partial_acts(
+        std::vector<Point>::const_iterator point,
+        std::map<std::vector<Point>::const_iterator,
+                 std::tuple<uint32_t, std::vector<Activation>>>& partial_paths)
+        const;
 
     static std::vector<BeatRate> form_beat_rates(const SongHeader& header,
                                                  const SyncTrack& sync_track);
