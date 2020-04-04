@@ -236,6 +236,32 @@ static Measure point_to_measure(const std::vector<Point>& points,
         std::distance(points.cbegin(), point))];
 }
 
+std::vector<Point>::const_iterator ProcessedTrack::furthest_reachable_point(
+    std::vector<Point>::const_iterator point, double sp) const
+{
+    auto current_position = point->beat_position;
+    auto current_meas_position
+        = point_to_measure(m_points, m_point_measures, point);
+
+    for (auto p = point; p < m_points.cend(); ++p) {
+        if (p->is_sp_granting_note) {
+            auto p_meas_position
+                = point_to_measure(m_points, m_point_measures, p);
+            sp = propagate_sp_over_whammy(current_position, p->beat_position,
+                                          current_meas_position,
+                                          p_meas_position, sp);
+            if (sp < 0.0) {
+                return p - 1;
+            }
+            sp = std::min(sp + SP_PHRASE_AMOUNT, 1.0);
+            current_position = p->beat_position;
+            current_meas_position = p_meas_position;
+        }
+    }
+
+    return m_points.cend() - 1;
+}
+
 bool ProcessedTrack::is_candidate_valid(
     const ActivationCandidate& activation) const
 {
@@ -412,7 +438,8 @@ void ProcessedTrack::add_point_to_partial_acts(
         std::vector<std::tuple<uint32_t, std::vector<Point>::const_iterator,
                                std::vector<Point>::const_iterator>>
             acts;
-        for (auto q = p; q < m_points.cend(); ++q) {
+        auto max_q = furthest_reachable_point(p, max_sp);
+        for (auto q = p; q <= max_q; ++q) {
             if (attained_act_ends.find(q) != attained_act_ends.end()) {
                 continue;
             }

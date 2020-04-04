@@ -92,6 +92,9 @@ private:
     propagate_over_whammy_range(Beat start, Beat end,
                                 double sp_bar_amount) const;
     [[nodiscard]] std::vector<Point>::const_iterator
+    furthest_reachable_point(std::vector<Point>::const_iterator point,
+                             double sp) const;
+    [[nodiscard]] std::vector<Point>::const_iterator
     next_candidate_point(std::vector<Point>::const_iterator point) const;
     std::tuple<uint32_t, std::vector<Activation>>
     get_partial_path(std::vector<Point>::const_iterator point,
