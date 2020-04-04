@@ -44,12 +44,22 @@ struct Point {
 
 using PointPtr = std::vector<Point>::const_iterator;
 
+// Represents the minimum and maximum SP possible at a given time.
+struct SpBar {
+    double min;
+    double max;
+
+    friend bool operator==(const SpBar& lhs, const SpBar& rhs)
+    {
+        return std::tie(lhs.min, lhs.max) == std::tie(rhs.min, rhs.max);
+    }
+};
+
 struct ActivationCandidate {
     PointPtr act_start;
     PointPtr act_end;
     Beat earliest_activation_point {0.0};
-    double min_sp_bar_amount {0.0};
-    double max_sp_bar_amount {0.0};
+    SpBar sp_bar {0.0, 0.0};
 };
 
 struct Activation {
@@ -126,8 +136,8 @@ public:
                                                   double sp_bar_amount) const;
     // Return the minimum and maximum amount of SP can be acquired between two
     // points. Does not include SP from the point act_start.
-    [[nodiscard]] std::tuple<double, double>
-    total_available_sp(Beat start, PointPtr act_start) const;
+    [[nodiscard]] SpBar total_available_sp(Beat start,
+                                           PointPtr act_start) const;
     // Return the optimal Star Power path.
     [[nodiscard]] Path optimal_path() const;
 };

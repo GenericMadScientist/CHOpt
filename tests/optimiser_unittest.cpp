@@ -310,13 +310,14 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     NoteTrack note_track(notes, {}, {});
     ProcessedTrack track(note_track, {}, {});
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(), points.cbegin() + 3,
-                                   Beat(0.0), 1.0, 1.0};
+    ActivationCandidate candidate {
+        points.cbegin(), points.cbegin() + 3, Beat(0.0), {1.0, 1.0}};
     ProcessedTrack second_track(note_track, {}, SyncTrack({{0, 3, 4}}, {}));
     const auto& second_points = second_track.points();
     ActivationCandidate second_candidate {second_points.cbegin(),
-                                          second_points.cbegin() + 3, Beat(0.0),
-                                          1.0, 1.0};
+                                          second_points.cbegin() + 3,
+                                          Beat(0.0),
+                                          {1.0, 1.0}};
 
     SECTION("Full bar works with time signatures")
     {
@@ -327,11 +328,9 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     SECTION("Half bar works with time signatures")
     {
         candidate.act_end = points.cbegin() + 2;
-        candidate.min_sp_bar_amount = 0.5;
-        candidate.max_sp_bar_amount = 0.5;
+        candidate.sp_bar = {0.5, 0.5};
         second_candidate.act_end = second_points.cbegin() + 2;
-        second_candidate.min_sp_bar_amount = 0.5;
-        second_candidate.max_sp_bar_amount = 0.5;
+        second_candidate.sp_bar = {0.5, 0.5};
 
         REQUIRE(track.is_candidate_valid(candidate));
         REQUIRE(!second_track.is_candidate_valid(second_candidate));
@@ -340,7 +339,7 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     SECTION("Below half bar never works")
     {
         candidate.act_end = points.cbegin() + 1;
-        candidate.max_sp_bar_amount = 0.25;
+        candidate.sp_bar.max = 0.25;
 
         REQUIRE(!track.is_candidate_valid(candidate));
     }
@@ -348,7 +347,7 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     SECTION("Check next point needs to not lie in activation")
     {
         candidate.act_end = points.cbegin() + 1;
-        candidate.max_sp_bar_amount = 0.6;
+        candidate.sp_bar.max = 0.6;
 
         REQUIRE(!track.is_candidate_valid(candidate));
     }
@@ -361,7 +360,8 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
                                                overlap_points.cbegin() + 3,
-                                               Beat(0.0), 0.8, 0.8};
+                                               Beat(0.0),
+                                               {0.8, 0.8}};
 
         REQUIRE(overlap_track.is_candidate_valid(overlap_candidate));
     }
@@ -375,7 +375,8 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
                                                overlap_points.cbegin() + 3,
-                                               Beat(0.0), 0.8, 0.8};
+                                               Beat(0.0),
+                                               {0.8, 0.8}};
 
         REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
     }
@@ -389,7 +390,8 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
                                                overlap_points.cbegin() + 2,
-                                               Beat(0.0), 1.0, 1.0};
+                                               Beat(0.0),
+                                               {1.0, 1.0}};
 
         REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
     }
@@ -397,8 +399,7 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     SECTION("Earliest activation point is considered")
     {
         candidate.act_end = points.cbegin() + 1;
-        candidate.min_sp_bar_amount = 0.53125;
-        candidate.max_sp_bar_amount = 0.53125;
+        candidate.sp_bar = {0.53125, 0.53125};
         candidate.earliest_activation_point = Beat(-2.0);
 
         REQUIRE(track.is_candidate_valid(candidate));
@@ -413,8 +414,8 @@ TEST_CASE("is_activation_valid works with whammy", "Valid whammy acts")
     NoteTrack note_track(notes, phrases, {});
     ProcessedTrack track(note_track, {}, {});
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(), points.cend() - 2,
-                                   Beat(0.0), 0.5, 0.5};
+    ActivationCandidate candidate {
+        points.cbegin(), points.cend() - 2, Beat(0.0), {0.5, 0.5}};
 
     SECTION("Check whammy is counted")
     {
@@ -423,7 +424,7 @@ TEST_CASE("is_activation_valid works with whammy", "Valid whammy acts")
 
     SECTION("Check compressed activations are counted")
     {
-        candidate.max_sp_bar_amount = 0.9;
+        candidate.sp_bar.max = 0.9;
         REQUIRE(track.is_candidate_valid(candidate));
     }
 }
@@ -435,8 +436,8 @@ TEST_CASE("is_activation_valid takes into account minimum SP", "Min SP")
     NoteTrack note_track(notes, {}, {});
     ProcessedTrack track(note_track, {}, {});
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(), points.cbegin() + 3,
-                                   Beat(0.0), 0.5, 1.0};
+    ActivationCandidate candidate {
+        points.cbegin(), points.cbegin() + 3, Beat(0.0), {0.5, 1.0}};
 
     SECTION("Lower SP is considered")
     {
@@ -446,7 +447,7 @@ TEST_CASE("is_activation_valid takes into account minimum SP", "Min SP")
     SECTION("Lower SP is only considered down to a half-bar")
     {
         candidate.act_end = points.cbegin() + 1;
-        candidate.min_sp_bar_amount = 0.25;
+        candidate.sp_bar.min = 0.25;
 
         REQUIRE(!track.is_candidate_valid(candidate));
     }
@@ -464,24 +465,24 @@ TEST_CASE("total_available_sp counts SP correctly", "Available SP")
     SECTION("Phrases are counted correctly")
     {
         REQUIRE(track.total_available_sp(Beat(0.0), points.cbegin() + 1)
-                == std::tuple {0.25, 0.25});
+                == SpBar {0.25, 0.25});
         REQUIRE(track.total_available_sp(Beat(0.0), points.cbegin() + 2)
-                == std::tuple {0.25, 0.25});
+                == SpBar {0.25, 0.25});
         REQUIRE(track.total_available_sp(Beat(0.5), points.cbegin() + 3)
-                == std::tuple {0.25, 0.25});
+                == SpBar {0.25, 0.25});
     }
 
     SECTION("Whammy is counted correctly")
     {
         auto result = track.total_available_sp(Beat(4.0), points.cbegin() + 5);
-        REQUIRE(std::get<0>(result) == Approx(0.0));
-        REQUIRE(std::get<1>(result) == Approx(0.00121528));
+        REQUIRE(result.min == Approx(0.0));
+        REQUIRE(result.max == Approx(0.00121528));
     }
 
     SECTION("SP does not exceed full bar")
     {
         REQUIRE(track.total_available_sp(Beat(0.0), points.cend() - 1)
-                == std::tuple {1.0, 1.0});
+                == SpBar {1.0, 1.0});
     }
 }
 

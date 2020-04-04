@@ -267,7 +267,7 @@ bool ProcessedTrack::is_candidate_valid(
 {
     constexpr double MEASURES_PER_BAR = 8.0;
 
-    if (activation.max_sp_bar_amount < MINIMUM_SP_AMOUNT) {
+    if (activation.sp_bar.max < MINIMUM_SP_AMOUNT) {
         return false;
     }
 
@@ -275,8 +275,8 @@ bool ProcessedTrack::is_candidate_valid(
     auto current_meas_position
         = point_to_measure(m_points, m_point_measures, activation.act_start);
 
-    auto min_sp = std::max(activation.min_sp_bar_amount, MINIMUM_SP_AMOUNT);
-    auto max_sp = activation.max_sp_bar_amount;
+    auto min_sp = std::max(activation.sp_bar.min, MINIMUM_SP_AMOUNT);
+    auto max_sp = activation.sp_bar.max;
 
     auto starting_meas_diff = current_meas_position
         - m_converter.beats_to_measures(activation.earliest_activation_point);
@@ -360,8 +360,7 @@ double ProcessedTrack::propagate_over_whammy_range(Beat start, Beat end,
     return sp_bar_amount;
 }
 
-std::tuple<double, double>
-ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
+SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
 {
     auto min_sp = 0.0;
     auto p
@@ -434,17 +433,16 @@ void ProcessedTrack::add_point_to_partial_acts(
     std::set<PointPtr> attained_act_ends;
 
     for (auto p = point; p < m_points.cend(); ++p) {
-        auto [min_sp, max_sp] = total_available_sp(starting_beat, p);
-        if (max_sp < MINIMUM_SP_AMOUNT) {
+        auto sp_bar = total_available_sp(starting_beat, p);
+        if (sp_bar.max < MINIMUM_SP_AMOUNT) {
             continue;
         }
-        std::vector<std::tuple<uint32_t, PointPtr, PointPtr>> acts;
-        auto max_q = furthest_reachable_point(p, max_sp);
+        auto max_q = furthest_reachable_point(p, sp_bar.max);
         for (auto q = p; q <= max_q; ++q) {
             if (attained_act_ends.find(q) != attained_act_ends.end()) {
                 continue;
             }
-            ActivationCandidate candidate {p, q, starting_beat, min_sp, max_sp};
+            ActivationCandidate candidate {p, q, starting_beat, sp_bar};
             if (!is_candidate_valid(candidate)) {
                 continue;
             }
