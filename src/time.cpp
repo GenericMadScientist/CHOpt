@@ -32,7 +32,7 @@ TimeConverter::TimeConverter(const SyncTrack& sync_track,
 
     for (const auto& bpm : sync_track.bpms()) {
         last_time += ((bpm.position - last_tick) * MS_PER_MINUTE)
-            / (static_cast<uint32_t>(header.resolution()) * last_bpm);
+            / (static_cast<double>(header.resolution()) * last_bpm);
         const auto beat
             = static_cast<double>(bpm.position) / header.resolution();
         m_beat_timestamps.push_back({Beat(beat), Second(last_time)});
