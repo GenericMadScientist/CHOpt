@@ -327,12 +327,28 @@ std::tuple<double, double> ProcessedTrack::total_available_sp(
     return {min_sp, max_sp};
 }
 
+std::vector<Point>::const_iterator ProcessedTrack::next_candidate_point(
+    std::vector<Point>::const_iterator point) const
+{
+    while (point != m_points.cend()) {
+        if (point->is_sp_granting_note) {
+            return point;
+        }
+        if (point->is_hold_point) {
+            return point;
+        }
+        ++point;
+    }
+    return m_points.cend();
+}
+
 std::tuple<uint32_t, std::vector<Activation>> ProcessedTrack::get_partial_path(
     std::vector<Point>::const_iterator point,
     std::map<std::vector<Point>::const_iterator,
              std::tuple<uint32_t, std::vector<Activation>>>& partial_paths)
     const
 {
+    point = next_candidate_point(point);
     if (partial_paths.find(point) == partial_paths.end()) {
         add_point_to_partial_acts(point, partial_paths);
     }
