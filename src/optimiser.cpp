@@ -20,6 +20,7 @@
 #include <cassert>
 #include <iterator>
 #include <numeric>
+#include <set>
 
 #include "optimiser.hpp"
 
@@ -401,6 +402,8 @@ void ProcessedTrack::add_point_to_partial_acts(
     auto starting_beat = point->beat_position;
     std::vector<std::tuple<uint32_t, std::vector<Activation>>> paths;
 
+    std::set<std::vector<Point>::const_iterator> attained_act_ends;
+
     for (auto p = point; p < m_points.cend(); ++p) {
         auto [min_sp, max_sp] = total_available_sp(starting_beat, p);
         if (max_sp < MINIMUM_SP_AMOUNT) {
@@ -409,24 +412,23 @@ void ProcessedTrack::add_point_to_partial_acts(
         std::vector<std::tuple<uint32_t, std::vector<Point>::const_iterator,
                                std::vector<Point>::const_iterator>>
             acts;
-        for (auto start = p; start < m_points.cend(); ++start) {
-            auto q = m_points.cend() - 1;
-            while (true) {
-                ActivationCandidate candidate {start, q, starting_beat, min_sp,
-                                               max_sp};
-                if (is_candidate_valid(candidate)) {
-                    break;
-                }
-                --q;
+        for (auto q = p; q < m_points.cend(); ++q) {
+            if (attained_act_ends.find(q) != attained_act_ends.end()) {
+                continue;
             }
-            assert(start <= q); // NOLINT
+            ActivationCandidate candidate {p, q, starting_beat, min_sp, max_sp};
+            if (!is_candidate_valid(candidate)) {
+                continue;
+            }
+            attained_act_ends.insert(q);
+
             auto act_score = std::accumulate(
-                start, q + 1, 0U,
+                p, std::next(q), 0U,
                 [](const auto& sum, const auto& x) { return sum + x.value; });
-            auto rest_of_path = get_partial_path(q + 1, partial_paths);
+            auto rest_of_path = get_partial_path(std::next(q), partial_paths);
             auto score = act_score + std::get<0>(rest_of_path);
             auto act_set = std::get<1>(rest_of_path);
-            act_set.insert(act_set.begin(), {start, q});
+            act_set.insert(act_set.begin(), {p, q});
             paths.emplace_back(score, act_set);
         }
     }
