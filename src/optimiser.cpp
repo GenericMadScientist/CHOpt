@@ -118,6 +118,20 @@ ProcessedTrack::form_beat_rates(const SongHeader& header,
     return beat_rates;
 }
 
+static std::vector<Measure>
+form_point_measures(const std::vector<Point>& points,
+                    const TimeConverter& converter)
+{
+    std::vector<Measure> locations;
+    locations.reserve(points.size());
+
+    for (const auto& point : points) {
+        locations.push_back(converter.beats_to_measures(point.beat_position));
+    }
+
+    return locations;
+}
+
 ProcessedTrack::ProcessedTrack(const NoteTrack& track, const SongHeader& header,
                                const SyncTrack& sync_track)
     : m_points {notes_to_points(track, header)}
@@ -162,29 +176,34 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, const SongHeader& header,
                 = static_cast<double>(std::get<0>(range)) / header.resolution();
             auto end
                 = static_cast<double>(std::get<1>(range)) / header.resolution();
-            m_whammy_ranges.push_back({Beat(start), Beat(end)});
+            auto start_meas = m_converter.beats_to_measures(Beat(start));
+            auto end_meas = m_converter.beats_to_measures(Beat(end));
+            m_whammy_ranges.push_back(
+                {Beat(start), Beat(end), start_meas, end_meas});
         }
     }
+
+    m_point_measures = form_point_measures(m_points, m_converter);
 }
 
 double ProcessedTrack::propagate_sp_over_whammy(Beat start, Beat end,
+                                                Measure start_meas,
+                                                Measure end_meas,
                                                 double sp_bar_amount) const
 {
     constexpr double MEASURES_PER_BAR = 8.0;
 
-    auto start_meas = m_converter.beats_to_measures(start);
     auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
                           [=](const auto& x) { return x.end_beat > start; });
     while ((p != m_whammy_ranges.cend()) && (p->start_beat < end)) {
         if (p->start_beat > start) {
-            auto meas_diff
-                = m_converter.beats_to_measures(p->start_beat) - start_meas;
+            auto meas_diff = p->start_meas - start_meas;
             sp_bar_amount -= meas_diff.value() / MEASURES_PER_BAR;
             if (sp_bar_amount < 0.0) {
                 return -1.0;
             }
             start = p->start_beat;
-            start_meas = m_converter.beats_to_measures(p->start_beat);
+            start_meas = p->start_meas;
         }
         auto range_end = std::min(end, p->end_beat);
         sp_bar_amount
@@ -196,16 +215,24 @@ double ProcessedTrack::propagate_sp_over_whammy(Beat start, Beat end,
         if (start >= end) {
             return sp_bar_amount;
         }
-        start_meas = m_converter.beats_to_measures(p->end_beat);
+        start_meas = p->end_meas;
         ++p;
     }
 
-    auto meas_diff = m_converter.beats_to_measures(end) - start_meas;
+    auto meas_diff = end_meas - start_meas;
     sp_bar_amount -= meas_diff.value() / MEASURES_PER_BAR;
     if (sp_bar_amount < 0.0) {
         return -1.0;
     }
     return sp_bar_amount;
+}
+
+static Measure point_to_measure(const std::vector<Point>& points,
+                                const std::vector<Measure>& point_meas,
+                                std::vector<Point>::const_iterator point)
+{
+    return point_meas[static_cast<size_t>(
+        std::distance(points.cbegin(), point))];
 }
 
 bool ProcessedTrack::is_candidate_valid(
@@ -218,32 +245,42 @@ bool ProcessedTrack::is_candidate_valid(
     }
 
     auto current_position = activation.act_start->beat_position;
+    auto current_meas_position
+        = point_to_measure(m_points, m_point_measures, activation.act_start);
+
     auto min_sp = std::max(activation.min_sp_bar_amount, MINIMUM_SP_AMOUNT);
     auto max_sp = activation.max_sp_bar_amount;
-    auto starting_meas_diff = m_converter.beats_to_measures(current_position)
+
+    auto starting_meas_diff = current_meas_position
         - m_converter.beats_to_measures(activation.earliest_activation_point);
     min_sp -= starting_meas_diff.value() / MEASURES_PER_BAR;
     min_sp = std::max(min_sp, 0.0);
 
     for (auto p = activation.act_start; p < activation.act_end; ++p) {
         if (p->is_sp_granting_note) {
-            max_sp = propagate_sp_over_whammy(current_position,
-                                              p->beat_position, max_sp);
+            auto p_meas_position
+                = point_to_measure(m_points, m_point_measures, p);
+            max_sp = propagate_sp_over_whammy(
+                current_position, p->beat_position, current_meas_position,
+                p_meas_position, max_sp);
             if (max_sp < 0.0) {
                 return false;
             }
-            auto meas_diff = m_converter.beats_to_measures(p->beat_position)
-                - m_converter.beats_to_measures(current_position);
+            auto meas_diff = p_meas_position - current_meas_position;
             min_sp
                 = std::max(min_sp - meas_diff.value() / MEASURES_PER_BAR, 0.0);
             min_sp = std::min(min_sp + SP_PHRASE_AMOUNT, 1.0);
             max_sp = std::min(max_sp + SP_PHRASE_AMOUNT, 1.0);
             current_position = p->beat_position;
+            current_meas_position = p_meas_position;
         }
     }
 
-    max_sp = propagate_sp_over_whammy(
-        current_position, activation.act_end->beat_position, max_sp);
+    auto end_meas
+        = point_to_measure(m_points, m_point_measures, activation.act_end);
+    max_sp = propagate_sp_over_whammy(current_position,
+                                      activation.act_end->beat_position,
+                                      current_meas_position, end_meas, max_sp);
     if (max_sp < 0.0) {
         return false;
     }
@@ -253,8 +290,8 @@ bool ProcessedTrack::is_candidate_valid(
         return true;
     }
 
-    auto meas_diff = m_converter.beats_to_measures(next_point->beat_position)
-        - m_converter.beats_to_measures(current_position);
+    auto meas_diff = point_to_measure(m_points, m_point_measures, next_point)
+        - current_meas_position;
     min_sp -= meas_diff.value() / MEASURES_PER_BAR;
 
     return min_sp < 0.0;

@@ -74,6 +74,8 @@ private:
     struct WhammyRange {
         Beat start_beat;
         Beat end_beat;
+        Measure start_meas;
+        Measure end_meas;
     };
 
     static constexpr double MINIMUM_SP_AMOUNT = 0.5;
@@ -115,6 +117,8 @@ public:
     // range, or -1 if SP runs out at any point. Only includes SP gain from
     // whammy.
     [[nodiscard]] double propagate_sp_over_whammy(Beat start, Beat end,
+                                                  Measure start_meas,
+                                                  Measure end_meas,
                                                   double sp_bar_amount) const;
     // Return the minimum and maximum amount of SP can be acquired between two
     // points. Does not include SP from the point act_start.

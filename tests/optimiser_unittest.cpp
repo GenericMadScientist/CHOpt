@@ -222,9 +222,11 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         std::vector<TimeSignature> time_sigs {{0, 4, 4}};
         ProcessedTrack track(note_track, {}, {time_sigs, {}});
 
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(4.0), 0.5)
+        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
+                                               Measure(0.0), Measure(1.0), 0.5)
                 == Approx(0.508333));
-        REQUIRE(track.propagate_sp_over_whammy(Beat(1.0), Beat(4.0), 0.5)
+        REQUIRE(track.propagate_sp_over_whammy(Beat(1.0), Beat(4.0),
+                                               Measure(0.25), Measure(1.0), 0.5)
                 == Approx(0.50625));
     }
 
@@ -233,9 +235,12 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         std::vector<TimeSignature> time_sigs {{0, 3, 4}};
         ProcessedTrack track(note_track, {}, {time_sigs, {}});
 
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(4.0), 0.5)
+        REQUIRE(track.propagate_sp_over_whammy(
+                    Beat(0.0), Beat(4.0), Measure(0.0), Measure(4.0 / 3), 0.5)
                 == Approx(0.466667));
-        REQUIRE(track.propagate_sp_over_whammy(Beat(-1.0), Beat(4.0), 0.5)
+        REQUIRE(track.propagate_sp_over_whammy(Beat(-1.0), Beat(4.0),
+                                               Measure(-0.25), Measure(4.0 / 3),
+                                               0.5)
                 == Approx(0.435417));
     }
 
@@ -244,9 +249,11 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         std::vector<TimeSignature> time_sigs {{0, 4, 4}, {384, 3, 4}};
         ProcessedTrack track(note_track, {}, {time_sigs, {}});
 
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(4.0), 0.5)
+        REQUIRE(track.propagate_sp_over_whammy(
+                    Beat(0.0), Beat(4.0), Measure(0.0), Measure(7.0 / 6), 0.5)
                 == Approx(0.4875));
-        REQUIRE(track.propagate_sp_over_whammy(Beat(1.0), Beat(4.0), 0.5)
+        REQUIRE(track.propagate_sp_over_whammy(
+                    Beat(1.0), Beat(4.0), Measure(0.25), Measure(7.0 / 6), 0.5)
                 == Approx(0.485417));
     }
 
@@ -255,9 +262,12 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         std::vector<TimeSignature> time_sigs {{0, 3, 4}, {384, 4, 4}};
         ProcessedTrack track(note_track, {}, {time_sigs, {}});
 
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(2.0), 0.015)
+        REQUIRE(track.propagate_sp_over_whammy(
+                    Beat(0.0), Beat(2.0), Measure(0.0), Measure(2.0 / 3), 0.015)
                 == Approx(-1.0));
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(10.0), 0.015)
+        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(10.0),
+                                               Measure(0.0), Measure(8.0 / 3),
+                                               0.015)
                 == Approx(-1.0));
     }
 
@@ -265,7 +275,8 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     {
         ProcessedTrack track(note_track, {}, {});
 
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(12.0), 0.5)
+        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(12.0),
+                                               Measure(0.0), Measure(3.0), 0.5)
                 == Approx(0.491667));
     }
 
@@ -273,9 +284,11 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     {
         ProcessedTrack track(note_track, {}, {});
 
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(10.0), 1.0)
+        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(10.0),
+                                               Measure(0.0), Measure(2.5), 1.0)
                 == Approx(1.0));
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(10.5), 1.0)
+        REQUIRE(track.propagate_sp_over_whammy(
+                    Beat(0.0), Beat(10.5), Measure(0.0), Measure(2.625), 1.0)
                 == Approx(0.984375));
     }
 
@@ -284,7 +297,8 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         NoteTrack no_sp_note_track(notes, {}, {});
         ProcessedTrack track(no_sp_note_track, {}, {});
 
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(4.0), 1.0)
+        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
+                                               Measure(0.0), Measure(1.0), 1.0)
                 == Approx(0.875));
     }
 }
