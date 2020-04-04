@@ -391,6 +391,16 @@ std::tuple<double, double> ProcessedTrack::total_available_sp(
     return {min_sp, max_sp};
 }
 
+bool ProcessedTrack::is_in_whammy_ranges(Beat beat) const
+{
+    auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
+                          [=](const auto& x) { return x.end_beat >= beat; });
+    if (p == m_whammy_ranges.cend()) {
+        return false;
+    }
+    return p->start_beat <= beat;
+}
+
 std::vector<Point>::const_iterator ProcessedTrack::next_candidate_point(
     std::vector<Point>::const_iterator point) const
 {
@@ -398,7 +408,7 @@ std::vector<Point>::const_iterator ProcessedTrack::next_candidate_point(
         if (point->is_sp_granting_note) {
             return point;
         }
-        if (point->is_hold_point) {
+        if (point->is_hold_point && is_in_whammy_ranges(point->beat_position)) {
             return point;
         }
         ++point;

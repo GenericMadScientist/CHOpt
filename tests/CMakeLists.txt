@@ -1,5 +1,6 @@
 add_library(catch_main STATIC catch_main.cpp)
 set_cpp_standard(catch_main)
+set_warnings(catch_main)
 
 function(package_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
