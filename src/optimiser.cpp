@@ -172,17 +172,19 @@ double ProcessedTrack::propagate_sp_over_whammy(Beat start, Beat end,
 {
     constexpr double MEASURES_PER_BAR = 8.0;
 
+    auto start_meas = m_converter.beats_to_measures(start);
     auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
                           [=](const auto& x) { return x.end_beat > start; });
     while ((p != m_whammy_ranges.cend()) && (p->start_beat < end)) {
         if (p->start_beat > start) {
             auto meas_diff = m_converter.beats_to_measures(p->start_beat)
-                - m_converter.beats_to_measures(start);
+                - start_meas;
             sp_bar_amount -= meas_diff.value() / MEASURES_PER_BAR;
             if (sp_bar_amount < 0.0) {
                 return -1.0;
             }
             start = p->start_beat;
+            start_meas = m_converter.beats_to_measures(p->start_beat);
         }
         auto range_end = std::min(end, p->end_beat);
         sp_bar_amount
@@ -194,11 +196,12 @@ double ProcessedTrack::propagate_sp_over_whammy(Beat start, Beat end,
         if (start >= end) {
             return sp_bar_amount;
         }
+        start_meas = m_converter.beats_to_measures(p->end_beat);
         ++p;
     }
 
     auto meas_diff = m_converter.beats_to_measures(end)
-        - m_converter.beats_to_measures(start);
+        - start_meas;
     sp_bar_amount -= meas_diff.value() / MEASURES_PER_BAR;
     if (sp_bar_amount < 0.0) {
         return -1.0;

@@ -1,4 +1,6 @@
 .vs/
 .vscode/
 build/
+out/
 test_charts/
+CMakeSettings.json
