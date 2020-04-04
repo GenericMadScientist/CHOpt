@@ -42,23 +42,30 @@ struct Point {
     }
 };
 
+using PointPtr = std::vector<Point>::const_iterator;
+
 struct ActivationCandidate {
-    std::vector<Point>::const_iterator act_start;
-    std::vector<Point>::const_iterator act_end;
+    PointPtr act_start;
+    PointPtr act_end;
     Beat earliest_activation_point {0.0};
     double min_sp_bar_amount {0.0};
     double max_sp_bar_amount {0.0};
 };
 
 struct Activation {
-    std::vector<Point>::const_iterator act_start;
-    std::vector<Point>::const_iterator act_end;
+    PointPtr act_start;
+    PointPtr act_end;
 
     friend bool operator==(const Activation& lhs, const Activation& rhs)
     {
         return std::tie(lhs.act_start, lhs.act_end)
             == std::tie(rhs.act_start, rhs.act_end);
     }
+};
+
+struct Path {
+    std::vector<Activation> activations;
+    uint32_t score_boost;
 };
 
 // Represents a song processed for Star Power optimisation. The constructor
@@ -91,22 +98,15 @@ private:
     [[nodiscard]] double
     propagate_over_whammy_range(Beat start, Beat end,
                                 double sp_bar_amount) const;
-    [[nodiscard]] std::vector<Point>::const_iterator
-    furthest_reachable_point(std::vector<Point>::const_iterator point,
-                             double sp) const;
+    [[nodiscard]] PointPtr furthest_reachable_point(PointPtr point,
+                                                    double sp) const;
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
-    [[nodiscard]] std::vector<Point>::const_iterator
-    next_candidate_point(std::vector<Point>::const_iterator point) const;
-    std::tuple<uint32_t, std::vector<Activation>>
-    get_partial_path(std::vector<Point>::const_iterator point,
-                     std::map<std::vector<Point>::const_iterator,
-                              std::tuple<uint32_t, std::vector<Activation>>>&
-                         partial_paths) const;
-    void add_point_to_partial_acts(
-        std::vector<Point>::const_iterator point,
-        std::map<std::vector<Point>::const_iterator,
-                 std::tuple<uint32_t, std::vector<Activation>>>& partial_paths)
-        const;
+    [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
+    Path get_partial_path(PointPtr point,
+                          std::map<PointPtr, Path>& partial_paths) const;
+    void
+    add_point_to_partial_acts(PointPtr point,
+                              std::map<PointPtr, Path>& partial_paths) const;
 
     static std::vector<BeatRate> form_beat_rates(const SongHeader& header,
                                                  const SyncTrack& sync_track);
@@ -127,10 +127,9 @@ public:
     // Return the minimum and maximum amount of SP can be acquired between two
     // points. Does not include SP from the point act_start.
     [[nodiscard]] std::tuple<double, double>
-    total_available_sp(Beat start,
-                       std::vector<Point>::const_iterator act_start) const;
+    total_available_sp(Beat start, PointPtr act_start) const;
     // Return the optimal Star Power path.
-    [[nodiscard]] std::vector<Activation> optimal_path() const;
+    [[nodiscard]] Path optimal_path() const;
 };
 
 // Return the earliest and latest times a point can be hit.

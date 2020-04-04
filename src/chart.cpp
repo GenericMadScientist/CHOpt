@@ -240,7 +240,7 @@ static std::optional<float> string_view_to_float(std::string_view input)
 // We need to do this conditional because for now only MSVC's STL
 // implements std::from_chars for floats.
 #if defined(_MSC_VER) && _MSC_VER >= 1924
-    float result;
+    float result {0.0};
     const char* last = input.data() + input.size();
     auto [p, ec] = std::from_chars(input.data(), last, result);
     if ((ec != std::errc()) || (p != last)) {

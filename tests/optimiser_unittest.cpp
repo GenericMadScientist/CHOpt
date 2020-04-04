@@ -494,10 +494,12 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack note_track(notes, phrases, {});
         ProcessedTrack track(note_track, {}, {});
         const auto& points = track.points();
-        std::vector<Activation> optimal_path {
+        std::vector<Activation> optimal_acts {
             {points.cbegin() + 2, points.cbegin() + 2}};
+        auto opt_path = track.optimal_path();
 
-        REQUIRE(track.optimal_path() == optimal_path);
+        REQUIRE(opt_path.score_boost == 50);
+        REQUIRE(opt_path.activations == optimal_acts);
     }
 
     SECTION("Simplest song with multiple acts")
@@ -517,11 +519,13 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack note_track(notes, phrases, {});
         ProcessedTrack track(note_track, {}, {});
         const auto& points = track.points();
-        std::vector<Activation> optimal_path {
+        std::vector<Activation> optimal_acts {
             {points.cbegin() + 2, points.cbegin() + 2},
             {points.cbegin() + 5, points.cbegin() + 5}};
+        auto opt_path = track.optimal_path();
 
-        REQUIRE(track.optimal_path() == optimal_path);
+        REQUIRE(opt_path.score_boost == 300);
+        REQUIRE(opt_path.activations == optimal_acts);
     }
 
     SECTION("Simplest song with an act containing more than one note")
@@ -531,10 +535,12 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack note_track(notes, phrases, {});
         ProcessedTrack track(note_track, {}, {});
         const auto& points = track.points();
-        std::vector<Activation> optimal_path {
+        std::vector<Activation> optimal_acts {
             {points.cbegin() + 2, points.cbegin() + 3}};
+        auto opt_path = track.optimal_path();
 
-        REQUIRE(track.optimal_path() == optimal_path);
+        REQUIRE(opt_path.score_boost == 100);
+        REQUIRE(opt_path.activations == optimal_acts);
     }
 
     SECTION("Simplest song with an act that must go as long as possible")
@@ -544,10 +550,12 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack note_track(notes, phrases, {});
         ProcessedTrack track(note_track, {}, {});
         const auto& points = track.points();
-        std::vector<Activation> optimal_path {
+        std::vector<Activation> optimal_acts {
             {points.cbegin() + 2, points.cbegin() + 3}};
+        auto opt_path = track.optimal_path();
 
-        REQUIRE(track.optimal_path() == optimal_path);
+        REQUIRE(opt_path.score_boost == 100);
+        REQUIRE(opt_path.activations == optimal_acts);
     }
 
     SECTION("Simplest song where greedy algorithm fails")
@@ -558,9 +566,11 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack note_track(notes, phrases, {});
         ProcessedTrack track(note_track, {}, {});
         const auto& points = track.points();
-        std::vector<Activation> optimal_path {
+        std::vector<Activation> optimal_acts {
             {points.cbegin() + 3, points.cbegin() + 3}};
+        auto opt_path = track.optimal_path();
 
-        REQUIRE(track.optimal_path() == optimal_path);
+        REQUIRE(opt_path.score_boost == 100);
+        REQUIRE(opt_path.activations == optimal_acts);
     }
 }

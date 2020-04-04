@@ -230,14 +230,14 @@ double ProcessedTrack::propagate_sp_over_whammy(Beat start, Beat end,
 
 static Measure point_to_measure(const std::vector<Point>& points,
                                 const std::vector<Measure>& point_meas,
-                                std::vector<Point>::const_iterator point)
+                                PointPtr point)
 {
     return point_meas[static_cast<size_t>(
         std::distance(points.cbegin(), point))];
 }
 
-std::vector<Point>::const_iterator ProcessedTrack::furthest_reachable_point(
-    std::vector<Point>::const_iterator point, double sp) const
+PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
+                                                  double sp) const
 {
     auto current_position = point->beat_position;
     auto current_meas_position
@@ -360,8 +360,8 @@ double ProcessedTrack::propagate_over_whammy_range(Beat start, Beat end,
     return sp_bar_amount;
 }
 
-std::tuple<double, double> ProcessedTrack::total_available_sp(
-    Beat start, std::vector<Point>::const_iterator act_start) const
+std::tuple<double, double>
+ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
 {
     auto min_sp = 0.0;
     auto p
@@ -401,8 +401,7 @@ bool ProcessedTrack::is_in_whammy_ranges(Beat beat) const
     return p->start_beat <= beat;
 }
 
-std::vector<Point>::const_iterator ProcessedTrack::next_candidate_point(
-    std::vector<Point>::const_iterator point) const
+PointPtr ProcessedTrack::next_candidate_point(PointPtr point) const
 {
     while (point != m_points.cend()) {
         if (point->is_sp_granting_note) {
@@ -416,11 +415,8 @@ std::vector<Point>::const_iterator ProcessedTrack::next_candidate_point(
     return m_points.cend();
 }
 
-std::tuple<uint32_t, std::vector<Activation>> ProcessedTrack::get_partial_path(
-    std::vector<Point>::const_iterator point,
-    std::map<std::vector<Point>::const_iterator,
-             std::tuple<uint32_t, std::vector<Activation>>>& partial_paths)
-    const
+Path ProcessedTrack::get_partial_path(
+    PointPtr point, std::map<PointPtr, Path>& partial_paths) const
 {
     point = next_candidate_point(point);
     if (partial_paths.find(point) == partial_paths.end()) {
@@ -430,24 +426,19 @@ std::tuple<uint32_t, std::vector<Activation>> ProcessedTrack::get_partial_path(
 }
 
 void ProcessedTrack::add_point_to_partial_acts(
-    std::vector<Point>::const_iterator point,
-    std::map<std::vector<Point>::const_iterator,
-             std::tuple<uint32_t, std::vector<Activation>>>& partial_paths)
-    const
+    PointPtr point, std::map<PointPtr, Path>& partial_paths) const
 {
     auto starting_beat = point->beat_position;
-    std::vector<std::tuple<uint32_t, std::vector<Activation>>> paths;
+    std::vector<Path> paths;
 
-    std::set<std::vector<Point>::const_iterator> attained_act_ends;
+    std::set<PointPtr> attained_act_ends;
 
     for (auto p = point; p < m_points.cend(); ++p) {
         auto [min_sp, max_sp] = total_available_sp(starting_beat, p);
         if (max_sp < MINIMUM_SP_AMOUNT) {
             continue;
         }
-        std::vector<std::tuple<uint32_t, std::vector<Point>::const_iterator,
-                               std::vector<Point>::const_iterator>>
-            acts;
+        std::vector<std::tuple<uint32_t, PointPtr, PointPtr>> acts;
         auto max_q = furthest_reachable_point(p, max_sp);
         for (auto q = p; q <= max_q; ++q) {
             if (attained_act_ends.find(q) != attained_act_ends.end()) {
@@ -463,32 +454,30 @@ void ProcessedTrack::add_point_to_partial_acts(
                 p, std::next(q), 0U,
                 [](const auto& sum, const auto& x) { return sum + x.value; });
             auto rest_of_path = get_partial_path(std::next(q), partial_paths);
-            auto score = act_score + std::get<0>(rest_of_path);
-            auto act_set = std::get<1>(rest_of_path);
+            auto score = act_score + rest_of_path.score_boost;
+            auto act_set = rest_of_path.activations;
             act_set.insert(act_set.begin(), {p, q});
-            paths.emplace_back(score, act_set);
+            paths.push_back({act_set, score});
         }
     }
 
-    auto final_act = std::max_element(
-        paths.cbegin(), paths.cend(), [](const auto& x, const auto& y) {
-            return std::get<0>(x) < std::get<0>(y);
-        });
+    auto final_act = std::max_element(paths.cbegin(), paths.cend(),
+                                      [](const auto& x, const auto& y) {
+                                          return x.score_boost < y.score_boost;
+                                      });
     if (final_act != paths.cend()) {
         partial_paths[point] = *final_act;
     } else {
-        partial_paths[point] = {0, {}};
+        partial_paths[point] = {{}, 0};
     }
 }
 
-std::vector<Activation> ProcessedTrack::optimal_path() const
+Path ProcessedTrack::optimal_path() const
 {
-    std::map<std::vector<Point>::const_iterator,
-             std::tuple<uint32_t, std::vector<Activation>>>
-        partial_paths;
-    partial_paths[m_points.cend()] = {0, {}};
+    std::map<PointPtr, Path> partial_paths;
+    partial_paths[m_points.cend()] = {{}, 0};
 
-    return std::get<1>(get_partial_path(m_points.cbegin(), partial_paths));
+    return get_partial_path(m_points.cbegin(), partial_paths);
 }
 
 Beat front_end(const Point& point, const TimeConverter& converter)
