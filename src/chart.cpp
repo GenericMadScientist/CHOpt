@@ -30,13 +30,11 @@
 struct PreNoteTrack {
     std::vector<Note> notes;
     std::vector<StarPower> sp_phrases;
-    std::vector<ChartEvent> events;
 };
 
 static bool is_empty(const PreNoteTrack& track)
 {
-    return track.notes.empty() && track.sp_phrases.empty()
-        && track.events.empty();
+    return track.notes.empty() && track.sp_phrases.empty();
 }
 
 // This represents a bundle of data akin to a SyncTrack, except it is only for
@@ -45,9 +43,7 @@ struct PreSyncTrack {
     std::vector<TimeSignature> time_sigs;
 };
 
-NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
-                     std::vector<ChartEvent> events)
-    : m_events {std::move(events)}
+NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases)
 {
     std::stable_sort(notes.begin(), notes.end(),
                      [](const auto& lhs, const auto& rhs) {
@@ -365,9 +361,6 @@ static std::string_view read_single_track(std::string_view input,
             }
             const auto length = *pre_length;
             track.sp_phrases.push_back({position, length});
-        } else if (type == "E") {
-            const auto event_name = split_string[3];
-            track.events.push_back({position, std::string(event_name)});
         }
     }
 
@@ -416,8 +409,7 @@ Chart Chart::parse_chart(std::string_view input)
             continue;
         }
         auto new_track
-            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
-                        std::move(track.events));
+            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases));
         chart.m_note_tracks.emplace(diff, std::move(new_track));
     }
 

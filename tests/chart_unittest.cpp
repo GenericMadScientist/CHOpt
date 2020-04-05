@@ -26,7 +26,7 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
     SECTION("Notes are sorted")
     {
         const auto notes = std::vector<Note>({{768}, {384}});
-        const auto track = NoteTrack(notes, {}, {});
+        const auto track = NoteTrack(notes, {});
         const auto sorted_notes = std::vector<Note>({{384}, {768}});
 
         REQUIRE(track.notes() == sorted_notes);
@@ -35,13 +35,13 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
     SECTION("Notes of the same colour and position are merged")
     {
         const auto notes = std::vector<Note>({{768, 0}, {768, 768}});
-        const auto track = NoteTrack(notes, {}, {});
+        const auto track = NoteTrack(notes, {});
         const auto required_notes = std::vector<Note>({{768, 768}});
 
         REQUIRE(track.notes() == required_notes);
 
         const auto second_notes = std::vector<Note>({{768, 768}, {768, 0}});
-        const auto second_track = NoteTrack(second_notes, {}, {});
+        const auto second_track = NoteTrack(second_notes, {});
         const auto second_required_notes = std::vector<Note>({{768, 0}});
 
         REQUIRE(second_track.notes() == second_required_notes);
@@ -52,7 +52,7 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
         const auto notes = std::vector<Note>({{768, 0, NoteColour::Green},
                                               {768, 0, NoteColour::Red},
                                               {768, 768, NoteColour::Green}});
-        const auto track = NoteTrack(notes, {}, {});
+        const auto track = NoteTrack(notes, {});
         const auto required_notes = std::vector<Note>(
             {{768, 768, NoteColour::Green}, {768, 0, NoteColour::Red}});
 
@@ -64,7 +64,7 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
         const auto notes = std::vector<Note>({{768}});
         const auto phrases
             = std::vector<StarPower>({{0, 100}, {700, 100}, {1000, 100}});
-        const auto track = NoteTrack(notes, phrases, {});
+        const auto track = NoteTrack(notes, phrases);
         const auto required_phrases = std::vector<StarPower>({{700, 100}});
 
         REQUIRE(track.sp_phrases() == required_phrases);
@@ -74,7 +74,7 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
     {
         const auto notes = std::vector<Note>({{768}, {1000}});
         const auto phrases = std::vector<StarPower>({{1000, 1}, {768, 1}});
-        const auto track = NoteTrack(notes, phrases, {});
+        const auto track = NoteTrack(notes, phrases);
         const auto required_phrases
             = std::vector<StarPower>({{768, 1}, {1000, 1}});
 
@@ -85,7 +85,7 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
     {
         const auto notes = std::vector<Note>({{768}, {1000}});
         const auto phrases = std::vector<StarPower>({{768, 1000}, {900, 150}});
-        const auto track = NoteTrack(notes, phrases, {});
+        const auto track = NoteTrack(notes, phrases);
         const auto required_phrases
             = std::vector<StarPower>({{768, 132}, {900, 150}});
 
@@ -166,7 +166,7 @@ TEST_CASE("Chart reads easy note track correctly", "Easy")
           "\n{\n768 = N 0 0\n768 = S 2 100\n}\n";
     const auto chart = Chart::parse_chart(text);
     const auto note_track
-        = NoteTrack {{{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
+        = NoteTrack {{{768, 0, NoteColour::Green}}, {{768, 100}}};
 
     REQUIRE(chart.note_track(Difficulty::Easy) == note_track);
 }

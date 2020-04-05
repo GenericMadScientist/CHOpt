@@ -65,17 +65,6 @@ struct StarPower {
     }
 };
 
-struct ChartEvent {
-    uint32_t position;
-    std::string name;
-
-    friend bool operator==(const ChartEvent& lhs, const ChartEvent& rhs)
-    {
-        return std::tie(lhs.position, lhs.name)
-            == std::tie(rhs.position, rhs.name);
-    }
-};
-
 // Invariants:
 // notes() will always return a vector of sorted notes.
 // notes() will not return a vector with two notes of the same colour with the
@@ -87,12 +76,10 @@ class NoteTrack {
 private:
     std::vector<Note> m_notes;
     std::vector<StarPower> m_sp_phrases;
-    std::vector<ChartEvent> m_events;
 
 public:
     NoteTrack() = default;
-    NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
-              std::vector<ChartEvent> events);
+    NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases);
 
     [[nodiscard]] const std::vector<Note>& notes() const { return m_notes; }
     [[nodiscard]] const std::vector<StarPower>& sp_phrases() const
@@ -102,8 +89,8 @@ public:
 
     friend bool operator==(const NoteTrack& lhs, const NoteTrack& rhs)
     {
-        return std::tie(lhs.m_notes, lhs.m_sp_phrases, lhs.m_events)
-            == std::tie(rhs.m_notes, rhs.m_sp_phrases, rhs.m_events);
+        return std::tie(lhs.m_notes, lhs.m_sp_phrases)
+            == std::tie(rhs.m_notes, rhs.m_sp_phrases);
     }
 };
 
