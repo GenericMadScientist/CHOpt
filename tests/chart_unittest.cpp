@@ -20,14 +20,6 @@
 
 #include "chart.hpp"
 
-// Last checked: 24.0.1555-master
-TEST_CASE("SongHeader ctor maintains invariants", "SongHeader")
-{
-    // Throw if resolution is <= 0. Clone Hero misbehaves in this case and it's
-    // nonsense anyway.
-    REQUIRE_THROWS([] { return SongHeader(0.F, 0); }());
-}
-
 // Last checked: 23.2.2
 TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
 {
@@ -131,28 +123,26 @@ TEST_CASE("SyncTrack ctor maintains invariants", "SyncTrack")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Chart reads resolution and offset", "Song")
+TEST_CASE("Chart reads resolution", "Song")
 {
-    SECTION("Defaults are 192 Res and 0 Offset")
+    SECTION("Default is 192 Res")
     {
         const char* text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n["
                            "ExpertSingle]\n{\n768 = N 0 0\n}";
-        const auto header = Chart::parse_chart(text).header();
+        const auto resolution = Chart::parse_chart(text).resolution();
 
-        REQUIRE(header.resolution() == 192);
-        REQUIRE(header.offset() == 0.F);
+        REQUIRE(resolution == 192);
     }
 
-    SECTION("Defaults are overriden by specified values")
+    SECTION("Default is overriden by specified value")
     {
         const char* text
             = "[Song]\n{\nResolution = 200\nOffset = "
               "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]"
               "\n{\n768 = N 0 0\n}";
-        const auto header = Chart::parse_chart(text).header();
+        const auto resolution = Chart::parse_chart(text).resolution();
 
-        REQUIRE(header.resolution() == 200);
-        REQUIRE(header.offset() == 100.F);
+        REQUIRE(resolution == 200);
     }
 }
 
@@ -200,10 +190,9 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
         = "\xEF\xBB\xBF[Song]\n{\nOffset = "
           "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
           "\n768 = N 0 0\n}";
-    const auto header = Chart::parse_chart(text).header();
+    const auto resolution = Chart::parse_chart(text).resolution();
 
-    REQUIRE(header.resolution() == 192);
-    REQUIRE(header.offset() == 100.F);
+    REQUIRE(resolution == 192);
 }
 
 // Last checked: 24.0.1555-master
@@ -213,10 +202,9 @@ TEST_CASE("Chart can end without a newline", "End-NL")
         = "\xEF\xBB\xBF[Song]\n{\nOffset = "
           "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
           "\n768 = N 0 0\n}";
-    const auto header = Chart::parse_chart(text).header();
+    const auto resolution = Chart::parse_chart(text).resolution();
 
-    REQUIRE(header.resolution() == 192);
-    REQUIRE(header.offset() == 100.F);
+    REQUIRE(resolution == 192);
 }
 
 // Last checked: 24.0.1555-master
@@ -227,7 +215,7 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
         const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n}";
         const auto chart = Chart::parse_chart(text);
 
-        REQUIRE(chart.header().resolution() == 192);
+        REQUIRE(chart.resolution() == 192);
     }
 
     SECTION("At least one non-empty note section must be present")
@@ -246,7 +234,7 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
         const auto chart = Chart::parse_chart(text);
         const auto notes = std::vector<Note>({{768}});
 
-        REQUIRE(chart.header().resolution() == 200);
+        REQUIRE(chart.resolution() == 200);
         REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
     }
 }

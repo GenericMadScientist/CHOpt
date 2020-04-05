@@ -33,11 +33,11 @@ static bool phrase_contains_pos(const StarPower& phrase, uint32_t position)
 
 template <class InputIt, class OutputIt>
 static void append_note_points(InputIt first, InputIt last, OutputIt points,
-                               const SongHeader& header, bool is_note_sp_ender)
+                               int32_t resolution, bool is_note_sp_ender)
 {
     constexpr auto NOTE_VALUE = 50U;
-    const double resolution = header.resolution();
-    const auto tick_gap = std::max(header.resolution() / 25, 1);
+    const double float_res = resolution;
+    const auto tick_gap = std::max(resolution / 25, 1);
 
     const auto chord_size = static_cast<uint32_t>(std::distance(first, last));
     auto chord_length = static_cast<int32_t>(
@@ -45,17 +45,17 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
             return x.length < y.length;
         })->length);
     auto pos = first->position;
-    *points++ = {Beat(pos / resolution), NOTE_VALUE * chord_size, false,
+    *points++ = {Beat(pos / float_res), NOTE_VALUE * chord_size, false,
                  is_note_sp_ender};
     while (chord_length > 0) {
         pos += static_cast<uint32_t>(tick_gap);
         chord_length -= tick_gap;
-        *points++ = {Beat(pos / resolution), 1, true, false};
+        *points++ = {Beat(pos / float_res), 1, true, false};
     }
 }
 
 static std::vector<Point> notes_to_points(const NoteTrack& track,
-                                          const SongHeader& header)
+                                          int32_t resolution)
 {
     std::vector<Point> points;
 
@@ -74,7 +74,7 @@ static std::vector<Point> notes_to_points(const NoteTrack& track,
             is_note_sp_ender = true;
             ++current_phrase;
         }
-        append_note_points(p, q, std::back_inserter(points), header,
+        append_note_points(p, q, std::back_inserter(points), resolution,
                            is_note_sp_ender);
         p = q;
     }
@@ -97,8 +97,7 @@ static std::vector<Point> notes_to_points(const NoteTrack& track,
 }
 
 std::vector<ProcessedTrack::BeatRate>
-ProcessedTrack::form_beat_rates(const SongHeader& header,
-                                const SyncTrack& sync_track)
+ProcessedTrack::form_beat_rates(int32_t resolution, const SyncTrack& sync_track)
 {
     constexpr double DEFAULT_BEAT_RATE = 4.0;
     constexpr double MEASURES_PER_BAR = 8.0;
@@ -107,7 +106,7 @@ ProcessedTrack::form_beat_rates(const SongHeader& header,
     beat_rates.reserve(sync_track.time_sigs().size());
 
     for (const auto& ts : sync_track.time_sigs()) {
-        const auto pos = static_cast<double>(ts.position) / header.resolution();
+        const auto pos = static_cast<double>(ts.position) / resolution;
         const auto measure_rate
             = ts.numerator * DEFAULT_BEAT_RATE / ts.denominator;
         const auto drain_rate
@@ -132,11 +131,11 @@ form_point_measures(const std::vector<Point>& points,
     return locations;
 }
 
-ProcessedTrack::ProcessedTrack(const NoteTrack& track, const SongHeader& header,
+ProcessedTrack::ProcessedTrack(const NoteTrack& track, int32_t resolution,
                                const SyncTrack& sync_track)
-    : m_points {notes_to_points(track, header)}
-    , m_converter {TimeConverter(sync_track, header)}
-    , m_beat_rates {form_beat_rates(header, sync_track)}
+    : m_points {notes_to_points(track, resolution)}
+    , m_converter {TimeConverter(sync_track, resolution)}
+    , m_beat_rates {form_beat_rates(resolution, sync_track)}
 {
     std::vector<std::tuple<uint32_t, uint32_t>> ranges_as_ticks;
     for (const auto& note : track.notes()) {
@@ -172,10 +171,8 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, const SongHeader& header,
         merged_ranges.push_back(pair);
 
         for (const auto& range : merged_ranges) {
-            auto start
-                = static_cast<double>(std::get<0>(range)) / header.resolution();
-            auto end
-                = static_cast<double>(std::get<1>(range)) / header.resolution();
+            auto start = static_cast<double>(std::get<0>(range)) / resolution;
+            auto end = static_cast<double>(std::get<1>(range)) / resolution;
             auto start_meas = m_converter.beats_to_measures(Beat(start));
             auto end_meas = m_converter.beats_to_measures(Beat(end));
             m_whammy_ranges.push_back(

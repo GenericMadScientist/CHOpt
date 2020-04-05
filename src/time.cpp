@@ -21,18 +21,16 @@
 
 #include "time.hpp"
 
-TimeConverter::TimeConverter(const SyncTrack& sync_track,
-                             const SongHeader& header)
+TimeConverter::TimeConverter(const SyncTrack& sync_track, int32_t resolution)
 {
     auto last_tick = 0U;
     auto last_beat_rate = DEFAULT_BEAT_RATE;
     auto last_measure = 0.0;
 
     for (const auto& ts : sync_track.time_sigs()) {
-        last_measure += (ts.position - last_tick)
-            / (header.resolution() * last_beat_rate);
-        const auto beat
-            = static_cast<double>(ts.position) / header.resolution();
+        last_measure
+            += (ts.position - last_tick) / (resolution * last_beat_rate);
+        const auto beat = static_cast<double>(ts.position) / resolution;
         m_measure_timestamps.push_back({Measure(last_measure), Beat(beat)});
         last_beat_rate = (ts.numerator * DEFAULT_BEAT_RATE) / ts.denominator;
         last_tick = ts.position;

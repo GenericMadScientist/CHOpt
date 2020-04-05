@@ -215,7 +215,7 @@ private:
     double m_last_beat_rate;
 
 public:
-    TimeConverter(const SyncTrack& sync_track, const SongHeader& header);
+    TimeConverter(const SyncTrack& sync_track, int32_t resolution);
     [[nodiscard]] Measure beats_to_measures(Beat beats) const;
     [[nodiscard]] Beat measures_to_beats(Measure measures) const;
 };

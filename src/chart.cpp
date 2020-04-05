@@ -54,15 +54,6 @@ struct PreSyncTrack {
     std::vector<TimeSignature> time_sigs;
 };
 
-SongHeader::SongHeader(float offset, int32_t resolution)
-    : m_offset {offset}
-    , m_resolution {resolution}
-{
-    if (m_resolution <= 0) {
-        throw std::invalid_argument("Songs with resolution < 0 are invalid");
-    }
-}
-
 NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
                      std::vector<ChartEvent> events)
     : m_events {std::move(events)}
@@ -521,7 +512,7 @@ Chart Chart::parse_chart(std::string_view input)
         }
     }
 
-    chart.m_header = SongHeader(pre_header.offset, pre_header.resolution);
+    chart.m_resolution = pre_header.resolution;
     chart.m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs));
 
     for (auto& key_track : pre_tracks) {

@@ -146,11 +146,11 @@ private:
     add_point_to_partial_acts(PointPtr point,
                               std::map<PointPtr, Path>& partial_paths) const;
 
-    static std::vector<BeatRate> form_beat_rates(const SongHeader& header,
+    static std::vector<BeatRate> form_beat_rates(int32_t resolution,
                                                  const SyncTrack& sync_track);
 
 public:
-    ProcessedTrack(const NoteTrack& track, const SongHeader& header,
+    ProcessedTrack(const NoteTrack& track, int32_t resolution,
                    const SyncTrack& sync_track);
     [[nodiscard]] const std::vector<Point>& points() const { return m_points; }
     [[nodiscard]] bool

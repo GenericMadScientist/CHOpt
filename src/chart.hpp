@@ -30,21 +30,6 @@ enum class Difficulty { Easy, Medium, Hard, Expert };
 
 enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
 
-// Invariants:
-// resolution() > 0.
-class SongHeader {
-private:
-    static constexpr int32_t DEFAULT_RESOLUTION = 192;
-    float m_offset = 0.F;
-    int32_t m_resolution = DEFAULT_RESOLUTION;
-
-public:
-    SongHeader() = default;
-    SongHeader(float offset, int32_t resolution);
-    [[nodiscard]] float offset() const { return m_offset; }
-    [[nodiscard]] int32_t resolution() const { return m_resolution; }
-};
-
 struct TimeSignature {
     uint32_t position;
     uint32_t numerator;
@@ -153,9 +138,13 @@ public:
     }
 };
 
+// Invariants:
+// resolution() > 0.
 class Chart {
 private:
-    SongHeader m_header;
+    static constexpr int32_t DEFAULT_RESOLUTION = 192;
+
+    int32_t m_resolution = DEFAULT_RESOLUTION;
     SyncTrack m_sync_track;
     std::vector<Section> m_sections;
     std::map<Difficulty, NoteTrack> m_note_tracks;
@@ -163,7 +152,7 @@ private:
 
 public:
     static Chart parse_chart(std::string_view input);
-    [[nodiscard]] const SongHeader& header() const { return m_header; }
+    [[nodiscard]] int32_t resolution() const { return m_resolution; }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
     [[nodiscard]] const std::vector<Section>& sections() const
     {

@@ -185,8 +185,7 @@ TEST_CASE("Measure operations", "Measure")
 TEST_CASE("Beats to measures conversion", "Beats<->Measures")
 {
     const auto track = SyncTrack({{0, 5, 4}, {1000, 4, 4}, {1200, 4, 16}});
-    const auto header = SongHeader(0.F, 200);
-    const auto converter = TimeConverter(track, header);
+    const auto converter = TimeConverter(track, 200);
     constexpr std::array beats {-1.0, 0.0, 3.0, 5.5, 6.5};
     constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
 

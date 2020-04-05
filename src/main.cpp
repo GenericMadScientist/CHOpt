@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
         const auto chart = Chart::parse_chart(contents);
         const auto& track = chart.note_track(Difficulty::Expert);
         const auto processed_track
-            = ProcessedTrack(track, chart.header(), chart.sync_track());
+            = ProcessedTrack(track, chart.resolution(), chart.sync_track());
         const auto path = processed_track.optimal_path();
         std::cout << "Number of activations: " << path.activations.size()
                   << '\n';
