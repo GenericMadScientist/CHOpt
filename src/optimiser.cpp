@@ -378,8 +378,9 @@ SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
         if (q->start_beat >= act_start->beat_position) {
             break;
         }
-        auto end = std::min(q->end_beat, act_start->beat_position);
-        sp_bar.max() += (end - q->start_beat).value() * SP_GAIN_RATE;
+        auto whammy_start = std::max(q->start_beat, start);
+        auto whammy_end = std::min(q->end_beat, act_start->beat_position);
+        sp_bar.max() += (whammy_end - whammy_start).value() * SP_GAIN_RATE;
         ++q;
     }
 

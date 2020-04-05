@@ -544,6 +544,13 @@ TEST_CASE("total_available_sp counts SP correctly", "Available SP")
         REQUIRE(result.max() == Approx(0.00121528));
     }
 
+    SECTION("Whammy is counted correctly even started mid hold")
+    {
+        auto result = track.total_available_sp(Beat(4.5), points.cend() - 3);
+        REQUIRE(result.min() == Approx(0.0));
+        REQUIRE(result.max() == Approx(0.0166667));
+    }
+
     SECTION("SP does not exceed full bar")
     {
         REQUIRE(track.total_available_sp(Beat(0.0), points.cend() - 1)
