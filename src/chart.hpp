@@ -42,17 +42,6 @@ struct TimeSignature {
     }
 };
 
-struct Section {
-    uint32_t position;
-    std::string name;
-
-    friend bool operator==(const Section& lhs, const Section& rhs)
-    {
-        return std::tie(lhs.position, lhs.name)
-            == std::tie(rhs.position, rhs.name);
-    }
-};
-
 struct Note {
     uint32_t position = 0;
     uint32_t length = 0;
@@ -142,7 +131,6 @@ private:
 
     int32_t m_resolution = DEFAULT_RESOLUTION;
     SyncTrack m_sync_track;
-    std::vector<Section> m_sections;
     std::map<Difficulty, NoteTrack> m_note_tracks;
     Chart() = default;
 
@@ -150,10 +138,6 @@ public:
     static Chart parse_chart(std::string_view input);
     [[nodiscard]] int32_t resolution() const { return m_resolution; }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
-    [[nodiscard]] const std::vector<Section>& sections() const
-    {
-        return m_sections;
-    }
     [[nodiscard]] const NoteTrack& note_track(Difficulty diff) const
     {
         return m_note_tracks.at(diff);

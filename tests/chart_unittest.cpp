@@ -159,18 +159,6 @@ TEST_CASE("Chart reads sync track correctly", "SyncTrack")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Chart reads events correctly", "Events")
-{
-    const char* text
-        = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n768 = E "
-          "\"section intro\"\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
-    const auto chart = Chart::parse_chart(text);
-    const auto sections = std::vector<Section>({{768, "intro"}});
-
-    REQUIRE(chart.sections() == sections);
-}
-
-// Last checked: 24.0.1555-master
 TEST_CASE("Chart reads easy note track correctly", "Easy")
 {
     const char* text

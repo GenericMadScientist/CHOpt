@@ -162,17 +162,6 @@ static std::vector<std::string_view> split_by_space(std::string_view input)
     return substrings;
 }
 
-// Return the substring with no leading or trailing quotation marks.
-static std::string_view trim_quotes(std::string_view input)
-{
-    const auto first_non_quote = input.find_first_not_of('"');
-    if (first_non_quote == std::string_view::npos) {
-        return input.substr(0, 0);
-    }
-    const auto last_non_quote = input.find_last_not_of('"');
-    return input.substr(first_non_quote, last_non_quote + 1);
-}
-
 // Convert a string_view to a uint32_t. If there are any problems with the
 // input, this function throws.
 static std::optional<uint32_t> string_view_to_uint(std::string_view input)
@@ -280,43 +269,6 @@ static std::string_view read_sync_track(std::string_view input,
             }
             sync_track.time_sigs.push_back(
                 {position, *numerator, 1U << denominator});
-        }
-    }
-
-    return input;
-}
-
-static std::string_view read_events(std::string_view input,
-                                    std::vector<Section>& sections)
-{
-    if (break_off_newline(input) != "{") {
-        throw std::runtime_error("[Events] does not open with {");
-    }
-
-    while (true) {
-        const auto line = break_off_newline(input);
-        if (line == "}") {
-            break;
-        }
-
-        const auto split_string = split_by_space(line);
-        if (split_string.size() < 4) {
-            throw std::invalid_argument("Event missing data");
-        }
-        const auto position = string_view_to_uint(split_string[0]);
-
-        const auto type = split_string[2];
-
-        if (type == "E" && position) {
-            if ((split_string[3] == "\"section") || (split_string.size() > 4)) {
-                std::string section_name(trim_quotes(split_string[4]));
-                constexpr auto NAME_START = 5U;
-                for (auto i = NAME_START; i < split_string.size(); ++i) {
-                    section_name += " ";
-                    section_name += trim_quotes(split_string[i]);
-                }
-                sections.push_back({*position, section_name});
-            }
         }
     }
 
@@ -441,8 +393,6 @@ Chart Chart::parse_chart(std::string_view input)
             input = read_song_header(input, pre_resolution);
         } else if (header == "[SyncTrack]") {
             input = read_sync_track(input, pre_sync_track);
-        } else if (header == "[Events]") {
-            input = read_events(input, chart.m_sections);
         } else if (header == "[EasySingle]") {
             input = read_single_track(input, pre_tracks[Difficulty::Easy]);
         } else if (header == "[MediumSingle]") {
