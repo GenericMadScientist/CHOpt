@@ -26,14 +26,6 @@
 
 #include "chart.hpp"
 
-// This represents a bundle of data akin to a SongHeader, except it is only for
-// mid-parser usage. Unlike a SongHeader, there are no invariants.
-struct PreSongHeader {
-    static constexpr int32_t DEFAULT_RESOLUTION = 192;
-    float offset = 0.F;
-    int32_t resolution = DEFAULT_RESOLUTION;
-};
-
 // This represents a bundle of data akin to a NoteTrack, except it is only for
 // mid-parser usage. Unlike a NoteTrack, there are no invariants.
 struct PreNoteTrack {
@@ -208,31 +200,6 @@ static std::optional<int32_t> string_view_to_int(std::string_view input)
     return result;
 }
 
-// Convert a string_view to a float. If there are any problems with the
-// input, this function throws.
-static std::optional<float> string_view_to_float(std::string_view input)
-{
-// We need to do this conditional because for now only MSVC's STL
-// implements std::from_chars for floats.
-#if defined(_MSC_VER) && _MSC_VER >= 1924
-    float result {0.0};
-    const char* last = input.data() + input.size();
-    auto [p, ec] = std::from_chars(input.data(), last, result);
-    if ((ec != std::errc()) || (p != last)) {
-        return {};
-    }
-    return result;
-#else
-    std::string null_terminated_input(input);
-    size_t chars_processed = 0;
-    float result = std::stof(null_terminated_input, &chars_processed);
-    if (chars_processed != null_terminated_input.size()) {
-        return {};
-    }
-    return result;
-#endif
-}
-
 static std::string_view skip_section(std::string_view input)
 {
     auto next_line = break_off_newline(input);
@@ -248,7 +215,7 @@ static std::string_view skip_section(std::string_view input)
 }
 
 static std::string_view read_song_header(std::string_view input,
-                                         PreSongHeader& header)
+                                         int32_t& resolution)
 {
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("[Song] does not open with {");
@@ -260,19 +227,12 @@ static std::string_view read_song_header(std::string_view input,
             break;
         }
 
-        if (string_starts_with(line, "Offset = ")) {
-            constexpr auto OFFSET_LEN = 9;
-            line.remove_prefix(OFFSET_LEN);
-            const auto result = string_view_to_float(line);
-            if (result) {
-                header.offset = *result;
-            }
-        } else if (string_starts_with(line, "Resolution = ")) {
+        if (string_starts_with(line, "Resolution = ")) {
             constexpr auto RESOLUTION_LEN = 13;
             line.remove_prefix(RESOLUTION_LEN);
             const auto result = string_view_to_int(line);
             if (result) {
-                header.resolution = *result;
+                resolution = *result;
             }
         }
     }
@@ -482,7 +442,7 @@ Chart Chart::parse_chart(std::string_view input)
 {
     Chart chart;
 
-    PreSongHeader pre_header;
+    int32_t pre_resolution = DEFAULT_RESOLUTION;
     PreSyncTrack pre_sync_track;
     std::map<Difficulty, PreNoteTrack> pre_tracks;
 
@@ -494,7 +454,7 @@ Chart Chart::parse_chart(std::string_view input)
     while (!input.empty()) {
         const auto header = break_off_newline(input);
         if (header == "[Song]") {
-            input = read_song_header(input, pre_header);
+            input = read_song_header(input, pre_resolution);
         } else if (header == "[SyncTrack]") {
             input = read_sync_track(input, pre_sync_track);
         } else if (header == "[Events]") {
@@ -512,7 +472,7 @@ Chart Chart::parse_chart(std::string_view input)
         }
     }
 
-    chart.m_resolution = pre_header.resolution;
+    chart.m_resolution = pre_resolution;
     chart.m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs));
 
     for (auto& key_track : pre_tracks) {
