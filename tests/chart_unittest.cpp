@@ -106,8 +106,7 @@ TEST_CASE("SyncTrack ctor maintains invariants", "SyncTrack")
 {
     SECTION("TimeSignatures are sorted by position")
     {
-        const auto track
-            = SyncTrack({{0, 4, 4}, {2000, 3, 3}, {1000, 2, 2}});
+        const auto track = SyncTrack({{0, 4, 4}, {2000, 3, 3}, {1000, 2, 2}});
         const auto expected_tses = std::vector<TimeSignature>(
             {{0, 4, 4}, {1000, 2, 2}, {2000, 3, 3}});
 

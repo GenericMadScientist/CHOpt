@@ -146,7 +146,7 @@ private:
     std::vector<TimeSignature> m_time_sigs;
 
 public:
-    SyncTrack(std::vector<TimeSignature> time_sigs = {});
+    explicit SyncTrack(std::vector<TimeSignature> time_sigs = {});
     [[nodiscard]] const std::vector<TimeSignature>& time_sigs() const
     {
         return m_time_sigs;
