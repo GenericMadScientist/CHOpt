@@ -196,37 +196,6 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("front_end and back_end work correctly", "Timing window")
-{
-    const auto converter
-        = TimeConverter(SyncTrack({}, {{0, 150000}, {768, 200000}}), {});
-
-    SECTION("Front ends for notes are correct")
-    {
-        REQUIRE(front_end({Beat(1.0), 50, false, false}, converter).value()
-                == Approx(0.825));
-        REQUIRE(front_end({Beat(4.1), 50, false, false}, converter).value()
-                == Approx(3.9));
-    }
-
-    SECTION("Back ends for notes are correct")
-    {
-        REQUIRE(back_end({Beat(1.0), 50, false, false}, converter).value()
-                == Approx(1.175));
-        REQUIRE(back_end({Beat(3.9), 50, false, false}, converter).value()
-                == Approx(4.1));
-    }
-
-    SECTION("Front and back ends for hold points are correct")
-    {
-        REQUIRE(front_end({Beat(4.1), 50, true, false}, converter).value()
-                == Approx(4.1));
-        REQUIRE(back_end({Beat(3.9), 50, true, false}, converter).value()
-                == Approx(3.9));
-    }
-}
-
-// Last checked: 24.0.1555-master
 TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
 {
     std::vector<Note> notes {{0, 1920}, {2112, 576}, {3000}};

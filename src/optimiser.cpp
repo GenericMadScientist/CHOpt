@@ -476,29 +476,3 @@ Path ProcessedTrack::optimal_path() const
 
     return get_partial_path(m_points.cbegin(), partial_paths);
 }
-
-Beat front_end(const Point& point, const TimeConverter& converter)
-{
-    constexpr double FRONT_END = 0.07;
-
-    if (point.is_hold_point) {
-        return point.beat_position;
-    }
-
-    auto time = converter.beats_to_seconds(point.beat_position).value();
-    time -= FRONT_END;
-    return converter.seconds_to_beats(Second(time));
-}
-
-Beat back_end(const Point& point, const TimeConverter& converter)
-{
-    constexpr double BACK_END = 0.07;
-
-    if (point.is_hold_point) {
-        return point.beat_position;
-    }
-
-    auto time = converter.beats_to_seconds(point.beat_position).value();
-    time += BACK_END;
-    return converter.seconds_to_beats(Second(time));
-}

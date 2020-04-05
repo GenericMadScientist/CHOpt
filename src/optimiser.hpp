@@ -170,8 +170,4 @@ public:
     [[nodiscard]] Path optimal_path() const;
 };
 
-// Return the earliest and latest times a point can be hit.
-Beat front_end(const Point& point, const TimeConverter& converter);
-Beat back_end(const Point& point, const TimeConverter& converter);
-
 #endif
