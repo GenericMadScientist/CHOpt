@@ -308,6 +308,9 @@ bool ProcessedTrack::is_candidate_valid(
     if (sp_bar.max() < 0.0) {
         return false;
     }
+    if (activation.act_end->is_sp_granting_note) {
+        sp_bar.add_phrase();
+    }
 
     const auto next_point = std::next(activation.act_end);
     if (next_point == m_points.cend()) {

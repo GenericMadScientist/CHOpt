@@ -431,6 +431,21 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
         REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
     }
 
+    SECTION("Last note's SP status is not ignored")
+    {
+        notes[3].position = 4000;
+        std::vector<StarPower> phrases {{3072, 100}};
+        NoteTrack overlap_notes(notes, phrases, {});
+        ProcessedTrack overlap_track(overlap_notes, {}, {});
+        const auto& overlap_points = overlap_track.points();
+        ActivationCandidate overlap_candidate {overlap_points.cbegin(),
+                                               overlap_points.cbegin() + 2,
+                                               Beat(0.0),
+                                               {0.5, 0.5}};
+
+        REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
+    }
+
     SECTION("SP bar does not exceed full bar")
     {
         std::vector<Note> overlap_notes {{0}, {2}, {7000}};
