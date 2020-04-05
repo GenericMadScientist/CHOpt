@@ -20,7 +20,6 @@
 #include <charconv>
 #include <cstdlib>
 #include <optional>
-#include <set>
 #include <stdexcept>
 #include <utility>
 
@@ -344,9 +343,6 @@ static std::string_view read_single_track(std::string_view input,
         throw std::runtime_error("A [*Single] track does not open with {");
     }
 
-    std::set<uint32_t> forced_flags;
-    std::set<uint32_t> tap_flags;
-
     while (true) {
         const auto line = break_off_newline(input);
         if (line == "}") {
@@ -395,10 +391,7 @@ static std::string_view read_single_track(std::string_view input,
                 track.notes.push_back({position, length, NoteColour::Orange});
                 break;
             case FORCED_CODE:
-                forced_flags.insert(position);
-                break;
             case TAP_CODE:
-                tap_flags.insert(position);
                 break;
             case OPEN_CODE:
                 track.notes.push_back({position, length, NoteColour::Open});
@@ -423,15 +416,6 @@ static std::string_view read_single_track(std::string_view input,
         } else if (type == "E") {
             const auto event_name = split_string[3];
             track.events.push_back({position, std::string(event_name)});
-        }
-    }
-
-    for (auto& note : track.notes) {
-        if (forced_flags.count(note.position) != 0) {
-            note.is_forced = true;
-        }
-        if (tap_flags.count(note.position) != 0) {
-            note.is_tap = true;
         }
     }
 

@@ -276,30 +276,6 @@ TEST_CASE("Notes should be sorted", "NoteSort")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Tap flags do not always apply across tracks", "TapFlag")
-{
-    SECTION("Tap flags do not apply to earlier sections")
-    {
-        const char* text
-            = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
-              "= N 6 0\n}";
-        const auto chart = Chart::parse_chart(text);
-
-        REQUIRE(!chart.note_track(Difficulty::Expert).notes()[0].is_tap);
-    }
-
-    SECTION("Tap flags do not apply to or prevent later sections")
-    {
-        const char* text
-            = "[ExpertSingle]\n{\n768 = N 6 0\n}\n[ExpertSingle]\n{\n768 "
-              "= N 0 0\n}";
-        const auto chart = Chart::parse_chart(text);
-
-        REQUIRE(!chart.note_track(Difficulty::Expert).notes()[0].is_tap);
-    }
-}
-
-// Last checked: 24.0.1555-master
 TEST_CASE("Notes with extra spaces", "NoteSpaceSkip")
 {
     SECTION("Leading non-empty sections with notes with spaces cause a throw")

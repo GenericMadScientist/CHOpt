@@ -57,15 +57,11 @@ struct Note {
     uint32_t position = 0;
     uint32_t length = 0;
     NoteColour colour = NoteColour::Green;
-    bool is_forced = false;
-    bool is_tap = false;
 
     friend bool operator==(const Note& lhs, const Note& rhs)
     {
-        return std::tie(lhs.position, lhs.length, lhs.colour, lhs.is_forced,
-                        lhs.is_tap)
-            == std::tie(rhs.position, rhs.length, rhs.colour, rhs.is_forced,
-                        rhs.is_tap);
+        return std::tie(lhs.position, lhs.length, lhs.colour)
+            == std::tie(rhs.position, rhs.length, rhs.colour);
     }
 };
 
