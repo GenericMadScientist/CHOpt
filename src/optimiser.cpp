@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
 #include <cassert>
 #include <iterator>
 #include <numeric>
@@ -187,45 +186,45 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, const SongHeader& header,
     m_point_measures = form_point_measures(m_points, m_converter);
 }
 
-double ProcessedTrack::propagate_sp_over_whammy(Beat start, Beat end,
-                                                Measure start_meas,
-                                                Measure end_meas,
-                                                double sp_bar_amount) const
+SpBar ProcessedTrack::propagate_sp_over_whammy(Beat start, Beat end,
+                                               Measure start_meas,
+                                               Measure end_meas,
+                                               SpBar sp_bar) const
 {
     constexpr double MEASURES_PER_BAR = 8.0;
+
+    sp_bar.min() -= (end_meas - start_meas).value() / MEASURES_PER_BAR;
+    sp_bar.min() = std::max(sp_bar.min(), 0.0);
 
     auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
                           [=](const auto& x) { return x.end_beat > start; });
     while ((p != m_whammy_ranges.cend()) && (p->start_beat < end)) {
         if (p->start_beat > start) {
             auto meas_diff = p->start_meas - start_meas;
-            sp_bar_amount -= meas_diff.value() / MEASURES_PER_BAR;
-            if (sp_bar_amount < 0.0) {
-                return -1.0;
+            sp_bar.max() -= meas_diff.value() / MEASURES_PER_BAR;
+            if (sp_bar.max() < 0.0) {
+                return sp_bar;
             }
             start = p->start_beat;
             start_meas = p->start_meas;
         }
         auto range_end = std::min(end, p->end_beat);
-        sp_bar_amount
-            = propagate_over_whammy_range(start, range_end, sp_bar_amount);
-        if (sp_bar_amount < 0.0) {
-            return -1.0;
+        sp_bar.max()
+            = propagate_over_whammy_range(start, range_end, sp_bar.max());
+        if (sp_bar.max() < 0.0) {
+            return sp_bar;
         }
         start = p->end_beat;
         if (start >= end) {
-            return sp_bar_amount;
+            return sp_bar;
         }
         start_meas = p->end_meas;
         ++p;
     }
 
     auto meas_diff = end_meas - start_meas;
-    sp_bar_amount -= meas_diff.value() / MEASURES_PER_BAR;
-    if (sp_bar_amount < 0.0) {
-        return -1.0;
-    }
-    return sp_bar_amount;
+    sp_bar.max() -= meas_diff.value() / MEASURES_PER_BAR;
+    return sp_bar;
 }
 
 static Measure point_to_measure(const std::vector<Point>& points,
@@ -239,6 +238,7 @@ static Measure point_to_measure(const std::vector<Point>& points,
 PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
                                                   double sp) const
 {
+    SpBar sp_bar {0.0, sp};
     auto current_position = point->beat_position;
     auto current_meas_position
         = point_to_measure(m_points, m_point_measures, point);
@@ -247,13 +247,13 @@ PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
         if (p->is_sp_granting_note) {
             auto p_meas_position
                 = point_to_measure(m_points, m_point_measures, p);
-            sp = propagate_sp_over_whammy(current_position, p->beat_position,
-                                          current_meas_position,
-                                          p_meas_position, sp);
-            if (sp < 0.0) {
+            sp_bar = propagate_sp_over_whammy(
+                current_position, p->beat_position, current_meas_position,
+                p_meas_position, sp_bar);
+            if (sp_bar.max() < 0.0) {
                 return p - 1;
             }
-            sp = std::min(sp + SP_PHRASE_AMOUNT, 1.0);
+            sp_bar.add_phrase();
             current_position = p->beat_position;
             current_meas_position = p_meas_position;
         }
@@ -266,8 +266,9 @@ bool ProcessedTrack::is_candidate_valid(
     const ActivationCandidate& activation) const
 {
     constexpr double MEASURES_PER_BAR = 8.0;
+    constexpr double MINIMUM_SP_AMOUNT = 0.5;
 
-    if (activation.sp_bar.max < MINIMUM_SP_AMOUNT) {
+    if (!activation.sp_bar.full_enough_to_activate()) {
         return false;
     }
 
@@ -275,29 +276,25 @@ bool ProcessedTrack::is_candidate_valid(
     auto current_meas_position
         = point_to_measure(m_points, m_point_measures, activation.act_start);
 
-    auto min_sp = std::max(activation.sp_bar.min, MINIMUM_SP_AMOUNT);
-    auto max_sp = activation.sp_bar.max;
+    auto sp_bar = activation.sp_bar;
+    sp_bar.min() = std::max(sp_bar.min(), MINIMUM_SP_AMOUNT);
 
     auto starting_meas_diff = current_meas_position
         - m_converter.beats_to_measures(activation.earliest_activation_point);
-    min_sp -= starting_meas_diff.value() / MEASURES_PER_BAR;
-    min_sp = std::max(min_sp, 0.0);
+    sp_bar.min() -= starting_meas_diff.value() / MEASURES_PER_BAR;
+    sp_bar.min() = std::max(sp_bar.min(), 0.0);
 
     for (auto p = activation.act_start; p < activation.act_end; ++p) {
         if (p->is_sp_granting_note) {
             auto p_meas_position
                 = point_to_measure(m_points, m_point_measures, p);
-            max_sp = propagate_sp_over_whammy(
+            sp_bar = propagate_sp_over_whammy(
                 current_position, p->beat_position, current_meas_position,
-                p_meas_position, max_sp);
-            if (max_sp < 0.0) {
+                p_meas_position, sp_bar);
+            if (sp_bar.max() < 0.0) {
                 return false;
             }
-            auto meas_diff = p_meas_position - current_meas_position;
-            min_sp
-                = std::max(min_sp - meas_diff.value() / MEASURES_PER_BAR, 0.0);
-            min_sp = std::min(min_sp + SP_PHRASE_AMOUNT, 1.0);
-            max_sp = std::min(max_sp + SP_PHRASE_AMOUNT, 1.0);
+            sp_bar.add_phrase();
             current_position = p->beat_position;
             current_meas_position = p_meas_position;
         }
@@ -305,10 +302,10 @@ bool ProcessedTrack::is_candidate_valid(
 
     auto end_meas
         = point_to_measure(m_points, m_point_measures, activation.act_end);
-    max_sp = propagate_sp_over_whammy(current_position,
+    sp_bar = propagate_sp_over_whammy(current_position,
                                       activation.act_end->beat_position,
-                                      current_meas_position, end_meas, max_sp);
-    if (max_sp < 0.0) {
+                                      current_meas_position, end_meas, sp_bar);
+    if (sp_bar.max() < 0.0) {
         return false;
     }
 
@@ -317,11 +314,11 @@ bool ProcessedTrack::is_candidate_valid(
         return true;
     }
 
-    auto meas_diff = point_to_measure(m_points, m_point_measures, next_point)
-        - current_meas_position;
-    min_sp -= meas_diff.value() / MEASURES_PER_BAR;
+    auto meas_diff
+        = point_to_measure(m_points, m_point_measures, next_point) - end_meas;
+    sp_bar.min() -= meas_diff.value() / MEASURES_PER_BAR;
 
-    return min_sp < 0.0;
+    return sp_bar.min() < 0.0;
 }
 
 double ProcessedTrack::propagate_over_whammy_range(Beat start, Beat end,
@@ -362,17 +359,16 @@ double ProcessedTrack::propagate_over_whammy_range(Beat start, Beat end,
 
 SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
 {
-    auto min_sp = 0.0;
+    SpBar sp_bar {0.0, 0.0};
     auto p
         = std::find_if(m_points.cbegin(), m_points.cend(),
                        [=](const auto& x) { return x.beat_position >= start; });
     for (; p < act_start; ++p) {
         if (p->is_sp_granting_note) {
-            min_sp += SP_PHRASE_AMOUNT;
+            sp_bar.add_phrase();
         }
     }
 
-    auto max_sp = min_sp;
     auto q = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
                           [=](const auto& x) { return x.end_beat > start; });
     while (q < m_whammy_ranges.cend()) {
@@ -380,14 +376,13 @@ SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
             break;
         }
         auto end = std::min(q->end_beat, act_start->beat_position);
-        max_sp += (end - q->start_beat).value() * SP_GAIN_RATE;
+        sp_bar.max() += (end - q->start_beat).value() * SP_GAIN_RATE;
         ++q;
     }
 
-    min_sp = std::min(min_sp, 1.0);
-    max_sp = std::min(max_sp, 1.0);
+    sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
-    return {min_sp, max_sp};
+    return sp_bar;
 }
 
 bool ProcessedTrack::is_in_whammy_ranges(Beat beat) const
@@ -434,10 +429,10 @@ void ProcessedTrack::add_point_to_partial_acts(
 
     for (auto p = point; p < m_points.cend(); ++p) {
         auto sp_bar = total_available_sp(starting_beat, p);
-        if (sp_bar.max < MINIMUM_SP_AMOUNT) {
+        if (!sp_bar.full_enough_to_activate()) {
             continue;
         }
-        auto max_q = furthest_reachable_point(p, sp_bar.max);
+        auto max_q = furthest_reachable_point(p, sp_bar.max());
         for (auto q = p; q <= max_q; ++q) {
             if (attained_act_ends.find(q) != attained_act_ends.end()) {
                 continue;

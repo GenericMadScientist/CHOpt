@@ -19,6 +19,7 @@
 #ifndef CHOPT_OPTIMISER_HPP
 #define CHOPT_OPTIMISER_HPP
 
+#include <algorithm>
 #include <cstdint>
 #include <map>
 #include <tuple>
@@ -45,13 +46,42 @@ struct Point {
 using PointPtr = std::vector<Point>::const_iterator;
 
 // Represents the minimum and maximum SP possible at a given time.
-struct SpBar {
-    double min;
-    double max;
+class SpBar {
+private:
+    double m_min;
+    double m_max;
+
+public:
+    SpBar(double min, double max)
+        : m_min {min}
+        , m_max {max}
+    {
+    }
+
+    double& min() { return m_min; }
+    double& max() { return m_max; }
+    [[nodiscard]] double min() const { return m_min; }
+    [[nodiscard]] double max() const { return m_max; }
 
     friend bool operator==(const SpBar& lhs, const SpBar& rhs)
     {
-        return std::tie(lhs.min, lhs.max) == std::tie(rhs.min, rhs.max);
+        return std::tie(lhs.m_min, lhs.m_max) == std::tie(rhs.m_min, rhs.m_max);
+    }
+
+    void add_phrase()
+    {
+        constexpr double SP_PHRASE_AMOUNT = 0.25;
+
+        m_min += SP_PHRASE_AMOUNT;
+        m_max += SP_PHRASE_AMOUNT;
+        m_min = std::min(m_min, 1.0);
+        m_max = std::min(m_max, 1.0);
+    }
+
+    [[nodiscard]] bool full_enough_to_activate() const
+    {
+        constexpr double MINIMUM_SP_AMOUNT = 0.5;
+        return m_max >= MINIMUM_SP_AMOUNT;
     }
 };
 
@@ -95,9 +125,7 @@ private:
         Measure end_meas;
     };
 
-    static constexpr double MINIMUM_SP_AMOUNT = 0.5;
     static constexpr double SP_GAIN_RATE = 1 / 30.0;
-    static constexpr double SP_PHRASE_AMOUNT = 0.25;
 
     std::vector<Point> m_points;
     TimeConverter m_converter;
@@ -130,10 +158,10 @@ public:
     // Return how much SP is available at the end after propagating over a
     // range, or -1 if SP runs out at any point. Only includes SP gain from
     // whammy.
-    [[nodiscard]] double propagate_sp_over_whammy(Beat start, Beat end,
-                                                  Measure start_meas,
-                                                  Measure end_meas,
-                                                  double sp_bar_amount) const;
+    [[nodiscard]] SpBar propagate_sp_over_whammy(Beat start, Beat end,
+                                                 Measure start_meas,
+                                                 Measure end_meas,
+                                                 SpBar sp_bar) const;
     // Return the minimum and maximum amount of SP can be acquired between two
     // points. Does not include SP from the point act_start.
     [[nodiscard]] SpBar total_available_sp(Beat start,

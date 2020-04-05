@@ -23,6 +23,22 @@
 
 #include "optimiser.hpp"
 
+TEST_CASE("SpBar methods", "SpBar")
+{
+    SECTION("add_phrase() works correctly")
+    {
+        SpBar sp_bar {0.0, 0.25};
+        sp_bar.add_phrase();
+
+        REQUIRE(sp_bar == SpBar {0.25, 0.5});
+
+        sp_bar = {0.8, 1.0};
+        sp_bar.add_phrase();
+
+        REQUIRE(sp_bar == SpBar {1.0, 1.0});
+    }
+}
+
 // Last checked: 24.0.1555-master
 TEST_CASE("Non-hold notes", "Non hold")
 {
@@ -222,11 +238,17 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         std::vector<TimeSignature> time_sigs {{0, 4, 4}};
         ProcessedTrack track(note_track, {}, {time_sigs, {}});
 
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
-                                               Measure(0.0), Measure(1.0), 0.5)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
+                                              Measure(0.0), Measure(1.0),
+                                              {0.5, 0.5})
+                    .max()
                 == Approx(0.508333));
-        REQUIRE(track.propagate_sp_over_whammy(Beat(1.0), Beat(4.0),
-                                               Measure(0.25), Measure(1.0), 0.5)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(1.0), Beat(4.0),
+                                              Measure(0.25), Measure(1.0),
+                                              {0.5, 0.5})
+                    .max()
                 == Approx(0.50625));
     }
 
@@ -235,12 +257,17 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         std::vector<TimeSignature> time_sigs {{0, 3, 4}};
         ProcessedTrack track(note_track, {}, {time_sigs, {}});
 
-        REQUIRE(track.propagate_sp_over_whammy(
-                    Beat(0.0), Beat(4.0), Measure(0.0), Measure(4.0 / 3), 0.5)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
+                                              Measure(0.0), Measure(4.0 / 3),
+                                              {0.5, 0.5})
+                    .max()
                 == Approx(0.466667));
-        REQUIRE(track.propagate_sp_over_whammy(Beat(-1.0), Beat(4.0),
-                                               Measure(-0.25), Measure(4.0 / 3),
-                                               0.5)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(-1.0), Beat(4.0),
+                                              Measure(-0.25), Measure(4.0 / 3),
+                                              {0.5, 0.5})
+                    .max()
                 == Approx(0.435417));
     }
 
@@ -249,11 +276,17 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         std::vector<TimeSignature> time_sigs {{0, 4, 4}, {384, 3, 4}};
         ProcessedTrack track(note_track, {}, {time_sigs, {}});
 
-        REQUIRE(track.propagate_sp_over_whammy(
-                    Beat(0.0), Beat(4.0), Measure(0.0), Measure(7.0 / 6), 0.5)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
+                                              Measure(0.0), Measure(7.0 / 6),
+                                              {0.5, 0.5})
+                    .max()
                 == Approx(0.4875));
-        REQUIRE(track.propagate_sp_over_whammy(
-                    Beat(1.0), Beat(4.0), Measure(0.25), Measure(7.0 / 6), 0.5)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(1.0), Beat(4.0),
+                                              Measure(0.25), Measure(7.0 / 6),
+                                              {0.5, 0.5})
+                    .max()
                 == Approx(0.485417));
     }
 
@@ -262,12 +295,17 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         std::vector<TimeSignature> time_sigs {{0, 3, 4}, {384, 4, 4}};
         ProcessedTrack track(note_track, {}, {time_sigs, {}});
 
-        REQUIRE(track.propagate_sp_over_whammy(
-                    Beat(0.0), Beat(2.0), Measure(0.0), Measure(2.0 / 3), 0.015)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(2.0),
+                                              Measure(0.0), Measure(2.0 / 3),
+                                              {0.015, 0.015})
+                    .max()
                 == Approx(-1.0));
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(10.0),
-                                               Measure(0.0), Measure(8.0 / 3),
-                                               0.015)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(10.0),
+                                              Measure(0.0), Measure(8.0 / 3),
+                                              {0.015, 0.015})
+                    .max()
                 == Approx(-1.0));
     }
 
@@ -275,8 +313,11 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     {
         ProcessedTrack track(note_track, {}, {});
 
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(12.0),
-                                               Measure(0.0), Measure(3.0), 0.5)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(12.0),
+                                              Measure(0.0), Measure(3.0),
+                                              {0.5, 0.5})
+                    .max()
                 == Approx(0.491667));
     }
 
@@ -284,11 +325,17 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     {
         ProcessedTrack track(note_track, {}, {});
 
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(10.0),
-                                               Measure(0.0), Measure(2.5), 1.0)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(10.0),
+                                              Measure(0.0), Measure(2.5),
+                                              {1.0, 1.0})
+                    .max()
                 == Approx(1.0));
-        REQUIRE(track.propagate_sp_over_whammy(
-                    Beat(0.0), Beat(10.5), Measure(0.0), Measure(2.625), 1.0)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(10.5),
+                                              Measure(0.0), Measure(2.625),
+                                              {1.0, 1.0})
+                    .max()
                 == Approx(0.984375));
     }
 
@@ -297,8 +344,11 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         NoteTrack no_sp_note_track(notes, {}, {});
         ProcessedTrack track(no_sp_note_track, {}, {});
 
-        REQUIRE(track.propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
-                                               Measure(0.0), Measure(1.0), 1.0)
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
+                                              Measure(0.0), Measure(1.0),
+                                              {1.0, 1.0})
+                    .max()
                 == Approx(0.875));
     }
 }
@@ -339,7 +389,7 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     SECTION("Below half bar never works")
     {
         candidate.act_end = points.cbegin() + 1;
-        candidate.sp_bar.max = 0.25;
+        candidate.sp_bar.max() = 0.25;
 
         REQUIRE(!track.is_candidate_valid(candidate));
     }
@@ -347,7 +397,7 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     SECTION("Check next point needs to not lie in activation")
     {
         candidate.act_end = points.cbegin() + 1;
-        candidate.sp_bar.max = 0.6;
+        candidate.sp_bar.max() = 0.6;
 
         REQUIRE(!track.is_candidate_valid(candidate));
     }
@@ -424,7 +474,7 @@ TEST_CASE("is_activation_valid works with whammy", "Valid whammy acts")
 
     SECTION("Check compressed activations are counted")
     {
-        candidate.sp_bar.max = 0.9;
+        candidate.sp_bar.max() = 0.9;
         REQUIRE(track.is_candidate_valid(candidate));
     }
 }
@@ -447,7 +497,7 @@ TEST_CASE("is_activation_valid takes into account minimum SP", "Min SP")
     SECTION("Lower SP is only considered down to a half-bar")
     {
         candidate.act_end = points.cbegin() + 1;
-        candidate.sp_bar.min = 0.25;
+        candidate.sp_bar.min() = 0.25;
 
         REQUIRE(!track.is_candidate_valid(candidate));
     }
@@ -475,8 +525,8 @@ TEST_CASE("total_available_sp counts SP correctly", "Available SP")
     SECTION("Whammy is counted correctly")
     {
         auto result = track.total_available_sp(Beat(4.0), points.cbegin() + 5);
-        REQUIRE(result.min == Approx(0.0));
-        REQUIRE(result.max == Approx(0.00121528));
+        REQUIRE(result.min() == Approx(0.0));
+        REQUIRE(result.max() == Approx(0.00121528));
     }
 
     SECTION("SP does not exceed full bar")
