@@ -52,7 +52,6 @@ static bool is_empty(const PreNoteTrack& track)
 // mid-parser usage. Unlike a SyncTrack, there are no invariants.
 struct PreSyncTrack {
     std::vector<TimeSignature> time_sigs;
-    std::vector<BPM> bpms;
 };
 
 SongHeader::SongHeader(float offset, int32_t resolution)
@@ -112,23 +111,8 @@ NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
     }
 }
 
-SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
-                     std::vector<BPM> bpms)
+SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs)
 {
-    constexpr auto DEFAULT_BPM = 120000;
-
-    std::stable_sort(
-        bpms.begin(), bpms.end(),
-        [](const auto& x, const auto& y) { return x.position < y.position; });
-    BPM prev_bpm {0, DEFAULT_BPM};
-    for (auto p = bpms.cbegin(); p < bpms.cend(); ++p) {
-        if (p->position != prev_bpm.position) {
-            m_bpms.push_back(prev_bpm);
-        }
-        prev_bpm = *p;
-    }
-    m_bpms.push_back(prev_bpm);
-
     std::stable_sort(
         time_sigs.begin(), time_sigs.end(),
         [](const auto& x, const auto& y) { return x.position < y.position; });
@@ -346,12 +330,6 @@ static std::string_view read_sync_track(std::string_view input,
             }
             sync_track.time_sigs.push_back(
                 {position, *numerator, 1U << denominator});
-        } else if (type == "B") {
-            const auto bpm = string_view_to_uint(split_string[3]);
-            if (!bpm) {
-                continue;
-            }
-            sync_track.bpms.push_back({position, *bpm});
         }
     }
 
@@ -544,8 +522,7 @@ Chart Chart::parse_chart(std::string_view input)
     }
 
     chart.m_header = SongHeader(pre_header.offset, pre_header.resolution);
-    chart.m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs),
-                                   std::move(pre_sync_track.bpms));
+    chart.m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs));
 
     for (auto& key_track : pre_tracks) {
         auto diff = key_track.first;

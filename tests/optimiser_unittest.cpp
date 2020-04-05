@@ -205,7 +205,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     SECTION("Works correctly over 4/4")
     {
         std::vector<TimeSignature> time_sigs {{0, 4, 4}};
-        ProcessedTrack track(note_track, {}, {time_sigs, {}});
+        ProcessedTrack track(note_track, {}, {time_sigs});
 
         REQUIRE(track
                     .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
@@ -224,7 +224,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     SECTION("Works correctly over 3/4")
     {
         std::vector<TimeSignature> time_sigs {{0, 3, 4}};
-        ProcessedTrack track(note_track, {}, {time_sigs, {}});
+        ProcessedTrack track(note_track, {}, {time_sigs});
 
         REQUIRE(track
                     .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
@@ -243,7 +243,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     SECTION("Works correctly over changing time signatures")
     {
         std::vector<TimeSignature> time_sigs {{0, 4, 4}, {384, 3, 4}};
-        ProcessedTrack track(note_track, {}, {time_sigs, {}});
+        ProcessedTrack track(note_track, {}, {time_sigs});
 
         REQUIRE(track
                     .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
@@ -262,7 +262,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     SECTION("Returns -1 if SP runs out")
     {
         std::vector<TimeSignature> time_sigs {{0, 3, 4}, {384, 4, 4}};
-        ProcessedTrack track(note_track, {}, {time_sigs, {}});
+        ProcessedTrack track(note_track, {}, {time_sigs});
 
         REQUIRE(track
                     .propagate_sp_over_whammy(Beat(0.0), Beat(2.0),
@@ -331,7 +331,7 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     const auto& points = track.points();
     ActivationCandidate candidate {
         points.cbegin(), points.cbegin() + 3, Beat(0.0), {1.0, 1.0}};
-    ProcessedTrack second_track(note_track, {}, SyncTrack({{0, 3, 4}}, {}));
+    ProcessedTrack second_track(note_track, {}, SyncTrack({{0, 3, 4}}));
     const auto& second_points = second_track.points();
     ActivationCandidate second_candidate {second_points.cbegin(),
                                           second_points.cbegin() + 3,

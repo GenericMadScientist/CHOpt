@@ -104,36 +104,10 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
 // Last checked: 24.0.1555-master
 TEST_CASE("SyncTrack ctor maintains invariants", "SyncTrack")
 {
-    SECTION("BPMs are sorted by position")
-    {
-        const auto track
-            = SyncTrack({}, {{0, 150000}, {2000, 200000}, {1000, 225000}});
-        const auto expected_bpms
-            = std::vector<BPM>({{0, 150000}, {1000, 225000}, {2000, 200000}});
-
-        REQUIRE(track.bpms() == expected_bpms);
-    }
-
-    SECTION("No two BPMs have the same position")
-    {
-        const auto track = SyncTrack({}, {{0, 150000}, {0, 200000}});
-        const auto expected_bpms = std::vector<BPM>({{0, 200000}});
-
-        REQUIRE(track.bpms() == expected_bpms);
-    }
-
-    SECTION("bpms() is never empty")
-    {
-        const auto track = SyncTrack();
-        const auto expected_bpms = std::vector<BPM>({{0, 120000}});
-
-        REQUIRE(track.bpms() == expected_bpms);
-    }
-
     SECTION("TimeSignatures are sorted by position")
     {
         const auto track
-            = SyncTrack({{0, 4, 4}, {2000, 3, 3}, {1000, 2, 2}}, {});
+            = SyncTrack({{0, 4, 4}, {2000, 3, 3}, {1000, 2, 2}});
         const auto expected_tses = std::vector<TimeSignature>(
             {{0, 4, 4}, {1000, 2, 2}, {2000, 3, 3}});
 
@@ -142,7 +116,7 @@ TEST_CASE("SyncTrack ctor maintains invariants", "SyncTrack")
 
     SECTION("No two TimeSignatures have the same position")
     {
-        const auto track = SyncTrack({{0, 4, 4}, {0, 3, 4}}, {});
+        const auto track = SyncTrack({{0, 4, 4}, {0, 3, 4}});
         const auto expected_tses = std::vector<TimeSignature>({{0, 3, 4}});
 
         REQUIRE(track.time_sigs() == expected_tses);
@@ -191,10 +165,8 @@ TEST_CASE("Chart reads sync track correctly", "SyncTrack")
           "TS 4 1\n}\n[Events]\n{\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
     const auto sync_track = Chart::parse_chart(text).sync_track();
     const auto time_sigs = std::vector<TimeSignature>({{0, 4, 4}, {768, 4, 2}});
-    const auto bpms = std::vector<BPM>({{0, 200000}});
 
     REQUIRE(sync_track.time_sigs() == time_sigs);
-    REQUIRE(sync_track.bpms() == bpms);
 }
 
 // Last checked: 24.0.1555-master
@@ -274,11 +246,9 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
               "N 0 0\n}\n[Song]\n{\nResolution = 200\n}";
         const auto chart = Chart::parse_chart(text);
         const auto notes = std::vector<Note>({{768}});
-        const auto bpms = std::vector<BPM>({{0, 200000}});
 
         REQUIRE(chart.header().resolution() == 200);
         REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
-        REQUIRE(chart.sync_track().bpms() == bpms);
     }
 }
 
