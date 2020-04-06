@@ -180,3 +180,21 @@ bool SpData::is_in_whammy_ranges(Beat beat) const
     }
     return p->start_beat <= beat;
 }
+
+double SpData::available_whammy(Beat start, Beat end) const
+{
+    double total_whammy {0.0};
+
+    auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
+                          [=](const auto& x) { return x.end_beat > start; });
+    for (; p < m_whammy_ranges.cend(); ++p) {
+        if (p->start_beat >= end) {
+            break;
+        }
+        auto whammy_start = std::max(p->start_beat, start);
+        auto whammy_end = std::min(p->end_beat, end);
+        total_whammy += (whammy_end - whammy_start).value() * SP_GAIN_RATE;
+    }
+
+    return total_whammy;
+}

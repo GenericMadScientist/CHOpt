@@ -184,3 +184,16 @@ TEST_CASE("is_in_whammy_ranges works correctly", "Whammy ranges")
     REQUIRE(sp_data.is_in_whammy_ranges(Beat(1.0)));
     REQUIRE(!sp_data.is_in_whammy_ranges(Beat(11.0)));
 }
+
+TEST_CASE("available_whammy works correctly", "Available whammy")
+{
+    std::vector<Note> notes {{0, 1920}, {2112}, {2304, 768}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack track(notes, phrases);
+    SpData sp_data(track, 192, SyncTrack());
+
+    REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(16.0))
+            == Approx(0.466667));
+    REQUIRE(sp_data.available_whammy(Beat(10.0), Beat(12.0)) == Approx(0.0));
+    REQUIRE(sp_data.available_whammy(Beat(1.0), Beat(8.0)) == Approx(0.233333));
+}

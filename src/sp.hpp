@@ -106,6 +106,8 @@ public:
                                                  SpBar sp_bar) const;
     // Return if a beat is at a place that can be whammied.
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
+    // Return the amount of whammy obtainable across a range.
+    [[nodiscard]] double available_whammy(Beat start, Beat end) const;
 };
 
 #endif

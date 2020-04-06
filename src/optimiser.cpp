@@ -115,52 +115,9 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
                                const SyncTrack& sync_track)
     : m_points {notes_to_points(track, resolution)}
     , m_converter {TimeConverter(sync_track, resolution)}
+    , m_point_measures {form_point_measures(m_points, m_converter)}
     , m_sp_data {track, resolution, sync_track}
 {
-    std::vector<std::tuple<std::uint32_t, std::uint32_t>> ranges_as_ticks;
-    for (const auto& note : track.notes()) {
-        if (note.length == 0) {
-            continue;
-        }
-        auto phrase
-            = std::find_if(track.sp_phrases().cbegin(),
-                           track.sp_phrases().cend(), [&](const auto& p) {
-                               return phrase_contains_pos(p, note.position);
-                           });
-        if (phrase == track.sp_phrases().cend()) {
-            continue;
-        }
-        ranges_as_ticks.emplace_back(note.position,
-                                     note.position + note.length);
-    }
-    std::sort(ranges_as_ticks.begin(), ranges_as_ticks.end());
-
-    if (!ranges_as_ticks.empty()) {
-        std::vector<std::tuple<std::uint32_t, std::uint32_t>> merged_ranges;
-        auto pair = ranges_as_ticks[0];
-        for (auto p = std::next(ranges_as_ticks.cbegin());
-             p < ranges_as_ticks.cend(); ++p) {
-            if (std::get<0>(*p) <= std::get<1>(pair)) {
-                std::get<1>(pair)
-                    = std::max(std::get<1>(pair), std::get<1>(*p));
-            } else {
-                merged_ranges.push_back(pair);
-                pair = *p;
-            }
-        }
-        merged_ranges.push_back(pair);
-
-        for (const auto& range : merged_ranges) {
-            auto start = static_cast<double>(std::get<0>(range)) / resolution;
-            auto end = static_cast<double>(std::get<1>(range)) / resolution;
-            auto start_meas = m_converter.beats_to_measures(Beat(start));
-            auto end_meas = m_converter.beats_to_measures(Beat(end));
-            m_whammy_ranges.push_back(
-                {Beat(start), Beat(end), start_meas, end_meas});
-        }
-    }
-
-    m_point_measures = form_point_measures(m_points, m_converter);
 }
 
 static Measure point_to_measure(const std::vector<Point>& points,
@@ -262,8 +219,6 @@ bool ProcessedTrack::is_candidate_valid(
 
 SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
 {
-    constexpr double SP_GAIN_RATE = 1 / 30.0;
-
     SpBar sp_bar {0.0, 0.0};
     auto p
         = std::find_if(m_points.cbegin(), m_points.cend(),
@@ -274,18 +229,7 @@ SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
         }
     }
 
-    auto q = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
-                          [=](const auto& x) { return x.end_beat > start; });
-    while (q < m_whammy_ranges.cend()) {
-        if (q->start_beat >= act_start->beat_position) {
-            break;
-        }
-        auto whammy_start = std::max(q->start_beat, start);
-        auto whammy_end = std::min(q->end_beat, act_start->beat_position);
-        sp_bar.max() += (whammy_end - whammy_start).value() * SP_GAIN_RATE;
-        ++q;
-    }
-
+    sp_bar.max() += m_sp_data.available_whammy(start, act_start->beat_position);
     sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
     return sp_bar;

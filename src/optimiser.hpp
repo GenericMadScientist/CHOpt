@@ -74,16 +74,10 @@ struct Path {
 // upheld by the constructors of the arguments.
 class ProcessedTrack {
 private:
-    struct WhammyRange {
-        Beat start_beat;
-        Beat end_beat;
-        Measure start_meas;
-        Measure end_meas;
-    };
-
+    // The order of these members is important. We must have m_points and
+    // m_converter before m_point_measures.
     std::vector<Point> m_points;
     TimeConverter m_converter;
-    std::vector<WhammyRange> m_whammy_ranges;
     std::vector<Measure> m_point_measures;
     SpData m_sp_data;
 
