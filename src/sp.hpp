@@ -21,6 +21,9 @@
 
 #include <algorithm>
 #include <tuple>
+#include <vector>
+
+#include "time.hpp"
 
 // Represents the minimum and maximum SP possible at a given time.
 class SpBar {
@@ -60,6 +63,47 @@ public:
         constexpr double MINIMUM_SP_AMOUNT = 0.5;
         return m_max >= MINIMUM_SP_AMOUNT;
     }
+};
+
+// This is used by the optimiser to calculate SP drain.
+class SpData {
+private:
+    struct BeatRate {
+        Beat position;
+        double net_sp_gain_rate;
+    };
+
+    struct WhammyRange {
+        Beat start_beat;
+        Beat end_beat;
+        Measure start_meas;
+        Measure end_meas;
+    };
+
+    static constexpr double SP_GAIN_RATE = 1 / 30.0;
+
+    TimeConverter m_converter;
+    std::vector<BeatRate> m_beat_rates;
+    std::vector<WhammyRange> m_whammy_ranges;
+
+    [[nodiscard]] double
+    propagate_over_whammy_range(Beat start, Beat end,
+                                double sp_bar_amount) const;
+
+    static std::vector<BeatRate> form_beat_rates(std::int32_t resolution,
+                                                 const SyncTrack& sync_track);
+
+public:
+    SpData(const NoteTrack& track, std::int32_t resolution,
+           const SyncTrack& sync_track);
+
+    // Return how much SP is available at the end after propagating over a
+    // range, or -1 if SP runs out at any point. Only includes SP gain from
+    // whammy.
+    [[nodiscard]] SpBar propagate_sp_over_whammy(Beat start, Beat end,
+                                                 Measure start_meas,
+                                                 Measure end_meas,
+                                                 SpBar sp_bar) const;
 };
 
 #endif

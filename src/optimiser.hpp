@@ -93,6 +93,7 @@ private:
     std::vector<BeatRate> m_beat_rates;
     std::vector<WhammyRange> m_whammy_ranges;
     std::vector<Measure> m_point_measures;
+    SpData m_sp_data;
 
     [[nodiscard]] double
     propagate_over_whammy_range(Beat start, Beat end,
@@ -116,13 +117,6 @@ public:
     [[nodiscard]] const std::vector<Point>& points() const { return m_points; }
     [[nodiscard]] bool
     is_candidate_valid(const ActivationCandidate& activation) const;
-    // Return how much SP is available at the end after propagating over a
-    // range, or -1 if SP runs out at any point. Only includes SP gain from
-    // whammy.
-    [[nodiscard]] SpBar propagate_sp_over_whammy(Beat start, Beat end,
-                                                 Measure start_meas,
-                                                 Measure end_meas,
-                                                 SpBar sp_bar) const;
     // Return the minimum and maximum amount of SP can be acquired between two
     // points. Does not include SP from the point act_start.
     [[nodiscard]] SpBar total_available_sp(Beat start,

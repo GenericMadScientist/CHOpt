@@ -46,3 +46,130 @@ TEST_CASE("SpBar methods", "SpBar")
         REQUIRE(sp_bar.full_enough_to_activate());
     }
 }
+
+// Last checked: 24.0.1555-master
+TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
+{
+    std::vector<Note> notes {{0, 1920}, {2112, 576}, {3000}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack note_track(notes, phrases);
+
+    SECTION("Works correctly over 4/4")
+    {
+        std::vector<TimeSignature> time_sigs {{0, 4, 4}};
+        SpData track(note_track, 192, SyncTrack(time_sigs));
+
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
+                                              Measure(0.0), Measure(1.0),
+                                              {0.5, 0.5})
+                    .max()
+                == Approx(0.508333));
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(1.0), Beat(4.0),
+                                              Measure(0.25), Measure(1.0),
+                                              {0.5, 0.5})
+                    .max()
+                == Approx(0.50625));
+    }
+
+    SECTION("Works correctly over 3/4")
+    {
+        std::vector<TimeSignature> time_sigs {{0, 3, 4}};
+        SpData track(note_track, 192, SyncTrack(time_sigs));
+
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
+                                              Measure(0.0), Measure(4.0 / 3),
+                                              {0.5, 0.5})
+                    .max()
+                == Approx(0.466667));
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(-1.0), Beat(4.0),
+                                              Measure(-0.25), Measure(4.0 / 3),
+                                              {0.5, 0.5})
+                    .max()
+                == Approx(0.435417));
+    }
+
+    SECTION("Works correctly over changing time signatures")
+    {
+        std::vector<TimeSignature> time_sigs {{0, 4, 4}, {384, 3, 4}};
+        SpData track(note_track, 192, SyncTrack(time_sigs));
+
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
+                                              Measure(0.0), Measure(7.0 / 6),
+                                              {0.5, 0.5})
+                    .max()
+                == Approx(0.4875));
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(1.0), Beat(4.0),
+                                              Measure(0.25), Measure(7.0 / 6),
+                                              {0.5, 0.5})
+                    .max()
+                == Approx(0.485417));
+    }
+
+    SECTION("Returns -1 if SP runs out")
+    {
+        std::vector<TimeSignature> time_sigs {{0, 3, 4}, {384, 4, 4}};
+        SpData track(note_track, 192, SyncTrack(time_sigs));
+
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(2.0),
+                                              Measure(0.0), Measure(2.0 / 3),
+                                              {0.015, 0.015})
+                    .max()
+                == Approx(-1.0));
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(10.0),
+                                              Measure(0.0), Measure(8.0 / 3),
+                                              {0.015, 0.015})
+                    .max()
+                == Approx(-1.0));
+    }
+
+    SECTION("Works even if some of the range isn't whammyable")
+    {
+        SpData track(note_track, 192, SyncTrack());
+
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(12.0),
+                                              Measure(0.0), Measure(3.0),
+                                              {0.5, 0.5})
+                    .max()
+                == Approx(0.491667));
+    }
+
+    SECTION("SP bar does not exceed full bar")
+    {
+        SpData track(note_track, 192, SyncTrack());
+
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(10.0),
+                                              Measure(0.0), Measure(2.5),
+                                              {1.0, 1.0})
+                    .max()
+                == Approx(1.0));
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(10.5),
+                                              Measure(0.0), Measure(2.625),
+                                              {1.0, 1.0})
+                    .max()
+                == Approx(0.984375));
+    }
+
+    SECTION("Hold notes not in a phrase do not contribute SP")
+    {
+        NoteTrack no_sp_note_track(notes, {});
+        SpData track(no_sp_note_track, 192, SyncTrack());
+
+        REQUIRE(track
+                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
+                                              Measure(0.0), Measure(1.0),
+                                              {1.0, 1.0})
+                    .max()
+                == Approx(0.875));
+    }
+}

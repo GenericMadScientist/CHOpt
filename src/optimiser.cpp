@@ -138,6 +138,7 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
     : m_points {notes_to_points(track, resolution)}
     , m_converter {TimeConverter(sync_track, resolution)}
     , m_beat_rates {form_beat_rates(resolution, sync_track)}
+    , m_sp_data {track, resolution, sync_track}
 {
     std::vector<std::tuple<std::uint32_t, std::uint32_t>> ranges_as_ticks;
     for (const auto& note : track.notes()) {
@@ -185,47 +186,6 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
     m_point_measures = form_point_measures(m_points, m_converter);
 }
 
-SpBar ProcessedTrack::propagate_sp_over_whammy(Beat start, Beat end,
-                                               Measure start_meas,
-                                               Measure end_meas,
-                                               SpBar sp_bar) const
-{
-    constexpr double MEASURES_PER_BAR = 8.0;
-
-    sp_bar.min() -= (end_meas - start_meas).value() / MEASURES_PER_BAR;
-    sp_bar.min() = std::max(sp_bar.min(), 0.0);
-
-    auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
-                          [=](const auto& x) { return x.end_beat > start; });
-    while ((p != m_whammy_ranges.cend()) && (p->start_beat < end)) {
-        if (p->start_beat > start) {
-            auto meas_diff = p->start_meas - start_meas;
-            sp_bar.max() -= meas_diff.value() / MEASURES_PER_BAR;
-            if (sp_bar.max() < 0.0) {
-                return sp_bar;
-            }
-            start = p->start_beat;
-            start_meas = p->start_meas;
-        }
-        auto range_end = std::min(end, p->end_beat);
-        sp_bar.max()
-            = propagate_over_whammy_range(start, range_end, sp_bar.max());
-        if (sp_bar.max() < 0.0) {
-            return sp_bar;
-        }
-        start = p->end_beat;
-        if (start >= end) {
-            return sp_bar;
-        }
-        start_meas = p->end_meas;
-        ++p;
-    }
-
-    auto meas_diff = end_meas - start_meas;
-    sp_bar.max() -= meas_diff.value() / MEASURES_PER_BAR;
-    return sp_bar;
-}
-
 static Measure point_to_measure(const std::vector<Point>& points,
                                 const std::vector<Measure>& point_meas,
                                 PointPtr point)
@@ -246,7 +206,7 @@ PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
         if (p->is_sp_granting_note) {
             auto p_meas_position
                 = point_to_measure(m_points, m_point_measures, p);
-            sp_bar = propagate_sp_over_whammy(
+            sp_bar = m_sp_data.propagate_sp_over_whammy(
                 current_position, p->beat_position, current_meas_position,
                 p_meas_position, sp_bar);
             if (sp_bar.max() < 0.0) {
@@ -287,7 +247,7 @@ bool ProcessedTrack::is_candidate_valid(
         if (p->is_sp_granting_note) {
             auto p_meas_position
                 = point_to_measure(m_points, m_point_measures, p);
-            sp_bar = propagate_sp_over_whammy(
+            sp_bar = m_sp_data.propagate_sp_over_whammy(
                 current_position, p->beat_position, current_meas_position,
                 p_meas_position, sp_bar);
             if (sp_bar.max() < 0.0) {
@@ -301,9 +261,9 @@ bool ProcessedTrack::is_candidate_valid(
 
     auto end_meas
         = point_to_measure(m_points, m_point_measures, activation.act_end);
-    sp_bar = propagate_sp_over_whammy(current_position,
-                                      activation.act_end->beat_position,
-                                      current_meas_position, end_meas, sp_bar);
+    sp_bar = m_sp_data.propagate_sp_over_whammy(
+        current_position, activation.act_end->beat_position,
+        current_meas_position, end_meas, sp_bar);
     if (sp_bar.max() < 0.0) {
         return false;
     }
