@@ -89,7 +89,6 @@ private:
 
     [[nodiscard]] PointPtr furthest_reachable_point(PointPtr point,
                                                     double sp) const;
-    [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
     Path get_partial_path(PointPtr point,
                           std::map<PointPtr, Path>& partial_paths) const;

@@ -291,23 +291,14 @@ SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
     return sp_bar;
 }
 
-bool ProcessedTrack::is_in_whammy_ranges(Beat beat) const
-{
-    auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
-                          [=](const auto& x) { return x.end_beat >= beat; });
-    if (p == m_whammy_ranges.cend()) {
-        return false;
-    }
-    return p->start_beat <= beat;
-}
-
 PointPtr ProcessedTrack::next_candidate_point(PointPtr point) const
 {
     while (point != m_points.cend()) {
         if (point->is_sp_granting_note) {
             return point;
         }
-        if (point->is_hold_point && is_in_whammy_ranges(point->beat_position)) {
+        if (point->is_hold_point
+            && m_sp_data.is_in_whammy_ranges(point->beat_position)) {
             return point;
         }
         ++point;

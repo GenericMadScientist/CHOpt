@@ -104,6 +104,8 @@ public:
                                                  Measure start_meas,
                                                  Measure end_meas,
                                                  SpBar sp_bar) const;
+    // Return if a beat is at a place that can be whammied.
+    [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
 };
 
 #endif

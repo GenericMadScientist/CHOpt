@@ -170,3 +170,13 @@ double SpData::propagate_over_whammy_range(Beat start, Beat end,
 
     return sp_bar_amount;
 }
+
+bool SpData::is_in_whammy_ranges(Beat beat) const
+{
+    auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
+                          [=](const auto& x) { return x.end_beat >= beat; });
+    if (p == m_whammy_ranges.cend()) {
+        return false;
+    }
+    return p->start_beat <= beat;
+}
