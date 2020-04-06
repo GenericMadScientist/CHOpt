@@ -23,7 +23,7 @@
 
 #include "optimiser.hpp"
 
-static bool phrase_contains_pos(const StarPower& phrase, uint32_t position)
+static bool phrase_contains_pos(const StarPower& phrase, std::uint32_t position)
 {
     if (position < phrase.position) {
         return false;
@@ -33,14 +33,15 @@ static bool phrase_contains_pos(const StarPower& phrase, uint32_t position)
 
 template <class InputIt, class OutputIt>
 static void append_note_points(InputIt first, InputIt last, OutputIt points,
-                               int32_t resolution, bool is_note_sp_ender)
+                               std::int32_t resolution, bool is_note_sp_ender)
 {
     constexpr auto NOTE_VALUE = 50U;
     const double float_res = resolution;
     const auto tick_gap = std::max(resolution / 25, 1);
 
-    const auto chord_size = static_cast<uint32_t>(std::distance(first, last));
-    auto chord_length = static_cast<int32_t>(
+    const auto chord_size
+        = static_cast<std::uint32_t>(std::distance(first, last));
+    auto chord_length = static_cast<std::int32_t>(
         std::max_element(first, last, [](const auto& x, const auto& y) {
             return x.length < y.length;
         })->length);
@@ -48,14 +49,14 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
     *points++ = {Beat(pos / float_res), NOTE_VALUE * chord_size, false,
                  is_note_sp_ender};
     while (chord_length > 0) {
-        pos += static_cast<uint32_t>(tick_gap);
+        pos += static_cast<std::uint32_t>(tick_gap);
         chord_length -= tick_gap;
         *points++ = {Beat(pos / float_res), 1, true, false};
     }
 }
 
 static std::vector<Point> notes_to_points(const NoteTrack& track,
-                                          int32_t resolution)
+                                          std::int32_t resolution)
 {
     std::vector<Point> points;
 
@@ -97,7 +98,8 @@ static std::vector<Point> notes_to_points(const NoteTrack& track,
 }
 
 std::vector<ProcessedTrack::BeatRate>
-ProcessedTrack::form_beat_rates(int32_t resolution, const SyncTrack& sync_track)
+ProcessedTrack::form_beat_rates(std::int32_t resolution,
+                                const SyncTrack& sync_track)
 {
     constexpr double DEFAULT_BEAT_RATE = 4.0;
     constexpr double MEASURES_PER_BAR = 8.0;
@@ -131,13 +133,13 @@ form_point_measures(const std::vector<Point>& points,
     return locations;
 }
 
-ProcessedTrack::ProcessedTrack(const NoteTrack& track, int32_t resolution,
+ProcessedTrack::ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
                                const SyncTrack& sync_track)
     : m_points {notes_to_points(track, resolution)}
     , m_converter {TimeConverter(sync_track, resolution)}
     , m_beat_rates {form_beat_rates(resolution, sync_track)}
 {
-    std::vector<std::tuple<uint32_t, uint32_t>> ranges_as_ticks;
+    std::vector<std::tuple<std::uint32_t, std::uint32_t>> ranges_as_ticks;
     for (const auto& note : track.notes()) {
         if (note.length == 0) {
             continue;
@@ -156,7 +158,7 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, int32_t resolution,
     std::sort(ranges_as_ticks.begin(), ranges_as_ticks.end());
 
     if (!ranges_as_ticks.empty()) {
-        std::vector<std::tuple<uint32_t, uint32_t>> merged_ranges;
+        std::vector<std::tuple<std::uint32_t, std::uint32_t>> merged_ranges;
         auto pair = ranges_as_ticks[0];
         for (auto p = std::next(ranges_as_ticks.cbegin());
              p < ranges_as_ticks.cend(); ++p) {
@@ -228,7 +230,7 @@ static Measure point_to_measure(const std::vector<Point>& points,
                                 const std::vector<Measure>& point_meas,
                                 PointPtr point)
 {
-    return point_meas[static_cast<size_t>(
+    return point_meas[static_cast<std::size_t>(
         std::distance(points.cbegin(), point))];
 }
 

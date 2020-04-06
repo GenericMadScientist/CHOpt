@@ -21,7 +21,8 @@
 
 #include "time.hpp"
 
-TimeConverter::TimeConverter(const SyncTrack& sync_track, int32_t resolution)
+TimeConverter::TimeConverter(const SyncTrack& sync_track,
+                             std::int32_t resolution)
 {
     auto last_tick = 0U;
     auto last_beat_rate = DEFAULT_BEAT_RATE;

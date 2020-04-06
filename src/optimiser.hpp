@@ -30,7 +30,7 @@
 
 struct Point {
     Beat beat_position;
-    uint32_t value;
+    std::uint32_t value;
     bool is_hold_point;
     bool is_sp_granting_note;
 
@@ -105,7 +105,7 @@ struct Activation {
 
 struct Path {
     std::vector<Activation> activations;
-    uint32_t score_boost;
+    std::uint32_t score_boost;
 };
 
 // Represents a song processed for Star Power optimisation. The constructor
@@ -146,11 +146,11 @@ private:
     add_point_to_partial_acts(PointPtr point,
                               std::map<PointPtr, Path>& partial_paths) const;
 
-    static std::vector<BeatRate> form_beat_rates(int32_t resolution,
+    static std::vector<BeatRate> form_beat_rates(std::int32_t resolution,
                                                  const SyncTrack& sync_track);
 
 public:
-    ProcessedTrack(const NoteTrack& track, int32_t resolution,
+    ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
                    const SyncTrack& sync_track);
     [[nodiscard]] const std::vector<Point>& points() const { return m_points; }
     [[nodiscard]] bool

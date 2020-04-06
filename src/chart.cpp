@@ -158,11 +158,11 @@ static std::vector<std::string_view> split_by_space(std::string_view input)
     return substrings;
 }
 
-// Convert a string_view to a uint32_t. If there are any problems with the
+// Convert a string_view to a std::uint32_t. If there are any problems with the
 // input, this function throws.
-static std::optional<uint32_t> string_view_to_uint(std::string_view input)
+static std::optional<std::uint32_t> string_view_to_uint(std::string_view input)
 {
-    uint32_t result = 0;
+    std::uint32_t result {0};
     const char* last = input.data() + input.size();
     auto [p, ec] = std::from_chars(input.data(), last, result);
     if ((ec != std::errc()) || (p != last)) {
@@ -171,11 +171,11 @@ static std::optional<uint32_t> string_view_to_uint(std::string_view input)
     return result;
 }
 
-// Convert a string_view to an int32_t. If there are any problems with the
+// Convert a string_view to a std::int32_t. If there are any problems with the
 // input, this function throws.
-static std::optional<int32_t> string_view_to_int(std::string_view input)
+static std::optional<std::int32_t> string_view_to_int(std::string_view input)
 {
-    int32_t result = 0;
+    std::int32_t result = 0;
     const char* last = input.data() + input.size();
     auto [p, ec] = std::from_chars(input.data(), last, result);
     if ((ec != std::errc()) || (p != last)) {
@@ -199,7 +199,7 @@ static std::string_view skip_section(std::string_view input)
 }
 
 static std::string_view read_song_header(std::string_view input,
-                                         int32_t& resolution)
+                                         std::int32_t& resolution)
 {
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("[Song] does not open with {");
@@ -254,7 +254,7 @@ static std::string_view read_sync_track(std::string_view input,
             if (!numerator) {
                 continue;
             }
-            uint32_t denominator = 2;
+            std::uint32_t denominator = 2;
             if (split_string.size() > 4) {
                 const auto result = string_view_to_uint(split_string[4]);
                 if (result) {
@@ -371,7 +371,7 @@ Chart Chart::parse_chart(std::string_view input)
 {
     Chart chart;
 
-    int32_t pre_resolution = DEFAULT_RESOLUTION;
+    std::int32_t pre_resolution = DEFAULT_RESOLUTION;
     PreSyncTrack pre_sync_track;
     std::map<Difficulty, PreNoteTrack> pre_tracks;
 

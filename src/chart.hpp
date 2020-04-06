@@ -31,9 +31,9 @@ enum class Difficulty { Easy, Medium, Hard, Expert };
 enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
 
 struct TimeSignature {
-    uint32_t position;
-    uint32_t numerator;
-    uint32_t denominator;
+    std::uint32_t position;
+    std::uint32_t numerator;
+    std::uint32_t denominator;
 
     friend bool operator==(const TimeSignature& lhs, const TimeSignature& rhs)
     {
@@ -43,8 +43,8 @@ struct TimeSignature {
 };
 
 struct Note {
-    uint32_t position = 0;
-    uint32_t length = 0;
+    std::uint32_t position = 0;
+    std::uint32_t length = 0;
     NoteColour colour = NoteColour::Green;
 
     friend bool operator==(const Note& lhs, const Note& rhs)
@@ -55,8 +55,8 @@ struct Note {
 };
 
 struct StarPower {
-    uint32_t position;
-    uint32_t length;
+    std::uint32_t position;
+    std::uint32_t length;
 
     friend bool operator==(const StarPower& lhs, const StarPower& rhs)
     {
@@ -114,16 +114,16 @@ public:
 // resolution() > 0.
 class Chart {
 private:
-    static constexpr int32_t DEFAULT_RESOLUTION = 192;
+    static constexpr std::int32_t DEFAULT_RESOLUTION = 192;
 
-    int32_t m_resolution = DEFAULT_RESOLUTION;
+    std::int32_t m_resolution = DEFAULT_RESOLUTION;
     SyncTrack m_sync_track;
     std::map<Difficulty, NoteTrack> m_note_tracks;
     Chart() = default;
 
 public:
     static Chart parse_chart(std::string_view input);
-    [[nodiscard]] int32_t resolution() const { return m_resolution; }
+    [[nodiscard]] std::int32_t resolution() const { return m_resolution; }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
     [[nodiscard]] const NoteTrack& note_track(Difficulty diff) const
     {
