@@ -97,28 +97,6 @@ static std::vector<Point> notes_to_points(const NoteTrack& track,
     return points;
 }
 
-std::vector<ProcessedTrack::BeatRate>
-ProcessedTrack::form_beat_rates(std::int32_t resolution,
-                                const SyncTrack& sync_track)
-{
-    constexpr double DEFAULT_BEAT_RATE = 4.0;
-    constexpr double MEASURES_PER_BAR = 8.0;
-
-    std::vector<BeatRate> beat_rates;
-    beat_rates.reserve(sync_track.time_sigs().size());
-
-    for (const auto& ts : sync_track.time_sigs()) {
-        const auto pos = static_cast<double>(ts.position) / resolution;
-        const auto measure_rate
-            = ts.numerator * DEFAULT_BEAT_RATE / ts.denominator;
-        const auto drain_rate
-            = SP_GAIN_RATE - 1 / (MEASURES_PER_BAR * measure_rate);
-        beat_rates.push_back({Beat(pos), drain_rate});
-    }
-
-    return beat_rates;
-}
-
 static std::vector<Measure>
 form_point_measures(const std::vector<Point>& points,
                     const TimeConverter& converter)
@@ -137,7 +115,6 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
                                const SyncTrack& sync_track)
     : m_points {notes_to_points(track, resolution)}
     , m_converter {TimeConverter(sync_track, resolution)}
-    , m_beat_rates {form_beat_rates(resolution, sync_track)}
     , m_sp_data {track, resolution, sync_track}
 {
     std::vector<std::tuple<std::uint32_t, std::uint32_t>> ranges_as_ticks;
@@ -283,44 +260,10 @@ bool ProcessedTrack::is_candidate_valid(
     return sp_bar.min() < 0.0;
 }
 
-double ProcessedTrack::propagate_over_whammy_range(Beat start, Beat end,
-                                                   double sp_bar_amount) const
-{
-    constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
-
-    auto p = std::find_if(m_beat_rates.cbegin(), m_beat_rates.cend(),
-                          [=](const auto& ts) { return ts.position >= start; });
-    if (p != m_beat_rates.cbegin()) {
-        --p;
-    } else {
-        auto subrange_end = std::min(end, p->position);
-        sp_bar_amount
-            += (subrange_end - start).value() * DEFAULT_NET_SP_GAIN_RATE;
-        sp_bar_amount = std::min(sp_bar_amount, 1.0);
-        if (sp_bar_amount < 0.0) {
-            return -1.0;
-        }
-        start = subrange_end;
-    }
-    while (start < end) {
-        auto subrange_end = end;
-        if (std::next(p) != m_beat_rates.cend()) {
-            subrange_end = std::min(end, std::next(p)->position);
-        }
-        sp_bar_amount += (subrange_end - start).value() * p->net_sp_gain_rate;
-        if (sp_bar_amount < 0.0) {
-            return -1.0;
-        }
-        sp_bar_amount = std::min(sp_bar_amount, 1.0);
-        start = subrange_end;
-        ++p;
-    }
-
-    return sp_bar_amount;
-}
-
 SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
 {
+    constexpr double SP_GAIN_RATE = 1 / 30.0;
+
     SpBar sp_bar {0.0, 0.0};
     auto p
         = std::find_if(m_points.cbegin(), m_points.cend(),

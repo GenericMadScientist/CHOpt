@@ -74,11 +74,6 @@ struct Path {
 // upheld by the constructors of the arguments.
 class ProcessedTrack {
 private:
-    struct BeatRate {
-        Beat position;
-        double net_sp_gain_rate;
-    };
-
     struct WhammyRange {
         Beat start_beat;
         Beat end_beat;
@@ -86,18 +81,12 @@ private:
         Measure end_meas;
     };
 
-    static constexpr double SP_GAIN_RATE = 1 / 30.0;
-
     std::vector<Point> m_points;
     TimeConverter m_converter;
-    std::vector<BeatRate> m_beat_rates;
     std::vector<WhammyRange> m_whammy_ranges;
     std::vector<Measure> m_point_measures;
     SpData m_sp_data;
 
-    [[nodiscard]] double
-    propagate_over_whammy_range(Beat start, Beat end,
-                                double sp_bar_amount) const;
     [[nodiscard]] PointPtr furthest_reachable_point(PointPtr point,
                                                     double sp) const;
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
@@ -107,9 +96,6 @@ private:
     void
     add_point_to_partial_acts(PointPtr point,
                               std::map<PointPtr, Path>& partial_paths) const;
-
-    static std::vector<BeatRate> form_beat_rates(std::int32_t resolution,
-                                                 const SyncTrack& sync_track);
 
 public:
     ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
