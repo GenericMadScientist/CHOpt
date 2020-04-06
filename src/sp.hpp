@@ -101,9 +101,7 @@ public:
     // Return how much SP is available at the end after propagating over a
     // range, or -1 if SP runs out at any point. Only includes SP gain from
     // whammy.
-    [[nodiscard]] SpBar propagate_sp_over_whammy(Beat start, Beat end,
-                                                 Measure start_meas,
-                                                 Measure end_meas,
+    [[nodiscard]] SpBar propagate_sp_over_whammy(Position start, Position end,
                                                  SpBar sp_bar) const;
     // Return if a beat is at a place that can be whammied.
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;

@@ -203,6 +203,11 @@ inline Measure Beat::to_measure(double beat_rate) const
 #pragma clang diagnostic pop
 #endif
 
+struct Position {
+    Beat beat;
+    Measure measure;
+};
+
 class TimeConverter {
 private:
     struct MeasureTimestamp {

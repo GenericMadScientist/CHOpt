@@ -98,41 +98,42 @@ SpData::SpData(const NoteTrack& track, std::int32_t resolution,
     }
 }
 
-SpBar SpData::propagate_sp_over_whammy(Beat start, Beat end, Measure start_meas,
-                                       Measure end_meas, SpBar sp_bar) const
+SpBar SpData::propagate_sp_over_whammy(Position start, Position end,
+                                       SpBar sp_bar) const
 {
     constexpr double MEASURES_PER_BAR = 8.0;
 
-    sp_bar.min() -= (end_meas - start_meas).value() / MEASURES_PER_BAR;
+    sp_bar.min() -= (end.measure - start.measure).value() / MEASURES_PER_BAR;
     sp_bar.min() = std::max(sp_bar.min(), 0.0);
 
-    auto p = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
-                          [=](const auto& x) { return x.end_beat > start; });
-    while ((p != m_whammy_ranges.cend()) && (p->start_beat < end)) {
-        if (p->start_beat > start) {
-            auto meas_diff = p->start_meas - start_meas;
+    auto p
+        = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
+                       [=](const auto& x) { return x.end_beat > start.beat; });
+    while ((p != m_whammy_ranges.cend()) && (p->start_beat < end.beat)) {
+        if (p->start_beat > start.beat) {
+            auto meas_diff = p->start_meas - start.measure;
             sp_bar.max() -= meas_diff.value() / MEASURES_PER_BAR;
             if (sp_bar.max() < 0.0) {
                 return sp_bar;
             }
-            start = p->start_beat;
-            start_meas = p->start_meas;
+            start.beat = p->start_beat;
+            start.measure = p->start_meas;
         }
-        auto range_end = std::min(end, p->end_beat);
+        auto range_end = std::min(end.beat, p->end_beat);
         sp_bar.max()
-            = propagate_over_whammy_range(start, range_end, sp_bar.max());
+            = propagate_over_whammy_range(start.beat, range_end, sp_bar.max());
         if (sp_bar.max() < 0.0) {
             return sp_bar;
         }
-        start = p->end_beat;
-        if (start >= end) {
+        start.beat = p->end_beat;
+        if (start.beat >= end.beat) {
             return sp_bar;
         }
-        start_meas = p->end_meas;
+        start.measure = p->end_meas;
         ++p;
     }
 
-    auto meas_diff = end_meas - start_meas;
+    auto meas_diff = end.measure - start.measure;
     sp_bar.max() -= meas_diff.value() / MEASURES_PER_BAR;
     return sp_bar;
 }

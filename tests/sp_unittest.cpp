@@ -60,14 +60,14 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         SpData sp_data(track, 192, SyncTrack(time_sigs));
 
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
-                                              Measure(0.0), Measure(1.0),
+                    .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
+                                              {Beat(4.0), Measure(1.0)},
                                               {0.5, 0.5})
                     .max()
                 == Approx(0.508333));
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(1.0), Beat(4.0),
-                                              Measure(0.25), Measure(1.0),
+                    .propagate_sp_over_whammy({Beat(1.0), Measure(0.25)},
+                                              {Beat(4.0), Measure(1.0)},
                                               {0.5, 0.5})
                     .max()
                 == Approx(0.50625));
@@ -79,14 +79,14 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         SpData sp_data(track, 192, SyncTrack(time_sigs));
 
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
-                                              Measure(0.0), Measure(4.0 / 3),
+                    .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
+                                              {Beat(4.0), Measure(4.0 / 3)},
                                               {0.5, 0.5})
                     .max()
                 == Approx(0.466667));
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(-1.0), Beat(4.0),
-                                              Measure(-0.25), Measure(4.0 / 3),
+                    .propagate_sp_over_whammy({Beat(-1.0), Measure(-0.25)},
+                                              {Beat(4.0), Measure(4.0 / 3)},
                                               {0.5, 0.5})
                     .max()
                 == Approx(0.435417));
@@ -98,14 +98,14 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         SpData sp_data(track, 192, SyncTrack(time_sigs));
 
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
-                                              Measure(0.0), Measure(7.0 / 6),
+                    .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
+                                              {Beat(4.0), Measure(7.0 / 6)},
                                               {0.5, 0.5})
                     .max()
                 == Approx(0.4875));
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(1.0), Beat(4.0),
-                                              Measure(0.25), Measure(7.0 / 6),
+                    .propagate_sp_over_whammy({Beat(1.0), Measure(0.25)},
+                                              {Beat(4.0), Measure(7.0 / 6)},
                                               {0.5, 0.5})
                     .max()
                 == Approx(0.485417));
@@ -117,14 +117,14 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         SpData sp_data(track, 192, SyncTrack(time_sigs));
 
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(0.0), Beat(2.0),
-                                              Measure(0.0), Measure(2.0 / 3),
+                    .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
+                                              {Beat(2.0), Measure(2.0 / 3)},
                                               {0.015, 0.015})
                     .max()
                 == Approx(-1.0));
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(0.0), Beat(10.0),
-                                              Measure(0.0), Measure(8.0 / 3),
+                    .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
+                                              {Beat(10.0), Measure(8.0 / 3)},
                                               {0.015, 0.015})
                     .max()
                 == Approx(-1.0));
@@ -135,8 +135,8 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         SpData sp_data(track, 192, SyncTrack());
 
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(0.0), Beat(12.0),
-                                              Measure(0.0), Measure(3.0),
+                    .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
+                                              {Beat(12.0), Measure(3.0)},
                                               {0.5, 0.5})
                     .max()
                 == Approx(0.491667));
@@ -147,14 +147,14 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         SpData sp_data(track, 192, SyncTrack());
 
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(0.0), Beat(10.0),
-                                              Measure(0.0), Measure(2.5),
+                    .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
+                                              {Beat(10.0), Measure(2.5)},
                                               {1.0, 1.0})
                     .max()
                 == Approx(1.0));
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(0.0), Beat(10.5),
-                                              Measure(0.0), Measure(2.625),
+                    .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
+                                              {Beat(10.5), Measure(2.625)},
                                               {1.0, 1.0})
                     .max()
                 == Approx(0.984375));
@@ -166,8 +166,8 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
         SpData sp_data(no_sp_note_track, 192, SyncTrack());
 
         REQUIRE(sp_data
-                    .propagate_sp_over_whammy(Beat(0.0), Beat(4.0),
-                                              Measure(0.0), Measure(1.0),
+                    .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
+                                              {Beat(4.0), Measure(1.0)},
                                               {1.0, 1.0})
                     .max()
                 == Approx(0.875));

@@ -141,8 +141,8 @@ PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
             auto p_meas_position
                 = point_to_measure(m_points, m_point_measures, p);
             sp_bar = m_sp_data.propagate_sp_over_whammy(
-                current_position, p->beat_position, current_meas_position,
-                p_meas_position, sp_bar);
+                {current_position, current_meas_position},
+                {p->beat_position, p_meas_position}, sp_bar);
             if (sp_bar.max() < 0.0) {
                 return p - 1;
             }
@@ -182,8 +182,8 @@ bool ProcessedTrack::is_candidate_valid(
             auto p_meas_position
                 = point_to_measure(m_points, m_point_measures, p);
             sp_bar = m_sp_data.propagate_sp_over_whammy(
-                current_position, p->beat_position, current_meas_position,
-                p_meas_position, sp_bar);
+                {current_position, current_meas_position},
+                {p->beat_position, p_meas_position}, sp_bar);
             if (sp_bar.max() < 0.0) {
                 return false;
             }
@@ -196,8 +196,8 @@ bool ProcessedTrack::is_candidate_valid(
     auto end_meas
         = point_to_measure(m_points, m_point_measures, activation.act_end);
     sp_bar = m_sp_data.propagate_sp_over_whammy(
-        current_position, activation.act_end->beat_position,
-        current_meas_position, end_meas, sp_bar);
+        {current_position, current_meas_position},
+        {activation.act_end->beat_position, end_meas}, sp_bar);
     if (sp_bar.max() < 0.0) {
         return false;
     }
