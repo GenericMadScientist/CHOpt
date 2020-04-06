@@ -148,7 +148,7 @@ bool ProcessedTrack::is_candidate_valid(
     sp_bar.min() = std::max(sp_bar.min(), MINIMUM_SP_AMOUNT);
 
     auto starting_meas_diff = current_position.measure
-        - m_converter.beats_to_measures(activation.earliest_activation_point);
+        - activation.earliest_activation_point.measure;
     sp_bar.min() -= starting_meas_diff.value() / MEASURES_PER_BAR;
     sp_bar.min() = std::max(sp_bar.min(), 0.0);
 
@@ -231,7 +231,8 @@ Path ProcessedTrack::get_partial_path(
 void ProcessedTrack::add_point_to_partial_acts(
     PointPtr point, std::map<PointPtr, Path>& partial_paths) const
 {
-    auto starting_beat = point->position.beat;
+    const auto starting_beat = point->position.beat;
+    auto starting_pos = point->position;
     std::vector<Path> paths;
 
     std::set<PointPtr> attained_act_ends;
@@ -246,7 +247,7 @@ void ProcessedTrack::add_point_to_partial_acts(
             if (attained_act_ends.find(q) != attained_act_ends.end()) {
                 continue;
             }
-            ActivationCandidate candidate {p, q, starting_beat, sp_bar};
+            ActivationCandidate candidate {p, q, starting_pos, sp_bar};
             if (!is_candidate_valid(candidate)) {
                 continue;
             }

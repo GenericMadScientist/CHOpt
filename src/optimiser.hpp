@@ -48,7 +48,7 @@ using PointPtr = std::vector<Point>::const_iterator;
 struct ActivationCandidate {
     PointPtr act_start;
     PointPtr act_end;
-    Beat earliest_activation_point {0.0};
+    Position earliest_activation_point {Beat(0.0), Measure(0.0)};
     SpBar sp_bar {0.0, 0.0};
 };
 
