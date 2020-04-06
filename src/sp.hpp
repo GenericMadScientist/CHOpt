@@ -75,10 +75,8 @@ private:
     };
 
     struct WhammyRange {
-        Beat start_beat;
-        Beat end_beat;
-        Measure start_meas;
-        Measure end_meas;
+        Position start;
+        Position end;
     };
 
     static constexpr double SP_GAIN_RATE = 1 / 30.0;
