@@ -19,7 +19,6 @@
 #ifndef CHOPT_OPTIMISER_HPP
 #define CHOPT_OPTIMISER_HPP
 
-#include <algorithm>
 #include <cstdint>
 #include <map>
 #include <tuple>

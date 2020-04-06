@@ -20,6 +20,7 @@
 #define CHOPT_SP_HPP
 
 #include <algorithm>
+#include <cstdint>
 #include <tuple>
 #include <vector>
 

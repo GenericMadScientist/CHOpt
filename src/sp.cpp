@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <iterator>
+
 #include "sp.hpp"
 
 static bool phrase_contains_pos(const StarPower& phrase, std::uint32_t position)
