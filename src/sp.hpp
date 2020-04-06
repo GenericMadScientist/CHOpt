@@ -19,6 +19,9 @@
 #ifndef CHOPT_SP_HPP
 #define CHOPT_SP_HPP
 
+#include <algorithm>
+#include <tuple>
+
 // Represents the minimum and maximum SP possible at a given time.
 class SpBar {
 private:
