@@ -23,22 +23,6 @@
 
 #include "optimiser.hpp"
 
-TEST_CASE("SpBar methods", "SpBar")
-{
-    SECTION("add_phrase() works correctly")
-    {
-        SpBar sp_bar {0.0, 0.25};
-        sp_bar.add_phrase();
-
-        REQUIRE(sp_bar == SpBar {0.25, 0.5});
-
-        sp_bar = {0.8, 1.0};
-        sp_bar.add_phrase();
-
-        REQUIRE(sp_bar == SpBar {1.0, 1.0});
-    }
-}
-
 // Last checked: 24.0.1555-master
 TEST_CASE("Non-hold notes", "Non hold")
 {
