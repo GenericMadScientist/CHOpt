@@ -103,58 +103,29 @@ static std::vector<Point> notes_to_points(const NoteTrack& track,
     return points;
 }
 
-static std::vector<Measure>
-form_point_measures(const std::vector<Point>& points,
-                    const TimeConverter& converter)
-{
-    std::vector<Measure> locations;
-    locations.reserve(points.size());
-
-    for (const auto& point : points) {
-        locations.push_back(converter.beats_to_measures(point.position.beat));
-    }
-
-    return locations;
-}
-
 ProcessedTrack::ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
                                const SyncTrack& sync_track)
     : m_converter {TimeConverter(sync_track, resolution)}
     , m_points {notes_to_points(track, resolution, m_converter)}
-    , m_point_measures {form_point_measures(m_points, m_converter)}
     , m_sp_data {track, resolution, sync_track}
 {
-}
-
-static Measure point_to_measure(const std::vector<Point>& points,
-                                const std::vector<Measure>& point_meas,
-                                PointPtr point)
-{
-    return point_meas[static_cast<std::size_t>(
-        std::distance(points.cbegin(), point))];
 }
 
 PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
                                                   double sp) const
 {
     SpBar sp_bar {0.0, sp};
-    auto current_position = point->position.beat;
-    auto current_meas_position
-        = point_to_measure(m_points, m_point_measures, point);
+    auto current_position = point->position;
 
     for (auto p = point; p < m_points.cend(); ++p) {
         if (p->is_sp_granting_note) {
-            auto p_meas_position
-                = point_to_measure(m_points, m_point_measures, p);
-            sp_bar = m_sp_data.propagate_sp_over_whammy(
-                {current_position, current_meas_position},
-                {p->position.beat, p_meas_position}, sp_bar);
+            sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
+                                                        p->position, sp_bar);
             if (sp_bar.max() < 0.0) {
                 return p - 1;
             }
             sp_bar.add_phrase();
-            current_position = p->position.beat;
-            current_meas_position = p_meas_position;
+            current_position = p->position;
         }
     }
 
@@ -171,39 +142,30 @@ bool ProcessedTrack::is_candidate_valid(
         return false;
     }
 
-    auto current_position = activation.act_start->position.beat;
-    auto current_meas_position
-        = point_to_measure(m_points, m_point_measures, activation.act_start);
+    auto current_position = activation.act_start->position;
 
     auto sp_bar = activation.sp_bar;
     sp_bar.min() = std::max(sp_bar.min(), MINIMUM_SP_AMOUNT);
 
-    auto starting_meas_diff = current_meas_position
+    auto starting_meas_diff = current_position.measure
         - m_converter.beats_to_measures(activation.earliest_activation_point);
     sp_bar.min() -= starting_meas_diff.value() / MEASURES_PER_BAR;
     sp_bar.min() = std::max(sp_bar.min(), 0.0);
 
     for (auto p = activation.act_start; p < activation.act_end; ++p) {
         if (p->is_sp_granting_note) {
-            auto p_meas_position
-                = point_to_measure(m_points, m_point_measures, p);
-            sp_bar = m_sp_data.propagate_sp_over_whammy(
-                {current_position, current_meas_position},
-                {p->position.beat, p_meas_position}, sp_bar);
+            sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
+                                                        p->position, sp_bar);
             if (sp_bar.max() < 0.0) {
                 return false;
             }
             sp_bar.add_phrase();
-            current_position = p->position.beat;
-            current_meas_position = p_meas_position;
+            current_position = p->position;
         }
     }
 
-    auto end_meas
-        = point_to_measure(m_points, m_point_measures, activation.act_end);
     sp_bar = m_sp_data.propagate_sp_over_whammy(
-        {current_position, current_meas_position},
-        {activation.act_end->position.beat, end_meas}, sp_bar);
+        current_position, activation.act_end->position, sp_bar);
     if (sp_bar.max() < 0.0) {
         return false;
     }
@@ -216,8 +178,8 @@ bool ProcessedTrack::is_candidate_valid(
         return true;
     }
 
-    auto meas_diff
-        = point_to_measure(m_points, m_point_measures, next_point) - end_meas;
+    auto end_meas = activation.act_end->position.measure;
+    auto meas_diff = next_point->position.measure - end_meas;
     sp_bar.min() -= meas_diff.value() / MEASURES_PER_BAR;
 
     return sp_bar.min() < 0.0;

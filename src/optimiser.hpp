@@ -74,10 +74,9 @@ struct Path {
 class ProcessedTrack {
 private:
     // The order of these members is important. We must have m_converter before
-    // m_points and m_points before m_point_measures.
+    // m_points.
     TimeConverter m_converter;
     std::vector<Point> m_points;
-    std::vector<Measure> m_point_measures;
     SpData m_sp_data;
 
     [[nodiscard]] PointPtr furthest_reachable_point(PointPtr point,
