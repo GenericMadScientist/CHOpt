@@ -29,17 +29,17 @@
 #include "time.hpp"
 
 struct Point {
-    Beat beat_position;
+    Position position;
     std::uint32_t value;
     bool is_hold_point;
     bool is_sp_granting_note;
 
     friend bool operator==(const Point& lhs, const Point& rhs)
     {
-        return std::tie(lhs.beat_position, lhs.value, lhs.is_hold_point,
-                        lhs.is_sp_granting_note)
-            == std::tie(rhs.beat_position, rhs.value, rhs.is_hold_point,
-                        rhs.is_sp_granting_note);
+        return std::tie(lhs.position.beat, lhs.position.measure, lhs.value,
+                        lhs.is_hold_point, lhs.is_sp_granting_note)
+            == std::tie(rhs.position.beat, rhs.position.measure, rhs.value,
+                        rhs.is_hold_point, rhs.is_sp_granting_note);
     }
 };
 
@@ -73,10 +73,10 @@ struct Path {
 // upheld by the constructors of the arguments.
 class ProcessedTrack {
 private:
-    // The order of these members is important. We must have m_points and
-    // m_converter before m_point_measures.
-    std::vector<Point> m_points;
+    // The order of these members is important. We must have m_converter before
+    // m_points and m_points before m_point_measures.
     TimeConverter m_converter;
+    std::vector<Point> m_points;
     std::vector<Measure> m_point_measures;
     SpData m_sp_data;
 

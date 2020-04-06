@@ -49,8 +49,8 @@ int main(int argc, char* argv[])
         std::cout << "Number of activations: " << path.activations.size()
                   << '\n';
         for (const auto& act : path.activations) {
-            std::cout << "Beat " << act.act_start->beat_position.value()
-                      << " to Beat " << act.act_end->beat_position.value()
+            std::cout << "Beat " << act.act_start->position.beat.value()
+                      << " to Beat " << act.act_end->position.beat.value()
                       << '\n';
         }
         return EXIT_SUCCESS;

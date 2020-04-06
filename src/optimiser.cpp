@@ -33,7 +33,8 @@ static bool phrase_contains_pos(const StarPower& phrase, std::uint32_t position)
 
 template <class InputIt, class OutputIt>
 static void append_note_points(InputIt first, InputIt last, OutputIt points,
-                               std::int32_t resolution, bool is_note_sp_ender)
+                               std::int32_t resolution, bool is_note_sp_ender,
+                               const TimeConverter& converter)
 {
     constexpr auto NOTE_VALUE = 50U;
     const double float_res = resolution;
@@ -46,17 +47,22 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
             return x.length < y.length;
         })->length);
     auto pos = first->position;
-    *points++ = {Beat(pos / float_res), NOTE_VALUE * chord_size, false,
-                 is_note_sp_ender};
+    auto beat = Beat(pos / float_res);
+    auto meas = converter.beats_to_measures(beat);
+    *points++
+        = {{beat, meas}, NOTE_VALUE * chord_size, false, is_note_sp_ender};
     while (chord_length > 0) {
         pos += static_cast<std::uint32_t>(tick_gap);
         chord_length -= tick_gap;
-        *points++ = {Beat(pos / float_res), 1, true, false};
+        beat = Beat(pos / float_res);
+        meas = converter.beats_to_measures(beat);
+        *points++ = {{beat, meas}, 1, true, false};
     }
 }
 
 static std::vector<Point> notes_to_points(const NoteTrack& track,
-                                          std::int32_t resolution)
+                                          std::int32_t resolution,
+                                          const TimeConverter& converter)
 {
     std::vector<Point> points;
 
@@ -76,13 +82,13 @@ static std::vector<Point> notes_to_points(const NoteTrack& track,
             ++current_phrase;
         }
         append_note_points(p, q, std::back_inserter(points), resolution,
-                           is_note_sp_ender);
+                           is_note_sp_ender, converter);
         p = q;
     }
 
     std::stable_sort(points.begin(), points.end(),
                      [](const auto& x, const auto& y) {
-                         return x.beat_position < y.beat_position;
+                         return x.position.beat < y.position.beat;
                      });
 
     auto combo = 0U;
@@ -105,7 +111,7 @@ form_point_measures(const std::vector<Point>& points,
     locations.reserve(points.size());
 
     for (const auto& point : points) {
-        locations.push_back(converter.beats_to_measures(point.beat_position));
+        locations.push_back(converter.beats_to_measures(point.position.beat));
     }
 
     return locations;
@@ -113,8 +119,8 @@ form_point_measures(const std::vector<Point>& points,
 
 ProcessedTrack::ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
                                const SyncTrack& sync_track)
-    : m_points {notes_to_points(track, resolution)}
-    , m_converter {TimeConverter(sync_track, resolution)}
+    : m_converter {TimeConverter(sync_track, resolution)}
+    , m_points {notes_to_points(track, resolution, m_converter)}
     , m_point_measures {form_point_measures(m_points, m_converter)}
     , m_sp_data {track, resolution, sync_track}
 {
@@ -132,7 +138,7 @@ PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
                                                   double sp) const
 {
     SpBar sp_bar {0.0, sp};
-    auto current_position = point->beat_position;
+    auto current_position = point->position.beat;
     auto current_meas_position
         = point_to_measure(m_points, m_point_measures, point);
 
@@ -142,12 +148,12 @@ PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
                 = point_to_measure(m_points, m_point_measures, p);
             sp_bar = m_sp_data.propagate_sp_over_whammy(
                 {current_position, current_meas_position},
-                {p->beat_position, p_meas_position}, sp_bar);
+                {p->position.beat, p_meas_position}, sp_bar);
             if (sp_bar.max() < 0.0) {
                 return p - 1;
             }
             sp_bar.add_phrase();
-            current_position = p->beat_position;
+            current_position = p->position.beat;
             current_meas_position = p_meas_position;
         }
     }
@@ -165,7 +171,7 @@ bool ProcessedTrack::is_candidate_valid(
         return false;
     }
 
-    auto current_position = activation.act_start->beat_position;
+    auto current_position = activation.act_start->position.beat;
     auto current_meas_position
         = point_to_measure(m_points, m_point_measures, activation.act_start);
 
@@ -183,12 +189,12 @@ bool ProcessedTrack::is_candidate_valid(
                 = point_to_measure(m_points, m_point_measures, p);
             sp_bar = m_sp_data.propagate_sp_over_whammy(
                 {current_position, current_meas_position},
-                {p->beat_position, p_meas_position}, sp_bar);
+                {p->position.beat, p_meas_position}, sp_bar);
             if (sp_bar.max() < 0.0) {
                 return false;
             }
             sp_bar.add_phrase();
-            current_position = p->beat_position;
+            current_position = p->position.beat;
             current_meas_position = p_meas_position;
         }
     }
@@ -197,7 +203,7 @@ bool ProcessedTrack::is_candidate_valid(
         = point_to_measure(m_points, m_point_measures, activation.act_end);
     sp_bar = m_sp_data.propagate_sp_over_whammy(
         {current_position, current_meas_position},
-        {activation.act_end->beat_position, end_meas}, sp_bar);
+        {activation.act_end->position.beat, end_meas}, sp_bar);
     if (sp_bar.max() < 0.0) {
         return false;
     }
@@ -222,14 +228,14 @@ SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
     SpBar sp_bar {0.0, 0.0};
     auto p
         = std::find_if(m_points.cbegin(), m_points.cend(),
-                       [=](const auto& x) { return x.beat_position >= start; });
+                       [=](const auto& x) { return x.position.beat >= start; });
     for (; p < act_start; ++p) {
         if (p->is_sp_granting_note) {
             sp_bar.add_phrase();
         }
     }
 
-    sp_bar.max() += m_sp_data.available_whammy(start, act_start->beat_position);
+    sp_bar.max() += m_sp_data.available_whammy(start, act_start->position.beat);
     sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
     return sp_bar;
@@ -242,7 +248,7 @@ PointPtr ProcessedTrack::next_candidate_point(PointPtr point) const
             return point;
         }
         if (point->is_hold_point
-            && m_sp_data.is_in_whammy_ranges(point->beat_position)) {
+            && m_sp_data.is_in_whammy_ranges(point->position.beat)) {
             return point;
         }
         ++point;
@@ -263,7 +269,7 @@ Path ProcessedTrack::get_partial_path(
 void ProcessedTrack::add_point_to_partial_acts(
     PointPtr point, std::map<PointPtr, Path>& partial_paths) const
 {
-    auto starting_beat = point->beat_position;
+    auto starting_beat = point->position.beat;
     std::vector<Path> paths;
 
     std::set<PointPtr> attained_act_ends;

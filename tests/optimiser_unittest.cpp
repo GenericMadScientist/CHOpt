@@ -30,7 +30,8 @@ TEST_CASE("Non-hold notes", "Non hold")
         const auto track = NoteTrack({{768}, {960}}, {});
         const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
         const auto expected_points = std::vector<Point>(
-            {{Beat(4.0), 50, false, false}, {Beat(5.0), 50, false, false}});
+            {{{Beat(4.0), Measure(1.0)}, 50, false, false},
+             {{Beat(5.0), Measure(1.25)}, 50, false, false}});
 
         REQUIRE(points == expected_points);
     }
@@ -40,8 +41,8 @@ TEST_CASE("Non-hold notes", "Non hold")
         const auto track = NoteTrack(
             {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}}, {});
         const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
-        const auto expected_points
-            = std::vector<Point>({{Beat(4.0), 100, false, false}});
+        const auto expected_points = std::vector<Point>(
+            {{{Beat(4.0), Measure(1.0)}, 100, false, false}});
 
         REQUIRE(points == expected_points);
     }
@@ -55,17 +56,17 @@ TEST_CASE("Hold notes", "Hold")
         const auto track = NoteTrack({{768, 15}}, {});
         const auto first_points
             = ProcessedTrack(track, 192, SyncTrack()).points();
-        const auto first_expected_points
-            = std::vector<Point>({{Beat(4.0), 50, false, false},
-                                  {Beat(775.0 / 192.0), 1, true, false},
-                                  {Beat(782.0 / 192.0), 1, true, false},
-                                  {Beat(789.0 / 192.0), 1, true, false}});
+        const auto first_expected_points = std::vector<Point>(
+            {{{Beat(4.0), Measure(1.0)}, 50, false, false},
+             {{Beat(775.0 / 192.0), Measure(775.0 / 768.0)}, 1, true, false},
+             {{Beat(782.0 / 192.0), Measure(782.0 / 768.0)}, 1, true, false},
+             {{Beat(789.0 / 192.0), Measure(789.0 / 768.0)}, 1, true, false}});
         const auto second_points
             = ProcessedTrack(track, 200, SyncTrack()).points();
-        const auto second_expected_points
-            = std::vector<Point>({{Beat(768.0 / 200.0), 50, false, false},
-                                  {Beat(776.0 / 200.0), 1, true, false},
-                                  {Beat(784.0 / 200.0), 1, true, false}});
+        const auto second_expected_points = std::vector<Point>(
+            {{{Beat(768.0 / 200.0), Measure(768.0 / 800.0)}, 50, false, false},
+             {{Beat(776.0 / 200.0), Measure(776.0 / 800.0)}, 1, true, false},
+             {{Beat(784.0 / 200.0), Measure(784.0 / 800.0)}, 1, true, false}});
 
         REQUIRE(first_points == first_expected_points);
         REQUIRE(second_points == second_expected_points);
@@ -76,10 +77,10 @@ TEST_CASE("Hold notes", "Hold")
         const auto track = NoteTrack(
             {{768, 7, NoteColour::Green}, {768, 8, NoteColour::Red}}, {});
         const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
-        const auto expected_points
-            = std::vector<Point>({{Beat(4.0), 100, false, false},
-                                  {Beat(775.0 / 192.0), 1, true, false},
-                                  {Beat(782.0 / 192.0), 1, true, false}});
+        const auto expected_points = std::vector<Point>(
+            {{{Beat(4.0), Measure(1.0)}, 100, false, false},
+             {{Beat(775.0 / 192.0), Measure(775.0 / 768.0)}, 1, true, false},
+             {{Beat(782.0 / 192.0), Measure(782.0 / 768.0)}, 1, true, false}});
 
         REQUIRE(points == expected_points);
     }
@@ -88,10 +89,10 @@ TEST_CASE("Hold notes", "Hold")
     {
         const auto track = NoteTrack({{768, 2}}, {});
         const auto points = ProcessedTrack(track, 1, SyncTrack()).points();
-        const auto expected_points
-            = std::vector<Point>({{Beat(768.0), 50, false, false},
-                                  {Beat(769.0), 1, true, false},
-                                  {Beat(770.0), 1, true, false}});
+        const auto expected_points = std::vector<Point>(
+            {{{Beat(768.0), Measure(192.0)}, 50, false, false},
+             {{Beat(769.0), Measure(192.25)}, 1, true, false},
+             {{Beat(770.0), Measure(192.5)}, 1, true, false}});
 
         REQUIRE(points == expected_points);
     }
@@ -102,12 +103,12 @@ TEST_CASE("Points are sorted", "Sorted")
 {
     const auto track = NoteTrack({{768, 15}, {770, 0}}, {});
     const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
-    const auto expected_points
-        = std::vector<Point>({{Beat(4.0), 50, false, false},
-                              {Beat(770.0 / 192.0), 50, false, false},
-                              {Beat(775.0 / 192.0), 1, true, false},
-                              {Beat(782.0 / 192.0), 1, true, false},
-                              {Beat(789.0 / 192.0), 1, true, false}});
+    const auto expected_points = std::vector<Point>(
+        {{{Beat(4.0), Measure(1.0)}, 50, false, false},
+         {{Beat(770.0 / 192.0), Measure(770.0 / 768.0)}, 50, false, false},
+         {{Beat(775.0 / 192.0), Measure(775.0 / 768.0)}, 1, true, false},
+         {{Beat(782.0 / 192.0), Measure(782.0 / 768.0)}, 1, true, false},
+         {{Beat(789.0 / 192.0), Measure(789.0 / 768.0)}, 1, true, false}});
 
     REQUIRE(points == expected_points);
 }
@@ -119,9 +120,9 @@ TEST_CASE("End of SP phrase points", "End of SP")
         = NoteTrack({{768}, {960}, {1152}}, {{768, 1}, {900, 50}, {1100, 53}});
     const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
     const auto expected_points
-        = std::vector<Point>({{Beat(4.0), 50, false, true},
-                              {Beat(5.0), 50, false, false},
-                              {Beat(6.0), 50, false, true}});
+        = std::vector<Point>({{{Beat(4.0), Measure(1.0)}, 50, false, true},
+                              {{Beat(5.0), Measure(1.25)}, 50, false, false},
+                              {{Beat(6.0), Measure(1.5)}, 50, false, true}});
 
     REQUIRE(points == expected_points);
 }
@@ -141,7 +142,8 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
         expected_points.reserve(50);
         for (auto i = 0U; i < 50U; ++i) {
             const auto mult = 1U + std::min((i + 1) / 10, 3U);
-            expected_points.push_back({Beat(i), 50 * mult, false, false});
+            expected_points.push_back(
+                {{Beat(i), Measure(i / 4.0)}, 50 * mult, false, false});
         }
 
         REQUIRE(ProcessedTrack(track, 192, SyncTrack()).points()
