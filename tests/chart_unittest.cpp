@@ -329,4 +329,24 @@ TEST_CASE("Solos are read properly", "Solos")
 
         REQUIRE(chart.note_track(Difficulty::Expert).solos().empty());
     }
+
+    SECTION("Repeated solo starts and ends don't matter")
+    {
+        const char* text = "[ExpertSingle]\n{\n0 = E solo\n100 = E solo\n100 = "
+                           "N 0 0\n200 = E soloend\n300 = E soloend\n}";
+        const auto chart = Chart::parse_chart(text);
+        const auto required_solos = std::vector<Solo>({{0, 200, 100}});
+
+        REQUIRE(chart.note_track(Difficulty::Expert).solos() == required_solos);
+    }
+
+    SECTION("Solo markers are sorted")
+    {
+        const char* text
+            = "[ExpertSingle]\n{\n384 = E soloend\n192 = N 0 0\n0 = E solo\n}";
+        const auto chart = Chart::parse_chart(text);
+        const auto required_solos = std::vector<Solo>({{0, 384, 100}});
+
+        REQUIRE(chart.note_track(Difficulty::Expert).solos() == required_solos);
+    }
 }

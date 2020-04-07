@@ -296,6 +296,8 @@ static std::string_view read_single_track(std::string_view input,
     constexpr auto TAP_CODE = 6;
     constexpr auto OPEN_CODE = 7;
 
+    constexpr std::uint32_t SOLO_NOTE_VALUE = 100;
+
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("A [*Single] track does not open with {");
     }
@@ -382,13 +384,17 @@ static std::string_view read_single_track(std::string_view input,
         }
     }
 
-    constexpr std::uint32_t SOLO_NOTE_VALUE = 100;
+    std::sort(solo_events.begin(), solo_events.end());
+
     auto start = 0U;
     auto end = 0U;
+    bool in_solo = false;
     for (auto [pos, type] : solo_events) {
-        if (type == 0) {
+        if (type == 0 && !in_solo) {
+            in_solo = true;
             start = pos;
-        } else {
+        } else if (type == 1 && in_solo) {
+            in_solo = false;
             end = pos;
             std::set<std::uint32_t> positions_in_solo;
             for (const auto& note : track.notes) {
