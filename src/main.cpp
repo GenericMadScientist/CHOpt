@@ -80,8 +80,7 @@ int main(int argc, char* argv[])
         const auto processed_track
             = ProcessedTrack(track, chart.resolution(), chart.sync_track());
         const auto path = processed_track.optimal_path();
-        std::cout << "Number of activations: " << path.activations.size()
-                  << '\n';
+        std::cout << processed_track.path_summary(path) << std::endl;
         for (const auto& act : path.activations) {
             std::cout << "Beat " << act.act_start->position.beat.value()
                       << " to Beat " << act.act_end->position.beat.value()

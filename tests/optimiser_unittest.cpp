@@ -481,3 +481,51 @@ TEST_CASE("optimal_path produces the correct path")
         REQUIRE(opt_path.activations == optimal_acts);
     }
 }
+
+TEST_CASE("path_summary produces the correct output", "Path summary")
+{
+    std::vector<Note> notes {{0}, {192}, {384}, {576}, {6144}};
+    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
+    std::vector<Solo> solos {{0, 50, 100}};
+    NoteTrack note_track(notes, phrases, solos);
+    ProcessedTrack track(note_track, 192, SyncTrack());
+    const auto& points = track.points();
+
+    SECTION("Overlap and ES are denoted correctly")
+    {
+        const Path path {{{points.cbegin() + 2, points.cbegin() + 3}}, 100};
+
+        const char* desired_path_output = "Path: 2(+1)-ES1";
+
+        REQUIRE(track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("No overlap is denoted correctly")
+    {
+        const Path path {{{points.cbegin() + 3, points.cbegin() + 3}}, 50};
+
+        const char* desired_path_output = "Path: 3-ES1";
+
+        REQUIRE(track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("No ES is denoted correctly")
+    {
+        const Path path {{{points.cbegin() + 4, points.cbegin() + 4}}, 50};
+
+        const char* desired_path_output = "Path: 3(+1)";
+
+        REQUIRE(track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("No SP is denoted correctly")
+    {
+        const Path path {{}, 0};
+        NoteTrack second_note_track(notes, {}, solos);
+        ProcessedTrack second_track(second_note_track, 192, SyncTrack());
+
+        const char* desired_path_output = "Path: None";
+
+        REQUIRE(second_track.path_summary(path) == desired_path_output);
+    }
+}

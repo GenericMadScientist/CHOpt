@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <map>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -100,6 +101,8 @@ public:
                                            PointPtr act_start) const;
     // Return the optimal Star Power path.
     [[nodiscard]] Path optimal_path() const;
+    // Return the summary of a path.
+    [[nodiscard]] std::string path_summary(const Path& path) const;
 };
 
 #endif

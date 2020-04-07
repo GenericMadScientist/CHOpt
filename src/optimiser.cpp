@@ -282,3 +282,48 @@ Path ProcessedTrack::optimal_path() const
 
     return get_partial_path(m_points.cbegin(), partial_paths);
 }
+
+std::string ProcessedTrack::path_summary(const Path& path) const
+{
+    std::string output = "Path: ";
+
+    std::vector<std::string> activation_summaries;
+    auto start_point = m_points.cbegin();
+    for (const auto& act : path.activations) {
+        auto sp_before
+            = std::count_if(start_point, act.act_start, [](const auto& p) {
+                  return p.is_sp_granting_note;
+              });
+        auto sp_during = std::count_if(
+            act.act_start, std::next(act.act_end),
+            [](const auto& p) { return p.is_sp_granting_note; });
+        auto summary = std::to_string(sp_before);
+        if (sp_during != 0) {
+            summary += "(+";
+            summary += std::to_string(sp_during);
+            summary += ")";
+        }
+        activation_summaries.push_back(summary);
+        start_point = std::next(act.act_end);
+    }
+
+    auto spare_sp
+        = std::count_if(start_point, m_points.cend(),
+                        [](const auto& p) { return p.is_sp_granting_note; });
+    if (spare_sp != 0) {
+        activation_summaries.push_back(std::string("ES")
+                                       + std::to_string(spare_sp));
+    }
+
+    if (activation_summaries.empty()) {
+        output += "None";
+    } else {
+        output += activation_summaries[0];
+        for (std::size_t i = 1; i < activation_summaries.size(); ++i) {
+            output += "-";
+            output += activation_summaries[i];
+        }
+    }
+
+    return output;
+}
