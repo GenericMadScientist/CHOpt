@@ -109,6 +109,9 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
     , m_points {notes_to_points(track, resolution, m_converter)}
     , m_sp_data {track, resolution, sync_track}
 {
+    m_total_solo_boost = std::accumulate(
+        track.solos().cbegin(), track.solos().cend(), 0U,
+        [](const auto x, const auto& y) { return x + y.value; });
 }
 
 PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
@@ -324,6 +327,17 @@ std::string ProcessedTrack::path_summary(const Path& path) const
             output += activation_summaries[i];
         }
     }
+
+    auto no_sp_score = std::accumulate(
+        m_points.cbegin(), m_points.cend(), 0U,
+        [](const auto x, const auto& y) { return x + y.value; });
+    no_sp_score += m_total_solo_boost;
+    output += "\nNo SP score: ";
+    output += std::to_string(no_sp_score);
+
+    auto total_score = no_sp_score + path.score_boost;
+    output += "\nTotal score: ";
+    output += std::to_string(total_score);
 
     return output;
 }

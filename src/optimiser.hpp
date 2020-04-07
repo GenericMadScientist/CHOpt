@@ -79,6 +79,7 @@ private:
     TimeConverter m_converter;
     std::vector<Point> m_points;
     SpData m_sp_data;
+    std::uint32_t m_total_solo_boost;
 
     [[nodiscard]] PointPtr furthest_reachable_point(PointPtr point,
                                                     double sp) const;
