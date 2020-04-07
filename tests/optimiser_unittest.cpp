@@ -496,7 +496,10 @@ TEST_CASE("path_summary produces the correct output", "Path summary")
         const Path path {{{points.cbegin() + 2, points.cbegin() + 3}}, 100};
 
         const char* desired_path_output
-            = "Path: 2(+1)-ES1\nNo SP score: 350\nTotal score: 450";
+            = "Path: 2(+1)-ES1\n"
+              "No SP score: 350\n"
+              "Total score: 450\n"
+              "Activation 1: Measure 0.5 to Measure 0.75";
 
         REQUIRE(track.path_summary(path) == desired_path_output);
     }
@@ -506,7 +509,10 @@ TEST_CASE("path_summary produces the correct output", "Path summary")
         const Path path {{{points.cbegin() + 3, points.cbegin() + 3}}, 50};
 
         const char* desired_path_output
-            = "Path: 3-ES1\nNo SP score: 350\nTotal score: 400";
+            = "Path: 3-ES1\n"
+              "No SP score: 350\n"
+              "Total score: 400\n"
+              "Activation 1: Measure 0.75 to Measure 0.75";
 
         REQUIRE(track.path_summary(path) == desired_path_output);
     }
@@ -516,7 +522,10 @@ TEST_CASE("path_summary produces the correct output", "Path summary")
         const Path path {{{points.cbegin() + 4, points.cbegin() + 4}}, 50};
 
         const char* desired_path_output
-            = "Path: 3(+1)\nNo SP score: 350\nTotal score: 400";
+            = "Path: 3(+1)\n"
+              "No SP score: 350\n"
+              "Total score: 400\n"
+              "Activation 1: Measure 8 to Measure 8";
 
         REQUIRE(track.path_summary(path) == desired_path_output);
     }
@@ -527,8 +536,9 @@ TEST_CASE("path_summary produces the correct output", "Path summary")
         NoteTrack second_note_track(notes, {}, solos);
         ProcessedTrack second_track(second_note_track, 192, SyncTrack());
 
-        const char* desired_path_output
-            = "Path: None\nNo SP score: 350\nTotal score: 350";
+        const char* desired_path_output = "Path: None\n"
+                                          "No SP score: 350\n"
+                                          "Total score: 350";
 
         REQUIRE(second_track.path_summary(path) == desired_path_output);
     }

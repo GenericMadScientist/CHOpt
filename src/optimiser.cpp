@@ -20,6 +20,7 @@
 #include <iterator>
 #include <numeric>
 #include <set>
+#include <sstream>
 
 #include "optimiser.hpp"
 
@@ -288,7 +289,10 @@ Path ProcessedTrack::optimal_path() const
 
 std::string ProcessedTrack::path_summary(const Path& path) const
 {
-    std::string output = "Path: ";
+    // We use std::stringstream instead of std::string for better formating of
+    // floats (measure values).
+    std::stringstream stream;
+    stream << "Path: ";
 
     std::vector<std::string> activation_summaries;
     auto start_point = m_points.cbegin();
@@ -319,12 +323,11 @@ std::string ProcessedTrack::path_summary(const Path& path) const
     }
 
     if (activation_summaries.empty()) {
-        output += "None";
+        stream << "None";
     } else {
-        output += activation_summaries[0];
+        stream << activation_summaries[0];
         for (std::size_t i = 1; i < activation_summaries.size(); ++i) {
-            output += "-";
-            output += activation_summaries[i];
+            stream << "-" << activation_summaries[i];
         }
     }
 
@@ -332,12 +335,17 @@ std::string ProcessedTrack::path_summary(const Path& path) const
         m_points.cbegin(), m_points.cend(), 0U,
         [](const auto x, const auto& y) { return x + y.value; });
     no_sp_score += m_total_solo_boost;
-    output += "\nNo SP score: ";
-    output += std::to_string(no_sp_score);
+    stream << "\nNo SP score: " << no_sp_score;
 
     auto total_score = no_sp_score + path.score_boost;
-    output += "\nTotal score: ";
-    output += std::to_string(total_score);
+    stream << "\nTotal score: " << total_score;
 
-    return output;
+    for (std::size_t i = 0; i < path.activations.size(); ++i) {
+        stream << "\nActivation " << i + 1 << ": Measure "
+               << path.activations[i].act_start->position.measure.value()
+               << " to Measure "
+               << path.activations[i].act_end->position.measure.value();
+    }
+
+    return stream.str();
 }
