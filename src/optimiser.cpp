@@ -342,9 +342,9 @@ std::string ProcessedTrack::path_summary(const Path& path) const
 
     for (std::size_t i = 0; i < path.activations.size(); ++i) {
         stream << "\nActivation " << i + 1 << ": Measure "
-               << path.activations[i].act_start->position.measure.value()
+               << path.activations[i].act_start->position.measure.value() + 1
                << " to Measure "
-               << path.activations[i].act_end->position.measure.value();
+               << path.activations[i].act_end->position.measure.value() + 1;
     }
 
     return stream.str();

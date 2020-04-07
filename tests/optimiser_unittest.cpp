@@ -499,7 +499,7 @@ TEST_CASE("path_summary produces the correct output", "Path summary")
             = "Path: 2(+1)-ES1\n"
               "No SP score: 350\n"
               "Total score: 450\n"
-              "Activation 1: Measure 0.5 to Measure 0.75";
+              "Activation 1: Measure 1.5 to Measure 1.75";
 
         REQUIRE(track.path_summary(path) == desired_path_output);
     }
@@ -512,7 +512,7 @@ TEST_CASE("path_summary produces the correct output", "Path summary")
             = "Path: 3-ES1\n"
               "No SP score: 350\n"
               "Total score: 400\n"
-              "Activation 1: Measure 0.75 to Measure 0.75";
+              "Activation 1: Measure 1.75 to Measure 1.75";
 
         REQUIRE(track.path_summary(path) == desired_path_output);
     }
@@ -525,7 +525,7 @@ TEST_CASE("path_summary produces the correct output", "Path summary")
             = "Path: 3(+1)\n"
               "No SP score: 350\n"
               "Total score: 400\n"
-              "Activation 1: Measure 8 to Measure 8";
+              "Activation 1: Measure 9 to Measure 9";
 
         REQUIRE(track.path_summary(path) == desired_path_output);
     }
