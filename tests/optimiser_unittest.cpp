@@ -27,7 +27,7 @@ TEST_CASE("Non-hold notes", "Non hold")
 {
     SECTION("Single notes give 50 points")
     {
-        const auto track = NoteTrack({{768}, {960}}, {});
+        const auto track = NoteTrack({{768}, {960}}, {}, {});
         const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
         const auto expected_points = std::vector<Point>(
             {{{Beat(4.0), Measure(1.0)}, 50, false, false},
@@ -39,7 +39,7 @@ TEST_CASE("Non-hold notes", "Non hold")
     SECTION("Chords give multiples of 50 points")
     {
         const auto track = NoteTrack(
-            {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}}, {});
+            {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}}, {}, {});
         const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
         const auto expected_points = std::vector<Point>(
             {{{Beat(4.0), Measure(1.0)}, 100, false, false}});
@@ -53,7 +53,7 @@ TEST_CASE("Hold notes", "Hold")
 {
     SECTION("Hold note points depend on resolution")
     {
-        const auto track = NoteTrack({{768, 15}}, {});
+        const auto track = NoteTrack({{768, 15}}, {}, {});
         const auto first_points
             = ProcessedTrack(track, 192, SyncTrack()).points();
         const auto first_expected_points = std::vector<Point>(
@@ -75,7 +75,7 @@ TEST_CASE("Hold notes", "Hold")
     SECTION("Hold note points and chords")
     {
         const auto track = NoteTrack(
-            {{768, 7, NoteColour::Green}, {768, 8, NoteColour::Red}}, {});
+            {{768, 7, NoteColour::Green}, {768, 8, NoteColour::Red}}, {}, {});
         const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
         const auto expected_points = std::vector<Point>(
             {{{Beat(4.0), Measure(1.0)}, 100, false, false},
@@ -87,7 +87,7 @@ TEST_CASE("Hold notes", "Hold")
 
     SECTION("Resolutions below 25 do not enter an infinite loop")
     {
-        const auto track = NoteTrack({{768, 2}}, {});
+        const auto track = NoteTrack({{768, 2}}, {}, {});
         const auto points = ProcessedTrack(track, 1, SyncTrack()).points();
         const auto expected_points = std::vector<Point>(
             {{{Beat(768.0), Measure(192.0)}, 50, false, false},
@@ -101,7 +101,7 @@ TEST_CASE("Hold notes", "Hold")
 // Last checked: 24.0.1555-master
 TEST_CASE("Points are sorted", "Sorted")
 {
-    const auto track = NoteTrack({{768, 15}, {770, 0}}, {});
+    const auto track = NoteTrack({{768, 15}, {770, 0}}, {}, {});
     const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
     const auto expected_points = std::vector<Point>(
         {{{Beat(4.0), Measure(1.0)}, 50, false, false},
@@ -116,8 +116,8 @@ TEST_CASE("Points are sorted", "Sorted")
 // Last checked: 24.0.1555-master
 TEST_CASE("End of SP phrase points", "End of SP")
 {
-    const auto track
-        = NoteTrack({{768}, {960}, {1152}}, {{768, 1}, {900, 50}, {1100, 53}});
+    const auto track = NoteTrack({{768}, {960}, {1152}},
+                                 {{768, 1}, {900, 50}, {1100, 53}}, {});
     const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
     const auto expected_points
         = std::vector<Point>({{{Beat(4.0), Measure(1.0)}, 50, false, true},
@@ -137,7 +137,7 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
         for (auto i = 0U; i < 50U; ++i) {
             notes.push_back({192 * i});
         }
-        const auto track = NoteTrack(notes, {});
+        const auto track = NoteTrack(notes, {}, {});
         std::vector<Point> expected_points;
         expected_points.reserve(50);
         for (auto i = 0U; i < 50U; ++i) {
@@ -159,7 +159,7 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
         }
         notes.push_back({9600, 192});
 
-        const auto track = NoteTrack(notes, {});
+        const auto track = NoteTrack(notes, {}, {});
         const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
 
         REQUIRE(points.back().value == 4);
@@ -174,7 +174,7 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
         }
         notes[0].length = 2000;
 
-        const auto track = NoteTrack(notes, {});
+        const auto track = NoteTrack(notes, {}, {});
         const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
 
         REQUIRE(points.back().value == 2);
@@ -185,7 +185,7 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
 TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
 {
     std::vector<Note> notes {{0}, {1536}, {3072}, {6144}};
-    NoteTrack note_track(notes, {});
+    NoteTrack note_track(notes, {}, {});
     ProcessedTrack track(note_track, 192, SyncTrack());
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
@@ -235,7 +235,7 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     SECTION("Check intermediate SP is accounted for")
     {
         std::vector<StarPower> phrases {{3000, 100}};
-        NoteTrack overlap_notes(notes, phrases);
+        NoteTrack overlap_notes(notes, phrases, {});
         ProcessedTrack overlap_track(overlap_notes, 192, SyncTrack());
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
@@ -250,7 +250,7 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     {
         notes[2].position = 6000;
         std::vector<StarPower> phrases {{6000, 100}};
-        NoteTrack overlap_notes(notes, phrases);
+        NoteTrack overlap_notes(notes, phrases, {});
         ProcessedTrack overlap_track(overlap_notes, 192, SyncTrack());
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
@@ -265,7 +265,7 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     {
         notes[3].position = 4000;
         std::vector<StarPower> phrases {{3072, 100}};
-        NoteTrack overlap_notes(notes, phrases);
+        NoteTrack overlap_notes(notes, phrases, {});
         ProcessedTrack overlap_track(overlap_notes, 192, SyncTrack());
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
@@ -280,7 +280,7 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     {
         std::vector<Note> overlap_notes {{0}, {2}, {7000}};
         std::vector<StarPower> phrases {{0, 1}, {2, 1}};
-        NoteTrack overlap_note_track(overlap_notes, phrases);
+        NoteTrack overlap_note_track(overlap_notes, phrases, {});
         ProcessedTrack overlap_track(overlap_note_track, 192, SyncTrack());
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
@@ -306,7 +306,7 @@ TEST_CASE("is_activation_valid works with whammy", "Valid whammy acts")
 {
     std::vector<Note> notes {{0, 960}, {3840}, {6144}};
     std::vector<StarPower> phrases {{0, 7000}};
-    NoteTrack note_track(notes, phrases);
+    NoteTrack note_track(notes, phrases, {});
     ProcessedTrack track(note_track, 192, SyncTrack());
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
@@ -330,7 +330,7 @@ TEST_CASE("is_activation_valid works with whammy", "Valid whammy acts")
 TEST_CASE("is_activation_valid takes into account minimum SP", "Min SP")
 {
     std::vector<Note> notes {{0}, {1536}, {2304}, {3072}, {4608}};
-    NoteTrack note_track(notes, {});
+    NoteTrack note_track(notes, {}, {});
     ProcessedTrack track(note_track, 192, SyncTrack());
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
@@ -357,7 +357,7 @@ TEST_CASE("total_available_sp counts SP correctly", "Available SP")
     std::vector<Note> notes {{0},        {192},  {384},  {576},
                              {768, 192}, {1152}, {1344}, {1536}};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack note_track(notes, phrases);
+    NoteTrack note_track(notes, phrases, {});
     ProcessedTrack track(note_track, 192, SyncTrack());
     const auto& points = track.points();
 
@@ -398,7 +398,7 @@ TEST_CASE("optimal_path produces the correct path")
     {
         std::vector<Note> notes {{0}, {192}, {384}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-        NoteTrack note_track(notes, phrases);
+        NoteTrack note_track(notes, phrases, {});
         ProcessedTrack track(note_track, 192, SyncTrack());
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
@@ -423,7 +423,7 @@ TEST_CASE("optimal_path produces the correct path")
                                  {10368, 0, NoteColour::Yellow}};
         std::vector<StarPower> phrases {
             {0, 50}, {192, 50}, {3840, 50}, {4032, 50}};
-        NoteTrack note_track(notes, phrases);
+        NoteTrack note_track(notes, phrases, {});
         ProcessedTrack track(note_track, 192, SyncTrack());
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
@@ -439,7 +439,7 @@ TEST_CASE("optimal_path produces the correct path")
     {
         std::vector<Note> notes {{0}, {192}, {384}, {576}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-        NoteTrack note_track(notes, phrases);
+        NoteTrack note_track(notes, phrases, {});
         ProcessedTrack track(note_track, 192, SyncTrack());
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
@@ -454,7 +454,7 @@ TEST_CASE("optimal_path produces the correct path")
     {
         std::vector<Note> notes {{0}, {192}, {384}, {3360}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-        NoteTrack note_track(notes, phrases);
+        NoteTrack note_track(notes, phrases, {});
         ProcessedTrack track(note_track, 192, SyncTrack());
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
@@ -470,7 +470,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<Note> notes {
             {0}, {192}, {384}, {3840}, {3840, 0, NoteColour::Red}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-        NoteTrack note_track(notes, phrases);
+        NoteTrack note_track(notes, phrases, {});
         ProcessedTrack track(note_track, 192, SyncTrack());
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {

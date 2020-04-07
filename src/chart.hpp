@@ -64,6 +64,18 @@ struct StarPower {
     }
 };
 
+struct Solo {
+    std::uint32_t start;
+    std::uint32_t end;
+    std::uint32_t value;
+
+    friend bool operator==(const Solo& lhs, const Solo& rhs)
+    {
+        return std::tie(lhs.start, lhs.end, lhs.value)
+            == std::tie(rhs.start, rhs.end, rhs.value);
+    }
+};
+
 // Invariants:
 // notes() will always return a vector of sorted notes.
 // notes() will not return a vector with two notes of the same colour with the
@@ -71,25 +83,29 @@ struct StarPower {
 // sp_phrases() will always return a vector of sorted SP phrases.
 // sp_phrases() will only return phrases with a note in their range.
 // sp_phrases() will return non-overlapping phrases.
+// solos() will always return a vector of sorted solos.
 class NoteTrack {
 private:
     std::vector<Note> m_notes;
     std::vector<StarPower> m_sp_phrases;
+    std::vector<Solo> m_solos;
 
 public:
     NoteTrack() = default;
-    NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases);
+    NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
+              std::vector<Solo> solos);
 
     [[nodiscard]] const std::vector<Note>& notes() const { return m_notes; }
     [[nodiscard]] const std::vector<StarPower>& sp_phrases() const
     {
         return m_sp_phrases;
     }
+    [[nodiscard]] const std::vector<Solo>& solos() const { return m_solos; }
 
     friend bool operator==(const NoteTrack& lhs, const NoteTrack& rhs)
     {
-        return std::tie(lhs.m_notes, lhs.m_sp_phrases)
-            == std::tie(rhs.m_notes, rhs.m_sp_phrases);
+        return std::tie(lhs.m_notes, lhs.m_sp_phrases, lhs.m_solos)
+            == std::tie(rhs.m_notes, rhs.m_sp_phrases, rhs.m_solos);
     }
 };
 

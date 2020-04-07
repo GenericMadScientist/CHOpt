@@ -52,7 +52,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
 {
     std::vector<Note> notes {{0, 1920}, {2112, 576}, {3000}};
     std::vector<StarPower> phrases {{0, 3000}};
-    NoteTrack track(notes, phrases);
+    NoteTrack track(notes, phrases, {});
 
     SECTION("Works correctly over 4/4")
     {
@@ -162,7 +162,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
 
     SECTION("Hold notes not in a phrase do not contribute SP")
     {
-        NoteTrack no_sp_note_track(notes, {});
+        NoteTrack no_sp_note_track(notes, {}, {});
         SpData sp_data(no_sp_note_track, 192, SyncTrack());
 
         REQUIRE(sp_data
@@ -178,7 +178,7 @@ TEST_CASE("is_in_whammy_ranges works correctly", "Whammy ranges")
 {
     std::vector<Note> notes {{0, 1920}, {2112}};
     std::vector<StarPower> phrases {{0, 2000}, {2112, 50}};
-    NoteTrack track(notes, phrases);
+    NoteTrack track(notes, phrases, {});
     SpData sp_data(track, 192, SyncTrack());
 
     REQUIRE(sp_data.is_in_whammy_ranges(Beat(1.0)));
@@ -189,7 +189,7 @@ TEST_CASE("available_whammy works correctly", "Available whammy")
 {
     std::vector<Note> notes {{0, 1920}, {2112}, {2304, 768}};
     std::vector<StarPower> phrases {{0, 3000}};
-    NoteTrack track(notes, phrases);
+    NoteTrack track(notes, phrases, {});
     SpData sp_data(track, 192, SyncTrack());
 
     REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(16.0))

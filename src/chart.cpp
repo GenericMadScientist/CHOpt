@@ -43,7 +43,8 @@ struct PreSyncTrack {
     std::vector<TimeSignature> time_sigs;
 };
 
-NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases)
+NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
+                     std::vector<Solo> solos)
 {
     std::stable_sort(notes.begin(), notes.end(),
                      [](const auto& lhs, const auto& rhs) {
@@ -87,6 +88,12 @@ NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases)
             m_sp_phrases.push_back(phrase);
         }
     }
+
+    std::stable_sort(
+        solos.begin(), solos.end(),
+        [](const auto& lhs, const auto& rhs) { return lhs.start < rhs.start; });
+
+    m_solos = std::move(solos);
 }
 
 SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs)
@@ -408,8 +415,8 @@ Chart Chart::parse_chart(std::string_view input)
         if (track.notes.empty()) {
             continue;
         }
-        auto new_track
-            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases));
+        auto new_track = NoteTrack(std::move(track.notes),
+                                   std::move(track.sp_phrases), {});
         chart.m_note_tracks.emplace(diff, std::move(new_track));
     }
 
