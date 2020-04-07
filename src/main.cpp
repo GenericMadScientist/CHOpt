@@ -30,21 +30,53 @@
 int main(int argc, char* argv[])
 {
     try {
-        if (argc < 2) {
-            std::cerr << "Please specify a file!\n";
+        cxxopts::Options options("chopt",
+                                 "Star Power optimiser for Clone Hero");
+
+        options.add_options()(
+            "d,diff", "Difficulty",
+            cxxopts::value<std::string>()->default_value("expert"))(
+            "f,file", "Chart filename",
+            cxxopts::value<std::string>())("h,help", "Print usage");
+
+        auto result = options.parse(argc, argv);
+
+        if (result.count("help") != 0) {
+            std::cout << options.help() << std::endl;
+            return EXIT_SUCCESS;
+        }
+        if (result.count("file") == 0) {
+            std::cerr << "Please specify a file!" << std::endl;
             return EXIT_FAILURE;
         }
-        // clang-tidy complains about the following pointer arithmetic, but
-        // using gsl::span just for this is overkill.
-        std::ifstream in(argv[1]); // NOLINT
+
+        auto filename = result["file"].as<std::string>();
+        auto diff_name = result["diff"].as<std::string>();
+
+        auto difficulty = Difficulty::Expert;
+        if (diff_name == "expert") {
+            difficulty = Difficulty::Expert;
+        } else if (diff_name == "hard") {
+            difficulty = Difficulty::Hard;
+        } else if (diff_name == "medium") {
+            difficulty = Difficulty::Medium;
+        } else if (diff_name == "easy") {
+            difficulty = Difficulty::Easy;
+        } else {
+            std::cerr << "Unrecognised difficulty " << diff_name << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        std::ifstream in(filename);
         if (!in.is_open()) {
-            std::cerr << "File did not open, please specify a valid file!\n";
+            std::cerr << "File did not open, please specify a valid file!"
+                      << std::endl;
             return EXIT_FAILURE;
         }
-        std::string contents((std::istreambuf_iterator<char>(in)),
-                             std::istreambuf_iterator<char>());
+        std::string contents {std::istreambuf_iterator<char>(in),
+                              std::istreambuf_iterator<char>()};
         const auto chart = Chart::parse_chart(contents);
-        const auto& track = chart.note_track(Difficulty::Expert);
+        const auto& track = chart.note_track(difficulty);
         const auto processed_track
             = ProcessedTrack(track, chart.resolution(), chart.sync_track());
         const auto path = processed_track.optimal_path();
