@@ -23,6 +23,7 @@ function(set_warnings TARGET)
 endfunction()
 
 add_executable(chopt src/main.cpp src/chart.cpp src/optimiser.cpp src/sp.cpp src/time.cpp)
+target_include_directories(chopt PRIVATE "${PROJECT_SOURCE_DIR}/libs")
 
 set_cpp_standard(chopt)
 set_warnings(chopt)

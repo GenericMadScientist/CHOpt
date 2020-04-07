@@ -22,6 +22,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "cxxopts_wrapper.hpp"
+
 #include "chart.hpp"
 #include "optimiser.hpp"
 
