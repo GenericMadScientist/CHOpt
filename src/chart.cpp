@@ -20,6 +20,7 @@
 #include <charconv>
 #include <cstdlib>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <utility>
 
@@ -30,6 +31,7 @@
 struct PreNoteTrack {
     std::vector<Note> notes;
     std::vector<StarPower> sp_phrases;
+    std::vector<Solo> solos;
 };
 
 static bool is_empty(const PreNoteTrack& track)
@@ -298,6 +300,9 @@ static std::string_view read_single_track(std::string_view input,
         throw std::runtime_error("A [*Single] track does not open with {");
     }
 
+    // Pairs are (location, x) where x is 0 for solo and 1 for soloend.
+    std::vector<std::tuple<uint32_t, uint32_t>> solo_events;
+
     while (true) {
         const auto line = break_off_newline(input);
         if (line == "}") {
@@ -368,6 +373,34 @@ static std::string_view read_single_track(std::string_view input,
             }
             const auto length = *pre_length;
             track.sp_phrases.push_back({position, length});
+        } else if (type == "E") {
+            if (split_string[3] == "solo") {
+                solo_events.emplace_back(position, 0);
+            } else if (split_string[3] == "soloend") {
+                solo_events.emplace_back(position, 1);
+            }
+        }
+    }
+
+    constexpr std::uint32_t SOLO_NOTE_VALUE = 100;
+    auto start = 0U;
+    auto end = 0U;
+    for (auto [pos, type] : solo_events) {
+        if (type == 0) {
+            start = pos;
+        } else {
+            end = pos;
+            std::set<std::uint32_t> positions_in_solo;
+            for (const auto& note : track.notes) {
+                if (note.position >= start && note.position <= end) {
+                    positions_in_solo.insert(note.position);
+                }
+            }
+            if (positions_in_solo.empty()) {
+                continue;
+            }
+            auto notes = static_cast<std::uint32_t>(positions_in_solo.size());
+            track.solos.push_back({start, end, SOLO_NOTE_VALUE * notes});
         }
     }
 
@@ -415,8 +448,9 @@ Chart Chart::parse_chart(std::string_view input)
         if (track.notes.empty()) {
             continue;
         }
-        auto new_track = NoteTrack(std::move(track.notes),
-                                   std::move(track.sp_phrases), {});
+        auto new_track
+            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
+                        std::move(track.solos));
         chart.m_note_tracks.emplace(diff, std::move(new_track));
     }
 

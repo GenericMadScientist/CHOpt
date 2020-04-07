@@ -295,3 +295,38 @@ TEST_CASE("Notes with extra spaces", "NoteSpaceSkip")
         REQUIRE(chart.note_track(Difficulty::Expert).notes() == required_notes);
     }
 }
+
+// Last checked: 24.0.1555-master
+TEST_CASE("Solos are read properly", "Solos")
+{
+    SECTION("Expected solos are read properly")
+    {
+        const char* text = "[ExpertSingle]\n{\n0 = E solo\n100 = N 0 0\n200 = "
+                           "E soloend\n300 = E solo\n300 = N 0 0\n400 = N 0 "
+                           "0\n400 = E soloend\n}";
+        const auto chart = Chart::parse_chart(text);
+        const auto required_solos
+            = std::vector<Solo>({{0, 200, 100}, {300, 400, 200}});
+
+        REQUIRE(chart.note_track(Difficulty::Expert).solos() == required_solos);
+    }
+
+    SECTION("Chords are not counted double")
+    {
+        const char* text = "[ExpertSingle]\n{\n0 = E solo\n100 = N 0 0\n100 = "
+                           "N 1 0\n200 = E soloend\n}";
+        const auto chart = Chart::parse_chart(text);
+        const auto required_solos = std::vector<Solo>({{0, 200, 100}});
+
+        REQUIRE(chart.note_track(Difficulty::Expert).solos() == required_solos);
+    }
+
+    SECTION("Empty solos are ignored")
+    {
+        const char* text
+            = "[ExpertSingle]\n{\n0 = N 0 0\n100 = E solo\n200 = E soloend\n}";
+        const auto chart = Chart::parse_chart(text);
+
+        REQUIRE(chart.note_track(Difficulty::Expert).solos().empty());
+    }
+}
