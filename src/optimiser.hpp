@@ -22,7 +22,6 @@
 #include <cstdint>
 #include <map>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "chart.hpp"
@@ -34,14 +33,6 @@ struct Point {
     std::uint32_t value;
     bool is_hold_point;
     bool is_sp_granting_note;
-
-    friend bool operator==(const Point& lhs, const Point& rhs)
-    {
-        return std::tie(lhs.position.beat, lhs.position.measure, lhs.value,
-                        lhs.is_hold_point, lhs.is_sp_granting_note)
-            == std::tie(rhs.position.beat, rhs.position.measure, rhs.value,
-                        rhs.is_hold_point, rhs.is_sp_granting_note);
-    }
 };
 
 using PointPtr = std::vector<Point>::const_iterator;
@@ -56,12 +47,6 @@ struct ActivationCandidate {
 struct Activation {
     PointPtr act_start;
     PointPtr act_end;
-
-    friend bool operator==(const Activation& lhs, const Activation& rhs)
-    {
-        return std::tie(lhs.act_start, lhs.act_end)
-            == std::tie(rhs.act_start, rhs.act_end);
-    }
 };
 
 struct Path {

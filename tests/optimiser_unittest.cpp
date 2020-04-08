@@ -17,10 +17,25 @@
  */
 
 #include <algorithm>
+#include <tuple>
 
 #include "catch.hpp"
 
 #include "optimiser.hpp"
+
+static bool operator==(const Activation& lhs, const Activation& rhs)
+{
+    return std::tie(lhs.act_start, lhs.act_end)
+        == std::tie(rhs.act_start, rhs.act_end);
+}
+
+static bool operator==(const Point& lhs, const Point& rhs)
+{
+    return std::tie(lhs.position.beat, lhs.position.measure, lhs.value,
+                    lhs.is_hold_point, lhs.is_sp_granting_note)
+        == std::tie(rhs.position.beat, rhs.position.measure, rhs.value,
+                    rhs.is_hold_point, rhs.is_sp_granting_note);
+}
 
 // Last checked: 24.0.1555-master
 TEST_CASE("Non-hold notes", "Non hold")
