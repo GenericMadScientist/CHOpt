@@ -111,7 +111,7 @@ public:
 
 // Invariants:
 // time_sigs() are sorted by position.
-// time_sigs() never has two TimeSignatures with the same poisition.
+// time_sigs() never has two TimeSignatures with the same position.
 // time_sigs() is never empty.
 class SyncTrack {
 private:

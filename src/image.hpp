@@ -19,10 +19,14 @@
 #ifndef CHOPT_IMAGE_HPP
 #define CHOPT_IMAGE_HPP
 
+#include <cstdint>
+
 #include "cimg_wrapper.hpp"
+
+#include "chart.hpp"
 
 using Image = cimg_library::CImg<unsigned char>;
 
-Image create_path_image();
+Image create_path_image(const NoteTrack& track, std::int32_t resolution);
 
 #endif
