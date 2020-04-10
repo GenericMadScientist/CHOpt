@@ -22,7 +22,8 @@ difficulty with -d or --diff, like so:
 ```
 
 The difficulties are lower case (easy/medium/hard/expert) and defaults to
-expert if none is provided.
+expert if none is provided. The full list of options can be listed by using -h
+or --help.
 
 ## Limitations
 
@@ -37,7 +38,8 @@ Guitar_Hero_Tools.
 
 ## Dependencies
 
-This program uses [Catch2](https://github.com/catchorg/Catch2) for tests and
+This program uses [Catch2](https://github.com/catchorg/Catch2) for tests,
+[CImg](https://cimg.eu/) to produce images, and
 [cxxopts](https://github.com/jarro2783/cxxopts) for argument parsing. Both of
 these are header-only libraries in the libs directory, so there should be no
 difficulty getting these set up if you want to build chopt.

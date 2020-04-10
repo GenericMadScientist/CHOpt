@@ -22,9 +22,11 @@
 #include <stdexcept>
 #include <string>
 
+#include "cimg_wrapper.hpp"
 #include "cxxopts_wrapper.hpp"
 
 #include "chart.hpp"
+#include "image.hpp"
 #include "optimiser.hpp"
 
 int main(int argc, char* argv[])
@@ -33,7 +35,7 @@ int main(int argc, char* argv[])
         cxxopts::Options options("chopt",
                                  "Star Power optimiser for Clone Hero");
 
-        options.add_options()(
+        options.add_options()("b,blank", "Give a blank chart image")(
             "d,diff", "Difficulty",
             cxxopts::value<std::string>()->default_value("expert"))(
             "f,file", "Chart filename",
@@ -77,10 +79,16 @@ int main(int argc, char* argv[])
                               std::istreambuf_iterator<char>()};
         const auto chart = Chart::parse_chart(contents);
         const auto& track = chart.note_track(difficulty);
-        const auto processed_track
-            = ProcessedTrack(track, chart.resolution(), chart.sync_track());
-        const auto path = processed_track.optimal_path();
-        std::cout << processed_track.path_summary(path) << std::endl;
+
+        if (result["blank"].as<bool>()) {
+            const auto image = create_path_image();
+            image.save("blank.bmp");
+        } else {
+            const auto processed_track
+                = ProcessedTrack(track, chart.resolution(), chart.sync_track());
+            const auto path = processed_track.optimal_path();
+            std::cout << processed_track.path_summary(path) << std::endl;
+        }
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
