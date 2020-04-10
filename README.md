@@ -40,7 +40,7 @@ Guitar_Hero_Tools.
 
 This program uses [Catch2](https://github.com/catchorg/Catch2) for tests,
 [CImg](https://cimg.eu/) to produce images, and
-[cxxopts](https://github.com/jarro2783/cxxopts) for argument parsing. Both of
+[cxxopts](https://github.com/jarro2783/cxxopts) for argument parsing. All of
 these are header-only libraries in the libs directory, so there should be no
 difficulty getting these set up if you want to build chopt.
 
