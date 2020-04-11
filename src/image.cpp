@@ -142,19 +142,58 @@ DrawingInstructions create_instructions(const NoteTrack& track,
     return {rows, half_beat_lines, beat_lines, measure_lines, notes};
 }
 
+static void draw_vertical_lines(Image& image,
+                                const DrawingInstructions& instructions,
+                                const std::vector<double>& positions,
+                                const std::array<unsigned char, 3> colour)
+{
+    for (auto pos : positions) {
+        auto row
+            = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
+                           [=](const auto x) { return x.end > pos; });
+        auto x
+            = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
+        auto y = MARGIN
+            + DIST_BETWEEN_MEASURES
+                * static_cast<int>(
+                    std::distance(instructions.rows.cbegin(), row));
+        image.draw_line(x, y, x, y + MEASURE_HEIGHT, colour.data());
+    }
+}
+
 static void draw_measures(Image& image, const DrawingInstructions& instructions)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
+    constexpr std::array<unsigned char, 3> grey {160, 160, 160};
+    constexpr std::array<unsigned char, 3> light_grey {224, 224, 224};
+
+    constexpr int RED_OFFSET = 15;
+    constexpr int YELLOW_OFFSET = 30;
+    constexpr int BLUE_OFFSET = 45;
+
+    draw_vertical_lines(image, instructions, instructions.beat_lines, grey);
+    draw_vertical_lines(image, instructions, instructions.half_beat_lines,
+                        light_grey);
 
     auto current_row = 0;
     for (const auto& row : instructions.rows) {
         auto y = DIST_BETWEEN_MEASURES * current_row + MARGIN;
         auto x_max = LEFT_MARGIN
             + static_cast<int>(BEAT_WIDTH * (row.end - row.start));
+        image.draw_line(LEFT_MARGIN, y + RED_OFFSET, x_max, y + RED_OFFSET,
+                        grey.data());
+        image.draw_line(LEFT_MARGIN, y + YELLOW_OFFSET, x_max,
+                        y + YELLOW_OFFSET, grey.data());
+        image.draw_line(LEFT_MARGIN, y + BLUE_OFFSET, x_max, y + BLUE_OFFSET,
+                        grey.data());
         image.draw_rectangle(LEFT_MARGIN, y, x_max, y + MEASURE_HEIGHT,
                              black.data(), 1.0, ~0U);
         ++current_row;
     }
+
+    // We do measure lines after the boxes because we want the measure lines to
+    // lie over the horizontal grey fretboard lines.
+    draw_vertical_lines(image, instructions, instructions.measure_lines, black);
 }
 
 static void draw_note(Image& image, int x, int y, NoteColour colour)
