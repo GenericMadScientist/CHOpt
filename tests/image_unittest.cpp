@@ -87,3 +87,52 @@ TEST_CASE("Drawn rows are handled correctly")
         REQUIRE(insts.rows == expected_rows);
     }
 }
+
+TEST_CASE("Beat lines are correct")
+{
+    SECTION("4/4 works fine")
+    {
+        const auto track = NoteTrack({{767}}, {}, {});
+        const auto insts = create_instructions(track, 192, SyncTrack());
+        const auto expected_half_beat_lines
+            = std::vector<double>({0.5, 1.5, 2.5, 3.5});
+        const auto expected_beat_lines = std::vector<double>({1.0, 2.0, 3.0});
+        const auto expected_measure_lines = std::vector<double>({0.0});
+
+        REQUIRE(insts.half_beat_lines == expected_half_beat_lines);
+        REQUIRE(insts.beat_lines == expected_beat_lines);
+        REQUIRE(insts.measure_lines == expected_measure_lines);
+    }
+
+    SECTION("4/8 works fine")
+    {
+        const auto track = NoteTrack({{767}}, {}, {});
+        const auto sync_track = SyncTrack({{0, 4, 8}});
+        const auto insts = create_instructions(track, 192, sync_track);
+        const auto expected_half_beat_lines = std::vector<double>(
+            {0.25, 0.75, 1.25, 1.75, 2.25, 2.75, 3.25, 3.75});
+        const auto expected_beat_lines
+            = std::vector<double>({0.5, 1.0, 1.5, 2.5, 3.0, 3.5});
+        const auto expected_measure_lines = std::vector<double>({0.0, 2.0});
+
+        REQUIRE(insts.half_beat_lines == expected_half_beat_lines);
+        REQUIRE(insts.beat_lines == expected_beat_lines);
+        REQUIRE(insts.measure_lines == expected_measure_lines);
+    }
+
+    SECTION("Combination of 4/4 and 4/8 works fine")
+    {
+        const auto track = NoteTrack({{1151}}, {}, {});
+        const auto sync_track = SyncTrack({{0, 4, 4}, {768, 4, 8}});
+        const auto insts = create_instructions(track, 192, sync_track);
+        const auto expected_half_beat_lines
+            = std::vector<double>({0.5, 1.5, 2.5, 3.5, 4.25, 4.75, 5.25, 5.75});
+        const auto expected_beat_lines
+            = std::vector<double>({1.0, 2.0, 3.0, 4.5, 5.0, 5.5});
+        const auto expected_measure_lines = std::vector<double>({0.0, 4.0});
+
+        REQUIRE(insts.half_beat_lines == expected_half_beat_lines);
+        REQUIRE(insts.beat_lines == expected_beat_lines);
+        REQUIRE(insts.measure_lines == expected_measure_lines);
+    }
+}

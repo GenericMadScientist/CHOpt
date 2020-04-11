@@ -38,6 +38,9 @@ struct DrawnNote {
 
 struct DrawingInstructions {
     std::vector<DrawnRow> rows;
+    std::vector<double> half_beat_lines;
+    std::vector<double> beat_lines;
+    std::vector<double> measure_lines;
     std::vector<DrawnNote> notes;
 };
 

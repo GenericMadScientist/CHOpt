@@ -46,6 +46,36 @@ static double get_beat_rate(const SyncTrack& sync_track,
     return BASE_BEAT_RATE * ts->numerator / ts->denominator;
 }
 
+static std::uint32_t get_numer(const SyncTrack& sync_track,
+                               std::int32_t resolution, double beat)
+{
+    constexpr auto BASE_NUMERATOR = 4U;
+
+    auto ts = std::find_if(
+        sync_track.time_sigs().cbegin(), sync_track.time_sigs().cend(),
+        [=](const auto& x) { return x.position > resolution * beat; });
+    if (ts == sync_track.time_sigs().cbegin()) {
+        return BASE_NUMERATOR;
+    }
+    --ts;
+    return ts->numerator;
+}
+
+static double get_denom(const SyncTrack& sync_track, std::int32_t resolution,
+                        double beat)
+{
+    constexpr double BASE_BEAT_RATE = 4.0;
+
+    auto ts = std::find_if(
+        sync_track.time_sigs().cbegin(), sync_track.time_sigs().cend(),
+        [=](const auto& x) { return x.position > resolution * beat; });
+    if (ts == sync_track.time_sigs().cbegin()) {
+        return 1.0;
+    }
+    --ts;
+    return BASE_BEAT_RATE / ts->denominator;
+}
+
 DrawingInstructions create_instructions(const NoteTrack& track,
                                         std::int32_t resolution,
                                         const SyncTrack& sync_track)
@@ -89,7 +119,27 @@ DrawingInstructions create_instructions(const NoteTrack& track,
         current_beat += row_length;
     }
 
-    return {rows, notes};
+    std::vector<double> half_beat_lines;
+    std::vector<double> beat_lines;
+    std::vector<double> measure_lines;
+    constexpr double HALF_BEAT = 0.5;
+    for (const auto& row : rows) {
+        auto start = row.start;
+        while (start < row.end) {
+            auto meas_length = get_beat_rate(sync_track, resolution, start);
+            auto numer = get_numer(sync_track, resolution, start);
+            auto denom = get_denom(sync_track, resolution, start);
+            measure_lines.push_back(start);
+            half_beat_lines.push_back(start + HALF_BEAT * denom);
+            for (auto i = 1U; i < numer; ++i) {
+                beat_lines.push_back(start + i * denom);
+                half_beat_lines.push_back(start + (i + HALF_BEAT) * denom);
+            }
+            start += meas_length;
+        }
+    }
+
+    return {rows, half_beat_lines, beat_lines, measure_lines, notes};
 }
 
 static void draw_measures(Image& image, const DrawingInstructions& instructions)
