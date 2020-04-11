@@ -92,7 +92,14 @@ DrawingInstructions create_instructions(const NoteTrack& track,
     for (const auto& note : track.notes()) {
         auto beat = note.position / static_cast<double>(resolution);
         auto length = note.length / static_cast<double>(resolution);
-        notes.push_back({beat, length, note.colour});
+        auto is_sp_note = false;
+        for (const auto& phrase : track.sp_phrases()) {
+            if (note.position >= phrase.position
+                && note.position < phrase.position + phrase.length) {
+                is_sp_note = true;
+            }
+        }
+        notes.push_back({beat, length, note.colour, is_sp_note});
         max_pos
             = std::max(max_pos, static_cast<int>(note.position + note.length));
     }
@@ -314,6 +321,65 @@ static void draw_note_circle(Image& image, int x, int y, NoteColour colour)
     }
 }
 
+static void draw_note_star(Image& image, int x, int y, NoteColour colour)
+{
+    constexpr std::array<unsigned char, 3> black {0, 0, 0};
+    constexpr std::array<unsigned char, 3> green {0, 255, 0};
+    constexpr std::array<unsigned char, 3> red {255, 0, 0};
+    constexpr std::array<unsigned char, 3> yellow {255, 255, 0};
+    constexpr std::array<unsigned char, 3> blue {0, 0, 255};
+    constexpr std::array<unsigned char, 3> orange {255, 165, 0};
+    constexpr std::array<unsigned char, 3> purple {128, 0, 128};
+
+    const unsigned char* colour_ptr = nullptr;
+    int offset = 0;
+    switch (colour) {
+    case NoteColour::Green:
+        colour_ptr = green.data();
+        offset = 0;
+        break;
+    case NoteColour::Red:
+        colour_ptr = red.data();
+        offset = RED_OFFSET;
+        break;
+    case NoteColour::Yellow:
+        colour_ptr = yellow.data();
+        offset = YELLOW_OFFSET;
+        break;
+    case NoteColour::Blue:
+        colour_ptr = blue.data();
+        offset = BLUE_OFFSET;
+        break;
+    case NoteColour::Orange:
+        colour_ptr = orange.data();
+        offset = ORANGE_OFFSET;
+        break;
+    case NoteColour::Open:
+        colour_ptr = purple.data();
+        offset = YELLOW_OFFSET;
+        break;
+    }
+
+    constexpr unsigned int POINTS_IN_STAR_POLYGON = 10;
+    auto points = CImg<int>(POINTS_IN_STAR_POLYGON, 2);
+    constexpr std::array<int, 20> coords {0, -6, 1, -2, 5, -2, 2,  1,  3, 5, 0,
+                                          2, -3, 5, -2, 1, -5, -2, -1, -2};
+    for (auto i = 0U; i < POINTS_IN_STAR_POLYGON; ++i) {
+        points(i, 0) = coords[2 * i] + x; // NOLINT
+        points(i, 1) = coords[2 * i + 1] + y + offset; // NOLINT
+    }
+
+    if (colour == NoteColour::Open) {
+        image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                             purple.data(), OPEN_NOTE_OPACITY);
+        image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                             black.data(), 1.0, ~0U);
+    } else {
+        image.draw_polygon(points, colour_ptr);
+        image.draw_polygon(points, black.data(), 1.0, ~0U);
+    }
+}
+
 static void draw_note(Image& image, const DrawingInstructions& instructions,
                       const DrawnNote& note)
 {
@@ -329,7 +395,11 @@ static void draw_note(Image& image, const DrawingInstructions& instructions,
     auto beats_along_row = note.beat - row_iter->start;
     auto x = LEFT_MARGIN + static_cast<int>(beats_along_row * BEAT_WIDTH);
     auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
-    draw_note_circle(image, x, y, note.colour);
+    if (note.is_sp_note) {
+        draw_note_star(image, x, y, note.colour);
+    } else {
+        draw_note_circle(image, x, y, note.colour);
+    }
 }
 
 Image create_path_image(const DrawingInstructions& instructions)

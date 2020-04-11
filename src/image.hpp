@@ -35,6 +35,7 @@ struct DrawnNote {
     double beat;
     double length;
     NoteColour colour;
+    bool is_sp_note;
 };
 
 struct DrawingInstructions {

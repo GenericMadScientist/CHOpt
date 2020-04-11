@@ -25,7 +25,7 @@
 static bool operator==(const DrawnNote& lhs, const DrawnNote& rhs)
 {
     return lhs.beat == Approx(rhs.beat) && lhs.length == Approx(rhs.length)
-        && lhs.colour == rhs.colour;
+        && lhs.colour == rhs.colour && lhs.is_sp_note == rhs.is_sp_note;
 }
 
 static bool operator==(const DrawnRow& lhs, const DrawnRow& rhs)
@@ -33,24 +33,39 @@ static bool operator==(const DrawnRow& lhs, const DrawnRow& rhs)
     return lhs.start == Approx(rhs.start) && lhs.end == Approx(rhs.end);
 }
 
-TEST_CASE("Non-SP non-sustains are handled correctly")
+TEST_CASE("Notes are handled correclty")
 {
-    const auto track = NoteTrack({{0}, {768, 0, NoteColour::Red}}, {}, {});
-    const auto insts = create_instructions(track, 192, SyncTrack());
-    const auto expected_notes = std::vector<DrawnNote>(
-        {{0.0, 0.0, NoteColour::Green}, {4.0, 0.0, NoteColour::Red}});
+    SECTION("Non-SP non-sustains are handled correctly")
+    {
+        const auto track = NoteTrack({{0}, {768, 0, NoteColour::Red}}, {}, {});
+        const auto insts = create_instructions(track, 192, SyncTrack());
+        const auto expected_notes
+            = std::vector<DrawnNote>({{0.0, 0.0, NoteColour::Green, false},
+                                      {4.0, 0.0, NoteColour::Red, false}});
 
-    REQUIRE(insts.notes == expected_notes);
-}
+        REQUIRE(insts.notes == expected_notes);
+    }
 
-TEST_CASE("Sustains are handled correctly")
-{
-    const auto track = NoteTrack({{0, 96}}, {}, {});
-    const auto insts = create_instructions(track, 192, SyncTrack());
-    const auto expected_notes
-        = std::vector<DrawnNote>({{0.0, 0.5, NoteColour::Green}});
+    SECTION("Sustains are handled correctly")
+    {
+        const auto track = NoteTrack({{0, 96}}, {}, {});
+        const auto insts = create_instructions(track, 192, SyncTrack());
+        const auto expected_notes
+            = std::vector<DrawnNote>({{0.0, 0.5, NoteColour::Green, false}});
 
-    REQUIRE(insts.notes == expected_notes);
+        REQUIRE(insts.notes == expected_notes);
+    }
+
+    SECTION("SP notes are recorded")
+    {
+        const auto track = NoteTrack({{0}, {768}}, {{768, 100}}, {});
+        const auto insts = create_instructions(track, 192, SyncTrack());
+        const auto expected_notes
+            = std::vector<DrawnNote>({{0.0, 0.0, NoteColour::Green, false},
+                                      {4.0, 0.0, NoteColour::Green, true}});
+
+        REQUIRE(insts.notes == expected_notes);
+    }
 }
 
 TEST_CASE("Drawn rows are handled correctly")
