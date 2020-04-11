@@ -29,7 +29,13 @@ constexpr int LEFT_MARGIN = 31;
 constexpr int MARGIN = 32;
 constexpr int MAX_BEATS_PER_LINE = 16;
 constexpr int MEASURE_HEIGHT = 61;
+constexpr float OPEN_NOTE_OPACITY = 0.5F;
 constexpr int DIST_BETWEEN_MEASURES = MEASURE_HEIGHT + MARGIN;
+
+constexpr int RED_OFFSET = 15;
+constexpr int YELLOW_OFFSET = 30;
+constexpr int BLUE_OFFSET = 45;
+constexpr int ORANGE_OFFSET = 60;
 
 static double get_beat_rate(const SyncTrack& sync_track,
                             std::int32_t resolution, double beat)
@@ -85,8 +91,10 @@ DrawingInstructions create_instructions(const NoteTrack& track,
 
     for (const auto& note : track.notes()) {
         auto beat = note.position / static_cast<double>(resolution);
-        notes.push_back({beat, note.colour});
-        max_pos = std::max(max_pos, static_cast<int>(note.position));
+        auto length = note.length / static_cast<double>(resolution);
+        notes.push_back({beat, length, note.colour});
+        max_pos
+            = std::max(max_pos, static_cast<int>(note.position + note.length));
     }
 
     const auto max_beat = max_pos / static_cast<double>(resolution);
@@ -167,10 +175,6 @@ static void draw_measures(Image& image, const DrawingInstructions& instructions)
     constexpr std::array<unsigned char, 3> grey {160, 160, 160};
     constexpr std::array<unsigned char, 3> light_grey {224, 224, 224};
 
-    constexpr int RED_OFFSET = 15;
-    constexpr int YELLOW_OFFSET = 30;
-    constexpr int BLUE_OFFSET = 45;
-
     draw_vertical_lines(image, instructions, instructions.beat_lines, grey);
     draw_vertical_lines(image, instructions, instructions.half_beat_lines,
                         light_grey);
@@ -196,7 +200,80 @@ static void draw_measures(Image& image, const DrawingInstructions& instructions)
     draw_vertical_lines(image, instructions, instructions.measure_lines, black);
 }
 
-static void draw_note(Image& image, int x, int y, NoteColour colour)
+static void draw_note_sustain(Image& image,
+                              const DrawingInstructions& instructions,
+                              const DrawnNote& note)
+{
+    constexpr std::array<unsigned char, 3> green {0, 255, 0};
+    constexpr std::array<unsigned char, 3> red {255, 0, 0};
+    constexpr std::array<unsigned char, 3> yellow {255, 255, 0};
+    constexpr std::array<unsigned char, 3> blue {0, 0, 255};
+    constexpr std::array<unsigned char, 3> orange {255, 165, 0};
+    constexpr std::array<unsigned char, 3> purple {128, 0, 128};
+
+    const unsigned char* colour = nullptr;
+    int offset = 0;
+    switch (note.colour) {
+    case NoteColour::Green:
+        colour = green.data();
+        offset = 0;
+        break;
+    case NoteColour::Red:
+        colour = red.data();
+        offset = RED_OFFSET;
+        break;
+    case NoteColour::Yellow:
+        colour = yellow.data();
+        offset = YELLOW_OFFSET;
+        break;
+    case NoteColour::Blue:
+        colour = blue.data();
+        offset = BLUE_OFFSET;
+        break;
+    case NoteColour::Orange:
+        colour = orange.data();
+        offset = ORANGE_OFFSET;
+        break;
+    case NoteColour::Open:
+        colour = purple.data();
+        offset = YELLOW_OFFSET;
+        break;
+    }
+
+    auto start = note.beat;
+    const auto end = note.beat + note.length;
+    auto row_iter
+        = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
+                       [&](const auto& r) { return r.end > note.beat; });
+    auto row
+        = static_cast<int>(std::distance(instructions.rows.cbegin(), row_iter));
+
+    while (start < end) {
+        auto sust_end = std::min(row_iter->end, end);
+        auto x_min = LEFT_MARGIN
+            + static_cast<int>(BEAT_WIDTH * (start - row_iter->start));
+        // -1 is so sustains that cross rows do not go over the ending line of a
+        // row.
+        auto x_max = LEFT_MARGIN
+            + static_cast<int>(BEAT_WIDTH * (sust_end - row_iter->start)) - 1;
+        if (x_min <= x_max) {
+            auto y = MARGIN + DIST_BETWEEN_MEASURES * row + offset;
+            if (note.colour == NoteColour::Open) {
+                constexpr int OPEN_SUST_RADIUS = 23;
+                image.draw_rectangle(x_min, y - OPEN_SUST_RADIUS, x_max,
+                                     y + OPEN_SUST_RADIUS, colour,
+                                     OPEN_NOTE_OPACITY);
+            } else {
+                image.draw_rectangle(x_min, y - 3, x_max, y + 3, colour);
+            }
+        }
+        start = sust_end;
+        ++row_iter;
+        ++row;
+    }
+}
+
+static void draw_note_circle(Image& image, int x, int y, NoteColour colour)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr std::array<unsigned char, 3> green {0, 255, 0};
@@ -233,13 +310,30 @@ static void draw_note(Image& image, int x, int y, NoteColour colour)
         image.draw_circle(x, y + ORANGE_OFFSET, RADIUS, black.data(), 1.0, ~0U);
         break;
     case NoteColour::Open:
-        image.draw_rectangle(x - RADIUS, y - RADIUS, x + RADIUS,
-                             y + MEASURE_HEIGHT + RADIUS, purple.data());
-        image.draw_rectangle(x - RADIUS, y - RADIUS, x + RADIUS,
-                             y + MEASURE_HEIGHT + RADIUS, black.data(), 1.0,
-                             ~0U);
+        image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                             purple.data(), OPEN_NOTE_OPACITY);
+        image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                             black.data(), 1.0, ~0U);
         break;
     }
+}
+
+static void draw_note(Image& image, const DrawingInstructions& instructions,
+                      const DrawnNote& note)
+{
+    if (note.length > 0.0) {
+        draw_note_sustain(image, instructions, note);
+    }
+
+    auto row_iter
+        = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
+                       [&](const auto& r) { return r.end > note.beat; });
+    auto row
+        = static_cast<int>(std::distance(instructions.rows.cbegin(), row_iter));
+    auto beats_along_row = note.beat - row_iter->start;
+    auto x = LEFT_MARGIN + static_cast<int>(beats_along_row * BEAT_WIDTH);
+    auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
+    draw_note_circle(image, x, y, note.colour);
 }
 
 Image create_path_image(const DrawingInstructions& instructions)
@@ -254,16 +348,7 @@ Image create_path_image(const DrawingInstructions& instructions)
     draw_measures(image, instructions);
 
     for (const auto& note : instructions.notes) {
-        auto row
-            = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
-                           [&](const auto& r) { return r.end > note.beat; });
-        auto beats_along_row = note.beat - row->start;
-        auto x = LEFT_MARGIN + static_cast<int>(beats_along_row * BEAT_WIDTH);
-        auto y = MARGIN
-            + (DIST_BETWEEN_MEASURES
-               * static_cast<int>(
-                   std::distance(instructions.rows.cbegin(), row)));
-        draw_note(image, x, y, note.colour);
+        draw_note(image, instructions, note);
     }
 
     return image;

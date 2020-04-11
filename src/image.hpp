@@ -33,6 +33,7 @@ struct DrawnRow {
 
 struct DrawnNote {
     double beat;
+    double length;
     NoteColour colour;
 };
 

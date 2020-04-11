@@ -24,7 +24,8 @@
 
 static bool operator==(const DrawnNote& lhs, const DrawnNote& rhs)
 {
-    return lhs.beat == Approx(rhs.beat) && lhs.colour == rhs.colour;
+    return lhs.beat == Approx(rhs.beat) && lhs.length == Approx(rhs.length)
+        && lhs.colour == rhs.colour;
 }
 
 static bool operator==(const DrawnRow& lhs, const DrawnRow& rhs)
@@ -32,12 +33,22 @@ static bool operator==(const DrawnRow& lhs, const DrawnRow& rhs)
     return lhs.start == Approx(rhs.start) && lhs.end == Approx(rhs.end);
 }
 
-TEST_CASE("Non-SP notes are handled correctly")
+TEST_CASE("Non-SP non-sustains are handled correctly")
 {
     const auto track = NoteTrack({{0}, {768, 0, NoteColour::Red}}, {}, {});
     const auto insts = create_instructions(track, 192, SyncTrack());
     const auto expected_notes = std::vector<DrawnNote>(
-        {{0.0, NoteColour::Green}, {4.0, NoteColour::Red}});
+        {{0.0, 0.0, NoteColour::Green}, {4.0, 0.0, NoteColour::Red}});
+
+    REQUIRE(insts.notes == expected_notes);
+}
+
+TEST_CASE("Sustains are handled correctly")
+{
+    const auto track = NoteTrack({{0, 96}}, {}, {});
+    const auto insts = create_instructions(track, 192, SyncTrack());
+    const auto expected_notes
+        = std::vector<DrawnNote>({{0.0, 0.5, NoteColour::Green}});
 
     REQUIRE(insts.notes == expected_notes);
 }
@@ -85,6 +96,14 @@ TEST_CASE("Drawn rows are handled correctly")
             = std::vector<DrawnRow>({{0.0, 16.0}, {16.0, 17.0}});
 
         REQUIRE(insts.rows == expected_rows);
+    }
+
+    SECTION("Enough rows are drawn for end of song sustains")
+    {
+        const auto track = NoteTrack({{0, 3840}}, {}, {});
+        const auto insts = create_instructions(track, 192, SyncTrack());
+
+        REQUIRE(insts.rows.size() == 2);
     }
 }
 
