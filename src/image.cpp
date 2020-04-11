@@ -283,10 +283,6 @@ static void draw_note_circle(Image& image, int x, int y, NoteColour colour)
     constexpr std::array<unsigned char, 3> orange {255, 165, 0};
     constexpr std::array<unsigned char, 3> purple {128, 0, 128};
     constexpr int RADIUS = 5;
-    constexpr int RED_OFFSET = 15;
-    constexpr int YELLOW_OFFSET = 30;
-    constexpr int BLUE_OFFSET = 45;
-    constexpr int ORANGE_OFFSET = 60;
 
     switch (colour) {
     case NoteColour::Green:
