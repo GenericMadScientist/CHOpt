@@ -26,18 +26,24 @@
 
 #include "chart.hpp"
 
+struct DrawnRow {
+    double start;
+    double end;
+};
+
 struct DrawnNote {
     double beat;
     NoteColour colour;
 };
 
 struct DrawingInstructions {
+    std::vector<DrawnRow> rows;
     std::vector<DrawnNote> notes;
-    int number_of_rows;
 };
 
 DrawingInstructions create_instructions(const NoteTrack& track,
-                                        std::int32_t resolution);
+                                        std::int32_t resolution,
+                                        const SyncTrack& sync_track);
 
 using Image = cimg_library::CImg<unsigned char>;
 

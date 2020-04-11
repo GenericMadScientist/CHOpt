@@ -25,14 +25,30 @@
 using namespace cimg_library;
 
 constexpr int BEAT_WIDTH = 60;
-constexpr int BEATS_PER_LINE = 16;
 constexpr int LEFT_MARGIN = 31;
 constexpr int MARGIN = 32;
+constexpr int MAX_BEATS_PER_LINE = 16;
 constexpr int MEASURE_HEIGHT = 61;
 constexpr int DIST_BETWEEN_MEASURES = MEASURE_HEIGHT + MARGIN;
 
+static double get_beat_rate(const SyncTrack& sync_track,
+                            std::int32_t resolution, double beat)
+{
+    constexpr double BASE_BEAT_RATE = 4.0;
+
+    auto ts = std::find_if(
+        sync_track.time_sigs().cbegin(), sync_track.time_sigs().cend(),
+        [=](const auto& x) { return x.position > resolution * beat; });
+    if (ts == sync_track.time_sigs().cbegin()) {
+        return BASE_BEAT_RATE;
+    }
+    --ts;
+    return BASE_BEAT_RATE * ts->numerator / ts->denominator;
+}
+
 DrawingInstructions create_instructions(const NoteTrack& track,
-                                        std::int32_t resolution)
+                                        std::int32_t resolution,
+                                        const SyncTrack& sync_track)
 {
     std::vector<DrawnNote> notes;
     int max_pos = 0;
@@ -43,21 +59,51 @@ DrawingInstructions create_instructions(const NoteTrack& track,
         max_pos = std::max(max_pos, static_cast<int>(note.position));
     }
 
-    const auto res_per_row = BEATS_PER_LINE * resolution;
-    const auto number_of_rows = 1 + max_pos / res_per_row;
+    const auto max_beat = max_pos / static_cast<double>(resolution);
+    auto current_beat = 0.0;
+    std::vector<DrawnRow> rows;
 
-    return {notes, number_of_rows};
+    while (current_beat <= max_beat) {
+        auto row_length = 0.0;
+        while (true) {
+            auto contribution = get_beat_rate(sync_track, resolution,
+                                              current_beat + row_length);
+            if (contribution > MAX_BEATS_PER_LINE && row_length == 0.0) {
+                // Break up a measure that spans more than a full row.
+                while (contribution > MAX_BEATS_PER_LINE) {
+                    rows.push_back(
+                        {current_beat, current_beat + MAX_BEATS_PER_LINE});
+                    current_beat += MAX_BEATS_PER_LINE;
+                    contribution -= MAX_BEATS_PER_LINE;
+                }
+            }
+            if (contribution + row_length > MAX_BEATS_PER_LINE) {
+                break;
+            }
+            row_length += contribution;
+            if (current_beat + row_length > max_beat) {
+                break;
+            }
+        }
+        rows.push_back({current_beat, current_beat + row_length});
+        current_beat += row_length;
+    }
+
+    return {rows, notes};
 }
 
-static void draw_measures(Image& image, int num_of_lines)
+static void draw_measures(Image& image, const DrawingInstructions& instructions)
 {
-    constexpr int LINE_WIDTH = 960;
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
 
-    for (auto i = 0; i < num_of_lines; ++i) {
-        auto y = DIST_BETWEEN_MEASURES * i + MARGIN;
-        image.draw_rectangle(LEFT_MARGIN, y, LEFT_MARGIN + LINE_WIDTH,
-                             y + MEASURE_HEIGHT, black.data(), 1.0, ~0U);
+    auto current_row = 0;
+    for (const auto& row : instructions.rows) {
+        auto y = DIST_BETWEEN_MEASURES * current_row + MARGIN;
+        auto x_max = LEFT_MARGIN
+            + static_cast<int>(BEAT_WIDTH * (row.end - row.start));
+        image.draw_rectangle(LEFT_MARGIN, y, x_max, y + MEASURE_HEIGHT,
+                             black.data(), 1.0, ~0U);
+        ++current_row;
     }
 }
 
@@ -113,16 +159,21 @@ Image create_path_image(const DrawingInstructions& instructions)
     constexpr unsigned char WHITE = 255;
 
     auto height = static_cast<unsigned int>(
-        MARGIN + DIST_BETWEEN_MEASURES * instructions.number_of_rows);
+        MARGIN + DIST_BETWEEN_MEASURES * instructions.rows.size());
 
     CImg<unsigned char> image(IMAGE_WIDTH, height, 1, 3, WHITE);
-    draw_measures(image, instructions.number_of_rows);
+    draw_measures(image, instructions);
 
     for (const auto& note : instructions.notes) {
-        auto beats_along_row = std::fmod(note.beat, BEATS_PER_LINE);
-        auto row = static_cast<int>(note.beat / BEATS_PER_LINE);
+        auto row
+            = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
+                           [&](const auto& r) { return r.end > note.beat; });
+        auto beats_along_row = note.beat - row->start;
         auto x = LEFT_MARGIN + static_cast<int>(beats_along_row * BEAT_WIDTH);
-        auto y = MARGIN + (DIST_BETWEEN_MEASURES * row);
+        auto y = MARGIN
+            + (DIST_BETWEEN_MEASURES
+               * static_cast<int>(
+                   std::distance(instructions.rows.cbegin(), row)));
         draw_note(image, x, y, note.colour);
     }
 
