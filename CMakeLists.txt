@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.15.0)
 
 project(chopt
-    VERSION 0.1.0
-    DESCRIPTION "A tool to generate optimal SP paths in Clone Hero"
+    VERSION 0.2.0
+    DESCRIPTION "A tool to generate optimal SP paths for Clone Hero"
     LANGUAGES CXX)
 
 # Require standard C++17
