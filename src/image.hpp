@@ -20,13 +20,27 @@
 #define CHOPT_IMAGE_HPP
 
 #include <cstdint>
+#include <vector>
 
 #include "cimg_wrapper.hpp"
 
 #include "chart.hpp"
 
+struct DrawnNote {
+    double beat;
+    NoteColour colour;
+};
+
+struct DrawingInstructions {
+    std::vector<DrawnNote> notes;
+    int number_of_rows;
+};
+
+DrawingInstructions create_instructions(const NoteTrack& track,
+                                        std::int32_t resolution);
+
 using Image = cimg_library::CImg<unsigned char>;
 
-Image create_path_image(const NoteTrack& track, std::int32_t resolution);
+Image create_path_image(const DrawingInstructions& instructions);
 
 #endif

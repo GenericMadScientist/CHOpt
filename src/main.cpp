@@ -81,7 +81,9 @@ int main(int argc, char* argv[])
         const auto& track = chart.note_track(difficulty);
 
         if (result["blank"].as<bool>()) {
-            const auto image = create_path_image(track, chart.resolution());
+            const auto instructions
+                = create_instructions(track, chart.resolution());
+            const auto image = create_path_image(instructions);
             image.save("blank.bmp");
         } else {
             const auto processed_track
