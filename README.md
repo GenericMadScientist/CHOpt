@@ -14,35 +14,34 @@ them.
 
 ## Usage
 
-This is a command-line program. Specify the filename with -f or --file and the
-difficulty with -d or --diff, like so:
+This is a command-line program. An example usage to path Trogdor on Hard and
+save the output to trogdor_path.bmp is
 
 ```
-> chopt.exe -f trogdor.chart -d hard
+> chopt.exe -f trogdor.chart -d hard -o trogdor_path.bmp
 ```
 
 The difficulties are lower case (easy/medium/hard/expert) and defaults to
-expert if none is provided. The full list of options can be listed by using -h
-or --help.
+expert if none is provided. The full set of options can be listed by using -h or
+--help.
 
 ## Limitations
 
-This is version 0.1, so right now the program is quite limited. There is no
+This is version 0.2, so right now the program is quite limited. There is no
 support for squeezing or early whammy, the only supported instrument is five
-fret guitar, only .chart files are accepted, and there is no option to output
-the path as an image. Also, the performance is currently quite poor (GH3 Flames
-takes 16 minutes on my computer, and the runtime blows up horribly for more
-complicated to path songs). I aim to address all of these issues in subsequent
-versions. For now, if you want an image then please check out
-Guitar_Hero_Tools.
+fret guitar, and only .chart files are accepted. The performance is currently
+quite poor (GH3 Flames takes 16 minutes on my computer, and the runtime blows up
+horribly for more complicated to path songs). I aim to address all of these
+issues in subsequent versions.
 
 ## Dependencies
 
-This program uses [Catch2](https://github.com/catchorg/Catch2) for tests,
-[CImg](https://cimg.eu/) to produce images, and
-[cxxopts](https://github.com/jarro2783/cxxopts) for argument parsing. All of
-these are header-only libraries in the libs directory, so there should be no
-difficulty getting these set up if you want to build chopt.
+* [Catch2](https://github.com/catchorg/Catch2) 2.11.1 for tests
+* [CImg](https://cimg.eu/) 2.9.0 to produce images
+* [cxxopts](https://github.com/jarro2783/cxxopts) 2.2.0 for argument parsing
+
+All of these are header-only libraries in the libs directory, so there should
+be no difficulty getting these set up if you want to build chopt.
 
 ## Acknowledgements
 
