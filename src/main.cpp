@@ -38,8 +38,10 @@ int main(int argc, char* argv[])
         options.add_options()("b,blank", "Give a blank chart image")(
             "d,diff", "Difficulty",
             cxxopts::value<std::string>()->default_value("expert"))(
-            "f,file", "Chart filename",
-            cxxopts::value<std::string>())("h,help", "Print usage");
+            "f,file", "Chart filename", cxxopts::value<std::string>())(
+            "o,output", "Location to save output image (must be a .bmp)",
+            cxxopts::value<std::string>()->default_value("path.bmp"))(
+            "h,help", "Print usage");
 
         auto result = options.parse(argc, argv);
 
@@ -54,6 +56,13 @@ int main(int argc, char* argv[])
 
         auto filename = result["file"].as<std::string>();
         auto diff_name = result["diff"].as<std::string>();
+        auto output_path = result["output"].as<std::string>();
+
+        if (output_path.size() < 4
+            || output_path.substr(output_path.size() - 4, 4) != ".bmp") {
+            std::cerr << "Image output must be a bitmap (.bmp)!" << std::endl;
+            return EXIT_FAILURE;
+        }
 
         auto difficulty = Difficulty::Expert;
         if (diff_name == "expert") {
@@ -94,7 +103,7 @@ int main(int argc, char* argv[])
             std::cout << processed_track.path_summary(path) << std::endl;
         }
         const auto image = create_path_image(instructions);
-        image.save("blank.bmp");
+        image.save(output_path.c_str());
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
