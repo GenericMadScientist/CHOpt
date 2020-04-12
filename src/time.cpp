@@ -24,7 +24,24 @@
 TimeConverter::TimeConverter(const SyncTrack& sync_track,
                              std::int32_t resolution)
 {
+    constexpr double MS_PER_MINUTE = 60000.0;
+
     auto last_tick = 0U;
+    auto last_bpm = DEFAULT_BPM;
+    auto last_time = 0.0;
+
+    for (const auto& bpm : sync_track.bpms()) {
+        last_time += ((bpm.position - last_tick) * MS_PER_MINUTE)
+            / (static_cast<double>(resolution) * last_bpm);
+        const auto beat = static_cast<double>(bpm.position) / resolution;
+        m_beat_timestamps.push_back({Beat(beat), Second(last_time)});
+        last_bpm = bpm.bpm;
+        last_tick = bpm.position;
+    }
+
+    m_last_bpm = last_bpm;
+
+    last_tick = 0U;
     auto last_beat_rate = DEFAULT_BEAT_RATE;
     auto last_measure = 0.0;
 
@@ -39,7 +56,44 @@ TimeConverter::TimeConverter(const SyncTrack& sync_track,
 
     m_last_beat_rate = last_beat_rate;
 
+    assert(!m_beat_timestamps.empty()); // NOLINT
     assert(!m_measure_timestamps.empty()); // NOLINT
+}
+
+Second TimeConverter::beats_to_seconds(Beat beats) const
+{
+    const auto pos = std::lower_bound(
+        m_beat_timestamps.cbegin(), m_beat_timestamps.cend(), beats,
+        [](const auto& x, const auto& y) { return x.beat < y; });
+    if (pos == m_beat_timestamps.cend()) {
+        const auto& back = m_beat_timestamps.back();
+        return back.time + (beats - back.beat).to_second(m_last_bpm);
+    }
+    if (pos == m_beat_timestamps.cbegin()) {
+        return pos->time - (pos->beat - beats).to_second(DEFAULT_BPM);
+    }
+    const auto prev = pos - 1;
+    return prev->time
+        + (pos->time - prev->time)
+        * ((beats - prev->beat) / (pos->beat - prev->beat));
+}
+
+Beat TimeConverter::seconds_to_beats(Second seconds) const
+{
+    const auto pos = std::lower_bound(
+        m_beat_timestamps.cbegin(), m_beat_timestamps.cend(), seconds,
+        [](const auto& x, const auto& y) { return x.time < y; });
+    if (pos == m_beat_timestamps.cend()) {
+        const auto& back = m_beat_timestamps.back();
+        return back.beat + (seconds - back.time).to_beat(m_last_bpm);
+    }
+    if (pos == m_beat_timestamps.cbegin()) {
+        return pos->beat - (pos->time - seconds).to_beat(DEFAULT_BPM);
+    }
+    const auto prev = pos - 1;
+    return prev->beat
+        + (pos->beat - prev->beat)
+        * ((seconds - prev->time) / (pos->time - prev->time));
 }
 
 Measure TimeConverter::beats_to_measures(Beat beats) const
@@ -76,4 +130,14 @@ Beat TimeConverter::measures_to_beats(Measure measures) const
     return prev->beat
         + (pos->beat - prev->beat)
         * ((measures - prev->measure) / (pos->measure - prev->measure));
+}
+
+Second TimeConverter::measures_to_seconds(Measure measures) const
+{
+    return beats_to_seconds(measures_to_beats(measures));
+}
+
+Measure TimeConverter::seconds_to_measures(Second seconds) const
+{
+    return beats_to_measures(seconds_to_beats(seconds));
 }

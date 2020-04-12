@@ -57,7 +57,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     SECTION("Works correctly over 4/4")
     {
         std::vector<TimeSignature> time_sigs {{0, 4, 4}};
-        SpData sp_data(track, 192, SyncTrack(time_sigs));
+        SpData sp_data(track, 192, SyncTrack(time_sigs, {}));
 
         REQUIRE(sp_data
                     .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
@@ -76,7 +76,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     SECTION("Works correctly over 3/4")
     {
         std::vector<TimeSignature> time_sigs {{0, 3, 4}};
-        SpData sp_data(track, 192, SyncTrack(time_sigs));
+        SpData sp_data(track, 192, SyncTrack(time_sigs, {}));
 
         REQUIRE(sp_data
                     .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
@@ -95,7 +95,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     SECTION("Works correctly over changing time signatures")
     {
         std::vector<TimeSignature> time_sigs {{0, 4, 4}, {384, 3, 4}};
-        SpData sp_data(track, 192, SyncTrack(time_sigs));
+        SpData sp_data(track, 192, SyncTrack(time_sigs, {}));
 
         REQUIRE(sp_data
                     .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
@@ -114,7 +114,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
     SECTION("Returns -1 if SP runs out")
     {
         std::vector<TimeSignature> time_sigs {{0, 3, 4}, {384, 4, 4}};
-        SpData sp_data(track, 192, SyncTrack(time_sigs));
+        SpData sp_data(track, 192, SyncTrack(time_sigs, {}));
 
         REQUIRE(sp_data
                     .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},

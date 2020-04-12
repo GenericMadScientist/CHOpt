@@ -349,3 +349,29 @@ std::string ProcessedTrack::path_summary(const Path& path) const
 
     return stream.str();
 }
+
+Beat front_end(const Point& point, const TimeConverter& converter)
+{
+    constexpr double FRONT_END = 0.07;
+
+    if (point.is_hold_point) {
+        return point.position.beat;
+    }
+
+    auto time = converter.beats_to_seconds(point.position.beat).value();
+    time -= FRONT_END;
+    return converter.seconds_to_beats(Second(time));
+}
+
+Beat back_end(const Point& point, const TimeConverter& converter)
+{
+    constexpr double BACK_END = 0.07;
+
+    if (point.is_hold_point) {
+        return point.position.beat;
+    }
+
+    auto time = converter.beats_to_seconds(point.position.beat).value();
+    time += BACK_END;
+    return converter.seconds_to_beats(Second(time));
+}

@@ -24,14 +24,15 @@
 
 #include "chart.hpp"
 
-// We really do want to be able to compare Beats and Measures for equality in
-// tests.
+// We really do want to be able to compare Beats, Measures, and Seconds for
+// equality in tests.
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wfloat-equal"
 #endif
 
 class Measure;
+class Second;
 
 class Beat {
 private:
@@ -43,6 +44,7 @@ public:
     {
     }
     [[nodiscard]] double value() const { return m_value; }
+    [[nodiscard]] Second to_second(uint32_t bpm) const;
     [[nodiscard]] Measure to_measure(double beat_rate) const;
 
     friend bool operator<(const Beat& lhs, const Beat& rhs)
@@ -194,9 +196,98 @@ public:
     }
 };
 
+class Second {
+private:
+    double m_value;
+
+public:
+    explicit Second(double value)
+        : m_value {value}
+    {
+    }
+    [[nodiscard]] double value() const { return m_value; }
+    [[nodiscard]] Beat to_beat(uint32_t bpm) const
+    {
+        constexpr double MS_PER_MINUTE = 60000.0;
+        return Beat(m_value * bpm / MS_PER_MINUTE);
+    }
+
+    friend bool operator<(const Second& lhs, const Second& rhs)
+    {
+        return lhs.m_value < rhs.m_value;
+    }
+    friend bool operator>(const Second& lhs, const Second& rhs)
+    {
+        return rhs < lhs;
+    }
+    friend bool operator<=(const Second& lhs, const Second& rhs)
+    {
+        return !(lhs > rhs);
+    }
+    friend bool operator>=(const Second& lhs, const Second& rhs)
+    {
+        return !(lhs < rhs);
+    }
+    friend bool operator==(const Second& lhs, const Second& rhs)
+    {
+        return lhs.m_value == rhs.m_value;
+    }
+    friend bool operator!=(const Second& lhs, const Second& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    Second& operator+=(const Second& rhs)
+    {
+        m_value += rhs.m_value;
+        return *this;
+    }
+
+    Second& operator-=(const Second& rhs)
+    {
+        m_value -= rhs.m_value;
+        return *this;
+    }
+
+    Second& operator*=(double rhs)
+    {
+        m_value *= rhs;
+        return *this;
+    }
+
+    friend Second operator+(Second lhs, const Second& rhs)
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    friend Second operator-(Second lhs, const Second& rhs)
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
+    friend Second operator*(Second lhs, double rhs)
+    {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    friend double operator/(const Second& lhs, const Second& rhs)
+    {
+        return lhs.m_value / rhs.m_value;
+    }
+};
+
 inline Measure Beat::to_measure(double beat_rate) const
 {
     return Measure(m_value / beat_rate);
+}
+
+inline Second Beat::to_second(uint32_t bpm) const
+{
+    constexpr double MS_PER_MINUTE = 60000.0;
+    return Second(m_value * MS_PER_MINUTE / bpm);
 }
 
 #ifdef __clang__
@@ -210,19 +301,31 @@ struct Position {
 
 class TimeConverter {
 private:
+    struct BeatTimestamp {
+        Beat beat;
+        Second time;
+    };
+
     struct MeasureTimestamp {
         Measure measure;
         Beat beat;
     };
 
+    static constexpr uint32_t DEFAULT_BPM = 120000;
     static constexpr double DEFAULT_BEAT_RATE = 4.0;
+    std::vector<BeatTimestamp> m_beat_timestamps;
     std::vector<MeasureTimestamp> m_measure_timestamps;
     double m_last_beat_rate;
+    uint32_t m_last_bpm;
 
 public:
     TimeConverter(const SyncTrack& sync_track, std::int32_t resolution);
+    [[nodiscard]] Second beats_to_seconds(Beat beats) const;
+    [[nodiscard]] Beat seconds_to_beats(Second seconds) const;
     [[nodiscard]] Measure beats_to_measures(Beat beats) const;
     [[nodiscard]] Beat measures_to_beats(Measure measures) const;
+    [[nodiscard]] Second measures_to_seconds(Measure measures) const;
+    [[nodiscard]] Measure seconds_to_measures(Second seconds) const;
 };
 
 #endif

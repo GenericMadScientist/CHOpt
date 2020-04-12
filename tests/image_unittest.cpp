@@ -82,8 +82,8 @@ TEST_CASE("Drawn rows are handled correctly")
     SECTION("3/4 and 3/8 are coped with")
     {
         const auto track = NoteTrack({{2450}}, {}, {});
-        const auto sync_track
-            = SyncTrack({{0, 4, 4}, {768, 3, 4}, {1344, 3, 8}, {1632, 4, 4}});
+        const auto sync_track = SyncTrack(
+            {{0, 4, 4}, {768, 3, 4}, {1344, 3, 8}, {1632, 4, 4}}, {});
         const auto insts = create_instructions(track, 192, sync_track);
         const auto expected_rows
             = std::vector<DrawnRow>({{0.0, 12.5}, {12.5, 16.5}});
@@ -95,7 +95,7 @@ TEST_CASE("Drawn rows are handled correctly")
     {
         const auto track = NoteTrack({{768}}, {}, {});
         const auto sync_track
-            = SyncTrack({{0, 4, 4}, {767, 3, 4}, {1344, 3, 8}});
+            = SyncTrack({{0, 4, 4}, {767, 3, 4}, {1344, 3, 8}}, {});
         const auto insts = create_instructions(track, 192, sync_track);
         const auto expected_rows = std::vector<DrawnRow>({{0.0, 7.0}});
 
@@ -105,7 +105,7 @@ TEST_CASE("Drawn rows are handled correctly")
     SECTION("x/4 for x > 16 is coped with")
     {
         const auto track = NoteTrack({{0}}, {}, {});
-        const auto sync_track = SyncTrack({{0, 17, 4}});
+        const auto sync_track = SyncTrack({{0, 17, 4}}, {});
         const auto insts = create_instructions(track, 192, sync_track);
         const auto expected_rows
             = std::vector<DrawnRow>({{0.0, 16.0}, {16.0, 17.0}});
@@ -141,7 +141,7 @@ TEST_CASE("Beat lines are correct")
     SECTION("4/8 works fine")
     {
         const auto track = NoteTrack({{767}}, {}, {});
-        const auto sync_track = SyncTrack({{0, 4, 8}});
+        const auto sync_track = SyncTrack({{0, 4, 8}}, {});
         const auto insts = create_instructions(track, 192, sync_track);
         const auto expected_half_beat_lines = std::vector<double>(
             {0.25, 0.75, 1.25, 1.75, 2.25, 2.75, 3.25, 3.75});
@@ -157,7 +157,7 @@ TEST_CASE("Beat lines are correct")
     SECTION("Combination of 4/4 and 4/8 works fine")
     {
         const auto track = NoteTrack({{1151}}, {}, {});
-        const auto sync_track = SyncTrack({{0, 4, 4}, {768, 4, 8}});
+        const auto sync_track = SyncTrack({{0, 4, 4}, {768, 4, 8}}, {});
         const auto insts = create_instructions(track, 192, sync_track);
         const auto expected_half_beat_lines
             = std::vector<double>({0.5, 1.5, 2.5, 3.5, 4.25, 4.75, 5.25, 5.75});
