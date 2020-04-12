@@ -79,18 +79,22 @@ int main(int argc, char* argv[])
                               std::istreambuf_iterator<char>()};
         const auto chart = Chart::parse_chart(contents);
         const auto& track = chart.note_track(difficulty);
+        auto instructions = create_instructions(track, chart.resolution(),
+                                                chart.sync_track());
 
-        if (result["blank"].as<bool>()) {
-            const auto instructions = create_instructions(
-                track, chart.resolution(), chart.sync_track());
-            const auto image = create_path_image(instructions);
-            image.save("blank.bmp");
-        } else {
+        if (!result["blank"].as<bool>()) {
             const auto processed_track
                 = ProcessedTrack(track, chart.resolution(), chart.sync_track());
             const auto path = processed_track.optimal_path();
+            for (const auto& act : path.activations) {
+                auto start = act.act_start->position.beat.value();
+                auto end = act.act_end->position.beat.value();
+                instructions.blue_ranges.emplace_back(start, end);
+            }
             std::cout << processed_track.path_summary(path) << std::endl;
         }
+        const auto image = create_path_image(instructions);
+        image.save("blank.bmp");
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;

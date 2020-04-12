@@ -46,6 +46,7 @@ struct DrawingInstructions {
     std::vector<double> measure_lines;
     std::vector<DrawnNote> notes;
     std::vector<std::tuple<double, double>> green_ranges;
+    std::vector<std::tuple<double, double>> blue_ranges;
 };
 
 DrawingInstructions create_instructions(const NoteTrack& track,

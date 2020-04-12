@@ -162,8 +162,8 @@ DrawingInstructions create_instructions(const NoteTrack& track,
         green_ranges.emplace_back(start, end);
     }
 
-    return {rows,          half_beat_lines, beat_lines,
-            measure_lines, notes,           green_ranges};
+    return {rows,  half_beat_lines, beat_lines, measure_lines,
+            notes, green_ranges,    {}};
 }
 
 static void draw_vertical_lines(Image& image,
@@ -411,11 +411,10 @@ static void draw_note(Image& image, const DrawingInstructions& instructions,
     }
 }
 
-static void draw_green_range(Image& image,
-                             const DrawingInstructions& instructions,
-                             std::tuple<double, double> range)
+static void draw_range(Image& image, const DrawingInstructions& instructions,
+                       std::array<unsigned char, 3> colour,
+                       std::tuple<double, double> range)
 {
-    constexpr std::array<unsigned char, 3> green {0, 255, 0};
     constexpr float RANGE_OPACITY = 0.25F;
 
     auto start = std::get<0>(range);
@@ -437,7 +436,7 @@ static void draw_green_range(Image& image,
         if (x_min <= x_max) {
             auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
             image.draw_rectangle(x_min, y, x_max, y + MEASURE_HEIGHT,
-                                 green.data(), RANGE_OPACITY);
+                                 colour.data(), RANGE_OPACITY);
         }
         start = block_end;
         ++row_iter;
@@ -447,6 +446,9 @@ static void draw_green_range(Image& image,
 
 Image create_path_image(const DrawingInstructions& instructions)
 {
+    constexpr std::array<unsigned char, 3> green {0, 255, 0};
+    constexpr std::array<unsigned char, 3> blue {0, 0, 255};
+
     constexpr unsigned int IMAGE_WIDTH = 1024;
     constexpr unsigned char WHITE = 255;
 
@@ -460,8 +462,11 @@ Image create_path_image(const DrawingInstructions& instructions)
         draw_note(image, instructions, note);
     }
 
-    for (const auto& green_range : instructions.green_ranges) {
-        draw_green_range(image, instructions, green_range);
+    for (const auto& range : instructions.green_ranges) {
+        draw_range(image, instructions, green, range);
+    }
+    for (const auto& range : instructions.blue_ranges) {
+        draw_range(image, instructions, blue, range);
     }
 
     return image;
