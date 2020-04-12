@@ -154,7 +154,16 @@ DrawingInstructions create_instructions(const NoteTrack& track,
         }
     }
 
-    return {rows, half_beat_lines, beat_lines, measure_lines, notes};
+    std::vector<std::tuple<double, double>> green_ranges;
+    for (const auto& phrase : track.sp_phrases()) {
+        auto start = phrase.position / static_cast<double>(resolution);
+        auto end = (phrase.position + phrase.length)
+            / static_cast<double>(resolution);
+        green_ranges.emplace_back(start, end);
+    }
+
+    return {rows,          half_beat_lines, beat_lines,
+            measure_lines, notes,           green_ranges};
 }
 
 static void draw_vertical_lines(Image& image,
@@ -402,6 +411,40 @@ static void draw_note(Image& image, const DrawingInstructions& instructions,
     }
 }
 
+static void draw_green_range(Image& image,
+                             const DrawingInstructions& instructions,
+                             std::tuple<double, double> range)
+{
+    constexpr std::array<unsigned char, 3> green {0, 255, 0};
+    constexpr float RANGE_OPACITY = 0.25F;
+
+    auto start = std::get<0>(range);
+    auto end = std::get<1>(range);
+    auto row_iter
+        = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
+                       [=](const auto& r) { return r.end > start; });
+    auto row
+        = static_cast<int>(std::distance(instructions.rows.cbegin(), row_iter));
+
+    while (start < end) {
+        auto block_end = std::min(row_iter->end, end);
+        auto x_min = LEFT_MARGIN
+            + static_cast<int>(BEAT_WIDTH * (start - row_iter->start));
+        // -1 is so blocks that cross rows do not go over the ending line of a
+        // row.
+        auto x_max = LEFT_MARGIN
+            + static_cast<int>(BEAT_WIDTH * (block_end - row_iter->start)) - 1;
+        if (x_min <= x_max) {
+            auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
+            image.draw_rectangle(x_min, y, x_max, y + MEASURE_HEIGHT,
+                                 green.data(), RANGE_OPACITY);
+        }
+        start = block_end;
+        ++row_iter;
+        ++row;
+    }
+}
+
 Image create_path_image(const DrawingInstructions& instructions)
 {
     constexpr unsigned int IMAGE_WIDTH = 1024;
@@ -415,6 +458,10 @@ Image create_path_image(const DrawingInstructions& instructions)
 
     for (const auto& note : instructions.notes) {
         draw_note(image, instructions, note);
+    }
+
+    for (const auto& green_range : instructions.green_ranges) {
+        draw_green_range(image, instructions, green_range);
     }
 
     return image;

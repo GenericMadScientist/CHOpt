@@ -170,3 +170,13 @@ TEST_CASE("Beat lines are correct")
         REQUIRE(insts.measure_lines == expected_measure_lines);
     }
 }
+
+TEST_CASE("Green ranges for SP phrases are added correctly")
+{
+    const auto track = NoteTrack({{1000}}, {{768, 384}}, {});
+    const auto insts = create_instructions(track, 192, SyncTrack());
+    const auto expected_green_ranges
+        = std::vector<std::tuple<double, double>>({{4.0, 6.0}});
+
+    REQUIRE(insts.green_ranges == expected_green_ranges);
+}

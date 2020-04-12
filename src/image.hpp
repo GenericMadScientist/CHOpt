@@ -20,6 +20,7 @@
 #define CHOPT_IMAGE_HPP
 
 #include <cstdint>
+#include <tuple>
 #include <vector>
 
 #include "cimg_wrapper.hpp"
@@ -44,6 +45,7 @@ struct DrawingInstructions {
     std::vector<double> beat_lines;
     std::vector<double> measure_lines;
     std::vector<DrawnNote> notes;
+    std::vector<std::tuple<double, double>> green_ranges;
 };
 
 DrawingInstructions create_instructions(const NoteTrack& track,
