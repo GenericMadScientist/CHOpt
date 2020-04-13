@@ -83,8 +83,4 @@ public:
     [[nodiscard]] std::string path_summary(const Path& path) const;
 };
 
-// Return the earliest and latest times a point can be hit.
-Beat hit_window_start(const Point& point, const TimeConverter& converter);
-Beat hit_window_end(const Point& point, const TimeConverter& converter);
-
 #endif

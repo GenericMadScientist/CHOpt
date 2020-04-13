@@ -31,48 +31,6 @@ static bool operator==(const Activation& lhs, const Activation& rhs)
         == std::tie(rhs.act_start, rhs.act_end);
 }
 
-TEST_CASE("hit_window_start and hit_window_end work correctly", "Timing window")
-{
-    const auto converter
-        = TimeConverter(SyncTrack({}, {{0, 150000}, {768, 200000}}), 192);
-
-    SECTION("Hit window starts for notes are correct")
-    {
-        REQUIRE(hit_window_start({{Beat(1.0), Measure(0.25)}, 50, false, false},
-                                 converter)
-                    .value()
-                == Approx(0.825));
-        REQUIRE(hit_window_start(
-                    {{Beat(4.1), Measure(1.025)}, 50, false, false}, converter)
-                    .value()
-                == Approx(3.9));
-    }
-
-    SECTION("Hit window ends for notes are correct")
-    {
-        REQUIRE(hit_window_end({{Beat(1.0), Measure(0.25)}, 50, false, false},
-                               converter)
-                    .value()
-                == Approx(1.175));
-        REQUIRE(hit_window_end({{Beat(3.9), Measure(0.975)}, 50, false, false},
-                               converter)
-                    .value()
-                == Approx(4.1));
-    }
-
-    SECTION("Hit window starts and ends for hold points are correct")
-    {
-        REQUIRE(hit_window_start({{Beat(4.1), Measure(1.025)}, 50, true, false},
-                                 converter)
-                    .value()
-                == Approx(4.1));
-        REQUIRE(hit_window_end({{Beat(3.9), Measure(0.975)}, 50, true, false},
-                               converter)
-                    .value()
-                == Approx(3.9));
-    }
-}
-
 TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
 {
     std::vector<Note> notes {{0}, {1536}, {3072}, {6144}};

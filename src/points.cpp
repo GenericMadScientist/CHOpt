@@ -94,3 +94,29 @@ PointSet::PointSet(const NoteTrack& track, std::int32_t resolution,
         point.value *= multiplier;
     }
 }
+
+Beat hit_window_start(const Point& point, const TimeConverter& converter)
+{
+    constexpr double FRONT_END = 0.07;
+
+    if (point.is_hold_point) {
+        return point.position.beat;
+    }
+
+    auto time = converter.beats_to_seconds(point.position.beat).value();
+    time -= FRONT_END;
+    return converter.seconds_to_beats(Second(time));
+}
+
+Beat hit_window_end(const Point& point, const TimeConverter& converter)
+{
+    constexpr double BACK_END = 0.07;
+
+    if (point.is_hold_point) {
+        return point.position.beat;
+    }
+
+    auto time = converter.beats_to_seconds(point.position.beat).value();
+    time += BACK_END;
+    return converter.seconds_to_beats(Second(time));
+}

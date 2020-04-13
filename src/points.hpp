@@ -45,4 +45,8 @@ public:
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
 };
 
+// Return the earliest and latest times a point can be hit.
+Beat hit_window_start(const Point& point, const TimeConverter& converter);
+Beat hit_window_end(const Point& point, const TimeConverter& converter);
+
 #endif
