@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "chart.hpp"
 #include "time.hpp"
 
 struct Point {
@@ -38,10 +39,8 @@ private:
     std::vector<Point> m_points;
 
 public:
-    explicit PointSet(std::vector<Point> points)
-        : m_points {std::move(points)}
-    {
-    }
+    PointSet(const NoteTrack& track, std::int32_t resolution,
+             const TimeConverter& converter);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
 };
