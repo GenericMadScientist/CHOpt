@@ -17,11 +17,13 @@
  */
 
 #include <algorithm>
+#include <iterator>
 #include <tuple>
 
 #include "catch.hpp"
 
 #include "optimiser.hpp"
+#include "points.hpp"
 
 static bool operator==(const Activation& lhs, const Activation& rhs)
 {
@@ -35,6 +37,11 @@ static bool operator==(const Point& lhs, const Point& rhs)
                     lhs.is_hold_point, lhs.is_sp_granting_note)
         == std::tie(rhs.position.beat, rhs.position.measure, rhs.value,
                     rhs.is_hold_point, rhs.is_sp_granting_note);
+}
+
+static bool operator==(const PointSet& set, const std::vector<Point>& points)
+{
+    return std::equal(set.cbegin(), set.cend(), points.cbegin(), points.cend());
 }
 
 TEST_CASE("Non-hold notes", "Non hold")
@@ -172,7 +179,7 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
         const auto track = NoteTrack(notes, {}, {});
         const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
 
-        REQUIRE(points.back().value == 4);
+        REQUIRE(std::prev(points.cend())->value == 4);
     }
 
     SECTION("Later hold points in extended sustains are multiplied")
@@ -187,7 +194,7 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
         const auto track = NoteTrack(notes, {}, {});
         const auto points = ProcessedTrack(track, 192, SyncTrack()).points();
 
-        REQUIRE(points.back().value == 2);
+        REQUIRE(std::prev(points.cend())->value == 2);
     }
 }
 

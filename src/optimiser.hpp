@@ -25,17 +25,9 @@
 #include <vector>
 
 #include "chart.hpp"
+#include "points.hpp"
 #include "sp.hpp"
 #include "time.hpp"
-
-struct Point {
-    Position position;
-    std::uint32_t value;
-    bool is_hold_point;
-    bool is_sp_granting_note;
-};
-
-using PointPtr = std::vector<Point>::const_iterator;
 
 struct ActivationCandidate {
     PointPtr act_start;
@@ -62,7 +54,7 @@ private:
     // The order of these members is important. We must have m_converter before
     // m_points.
     TimeConverter m_converter;
-    std::vector<Point> m_points;
+    PointSet m_points;
     SpData m_sp_data;
     std::uint32_t m_total_solo_boost;
 
@@ -78,7 +70,7 @@ private:
 public:
     ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
                    const SyncTrack& sync_track);
-    [[nodiscard]] const std::vector<Point>& points() const { return m_points; }
+    [[nodiscard]] const PointSet& points() const { return m_points; }
     [[nodiscard]] bool
     is_candidate_valid(const ActivationCandidate& activation) const;
     // Return the minimum and maximum amount of SP can be acquired between two
