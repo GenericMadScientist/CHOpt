@@ -146,7 +146,9 @@ bool ProcessedTrack::is_candidate_valid(
         return false;
     }
 
-    auto current_position = activation.act_start->position;
+    auto current_beat = hit_window_end(*activation.act_start, m_converter);
+    auto current_measure = m_converter.beats_to_measures(current_beat);
+    auto current_position = Position {current_beat, current_measure};
 
     auto sp_bar = activation.sp_bar;
     sp_bar.min() = std::max(sp_bar.min(), MINIMUM_SP_AMOUNT);
@@ -168,8 +170,10 @@ bool ProcessedTrack::is_candidate_valid(
         }
     }
 
+    auto ending_beat = hit_window_start(*activation.act_end, m_converter);
+    auto ending_meas = m_converter.beats_to_measures(ending_beat);
     sp_bar = m_sp_data.propagate_sp_over_whammy(
-        current_position, activation.act_end->position, sp_bar);
+        current_position, {ending_beat, ending_meas}, sp_bar);
     if (sp_bar.max() < 0.0) {
         return false;
     }
@@ -182,8 +186,9 @@ bool ProcessedTrack::is_candidate_valid(
         return true;
     }
 
-    auto end_meas = activation.act_end->position.measure;
-    auto meas_diff = next_point->position.measure - end_meas;
+    auto next_point_beat = hit_window_end(*next_point, m_converter);
+    auto next_point_meas = m_converter.beats_to_measures(next_point_beat);
+    auto meas_diff = next_point_meas - ending_meas;
     sp_bar.min() -= meas_diff.value() / MEASURES_PER_BAR;
 
     return sp_bar.min() < 0.0;
@@ -350,7 +355,7 @@ std::string ProcessedTrack::path_summary(const Path& path) const
     return stream.str();
 }
 
-Beat front_end(const Point& point, const TimeConverter& converter)
+Beat hit_window_start(const Point& point, const TimeConverter& converter)
 {
     constexpr double FRONT_END = 0.07;
 
@@ -363,7 +368,7 @@ Beat front_end(const Point& point, const TimeConverter& converter)
     return converter.seconds_to_beats(Second(time));
 }
 
-Beat back_end(const Point& point, const TimeConverter& converter)
+Beat hit_window_end(const Point& point, const TimeConverter& converter)
 {
     constexpr double BACK_END = 0.07;
 

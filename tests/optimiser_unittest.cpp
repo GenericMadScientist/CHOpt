@@ -197,45 +197,45 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("front_end and back_end work correctly", "Timing window")
+TEST_CASE("hit_window_start and hit_window_end work correctly", "Timing window")
 {
     const auto converter
         = TimeConverter(SyncTrack({}, {{0, 150000}, {768, 200000}}), 192);
 
-    SECTION("Front ends for notes are correct")
+    SECTION("Hit window starts for notes are correct")
     {
-        REQUIRE(
-            front_end({{Beat(1.0), Measure(0.25)}, 50, false, false}, converter)
-                .value()
-            == Approx(0.825));
-        REQUIRE(front_end({{Beat(4.1), Measure(1.025)}, 50, false, false},
-                          converter)
+        REQUIRE(hit_window_start({{Beat(1.0), Measure(0.25)}, 50, false, false},
+                                 converter)
+                    .value()
+                == Approx(0.825));
+        REQUIRE(hit_window_start(
+                    {{Beat(4.1), Measure(1.025)}, 50, false, false}, converter)
                     .value()
                 == Approx(3.9));
     }
 
-    SECTION("Back ends for notes are correct")
+    SECTION("Hit window ends for notes are correct")
     {
-        REQUIRE(
-            back_end({{Beat(1.0), Measure(0.25)}, 50, false, false}, converter)
-                .value()
-            == Approx(1.175));
-        REQUIRE(
-            back_end({{Beat(3.9), Measure(0.975)}, 50, false, false}, converter)
-                .value()
-            == Approx(4.1));
+        REQUIRE(hit_window_end({{Beat(1.0), Measure(0.25)}, 50, false, false},
+                               converter)
+                    .value()
+                == Approx(1.175));
+        REQUIRE(hit_window_end({{Beat(3.9), Measure(0.975)}, 50, false, false},
+                               converter)
+                    .value()
+                == Approx(4.1));
     }
 
-    SECTION("Front and back ends for hold points are correct")
+    SECTION("Hit window starts and ends for hold points are correct")
     {
-        REQUIRE(
-            front_end({{Beat(4.1), Measure(1.025)}, 50, true, false}, converter)
-                .value()
-            == Approx(4.1));
-        REQUIRE(
-            back_end({{Beat(3.9), Measure(0.975)}, 50, true, false}, converter)
-                .value()
-            == Approx(3.9));
+        REQUIRE(hit_window_start({{Beat(4.1), Measure(1.025)}, 50, true, false},
+                                 converter)
+                    .value()
+                == Approx(4.1));
+        REQUIRE(hit_window_end({{Beat(3.9), Measure(0.975)}, 50, true, false},
+                               converter)
+                    .value()
+                == Approx(3.9));
     }
 }
 
@@ -360,7 +360,7 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("is_activation_valid works with whammy", "Valid whammy acts")
+TEST_CASE("is_candidate_valid works with whammy", "Valid whammy acts")
 {
     std::vector<Note> notes {{0, 960}, {3840}, {6144}};
     std::vector<StarPower> phrases {{0, 7000}};
@@ -385,7 +385,7 @@ TEST_CASE("is_activation_valid works with whammy", "Valid whammy acts")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("is_activation_valid takes into account minimum SP", "Min SP")
+TEST_CASE("is_candidate_valid takes into account minimum SP", "Min SP")
 {
     std::vector<Note> notes {{0}, {1536}, {2304}, {3072}, {4608}};
     NoteTrack note_track(notes, {}, {});
@@ -407,6 +407,37 @@ TEST_CASE("is_activation_valid takes into account minimum SP", "Min SP")
         candidate.sp_bar.min() = 0.25;
 
         REQUIRE(!track.is_candidate_valid(candidate));
+    }
+}
+
+TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
+{
+    SECTION("Front end and back end of the activation endpoints are considered")
+    {
+        std::vector<Note> notes {{0}, {3110}};
+        NoteTrack note_track(notes, {}, {});
+        ProcessedTrack track(note_track, 192, SyncTrack());
+        const auto& points = track.points();
+        ActivationCandidate candidate {points.cbegin(),
+                                       points.cbegin() + 1,
+                                       {Beat(0.0), Measure(0.0)},
+                                       {0.5, 0.5}};
+
+        REQUIRE(track.is_candidate_valid(candidate));
+    }
+
+    SECTION("Next note can be squeezed late to avoid going too far")
+    {
+        std::vector<Note> notes {{0}, {3034}, {3053}};
+        NoteTrack note_track(notes, {}, {});
+        ProcessedTrack track(note_track, 192, SyncTrack());
+        const auto& points = track.points();
+        ActivationCandidate candidate {points.cbegin(),
+                                       points.cbegin() + 1,
+                                       {Beat(0.0), Measure(0.0)},
+                                       {0.5, 0.5}};
+
+        REQUIRE(track.is_candidate_valid(candidate));
     }
 }
 
