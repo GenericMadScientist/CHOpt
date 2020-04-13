@@ -240,8 +240,9 @@ Path ProcessedTrack::get_partial_path(
 void ProcessedTrack::add_point_to_partial_acts(
     PointPtr point, std::map<PointPtr, Path>& partial_paths) const
 {
-    const auto starting_beat = point->position.beat;
-    auto starting_pos = point->position;
+    const auto starting_beat = hit_window_start(*point, m_converter);
+    const auto starting_meas = m_converter.beats_to_measures(starting_beat);
+    Position starting_pos {starting_beat, starting_meas};
     std::vector<Path> paths;
 
     std::set<PointPtr> attained_act_ends;

@@ -37,7 +37,6 @@ static bool operator==(const Point& lhs, const Point& rhs)
                     rhs.is_hold_point, rhs.is_sp_granting_note);
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("Non-hold notes", "Non hold")
 {
     SECTION("Single notes give 50 points")
@@ -63,7 +62,6 @@ TEST_CASE("Non-hold notes", "Non hold")
     }
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("Hold notes", "Hold")
 {
     SECTION("Hold note points depend on resolution")
@@ -113,7 +111,6 @@ TEST_CASE("Hold notes", "Hold")
     }
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("Points are sorted", "Sorted")
 {
     const auto track = NoteTrack({{768, 15}, {770, 0}}, {}, {});
@@ -128,7 +125,6 @@ TEST_CASE("Points are sorted", "Sorted")
     REQUIRE(points == expected_points);
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("End of SP phrase points", "End of SP")
 {
     const auto track = NoteTrack({{768}, {960}, {1152}},
@@ -142,7 +138,6 @@ TEST_CASE("End of SP phrase points", "End of SP")
     REQUIRE(points == expected_points);
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("Combo multiplier is taken into account", "Multiplier")
 {
     SECTION("Multiplier applies to non-holds")
@@ -196,7 +191,6 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
     }
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("hit_window_start and hit_window_end work correctly", "Timing window")
 {
     const auto converter
@@ -239,7 +233,6 @@ TEST_CASE("hit_window_start and hit_window_end work correctly", "Timing window")
     }
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
 {
     std::vector<Note> notes {{0}, {1536}, {3072}, {6144}};
@@ -359,7 +352,6 @@ TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
     }
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("is_candidate_valid works with whammy", "Valid whammy acts")
 {
     std::vector<Note> notes {{0, 960}, {3840}, {6144}};
@@ -384,7 +376,6 @@ TEST_CASE("is_candidate_valid works with whammy", "Valid whammy acts")
     }
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("is_candidate_valid takes into account minimum SP", "Min SP")
 {
     std::vector<Note> notes {{0}, {1536}, {2304}, {3072}, {4608}};
@@ -567,6 +558,24 @@ TEST_CASE("optimal_path produces the correct path")
         auto opt_path = track.optimal_path();
 
         REQUIRE(opt_path.score_boost == 100);
+        REQUIRE(opt_path.activations == optimal_acts);
+    }
+
+    SECTION("Simplest song where a phrase must be hit early")
+    {
+        std::vector<Note> notes {{0},    {192},   {384},  {3224},
+                                 {9378}, {15714}, {15715}};
+        std::vector<StarPower> phrases {
+            {0, 50}, {192, 50}, {3224, 50}, {9378, 50}};
+        NoteTrack note_track(notes, phrases, {});
+        ProcessedTrack track(note_track, 12, SyncTrack());
+        const auto& points = track.points();
+        std::vector<Activation> optimal_acts {
+            {points.cbegin() + 2, points.cbegin() + 2},
+            {points.cbegin() + 5, points.cbegin() + 6}};
+        auto opt_path = track.optimal_path();
+
+        REQUIRE(opt_path.score_boost == 150);
         REQUIRE(opt_path.activations == optimal_acts);
     }
 }
