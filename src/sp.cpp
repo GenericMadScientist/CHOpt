@@ -54,7 +54,9 @@ SpData::SpData(const NoteTrack& track, std::int32_t resolution,
     : m_converter {TimeConverter(sync_track, resolution)}
     , m_beat_rates {form_beat_rates(resolution, sync_track)}
 {
-    std::vector<std::tuple<std::uint32_t, std::uint32_t>> ranges_as_ticks;
+    constexpr double EARLY_TIMING_WINDOW = 0.07;
+
+    std::vector<std::tuple<Beat, Beat>> ranges;
     for (const auto& note : track.notes()) {
         if (note.length == 0) {
             continue;
@@ -67,16 +69,21 @@ SpData::SpData(const NoteTrack& track, std::int32_t resolution,
         if (phrase == track.sp_phrases().cend()) {
             continue;
         }
-        ranges_as_ticks.emplace_back(note.position,
-                                     note.position + note.length);
-    }
-    std::sort(ranges_as_ticks.begin(), ranges_as_ticks.end());
 
-    if (!ranges_as_ticks.empty()) {
-        std::vector<std::tuple<std::uint32_t, std::uint32_t>> merged_ranges;
-        auto pair = ranges_as_ticks[0];
-        for (auto p = std::next(ranges_as_ticks.cbegin());
-             p < ranges_as_ticks.cend(); ++p) {
+        auto beat_start = Beat(static_cast<double>(note.position) / resolution);
+        auto second_start = m_converter.beats_to_seconds(beat_start).value();
+        second_start -= EARLY_TIMING_WINDOW;
+        beat_start = m_converter.seconds_to_beats(Second(second_start));
+        auto beat_end = Beat(static_cast<double>(note.position + note.length)
+                             / resolution);
+        ranges.emplace_back(beat_start, beat_end);
+    }
+    std::sort(ranges.begin(), ranges.end());
+
+    if (!ranges.empty()) {
+        std::vector<std::tuple<Beat, Beat>> merged_ranges;
+        auto pair = ranges[0];
+        for (auto p = std::next(ranges.cbegin()); p < ranges.cend(); ++p) {
             if (std::get<0>(*p) <= std::get<1>(pair)) {
                 std::get<1>(pair)
                     = std::max(std::get<1>(pair), std::get<1>(*p));
@@ -87,13 +94,10 @@ SpData::SpData(const NoteTrack& track, std::int32_t resolution,
         }
         merged_ranges.push_back(pair);
 
-        for (const auto& range : merged_ranges) {
-            auto start = static_cast<double>(std::get<0>(range)) / resolution;
-            auto end = static_cast<double>(std::get<1>(range)) / resolution;
-            auto start_meas = m_converter.beats_to_measures(Beat(start));
-            auto end_meas = m_converter.beats_to_measures(Beat(end));
-            m_whammy_ranges.push_back(
-                {{Beat(start), start_meas}, {Beat(end), end_meas}});
+        for (auto [start, end] : merged_ranges) {
+            auto start_meas = m_converter.beats_to_measures(start);
+            auto end_meas = m_converter.beats_to_measures(end);
+            m_whammy_ranges.push_back({{start, start_meas}, {end, end_meas}});
         }
     }
 }

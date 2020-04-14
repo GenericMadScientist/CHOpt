@@ -89,7 +89,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly")
                                               {Beat(4.0), Measure(4.0 / 3)},
                                               {0.5, 0.5})
                     .max()
-                == Approx(0.435417));
+                == Approx(0.440083));
     }
 
     SECTION("Works correctly over changing time signatures")
@@ -139,7 +139,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly")
                                               {Beat(12.0), Measure(3.0)},
                                               {0.5, 0.5})
                     .max()
-                == Approx(0.491667));
+                == Approx(0.496333));
     }
 
     SECTION("SP bar does not exceed full bar")
@@ -193,8 +193,8 @@ TEST_CASE("available_whammy works correctly", "Available whammy")
     SpData sp_data(track, 192, SyncTrack());
 
     REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(16.0))
-            == Approx(0.466667));
-    REQUIRE(sp_data.available_whammy(Beat(10.0), Beat(12.0)) == Approx(0.0));
+            == Approx(0.471333));
+    REQUIRE(sp_data.available_whammy(Beat(10.0), Beat(11.0)) == Approx(0.0));
     REQUIRE(sp_data.available_whammy(Beat(1.0), Beat(8.0)) == Approx(0.233333));
 }
 
