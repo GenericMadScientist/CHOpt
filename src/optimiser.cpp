@@ -186,6 +186,63 @@ Path ProcessedTrack::get_partial_path(CacheKey key, Cache& cache) const
     return cache.paths.at(key);
 }
 
+Path ProcessedTrack::get_partial_full_sp_path(PointPtr point,
+                                              Cache& cache) const
+{
+    // We only call this from add_point_to_partial_paths in a situaiton where we
+    // know point is not m_points.cend(), so we may assume point points to valid
+    // memory.
+    if (cache.full_sp_paths.find(point) != cache.full_sp_paths.end()) {
+        return cache.full_sp_paths.at(point);
+    }
+
+    std::vector<Path> paths;
+    std::set<PointPtr> attained_act_ends;
+    auto sp_bar = SpBar {1.0, 1.0};
+
+    for (auto p = point; p < m_points.cend(); ++p) {
+        auto starting_beat = hit_window_start(*std::prev(p), m_converter);
+        auto starting_meas = m_converter.beats_to_measures(starting_beat);
+        auto starting_pos = Position {starting_beat, starting_meas};
+        auto max_q = furthest_reachable_point(p, 1.0);
+        for (auto q = p; q <= max_q; ++q) {
+            if (attained_act_ends.find(q) != attained_act_ends.end()) {
+                continue;
+            }
+
+            ActivationCandidate candidate {p, q, starting_pos, sp_bar};
+            auto candidate_result = is_candidate_valid(candidate);
+            if (!candidate_result) {
+                continue;
+            }
+
+            attained_act_ends.insert(q);
+
+            auto act_score = std::accumulate(
+                p, std::next(q), 0U,
+                [](const auto& sum, const auto& x) { return sum + x.value; });
+            auto rest_of_path
+                = get_partial_path({std::next(q), *candidate_result}, cache);
+            auto score = act_score + rest_of_path.score_boost;
+            auto act_set = rest_of_path.activations;
+            act_set.insert(act_set.begin(), {p, q});
+            paths.push_back({act_set, score});
+        }
+    }
+
+    auto final_act = std::max_element(paths.cbegin(), paths.cend(),
+                                      [](const auto& x, const auto& y) {
+                                          return x.score_boost < y.score_boost;
+                                      });
+
+    // We can never have final_act be paths.cend() because paths must always be
+    // nonempty: at the very least, since we have full SP we could activate on
+    // point, giving us the start of one path. Therefore unlike
+    // add_point_to_partial_paths we do not need to check for this.
+    cache.full_sp_paths[point] = *final_act;
+    return *final_act;
+}
+
 void ProcessedTrack::add_point_to_partial_acts(CacheKey key, Cache& cache) const
 {
     std::vector<Path> paths;
@@ -195,6 +252,10 @@ void ProcessedTrack::add_point_to_partial_acts(CacheKey key, Cache& cache) const
         auto sp_bar = total_available_sp(key.position.beat, key.point, p);
         if (!sp_bar.full_enough_to_activate()) {
             continue;
+        }
+        if (sp_bar.max() == 1.0) {
+            paths.push_back(get_partial_full_sp_path(p, cache));
+            break;
         }
         auto starting_beat = hit_window_start(*std::prev(p), m_converter);
         auto starting_meas = m_converter.beats_to_measures(starting_beat);

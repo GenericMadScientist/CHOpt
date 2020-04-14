@@ -54,7 +54,9 @@ class ProcessedTrack {
 private:
     // The Cache is used to store paths starting from a certain point onwards,
     // i.e., the solution to our subproblems in our dynamic programming
-    // algorithm.
+    // algorithm. Cache.full_sp_paths represents the best path with the first
+    // activation at the point key or later, under the condition there is
+    // already full SP there.
     struct CacheKey {
         PointPtr point;
         Position position {Beat(0.0), Measure(0.0)};
@@ -68,6 +70,7 @@ private:
 
     struct Cache {
         std::map<CacheKey, Path> paths;
+        std::map<PointPtr, Path> full_sp_paths;
     };
 
     // The order of these members is important. We must have m_converter before
@@ -81,6 +84,7 @@ private:
                                                     double sp) const;
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
     Path get_partial_path(CacheKey key, Cache& cache) const;
+    Path get_partial_full_sp_path(PointPtr point, Cache& cache) const;
     void add_point_to_partial_acts(CacheKey key, Cache& cache) const;
 
 public:
