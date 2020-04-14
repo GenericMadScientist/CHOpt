@@ -52,6 +52,24 @@ struct Path {
 // upheld by the constructors of the arguments.
 class ProcessedTrack {
 private:
+    // The Cache is used to store paths starting from a certain point onwards,
+    // i.e., the solution to our subproblems in our dynamic programming
+    // algorithm.
+    struct CacheKey {
+        PointPtr point;
+        Position position {Beat(0.0), Measure(0.0)};
+
+        friend bool operator<(const CacheKey& lhs, const CacheKey& rhs)
+        {
+            return std::tie(lhs.point, lhs.position.beat)
+                < std::tie(rhs.point, rhs.position.beat);
+        }
+    };
+
+    struct Cache {
+        std::map<CacheKey, Path> paths;
+    };
+
     // The order of these members is important. We must have m_converter before
     // m_points.
     TimeConverter m_converter;
@@ -62,12 +80,8 @@ private:
     [[nodiscard]] PointPtr furthest_reachable_point(PointPtr point,
                                                     double sp) const;
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
-    Path get_partial_path(
-        std::tuple<PointPtr, Position> point,
-        std::map<std::tuple<PointPtr, Position>, Path>& partial_paths) const;
-    void add_point_to_partial_acts(
-        std::tuple<PointPtr, Position> point,
-        std::map<std::tuple<PointPtr, Position>, Path>& partial_paths) const;
+    Path get_partial_path(CacheKey key, Cache& cache) const;
+    void add_point_to_partial_acts(CacheKey key, Cache& cache) const;
 
 public:
     ProcessedTrack(const NoteTrack& track, std::int32_t resolution,

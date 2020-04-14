@@ -170,34 +170,29 @@ PointPtr ProcessedTrack::next_candidate_point(PointPtr point) const
     return m_points.cend();
 }
 
-Path ProcessedTrack::get_partial_path(
-    std::tuple<PointPtr, Position> point,
-    std::map<std::tuple<PointPtr, Position>, Path>& partial_paths) const
+Path ProcessedTrack::get_partial_path(CacheKey key, Cache& cache) const
 {
-    std::get<0>(point) = next_candidate_point(std::get<0>(point));
-    if (std::get<0>(point) == m_points.cend()) {
+    key.point = next_candidate_point(key.point);
+    if (key.point == m_points.cend()) {
         return {{}, 0};
     }
-    const auto beat = hit_window_start(*std::get<0>(point), m_converter);
-    if (beat >= std::get<1>(point).beat) {
-        std::get<1>(point) = {beat, m_converter.beats_to_measures(beat)};
+    const auto beat = hit_window_start(*key.point, m_converter);
+    if (beat >= key.position.beat) {
+        key.position = {beat, m_converter.beats_to_measures(beat)};
     }
-    if (partial_paths.find(point) == partial_paths.end()) {
-        add_point_to_partial_acts(point, partial_paths);
+    if (cache.paths.find(key) == cache.paths.end()) {
+        add_point_to_partial_acts(key, cache);
     }
-    return partial_paths.at(point);
+    return cache.paths.at(key);
 }
 
-void ProcessedTrack::add_point_to_partial_acts(
-    std::tuple<PointPtr, Position> point,
-    std::map<std::tuple<PointPtr, Position>, Path>& partial_paths) const
+void ProcessedTrack::add_point_to_partial_acts(CacheKey key, Cache& cache) const
 {
     std::vector<Path> paths;
     std::set<PointPtr> attained_act_ends;
 
-    for (auto p = std::get<0>(point); p < m_points.cend(); ++p) {
-        auto sp_bar = total_available_sp(std::get<1>(point).beat,
-                                         std::get<0>(point), p);
+    for (auto p = key.point; p < m_points.cend(); ++p) {
+        auto sp_bar = total_available_sp(key.position.beat, key.point, p);
         if (!sp_bar.full_enough_to_activate()) {
             continue;
         }
@@ -221,8 +216,8 @@ void ProcessedTrack::add_point_to_partial_acts(
             auto act_score = std::accumulate(
                 p, std::next(q), 0U,
                 [](const auto& sum, const auto& x) { return sum + x.value; });
-            auto rest_of_path = get_partial_path(
-                {std::next(q), *candidate_result}, partial_paths);
+            auto rest_of_path
+                = get_partial_path({std::next(q), *candidate_result}, cache);
             auto score = act_score + rest_of_path.score_boost;
             auto act_set = rest_of_path.activations;
             act_set.insert(act_set.begin(), {p, q});
@@ -235,19 +230,19 @@ void ProcessedTrack::add_point_to_partial_acts(
                                           return x.score_boost < y.score_boost;
                                       });
     if (final_act != paths.cend()) {
-        partial_paths[point] = *final_act;
+        cache.paths[key] = *final_act;
     } else {
-        partial_paths[point] = {{}, 0};
+        cache.paths[key] = {{}, 0};
     }
 }
 
 Path ProcessedTrack::optimal_path() const
 {
-    std::map<std::tuple<PointPtr, Position>, Path> partial_paths;
+    Cache cache;
     auto neg_inf = -std::numeric_limits<double>::infinity();
 
     return get_partial_path(
-        {m_points.cbegin(), {Beat(neg_inf), Measure(neg_inf)}}, partial_paths);
+        {m_points.cbegin(), {Beat(neg_inf), Measure(neg_inf)}}, cache);
 }
 
 std::string ProcessedTrack::path_summary(const Path& path) const

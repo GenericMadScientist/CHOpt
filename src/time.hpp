@@ -299,11 +299,6 @@ struct Position {
     Measure measure;
 };
 
-inline bool operator<(const Position& lhs, const Position& rhs)
-{
-    return lhs.beat < rhs.beat;
-}
-
 class TimeConverter {
 private:
     struct BeatTimestamp {
