@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -61,21 +62,26 @@ private:
     [[nodiscard]] PointPtr furthest_reachable_point(PointPtr point,
                                                     double sp) const;
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
-    Path get_partial_path(PointPtr point,
-                          std::map<PointPtr, Path>& partial_paths) const;
-    void
-    add_point_to_partial_acts(PointPtr point,
-                              std::map<PointPtr, Path>& partial_paths) const;
+    Path get_partial_path(
+        std::tuple<PointPtr, Position> point,
+        std::map<std::tuple<PointPtr, Position>, Path>& partial_paths) const;
+    void add_point_to_partial_acts(
+        std::tuple<PointPtr, Position> point,
+        std::map<std::tuple<PointPtr, Position>, Path>& partial_paths) const;
 
 public:
     ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
                    const SyncTrack& sync_track);
     [[nodiscard]] const PointSet& points() const { return m_points; }
-    [[nodiscard]] bool
+    // Returns an empty optional if the activation is invalid, or the earliest
+    // point it can end if it is valid.
+    [[nodiscard]] std::optional<Position>
     is_candidate_valid(const ActivationCandidate& activation) const;
     // Return the minimum and maximum amount of SP can be acquired between two
-    // points. Does not include SP from the point act_start.
-    [[nodiscard]] SpBar total_available_sp(Beat start,
+    // points. Does not include SP from the point act_start. first_point is
+    // given for the purposes of counting SP grantings notes, e.g. if start is
+    // after the middle of first_point's timing window.
+    [[nodiscard]] SpBar total_available_sp(Beat start, PointPtr first_point,
                                            PointPtr act_start) const;
     // Return the optimal Star Power path.
     [[nodiscard]] Path optimal_path() const;

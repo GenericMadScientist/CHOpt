@@ -18,6 +18,7 @@
 
 #include <cassert>
 #include <iterator>
+#include <limits>
 #include <numeric>
 #include <set>
 #include <sstream>
@@ -56,15 +57,15 @@ PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
     return m_points.cend() - 1;
 }
 
-bool ProcessedTrack::is_candidate_valid(
-    const ActivationCandidate& activation) const
+std::optional<Position>
+ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
 {
     constexpr double MEASURES_PER_BAR = 8.0;
     constexpr double MINIMUM_SP_AMOUNT = 0.5;
     constexpr double SP_PHRASE_AMOUNT = 0.25;
 
     if (!activation.sp_bar.full_enough_to_activate()) {
-        return false;
+        return {};
     }
 
     auto current_beat = hit_window_end(*activation.act_start, m_converter);
@@ -87,7 +88,7 @@ bool ProcessedTrack::is_candidate_valid(
             sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
                                                         sp_note_pos, sp_bar);
             if (sp_bar.max() < 0.0) {
-                return false;
+                return {};
             }
 
             auto sp_note_end_beat = hit_window_end(*p, m_converter);
@@ -114,7 +115,7 @@ bool ProcessedTrack::is_candidate_valid(
     sp_bar = m_sp_data.propagate_sp_over_whammy(
         current_position, {ending_beat, ending_meas}, sp_bar);
     if (sp_bar.max() < 0.0) {
-        return false;
+        return {};
     }
     if (activation.act_end->is_sp_granting_note) {
         sp_bar.add_phrase();
@@ -122,24 +123,27 @@ bool ProcessedTrack::is_candidate_valid(
 
     const auto next_point = std::next(activation.act_end);
     if (next_point == m_points.cend()) {
-        return true;
+        // Return value doesn't matter other than it being non-empty.
+        auto pos_inf = std::numeric_limits<double>::infinity();
+        return Position {Beat(pos_inf), Measure(pos_inf)};
     }
 
     auto next_point_beat = hit_window_end(*next_point, m_converter);
     auto next_point_meas = m_converter.beats_to_measures(next_point_beat);
-    auto meas_diff = next_point_meas - ending_meas;
-    sp_bar.min() -= meas_diff.value() / MEASURES_PER_BAR;
+    auto end_meas = ending_meas + Measure(sp_bar.min() * MEASURES_PER_BAR);
+    if (end_meas >= next_point_meas) {
+        return {};
+    }
 
-    return sp_bar.min() < 0.0;
+    auto end_beat = m_converter.measures_to_beats(end_meas);
+    return Position {end_beat, end_meas};
 }
 
-SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr act_start) const
+SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr first_point,
+                                         PointPtr act_start) const
 {
     SpBar sp_bar {0.0, 0.0};
-    auto p
-        = std::find_if(m_points.cbegin(), m_points.cend(),
-                       [=](const auto& x) { return x.position.beat >= start; });
-    for (; p < act_start; ++p) {
+    for (auto p = first_point; p < act_start; ++p) {
         if (p->is_sp_granting_note) {
             sp_bar.add_phrase();
         }
@@ -167,9 +171,17 @@ PointPtr ProcessedTrack::next_candidate_point(PointPtr point) const
 }
 
 Path ProcessedTrack::get_partial_path(
-    PointPtr point, std::map<PointPtr, Path>& partial_paths) const
+    std::tuple<PointPtr, Position> point,
+    std::map<std::tuple<PointPtr, Position>, Path>& partial_paths) const
 {
-    point = next_candidate_point(point);
+    std::get<0>(point) = next_candidate_point(std::get<0>(point));
+    if (std::get<0>(point) == m_points.cend()) {
+        return {{}, 0};
+    }
+    const auto beat = hit_window_start(*std::get<0>(point), m_converter);
+    if (beat >= std::get<1>(point).beat) {
+        std::get<1>(point) = {beat, m_converter.beats_to_measures(beat)};
+    }
     if (partial_paths.find(point) == partial_paths.end()) {
         add_point_to_partial_acts(point, partial_paths);
     }
@@ -177,35 +189,40 @@ Path ProcessedTrack::get_partial_path(
 }
 
 void ProcessedTrack::add_point_to_partial_acts(
-    PointPtr point, std::map<PointPtr, Path>& partial_paths) const
+    std::tuple<PointPtr, Position> point,
+    std::map<std::tuple<PointPtr, Position>, Path>& partial_paths) const
 {
-    const auto starting_beat = hit_window_start(*point, m_converter);
-    const auto starting_meas = m_converter.beats_to_measures(starting_beat);
-    Position starting_pos {starting_beat, starting_meas};
     std::vector<Path> paths;
-
     std::set<PointPtr> attained_act_ends;
 
-    for (auto p = point; p < m_points.cend(); ++p) {
-        auto sp_bar = total_available_sp(starting_beat, p);
+    for (auto p = std::get<0>(point); p < m_points.cend(); ++p) {
+        auto sp_bar = total_available_sp(std::get<1>(point).beat,
+                                         std::get<0>(point), p);
         if (!sp_bar.full_enough_to_activate()) {
             continue;
         }
+        auto starting_beat = hit_window_start(*std::prev(p), m_converter);
+        auto starting_meas = m_converter.beats_to_measures(starting_beat);
+        auto starting_pos = Position {starting_beat, starting_meas};
         auto max_q = furthest_reachable_point(p, sp_bar.max());
         for (auto q = p; q <= max_q; ++q) {
             if (attained_act_ends.find(q) != attained_act_ends.end()) {
                 continue;
             }
+
             ActivationCandidate candidate {p, q, starting_pos, sp_bar};
-            if (!is_candidate_valid(candidate)) {
+            auto candidate_result = is_candidate_valid(candidate);
+            if (!candidate_result) {
                 continue;
             }
+
             attained_act_ends.insert(q);
 
             auto act_score = std::accumulate(
                 p, std::next(q), 0U,
                 [](const auto& sum, const auto& x) { return sum + x.value; });
-            auto rest_of_path = get_partial_path(std::next(q), partial_paths);
+            auto rest_of_path = get_partial_path(
+                {std::next(q), *candidate_result}, partial_paths);
             auto score = act_score + rest_of_path.score_boost;
             auto act_set = rest_of_path.activations;
             act_set.insert(act_set.begin(), {p, q});
@@ -226,10 +243,11 @@ void ProcessedTrack::add_point_to_partial_acts(
 
 Path ProcessedTrack::optimal_path() const
 {
-    std::map<PointPtr, Path> partial_paths;
-    partial_paths[m_points.cend()] = {{}, 0};
+    std::map<std::tuple<PointPtr, Position>, Path> partial_paths;
+    auto neg_inf = -std::numeric_limits<double>::infinity();
 
-    return get_partial_path(m_points.cbegin(), partial_paths);
+    return get_partial_path(
+        {m_points.cbegin(), {Beat(neg_inf), Measure(neg_inf)}}, partial_paths);
 }
 
 std::string ProcessedTrack::path_summary(const Path& path) const

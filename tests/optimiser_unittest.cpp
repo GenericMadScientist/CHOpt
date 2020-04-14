@@ -31,7 +31,7 @@ static bool operator==(const Activation& lhs, const Activation& rhs)
         == std::tie(rhs.act_start, rhs.act_end);
 }
 
-TEST_CASE("is_activation_valid works with no whammy", "Valid no whammy acts")
+TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
 {
     std::vector<Note> notes {{0}, {1536}, {3072}, {6144}};
     NoteTrack note_track(notes, {}, {});
@@ -271,32 +271,46 @@ TEST_CASE("total_available_sp counts SP correctly", "Available SP")
 
     SECTION("Phrases are counted correctly")
     {
-        REQUIRE(track.total_available_sp(Beat(0.0), points.cbegin() + 1)
+        REQUIRE(track.total_available_sp(Beat(0.0), points.cbegin(),
+                                         points.cbegin() + 1)
                 == SpBar {0.25, 0.25});
-        REQUIRE(track.total_available_sp(Beat(0.0), points.cbegin() + 2)
+        REQUIRE(track.total_available_sp(Beat(0.0), points.cbegin(),
+                                         points.cbegin() + 2)
                 == SpBar {0.25, 0.25});
-        REQUIRE(track.total_available_sp(Beat(0.5), points.cbegin() + 3)
+        REQUIRE(track.total_available_sp(Beat(0.5), points.cbegin() + 2,
+                                         points.cbegin() + 3)
                 == SpBar {0.25, 0.25});
     }
 
     SECTION("Whammy is counted correctly")
     {
-        auto result = track.total_available_sp(Beat(4.0), points.cbegin() + 5);
+        auto result = track.total_available_sp(Beat(4.0), points.cbegin() + 4,
+                                               points.cbegin() + 5);
         REQUIRE(result.min() == Approx(0.0));
         REQUIRE(result.max() == Approx(0.00121528));
     }
 
     SECTION("Whammy is counted correctly even started mid hold")
     {
-        auto result = track.total_available_sp(Beat(4.5), points.cend() - 3);
+        auto result = track.total_available_sp(Beat(4.5), points.cend() - 3,
+                                               points.cend() - 3);
         REQUIRE(result.min() == Approx(0.0));
         REQUIRE(result.max() == Approx(0.0166667));
     }
 
     SECTION("SP does not exceed full bar")
     {
-        REQUIRE(track.total_available_sp(Beat(0.0), points.cend() - 1)
+        REQUIRE(track.total_available_sp(Beat(0.0), points.cbegin(),
+                                         points.cend() - 1)
                 == SpBar {1.0, 1.0});
+    }
+
+    SECTION("SP notes are counted from first_point even if start is passed its "
+            "middle")
+    {
+        REQUIRE(track.total_available_sp(Beat(0.05), points.cbegin(),
+                                         points.cbegin() + 1)
+                == SpBar {0.25, 0.25});
     }
 }
 
@@ -396,7 +410,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<StarPower> phrases {
             {0, 50}, {192, 50}, {3224, 50}, {9378, 50}};
         NoteTrack note_track(notes, phrases, {});
-        ProcessedTrack track(note_track, 12, SyncTrack());
+        ProcessedTrack track(note_track, 192, SyncTrack());
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
             {points.cbegin() + 2, points.cbegin() + 2},
@@ -405,6 +419,23 @@ TEST_CASE("optimal_path produces the correct path")
 
         REQUIRE(opt_path.score_boost == 150);
         REQUIRE(opt_path.activations == optimal_acts);
+    }
+
+    // Naively the ideal path would be 2-1, but we have to squeeze the last SP
+    // phrase early for the 2 to work and this makes the 1 impossible. So the
+    // optimal path is really 3.
+    SECTION("Simplest song where activations ending late matter")
+    {
+        std::vector<Note> notes {
+            {0},     {192},   {384},   {3234, 1440}, {10944}, {10945}, {10946},
+            {10947}, {10948}, {10949}, {10950},      {10951}, {10952}, {10953}};
+        std::vector<StarPower> phrases {{0, 50}, {192, 50}, {3234, 50}};
+        NoteTrack note_track(notes, phrases, {});
+        ProcessedTrack track(note_track, 192, SyncTrack());
+        auto opt_path = track.optimal_path();
+
+        REQUIRE(opt_path.score_boost == 750);
+        REQUIRE(opt_path.activations.size() == 1);
     }
 }
 
