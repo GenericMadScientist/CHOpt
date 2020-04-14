@@ -139,8 +139,6 @@ SpBar SpData::propagate_sp_over_whammy(Position start, Position end,
 double SpData::propagate_over_whammy_range(Beat start, Beat end,
                                            double sp_bar_amount) const
 {
-    constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
-
     auto p = std::find_if(m_beat_rates.cbegin(), m_beat_rates.cend(),
                           [=](const auto& ts) { return ts.position >= start; });
     if (p != m_beat_rates.cbegin()) {
@@ -150,9 +148,6 @@ double SpData::propagate_over_whammy_range(Beat start, Beat end,
         sp_bar_amount
             += (subrange_end - start).value() * DEFAULT_NET_SP_GAIN_RATE;
         sp_bar_amount = std::min(sp_bar_amount, 1.0);
-        if (sp_bar_amount < 0.0) {
-            return -1.0;
-        }
         start = subrange_end;
     }
     while (start < end) {
@@ -198,4 +193,88 @@ double SpData::available_whammy(Beat start, Beat end) const
     }
 
     return total_whammy;
+}
+
+Position SpData::activation_end_point(Position start, Position end,
+                                      double sp_bar_amount) const
+{
+    constexpr double MEASURES_PER_BAR = 8.0;
+
+    auto p
+        = std::find_if(m_whammy_ranges.cbegin(), m_whammy_ranges.cend(),
+                       [=](const auto& x) { return x.end.beat > start.beat; });
+    while ((p != m_whammy_ranges.cend()) && (p->start.beat < end.beat)) {
+        if (p->start.beat > start.beat) {
+            auto meas_diff = p->start.measure - start.measure;
+            auto sp_deduction = meas_diff.value() / MEASURES_PER_BAR;
+            if (sp_bar_amount < sp_deduction) {
+                auto end_meas
+                    = start.measure + Measure(sp_bar_amount * MEASURES_PER_BAR);
+                auto end_beat = m_converter.measures_to_beats(end_meas);
+                return {end_beat, end_meas};
+            }
+            sp_bar_amount -= sp_deduction;
+            start = p->start;
+        }
+        auto range_end = std::min(end.beat, p->end.beat);
+        auto new_sp_bar_amount
+            = propagate_over_whammy_range(start.beat, range_end, sp_bar_amount);
+        if (new_sp_bar_amount < 0.0) {
+            auto end_beat = whammy_propagation_endpoint(start.beat, end.beat,
+                                                        sp_bar_amount);
+            auto end_meas = m_converter.beats_to_measures(end_beat);
+            return {end_beat, end_meas};
+        }
+        sp_bar_amount = new_sp_bar_amount;
+        if (p->end.beat >= end.beat) {
+            return end;
+        }
+        start = p->end;
+        ++p;
+    }
+
+    auto meas_diff = end.measure - start.measure;
+    auto sp_deduction = meas_diff.value() / MEASURES_PER_BAR;
+    if (sp_bar_amount < sp_deduction) {
+        auto end_meas
+            = start.measure + Measure(sp_bar_amount * MEASURES_PER_BAR);
+        auto end_beat = m_converter.measures_to_beats(end_meas);
+        return {end_beat, end_meas};
+    }
+    return end;
+}
+
+// Return the point whammy runs out if all of the range [start, end) is
+// whammied.
+Beat SpData::whammy_propagation_endpoint(Beat start, Beat end,
+                                         double sp_bar_amount) const
+{
+    auto p = std::find_if(m_beat_rates.cbegin(), m_beat_rates.cend(),
+                          [=](const auto& ts) { return ts.position >= start; });
+    if (p != m_beat_rates.cbegin()) {
+        --p;
+    } else {
+        auto subrange_end = std::min(end, p->position);
+        auto sp_gain
+            = (subrange_end - start).value() * DEFAULT_NET_SP_GAIN_RATE;
+        sp_bar_amount += sp_gain;
+        sp_bar_amount = std::min(sp_bar_amount, 1.0);
+        start = subrange_end;
+    }
+    while (start < end) {
+        auto subrange_end = end;
+        if (std::next(p) != m_beat_rates.cend()) {
+            subrange_end = std::min(end, std::next(p)->position);
+        }
+        auto sp_gain = (subrange_end - start).value() * p->net_sp_gain_rate;
+        if (sp_bar_amount + sp_gain < 0.0) {
+            return start + Beat(-sp_bar_amount / p->net_sp_gain_rate);
+        }
+        sp_bar_amount += sp_gain;
+        sp_bar_amount = std::min(sp_bar_amount, 1.0);
+        start = subrange_end;
+        ++p;
+    }
+
+    return end;
 }

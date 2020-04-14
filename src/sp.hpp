@@ -79,6 +79,7 @@ private:
         Position end;
     };
 
+    static constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
     static constexpr double SP_GAIN_RATE = 1 / 30.0;
 
     TimeConverter m_converter;
@@ -88,6 +89,8 @@ private:
     [[nodiscard]] double
     propagate_over_whammy_range(Beat start, Beat end,
                                 double sp_bar_amount) const;
+    [[nodiscard]] Beat whammy_propagation_endpoint(Beat start, Beat end,
+                                                   double sp_bar_amount) const;
 
     static std::vector<BeatRate> form_beat_rates(std::int32_t resolution,
                                                  const SyncTrack& sync_track);
@@ -105,6 +108,10 @@ public:
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
     // Return the amount of whammy obtainable across a range.
     [[nodiscard]] double available_whammy(Beat start, Beat end) const;
+    // Return how far an activation can propagate based on whammy, returning the
+    // end of the range if it can be reached.
+    [[nodiscard]] Position activation_end_point(Position start, Position end,
+                                                double sp_bar_amount) const;
 };
 
 #endif

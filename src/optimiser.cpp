@@ -61,6 +61,7 @@ bool ProcessedTrack::is_candidate_valid(
 {
     constexpr double MEASURES_PER_BAR = 8.0;
     constexpr double MINIMUM_SP_AMOUNT = 0.5;
+    constexpr double SP_PHRASE_AMOUNT = 0.25;
 
     if (!activation.sp_bar.full_enough_to_activate()) {
         return false;
@@ -80,13 +81,31 @@ bool ProcessedTrack::is_candidate_valid(
 
     for (auto p = activation.act_start; p < activation.act_end; ++p) {
         if (p->is_sp_granting_note) {
+            auto sp_note_beat = hit_window_start(*p, m_converter);
+            auto sp_note_meas = m_converter.beats_to_measures(sp_note_beat);
+            auto sp_note_pos = Position {sp_note_beat, sp_note_meas};
             sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
-                                                        p->position, sp_bar);
+                                                        sp_note_pos, sp_bar);
             if (sp_bar.max() < 0.0) {
                 return false;
             }
-            sp_bar.add_phrase();
-            current_position = p->position;
+
+            auto sp_note_end_beat = hit_window_end(*p, m_converter);
+            auto sp_note_end_meas
+                = m_converter.beats_to_measures(sp_note_end_beat);
+            auto sp_note_end_pos
+                = Position {sp_note_end_beat, sp_note_end_meas};
+
+            auto latest_point_to_hit_sp = m_sp_data.activation_end_point(
+                sp_note_pos, sp_note_end_pos, sp_bar.max());
+            sp_bar.min() += SP_PHRASE_AMOUNT;
+            sp_bar.min() = std::min(sp_bar.min(), 1.0);
+            sp_bar = m_sp_data.propagate_sp_over_whammy(
+                sp_note_pos, latest_point_to_hit_sp, sp_bar);
+            sp_bar.max() += SP_PHRASE_AMOUNT;
+            sp_bar.max() = std::min(sp_bar.max(), 1.0);
+
+            current_position = latest_point_to_hit_sp;
         }
     }
 

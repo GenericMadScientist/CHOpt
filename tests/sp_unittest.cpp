@@ -48,7 +48,7 @@ TEST_CASE("SpBar methods", "SpBar")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("propagate_sp_over_whammy works correctly", "Whammy SP")
+TEST_CASE("propagate_sp_over_whammy works correctly")
 {
     std::vector<Note> notes {{0, 1920}, {2112, 576}, {3000}};
     std::vector<StarPower> phrases {{0, 3000}};
@@ -196,4 +196,71 @@ TEST_CASE("available_whammy works correctly", "Available whammy")
             == Approx(0.466667));
     REQUIRE(sp_data.available_whammy(Beat(10.0), Beat(12.0)) == Approx(0.0));
     REQUIRE(sp_data.available_whammy(Beat(1.0), Beat(8.0)) == Approx(0.233333));
+}
+
+TEST_CASE("activation_end_point works correctly")
+{
+    SECTION("Works when SP is sufficient")
+    {
+        std::vector<Note> notes {{0}};
+        NoteTrack track(notes, {}, {});
+        SpData sp_data(track, 192, SyncTrack());
+        Position start {Beat(0.0), Measure(0.0)};
+        Position end {Beat(1.0), Measure(0.25)};
+
+        REQUIRE(sp_data.activation_end_point(start, end, 0.5).beat.value()
+                == Approx(1.0));
+    }
+
+    SECTION("Works when SP is insufficient")
+    {
+        std::vector<Note> notes {{0}};
+        NoteTrack track(notes, {}, {});
+        SpData sp_data(track, 192, SyncTrack());
+        Position start {Beat(0.0), Measure(0.0)};
+        Position end {Beat(1.0), Measure(0.25)};
+
+        REQUIRE(sp_data.activation_end_point(start, end, 0.01).beat.value()
+                == Approx(0.32));
+    }
+
+    SECTION("Works when adding whammy makes SP sufficient")
+    {
+        std::vector<Note> notes {{0, 192}, {950}};
+        std::vector<StarPower> phrases {{0, 1000}};
+        NoteTrack track(notes, phrases, {});
+        SpData sp_data(track, 192, SyncTrack());
+        Position start {Beat(0.0), Measure(0.0)};
+        Position end {Beat(1.0), Measure(0.25)};
+
+        REQUIRE(sp_data.activation_end_point(start, end, 0.01).beat.value()
+                == Approx(1.0));
+    }
+
+    SECTION("Works when whammy is present but insufficient")
+    {
+        std::vector<Note> notes {{0, 192}, {950}};
+        std::vector<StarPower> phrases {{0, 1000}};
+        NoteTrack track(notes, phrases, {});
+        SpData sp_data(track, 192, SyncTrack());
+        Position start {Beat(0.0), Measure(0.0)};
+        Position end {Beat(2.0), Measure(0.5)};
+
+        REQUIRE(sp_data.activation_end_point(start, end, 0.01).beat.value()
+                == Approx(1.38667));
+    }
+
+    SECTION("Works when whammy is present but accumulation is too slow")
+    {
+        std::vector<Note> notes {{0, 192}, {950}};
+        std::vector<StarPower> phrases {{0, 1000}};
+        SyncTrack sync_track({{0, 2, 4}}, {});
+        NoteTrack track(notes, phrases, {});
+        SpData sp_data(track, 192, sync_track);
+        Position start {Beat(0.0), Measure(0.0)};
+        Position end {Beat(1.0), Measure(0.25)};
+
+        REQUIRE(sp_data.activation_end_point(start, end, 0.01).beat.value()
+                == Approx(0.342857));
+    }
 }

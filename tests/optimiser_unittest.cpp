@@ -228,6 +228,36 @@ TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
 
         REQUIRE(track.is_candidate_valid(candidate));
     }
+
+    SECTION("Intermediate SP can be hit early")
+    {
+        std::vector<Note> notes {{0}, {3102}, {4608}};
+        std::vector<StarPower> phrases {{3100, 100}};
+        NoteTrack note_track(notes, phrases, {});
+        ProcessedTrack track(note_track, 192, SyncTrack());
+        const auto& points = track.points();
+        ActivationCandidate candidate {points.cbegin(),
+                                       points.cbegin() + 2,
+                                       {Beat(0.0), Measure(0.0)},
+                                       {0.5, 0.5}};
+
+        REQUIRE(track.is_candidate_valid(candidate));
+    }
+
+    SECTION("Intermediate SP can be hit late")
+    {
+        std::vector<Note> notes {{0}, {768}, {6942}};
+        std::vector<StarPower> phrases {{768, 100}};
+        NoteTrack note_track(notes, phrases, {});
+        ProcessedTrack track(note_track, 192, SyncTrack());
+        const auto& points = track.points();
+        ActivationCandidate candidate {points.cbegin(),
+                                       points.cbegin() + 2,
+                                       {Beat(0.0), Measure(0.0)},
+                                       {1.0, 1.0}};
+
+        REQUIRE(track.is_candidate_valid(candidate));
+    }
 }
 
 TEST_CASE("total_available_sp counts SP correctly", "Available SP")
