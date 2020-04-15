@@ -68,9 +68,7 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
         return {};
     }
 
-    auto current_beat = hit_window_end(*activation.act_start, m_converter);
-    auto current_measure = m_converter.beats_to_measures(current_beat);
-    auto current_position = Position {current_beat, current_measure};
+    auto current_position = activation.act_start->hit_window_end;
 
     auto sp_bar = activation.sp_bar;
     sp_bar.min() = std::max(sp_bar.min(), MINIMUM_SP_AMOUNT);
@@ -82,20 +80,14 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
 
     for (auto p = activation.act_start; p < activation.act_end; ++p) {
         if (p->is_sp_granting_note) {
-            auto sp_note_beat = hit_window_start(*p, m_converter);
-            auto sp_note_meas = m_converter.beats_to_measures(sp_note_beat);
-            auto sp_note_pos = Position {sp_note_beat, sp_note_meas};
+            auto sp_note_pos = p->hit_window_start;
             sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
                                                         sp_note_pos, sp_bar);
             if (sp_bar.max() < 0.0) {
                 return {};
             }
 
-            auto sp_note_end_beat = hit_window_end(*p, m_converter);
-            auto sp_note_end_meas
-                = m_converter.beats_to_measures(sp_note_end_beat);
-            auto sp_note_end_pos
-                = Position {sp_note_end_beat, sp_note_end_meas};
+            auto sp_note_end_pos = p->hit_window_end;
 
             auto latest_point_to_hit_sp = m_sp_data.activation_end_point(
                 sp_note_pos, sp_note_end_pos, sp_bar.max());
@@ -110,10 +102,9 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
         }
     }
 
-    auto ending_beat = hit_window_start(*activation.act_end, m_converter);
-    auto ending_meas = m_converter.beats_to_measures(ending_beat);
-    sp_bar = m_sp_data.propagate_sp_over_whammy(
-        current_position, {ending_beat, ending_meas}, sp_bar);
+    auto ending_pos = activation.act_end->hit_window_start;
+    sp_bar = m_sp_data.propagate_sp_over_whammy(current_position, ending_pos,
+                                                sp_bar);
     if (sp_bar.max() < 0.0) {
         return {};
     }
@@ -128,10 +119,9 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
         return Position {Beat(pos_inf), Measure(pos_inf)};
     }
 
-    auto next_point_beat = hit_window_end(*next_point, m_converter);
-    auto next_point_meas = m_converter.beats_to_measures(next_point_beat);
-    auto end_meas = ending_meas + Measure(sp_bar.min() * MEASURES_PER_BAR);
-    if (end_meas >= next_point_meas) {
+    auto end_meas
+        = ending_pos.measure + Measure(sp_bar.min() * MEASURES_PER_BAR);
+    if (end_meas >= next_point->hit_window_end.measure) {
         return {};
     }
 
@@ -176,9 +166,9 @@ Path ProcessedTrack::get_partial_path(CacheKey key, Cache& cache) const
     if (key.point == m_points.cend()) {
         return {{}, 0};
     }
-    const auto beat = hit_window_start(*key.point, m_converter);
-    if (beat >= key.position.beat) {
-        key.position = {beat, m_converter.beats_to_measures(beat)};
+    const auto pos = key.point->hit_window_start;
+    if (pos.beat >= key.position.beat) {
+        key.position = pos;
     }
     if (cache.paths.find(key) == cache.paths.end()) {
         add_point_to_partial_acts(key, cache);
@@ -205,9 +195,7 @@ Path ProcessedTrack::get_partial_full_sp_path(PointPtr point,
             paths.push_back(get_partial_full_sp_path(p, cache));
             break;
         }
-        auto starting_beat = hit_window_start(*std::prev(p), m_converter);
-        auto starting_meas = m_converter.beats_to_measures(starting_beat);
-        auto starting_pos = Position {starting_beat, starting_meas};
+        auto starting_pos = std::prev(p)->hit_window_start;
         auto max_q = furthest_reachable_point(p, 1.0);
         for (auto q = p; q <= max_q; ++q) {
             if (attained_act_ends.find(q) != attained_act_ends.end()) {
@@ -261,9 +249,7 @@ void ProcessedTrack::add_point_to_partial_acts(CacheKey key, Cache& cache) const
             paths.push_back(get_partial_full_sp_path(p, cache));
             break;
         }
-        auto starting_beat = hit_window_start(*std::prev(p), m_converter);
-        auto starting_meas = m_converter.beats_to_measures(starting_beat);
-        auto starting_pos = Position {starting_beat, starting_meas};
+        auto starting_pos = std::prev(p)->hit_window_start;
         auto max_q = furthest_reachable_point(p, sp_bar.max());
         for (auto q = p; q <= max_q; ++q) {
             if (attained_act_ends.find(q) != attained_act_ends.end()) {

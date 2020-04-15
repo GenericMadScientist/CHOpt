@@ -34,6 +34,9 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
                                const TimeConverter& converter)
 {
     constexpr auto NOTE_VALUE = 50U;
+    const auto EARLY_WINDOW = Second(0.07);
+    const auto LATE_WINDOW = Second(0.07);
+
     const double float_res = resolution;
     const auto tick_gap = std::max(resolution / 25, 1);
 
@@ -46,14 +49,23 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
     auto pos = first->position;
     auto beat = Beat(pos / float_res);
     auto meas = converter.beats_to_measures(beat);
-    *points++
-        = {{beat, meas}, NOTE_VALUE * chord_size, false, is_note_sp_ender};
+    auto note_seconds = converter.beats_to_seconds(beat);
+    auto early_beat = converter.seconds_to_beats(note_seconds - EARLY_WINDOW);
+    auto early_meas = converter.beats_to_measures(early_beat);
+    auto late_beat = converter.seconds_to_beats(note_seconds + LATE_WINDOW);
+    auto late_meas = converter.beats_to_measures(late_beat);
+    *points++ = {{beat, meas},
+                 {early_beat, early_meas},
+                 {late_beat, late_meas},
+                 NOTE_VALUE * chord_size,
+                 false,
+                 is_note_sp_ender};
     while (chord_length > 0) {
         pos += static_cast<std::uint32_t>(tick_gap);
         chord_length -= tick_gap;
         beat = Beat(pos / float_res);
         meas = converter.beats_to_measures(beat);
-        *points++ = {{beat, meas}, 1, true, false};
+        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, 1, true, false};
     }
 }
 
@@ -93,30 +105,4 @@ PointSet::PointSet(const NoteTrack& track, std::int32_t resolution,
         const auto multiplier = 1 + std::min(combo / 10, 3U);
         point.value *= multiplier;
     }
-}
-
-Beat hit_window_start(const Point& point, const TimeConverter& converter)
-{
-    constexpr double FRONT_END = 0.07;
-
-    if (point.is_hold_point) {
-        return point.position.beat;
-    }
-
-    auto time = converter.beats_to_seconds(point.position.beat).value();
-    time -= FRONT_END;
-    return converter.seconds_to_beats(Second(time));
-}
-
-Beat hit_window_end(const Point& point, const TimeConverter& converter)
-{
-    constexpr double BACK_END = 0.07;
-
-    if (point.is_hold_point) {
-        return point.position.beat;
-    }
-
-    auto time = converter.beats_to_seconds(point.position.beat).value();
-    time += BACK_END;
-    return converter.seconds_to_beats(Second(time));
 }

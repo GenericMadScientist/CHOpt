@@ -27,6 +27,8 @@
 
 struct Point {
     Position position;
+    Position hit_window_start;
+    Position hit_window_end;
     std::uint32_t value;
     bool is_hold_point;
     bool is_sp_granting_note;
@@ -44,9 +46,5 @@ public:
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
 };
-
-// Return the earliest and latest times a point can be hit.
-Beat hit_window_start(const Point& point, const TimeConverter& converter);
-Beat hit_window_end(const Point& point, const TimeConverter& converter);
 
 #endif
