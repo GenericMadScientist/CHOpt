@@ -57,7 +57,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly")
     SECTION("Works correctly over 4/4")
     {
         std::vector<TimeSignature> time_sigs {{0, 4, 4}};
-        SpData sp_data(track, 192, SyncTrack(time_sigs, {}));
+        SpData sp_data(track, 192, SyncTrack(time_sigs, {}), 1.0);
 
         REQUIRE(sp_data
                     .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
@@ -76,7 +76,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly")
     SECTION("Works correctly over 3/4")
     {
         std::vector<TimeSignature> time_sigs {{0, 3, 4}};
-        SpData sp_data(track, 192, SyncTrack(time_sigs, {}));
+        SpData sp_data(track, 192, SyncTrack(time_sigs, {}), 1.0);
 
         REQUIRE(sp_data
                     .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
@@ -95,7 +95,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly")
     SECTION("Works correctly over changing time signatures")
     {
         std::vector<TimeSignature> time_sigs {{0, 4, 4}, {384, 3, 4}};
-        SpData sp_data(track, 192, SyncTrack(time_sigs, {}));
+        SpData sp_data(track, 192, SyncTrack(time_sigs, {}), 1.0);
 
         REQUIRE(sp_data
                     .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
@@ -114,7 +114,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly")
     SECTION("Returns -1 if SP runs out")
     {
         std::vector<TimeSignature> time_sigs {{0, 3, 4}, {384, 4, 4}};
-        SpData sp_data(track, 192, SyncTrack(time_sigs, {}));
+        SpData sp_data(track, 192, SyncTrack(time_sigs, {}), 1.0);
 
         REQUIRE(sp_data
                     .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
@@ -132,7 +132,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly")
 
     SECTION("Works even if some of the range isn't whammyable")
     {
-        SpData sp_data(track, 192, SyncTrack());
+        SpData sp_data(track, 192, SyncTrack(), 1.0);
 
         REQUIRE(sp_data
                     .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
@@ -144,7 +144,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly")
 
     SECTION("SP bar does not exceed full bar")
     {
-        SpData sp_data(track, 192, SyncTrack());
+        SpData sp_data(track, 192, SyncTrack(), 1.0);
 
         REQUIRE(sp_data
                     .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
@@ -163,7 +163,7 @@ TEST_CASE("propagate_sp_over_whammy works correctly")
     SECTION("Hold notes not in a phrase do not contribute SP")
     {
         NoteTrack no_sp_note_track(notes, {}, {});
-        SpData sp_data(no_sp_note_track, 192, SyncTrack());
+        SpData sp_data(no_sp_note_track, 192, SyncTrack(), 1.0);
 
         REQUIRE(sp_data
                     .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
@@ -179,7 +179,7 @@ TEST_CASE("is_in_whammy_ranges works correctly", "Whammy ranges")
     std::vector<Note> notes {{0, 1920}, {2112}};
     std::vector<StarPower> phrases {{0, 2000}, {2112, 50}};
     NoteTrack track(notes, phrases, {});
-    SpData sp_data(track, 192, SyncTrack());
+    SpData sp_data(track, 192, SyncTrack(), 1.0);
 
     REQUIRE(sp_data.is_in_whammy_ranges(Beat(1.0)));
     REQUIRE(!sp_data.is_in_whammy_ranges(Beat(11.0)));
@@ -190,12 +190,30 @@ TEST_CASE("available_whammy works correctly", "Available whammy")
     std::vector<Note> notes {{0, 1920}, {2112}, {2304, 768}};
     std::vector<StarPower> phrases {{0, 3000}};
     NoteTrack track(notes, phrases, {});
-    SpData sp_data(track, 192, SyncTrack());
 
-    REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(16.0))
-            == Approx(0.471333));
-    REQUIRE(sp_data.available_whammy(Beat(10.0), Beat(11.0)) == Approx(0.0));
-    REQUIRE(sp_data.available_whammy(Beat(1.0), Beat(8.0)) == Approx(0.233333));
+    SECTION("100% early whammy")
+    {
+        SpData sp_data(track, 192, SyncTrack(), 1.0);
+
+        REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(16.0))
+                == Approx(0.471333));
+        REQUIRE(sp_data.available_whammy(Beat(10.0), Beat(11.0))
+                == Approx(0.0));
+        REQUIRE(sp_data.available_whammy(Beat(1.0), Beat(8.0))
+                == Approx(0.233333));
+    }
+
+    SECTION("50% early whammy")
+    {
+        SpData sp_data(track, 192, SyncTrack(), 0.5);
+
+        REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(16.0))
+                == Approx(0.469));
+        REQUIRE(sp_data.available_whammy(Beat(10.0), Beat(11.0))
+                == Approx(0.0));
+        REQUIRE(sp_data.available_whammy(Beat(1.0), Beat(8.0))
+                == Approx(0.233333));
+    }
 }
 
 TEST_CASE("activation_end_point works correctly")
@@ -204,7 +222,7 @@ TEST_CASE("activation_end_point works correctly")
     {
         std::vector<Note> notes {{0}};
         NoteTrack track(notes, {}, {});
-        SpData sp_data(track, 192, SyncTrack());
+        SpData sp_data(track, 192, SyncTrack(), 1.0);
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
 
@@ -216,7 +234,7 @@ TEST_CASE("activation_end_point works correctly")
     {
         std::vector<Note> notes {{0}};
         NoteTrack track(notes, {}, {});
-        SpData sp_data(track, 192, SyncTrack());
+        SpData sp_data(track, 192, SyncTrack(), 1.0);
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
 
@@ -229,7 +247,7 @@ TEST_CASE("activation_end_point works correctly")
         std::vector<Note> notes {{0, 192}, {950}};
         std::vector<StarPower> phrases {{0, 1000}};
         NoteTrack track(notes, phrases, {});
-        SpData sp_data(track, 192, SyncTrack());
+        SpData sp_data(track, 192, SyncTrack(), 1.0);
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
 
@@ -242,7 +260,7 @@ TEST_CASE("activation_end_point works correctly")
         std::vector<Note> notes {{0, 192}, {950}};
         std::vector<StarPower> phrases {{0, 1000}};
         NoteTrack track(notes, phrases, {});
-        SpData sp_data(track, 192, SyncTrack());
+        SpData sp_data(track, 192, SyncTrack(), 1.0);
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(2.0), Measure(0.5)};
 
@@ -256,7 +274,7 @@ TEST_CASE("activation_end_point works correctly")
         std::vector<StarPower> phrases {{0, 1000}};
         SyncTrack sync_track({{0, 2, 4}}, {});
         NoteTrack track(notes, phrases, {});
-        SpData sp_data(track, 192, sync_track);
+        SpData sp_data(track, 192, sync_track, 1.0);
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
 

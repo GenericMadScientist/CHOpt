@@ -50,11 +50,11 @@ SpData::form_beat_rates(std::int32_t resolution, const SyncTrack& sync_track)
 }
 
 SpData::SpData(const NoteTrack& track, std::int32_t resolution,
-               const SyncTrack& sync_track)
+               const SyncTrack& sync_track, double early_whammy)
     : m_converter {TimeConverter(sync_track, resolution)}
     , m_beat_rates {form_beat_rates(resolution, sync_track)}
 {
-    constexpr double EARLY_TIMING_WINDOW = 0.07;
+    const double EARLY_TIMING_WINDOW = 0.07 * early_whammy;
 
     std::vector<std::tuple<Beat, Beat>> ranges;
     for (const auto& note : track.notes()) {

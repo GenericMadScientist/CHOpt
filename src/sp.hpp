@@ -97,7 +97,7 @@ private:
 
 public:
     SpData(const NoteTrack& track, std::int32_t resolution,
-           const SyncTrack& sync_track);
+           const SyncTrack& sync_track, double early_whammy);
 
     // Return how much SP is available at the end after propagating over a
     // range, or -1 if SP runs out at any point. Only includes SP gain from
