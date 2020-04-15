@@ -201,6 +201,10 @@ Path ProcessedTrack::get_partial_full_sp_path(PointPtr point,
     auto sp_bar = SpBar {1.0, 1.0};
 
     for (auto p = point; p < m_points.cend(); ++p) {
+        if (p != point && std::prev(p)->is_sp_granting_note) {
+            paths.push_back(get_partial_full_sp_path(p, cache));
+            break;
+        }
         auto starting_beat = hit_window_start(*std::prev(p), m_converter);
         auto starting_meas = m_converter.beats_to_measures(starting_beat);
         auto starting_pos = Position {starting_beat, starting_meas};
