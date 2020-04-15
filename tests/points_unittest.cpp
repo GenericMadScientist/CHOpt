@@ -16,53 +16,49 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
+
 #include "catch.hpp"
 
 #include "points.hpp"
 
-static bool operator==(const Position& lhs, const Position& rhs)
+static bool operator==(const Beat& lhs, const Beat& rhs)
 {
-    if (lhs.beat.value() != Approx(rhs.beat.value())) {
-        return false;
+    return lhs.value() == Approx(rhs.value());
+}
+
+static std::vector<std::uint32_t> set_values(const PointSet& points)
+{
+    std::vector<std::uint32_t> values;
+    values.reserve(static_cast<std::size_t>(
+        std::distance(points.cbegin(), points.cend())));
+    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+        values.push_back(p->value);
     }
-    return lhs.measure.value() == Approx(rhs.measure.value());
+    return values;
 }
 
-static bool operator==(const Point& lhs, const Point& rhs)
+static std::vector<Beat> set_position_beats(const PointSet& points)
 {
-    return std::tie(lhs.position, lhs.hit_window_start, lhs.hit_window_end,
-                    lhs.value, lhs.is_hold_point, lhs.is_sp_granting_note)
-        == std::tie(rhs.position, rhs.hit_window_start, rhs.hit_window_end,
-                    rhs.value, rhs.is_hold_point, rhs.is_sp_granting_note);
+    std::vector<Beat> values;
+    values.reserve(static_cast<std::size_t>(
+        std::distance(points.cbegin(), points.cend())));
+    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+        values.push_back(p->position.beat);
+    }
+    return values;
 }
 
-static bool operator==(const PointSet& set, const std::vector<Point>& points)
-{
-    return std::equal(set.cbegin(), set.cend(), points.cbegin(), points.cend());
-}
-
-TEST_CASE("Non-hold notes", "Non hold")
+TEST_CASE("Non-hold notes")
 {
     SECTION("Single notes give 50 points")
     {
         const auto track = NoteTrack({{768}, {960}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
         const auto points = PointSet(track, 192, converter);
-        const auto expected_points
-            = std::vector<Point>({{{Beat(4.0), Measure(1.0)},
-                                   {Beat(3.86), Measure(0.965)},
-                                   {Beat(4.14), Measure(1.035)},
-                                   50,
-                                   false,
-                                   false},
-                                  {{Beat(5.0), Measure(1.25)},
-                                   {Beat(4.86), Measure(1.215)},
-                                   {Beat(5.14), Measure(1.285)},
-                                   50,
-                                   false,
-                                   false}});
+        std::vector<std::uint32_t> expected_values {50, 50};
 
-        REQUIRE(points == expected_points);
+        REQUIRE(set_values(points) == expected_values);
     }
 
     SECTION("Chords give multiples of 50 points")
@@ -71,74 +67,32 @@ TEST_CASE("Non-hold notes", "Non hold")
             {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
         const auto points = PointSet(track, 192, converter);
-        const auto expected_points
-            = std::vector<Point>({{{Beat(4.0), Measure(1.0)},
-                                   {Beat(3.86), Measure(0.965)},
-                                   {Beat(4.14), Measure(1.035)},
-                                   100,
-                                   false,
-                                   false}});
+        std::vector<std::uint32_t> expected_values {100};
 
-        REQUIRE(points == expected_points);
+        REQUIRE(set_values(points) == expected_values);
     }
 }
 
-TEST_CASE("Hold notes", "Hold")
+TEST_CASE("Hold notes")
 {
     SECTION("Hold note points depend on resolution")
     {
         const auto track = NoteTrack({{768, 15}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
         const auto first_points = PointSet(track, 192, converter);
-        const auto first_expected_points = std::vector<Point>(
-            {{{Beat(4.0), Measure(1.0)},
-              {Beat(3.86), Measure(0.965)},
-              {Beat(4.14), Measure(1.035)},
-              50,
-              false,
-              false},
-             {{Beat(775.0 / 192.0), Measure(775.0 / 768.0)},
-              {Beat(775.0 / 192.0), Measure(775.0 / 768.0)},
-              {Beat(775.0 / 192.0), Measure(775.0 / 768.0)},
-              1,
-              true,
-              false},
-             {{Beat(782.0 / 192.0), Measure(782.0 / 768.0)},
-              {Beat(782.0 / 192.0), Measure(782.0 / 768.0)},
-              {Beat(782.0 / 192.0), Measure(782.0 / 768.0)},
-              1,
-              true,
-              false},
-             {{Beat(789.0 / 192.0), Measure(789.0 / 768.0)},
-              {Beat(789.0 / 192.0), Measure(789.0 / 768.0)},
-              {Beat(789.0 / 192.0), Measure(789.0 / 768.0)},
-              1,
-              true,
-              false}});
+        std::vector<std::uint32_t> first_expected_values {50, 1, 1, 1};
+        std::vector<Beat> first_expected_beats {Beat(4.0), Beat(4.03646),
+                                                Beat(4.07292), Beat(4.10938)};
         const auto second_converter = TimeConverter(SyncTrack(), 200);
         const auto second_points = PointSet(track, 200, second_converter);
-        const auto second_expected_points = std::vector<Point>(
-            {{{Beat(768.0 / 200.0), Measure(768.0 / 800.0)},
-              {Beat(768.0 / 200.0 - 0.14), Measure(768.0 / 800.0 - 0.035)},
-              {Beat(768.0 / 200.0 + 0.14), Measure(768.0 / 800.0 + 0.035)},
-              50,
-              false,
-              false},
-             {{Beat(776.0 / 200.0), Measure(776.0 / 800.0)},
-              {Beat(776.0 / 200.0), Measure(776.0 / 800.0)},
-              {Beat(776.0 / 200.0), Measure(776.0 / 800.0)},
-              1,
-              true,
-              false},
-             {{Beat(784.0 / 200.0), Measure(784.0 / 800.0)},
-              {Beat(784.0 / 200.0), Measure(784.0 / 800.0)},
-              {Beat(784.0 / 200.0), Measure(784.0 / 800.0)},
-              1,
-              true,
-              false}});
+        std::vector<std::uint32_t> second_expected_values {50, 1, 1};
+        std::vector<Beat> second_expected_beats {Beat(3.84), Beat(3.88),
+                                                 Beat(3.92)};
 
-        REQUIRE(first_points == first_expected_points);
-        REQUIRE(second_points == second_expected_points);
+        REQUIRE(set_values(first_points) == first_expected_values);
+        REQUIRE(set_position_beats(first_points) == first_expected_beats);
+        REQUIRE(set_values(second_points) == second_expected_values);
+        REQUIRE(set_position_beats(second_points) == second_expected_beats);
     }
 
     SECTION("Hold note points and chords")
@@ -147,27 +101,12 @@ TEST_CASE("Hold notes", "Hold")
             {{768, 7, NoteColour::Green}, {768, 8, NoteColour::Red}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
         const auto points = PointSet(track, 192, converter);
-        const auto expected_points = std::vector<Point>(
-            {{{Beat(4.0), Measure(1.0)},
-              {Beat(3.86), Measure(0.965)},
-              {Beat(4.14), Measure(1.035)},
-              100,
-              false,
-              false},
-             {{Beat(775.0 / 192.0), Measure(775.0 / 768.0)},
-              {Beat(775.0 / 192.0), Measure(775.0 / 768.0)},
-              {Beat(775.0 / 192.0), Measure(775.0 / 768.0)},
-              1,
-              true,
-              false},
-             {{Beat(782.0 / 192.0), Measure(782.0 / 768.0)},
-              {Beat(782.0 / 192.0), Measure(782.0 / 768.0)},
-              {Beat(782.0 / 192.0), Measure(782.0 / 768.0)},
-              1,
-              true,
-              false}});
+        std::vector<std::uint32_t> expected_values {100, 1, 1};
+        std::vector<Beat> expected_beats {Beat(4.0), Beat(4.03646),
+                                          Beat(4.07292)};
 
-        REQUIRE(points == expected_points);
+        REQUIRE(set_values(points) == expected_values);
+        REQUIRE(set_position_beats(points) == expected_beats);
     }
 
     SECTION("Resolutions below 25 do not enter an infinite loop")
@@ -175,100 +114,34 @@ TEST_CASE("Hold notes", "Hold")
         const auto track = NoteTrack({{768, 2}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 1);
         const auto points = PointSet(track, 1, converter);
-        const auto expected_points
-            = std::vector<Point>({{{Beat(768.0), Measure(192.0)},
-                                   {Beat(767.86), Measure(191.965)},
-                                   {Beat(768.14), Measure(192.035)},
-                                   50,
-                                   false,
-                                   false},
-                                  {{Beat(769.0), Measure(192.25)},
-                                   {Beat(769.0), Measure(192.25)},
-                                   {Beat(769.0), Measure(192.25)},
-                                   1,
-                                   true,
-                                   false},
-                                  {{Beat(770.0), Measure(192.5)},
-                                   {Beat(770.0), Measure(192.5)},
-                                   {Beat(770.0), Measure(192.5)},
-                                   1,
-                                   true,
-                                   false}});
 
-        REQUIRE(points == expected_points);
+        REQUIRE(std::distance(points.cbegin(), points.cend()) == 3);
     }
 }
 
-TEST_CASE("Points are sorted", "Sorted")
+TEST_CASE("Points are sorted")
 {
     const auto track = NoteTrack({{768, 15}, {770, 0}}, {}, {});
     const auto converter = TimeConverter(SyncTrack(), 192);
     const auto points = PointSet(track, 192, converter);
-    const auto expected_points = std::vector<Point>(
-        {{{Beat(4.0), Measure(1.0)},
-          {Beat(3.86), Measure(0.965)},
-          {Beat(4.14), Measure(1.035)},
-          50,
-          false,
-          false},
-         {{Beat(770.0 / 192.0), Measure(770.0 / 768.0)},
-          {Beat(770.0 / 192.0 - 0.14), Measure(770.0 / 768.0 - 0.035)},
-          {Beat(770.0 / 192.0 + 0.14), Measure(770.0 / 768.0 + 0.035)},
-          50,
-          false,
-          false},
-         {{Beat(775.0 / 192.0), Measure(775.0 / 768.0)},
-          {Beat(775.0 / 192.0), Measure(775.0 / 768.0)},
-          {Beat(775.0 / 192.0), Measure(775.0 / 768.0)},
-          1,
-          true,
-          false},
-         {{Beat(782.0 / 192.0), Measure(782.0 / 768.0)},
-          {Beat(782.0 / 192.0), Measure(782.0 / 768.0)},
-          {Beat(782.0 / 192.0), Measure(782.0 / 768.0)},
-          1,
-          true,
-          false},
-         {{Beat(789.0 / 192.0), Measure(789.0 / 768.0)},
-          {Beat(789.0 / 192.0), Measure(789.0 / 768.0)},
-          {Beat(789.0 / 192.0), Measure(789.0 / 768.0)},
-          1,
-          true,
-          false}});
+    const auto beats = set_position_beats(points);
 
-    REQUIRE(points == expected_points);
+    REQUIRE(std::is_sorted(beats.cbegin(), beats.cend()));
 }
 
-TEST_CASE("End of SP phrase points", "End of SP")
+TEST_CASE("End of SP phrase points")
 {
     const auto track = NoteTrack({{768}, {960}, {1152}},
                                  {{768, 1}, {900, 50}, {1100, 53}}, {});
     const auto converter = TimeConverter(SyncTrack(), 192);
     const auto points = PointSet(track, 192, converter);
-    const auto expected_points
-        = std::vector<Point>({{{Beat(4.0), Measure(1.0)},
-                               {Beat(3.86), Measure(0.965)},
-                               {Beat(4.14), Measure(1.035)},
-                               50,
-                               false,
-                               true},
-                              {{Beat(5.0), Measure(1.25)},
-                               {Beat(4.86), Measure(1.215)},
-                               {Beat(5.14), Measure(1.285)},
-                               50,
-                               false,
-                               false},
-                              {{Beat(6.0), Measure(1.5)},
-                               {Beat(5.86), Measure(1.465)},
-                               {Beat(6.14), Measure(1.535)},
-                               50,
-                               false,
-                               true}});
 
-    REQUIRE(points == expected_points);
+    REQUIRE(points.cbegin()->is_sp_granting_note);
+    REQUIRE(!std::next(points.cbegin())->is_sp_granting_note);
+    REQUIRE(std::next(points.cbegin(), 2)->is_sp_granting_note);
 }
 
-TEST_CASE("Combo multiplier is taken into account", "Multiplier")
+TEST_CASE("Combo multiplier is taken into account")
 {
     SECTION("Multiplier applies to non-holds")
     {
@@ -279,20 +152,15 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
         }
         const auto track = NoteTrack(notes, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
-        std::vector<Point> expected_points;
-        expected_points.reserve(50);
+        const auto points = PointSet(track, 192, converter);
+        std::vector<std::uint32_t> expected_values;
+        expected_values.reserve(50);
         for (auto i = 0U; i < 50U; ++i) {
             const auto mult = 1U + std::min((i + 1) / 10, 3U);
-            expected_points.push_back(
-                {{Beat(i), Measure(i / 4.0)},
-                 {Beat(i - 0.14), Measure(i / 4.0 - 0.035)},
-                 {Beat(i + 0.14), Measure(i / 4.0 + 0.035)},
-                 50 * mult,
-                 false,
-                 false});
+            expected_values.push_back(50 * mult);
         }
 
-        REQUIRE(PointSet(track, 192, converter) == expected_points);
+        REQUIRE(set_values(points) == expected_values);
     }
 
     SECTION("Hold points are multiplied")
@@ -325,5 +193,44 @@ TEST_CASE("Combo multiplier is taken into account", "Multiplier")
         const auto points = PointSet(track, 192, converter);
 
         REQUIRE(std::prev(points.cend())->value == 2);
+    }
+}
+
+TEST_CASE("hit_window_start and hit_window_end are set correctly")
+{
+    TimeConverter converter(SyncTrack({}, {{0, 150000}, {768, 200000}}), 192);
+
+    SECTION("Hit window starts for notes are correct")
+    {
+        std::vector<Note> notes {{192}, {787}};
+        NoteTrack track(notes, {}, {});
+        PointSet points(track, 192, converter);
+
+        REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.825));
+        REQUIRE(std::next(points.cbegin())->hit_window_start.beat
+                == Beat(3.89922));
+    }
+
+    SECTION("Hit window ends for notes are correct")
+    {
+        std::vector<Note> notes {{192}, {749}};
+        NoteTrack track(notes, {}, {});
+        PointSet points(track, 192, converter);
+
+        REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.175));
+        REQUIRE(std::next(points.cbegin())->hit_window_end.beat
+                == Beat(4.10139));
+    }
+
+    SECTION("Hit window starts and ends for hold points are correct")
+    {
+        std::vector<Note> notes {{672, 192}};
+        NoteTrack track(notes, {}, {});
+        PointSet points(track, 192, converter);
+
+        for (auto p = std::next(points.cbegin()); p < points.cend(); ++p) {
+            REQUIRE(p->position.beat == p->hit_window_start.beat);
+            REQUIRE(p->position.beat == p->hit_window_end.beat);
+        }
     }
 }

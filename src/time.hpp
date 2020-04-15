@@ -63,14 +63,6 @@ public:
     {
         return !(lhs < rhs);
     }
-    friend bool operator==(const Beat& lhs, const Beat& rhs)
-    {
-        return lhs.m_value == rhs.m_value;
-    }
-    friend bool operator!=(const Beat& lhs, const Beat& rhs)
-    {
-        return !(lhs == rhs);
-    }
 
     Beat& operator+=(const Beat& rhs)
     {

@@ -63,22 +63,14 @@ TEST_CASE("Beat operations", "Beat")
         REQUIRE(Beat(1.0) >= Beat(1.0));
     }
 
-    SECTION("== and != work correctly")
-    {
-        REQUIRE(Beat(1.0) == Beat(1.0));
-        REQUIRE(!(Beat(-1.0) == Beat(1.0)));
-        REQUIRE(Beat(-1.0) != Beat(1.0));
-        REQUIRE(!(Beat(1.0) != Beat(1.0)));
-    }
-
     SECTION("+= and + work correctly")
     {
         Beat lhs {1.0};
         Beat rhs {0.5};
         lhs += rhs;
 
-        REQUIRE(lhs == Beat(1.5));
-        REQUIRE(Beat(1.0) + Beat(0.5) == Beat(1.5));
+        REQUIRE(lhs.value() == Approx(1.5));
+        REQUIRE((Beat(1.0) + Beat(0.5)).value() == Approx(1.5));
     }
 
     SECTION("-= and - work correctly")
@@ -87,8 +79,8 @@ TEST_CASE("Beat operations", "Beat")
         Beat rhs {0.5};
         lhs -= rhs;
 
-        REQUIRE(lhs == Beat(0.5));
-        REQUIRE(Beat(1.0) - Beat(0.5) == Beat(0.5));
+        REQUIRE(lhs.value() == Approx(0.5));
+        REQUIRE((Beat(1.0) - Beat(0.5)).value() == Approx(0.5));
     }
 
     SECTION("*= and * work correctly")
@@ -97,8 +89,8 @@ TEST_CASE("Beat operations", "Beat")
         double rhs {0.5};
         lhs *= rhs;
 
-        REQUIRE(lhs == Beat(0.5));
-        REQUIRE(Beat(1.0) * 0.5 == Beat(0.5));
+        REQUIRE(lhs.value() == Approx(0.5));
+        REQUIRE((Beat(1.0) * 0.5).value() == Approx(0.5));
     }
 
     SECTION("/ works correctly")
@@ -118,8 +110,8 @@ TEST_CASE("Measure operations", "Measure")
 
     SECTION(".to_beat() works correctly")
     {
-        REQUIRE(Measure(1.0).to_beat(4.0) == Beat(4.0));
-        REQUIRE(Measure(2.0).to_beat(3.0) == Beat(6.0));
+        REQUIRE(Measure(1.0).to_beat(4.0).value() == Approx(4.0));
+        REQUIRE(Measure(2.0).to_beat(3.0).value() == Approx(6.0));
     }
 
     SECTION("< and > work correctly")
@@ -197,8 +189,8 @@ TEST_CASE("Second operations", "Second")
 
     SECTION(".to_beat() works correctly")
     {
-        REQUIRE(Second(1.0).to_beat(120000) == Beat(2.0));
-        REQUIRE(Second(2.0).to_beat(240000) == Beat(8.0));
+        REQUIRE(Second(1.0).to_beat(120000).value() == Approx(2.0));
+        REQUIRE(Second(2.0).to_beat(240000).value() == Approx(8.0));
     }
 
     SECTION("< and > work correctly")
