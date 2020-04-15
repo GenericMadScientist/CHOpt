@@ -31,11 +31,11 @@ static bool phrase_contains_pos(const StarPower& phrase, std::uint32_t position)
 template <class InputIt, class OutputIt>
 static void append_note_points(InputIt first, InputIt last, OutputIt points,
                                std::int32_t resolution, bool is_note_sp_ender,
-                               const TimeConverter& converter)
+                               const TimeConverter& converter, double squeeze)
 {
     constexpr auto NOTE_VALUE = 50U;
-    const auto EARLY_WINDOW = Second(0.07);
-    const auto LATE_WINDOW = Second(0.07);
+    const auto EARLY_WINDOW = Second(0.07 * squeeze);
+    const auto LATE_WINDOW = Second(0.07 * squeeze);
 
     const double float_res = resolution;
     const auto tick_gap = std::max(resolution / 25, 1);
@@ -70,7 +70,7 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
 }
 
 PointSet::PointSet(const NoteTrack& track, std::int32_t resolution,
-                   const TimeConverter& converter)
+                   const TimeConverter& converter, double squeeze)
 {
     const auto& notes = track.notes();
 
@@ -88,7 +88,7 @@ PointSet::PointSet(const NoteTrack& track, std::int32_t resolution,
             ++current_phrase;
         }
         append_note_points(p, q, std::back_inserter(m_points), resolution,
-                           is_note_sp_ender, converter);
+                           is_note_sp_ender, converter, squeeze);
         p = q;
     }
 

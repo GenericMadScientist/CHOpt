@@ -42,7 +42,7 @@ private:
 
 public:
     PointSet(const NoteTrack& track, std::int32_t resolution,
-             const TimeConverter& converter);
+             const TimeConverter& converter, double squeeze);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
 };

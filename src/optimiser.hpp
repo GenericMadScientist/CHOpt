@@ -89,7 +89,8 @@ private:
 
 public:
     ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
-                   const SyncTrack& sync_track, double early_whammy);
+                   const SyncTrack& sync_track, double early_whammy,
+                   double squeeze);
     [[nodiscard]] const PointSet& points() const { return m_points; }
     // Returns an empty optional if the activation is invalid, or the earliest
     // point it can end if it is valid.

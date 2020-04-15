@@ -26,9 +26,10 @@
 #include "optimiser.hpp"
 
 ProcessedTrack::ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
-                               const SyncTrack& sync_track, double early_whammy)
+                               const SyncTrack& sync_track, double early_whammy,
+                               double squeeze)
     : m_converter {TimeConverter(sync_track, resolution)}
-    , m_points {track, resolution, m_converter}
+    , m_points {track, resolution, m_converter, squeeze}
     , m_sp_data {track, resolution, sync_track, early_whammy}
 {
     m_total_solo_boost = std::accumulate(

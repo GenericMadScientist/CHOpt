@@ -114,8 +114,9 @@ int main(int argc, char* argv[])
                                                 chart.sync_track());
 
         if (!result["blank"].as<bool>()) {
-            const auto processed_track = ProcessedTrack(
-                track, chart.resolution(), chart.sync_track(), early_whammy);
+            const auto processed_track
+                = ProcessedTrack(track, chart.resolution(), chart.sync_track(),
+                                 early_whammy / 100.0, squeeze / 100.0);
             const auto path = processed_track.optimal_path();
             for (const auto& act : path.activations) {
                 auto start = act.act_start->position.beat.value();

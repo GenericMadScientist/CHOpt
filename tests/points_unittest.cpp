@@ -55,7 +55,7 @@ TEST_CASE("Non-hold notes")
     {
         const auto track = NoteTrack({{768}, {960}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
-        const auto points = PointSet(track, 192, converter);
+        const auto points = PointSet(track, 192, converter, 1.0);
         std::vector<std::uint32_t> expected_values {50, 50};
 
         REQUIRE(set_values(points) == expected_values);
@@ -66,7 +66,7 @@ TEST_CASE("Non-hold notes")
         const auto track = NoteTrack(
             {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
-        const auto points = PointSet(track, 192, converter);
+        const auto points = PointSet(track, 192, converter, 1.0);
         std::vector<std::uint32_t> expected_values {100};
 
         REQUIRE(set_values(points) == expected_values);
@@ -79,12 +79,12 @@ TEST_CASE("Hold notes")
     {
         const auto track = NoteTrack({{768, 15}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
-        const auto first_points = PointSet(track, 192, converter);
+        const auto first_points = PointSet(track, 192, converter, 1.0);
         std::vector<std::uint32_t> first_expected_values {50, 1, 1, 1};
         std::vector<Beat> first_expected_beats {Beat(4.0), Beat(4.03646),
                                                 Beat(4.07292), Beat(4.10938)};
         const auto second_converter = TimeConverter(SyncTrack(), 200);
-        const auto second_points = PointSet(track, 200, second_converter);
+        const auto second_points = PointSet(track, 200, second_converter, 1.0);
         std::vector<std::uint32_t> second_expected_values {50, 1, 1};
         std::vector<Beat> second_expected_beats {Beat(3.84), Beat(3.88),
                                                  Beat(3.92)};
@@ -100,7 +100,7 @@ TEST_CASE("Hold notes")
         const auto track = NoteTrack(
             {{768, 7, NoteColour::Green}, {768, 8, NoteColour::Red}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
-        const auto points = PointSet(track, 192, converter);
+        const auto points = PointSet(track, 192, converter, 1.0);
         std::vector<std::uint32_t> expected_values {100, 1, 1};
         std::vector<Beat> expected_beats {Beat(4.0), Beat(4.03646),
                                           Beat(4.07292)};
@@ -113,7 +113,7 @@ TEST_CASE("Hold notes")
     {
         const auto track = NoteTrack({{768, 2}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 1);
-        const auto points = PointSet(track, 1, converter);
+        const auto points = PointSet(track, 1, converter, 1.0);
 
         REQUIRE(std::distance(points.cbegin(), points.cend()) == 3);
     }
@@ -123,7 +123,7 @@ TEST_CASE("Points are sorted")
 {
     const auto track = NoteTrack({{768, 15}, {770, 0}}, {}, {});
     const auto converter = TimeConverter(SyncTrack(), 192);
-    const auto points = PointSet(track, 192, converter);
+    const auto points = PointSet(track, 192, converter, 1.0);
     const auto beats = set_position_beats(points);
 
     REQUIRE(std::is_sorted(beats.cbegin(), beats.cend()));
@@ -134,7 +134,7 @@ TEST_CASE("End of SP phrase points")
     const auto track = NoteTrack({{768}, {960}, {1152}},
                                  {{768, 1}, {900, 50}, {1100, 53}}, {});
     const auto converter = TimeConverter(SyncTrack(), 192);
-    const auto points = PointSet(track, 192, converter);
+    const auto points = PointSet(track, 192, converter, 1.0);
 
     REQUIRE(points.cbegin()->is_sp_granting_note);
     REQUIRE(!std::next(points.cbegin())->is_sp_granting_note);
@@ -152,7 +152,7 @@ TEST_CASE("Combo multiplier is taken into account")
         }
         const auto track = NoteTrack(notes, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
-        const auto points = PointSet(track, 192, converter);
+        const auto points = PointSet(track, 192, converter, 1.0);
         std::vector<std::uint32_t> expected_values;
         expected_values.reserve(50);
         for (auto i = 0U; i < 50U; ++i) {
@@ -174,7 +174,7 @@ TEST_CASE("Combo multiplier is taken into account")
 
         const auto track = NoteTrack(notes, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
-        const auto points = PointSet(track, 192, converter);
+        const auto points = PointSet(track, 192, converter, 1.0);
 
         REQUIRE(std::prev(points.cend())->value == 4);
     }
@@ -190,7 +190,7 @@ TEST_CASE("Combo multiplier is taken into account")
 
         const auto track = NoteTrack(notes, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
-        const auto points = PointSet(track, 192, converter);
+        const auto points = PointSet(track, 192, converter, 1.0);
 
         REQUIRE(std::prev(points.cend())->value == 2);
     }
@@ -204,7 +204,7 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     {
         std::vector<Note> notes {{192}, {787}};
         NoteTrack track(notes, {}, {});
-        PointSet points(track, 192, converter);
+        PointSet points(track, 192, converter, 1.0);
 
         REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.825));
         REQUIRE(std::next(points.cbegin())->hit_window_start.beat
@@ -215,7 +215,7 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     {
         std::vector<Note> notes {{192}, {749}};
         NoteTrack track(notes, {}, {});
-        PointSet points(track, 192, converter);
+        PointSet points(track, 192, converter, 1.0);
 
         REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.175));
         REQUIRE(std::next(points.cbegin())->hit_window_end.beat
@@ -226,11 +226,21 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     {
         std::vector<Note> notes {{672, 192}};
         NoteTrack track(notes, {}, {});
-        PointSet points(track, 192, converter);
+        PointSet points(track, 192, converter, 1.0);
 
         for (auto p = std::next(points.cbegin()); p < points.cend(); ++p) {
             REQUIRE(p->position.beat == p->hit_window_start.beat);
             REQUIRE(p->position.beat == p->hit_window_end.beat);
         }
+    }
+
+    SECTION("Squeeze setting is accounted for")
+    {
+        std::vector<Note> notes {{192}};
+        NoteTrack track(notes, {}, {});
+        PointSet points(track, 192, converter, 0.5);
+
+        REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.9125));
+        REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.0875));
     }
 }
