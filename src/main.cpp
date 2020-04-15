@@ -31,6 +31,8 @@
 
 int main(int argc, char* argv[])
 {
+    constexpr int MAX_PERCENT = 100;
+
     try {
         cxxopts::Options options("chopt",
                                  "Star Power optimiser for Clone Hero");
@@ -39,6 +41,10 @@ int main(int argc, char* argv[])
             "d,diff", "Difficulty",
             cxxopts::value<std::string>()->default_value("expert"))(
             "f,file", "Chart filename", cxxopts::value<std::string>())(
+            "squeeze", "Squeeze% (0 to 100)",
+            cxxopts::value<int>()->default_value("100"))(
+            "early-whammy", "Early whammy% (0 to 100), <= squeeze",
+            cxxopts::value<int>()->default_value("100"))(
             "o,output", "Location to save output image (must be a .bmp)",
             cxxopts::value<std::string>()->default_value("path.bmp"))(
             "h,help", "Print usage");
@@ -75,6 +81,22 @@ int main(int argc, char* argv[])
             difficulty = Difficulty::Easy;
         } else {
             std::cerr << "Unrecognised difficulty " << diff_name << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        auto squeeze = result["squeeze"].as<int>();
+        auto early_whammy = result["early-whammy"].as<int>();
+        if (squeeze < 0 || squeeze > MAX_PERCENT) {
+            std::cerr << "Squeeze must lie between 0 and 100" << std::endl;
+            return EXIT_FAILURE;
+        }
+        if (early_whammy < 0 || early_whammy > MAX_PERCENT) {
+            std::cerr << "Early whammy must lie between 0 and 100" << std::endl;
+            return EXIT_FAILURE;
+        }
+        if (early_whammy > squeeze) {
+            std::cerr << "Early whammy cannot be higher than squeeze"
+                      << std::endl;
             return EXIT_FAILURE;
         }
 
