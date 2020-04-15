@@ -10,7 +10,8 @@ A command-line tool to work out optimal Star Power paths for Clone Hero songs.
 Download the latest version from the [Releases page](../../releases). If you're
 on something other than Windows, then either compile it yourself or ask me. The
 tests do pass on Mac OS and Linux, but I've not tried the program proper on
-them.
+them. If you do plan to compile chopt yourself, make sure to set ENABLE_LTO to
+ON in your CMakeCache.
 
 ## Usage
 
@@ -27,12 +28,14 @@ expert if none is provided. The full set of options can be listed by using -h or
 
 ## Limitations
 
-This is version 0.2, so right now the program is quite limited. There is no
-support for squeezing or early whammy, the only supported instrument is five
-fret guitar, and only .chart files are accepted. The performance is currently
-quite poor (GH3 Flames takes 16 minutes on my computer, and the runtime blows up
-horribly for more complicated to path songs). I aim to address all of these
-issues in subsequent versions.
+This is version 0.3, so there are still some kinks and missing features. The
+only supported instrument is five fret guitar, only .chart files are accepted,
+and the drawn paths are sufficient to work out what the path is rather than
+providing all the details like how much to squeeze or not whammy. The
+performance is decent for typical songs (GH3 Flames and Soulless 4 take under
+40 seconds on my machine), but the run time blows up horribly for more
+complicated to path songs (Soulless 5 takes my machine 8 minutes, RWBY solo
+medley 12 minutes). I aim to address all of these issues in subsequent versions.
 
 ## Dependencies
 
