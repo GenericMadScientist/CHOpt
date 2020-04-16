@@ -63,7 +63,7 @@ jobs:
         - echo "CMake not required for static analysis job"
       script:
         - clang-format-10 --version
-        - clang-format-10 -i src/*.cpp src/*.hpp tests/*.cpp
+        - clang-format-10 -i include/*.hpp src/*.cpp tests/*.cpp
         - git diff --color --exit-code
         - clang-tidy-10 --version
         - clang-tidy-10 include/*.hpp src/*.cpp -- -std=c++17 -Iinclude -Ilibs -stdlib=libc++

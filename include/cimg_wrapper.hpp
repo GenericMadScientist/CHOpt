@@ -34,7 +34,7 @@
 #pragma warning(push, 0)
 #endif
 
-#define cimg_display 0
+#define cimg_display 0 // NOLINT
 #include "CImg.h"
 
 #if defined(__clang__)

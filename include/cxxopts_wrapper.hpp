@@ -26,7 +26,8 @@
 #define CHOPT_CXXOPTS_WRAPPER_HPP
 
 #if defined(__clang__)
-#pragma clang system_header
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #elif defined(__GNUG__)
 #pragma GCC system_header
 #elif defined(_MSC_VER)
@@ -35,6 +36,8 @@
 
 #include "cxxopts.hpp"
 
+#if defined(__clang__)
+#pragma clang diagnostic pop
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif
