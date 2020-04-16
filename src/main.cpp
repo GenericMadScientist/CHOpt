@@ -23,84 +23,23 @@
 #include <string>
 
 #include "cimg_wrapper.hpp"
-#include "cxxopts_wrapper.hpp"
 
 #include "chart.hpp"
 #include "image.hpp"
 #include "optimiser.hpp"
+#include "settings.hpp"
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
-    constexpr int MAX_PERCENT = 100;
-
     try {
-        cxxopts::Options options("chopt",
-                                 "Star Power optimiser for Clone Hero");
+        const auto settings = from_args(argc, argv);
 
-        options.add_options()("b,blank", "Give a blank chart image")(
-            "d,diff", "Difficulty",
-            cxxopts::value<std::string>()->default_value("expert"))(
-            "f,file", "Chart filename", cxxopts::value<std::string>())(
-            "squeeze", "Squeeze% (0 to 100)",
-            cxxopts::value<int>()->default_value("100"))(
-            "early-whammy", "Early whammy% (0 to 100), <= squeeze",
-            cxxopts::value<int>()->default_value("100"))(
-            "o,output", "Location to save output image (must be a .bmp)",
-            cxxopts::value<std::string>()->default_value("path.bmp"))(
-            "h,help", "Print usage");
-
-        auto result = options.parse(argc, argv);
-
-        if (result.count("help") != 0) {
-            std::cout << options.help() << std::endl;
+        if (settings.help) {
+            std::cout << settings.help_message << std::endl;
             return EXIT_SUCCESS;
         }
-        if (result.count("file") == 0) {
-            std::cerr << "Please specify a file!" << std::endl;
-            return EXIT_FAILURE;
-        }
 
-        auto filename = result["file"].as<std::string>();
-        auto diff_name = result["diff"].as<std::string>();
-        auto output_path = result["output"].as<std::string>();
-
-        if (output_path.size() < 4
-            || output_path.substr(output_path.size() - 4, 4) != ".bmp") {
-            std::cerr << "Image output must be a bitmap (.bmp)!" << std::endl;
-            return EXIT_FAILURE;
-        }
-
-        auto difficulty = Difficulty::Expert;
-        if (diff_name == "expert") {
-            difficulty = Difficulty::Expert;
-        } else if (diff_name == "hard") {
-            difficulty = Difficulty::Hard;
-        } else if (diff_name == "medium") {
-            difficulty = Difficulty::Medium;
-        } else if (diff_name == "easy") {
-            difficulty = Difficulty::Easy;
-        } else {
-            std::cerr << "Unrecognised difficulty " << diff_name << std::endl;
-            return EXIT_FAILURE;
-        }
-
-        auto squeeze = result["squeeze"].as<int>();
-        auto early_whammy = result["early-whammy"].as<int>();
-        if (squeeze < 0 || squeeze > MAX_PERCENT) {
-            std::cerr << "Squeeze must lie between 0 and 100" << std::endl;
-            return EXIT_FAILURE;
-        }
-        if (early_whammy < 0 || early_whammy > MAX_PERCENT) {
-            std::cerr << "Early whammy must lie between 0 and 100" << std::endl;
-            return EXIT_FAILURE;
-        }
-        if (early_whammy > squeeze) {
-            std::cerr << "Early whammy cannot be higher than squeeze"
-                      << std::endl;
-            return EXIT_FAILURE;
-        }
-
-        std::ifstream in(filename);
+        std::ifstream in(settings.filename);
         if (!in.is_open()) {
             std::cerr << "File did not open, please specify a valid file!"
                       << std::endl;
@@ -109,14 +48,14 @@ int main(int argc, char* argv[])
         std::string contents {std::istreambuf_iterator<char>(in),
                               std::istreambuf_iterator<char>()};
         const auto chart = Chart::parse_chart(contents);
-        const auto& track = chart.note_track(difficulty);
+        const auto& track = chart.note_track(settings.difficulty);
         auto instructions = create_instructions(track, chart.resolution(),
                                                 chart.sync_track());
 
-        if (!result["blank"].as<bool>()) {
+        if (!settings.blank) {
             const auto processed_track
                 = ProcessedTrack(track, chart.resolution(), chart.sync_track(),
-                                 early_whammy / 100.0, squeeze / 100.0);
+                                 settings.early_whammy, settings.squeeze);
             const auto path = processed_track.optimal_path();
             for (const auto& act : path.activations) {
                 auto start = act.act_start->position.beat.value();
@@ -126,10 +65,10 @@ int main(int argc, char* argv[])
             std::cout << processed_track.path_summary(path) << std::endl;
         }
         const auto image = create_path_image(instructions);
-        image.save(output_path.c_str());
+        image.save(settings.image_path.c_str());
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     } catch (...) {
         std::cerr << "Unexpected non-exception error!" << std::endl;
