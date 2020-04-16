@@ -1,3 +1,4 @@
+set(INCLUDE "${PROJECT_SOURCE_DIR}/include")
 set(LIBS "${PROJECT_SOURCE_DIR}/libs")
 set(SRC "${PROJECT_SOURCE_DIR}/src")
 
@@ -8,7 +9,7 @@ set_warnings(catch_main)
 
 function(package_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
-    target_include_directories(${TESTNAME} PRIVATE ${LIBS} ${SRC})
+    target_include_directories(${TESTNAME} PRIVATE ${INCLUDE} ${LIBS})
     target_link_libraries(${TESTNAME} PRIVATE catch_main)
     add_test(NAME ${TESTNAME} COMMAND ${TESTNAME})
     set_cpp_standard(${TESTNAME})
