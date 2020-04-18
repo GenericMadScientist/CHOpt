@@ -37,8 +37,8 @@ constexpr int YELLOW_OFFSET = 30;
 constexpr int BLUE_OFFSET = 45;
 constexpr int ORANGE_OFFSET = 60;
 
-static double get_beat_rate(const SyncTrack& sync_track,
-                            std::int32_t resolution, double beat)
+static double get_beat_rate(const SyncTrack& sync_track, int resolution,
+                            double beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
@@ -52,10 +52,9 @@ static double get_beat_rate(const SyncTrack& sync_track,
     return BASE_BEAT_RATE * ts->numerator / ts->denominator;
 }
 
-static std::uint32_t get_numer(const SyncTrack& sync_track,
-                               std::int32_t resolution, double beat)
+static int get_numer(const SyncTrack& sync_track, int resolution, double beat)
 {
-    constexpr auto BASE_NUMERATOR = 4U;
+    constexpr int BASE_NUMERATOR = 4;
 
     auto ts = std::find_if(
         sync_track.time_sigs().cbegin(), sync_track.time_sigs().cend(),
@@ -67,7 +66,7 @@ static std::uint32_t get_numer(const SyncTrack& sync_track,
     return ts->numerator;
 }
 
-static double get_denom(const SyncTrack& sync_track, std::int32_t resolution,
+static double get_denom(const SyncTrack& sync_track, int resolution,
                         double beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
@@ -82,8 +81,7 @@ static double get_denom(const SyncTrack& sync_track, std::int32_t resolution,
     return BASE_BEAT_RATE / ts->denominator;
 }
 
-DrawingInstructions create_instructions(const NoteTrack& track,
-                                        std::int32_t resolution,
+DrawingInstructions create_instructions(const NoteTrack& track, int resolution,
                                         const SyncTrack& sync_track)
 {
     std::vector<DrawnNote> notes;
@@ -146,7 +144,7 @@ DrawingInstructions create_instructions(const NoteTrack& track,
             auto denom = get_denom(sync_track, resolution, start);
             measure_lines.push_back(start);
             half_beat_lines.push_back(start + HALF_BEAT * denom);
-            for (auto i = 1U; i < numer; ++i) {
+            for (int i = 1; i < numer; ++i) {
                 beat_lines.push_back(start + i * denom);
                 half_beat_lines.push_back(start + (i + HALF_BEAT) * denom);
             }

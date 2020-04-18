@@ -27,9 +27,9 @@ static bool operator==(const Beat& lhs, const Beat& rhs)
     return lhs.value() == Approx(rhs.value());
 }
 
-static std::vector<std::uint32_t> set_values(const PointSet& points)
+static std::vector<int> set_values(const PointSet& points)
 {
-    std::vector<std::uint32_t> values;
+    std::vector<int> values;
     values.reserve(static_cast<std::size_t>(
         std::distance(points.cbegin(), points.cend())));
     for (auto p = points.cbegin(); p < points.cend(); ++p) {
@@ -56,7 +56,7 @@ TEST_CASE("Non-hold notes")
         const auto track = NoteTrack({{768}, {960}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
         const auto points = PointSet(track, 192, converter, 1.0);
-        std::vector<std::uint32_t> expected_values {50, 50};
+        std::vector<int> expected_values {50, 50};
 
         REQUIRE(set_values(points) == expected_values);
     }
@@ -67,7 +67,7 @@ TEST_CASE("Non-hold notes")
             {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
         const auto points = PointSet(track, 192, converter, 1.0);
-        std::vector<std::uint32_t> expected_values {100};
+        std::vector<int> expected_values {100};
 
         REQUIRE(set_values(points) == expected_values);
     }
@@ -80,12 +80,12 @@ TEST_CASE("Hold notes")
         const auto track = NoteTrack({{768, 15}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
         const auto first_points = PointSet(track, 192, converter, 1.0);
-        std::vector<std::uint32_t> first_expected_values {50, 1, 1, 1};
+        std::vector<int> first_expected_values {50, 1, 1, 1};
         std::vector<Beat> first_expected_beats {Beat(4.0), Beat(4.03646),
                                                 Beat(4.07292), Beat(4.10938)};
         const auto second_converter = TimeConverter(SyncTrack(), 200);
         const auto second_points = PointSet(track, 200, second_converter, 1.0);
-        std::vector<std::uint32_t> second_expected_values {50, 1, 1};
+        std::vector<int> second_expected_values {50, 1, 1};
         std::vector<Beat> second_expected_beats {Beat(3.84), Beat(3.88),
                                                  Beat(3.92)};
 
@@ -101,7 +101,7 @@ TEST_CASE("Hold notes")
             {{768, 7, NoteColour::Green}, {768, 8, NoteColour::Red}}, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
         const auto points = PointSet(track, 192, converter, 1.0);
-        std::vector<std::uint32_t> expected_values {100, 1, 1};
+        std::vector<int> expected_values {100, 1, 1};
         std::vector<Beat> expected_beats {Beat(4.0), Beat(4.03646),
                                           Beat(4.07292)};
 
@@ -147,16 +147,16 @@ TEST_CASE("Combo multiplier is taken into account")
     {
         std::vector<Note> notes;
         notes.reserve(50);
-        for (auto i = 0U; i < 50U; ++i) {
+        for (int i = 0; i < 50; ++i) {
             notes.push_back({192 * i});
         }
         const auto track = NoteTrack(notes, {}, {});
         const auto converter = TimeConverter(SyncTrack(), 192);
         const auto points = PointSet(track, 192, converter, 1.0);
-        std::vector<std::uint32_t> expected_values;
+        std::vector<int> expected_values;
         expected_values.reserve(50);
-        for (auto i = 0U; i < 50U; ++i) {
-            const auto mult = 1U + std::min((i + 1) / 10, 3U);
+        for (int i = 0; i < 50; ++i) {
+            const auto mult = 1 + std::min((i + 1) / 10, 3);
             expected_values.push_back(50 * mult);
         }
 
@@ -167,7 +167,7 @@ TEST_CASE("Combo multiplier is taken into account")
     {
         std::vector<Note> notes;
         notes.reserve(50);
-        for (auto i = 0U; i < 50U; ++i) {
+        for (int i = 0; i < 50; ++i) {
             notes.push_back({192 * i});
         }
         notes.push_back({9600, 192});
@@ -183,7 +183,7 @@ TEST_CASE("Combo multiplier is taken into account")
     {
         std::vector<Note> notes;
         notes.reserve(10);
-        for (auto i = 0U; i < 10U; ++i) {
+        for (int i = 0; i < 10; ++i) {
             notes.push_back({192 * i});
         }
         notes[0].length = 2000;

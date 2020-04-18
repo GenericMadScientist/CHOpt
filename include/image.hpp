@@ -19,7 +19,6 @@
 #ifndef CHOPT_IMAGE_HPP
 #define CHOPT_IMAGE_HPP
 
-#include <cstdint>
 #include <tuple>
 #include <vector>
 
@@ -49,8 +48,7 @@ struct DrawingInstructions {
     std::vector<std::tuple<double, double>> blue_ranges;
 };
 
-DrawingInstructions create_instructions(const NoteTrack& track,
-                                        std::int32_t resolution,
+DrawingInstructions create_instructions(const NoteTrack& track, int resolution,
                                         const SyncTrack& sync_track);
 
 using Image = cimg_library::CImg<unsigned char>;

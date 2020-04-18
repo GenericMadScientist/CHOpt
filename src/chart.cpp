@@ -183,24 +183,11 @@ static std::vector<std::string_view> split_by_space(std::string_view input)
     return substrings;
 }
 
-// Convert a string_view to a std::uint32_t. If there are any problems with the
-// input, this function throws.
-static std::optional<std::uint32_t> string_view_to_uint(std::string_view input)
+// Convert a string_view to an int. If there are any problems with the input,
+// this function throws.
+static std::optional<int> string_view_to_int(std::string_view input)
 {
-    std::uint32_t result {0};
-    const char* last = input.data() + input.size();
-    auto [p, ec] = std::from_chars(input.data(), last, result);
-    if ((ec != std::errc()) || (p != last)) {
-        return {};
-    }
-    return result;
-}
-
-// Convert a string_view to a std::int32_t. If there are any problems with the
-// input, this function throws.
-static std::optional<std::int32_t> string_view_to_int(std::string_view input)
-{
-    std::int32_t result = 0;
+    int result = 0;
     const char* last = input.data() + input.size();
     auto [p, ec] = std::from_chars(input.data(), last, result);
     if ((ec != std::errc()) || (p != last)) {
@@ -224,7 +211,7 @@ static std::string_view skip_section(std::string_view input)
 }
 
 static std::string_view read_song_header(std::string_view input,
-                                         std::int32_t& resolution)
+                                         int& resolution)
 {
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("[Song] does not open with {");
@@ -266,7 +253,7 @@ static std::string_view read_sync_track(std::string_view input,
         if (split_string.size() < 4) {
             throw std::invalid_argument("Event missing data");
         }
-        const auto pre_position = string_view_to_uint(split_string[0]);
+        const auto pre_position = string_view_to_int(split_string[0]);
         if (!pre_position) {
             continue;
         }
@@ -275,23 +262,26 @@ static std::string_view read_sync_track(std::string_view input,
         const auto type = split_string[2];
 
         if (type == "TS") {
-            const auto numerator = string_view_to_uint(split_string[3]);
+            const auto numerator = string_view_to_int(split_string[3]);
             if (!numerator) {
                 continue;
             }
-            std::uint32_t denominator = 2;
+            int denominator_base = 2;
             if (split_string.size() > 4) {
-                const auto result = string_view_to_uint(split_string[4]);
+                const auto result = string_view_to_int(split_string[4]);
                 if (result) {
-                    denominator = *result;
+                    denominator_base = *result;
                 } else {
                     continue;
                 }
             }
-            sync_track.time_sigs.push_back(
-                {position, *numerator, 1U << denominator});
+            // TODO: Check how Clone Hero reacts to a base outside the range of
+            // [0, 31]. For now, yes clang-tidy, we are technically in a state
+            // of sin.
+            int denominator = 1 << denominator_base; // NOLINT
+            sync_track.time_sigs.push_back({position, *numerator, denominator});
         } else if (type == "B") {
-            const auto bpm = string_view_to_uint(split_string[3]);
+            const auto bpm = string_view_to_int(split_string[3]);
             if (!bpm) {
                 continue;
             }
@@ -318,14 +308,14 @@ static std::string_view read_single_track(std::string_view input,
     constexpr auto TAP_CODE = 6;
     constexpr auto OPEN_CODE = 7;
 
-    constexpr std::uint32_t SOLO_NOTE_VALUE = 100;
+    constexpr int SOLO_NOTE_VALUE = 100;
 
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("A [*Single] track does not open with {");
     }
 
     // Pairs are (location, x) where x is 0 for solo and 1 for soloend.
-    std::vector<std::tuple<uint32_t, uint32_t>> solo_events;
+    std::vector<std::tuple<int, int>> solo_events;
 
     while (true) {
         const auto line = break_off_newline(input);
@@ -337,7 +327,7 @@ static std::string_view read_single_track(std::string_view input,
         if (split_string.size() < 4) {
             throw std::invalid_argument("Event missing data");
         }
-        const auto pre_position = string_view_to_uint(split_string[0]);
+        const auto pre_position = string_view_to_int(split_string[0]);
         if (!pre_position) {
             continue;
         }
@@ -353,7 +343,7 @@ static std::string_view read_single_track(std::string_view input,
             if (!fret_type) {
                 throw std::invalid_argument("Note has invalid fret");
             }
-            const auto pre_length = string_view_to_uint(split_string[4]);
+            const auto pre_length = string_view_to_int(split_string[4]);
             if (!pre_length) {
                 throw std::invalid_argument("Note has invalid length");
             }
@@ -391,7 +381,7 @@ static std::string_view read_single_track(std::string_view input,
             if (string_view_to_int(split_string[3]) != 2) {
                 continue;
             }
-            const auto pre_length = string_view_to_uint(split_string[4]);
+            const auto pre_length = string_view_to_int(split_string[4]);
             if (!pre_length) {
                 continue;
             }
@@ -408,8 +398,8 @@ static std::string_view read_single_track(std::string_view input,
 
     std::sort(solo_events.begin(), solo_events.end());
 
-    auto start = 0U;
-    auto end = 0U;
+    int start = 0;
+    int end = 0;
     bool in_solo = false;
     for (auto [pos, type] : solo_events) {
         if (type == 0 && !in_solo) {
@@ -418,7 +408,7 @@ static std::string_view read_single_track(std::string_view input,
         } else if (type == 1 && in_solo) {
             in_solo = false;
             end = pos;
-            std::set<std::uint32_t> positions_in_solo;
+            std::set<int> positions_in_solo;
             for (const auto& note : track.notes) {
                 if (note.position >= start && note.position <= end) {
                     positions_in_solo.insert(note.position);
@@ -427,7 +417,7 @@ static std::string_view read_single_track(std::string_view input,
             if (positions_in_solo.empty()) {
                 continue;
             }
-            auto notes = static_cast<std::uint32_t>(positions_in_solo.size());
+            auto notes = static_cast<int>(positions_in_solo.size());
             track.solos.push_back({start, end, SOLO_NOTE_VALUE * notes});
         }
     }
@@ -439,7 +429,7 @@ Chart Chart::parse_chart(std::string_view input)
 {
     Chart chart;
 
-    std::int32_t pre_resolution = DEFAULT_RESOLUTION;
+    int pre_resolution = DEFAULT_RESOLUTION;
     PreSyncTrack pre_sync_track;
     std::map<Difficulty, PreNoteTrack> pre_tracks;
 

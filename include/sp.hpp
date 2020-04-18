@@ -20,7 +20,6 @@
 #define CHOPT_SP_HPP
 
 #include <algorithm>
-#include <cstdint>
 #include <tuple>
 #include <vector>
 
@@ -92,12 +91,12 @@ private:
     [[nodiscard]] Beat whammy_propagation_endpoint(Beat start, Beat end,
                                                    double sp_bar_amount) const;
 
-    static std::vector<BeatRate> form_beat_rates(std::int32_t resolution,
+    static std::vector<BeatRate> form_beat_rates(int resolution,
                                                  const SyncTrack& sync_track);
 
 public:
-    SpData(const NoteTrack& track, std::int32_t resolution,
-           const SyncTrack& sync_track, double early_whammy);
+    SpData(const NoteTrack& track, int resolution, const SyncTrack& sync_track,
+           double early_whammy);
 
     // Return how much SP is available at the end after propagating over a
     // range, or -1 if SP runs out at any point. Only includes SP gain from

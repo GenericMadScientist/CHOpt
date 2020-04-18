@@ -19,7 +19,6 @@
 #ifndef CHOPT_TIME_HPP
 #define CHOPT_TIME_HPP
 
-#include <cstdint>
 #include <vector>
 
 #include "chart.hpp"
@@ -44,7 +43,7 @@ public:
     {
     }
     [[nodiscard]] double value() const { return m_value; }
-    [[nodiscard]] Second to_second(uint32_t bpm) const;
+    [[nodiscard]] Second to_second(int bpm) const;
     [[nodiscard]] Measure to_measure(double beat_rate) const;
 
     friend bool operator<(const Beat& lhs, const Beat& rhs)
@@ -198,7 +197,7 @@ public:
     {
     }
     [[nodiscard]] double value() const { return m_value; }
-    [[nodiscard]] Beat to_beat(uint32_t bpm) const
+    [[nodiscard]] Beat to_beat(int bpm) const
     {
         constexpr double MS_PER_MINUTE = 60000.0;
         return Beat(m_value * bpm / MS_PER_MINUTE);
@@ -276,7 +275,7 @@ inline Measure Beat::to_measure(double beat_rate) const
     return Measure(m_value / beat_rate);
 }
 
-inline Second Beat::to_second(uint32_t bpm) const
+inline Second Beat::to_second(int bpm) const
 {
     constexpr double MS_PER_MINUTE = 60000.0;
     return Second(m_value * MS_PER_MINUTE / bpm);
@@ -303,15 +302,15 @@ private:
         Beat beat;
     };
 
-    static constexpr uint32_t DEFAULT_BPM = 120000;
+    static constexpr int DEFAULT_BPM = 120000;
     static constexpr double DEFAULT_BEAT_RATE = 4.0;
     std::vector<BeatTimestamp> m_beat_timestamps;
     std::vector<MeasureTimestamp> m_measure_timestamps;
     double m_last_beat_rate;
-    uint32_t m_last_bpm;
+    int m_last_bpm;
 
 public:
-    TimeConverter(const SyncTrack& sync_track, std::int32_t resolution);
+    TimeConverter(const SyncTrack& sync_track, int resolution);
     [[nodiscard]] Second beats_to_seconds(Beat beats) const;
     [[nodiscard]] Beat seconds_to_beats(Second seconds) const;
     [[nodiscard]] Measure beats_to_measures(Beat beats) const;

@@ -19,7 +19,6 @@
 #ifndef CHOPT_OPTIMISER_HPP
 #define CHOPT_OPTIMISER_HPP
 
-#include <cstdint>
 #include <map>
 #include <optional>
 #include <string>
@@ -44,7 +43,7 @@ struct Activation {
 
 struct Path {
     std::vector<Activation> activations;
-    std::uint32_t score_boost;
+    int score_boost;
 };
 
 // Represents a song processed for Star Power optimisation. The constructor
@@ -78,7 +77,7 @@ private:
     TimeConverter m_converter;
     PointSet m_points;
     SpData m_sp_data;
-    std::uint32_t m_total_solo_boost;
+    int m_total_solo_boost;
 
     [[nodiscard]] PointPtr furthest_reachable_point(PointPtr point,
                                                     double sp) const;
@@ -88,7 +87,7 @@ private:
     Path get_partial_full_sp_path(PointPtr point, Cache& cache) const;
 
 public:
-    ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
+    ProcessedTrack(const NoteTrack& track, int resolution,
                    const SyncTrack& sync_track, double early_whammy,
                    double squeeze);
     [[nodiscard]] const PointSet& points() const { return m_points; }

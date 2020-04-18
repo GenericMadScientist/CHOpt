@@ -25,7 +25,7 @@
 
 #include "optimiser.hpp"
 
-ProcessedTrack::ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
+ProcessedTrack::ProcessedTrack(const NoteTrack& track, int resolution,
                                const SyncTrack& sync_track, double early_whammy,
                                double squeeze)
     : m_converter {TimeConverter(sync_track, resolution)}
@@ -33,7 +33,7 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, std::int32_t resolution,
     , m_sp_data {track, resolution, sync_track, early_whammy}
 {
     m_total_solo_boost = std::accumulate(
-        track.solos().cbegin(), track.solos().cend(), 0U,
+        track.solos().cbegin(), track.solos().cend(), 0,
         [](const auto x, const auto& y) { return x + y.value; });
 }
 
@@ -229,7 +229,7 @@ Path ProcessedTrack::find_best_subpath(CacheKey key, Cache& cache,
             attained_act_ends.insert(q);
 
             auto act_score = std::accumulate(
-                p, std::next(q), 0U,
+                p, std::next(q), 0,
                 [](const auto& sum, const auto& x) { return sum + x.value; });
             auto rest_of_path
                 = get_partial_path({std::next(q), *candidate_result}, cache);
@@ -304,7 +304,7 @@ std::string ProcessedTrack::path_summary(const Path& path) const
     }
 
     auto no_sp_score = std::accumulate(
-        m_points.cbegin(), m_points.cend(), 0U,
+        m_points.cbegin(), m_points.cend(), 0,
         [](const auto x, const auto& y) { return x + y.value; });
     no_sp_score += m_total_solo_boost;
     stream << "\nNo SP score: " << no_sp_score;

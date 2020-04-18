@@ -19,7 +19,6 @@
 #ifndef CHOPT_CHART_HPP
 #define CHOPT_CHART_HPP
 
-#include <cstdint>
 #include <map>
 #include <string_view>
 #include <tuple>
@@ -30,9 +29,9 @@ enum class Difficulty { Easy, Medium, Hard, Expert };
 enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
 
 struct TimeSignature {
-    std::uint32_t position;
-    std::uint32_t numerator;
-    std::uint32_t denominator;
+    int position;
+    int numerator;
+    int denominator;
 
     friend bool operator==(const TimeSignature& lhs, const TimeSignature& rhs)
     {
@@ -42,8 +41,8 @@ struct TimeSignature {
 };
 
 struct BPM {
-    uint32_t position;
-    uint32_t bpm;
+    int position;
+    int bpm;
 
     friend bool operator==(const BPM& lhs, const BPM& rhs)
     {
@@ -53,8 +52,8 @@ struct BPM {
 };
 
 struct Note {
-    std::uint32_t position = 0;
-    std::uint32_t length = 0;
+    int position {0};
+    int length {0};
     NoteColour colour = NoteColour::Green;
 
     friend bool operator==(const Note& lhs, const Note& rhs)
@@ -65,8 +64,8 @@ struct Note {
 };
 
 struct StarPower {
-    std::uint32_t position;
-    std::uint32_t length;
+    int position;
+    int length;
 
     friend bool operator==(const StarPower& lhs, const StarPower& rhs)
     {
@@ -76,9 +75,9 @@ struct StarPower {
 };
 
 struct Solo {
-    std::uint32_t start;
-    std::uint32_t end;
-    std::uint32_t value;
+    int start;
+    int end;
+    int value;
 
     friend bool operator==(const Solo& lhs, const Solo& rhs)
     {
@@ -149,16 +148,16 @@ public:
 // resolution() > 0.
 class Chart {
 private:
-    static constexpr std::int32_t DEFAULT_RESOLUTION = 192;
+    static constexpr int DEFAULT_RESOLUTION = 192;
 
-    std::int32_t m_resolution = DEFAULT_RESOLUTION;
+    int m_resolution = DEFAULT_RESOLUTION;
     SyncTrack m_sync_track;
     std::map<Difficulty, NoteTrack> m_note_tracks;
     Chart() = default;
 
 public:
     static Chart parse_chart(std::string_view input);
-    [[nodiscard]] std::int32_t resolution() const { return m_resolution; }
+    [[nodiscard]] int resolution() const { return m_resolution; }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
     [[nodiscard]] const NoteTrack& note_track(Difficulty diff) const
     {

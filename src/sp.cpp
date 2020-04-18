@@ -20,7 +20,7 @@
 
 #include "sp.hpp"
 
-static bool phrase_contains_pos(const StarPower& phrase, std::uint32_t position)
+static bool phrase_contains_pos(const StarPower& phrase, int position)
 {
     if (position < phrase.position) {
         return false;
@@ -29,7 +29,7 @@ static bool phrase_contains_pos(const StarPower& phrase, std::uint32_t position)
 }
 
 std::vector<SpData::BeatRate>
-SpData::form_beat_rates(std::int32_t resolution, const SyncTrack& sync_track)
+SpData::form_beat_rates(int resolution, const SyncTrack& sync_track)
 {
     constexpr double DEFAULT_BEAT_RATE = 4.0;
     constexpr double MEASURES_PER_BAR = 8.0;
@@ -49,7 +49,7 @@ SpData::form_beat_rates(std::int32_t resolution, const SyncTrack& sync_track)
     return beat_rates;
 }
 
-SpData::SpData(const NoteTrack& track, std::int32_t resolution,
+SpData::SpData(const NoteTrack& track, int resolution,
                const SyncTrack& sync_track, double early_whammy)
     : m_converter {TimeConverter(sync_track, resolution)}
     , m_beat_rates {form_beat_rates(resolution, sync_track)}

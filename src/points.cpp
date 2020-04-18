@@ -20,7 +20,7 @@
 
 #include "points.hpp"
 
-static bool phrase_contains_pos(const StarPower& phrase, std::uint32_t position)
+static bool phrase_contains_pos(const StarPower& phrase, int position)
 {
     if (position < phrase.position) {
         return false;
@@ -30,22 +30,21 @@ static bool phrase_contains_pos(const StarPower& phrase, std::uint32_t position)
 
 template <class InputIt, class OutputIt>
 static void append_note_points(InputIt first, InputIt last, OutputIt points,
-                               std::int32_t resolution, bool is_note_sp_ender,
+                               int resolution, bool is_note_sp_ender,
                                const TimeConverter& converter, double squeeze)
 {
-    constexpr auto NOTE_VALUE = 50U;
+    constexpr int NOTE_VALUE = 50;
     const auto EARLY_WINDOW = Second(0.07 * squeeze);
     const auto LATE_WINDOW = Second(0.07 * squeeze);
 
     const double float_res = resolution;
     const auto tick_gap = std::max(resolution / 25, 1);
 
-    const auto chord_size
-        = static_cast<std::uint32_t>(std::distance(first, last));
-    auto chord_length = static_cast<std::int32_t>(
-        std::max_element(first, last, [](const auto& x, const auto& y) {
-            return x.length < y.length;
-        })->length);
+    const auto chord_size = static_cast<int>(std::distance(first, last));
+    auto chord_length
+        = std::max_element(first, last, [](const auto& x, const auto& y) {
+              return x.length < y.length;
+          })->length;
     auto pos = first->position;
     auto beat = Beat(pos / float_res);
     auto meas = converter.beats_to_measures(beat);
@@ -61,7 +60,7 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
                  false,
                  is_note_sp_ender};
     while (chord_length > 0) {
-        pos += static_cast<std::uint32_t>(tick_gap);
+        pos += tick_gap;
         chord_length -= tick_gap;
         beat = Beat(pos / float_res);
         meas = converter.beats_to_measures(beat);
@@ -69,7 +68,7 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
     }
 }
 
-PointSet::PointSet(const NoteTrack& track, std::int32_t resolution,
+PointSet::PointSet(const NoteTrack& track, int resolution,
                    const TimeConverter& converter, double squeeze)
 {
     const auto& notes = track.notes();

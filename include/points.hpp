@@ -19,7 +19,6 @@
 #ifndef CHOPT_POINTS_HPP
 #define CHOPT_POINTS_HPP
 
-#include <cstdint>
 #include <vector>
 
 #include "chart.hpp"
@@ -29,7 +28,7 @@ struct Point {
     Position position;
     Position hit_window_start;
     Position hit_window_end;
-    std::uint32_t value;
+    int value;
     bool is_hold_point;
     bool is_sp_granting_note;
 };
@@ -41,7 +40,7 @@ private:
     std::vector<Point> m_points;
 
 public:
-    PointSet(const NoteTrack& track, std::int32_t resolution,
+    PointSet(const NoteTrack& track, int resolution,
              const TimeConverter& converter, double squeeze);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }

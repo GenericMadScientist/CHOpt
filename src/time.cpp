@@ -21,19 +21,19 @@
 
 #include "time.hpp"
 
-TimeConverter::TimeConverter(const SyncTrack& sync_track,
-                             std::int32_t resolution)
+TimeConverter::TimeConverter(const SyncTrack& sync_track, int resolution)
 {
     constexpr double MS_PER_MINUTE = 60000.0;
+    const double float_resolution = resolution;
 
-    auto last_tick = 0U;
+    auto last_tick = 0;
     auto last_bpm = DEFAULT_BPM;
     auto last_time = 0.0;
 
     for (const auto& bpm : sync_track.bpms()) {
         last_time += ((bpm.position - last_tick) * MS_PER_MINUTE)
-            / (static_cast<double>(resolution) * last_bpm);
-        const auto beat = static_cast<double>(bpm.position) / resolution;
+            / (float_resolution * last_bpm);
+        const auto beat = bpm.position / float_resolution;
         m_beat_timestamps.push_back({Beat(beat), Second(last_time)});
         last_bpm = bpm.bpm;
         last_tick = bpm.position;
@@ -41,14 +41,14 @@ TimeConverter::TimeConverter(const SyncTrack& sync_track,
 
     m_last_bpm = last_bpm;
 
-    last_tick = 0U;
+    last_tick = 0;
     auto last_beat_rate = DEFAULT_BEAT_RATE;
     auto last_measure = 0.0;
 
     for (const auto& ts : sync_track.time_sigs()) {
         last_measure
             += (ts.position - last_tick) / (resolution * last_beat_rate);
-        const auto beat = static_cast<double>(ts.position) / resolution;
+        const auto beat = ts.position / float_resolution;
         m_measure_timestamps.push_back({Measure(last_measure), Beat(beat)});
         last_beat_rate = (ts.numerator * DEFAULT_BEAT_RATE) / ts.denominator;
         last_tick = ts.position;
