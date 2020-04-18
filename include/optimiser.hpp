@@ -83,9 +83,9 @@ private:
     [[nodiscard]] PointPtr furthest_reachable_point(PointPtr point,
                                                     double sp) const;
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
+    Path find_best_subpath(CacheKey key, Cache& cache, bool has_full_sp) const;
     Path get_partial_path(CacheKey key, Cache& cache) const;
     Path get_partial_full_sp_path(PointPtr point, Cache& cache) const;
-    void add_point_to_partial_acts(CacheKey key, Cache& cache) const;
 
 public:
     ProcessedTrack(const NoteTrack& track, std::int32_t resolution,

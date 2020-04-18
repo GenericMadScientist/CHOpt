@@ -48,14 +48,14 @@ PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
             sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
                                                         p->position, sp_bar);
             if (sp_bar.max() < 0.0) {
-                return p - 1;
+                return std::prev(p);
             }
             sp_bar.add_phrase();
             current_position = p->position;
         }
     }
 
-    return m_points.cend() - 1;
+    return std::prev(m_points.cend());
 }
 
 std::optional<Position>
@@ -172,7 +172,9 @@ Path ProcessedTrack::get_partial_path(CacheKey key, Cache& cache) const
         key.position = pos;
     }
     if (cache.paths.find(key) == cache.paths.end()) {
-        add_point_to_partial_acts(key, cache);
+        auto best_path = find_best_subpath(key, cache, false);
+        cache.paths.emplace(key, best_path);
+        return best_path;
     }
     return cache.paths.at(key);
 }
@@ -180,73 +182,34 @@ Path ProcessedTrack::get_partial_path(CacheKey key, Cache& cache) const
 Path ProcessedTrack::get_partial_full_sp_path(PointPtr point,
                                               Cache& cache) const
 {
-    // We only call this from add_point_to_partial_paths in a situaiton where we
-    // know point is not m_points.cend(), so we may assume point points to valid
-    // memory.
     if (cache.full_sp_paths.find(point) != cache.full_sp_paths.end()) {
         return cache.full_sp_paths.at(point);
     }
 
-    std::vector<Path> paths;
-    std::set<PointPtr> attained_act_ends;
-    auto sp_bar = SpBar {1.0, 1.0};
-
-    for (auto p = point; p < m_points.cend(); ++p) {
-        if (p != point && std::prev(p)->is_sp_granting_note) {
-            paths.push_back(get_partial_full_sp_path(p, cache));
-            break;
-        }
-        auto starting_pos = std::prev(p)->hit_window_start;
-        auto max_q = furthest_reachable_point(p, 1.0);
-        for (auto q = p; q <= max_q; ++q) {
-            if (attained_act_ends.find(q) != attained_act_ends.end()) {
-                continue;
-            }
-
-            ActivationCandidate candidate {p, q, starting_pos, sp_bar};
-            auto candidate_result = is_candidate_valid(candidate);
-            if (!candidate_result) {
-                continue;
-            }
-
-            attained_act_ends.insert(q);
-
-            auto act_score = std::accumulate(
-                p, std::next(q), 0U,
-                [](const auto& sum, const auto& x) { return sum + x.value; });
-            auto rest_of_path
-                = get_partial_path({std::next(q), *candidate_result}, cache);
-            auto score = act_score + rest_of_path.score_boost;
-            auto act_set = rest_of_path.activations;
-            act_set.insert(act_set.begin(), {p, q});
-            paths.push_back({act_set, score});
-        }
-    }
-
-    auto final_act = std::max_element(paths.cbegin(), paths.cend(),
-                                      [](const auto& x, const auto& y) {
-                                          return x.score_boost < y.score_boost;
-                                      });
-
-    // We can never have final_act be paths.cend() because paths must always be
-    // nonempty: at the very least, since we have full SP we could activate on
-    // point, giving us the start of one path. Therefore unlike
-    // add_point_to_partial_paths we do not need to check for this.
-    cache.full_sp_paths[point] = *final_act;
-    return *final_act;
+    // We only call this from find_best_subpath in a situaiton where we know
+    // point is not m_points.cend(), so we may assume point is a real Point.
+    CacheKey key {point, std::prev(point)->hit_window_start};
+    auto best_path = find_best_subpath(key, cache, true);
+    cache.full_sp_paths.emplace(point, best_path);
+    return best_path;
 }
 
-void ProcessedTrack::add_point_to_partial_acts(CacheKey key, Cache& cache) const
+Path ProcessedTrack::find_best_subpath(CacheKey key, Cache& cache,
+                                       bool has_full_sp) const
 {
     std::vector<Path> paths;
     std::set<PointPtr> attained_act_ends;
 
     for (auto p = key.point; p < m_points.cend(); ++p) {
-        auto sp_bar = total_available_sp(key.position.beat, key.point, p);
+        SpBar sp_bar {1.0, 1.0};
+        if (!has_full_sp) {
+            sp_bar = total_available_sp(key.position.beat, key.point, p);
+        }
         if (!sp_bar.full_enough_to_activate()) {
             continue;
         }
-        if (sp_bar.max() == 1.0) {
+        if (p != key.point && sp_bar.max() == 1.0
+            && std::prev(p)->is_sp_granting_note) {
             paths.push_back(get_partial_full_sp_path(p, cache));
             break;
         }
@@ -277,15 +240,14 @@ void ProcessedTrack::add_point_to_partial_acts(CacheKey key, Cache& cache) const
         }
     }
 
-    auto final_act = std::max_element(paths.cbegin(), paths.cend(),
-                                      [](const auto& x, const auto& y) {
-                                          return x.score_boost < y.score_boost;
-                                      });
-    if (final_act != paths.cend()) {
-        cache.paths[key] = *final_act;
-    } else {
-        cache.paths[key] = {{}, 0};
+    auto best_subpath = std::max_element(
+        paths.cbegin(), paths.cend(), [](const auto& x, const auto& y) {
+            return x.score_boost < y.score_boost;
+        });
+    if (best_subpath == paths.cend()) {
+        return {{}, 0};
     }
+    return *best_subpath;
 }
 
 Path ProcessedTrack::optimal_path() const
