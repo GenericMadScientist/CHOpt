@@ -23,13 +23,6 @@
 
 #include "chart.hpp"
 
-// We really do want to be able to compare Beats, Measures, and Seconds for
-// equality in tests.
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfloat-equal"
-#endif
-
 class Measure;
 class Second;
 
@@ -136,14 +129,6 @@ public:
     {
         return !(lhs < rhs);
     }
-    friend bool operator==(const Measure& lhs, const Measure& rhs)
-    {
-        return lhs.m_value == rhs.m_value;
-    }
-    friend bool operator!=(const Measure& lhs, const Measure& rhs)
-    {
-        return !(lhs == rhs);
-    }
 
     Measure& operator+=(const Measure& rhs)
     {
@@ -219,14 +204,6 @@ public:
     {
         return !(lhs < rhs);
     }
-    friend bool operator==(const Second& lhs, const Second& rhs)
-    {
-        return lhs.m_value == rhs.m_value;
-    }
-    friend bool operator!=(const Second& lhs, const Second& rhs)
-    {
-        return !(lhs == rhs);
-    }
 
     Second& operator+=(const Second& rhs)
     {
@@ -280,10 +257,6 @@ inline Second Beat::to_second(int bpm) const
     constexpr double MS_PER_MINUTE = 60000.0;
     return Second(m_value * MS_PER_MINUTE / bpm);
 }
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 
 struct Position {
     Beat beat;
