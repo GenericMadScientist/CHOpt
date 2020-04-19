@@ -25,80 +25,76 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
 {
     SECTION("Notes are sorted")
     {
-        const auto notes = std::vector<Note>({{768}, {384}});
-        const auto track = NoteTrack(notes, {}, {});
-        const auto sorted_notes = std::vector<Note>({{384}, {768}});
+        std::vector<Note> notes {{768}, {384}};
+        NoteTrack track {notes, {}, {}};
+        std::vector<Note> sorted_notes {{384}, {768}};
 
         REQUIRE(track.notes() == sorted_notes);
     }
 
     SECTION("Notes of the same colour and position are merged")
     {
-        const auto notes = std::vector<Note>({{768, 0}, {768, 768}});
-        const auto track = NoteTrack(notes, {}, {});
-        const auto required_notes = std::vector<Note>({{768, 768}});
+        std::vector<Note> notes {{768, 0}, {768, 768}};
+        NoteTrack track {notes, {}, {}};
+        std::vector<Note> required_notes {{768, 768}};
 
         REQUIRE(track.notes() == required_notes);
 
-        const auto second_notes = std::vector<Note>({{768, 768}, {768, 0}});
-        const auto second_track = NoteTrack(second_notes, {}, {});
-        const auto second_required_notes = std::vector<Note>({{768, 0}});
+        std::vector<Note> second_notes {{768, 768}, {768, 0}};
+        NoteTrack second_track {second_notes, {}, {}};
+        std::vector<Note> second_required_notes {{768, 0}};
 
         REQUIRE(second_track.notes() == second_required_notes);
     }
 
     SECTION("Notes of different colours are dealt with separately")
     {
-        const auto notes = std::vector<Note>({{768, 0, NoteColour::Green},
-                                              {768, 0, NoteColour::Red},
-                                              {768, 768, NoteColour::Green}});
-        const auto track = NoteTrack(notes, {}, {});
-        const auto required_notes = std::vector<Note>(
-            {{768, 768, NoteColour::Green}, {768, 0, NoteColour::Red}});
+        std::vector<Note> notes {{768, 0, NoteColour::Green},
+                                 {768, 0, NoteColour::Red},
+                                 {768, 768, NoteColour::Green}};
+        NoteTrack track {notes, {}, {}};
+        std::vector<Note> required_notes {{768, 768, NoteColour::Green},
+                                          {768, 0, NoteColour::Red}};
 
         REQUIRE(track.notes() == required_notes);
     }
 
     SECTION("Empty SP phrases are culled")
     {
-        const auto notes = std::vector<Note>({{768}});
-        const auto phrases
-            = std::vector<StarPower>({{0, 100}, {700, 100}, {1000, 100}});
-        const auto track = NoteTrack(notes, phrases, {});
-        const auto required_phrases = std::vector<StarPower>({{700, 100}});
+        std::vector<Note> notes {{768}};
+        std::vector<StarPower> phrases {{0, 100}, {700, 100}, {1000, 100}};
+        NoteTrack track {notes, phrases, {}};
+        std::vector<StarPower> required_phrases {{700, 100}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
     }
 
     SECTION("SP phrases are sorted")
     {
-        const auto notes = std::vector<Note>({{768}, {1000}});
-        const auto phrases = std::vector<StarPower>({{1000, 1}, {768, 1}});
-        const auto track = NoteTrack(notes, phrases, {});
-        const auto required_phrases
-            = std::vector<StarPower>({{768, 1}, {1000, 1}});
+        std::vector<Note> notes {{768}, {1000}};
+        std::vector<StarPower> phrases {{1000, 1}, {768, 1}};
+        NoteTrack track {notes, phrases, {}};
+        std::vector<StarPower> required_phrases {{768, 1}, {1000, 1}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
     }
 
     SECTION("SP phrases do not overlap")
     {
-        const auto notes = std::vector<Note>({{768}, {1000}});
-        const auto phrases = std::vector<StarPower>({{768, 1000}, {900, 150}});
-        const auto track = NoteTrack(notes, phrases, {});
-        const auto required_phrases
-            = std::vector<StarPower>({{768, 132}, {900, 150}});
+        std::vector<Note> notes {{768}, {1000}};
+        std::vector<StarPower> phrases {{768, 1000}, {900, 150}};
+        NoteTrack track {notes, phrases, {}};
+        std::vector<StarPower> required_phrases {{768, 132}, {900, 150}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
     }
 
     SECTION("Solos are sorted")
     {
-        const auto notes = std::vector<Note>({{0}, {768}});
-        const auto solos = std::vector<Solo>({{768, 868, 100}, {0, 100, 100}});
-        const auto track = NoteTrack(notes, {}, solos);
-        const auto required_solos
-            = std::vector<Solo>({{0, 100, 100}, {768, 868, 100}});
+        std::vector<Note> notes {{0}, {768}};
+        std::vector<Solo> solos {{768, 868, 100}, {0, 100, 100}};
+        NoteTrack track {notes, {}, solos};
+        std::vector<Solo> required_solos {{0, 100, 100}, {768, 868, 100}};
 
         REQUIRE(track.solos() == required_solos);
     }
@@ -109,52 +105,50 @@ TEST_CASE("SyncTrack ctor maintains invariants", "SyncTrack")
 {
     SECTION("BPMs are sorted by position")
     {
-        const auto track
-            = SyncTrack({}, {{0, 150000}, {2000, 200000}, {1000, 225000}});
-        const auto expected_bpms
-            = std::vector<BPM>({{0, 150000}, {1000, 225000}, {2000, 200000}});
+        SyncTrack track {{}, {{0, 150000}, {2000, 200000}, {1000, 225000}}};
+        std::vector<BPM> expected_bpms {
+            {0, 150000}, {1000, 225000}, {2000, 200000}};
 
         REQUIRE(track.bpms() == expected_bpms);
     }
 
     SECTION("No two BPMs have the same position")
     {
-        const auto track = SyncTrack({}, {{0, 150000}, {0, 200000}});
-        const auto expected_bpms = std::vector<BPM>({{0, 200000}});
+        SyncTrack track {{}, {{0, 150000}, {0, 200000}}};
+        std::vector<BPM> expected_bpms {{0, 200000}};
 
         REQUIRE(track.bpms() == expected_bpms);
     }
 
     SECTION("bpms() is never empty")
     {
-        const auto track = SyncTrack();
-        const auto expected_bpms = std::vector<BPM>({{0, 120000}});
+        SyncTrack track;
+        std::vector<BPM> expected_bpms {{0, 120000}};
 
         REQUIRE(track.bpms() == expected_bpms);
     }
 
     SECTION("TimeSignatures are sorted by position")
     {
-        const auto track
-            = SyncTrack({{0, 4, 4}, {2000, 3, 3}, {1000, 2, 2}}, {});
-        const auto expected_tses = std::vector<TimeSignature>(
-            {{0, 4, 4}, {1000, 2, 2}, {2000, 3, 3}});
+        SyncTrack track {{{0, 4, 4}, {2000, 3, 3}, {1000, 2, 2}}, {}};
+        std::vector<TimeSignature> expected_tses {
+            {0, 4, 4}, {1000, 2, 2}, {2000, 3, 3}};
 
         REQUIRE(track.time_sigs() == expected_tses);
     }
 
     SECTION("No two TimeSignatures have the same position")
     {
-        const auto track = SyncTrack({{0, 4, 4}, {0, 3, 4}}, {});
-        const auto expected_tses = std::vector<TimeSignature>({{0, 3, 4}});
+        SyncTrack track {{{0, 4, 4}, {0, 3, 4}}, {}};
+        std::vector<TimeSignature> expected_tses {{0, 3, 4}};
 
         REQUIRE(track.time_sigs() == expected_tses);
     }
 
     SECTION("time_sigs() is never empty")
     {
-        const auto track = SyncTrack();
-        const auto expected_tses = std::vector<TimeSignature>({{0, 4, 4}});
+        SyncTrack track;
+        std::vector<TimeSignature> expected_tses {{0, 4, 4}};
 
         REQUIRE(track.time_sigs() == expected_tses);
     }
@@ -191,8 +185,8 @@ TEST_CASE("Chart reads sync track correctly", "SyncTrack")
         = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
           "TS 4 1\n}\n[Events]\n{\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
     const auto sync_track = Chart::parse_chart(text).sync_track();
-    const auto time_sigs = std::vector<TimeSignature>({{0, 4, 4}, {768, 4, 2}});
-    const auto bpms = std::vector<BPM>({{0, 200000}});
+    std::vector<TimeSignature> time_sigs {{0, 4, 4}, {768, 4, 2}};
+    std::vector<BPM> bpms {{0, 200000}};
 
     REQUIRE(sync_track.time_sigs() == time_sigs);
     REQUIRE(sync_track.bpms() == bpms);
@@ -205,8 +199,7 @@ TEST_CASE("Chart reads easy note track correctly", "Easy")
         = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[EasySingle]"
           "\n{\n768 = N 0 0\n768 = S 2 100\n}\n";
     const auto chart = Chart::parse_chart(text);
-    const auto note_track
-        = NoteTrack {{{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
+    NoteTrack note_track {{{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
 
     REQUIRE(chart.note_track(Difficulty::Easy) == note_track);
 }
@@ -260,8 +253,8 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
             = "[SyncTrack]\n{\n0 = B 200000\n}\n[ExpertSingle]\n{\n768 = "
               "N 0 0\n}\n[Song]\n{\nResolution = 200\n}";
         const auto chart = Chart::parse_chart(text);
-        const auto notes = std::vector<Note>({{768}});
-        const auto bpms = std::vector<BPM>({{0, 200000}});
+        std::vector<Note> notes {{768}};
+        std::vector<BPM> bpms {{0, 200000}};
 
         REQUIRE(chart.resolution() == 200);
         REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
@@ -278,7 +271,7 @@ TEST_CASE("Only first non-empty part of note sections matter", "Note split")
             = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 = N "
               "1 0\n}";
         const auto chart = Chart::parse_chart(text);
-        const auto notes = std::vector<Note>({{768, 0, NoteColour::Green}});
+        std::vector<Note> notes {{768, 0, NoteColour::Green}};
 
         REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
     }
@@ -288,7 +281,7 @@ TEST_CASE("Only first non-empty part of note sections matter", "Note split")
         const char* text
             = "[ExpertSingle]\n{\n}\n[ExpertSingle]\n{\n768 = N 1 0\n}";
         const auto chart = Chart::parse_chart(text);
-        const auto notes = std::vector<Note>({{768, 0, NoteColour::Red}});
+        std::vector<Note> notes {{768, 0, NoteColour::Red}};
 
         REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
     }
@@ -299,8 +292,8 @@ TEST_CASE("Notes should be sorted", "NoteSort")
 {
     const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n384 = N 0 0\n}";
     const auto chart = Chart::parse_chart(text);
-    const auto notes = std::vector<Note>(
-        {{384, 0, NoteColour::Green}, {768, 0, NoteColour::Green}});
+    std::vector<Note> notes {{384, 0, NoteColour::Green},
+                             {768, 0, NoteColour::Green}};
 
     REQUIRE(chart.note_track(Difficulty::Expert).notes() == notes);
 }
@@ -321,7 +314,7 @@ TEST_CASE("Notes with extra spaces", "NoteSpaceSkip")
             = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
               "= N  1 0\n}";
         const auto chart = Chart::parse_chart(text);
-        const auto required_notes = std::vector<Note>({{768}});
+        std::vector<Note> required_notes {{768}};
 
         REQUIRE(chart.note_track(Difficulty::Expert).notes() == required_notes);
     }
@@ -336,8 +329,7 @@ TEST_CASE("Solos are read properly", "Solos")
                            "E soloend\n300 = E solo\n300 = N 0 0\n400 = N 0 "
                            "0\n400 = E soloend\n}";
         const auto chart = Chart::parse_chart(text);
-        const auto required_solos
-            = std::vector<Solo>({{0, 200, 100}, {300, 400, 200}});
+        std::vector<Solo> required_solos {{0, 200, 100}, {300, 400, 200}};
 
         REQUIRE(chart.note_track(Difficulty::Expert).solos() == required_solos);
     }
@@ -347,7 +339,7 @@ TEST_CASE("Solos are read properly", "Solos")
         const char* text = "[ExpertSingle]\n{\n0 = E solo\n100 = N 0 0\n100 = "
                            "N 1 0\n200 = E soloend\n}";
         const auto chart = Chart::parse_chart(text);
-        const auto required_solos = std::vector<Solo>({{0, 200, 100}});
+        std::vector<Solo> required_solos {{0, 200, 100}};
 
         REQUIRE(chart.note_track(Difficulty::Expert).solos() == required_solos);
     }
@@ -366,7 +358,7 @@ TEST_CASE("Solos are read properly", "Solos")
         const char* text = "[ExpertSingle]\n{\n0 = E solo\n100 = E solo\n100 = "
                            "N 0 0\n200 = E soloend\n300 = E soloend\n}";
         const auto chart = Chart::parse_chart(text);
-        const auto required_solos = std::vector<Solo>({{0, 200, 100}});
+        std::vector<Solo> required_solos {{0, 200, 100}};
 
         REQUIRE(chart.note_track(Difficulty::Expert).solos() == required_solos);
     }
@@ -376,7 +368,7 @@ TEST_CASE("Solos are read properly", "Solos")
         const char* text
             = "[ExpertSingle]\n{\n384 = E soloend\n192 = N 0 0\n0 = E solo\n}";
         const auto chart = Chart::parse_chart(text);
-        const auto required_solos = std::vector<Solo>({{0, 384, 100}});
+        std::vector<Solo> required_solos {{0, 384, 100}};
 
         REQUIRE(chart.note_track(Difficulty::Expert).solos() == required_solos);
     }
