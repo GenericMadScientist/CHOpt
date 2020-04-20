@@ -281,44 +281,58 @@ static int note_colour_to_offset(NoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_offset");
 }
 
+static void colour_beat_range(Image& image,
+                              const DrawingInstructions& instructions,
+                              std::array<unsigned char, 3> colour,
+                              std::tuple<double, double> x_range,
+                              std::tuple<int, int> y_range, float opacity)
+{
+    auto start = std::get<0>(x_range);
+    auto end = std::get<1>(x_range);
+    auto row_iter
+        = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
+                       [=](const auto& r) { return r.end > start; });
+    auto row
+        = static_cast<int>(std::distance(instructions.rows.cbegin(), row_iter));
+
+    auto y_min = std::get<0>(y_range);
+    auto y_max = std::get<1>(y_range);
+
+    while (start < end) {
+        auto block_end = std::min(row_iter->end, end);
+        auto x_min = LEFT_MARGIN
+            + static_cast<int>(BEAT_WIDTH * (start - row_iter->start));
+        // -1 is so regions that cross rows do not go over the ending line of a
+        // row.
+        auto x_max = LEFT_MARGIN
+            + static_cast<int>(BEAT_WIDTH * (block_end - row_iter->start)) - 1;
+        if (x_min <= x_max) {
+            auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
+            image.draw_rectangle(x_min, y + y_min, x_max, y + y_max,
+                                 colour.data(), opacity);
+        }
+        start = block_end;
+        ++row_iter;
+        ++row;
+    }
+}
+
 static void draw_note_sustain(Image& image,
                               const DrawingInstructions& instructions,
                               const DrawnNote& note)
 {
+    constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
+
     auto colour = note_colour_to_colour(note.colour);
+    std::tuple<double, double> x_range {note.beat, note.beat + note.length};
     auto offset = note_colour_to_offset(note.colour);
-
-    auto start = note.beat;
-    const auto end = note.beat + note.length;
-    auto row_iter
-        = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
-                       [&](const auto& r) { return r.end > note.beat; });
-    auto row
-        = static_cast<int>(std::distance(instructions.rows.cbegin(), row_iter));
-
-    while (start < end) {
-        auto sust_end = std::min(row_iter->end, end);
-        auto x_min = LEFT_MARGIN
-            + static_cast<int>(BEAT_WIDTH * (start - row_iter->start));
-        // -1 is so sustains that cross rows do not go over the ending line of a
-        // row.
-        auto x_max = LEFT_MARGIN
-            + static_cast<int>(BEAT_WIDTH * (sust_end - row_iter->start)) - 1;
-        if (x_min <= x_max) {
-            auto y = MARGIN + DIST_BETWEEN_MEASURES * row + offset;
-            if (note.colour == NoteColour::Open) {
-                constexpr int OPEN_SUST_RADIUS = 23;
-                image.draw_rectangle(x_min, y - OPEN_SUST_RADIUS, x_max,
-                                     y + OPEN_SUST_RADIUS, colour.data(),
-                                     OPEN_NOTE_OPACITY);
-            } else {
-                image.draw_rectangle(x_min, y - 3, x_max, y + 3, colour.data());
-            }
-        }
-        start = sust_end;
-        ++row_iter;
-        ++row;
+    std::tuple<int, int> y_range {offset - 3, offset + 3};
+    float opacity = 1.0F;
+    if (note.colour == NoteColour::Open) {
+        y_range = OPEN_NOTE_Y_RANGE;
+        opacity = OPEN_NOTE_OPACITY;
     }
+    colour_beat_range(image, instructions, colour, x_range, y_range, opacity);
 }
 
 static void draw_note_circle(Image& image, int x, int y, NoteColour note_colour)
@@ -348,7 +362,7 @@ static void draw_note_star(Image& image, int x, int y, NoteColour note_colour)
     auto offset = note_colour_to_offset(note_colour);
 
     constexpr unsigned int POINTS_IN_STAR_POLYGON = 10;
-    auto points = CImg<int>(POINTS_IN_STAR_POLYGON, 2);
+    CImg<int> points {POINTS_IN_STAR_POLYGON, 2};
     constexpr std::array<int, 20> coords {0, -6, 1, -2, 5, -2, 2,  1,  3, 5, 0,
                                           2, -3, 5, -2, 1, -5, -2, -1, -2};
     for (auto i = 0U; i < POINTS_IN_STAR_POLYGON; ++i) {
@@ -389,51 +403,19 @@ static void draw_note(Image& image, const DrawingInstructions& instructions,
     }
 }
 
-static void draw_range(Image& image, const DrawingInstructions& instructions,
-                       std::array<unsigned char, 3> colour,
-                       std::tuple<double, double> range)
-{
-    constexpr float RANGE_OPACITY = 0.25F;
-
-    auto start = std::get<0>(range);
-    auto end = std::get<1>(range);
-    auto row_iter
-        = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
-                       [=](const auto& r) { return r.end > start; });
-    auto row
-        = static_cast<int>(std::distance(instructions.rows.cbegin(), row_iter));
-
-    while (start < end) {
-        auto block_end = std::min(row_iter->end, end);
-        auto x_min = LEFT_MARGIN
-            + static_cast<int>(BEAT_WIDTH * (start - row_iter->start));
-        // -1 is so blocks that cross rows do not go over the ending line of a
-        // row.
-        auto x_max = LEFT_MARGIN
-            + static_cast<int>(BEAT_WIDTH * (block_end - row_iter->start)) - 1;
-        if (x_min <= x_max) {
-            auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
-            image.draw_rectangle(x_min, y, x_max, y + MEASURE_HEIGHT,
-                                 colour.data(), RANGE_OPACITY);
-        }
-        start = block_end;
-        ++row_iter;
-        ++row;
-    }
-}
-
 Image create_path_image(const DrawingInstructions& instructions)
 {
     constexpr std::array<unsigned char, 3> green {0, 255, 0};
     constexpr std::array<unsigned char, 3> blue {0, 0, 255};
 
     constexpr unsigned int IMAGE_WIDTH = 1024;
+    constexpr float RANGE_OPACITY = 0.25F;
     constexpr unsigned char WHITE = 255;
 
     auto height = static_cast<unsigned int>(
         MARGIN + DIST_BETWEEN_MEASURES * instructions.rows.size());
 
-    CImg<unsigned char> image(IMAGE_WIDTH, height, 1, 3, WHITE);
+    CImg<unsigned char> image {IMAGE_WIDTH, height, 1, 3, WHITE};
     draw_measures(image, instructions);
 
     for (const auto& note : instructions.notes) {
@@ -441,10 +423,12 @@ Image create_path_image(const DrawingInstructions& instructions)
     }
 
     for (const auto& range : instructions.green_ranges) {
-        draw_range(image, instructions, green, range);
+        colour_beat_range(image, instructions, green, range,
+                          {0, MEASURE_HEIGHT}, RANGE_OPACITY);
     }
     for (const auto& range : instructions.blue_ranges) {
-        draw_range(image, instructions, blue, range);
+        colour_beat_range(image, instructions, blue, range, {0, MEASURE_HEIGHT},
+                          RANGE_OPACITY);
     }
 
     return image;
