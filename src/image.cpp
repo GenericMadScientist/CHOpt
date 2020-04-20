@@ -32,11 +32,6 @@ constexpr int MEASURE_HEIGHT = 61;
 constexpr float OPEN_NOTE_OPACITY = 0.5F;
 constexpr int DIST_BETWEEN_MEASURES = MEASURE_HEIGHT + MARGIN;
 
-constexpr int RED_OFFSET = 15;
-constexpr int YELLOW_OFFSET = 30;
-constexpr int BLUE_OFFSET = 45;
-constexpr int ORANGE_OFFSET = 60;
-
 static double get_beat_rate(const SyncTrack& sync_track, int resolution,
                             double beat)
 {
@@ -208,6 +203,7 @@ static void draw_measures(Image& image, const DrawingInstructions& instructions)
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr std::array<unsigned char, 3> grey {160, 160, 160};
     constexpr std::array<unsigned char, 3> light_grey {224, 224, 224};
+    constexpr int COLOUR_DISTANCE = 15;
 
     draw_vertical_lines(image, instructions, instructions.beat_lines, grey);
     draw_vertical_lines(image, instructions, instructions.half_beat_lines,
@@ -218,12 +214,10 @@ static void draw_measures(Image& image, const DrawingInstructions& instructions)
         auto y = DIST_BETWEEN_MEASURES * current_row + MARGIN;
         auto x_max = LEFT_MARGIN
             + static_cast<int>(BEAT_WIDTH * (row.end - row.start));
-        image.draw_line(LEFT_MARGIN, y + RED_OFFSET, x_max, y + RED_OFFSET,
-                        grey.data());
-        image.draw_line(LEFT_MARGIN, y + YELLOW_OFFSET, x_max,
-                        y + YELLOW_OFFSET, grey.data());
-        image.draw_line(LEFT_MARGIN, y + BLUE_OFFSET, x_max, y + BLUE_OFFSET,
-                        grey.data());
+        for (int i = 1; i < 4; ++i) {
+            image.draw_line(LEFT_MARGIN, y + COLOUR_DISTANCE * i, x_max,
+                            y + COLOUR_DISTANCE * i, grey.data());
+        }
         image.draw_rectangle(LEFT_MARGIN, y, x_max, y + MEASURE_HEIGHT,
                              black.data(), 1.0, ~0U);
         ++current_row;
@@ -234,45 +228,61 @@ static void draw_measures(Image& image, const DrawingInstructions& instructions)
     draw_vertical_lines(image, instructions, instructions.measure_lines, black);
 }
 
+static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
+{
+    constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
+    constexpr std::array<unsigned char, 3> RED {255, 0, 0};
+    constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
+    constexpr std::array<unsigned char, 3> BLUE {0, 0, 255};
+    constexpr std::array<unsigned char, 3> ORANGE {255, 165, 0};
+    constexpr std::array<unsigned char, 3> PURPLE {128, 0, 128};
+
+    switch (colour) {
+    case NoteColour::Green:
+        return GREEN;
+    case NoteColour::Red:
+        return RED;
+    case NoteColour::Yellow:
+        return YELLOW;
+    case NoteColour::Blue:
+        return BLUE;
+    case NoteColour::Orange:
+        return ORANGE;
+    case NoteColour::Open:
+        return PURPLE;
+    }
+}
+
+static int note_colour_to_offset(NoteColour colour)
+{
+    constexpr int GREEN_OFFSET = 0;
+    constexpr int RED_OFFSET = 15;
+    constexpr int YELLOW_OFFSET = 30;
+    constexpr int BLUE_OFFSET = 45;
+    constexpr int ORANGE_OFFSET = 60;
+
+    switch (colour) {
+    case NoteColour::Green:
+        return GREEN_OFFSET;
+    case NoteColour::Red:
+        return RED_OFFSET;
+    case NoteColour::Yellow:
+        return YELLOW_OFFSET;
+    case NoteColour::Blue:
+        return BLUE_OFFSET;
+    case NoteColour::Orange:
+        return ORANGE_OFFSET;
+    case NoteColour::Open:
+        return YELLOW_OFFSET;
+    }
+}
+
 static void draw_note_sustain(Image& image,
                               const DrawingInstructions& instructions,
                               const DrawnNote& note)
 {
-    constexpr std::array<unsigned char, 3> green {0, 255, 0};
-    constexpr std::array<unsigned char, 3> red {255, 0, 0};
-    constexpr std::array<unsigned char, 3> yellow {255, 255, 0};
-    constexpr std::array<unsigned char, 3> blue {0, 0, 255};
-    constexpr std::array<unsigned char, 3> orange {255, 165, 0};
-    constexpr std::array<unsigned char, 3> purple {128, 0, 128};
-
-    const unsigned char* colour = nullptr;
-    int offset = 0;
-    switch (note.colour) {
-    case NoteColour::Green:
-        colour = green.data();
-        offset = 0;
-        break;
-    case NoteColour::Red:
-        colour = red.data();
-        offset = RED_OFFSET;
-        break;
-    case NoteColour::Yellow:
-        colour = yellow.data();
-        offset = YELLOW_OFFSET;
-        break;
-    case NoteColour::Blue:
-        colour = blue.data();
-        offset = BLUE_OFFSET;
-        break;
-    case NoteColour::Orange:
-        colour = orange.data();
-        offset = ORANGE_OFFSET;
-        break;
-    case NoteColour::Open:
-        colour = purple.data();
-        offset = YELLOW_OFFSET;
-        break;
-    }
+    auto colour = note_colour_to_colour(note.colour);
+    auto offset = note_colour_to_offset(note.colour);
 
     auto start = note.beat;
     const auto end = note.beat + note.length;
@@ -295,10 +305,10 @@ static void draw_note_sustain(Image& image,
             if (note.colour == NoteColour::Open) {
                 constexpr int OPEN_SUST_RADIUS = 23;
                 image.draw_rectangle(x_min, y - OPEN_SUST_RADIUS, x_max,
-                                     y + OPEN_SUST_RADIUS, colour,
+                                     y + OPEN_SUST_RADIUS, colour.data(),
                                      OPEN_NOTE_OPACITY);
             } else {
-                image.draw_rectangle(x_min, y - 3, x_max, y + 3, colour);
+                image.draw_rectangle(x_min, y - 3, x_max, y + 3, colour.data());
             }
         }
         start = sust_end;
@@ -307,85 +317,31 @@ static void draw_note_sustain(Image& image,
     }
 }
 
-static void draw_note_circle(Image& image, int x, int y, NoteColour colour)
+static void draw_note_circle(Image& image, int x, int y, NoteColour note_colour)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
-    constexpr std::array<unsigned char, 3> green {0, 255, 0};
-    constexpr std::array<unsigned char, 3> red {255, 0, 0};
-    constexpr std::array<unsigned char, 3> yellow {255, 255, 0};
-    constexpr std::array<unsigned char, 3> blue {0, 0, 255};
-    constexpr std::array<unsigned char, 3> orange {255, 165, 0};
-    constexpr std::array<unsigned char, 3> purple {128, 0, 128};
     constexpr int RADIUS = 5;
 
-    switch (colour) {
-    case NoteColour::Green:
-        image.draw_circle(x, y, RADIUS, green.data());
-        image.draw_circle(x, y, RADIUS, black.data(), 1.0, ~0U);
-        break;
-    case NoteColour::Red:
-        image.draw_circle(x, y + RED_OFFSET, RADIUS, red.data());
-        image.draw_circle(x, y + RED_OFFSET, RADIUS, black.data(), 1.0, ~0U);
-        break;
-    case NoteColour::Yellow:
-        image.draw_circle(x, y + YELLOW_OFFSET, RADIUS, yellow.data());
-        image.draw_circle(x, y + YELLOW_OFFSET, RADIUS, black.data(), 1.0, ~0U);
-        break;
-    case NoteColour::Blue:
-        image.draw_circle(x, y + BLUE_OFFSET, RADIUS, blue.data());
-        image.draw_circle(x, y + BLUE_OFFSET, RADIUS, black.data(), 1.0, ~0U);
-        break;
-    case NoteColour::Orange:
-        image.draw_circle(x, y + ORANGE_OFFSET, RADIUS, orange.data());
-        image.draw_circle(x, y + ORANGE_OFFSET, RADIUS, black.data(), 1.0, ~0U);
-        break;
-    case NoteColour::Open:
+    auto colour = note_colour_to_colour(note_colour);
+    auto offset = note_colour_to_offset(note_colour);
+
+    if (note_colour == NoteColour::Open) {
         image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
-                             purple.data(), OPEN_NOTE_OPACITY);
+                             colour.data(), OPEN_NOTE_OPACITY);
         image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                              black.data(), 1.0, ~0U);
-        break;
+    } else {
+        image.draw_circle(x, y + offset, RADIUS, colour.data());
+        image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
     }
 }
 
-static void draw_note_star(Image& image, int x, int y, NoteColour colour)
+static void draw_note_star(Image& image, int x, int y, NoteColour note_colour)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
-    constexpr std::array<unsigned char, 3> green {0, 255, 0};
-    constexpr std::array<unsigned char, 3> red {255, 0, 0};
-    constexpr std::array<unsigned char, 3> yellow {255, 255, 0};
-    constexpr std::array<unsigned char, 3> blue {0, 0, 255};
-    constexpr std::array<unsigned char, 3> orange {255, 165, 0};
-    constexpr std::array<unsigned char, 3> purple {128, 0, 128};
 
-    const unsigned char* colour_ptr = nullptr;
-    int offset = 0;
-    switch (colour) {
-    case NoteColour::Green:
-        colour_ptr = green.data();
-        offset = 0;
-        break;
-    case NoteColour::Red:
-        colour_ptr = red.data();
-        offset = RED_OFFSET;
-        break;
-    case NoteColour::Yellow:
-        colour_ptr = yellow.data();
-        offset = YELLOW_OFFSET;
-        break;
-    case NoteColour::Blue:
-        colour_ptr = blue.data();
-        offset = BLUE_OFFSET;
-        break;
-    case NoteColour::Orange:
-        colour_ptr = orange.data();
-        offset = ORANGE_OFFSET;
-        break;
-    case NoteColour::Open:
-        colour_ptr = purple.data();
-        offset = YELLOW_OFFSET;
-        break;
-    }
+    auto colour = note_colour_to_colour(note_colour);
+    auto offset = note_colour_to_offset(note_colour);
 
     constexpr unsigned int POINTS_IN_STAR_POLYGON = 10;
     auto points = CImg<int>(POINTS_IN_STAR_POLYGON, 2);
@@ -396,13 +352,13 @@ static void draw_note_star(Image& image, int x, int y, NoteColour colour)
         points(i, 1) = coords[2 * i + 1] + y + offset; // NOLINT
     }
 
-    if (colour == NoteColour::Open) {
+    if (note_colour == NoteColour::Open) {
         image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
-                             purple.data(), OPEN_NOTE_OPACITY);
+                             colour.data(), OPEN_NOTE_OPACITY);
         image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                              black.data(), 1.0, ~0U);
     } else {
-        image.draw_polygon(points, colour_ptr);
+        image.draw_polygon(points, colour.data());
         image.draw_polygon(points, black.data(), 1.0, ~0U);
     }
 }
