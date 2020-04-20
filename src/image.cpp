@@ -251,6 +251,8 @@ static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
     case NoteColour::Open:
         return PURPLE;
     }
+
+    throw std::invalid_argument("Invalid colour to note_colour_to_colour");
 }
 
 static int note_colour_to_offset(NoteColour colour)
@@ -275,6 +277,8 @@ static int note_colour_to_offset(NoteColour colour)
     case NoteColour::Open:
         return YELLOW_OFFSET;
     }
+
+    throw std::invalid_argument("Invalid colour to note_colour_to_offset");
 }
 
 static void draw_note_sustain(Image& image,
