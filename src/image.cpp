@@ -81,11 +81,10 @@ static double get_denom(const SyncTrack& sync_track, int resolution,
     return BASE_BEAT_RATE / ts->denominator;
 }
 
-DrawingInstructions create_instructions(const NoteTrack& track, int resolution,
-                                        const SyncTrack& sync_track)
+static std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
+                                          int resolution)
 {
     std::vector<DrawnNote> notes;
-    int max_pos = 0;
 
     for (const auto& note : track.notes()) {
         auto beat = note.position / static_cast<double>(resolution);
@@ -98,8 +97,20 @@ DrawingInstructions create_instructions(const NoteTrack& track, int resolution,
             }
         }
         notes.push_back({beat, length, note.colour, is_sp_note});
-        max_pos
-            = std::max(max_pos, static_cast<int>(note.position + note.length));
+    }
+
+    return notes;
+}
+
+static std::vector<DrawnRow> drawn_rows(const NoteTrack& track, int resolution,
+                                        const SyncTrack& sync_track)
+{
+    int max_pos = 0;
+    for (const auto& note : track.notes()) {
+        auto length = note.position + note.length;
+        if (length > max_pos) {
+            max_pos = length;
+        }
     }
 
     const auto max_beat = max_pos / static_cast<double>(resolution);
@@ -131,6 +142,15 @@ DrawingInstructions create_instructions(const NoteTrack& track, int resolution,
         rows.push_back({current_beat, current_beat + row_length});
         current_beat += row_length;
     }
+
+    return rows;
+}
+
+DrawingInstructions create_instructions(const NoteTrack& track, int resolution,
+                                        const SyncTrack& sync_track)
+{
+    auto notes = drawn_notes(track, resolution);
+    auto rows = drawn_rows(track, resolution, sync_track);
 
     std::vector<double> half_beat_lines;
     std::vector<double> beat_lines;
