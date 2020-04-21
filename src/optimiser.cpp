@@ -35,6 +35,26 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, int resolution,
     m_total_solo_boost = std::accumulate(
         track.solos().cbegin(), track.solos().cend(), 0,
         [](const auto x, const auto& y) { return x + y.value; });
+
+    auto capacity = std::distance(m_points.cbegin(), m_points.cend()) + 1;
+    m_next_candidate_points.reserve(static_cast<std::size_t>(capacity));
+    int count = 0;
+    for (auto p = m_points.cbegin(); p < m_points.cend(); ++p) {
+        ++count;
+        if (p->is_sp_granting_note
+            || (p->is_hold_point
+                && m_sp_data.is_in_whammy_ranges(p->position.beat))) {
+            for (int i = 0; i < count; ++i) {
+                m_next_candidate_points.push_back(p);
+            }
+            count = 0;
+        }
+    }
+
+    ++count;
+    for (int i = 0; i < count; ++i) {
+        m_next_candidate_points.push_back(m_points.cend());
+    }
 }
 
 ActResult
@@ -128,17 +148,8 @@ SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr first_point,
 
 PointPtr ProcessedTrack::next_candidate_point(PointPtr point) const
 {
-    while (point != m_points.cend()) {
-        if (point->is_sp_granting_note) {
-            return point;
-        }
-        if (point->is_hold_point
-            && m_sp_data.is_in_whammy_ranges(point->position.beat)) {
-            return point;
-        }
-        ++point;
-    }
-    return m_points.cend();
+    auto index = std::distance(m_points.cbegin(), point);
+    return m_next_candidate_points[static_cast<std::size_t>(index)];
 }
 
 Path ProcessedTrack::get_partial_path(CacheKey key, Cache& cache) const

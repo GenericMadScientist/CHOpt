@@ -89,6 +89,7 @@ private:
     PointSet m_points;
     SpData m_sp_data;
     int m_total_solo_boost;
+    std::vector<PointPtr> m_next_candidate_points;
 
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
     Path find_best_subpath(CacheKey key, Cache& cache, bool has_full_sp) const;
