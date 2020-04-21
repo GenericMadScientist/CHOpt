@@ -37,27 +37,6 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, int resolution,
         [](const auto x, const auto& y) { return x + y.value; });
 }
 
-PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
-                                                  double sp) const
-{
-    SpBar sp_bar {0.0, sp};
-    auto current_position = point->position;
-
-    for (auto p = point; p < m_points.cend(); ++p) {
-        if (p->is_sp_granting_note) {
-            sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
-                                                        p->position, sp_bar);
-            if (sp_bar.max() < 0.0) {
-                return std::prev(p);
-            }
-            sp_bar.add_phrase();
-            current_position = p->position;
-        }
-    }
-
-    return std::prev(m_points.cend());
-}
-
 ActResult
 ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
 {
@@ -67,7 +46,7 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
     const Position null_position {Beat(0.0), Measure(0.0)};
 
     if (!activation.sp_bar.full_enough_to_activate()) {
-        return {null_position, false};
+        return {null_position, ActValidity::insufficient_sp};
     }
 
     auto current_position = activation.act_start->hit_window_end;
@@ -86,7 +65,7 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
             sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
                                                         sp_note_pos, sp_bar);
             if (sp_bar.max() < 0.0) {
-                return {null_position, false};
+                return {null_position, ActValidity::insufficient_sp};
             }
 
             auto sp_note_end_pos = p->hit_window_end;
@@ -108,7 +87,7 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
     sp_bar = m_sp_data.propagate_sp_over_whammy(current_position, ending_pos,
                                                 sp_bar);
     if (sp_bar.max() < 0.0) {
-        return {null_position, false};
+        return {null_position, ActValidity::insufficient_sp};
     }
     if (activation.act_end->is_sp_granting_note) {
         sp_bar.add_phrase();
@@ -118,17 +97,17 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
     if (next_point == m_points.cend()) {
         // Return value doesn't matter other than it being non-empty.
         auto pos_inf = std::numeric_limits<double>::infinity();
-        return {{Beat(pos_inf), Measure(pos_inf)}, true};
+        return {{Beat(pos_inf), Measure(pos_inf)}, ActValidity::success};
     }
 
     auto end_meas
         = ending_pos.measure + Measure(sp_bar.min() * MEASURES_PER_BAR);
     if (end_meas >= next_point->hit_window_end.measure) {
-        return {null_position, false};
+        return {null_position, ActValidity::surplus_sp};
     }
 
     auto end_beat = m_converter.measures_to_beats(end_meas);
-    return {{end_beat, end_meas}, true};
+    return {{end_beat, end_meas}, ActValidity::success};
 }
 
 SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr first_point,
@@ -215,19 +194,24 @@ Path ProcessedTrack::find_best_subpath(CacheKey key, Cache& cache,
             break;
         }
         auto starting_pos = std::prev(p)->hit_window_start;
-        auto max_q = furthest_reachable_point(p, sp_bar.max());
-        for (auto q = p; q <= max_q; ++q) {
+        for (auto q = p; q < m_points.cend(); ++q) {
             if (attained_act_ends.find(q) != attained_act_ends.end()) {
                 continue;
             }
 
             ActivationCandidate candidate {p, q, starting_pos, sp_bar};
             auto candidate_result = is_candidate_valid(candidate);
-            if (!candidate_result.is_valid) {
-                continue;
+            if (candidate_result.validity != ActValidity::insufficient_sp) {
+                attained_act_ends.insert(q);
+            } else if (!q->is_hold_point) {
+                // We cannot hit any later points if q is not a hold point, so
+                // we are done.
+                break;
             }
 
-            attained_act_ends.insert(q);
+            if (candidate_result.validity != ActValidity::success) {
+                continue;
+            }
 
             auto act_score = std::accumulate(
                 p, std::next(q), 0,

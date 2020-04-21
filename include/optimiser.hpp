@@ -40,11 +40,16 @@ struct Activation {
     PointPtr act_end;
 };
 
+// Part of the return value of ProcessedTrack::is_candidate_valid. Says if an
+// activation is valid, and if not whether the problem is too little or too much
+// Star Power.
+enum class ActValidity { success, insufficient_sp, surplus_sp };
+
 // Return value of ProcessedTrack::is_candidate_valid, providing information on
 // whether an activation is valid, and if so the earliest position it can end.
 struct ActResult {
     Position ending_position;
-    bool is_valid;
+    ActValidity validity;
 };
 
 struct Path {
@@ -85,8 +90,6 @@ private:
     SpData m_sp_data;
     int m_total_solo_boost;
 
-    [[nodiscard]] PointPtr furthest_reachable_point(PointPtr point,
-                                                    double sp) const;
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
     Path find_best_subpath(CacheKey key, Cache& cache, bool has_full_sp) const;
     Path get_partial_path(CacheKey key, Cache& cache) const;
