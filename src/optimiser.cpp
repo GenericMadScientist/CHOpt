@@ -58,15 +58,16 @@ PointPtr ProcessedTrack::furthest_reachable_point(PointPtr point,
     return std::prev(m_points.cend());
 }
 
-std::optional<Position>
+ActResult
 ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
 {
     constexpr double MEASURES_PER_BAR = 8.0;
     constexpr double MINIMUM_SP_AMOUNT = 0.5;
     constexpr double SP_PHRASE_AMOUNT = 0.25;
+    const Position null_position {Beat(0.0), Measure(0.0)};
 
     if (!activation.sp_bar.full_enough_to_activate()) {
-        return {};
+        return {null_position, false};
     }
 
     auto current_position = activation.act_start->hit_window_end;
@@ -85,7 +86,7 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
             sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
                                                         sp_note_pos, sp_bar);
             if (sp_bar.max() < 0.0) {
-                return {};
+                return {null_position, false};
             }
 
             auto sp_note_end_pos = p->hit_window_end;
@@ -107,7 +108,7 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
     sp_bar = m_sp_data.propagate_sp_over_whammy(current_position, ending_pos,
                                                 sp_bar);
     if (sp_bar.max() < 0.0) {
-        return {};
+        return {null_position, false};
     }
     if (activation.act_end->is_sp_granting_note) {
         sp_bar.add_phrase();
@@ -117,17 +118,17 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
     if (next_point == m_points.cend()) {
         // Return value doesn't matter other than it being non-empty.
         auto pos_inf = std::numeric_limits<double>::infinity();
-        return Position {Beat(pos_inf), Measure(pos_inf)};
+        return {{Beat(pos_inf), Measure(pos_inf)}, true};
     }
 
     auto end_meas
         = ending_pos.measure + Measure(sp_bar.min() * MEASURES_PER_BAR);
     if (end_meas >= next_point->hit_window_end.measure) {
-        return {};
+        return {null_position, false};
     }
 
     auto end_beat = m_converter.measures_to_beats(end_meas);
-    return Position {end_beat, end_meas};
+    return {{end_beat, end_meas}, true};
 }
 
 SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr first_point,
@@ -222,7 +223,7 @@ Path ProcessedTrack::find_best_subpath(CacheKey key, Cache& cache,
 
             ActivationCandidate candidate {p, q, starting_pos, sp_bar};
             auto candidate_result = is_candidate_valid(candidate);
-            if (!candidate_result) {
+            if (!candidate_result.is_valid) {
                 continue;
             }
 
@@ -231,8 +232,8 @@ Path ProcessedTrack::find_best_subpath(CacheKey key, Cache& cache,
             auto act_score = std::accumulate(
                 p, std::next(q), 0,
                 [](const auto& sum, const auto& x) { return sum + x.value; });
-            auto rest_of_path
-                = get_partial_path({std::next(q), *candidate_result}, cache);
+            auto rest_of_path = get_partial_path(
+                {std::next(q), candidate_result.ending_position}, cache);
             auto score = act_score + rest_of_path.score_boost;
             auto act_set = rest_of_path.activations;
             act_set.insert(act_set.begin(), {p, q});

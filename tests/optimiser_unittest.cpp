@@ -51,8 +51,8 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
 
     SECTION("Full bar works with time signatures")
     {
-        REQUIRE(track.is_candidate_valid(candidate));
-        REQUIRE(!second_track.is_candidate_valid(second_candidate));
+        REQUIRE(track.is_candidate_valid(candidate).is_valid);
+        REQUIRE(!second_track.is_candidate_valid(second_candidate).is_valid);
     }
 
     SECTION("Half bar works with time signatures")
@@ -62,8 +62,8 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         second_candidate.act_end = second_points.cbegin() + 2;
         second_candidate.sp_bar = {0.5, 0.5};
 
-        REQUIRE(track.is_candidate_valid(candidate));
-        REQUIRE(!second_track.is_candidate_valid(second_candidate));
+        REQUIRE(track.is_candidate_valid(candidate).is_valid);
+        REQUIRE(!second_track.is_candidate_valid(second_candidate).is_valid);
     }
 
     SECTION("Below half bar never works")
@@ -71,7 +71,7 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         candidate.act_end = points.cbegin() + 1;
         candidate.sp_bar.max() = 0.25;
 
-        REQUIRE(!track.is_candidate_valid(candidate));
+        REQUIRE(!track.is_candidate_valid(candidate).is_valid);
     }
 
     SECTION("Check next point needs to not lie in activation")
@@ -79,7 +79,7 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         candidate.act_end = points.cbegin() + 1;
         candidate.sp_bar.max() = 0.6;
 
-        REQUIRE(!track.is_candidate_valid(candidate));
+        REQUIRE(!track.is_candidate_valid(candidate).is_valid);
     }
 
     SECTION("Check intermediate SP is accounted for")
@@ -93,7 +93,7 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
                                                {Beat(0.0), Measure(0.0)},
                                                {0.8, 0.8}};
 
-        REQUIRE(overlap_track.is_candidate_valid(overlap_candidate));
+        REQUIRE(overlap_track.is_candidate_valid(overlap_candidate).is_valid);
     }
 
     SECTION("Check only reached intermediate SP is accounted for")
@@ -108,7 +108,7 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
                                                {Beat(0.0), Measure(0.0)},
                                                {0.8, 0.8}};
 
-        REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
+        REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate).is_valid);
     }
 
     SECTION("Last note's SP status is not ignored")
@@ -123,7 +123,7 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
                                                {Beat(0.0), Measure(0.0)},
                                                {0.5, 0.5}};
 
-        REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
+        REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate).is_valid);
     }
 
     SECTION("SP bar does not exceed full bar")
@@ -139,7 +139,7 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
                                                {Beat(0.0), Measure(0.0)},
                                                {1.0, 1.0}};
 
-        REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate));
+        REQUIRE(!overlap_track.is_candidate_valid(overlap_candidate).is_valid);
     }
 
     SECTION("Earliest activation point is considered")
@@ -148,7 +148,7 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         candidate.sp_bar = {0.53125, 0.53125};
         candidate.earliest_activation_point = {Beat(-2.0), Measure(-0.5)};
 
-        REQUIRE(track.is_candidate_valid(candidate));
+        REQUIRE(track.is_candidate_valid(candidate).is_valid);
     }
 }
 
@@ -166,13 +166,13 @@ TEST_CASE("is_candidate_valid works with whammy", "Valid whammy acts")
 
     SECTION("Check whammy is counted")
     {
-        REQUIRE(track.is_candidate_valid(candidate));
+        REQUIRE(track.is_candidate_valid(candidate).is_valid);
     }
 
     SECTION("Check compressed activations are counted")
     {
         candidate.sp_bar.max() = 0.9;
-        REQUIRE(track.is_candidate_valid(candidate));
+        REQUIRE(track.is_candidate_valid(candidate).is_valid);
     }
 }
 
@@ -189,7 +189,7 @@ TEST_CASE("is_candidate_valid takes into account minimum SP", "Min SP")
 
     SECTION("Lower SP is considered")
     {
-        REQUIRE(track.is_candidate_valid(candidate));
+        REQUIRE(track.is_candidate_valid(candidate).is_valid);
     }
 
     SECTION("Lower SP is only considered down to a half-bar")
@@ -197,7 +197,7 @@ TEST_CASE("is_candidate_valid takes into account minimum SP", "Min SP")
         candidate.act_end = points.cbegin() + 1;
         candidate.sp_bar.min() = 0.25;
 
-        REQUIRE(!track.is_candidate_valid(candidate));
+        REQUIRE(!track.is_candidate_valid(candidate).is_valid);
     }
 }
 
@@ -214,7 +214,7 @@ TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(track.is_candidate_valid(candidate));
+        REQUIRE(track.is_candidate_valid(candidate).is_valid);
     }
 
     SECTION("Next note can be squeezed late to avoid going too far")
@@ -228,7 +228,7 @@ TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(track.is_candidate_valid(candidate));
+        REQUIRE(track.is_candidate_valid(candidate).is_valid);
     }
 
     SECTION("Intermediate SP can be hit early")
@@ -243,7 +243,7 @@ TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(track.is_candidate_valid(candidate));
+        REQUIRE(track.is_candidate_valid(candidate).is_valid);
     }
 
     SECTION("Intermediate SP can be hit late")
@@ -258,7 +258,7 @@ TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
                                        {Beat(0.0), Measure(0.0)},
                                        {1.0, 1.0}};
 
-        REQUIRE(track.is_candidate_valid(candidate));
+        REQUIRE(track.is_candidate_valid(candidate).is_valid);
     }
 }
 
