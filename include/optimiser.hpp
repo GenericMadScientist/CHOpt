@@ -91,7 +91,12 @@ private:
     int m_total_solo_boost;
     std::vector<PointPtr> m_next_candidate_points;
 
+    static constexpr double MEASURES_PER_BAR = 8.0;
+    static constexpr double MINIMUM_SP_AMOUNT = 0.5;
+
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
+    [[nodiscard]] PointPtr act_end_lower_bound(PointPtr point, Measure pos,
+                                               double sp_bar_amount) const;
     Path find_best_subpath(CacheKey key, Cache& cache, bool has_full_sp) const;
     Path get_partial_path(CacheKey key, Cache& cache) const;
     Path get_partial_full_sp_path(PointPtr point, Cache& cache) const;

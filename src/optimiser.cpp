@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cassert>
 #include <iterator>
 #include <limits>
 #include <numeric>
@@ -60,8 +59,6 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, int resolution,
 ActResult
 ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
 {
-    constexpr double MEASURES_PER_BAR = 8.0;
-    constexpr double MINIMUM_SP_AMOUNT = 0.5;
     constexpr double SP_PHRASE_AMOUNT = 0.25;
     const Position null_position {Beat(0.0), Measure(0.0)};
 
@@ -152,6 +149,20 @@ PointPtr ProcessedTrack::next_candidate_point(PointPtr point) const
     return m_next_candidate_points[static_cast<std::size_t>(index)];
 }
 
+// This function merely returns a point such that all activations starting at
+// pos, with earliest point point, with the given SP must end at the returned
+// point or later. This is merely a bound to help the core algorithm, it need
+// not be optimal.
+PointPtr ProcessedTrack::act_end_lower_bound(PointPtr point, Measure pos,
+                                             double sp_bar_amount) const
+{
+    auto end_pos = pos + Measure(MEASURES_PER_BAR * sp_bar_amount);
+    auto q = std::find_if(point, m_points.cend(), [=](const auto& pt) {
+        return pt.hit_window_end.measure > end_pos;
+    });
+    return std::prev(q);
+}
+
 Path ProcessedTrack::get_partial_path(CacheKey key, Cache& cache) const
 {
     key.point = next_candidate_point(key.point);
@@ -205,7 +216,9 @@ Path ProcessedTrack::find_best_subpath(CacheKey key, Cache& cache,
             break;
         }
         auto starting_pos = std::prev(p)->hit_window_start;
-        for (auto q = p; q < m_points.cend(); ++q) {
+        auto q_min = act_end_lower_bound(
+            p, starting_pos.measure, std::max(MINIMUM_SP_AMOUNT, sp_bar.min()));
+        for (auto q = q_min; q < m_points.cend(); ++q) {
             if (attained_act_ends.find(q) != attained_act_ends.end()) {
                 continue;
             }
