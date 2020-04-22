@@ -204,47 +204,68 @@ Path ProcessedTrack::get_partial_full_sp_path(PointPtr point,
     return best_path.path;
 }
 
+// This function is an optimisation for the case where key.point is a tick in
+// the middle of an SP granting sustain. It is often the case that adjacent
+// ticks have the same optimal subpath, and at any rate the optimal subpath
+// can't be better than the optimal subpath for the previous point, so we try it
+// first. If it works, we return the result, else we return an empty optional.
+std::optional<ProcessedTrack::CacheValue>
+ProcessedTrack::try_previous_best_subpaths(CacheKey key, const Cache& cache,
+                                           bool has_full_sp) const
+{
+    if (has_full_sp || !key.point->is_hold_point
+        || !std::prev(key.point)->is_hold_point) {
+        return {};
+    }
+
+    auto prev_key_iter = cache.paths.lower_bound(key);
+    if (prev_key_iter == cache.paths.begin()) {
+        return {};
+    }
+
+    prev_key_iter = std::prev(prev_key_iter);
+    if (std::distance(prev_key_iter->first.point, key.point) > 1) {
+        return {};
+    }
+
+    const auto& acts = prev_key_iter->second.possible_next_acts;
+    std::vector<std::tuple<Activation, CacheKey>> next_acts;
+    for (const auto& act : acts) {
+        auto [p, q] = std::get<0>(act);
+        auto sp_bar = total_available_sp(key.position.beat, key.point, p);
+        auto starting_pos = std::prev(p)->hit_window_start;
+        ActivationCandidate candidate {p, q, starting_pos, sp_bar};
+        auto candidate_result = is_candidate_valid(candidate);
+        if (candidate_result.validity == ActValidity::success
+            && candidate_result.ending_position.beat
+                <= std::get<1>(act).position.beat) {
+            next_acts.push_back(act);
+        }
+    }
+    if (next_acts.empty()) {
+        return {};
+    }
+
+    auto score_boost = prev_key_iter->second.path.score_boost;
+    auto next_key = std::get<1>(next_acts[0]);
+    Path rest_of_path {{}, 0};
+    if (next_key.point != m_points.cend()) {
+        rest_of_path = cache.paths.at(next_key).path;
+    }
+    auto act_set = rest_of_path.activations;
+    act_set.insert(act_set.begin(), std::get<0>(next_acts[0]));
+    Path best_path {act_set, score_boost};
+    return {{best_path, next_acts}};
+}
+
 ProcessedTrack::CacheValue
 ProcessedTrack::find_best_subpaths(CacheKey key, Cache& cache,
                                    bool has_full_sp) const
 {
-    // This is an optimisation for the case where key.point is a tick in the
-    // middle of an SP granting sustain. It is often the case that adjacent
-    // ticks have the same optimal subpath, and at any rate the optimal subpath
-    // can't be better than the optimal subpath for the previous point, so we
-    // try it first.
-    if (!has_full_sp && key.point->is_hold_point
-        && std::prev(key.point)->is_hold_point) {
-        auto prev_key_iter = cache.paths.lower_bound(key);
-        if (prev_key_iter != cache.paths.begin()) {
-            prev_key_iter = std::prev(prev_key_iter);
-            if (std::distance(prev_key_iter->first.point, key.point) <= 1) {
-                const auto& acts = prev_key_iter->second.possible_next_acts;
-                std::vector<std::tuple<Activation, CacheKey>> next_acts;
-                for (const auto& act : acts) {
-                    auto [p, q] = std::get<0>(act);
-                    auto sp_bar
-                        = total_available_sp(key.position.beat, key.point, p);
-                    auto starting_pos = std::prev(p)->hit_window_start;
-                    ActivationCandidate candidate {p, q, starting_pos, sp_bar};
-                    auto candidate_result = is_candidate_valid(candidate);
-                    if (candidate_result.validity == ActValidity::success
-                        && candidate_result.ending_position.beat
-                            <= std::get<1>(act).position.beat) {
-                        next_acts.push_back(act);
-                    }
-                }
-                if (!next_acts.empty()) {
-                    auto score_boost = prev_key_iter->second.path.score_boost;
-                    auto next_key = std::get<1>(next_acts[0]);
-                    auto rest_of_path = get_partial_path(next_key, cache);
-                    auto act_set = rest_of_path.activations;
-                    act_set.insert(act_set.begin(), std::get<0>(next_acts[0]));
-                    Path best_path {act_set, score_boost};
-                    return {best_path, next_acts};
-                }
-            }
-        }
+    auto subpath_from_prev
+        = try_previous_best_subpaths(key, cache, has_full_sp);
+    if (subpath_from_prev) {
+        return *subpath_from_prev;
     }
 
     std::vector<std::tuple<Activation, CacheKey>> acts;

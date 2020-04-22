@@ -20,6 +20,7 @@
 #define CHOPT_OPTIMISER_HPP
 
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -103,6 +104,9 @@ private:
     [[nodiscard]] CacheKey advance_cache_key(CacheKey key) const;
     [[nodiscard]] PointPtr act_end_lower_bound(PointPtr point, Measure pos,
                                                double sp_bar_amount) const;
+    [[nodiscard]] std::optional<CacheValue>
+    try_previous_best_subpaths(CacheKey key, const Cache& cache,
+                               bool has_full_sp) const;
     CacheValue find_best_subpaths(CacheKey key, Cache& cache,
                                   bool has_full_sp) const;
     Path get_partial_path(CacheKey key, Cache& cache) const;
