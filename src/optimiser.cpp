@@ -149,6 +149,19 @@ PointPtr ProcessedTrack::next_candidate_point(PointPtr point) const
     return m_next_candidate_points[static_cast<std::size_t>(index)];
 }
 
+ProcessedTrack::CacheKey ProcessedTrack::advance_cache_key(CacheKey key) const
+{
+    key.point = next_candidate_point(key.point);
+    if (key.point == m_points.cend()) {
+        return key;
+    }
+    const auto pos = key.point->hit_window_start;
+    if (pos.beat >= key.position.beat) {
+        key.position = pos;
+    }
+    return key;
+}
+
 // This function merely returns a point such that all activations starting at
 // pos, with earliest point point, with the given SP must end at the returned
 // point or later. This is merely a bound to help the core algorithm, it need
@@ -165,42 +178,79 @@ PointPtr ProcessedTrack::act_end_lower_bound(PointPtr point, Measure pos,
 
 Path ProcessedTrack::get_partial_path(CacheKey key, Cache& cache) const
 {
-    key.point = next_candidate_point(key.point);
     if (key.point == m_points.cend()) {
         return {{}, 0};
     }
-    const auto pos = key.point->hit_window_start;
-    if (pos.beat >= key.position.beat) {
-        key.position = pos;
-    }
     if (cache.paths.find(key) == cache.paths.end()) {
-        auto best_path = find_best_subpath(key, cache, false);
+        auto best_path = find_best_subpaths(key, cache, false);
         cache.paths.emplace(key, best_path);
-        return best_path;
+        return best_path.path;
     }
-    return cache.paths.at(key);
+    return cache.paths.at(key).path;
 }
 
 Path ProcessedTrack::get_partial_full_sp_path(PointPtr point,
                                               Cache& cache) const
 {
     if (cache.full_sp_paths.find(point) != cache.full_sp_paths.end()) {
-        return cache.full_sp_paths.at(point);
+        return cache.full_sp_paths.at(point).path;
     }
 
     // We only call this from find_best_subpath in a situaiton where we know
     // point is not m_points.cend(), so we may assume point is a real Point.
     CacheKey key {point, std::prev(point)->hit_window_start};
-    auto best_path = find_best_subpath(key, cache, true);
+    auto best_path = find_best_subpaths(key, cache, true);
     cache.full_sp_paths.emplace(point, best_path);
-    return best_path;
+    return best_path.path;
 }
 
-Path ProcessedTrack::find_best_subpath(CacheKey key, Cache& cache,
-                                       bool has_full_sp) const
+ProcessedTrack::CacheValue
+ProcessedTrack::find_best_subpaths(CacheKey key, Cache& cache,
+                                   bool has_full_sp) const
 {
-    std::vector<Path> paths;
+    // This is an optimisation for the case where key.point is a tick in the
+    // middle of an SP granting sustain. It is often the case that adjacent
+    // ticks have the same optimal subpath, and at any rate the optimal subpath
+    // can't be better than the optimal subpath for the previous point, so we
+    // try it first.
+    if (!has_full_sp && key.point->is_hold_point
+        && std::prev(key.point)->is_hold_point) {
+        auto prev_key_iter = cache.paths.lower_bound(key);
+        if (prev_key_iter != cache.paths.begin()) {
+            prev_key_iter = std::prev(prev_key_iter);
+            if (std::distance(prev_key_iter->first.point, key.point) <= 1) {
+                const auto& acts = prev_key_iter->second.possible_next_acts;
+                std::vector<std::tuple<Activation, CacheKey>> next_acts;
+                for (const auto& act : acts) {
+                    auto [p, q] = std::get<0>(act);
+                    auto sp_bar
+                        = total_available_sp(key.position.beat, key.point, p);
+                    auto starting_pos = std::prev(p)->hit_window_start;
+                    ActivationCandidate candidate {p, q, starting_pos, sp_bar};
+                    auto candidate_result = is_candidate_valid(candidate);
+                    if (candidate_result.validity == ActValidity::success
+                        && candidate_result.ending_position.beat
+                            <= std::get<1>(act).position.beat) {
+                        next_acts.push_back(act);
+                    }
+                }
+                if (!next_acts.empty()) {
+                    auto score_boost = prev_key_iter->second.path.score_boost;
+                    auto next_key = std::get<1>(next_acts[0]);
+                    auto rest_of_path = get_partial_path(next_key, cache);
+                    auto act_set = rest_of_path.activations;
+                    act_set.insert(act_set.begin(), std::get<0>(next_acts[0]));
+                    Path best_path {act_set, score_boost};
+                    return {best_path, next_acts};
+                }
+            }
+        }
+    }
+
+    std::vector<std::tuple<Activation, CacheKey>> acts;
     std::set<PointPtr> attained_act_ends;
+    auto best_score_boost = 0;
+    Path best_path {{}, 0};
 
     for (auto p = key.point; p < m_points.cend(); ++p) {
         SpBar sp_bar {1.0, 1.0};
@@ -212,7 +262,15 @@ Path ProcessedTrack::find_best_subpath(CacheKey key, Cache& cache,
         }
         if (p != key.point && sp_bar.max() == 1.0
             && std::prev(p)->is_sp_granting_note) {
-            paths.push_back(get_partial_full_sp_path(p, cache));
+            get_partial_full_sp_path(p, cache);
+            auto cache_value = cache.full_sp_paths.at(p);
+            if (cache_value.path.score_boost > best_score_boost) {
+                return cache_value;
+            }
+            if (cache_value.path.score_boost == best_score_boost) {
+                const auto& next_acts = cache_value.possible_next_acts;
+                acts.insert(acts.end(), next_acts.cbegin(), next_acts.cend());
+            }
             break;
         }
         auto starting_pos = std::prev(p)->hit_window_start;
@@ -240,32 +298,34 @@ Path ProcessedTrack::find_best_subpath(CacheKey key, Cache& cache,
             auto act_score = std::accumulate(
                 p, std::next(q), 0,
                 [](const auto& sum, const auto& x) { return sum + x.value; });
-            auto rest_of_path = get_partial_path(
-                {std::next(q), candidate_result.ending_position}, cache);
+            CacheKey next_key {std::next(q), candidate_result.ending_position};
+            next_key = advance_cache_key(next_key);
+            auto rest_of_path = get_partial_path(next_key, cache);
             auto score = act_score + rest_of_path.score_boost;
-            auto act_set = rest_of_path.activations;
-            act_set.insert(act_set.begin(), {p, q});
-            paths.push_back({act_set, score});
+            if (score > best_score_boost) {
+                best_score_boost = score;
+                auto act_set = rest_of_path.activations;
+                act_set.insert(act_set.begin(), {p, q});
+                best_path = {act_set, score};
+                acts.clear();
+                acts.push_back({{p, q}, next_key});
+            } else if (score == best_score_boost) {
+                acts.push_back({{p, q}, next_key});
+            }
         }
     }
 
-    auto best_subpath = std::max_element(
-        paths.cbegin(), paths.cend(), [](const auto& x, const auto& y) {
-            return x.score_boost < y.score_boost;
-        });
-    if (best_subpath == paths.cend()) {
-        return {{}, 0};
-    }
-    return *best_subpath;
+    return {best_path, acts};
 }
 
 Path ProcessedTrack::optimal_path() const
 {
     Cache cache;
     auto neg_inf = -std::numeric_limits<double>::infinity();
+    CacheKey start_key {m_points.cbegin(), {Beat(neg_inf), Measure(neg_inf)}};
+    start_key = advance_cache_key(start_key);
 
-    return get_partial_path(
-        {m_points.cbegin(), {Beat(neg_inf), Measure(neg_inf)}}, cache);
+    return get_partial_path(start_key, cache);
 }
 
 std::string ProcessedTrack::path_summary(const Path& path) const

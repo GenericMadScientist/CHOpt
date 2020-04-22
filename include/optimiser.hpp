@@ -78,9 +78,14 @@ private:
         }
     };
 
+    struct CacheValue {
+        Path path;
+        std::vector<std::tuple<Activation, CacheKey>> possible_next_acts;
+    };
+
     struct Cache {
-        std::map<CacheKey, Path> paths;
-        std::map<PointPtr, Path> full_sp_paths;
+        std::map<CacheKey, CacheValue> paths;
+        std::map<PointPtr, CacheValue> full_sp_paths;
     };
 
     // The order of these members is important. We must have m_converter before
@@ -95,9 +100,11 @@ private:
     static constexpr double MINIMUM_SP_AMOUNT = 0.5;
 
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
+    [[nodiscard]] CacheKey advance_cache_key(CacheKey key) const;
     [[nodiscard]] PointPtr act_end_lower_bound(PointPtr point, Measure pos,
                                                double sp_bar_amount) const;
-    Path find_best_subpath(CacheKey key, Cache& cache, bool has_full_sp) const;
+    CacheValue find_best_subpaths(CacheKey key, Cache& cache,
+                                  bool has_full_sp) const;
     Path get_partial_path(CacheKey key, Cache& cache) const;
     Path get_partial_full_sp_path(PointPtr point, Cache& cache) const;
 
