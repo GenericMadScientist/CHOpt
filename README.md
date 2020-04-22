@@ -2,8 +2,8 @@
 
 A command-line tool to work out optimal Star Power paths for Clone Hero songs.
 
-[![Build Status](https://travis-ci.com/GenericMadScientist/chopt.svg?branch=master)](https://travis-ci.com/GenericMadScientist/chopt)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/GenericMadScientist/chopt?branch=master&svg=true)](https://ci.appveyor.com/project/GenericMadScientist/chopt)
+[![Build Status](https://travis-ci.com/GenericMadScientist/chopt.svg?branch=develop)](https://travis-ci.com/GenericMadScientist/chopt)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/GenericMadScientist/chopt?branch=develop&svg=true)](https://ci.appveyor.com/project/GenericMadScientist/chopt)
 
 ## Install
 
@@ -28,14 +28,14 @@ expert if none is provided. The full set of options can be listed by using -h or
 
 ## Limitations
 
-This is version 0.3, so there are still some kinks and missing features. The
+This is version 0.3.1, so there are still some kinks and missing features. The
 only supported instrument is five fret guitar, only .chart files are accepted,
 and the drawn paths are sufficient to work out what the path is rather than
 providing all the details like how much to squeeze or not whammy. The
-performance is decent for typical songs (GH3 Flames and Soulless 4 take under
-40 seconds on my machine), but the run time blows up horribly for more
-complicated to path songs (Soulless 5 takes my machine 8 minutes, RWBY solo
-medley 12 minutes). I aim to address all of these issues in subsequent versions.
+performance is pretty good for most songs (chopt zips through The Ultimate
+Endurance Challenge in a minute on my machine) although some songs cause the
+runtime to go up horribly. I aim to address all of these issues in subsequent
+versions.
 
 ## Dependencies
 
