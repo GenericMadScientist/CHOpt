@@ -53,9 +53,9 @@ int main(int argc, char** argv)
                                                 chart.sync_track());
 
         if (!settings.blank) {
-            const auto processed_track
-                = ProcessedTrack(track, chart.resolution(), chart.sync_track(),
-                                 settings.early_whammy, settings.squeeze);
+            const Optimiser processed_track {
+                track, chart.resolution(), chart.sync_track(),
+                settings.early_whammy, settings.squeeze};
             const auto path = processed_track.optimal_path();
             for (const auto& act : path.activations) {
                 auto start = act.act_start->position.beat.value();

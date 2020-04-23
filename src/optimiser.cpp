@@ -24,9 +24,9 @@
 
 #include "optimiser.hpp"
 
-ProcessedTrack::ProcessedTrack(const NoteTrack& track, int resolution,
-                               const SyncTrack& sync_track, double early_whammy,
-                               double squeeze)
+Optimiser::Optimiser(const NoteTrack& track, int resolution,
+                     const SyncTrack& sync_track, double early_whammy,
+                     double squeeze)
     : m_converter {TimeConverter(sync_track, resolution)}
     , m_points {track, resolution, m_converter, squeeze}
     , m_sp_data {track, resolution, sync_track, early_whammy}
@@ -57,7 +57,7 @@ ProcessedTrack::ProcessedTrack(const NoteTrack& track, int resolution,
 }
 
 ActResult
-ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
+Optimiser::is_candidate_valid(const ActivationCandidate& activation) const
 {
     constexpr double SP_PHRASE_AMOUNT = 0.25;
     const Position null_position {Beat(0.0), Measure(0.0)};
@@ -127,8 +127,8 @@ ProcessedTrack::is_candidate_valid(const ActivationCandidate& activation) const
     return {{end_beat, end_meas}, ActValidity::success};
 }
 
-SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr first_point,
-                                         PointPtr act_start) const
+SpBar Optimiser::total_available_sp(Beat start, PointPtr first_point,
+                                    PointPtr act_start) const
 {
     SpBar sp_bar {0.0, 0.0};
     for (auto p = first_point; p < act_start; ++p) {
@@ -143,13 +143,13 @@ SpBar ProcessedTrack::total_available_sp(Beat start, PointPtr first_point,
     return sp_bar;
 }
 
-PointPtr ProcessedTrack::next_candidate_point(PointPtr point) const
+PointPtr Optimiser::next_candidate_point(PointPtr point) const
 {
     auto index = std::distance(m_points.cbegin(), point);
     return m_next_candidate_points[static_cast<std::size_t>(index)];
 }
 
-ProcessedTrack::CacheKey ProcessedTrack::advance_cache_key(CacheKey key) const
+Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
 {
     key.point = next_candidate_point(key.point);
     if (key.point == m_points.cend()) {
@@ -166,8 +166,8 @@ ProcessedTrack::CacheKey ProcessedTrack::advance_cache_key(CacheKey key) const
 // pos, with earliest point point, with the given SP must end at the returned
 // point or later. This is merely a bound to help the core algorithm, it need
 // not be optimal.
-PointPtr ProcessedTrack::act_end_lower_bound(PointPtr point, Measure pos,
-                                             double sp_bar_amount) const
+PointPtr Optimiser::act_end_lower_bound(PointPtr point, Measure pos,
+                                        double sp_bar_amount) const
 {
     auto end_pos = pos + Measure(MEASURES_PER_BAR * sp_bar_amount);
     auto q = std::find_if(point, m_points.cend(), [=](const auto& pt) {
@@ -176,7 +176,7 @@ PointPtr ProcessedTrack::act_end_lower_bound(PointPtr point, Measure pos,
     return std::prev(q);
 }
 
-Path ProcessedTrack::get_partial_path(CacheKey key, Cache& cache) const
+Path Optimiser::get_partial_path(CacheKey key, Cache& cache) const
 {
     if (key.point == m_points.cend()) {
         return {{}, 0};
@@ -189,8 +189,7 @@ Path ProcessedTrack::get_partial_path(CacheKey key, Cache& cache) const
     return cache.paths.at(key).path;
 }
 
-Path ProcessedTrack::get_partial_full_sp_path(PointPtr point,
-                                              Cache& cache) const
+Path Optimiser::get_partial_full_sp_path(PointPtr point, Cache& cache) const
 {
     if (cache.full_sp_paths.find(point) != cache.full_sp_paths.end()) {
         return cache.full_sp_paths.at(point).path;
@@ -209,9 +208,9 @@ Path ProcessedTrack::get_partial_full_sp_path(PointPtr point,
 // ticks have the same optimal subpath, and at any rate the optimal subpath
 // can't be better than the optimal subpath for the previous point, so we try it
 // first. If it works, we return the result, else we return an empty optional.
-std::optional<ProcessedTrack::CacheValue>
-ProcessedTrack::try_previous_best_subpaths(CacheKey key, const Cache& cache,
-                                           bool has_full_sp) const
+std::optional<Optimiser::CacheValue>
+Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
+                                      bool has_full_sp) const
 {
     if (has_full_sp || !key.point->is_hold_point
         || !std::prev(key.point)->is_hold_point) {
@@ -258,9 +257,8 @@ ProcessedTrack::try_previous_best_subpaths(CacheKey key, const Cache& cache,
     return {{best_path, next_acts}};
 }
 
-ProcessedTrack::CacheValue
-ProcessedTrack::find_best_subpaths(CacheKey key, Cache& cache,
-                                   bool has_full_sp) const
+Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
+                                                    bool has_full_sp) const
 {
     auto subpath_from_prev
         = try_previous_best_subpaths(key, cache, has_full_sp);
@@ -339,7 +337,7 @@ ProcessedTrack::find_best_subpaths(CacheKey key, Cache& cache,
     return {best_path, acts};
 }
 
-Path ProcessedTrack::optimal_path() const
+Path Optimiser::optimal_path() const
 {
     Cache cache;
     auto neg_inf = -std::numeric_limits<double>::infinity();
@@ -349,7 +347,7 @@ Path ProcessedTrack::optimal_path() const
     return get_partial_path(start_key, cache);
 }
 
-std::string ProcessedTrack::path_summary(const Path& path) const
+std::string Optimiser::path_summary(const Path& path) const
 {
     // We use std::stringstream instead of std::string for better formating of
     // floats (measure values).

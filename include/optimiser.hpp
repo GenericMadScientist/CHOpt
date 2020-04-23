@@ -41,12 +41,12 @@ struct Activation {
     PointPtr act_end;
 };
 
-// Part of the return value of ProcessedTrack::is_candidate_valid. Says if an
+// Part of the return value of Optimiser::is_candidate_valid. Says if an
 // activation is valid, and if not whether the problem is too little or too much
 // Star Power.
 enum class ActValidity { success, insufficient_sp, surplus_sp };
 
-// Return value of ProcessedTrack::is_candidate_valid, providing information on
+// Return value of Optimiser::is_candidate_valid, providing information on
 // whether an activation is valid, and if so the earliest position it can end.
 struct ActResult {
     Position ending_position;
@@ -61,7 +61,7 @@ struct Path {
 // Represents a song processed for Star Power optimisation. The constructor
 // should only fail due to OOM; invariants on the song are supposed to be
 // upheld by the constructors of the arguments.
-class ProcessedTrack {
+class Optimiser {
 private:
     // The Cache is used to store paths starting from a certain point onwards,
     // i.e., the solution to our subproblems in our dynamic programming
@@ -113,9 +113,8 @@ private:
     Path get_partial_full_sp_path(PointPtr point, Cache& cache) const;
 
 public:
-    ProcessedTrack(const NoteTrack& track, int resolution,
-                   const SyncTrack& sync_track, double early_whammy,
-                   double squeeze);
+    Optimiser(const NoteTrack& track, int resolution,
+              const SyncTrack& sync_track, double early_whammy, double squeeze);
     [[nodiscard]] const PointSet& points() const { return m_points; }
     // Returns an ActResult which says if an activation is valid, and if so the
     // earliest position it can end.
