@@ -38,6 +38,17 @@ static std::vector<int> set_values(const PointSet& points)
     return values;
 }
 
+static std::vector<int> set_base_values(const PointSet& points)
+{
+    std::vector<int> base_values;
+    base_values.reserve(static_cast<std::size_t>(
+        std::distance(points.cbegin(), points.cend())));
+    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+        base_values.push_back(p->base_value);
+    }
+    return base_values;
+}
+
 static std::vector<Beat> set_position_beats(const PointSet& points)
 {
     std::vector<Beat> values;
@@ -154,13 +165,17 @@ TEST_CASE("Combo multiplier is taken into account")
         TimeConverter converter {{}, 192};
         PointSet points {track, 192, converter, 1.0};
         std::vector<int> expected_values;
+        std::vector<int> expected_base_values;
         expected_values.reserve(50);
+        expected_base_values.reserve(50);
         for (int i = 0; i < 50; ++i) {
             const auto mult = 1 + std::min((i + 1) / 10, 3);
             expected_values.push_back(50 * mult);
+            expected_base_values.push_back(50);
         }
 
         REQUIRE(set_values(points) == expected_values);
+        REQUIRE(set_base_values(points) == expected_base_values);
     }
 
     SECTION("Hold points are multiplied")
@@ -177,6 +192,7 @@ TEST_CASE("Combo multiplier is taken into account")
         PointSet points {track, 192, converter, 1.0};
 
         REQUIRE(std::prev(points.cend())->value == 4);
+        REQUIRE(std::prev(points.cend())->base_value == 1);
     }
 
     SECTION("Later hold points in extended sustains are multiplied")
@@ -193,6 +209,7 @@ TEST_CASE("Combo multiplier is taken into account")
         PointSet points {track, 192, converter, 1.0};
 
         REQUIRE(std::prev(points.cend())->value == 2);
+        REQUIRE(std::prev(points.cend())->base_value == 1);
     }
 }
 

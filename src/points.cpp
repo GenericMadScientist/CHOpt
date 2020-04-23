@@ -57,6 +57,7 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
                  {early_beat, early_meas},
                  {late_beat, late_meas},
                  NOTE_VALUE * chord_size,
+                 NOTE_VALUE * chord_size,
                  false,
                  is_note_sp_ender};
     while (chord_length > 0) {
@@ -64,7 +65,8 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
         chord_length -= tick_gap;
         beat = Beat(pos / float_res);
         meas = converter.beats_to_measures(beat);
-        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, 1, true, false};
+        *points++
+            = {{beat, meas}, {beat, meas}, {beat, meas}, 1, 1, true, false};
     }
 }
 

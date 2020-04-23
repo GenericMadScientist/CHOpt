@@ -29,6 +29,7 @@ struct Point {
     Position hit_window_start;
     Position hit_window_end;
     int value;
+    int base_value;
     bool is_hold_point;
     bool is_sp_granting_note;
 };
