@@ -89,7 +89,6 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
     std::vector<Note> notes {{0}, {1536}, {3072}, {6144}};
     NoteTrack note_track {notes, {}, {}};
     ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
-    Optimiser optimiser {&track};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
@@ -97,7 +96,6 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
                                    {1.0, 1.0}};
     ProcessedSong second_track {note_track, 192, SyncTrack({{0, 3, 4}}, {}),
                                 1.0, 1.0};
-    Optimiser second_optimiser {&second_track};
     const auto& second_points = second_track.points();
     ActivationCandidate second_candidate {second_points.cbegin(),
                                           second_points.cbegin() + 3,
@@ -106,9 +104,9 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
 
     SECTION("Full bar works with time signatures")
     {
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
-        REQUIRE(second_optimiser.is_candidate_valid(second_candidate).validity
+        REQUIRE(second_track.is_candidate_valid(second_candidate).validity
                 == ActValidity::insufficient_sp);
     }
 
@@ -119,9 +117,9 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         second_candidate.act_end = second_points.cbegin() + 2;
         second_candidate.sp_bar = {0.5, 0.5};
 
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
-        REQUIRE(second_optimiser.is_candidate_valid(second_candidate).validity
+        REQUIRE(second_track.is_candidate_valid(second_candidate).validity
                 == ActValidity::insufficient_sp);
     }
 
@@ -130,7 +128,7 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         candidate.act_end = points.cbegin() + 1;
         candidate.sp_bar.max() = 0.25;
 
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::insufficient_sp);
     }
 
@@ -139,7 +137,7 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         candidate.act_end = points.cbegin() + 1;
         candidate.sp_bar.max() = 0.6;
 
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::surplus_sp);
     }
 
@@ -148,14 +146,13 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         std::vector<StarPower> phrases {{3000, 100}};
         NoteTrack overlap_notes {notes, phrases, {}};
         ProcessedSong overlap_track {overlap_notes, 192, {}, 1.0, 1.0};
-        Optimiser overlap_optimiser {&overlap_track};
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
                                                overlap_points.cbegin() + 3,
                                                {Beat(0.0), Measure(0.0)},
                                                {0.8, 0.8}};
 
-        REQUIRE(overlap_optimiser.is_candidate_valid(overlap_candidate).validity
+        REQUIRE(overlap_track.is_candidate_valid(overlap_candidate).validity
                 == ActValidity::success);
     }
 
@@ -165,14 +162,13 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         std::vector<StarPower> phrases {{6000, 100}};
         NoteTrack overlap_notes {notes, phrases, {}};
         ProcessedSong overlap_track {overlap_notes, 192, {}, 1.0, 1.0};
-        Optimiser overlap_optimiser {&overlap_track};
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
                                                overlap_points.cbegin() + 3,
                                                {Beat(0.0), Measure(0.0)},
                                                {0.8, 0.8}};
 
-        REQUIRE(overlap_optimiser.is_candidate_valid(overlap_candidate).validity
+        REQUIRE(overlap_track.is_candidate_valid(overlap_candidate).validity
                 == ActValidity::insufficient_sp);
     }
 
@@ -182,14 +178,13 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         std::vector<StarPower> phrases {{3072, 100}};
         NoteTrack overlap_notes {notes, phrases, {}};
         ProcessedSong overlap_track {overlap_notes, 192, {}, 1.0, 1.0};
-        Optimiser overlap_optimiser {&overlap_track};
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
                                                overlap_points.cbegin() + 2,
                                                {Beat(0.0), Measure(0.0)},
                                                {0.5, 0.5}};
 
-        REQUIRE(overlap_optimiser.is_candidate_valid(overlap_candidate).validity
+        REQUIRE(overlap_track.is_candidate_valid(overlap_candidate).validity
                 == ActValidity::surplus_sp);
     }
 
@@ -199,14 +194,13 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         std::vector<StarPower> phrases {{0, 1}, {2, 1}};
         NoteTrack overlap_note_track {overlap_notes, phrases, {}};
         ProcessedSong overlap_track {overlap_note_track, 192, {}, 1.0, 1.0};
-        Optimiser overlap_optimiser {&overlap_track};
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
                                                overlap_points.cbegin() + 2,
                                                {Beat(0.0), Measure(0.0)},
                                                {1.0, 1.0}};
 
-        REQUIRE(overlap_optimiser.is_candidate_valid(overlap_candidate).validity
+        REQUIRE(overlap_track.is_candidate_valid(overlap_candidate).validity
                 == ActValidity::insufficient_sp);
     }
 
@@ -216,7 +210,7 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
         candidate.sp_bar = {0.53125, 0.53125};
         candidate.earliest_activation_point = {Beat(-2.0), Measure(-0.5)};
 
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
     }
 }
@@ -227,7 +221,6 @@ TEST_CASE("is_candidate_valid works with whammy", "Valid whammy acts")
     std::vector<StarPower> phrases {{0, 7000}};
     NoteTrack note_track {notes, phrases, {}};
     ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
-    Optimiser optimiser {&track};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
@@ -236,14 +229,14 @@ TEST_CASE("is_candidate_valid works with whammy", "Valid whammy acts")
 
     SECTION("Check whammy is counted")
     {
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
     }
 
     SECTION("Check compressed activations are counted")
     {
         candidate.sp_bar.max() = 0.9;
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
     }
 }
@@ -253,7 +246,6 @@ TEST_CASE("is_candidate_valid takes into account minimum SP", "Min SP")
     std::vector<Note> notes {{0}, {1536}, {2304}, {3072}, {4608}};
     NoteTrack note_track {notes, {}, {}};
     ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
-    Optimiser optimiser {&track};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
@@ -262,7 +254,7 @@ TEST_CASE("is_candidate_valid takes into account minimum SP", "Min SP")
 
     SECTION("Lower SP is considered")
     {
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
     }
 
@@ -271,7 +263,7 @@ TEST_CASE("is_candidate_valid takes into account minimum SP", "Min SP")
         candidate.act_end = points.cbegin() + 1;
         candidate.sp_bar.min() = 0.25;
 
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::surplus_sp);
     }
 }
@@ -283,14 +275,13 @@ TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
         std::vector<Note> notes {{0}, {3110}};
         NoteTrack note_track {notes, {}, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
-        Optimiser optimiser {&track};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 1,
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
     }
 
@@ -299,14 +290,13 @@ TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
         std::vector<Note> notes {{0}, {3034}, {3053}};
         NoteTrack note_track {notes, {}, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
-        Optimiser optimiser {&track};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 1,
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
     }
 
@@ -316,14 +306,13 @@ TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
         std::vector<StarPower> phrases {{3100, 100}};
         NoteTrack note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
-        Optimiser optimiser {&track};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 2,
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
     }
 
@@ -333,15 +322,76 @@ TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
         std::vector<StarPower> phrases {{768, 100}};
         NoteTrack note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
-        Optimiser optimiser {&track};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 2,
                                        {Beat(0.0), Measure(0.0)},
                                        {1.0, 1.0}};
 
-        REQUIRE(optimiser.is_candidate_valid(candidate).validity
+        REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
+    }
+}
+
+TEST_CASE("path_summary produces the correct output", "Path summary")
+{
+    std::vector<Note> notes {{0}, {192}, {384}, {576}, {6144}};
+    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
+    std::vector<Solo> solos {{0, 50, 100}};
+    NoteTrack note_track {notes, phrases, solos};
+    ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+    const auto& points = track.points();
+
+    SECTION("Overlap and ES are denoted correctly")
+    {
+        const Path path {{{points.cbegin() + 2, points.cbegin() + 3}}, 100};
+
+        const char* desired_path_output
+            = "Path: 2(+1)-ES1\n"
+              "No SP score: 350\n"
+              "Total score: 450\n"
+              "Activation 1: Measure 1.5 to Measure 1.75";
+
+        REQUIRE(track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("No overlap is denoted correctly")
+    {
+        const Path path {{{points.cbegin() + 3, points.cbegin() + 3}}, 50};
+
+        const char* desired_path_output
+            = "Path: 3-ES1\n"
+              "No SP score: 350\n"
+              "Total score: 400\n"
+              "Activation 1: Measure 1.75 to Measure 1.75";
+
+        REQUIRE(track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("No ES is denoted correctly")
+    {
+        const Path path {{{points.cbegin() + 4, points.cbegin() + 4}}, 50};
+
+        const char* desired_path_output
+            = "Path: 3(+1)\n"
+              "No SP score: 350\n"
+              "Total score: 400\n"
+              "Activation 1: Measure 9 to Measure 9";
+
+        REQUIRE(track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("No SP is denoted correctly")
+    {
+        const Path path {{}, 0};
+        NoteTrack second_note_track {notes, {}, solos};
+        ProcessedSong second_track {second_note_track, 192, {}, 1.0, 1.0};
+
+        const char* desired_path_output = "Path: None\n"
+                                          "No SP score: 350\n"
+                                          "Total score: 350";
+
+        REQUIRE(second_track.path_summary(path) == desired_path_output);
     }
 }
 
@@ -474,69 +524,5 @@ TEST_CASE("optimal_path produces the correct path")
 
         REQUIRE(opt_path.score_boost == 750);
         REQUIRE(opt_path.activations.size() == 1);
-    }
-}
-
-TEST_CASE("path_summary produces the correct output", "Path summary")
-{
-    std::vector<Note> notes {{0}, {192}, {384}, {576}, {6144}};
-    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
-    std::vector<Solo> solos {{0, 50, 100}};
-    NoteTrack note_track {notes, phrases, solos};
-    ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
-    Optimiser optimiser {&track};
-    const auto& points = track.points();
-
-    SECTION("Overlap and ES are denoted correctly")
-    {
-        const Path path {{{points.cbegin() + 2, points.cbegin() + 3}}, 100};
-
-        const char* desired_path_output
-            = "Path: 2(+1)-ES1\n"
-              "No SP score: 350\n"
-              "Total score: 450\n"
-              "Activation 1: Measure 1.5 to Measure 1.75";
-
-        REQUIRE(optimiser.path_summary(path) == desired_path_output);
-    }
-
-    SECTION("No overlap is denoted correctly")
-    {
-        const Path path {{{points.cbegin() + 3, points.cbegin() + 3}}, 50};
-
-        const char* desired_path_output
-            = "Path: 3-ES1\n"
-              "No SP score: 350\n"
-              "Total score: 400\n"
-              "Activation 1: Measure 1.75 to Measure 1.75";
-
-        REQUIRE(optimiser.path_summary(path) == desired_path_output);
-    }
-
-    SECTION("No ES is denoted correctly")
-    {
-        const Path path {{{points.cbegin() + 4, points.cbegin() + 4}}, 50};
-
-        const char* desired_path_output
-            = "Path: 3(+1)\n"
-              "No SP score: 350\n"
-              "Total score: 400\n"
-              "Activation 1: Measure 9 to Measure 9";
-
-        REQUIRE(optimiser.path_summary(path) == desired_path_output);
-    }
-
-    SECTION("No SP is denoted correctly")
-    {
-        const Path path {{}, 0};
-        NoteTrack second_note_track {notes, {}, solos};
-        ProcessedSong second_track {second_note_track, 192, {}, 1.0, 1.0};
-        Optimiser second_optimiser {&second_track};
-
-        const char* desired_path_output = "Path: None\n"
-                                          "No SP score: 350\n"
-                                          "Total score: 350";
-
-        REQUIRE(second_optimiser.path_summary(path) == desired_path_output);
     }
 }

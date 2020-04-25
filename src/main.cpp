@@ -63,7 +63,7 @@ int main(int argc, char** argv)
                 auto end = act.act_end->position.beat.value();
                 instructions.blue_ranges.emplace_back(start, end);
             }
-            std::cout << optimiser.path_summary(path) << std::endl;
+            std::cout << processed_track.path_summary(path) << std::endl;
         }
         const auto image = create_path_image(instructions);
         image.save(settings.image_path.c_str());

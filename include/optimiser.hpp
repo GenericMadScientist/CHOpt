@@ -29,6 +29,38 @@
 #include "sp.hpp"
 #include "time.hpp"
 
+struct ActivationCandidate {
+    PointPtr act_start;
+    PointPtr act_end;
+    Position earliest_activation_point {Beat(0.0), Measure(0.0)};
+    SpBar sp_bar {0.0, 0.0};
+};
+
+struct Activation {
+    PointPtr act_start;
+    PointPtr act_end;
+};
+
+// Part of the return value of ProcessedSong::is_candidate_valid. Says if an
+// activation is valid, and if not whether the problem is too little or too much
+// Star Power.
+enum class ActValidity { success, insufficient_sp, surplus_sp };
+
+// Return value of ProcessedSong::is_candidate_valid, providing information on
+// whether an activation is valid, and if so the earliest position it can end.
+struct ActResult {
+    Position ending_position;
+    ActValidity validity;
+};
+
+struct Path {
+    std::vector<Activation> activations;
+    int score_boost;
+};
+
+// Represents a song processed for Star Power optimisation. The constructor
+// should only fail due to OOM; invariants on the song are supposed to be
+// upheld by the constructors of the arguments.
 class ProcessedSong {
 private:
     // The order of these members is important. We must have m_converter before
@@ -49,45 +81,22 @@ public:
     // after the middle of first_point's timing window.
     [[nodiscard]] SpBar total_available_sp(Beat start, PointPtr first_point,
                                            PointPtr act_start) const;
+    // Returns an ActResult which says if an activation is valid, and if so the
+    // earliest position it can end.
+    [[nodiscard]] ActResult
+    is_candidate_valid(const ActivationCandidate& activation) const;
+    // Return the summary of a path.
+    [[nodiscard]] std::string path_summary(const Path& path) const;
 
-    [[nodiscard]] const TimeConverter& converter() const { return m_converter; }
     [[nodiscard]] const PointSet& points() const { return m_points; }
     [[nodiscard]] const SpData& sp_data() const { return m_sp_data; }
-    [[nodiscard]] int total_solo_boost() const { return m_total_solo_boost; }
 };
 
-struct ActivationCandidate {
-    PointPtr act_start;
-    PointPtr act_end;
-    Position earliest_activation_point {Beat(0.0), Measure(0.0)};
-    SpBar sp_bar {0.0, 0.0};
-};
-
-struct Activation {
-    PointPtr act_start;
-    PointPtr act_end;
-};
-
-// Part of the return value of Optimiser::is_candidate_valid. Says if an
-// activation is valid, and if not whether the problem is too little or too much
-// Star Power.
-enum class ActValidity { success, insufficient_sp, surplus_sp };
-
-// Return value of Optimiser::is_candidate_valid, providing information on
-// whether an activation is valid, and if so the earliest position it can end.
-struct ActResult {
-    Position ending_position;
-    ActValidity validity;
-};
-
-struct Path {
-    std::vector<Activation> activations;
-    int score_boost;
-};
-
-// Represents a song processed for Star Power optimisation. The constructor
-// should only fail due to OOM; invariants on the song are supposed to be
-// upheld by the constructors of the arguments.
+// The class that stores extra information needed on top of a ProcessedSong for
+// the purposes of optimisation, and finds the optimal path. The song passed to
+// Optimiser's constructor must outlive Optimiser; the class is done this way so
+// that other code can make use of the PointIters that are returned by Optimiser
+// without needing access to Optimiser itself.
 class Optimiser {
 private:
     // The Cache is used to store paths starting from a certain point onwards,
@@ -119,9 +128,6 @@ private:
     const ProcessedSong* m_song;
     std::vector<PointPtr> m_next_candidate_points;
 
-    static constexpr double MEASURES_PER_BAR = 8.0;
-    static constexpr double MINIMUM_SP_AMOUNT = 0.5;
-
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
     [[nodiscard]] CacheKey advance_cache_key(CacheKey key) const;
     [[nodiscard]] PointPtr act_end_lower_bound(PointPtr point, Measure pos,
@@ -136,14 +142,8 @@ private:
 
 public:
     explicit Optimiser(const ProcessedSong* song);
-    // Returns an ActResult which says if an activation is valid, and if so the
-    // earliest position it can end.
-    [[nodiscard]] ActResult
-    is_candidate_valid(const ActivationCandidate& activation) const;
     // Return the optimal Star Power path.
     [[nodiscard]] Path optimal_path() const;
-    // Return the summary of a path.
-    [[nodiscard]] std::string path_summary(const Path& path) const;
 };
 
 #endif
