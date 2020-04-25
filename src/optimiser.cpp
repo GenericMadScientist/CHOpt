@@ -24,25 +24,35 @@
 
 #include "optimiser.hpp"
 
+ProcessedSong::ProcessedSong(const NoteTrack& track, int resolution,
+                             const SyncTrack& sync_track, double early_whammy,
+                             double squeeze)
+    : m_converter {sync_track, resolution}
+    , m_points {track, resolution, m_converter, squeeze}
+    , m_sp_data {track, resolution, sync_track, early_whammy}
+{
+}
+
 Optimiser::Optimiser(const NoteTrack& track, int resolution,
                      const SyncTrack& sync_track, double early_whammy,
                      double squeeze)
-    : m_converter {TimeConverter(sync_track, resolution)}
-    , m_points {track, resolution, m_converter, squeeze}
-    , m_sp_data {track, resolution, sync_track, early_whammy}
+    : m_song {track, resolution, sync_track, early_whammy, squeeze}
 {
     m_total_solo_boost = std::accumulate(
         track.solos().cbegin(), track.solos().cend(), 0,
         [](const auto x, const auto& y) { return x + y.value; });
 
-    auto capacity = std::distance(m_points.cbegin(), m_points.cend()) + 1;
+    const auto& points = m_song.points();
+    const auto& sp_data = m_song.sp_data();
+
+    auto capacity = std::distance(points.cbegin(), points.cend()) + 1;
     m_next_candidate_points.reserve(static_cast<std::size_t>(capacity));
     int count = 0;
-    for (auto p = m_points.cbegin(); p < m_points.cend(); ++p) {
+    for (auto p = points.cbegin(); p < points.cend(); ++p) {
         ++count;
         if (p->is_sp_granting_note
             || (p->is_hold_point
-                && m_sp_data.is_in_whammy_ranges(p->position.beat))) {
+                && sp_data.is_in_whammy_ranges(p->position.beat))) {
             for (int i = 0; i < count; ++i) {
                 m_next_candidate_points.push_back(p);
             }
@@ -52,7 +62,7 @@ Optimiser::Optimiser(const NoteTrack& track, int resolution,
 
     ++count;
     for (int i = 0; i < count; ++i) {
-        m_next_candidate_points.push_back(m_points.cend());
+        m_next_candidate_points.push_back(points.cend());
     }
 }
 
@@ -79,19 +89,19 @@ Optimiser::is_candidate_valid(const ActivationCandidate& activation) const
     for (auto p = activation.act_start; p < activation.act_end; ++p) {
         if (p->is_sp_granting_note) {
             auto sp_note_pos = p->hit_window_start;
-            sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
-                                                        sp_note_pos, sp_bar);
+            sp_bar = m_song.sp_data().propagate_sp_over_whammy(
+                current_position, sp_note_pos, sp_bar);
             if (sp_bar.max() < 0.0) {
                 return {null_position, ActValidity::insufficient_sp};
             }
 
             auto sp_note_end_pos = p->hit_window_end;
 
-            auto latest_point_to_hit_sp = m_sp_data.activation_end_point(
+            auto latest_point_to_hit_sp = m_song.sp_data().activation_end_point(
                 sp_note_pos, sp_note_end_pos, sp_bar.max());
             sp_bar.min() += SP_PHRASE_AMOUNT;
             sp_bar.min() = std::min(sp_bar.min(), 1.0);
-            sp_bar = m_sp_data.propagate_sp_over_whammy(
+            sp_bar = m_song.sp_data().propagate_sp_over_whammy(
                 sp_note_pos, latest_point_to_hit_sp, sp_bar);
             sp_bar.max() += SP_PHRASE_AMOUNT;
             sp_bar.max() = std::min(sp_bar.max(), 1.0);
@@ -101,8 +111,8 @@ Optimiser::is_candidate_valid(const ActivationCandidate& activation) const
     }
 
     auto ending_pos = activation.act_end->hit_window_start;
-    sp_bar = m_sp_data.propagate_sp_over_whammy(current_position, ending_pos,
-                                                sp_bar);
+    sp_bar = m_song.sp_data().propagate_sp_over_whammy(current_position,
+                                                       ending_pos, sp_bar);
     if (sp_bar.max() < 0.0) {
         return {null_position, ActValidity::insufficient_sp};
     }
@@ -111,7 +121,7 @@ Optimiser::is_candidate_valid(const ActivationCandidate& activation) const
     }
 
     const auto next_point = std::next(activation.act_end);
-    if (next_point == m_points.cend()) {
+    if (next_point == m_song.points().cend()) {
         // Return value doesn't matter other than it being non-empty.
         auto pos_inf = std::numeric_limits<double>::infinity();
         return {{Beat(pos_inf), Measure(pos_inf)}, ActValidity::success};
@@ -123,7 +133,7 @@ Optimiser::is_candidate_valid(const ActivationCandidate& activation) const
         return {null_position, ActValidity::surplus_sp};
     }
 
-    auto end_beat = m_converter.measures_to_beats(end_meas);
+    auto end_beat = m_song.converter().measures_to_beats(end_meas);
     return {{end_beat, end_meas}, ActValidity::success};
 }
 
@@ -137,7 +147,8 @@ SpBar Optimiser::total_available_sp(Beat start, PointPtr first_point,
         }
     }
 
-    sp_bar.max() += m_sp_data.available_whammy(start, act_start->position.beat);
+    sp_bar.max()
+        += m_song.sp_data().available_whammy(start, act_start->position.beat);
     sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
     return sp_bar;
@@ -145,14 +156,14 @@ SpBar Optimiser::total_available_sp(Beat start, PointPtr first_point,
 
 PointPtr Optimiser::next_candidate_point(PointPtr point) const
 {
-    auto index = std::distance(m_points.cbegin(), point);
+    auto index = std::distance(m_song.points().cbegin(), point);
     return m_next_candidate_points[static_cast<std::size_t>(index)];
 }
 
 Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
 {
     key.point = next_candidate_point(key.point);
-    if (key.point == m_points.cend()) {
+    if (key.point == m_song.points().cend()) {
         return key;
     }
     const auto pos = key.point->hit_window_start;
@@ -170,7 +181,7 @@ PointPtr Optimiser::act_end_lower_bound(PointPtr point, Measure pos,
                                         double sp_bar_amount) const
 {
     auto end_pos = pos + Measure(MEASURES_PER_BAR * sp_bar_amount);
-    auto q = std::find_if(point, m_points.cend(), [=](const auto& pt) {
+    auto q = std::find_if(point, m_song.points().cend(), [=](const auto& pt) {
         return pt.hit_window_end.measure > end_pos;
     });
     return std::prev(q);
@@ -178,7 +189,7 @@ PointPtr Optimiser::act_end_lower_bound(PointPtr point, Measure pos,
 
 Path Optimiser::get_partial_path(CacheKey key, Cache& cache) const
 {
-    if (key.point == m_points.cend()) {
+    if (key.point == m_song.points().cend()) {
         return {{}, 0};
     }
     if (cache.paths.find(key) == cache.paths.end()) {
@@ -248,7 +259,7 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
     auto score_boost = prev_key_iter->second.path.score_boost;
     auto next_key = std::get<1>(next_acts[0]);
     Path rest_of_path {{}, 0};
-    if (next_key.point != m_points.cend()) {
+    if (next_key.point != m_song.points().cend()) {
         rest_of_path = cache.paths.at(next_key).path;
     }
     auto act_set = rest_of_path.activations;
@@ -271,7 +282,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
     auto best_score_boost = 0;
     Path best_path {{}, 0};
 
-    for (auto p = key.point; p < m_points.cend(); ++p) {
+    for (auto p = key.point; p < m_song.points().cend(); ++p) {
         SpBar sp_bar {1.0, 1.0};
         if (!has_full_sp) {
             sp_bar = total_available_sp(key.position.beat, key.point, p);
@@ -295,7 +306,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         auto starting_pos = std::prev(p)->hit_window_start;
         auto q_min = act_end_lower_bound(
             p, starting_pos.measure, std::max(MINIMUM_SP_AMOUNT, sp_bar.min()));
-        for (auto q = q_min; q < m_points.cend(); ++q) {
+        for (auto q = q_min; q < m_song.points().cend(); ++q) {
             if (attained_act_ends.find(q) != attained_act_ends.end()) {
                 continue;
             }
@@ -341,7 +352,8 @@ Path Optimiser::optimal_path() const
 {
     Cache cache;
     auto neg_inf = -std::numeric_limits<double>::infinity();
-    CacheKey start_key {m_points.cbegin(), {Beat(neg_inf), Measure(neg_inf)}};
+    CacheKey start_key {m_song.points().cbegin(),
+                        {Beat(neg_inf), Measure(neg_inf)}};
     start_key = advance_cache_key(start_key);
 
     return get_partial_path(start_key, cache);
@@ -355,7 +367,7 @@ std::string Optimiser::path_summary(const Path& path) const
     stream << "Path: ";
 
     std::vector<std::string> activation_summaries;
-    auto start_point = m_points.cbegin();
+    auto start_point = m_song.points().cbegin();
     for (const auto& act : path.activations) {
         auto sp_before
             = std::count_if(start_point, act.act_start, [](const auto& p) {
@@ -375,7 +387,7 @@ std::string Optimiser::path_summary(const Path& path) const
     }
 
     auto spare_sp
-        = std::count_if(start_point, m_points.cend(),
+        = std::count_if(start_point, m_song.points().cend(),
                         [](const auto& p) { return p.is_sp_granting_note; });
     if (spare_sp != 0) {
         activation_summaries.push_back(std::string("ES")
@@ -392,7 +404,7 @@ std::string Optimiser::path_summary(const Path& path) const
     }
 
     auto no_sp_score = std::accumulate(
-        m_points.cbegin(), m_points.cend(), 0,
+        m_song.points().cbegin(), m_song.points().cend(), 0,
         [](const auto x, const auto& y) { return x + y.value; });
     no_sp_score += m_total_solo_boost;
     stream << "\nNo SP score: " << no_sp_score;

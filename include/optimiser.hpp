@@ -29,6 +29,24 @@
 #include "sp.hpp"
 #include "time.hpp"
 
+class ProcessedSong {
+private:
+    // The order of these members is important. We must have m_converter before
+    // m_points.
+    TimeConverter m_converter;
+    PointSet m_points;
+    SpData m_sp_data;
+
+public:
+    ProcessedSong(const NoteTrack& track, int resolution,
+                  const SyncTrack& sync_track, double early_whammy,
+                  double squeeze);
+
+    [[nodiscard]] const TimeConverter& converter() const { return m_converter; }
+    [[nodiscard]] const PointSet& points() const { return m_points; }
+    [[nodiscard]] const SpData& sp_data() const { return m_sp_data; }
+};
+
 struct ActivationCandidate {
     PointPtr act_start;
     PointPtr act_end;
@@ -89,11 +107,7 @@ private:
         std::map<PointPtr, CacheValue> full_sp_paths;
     };
 
-    // The order of these members is important. We must have m_converter before
-    // m_points.
-    TimeConverter m_converter;
-    PointSet m_points;
-    SpData m_sp_data;
+    ProcessedSong m_song;
     int m_total_solo_boost;
     std::vector<PointPtr> m_next_candidate_points;
 
@@ -115,7 +129,7 @@ private:
 public:
     Optimiser(const NoteTrack& track, int resolution,
               const SyncTrack& sync_track, double early_whammy, double squeeze);
-    [[nodiscard]] const PointSet& points() const { return m_points; }
+    [[nodiscard]] const PointSet& points() const { return m_song.points(); }
     // Returns an ActResult which says if an activation is valid, and if so the
     // earliest position it can end.
     [[nodiscard]] ActResult
