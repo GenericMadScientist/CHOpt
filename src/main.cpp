@@ -53,16 +53,17 @@ int main(int argc, char** argv)
                                                 chart.sync_track());
 
         if (!settings.blank) {
-            const Optimiser processed_track {
+            const ProcessedSong processed_track {
                 track, chart.resolution(), chart.sync_track(),
                 settings.early_whammy, settings.squeeze};
-            const auto path = processed_track.optimal_path();
+            const Optimiser optimiser {&processed_track};
+            const auto path = optimiser.optimal_path();
             for (const auto& act : path.activations) {
                 auto start = act.act_start->position.beat.value();
                 auto end = act.act_end->position.beat.value();
                 instructions.blue_ranges.emplace_back(start, end);
             }
-            std::cout << processed_track.path_summary(path) << std::endl;
+            std::cout << optimiser.path_summary(path) << std::endl;
         }
         const auto image = create_path_image(instructions);
         image.save(settings.image_path.c_str());

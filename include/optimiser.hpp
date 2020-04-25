@@ -36,15 +36,24 @@ private:
     TimeConverter m_converter;
     PointSet m_points;
     SpData m_sp_data;
+    int m_total_solo_boost;
 
 public:
     ProcessedSong(const NoteTrack& track, int resolution,
                   const SyncTrack& sync_track, double early_whammy,
                   double squeeze);
 
+    // Return the minimum and maximum amount of SP can be acquired between two
+    // points. Does not include SP from the point act_start. first_point is
+    // given for the purposes of counting SP grantings notes, e.g. if start is
+    // after the middle of first_point's timing window.
+    [[nodiscard]] SpBar total_available_sp(Beat start, PointPtr first_point,
+                                           PointPtr act_start) const;
+
     [[nodiscard]] const TimeConverter& converter() const { return m_converter; }
     [[nodiscard]] const PointSet& points() const { return m_points; }
     [[nodiscard]] const SpData& sp_data() const { return m_sp_data; }
+    [[nodiscard]] int total_solo_boost() const { return m_total_solo_boost; }
 };
 
 struct ActivationCandidate {
@@ -107,8 +116,7 @@ private:
         std::map<PointPtr, CacheValue> full_sp_paths;
     };
 
-    ProcessedSong m_song;
-    int m_total_solo_boost;
+    const ProcessedSong* m_song;
     std::vector<PointPtr> m_next_candidate_points;
 
     static constexpr double MEASURES_PER_BAR = 8.0;
@@ -127,19 +135,11 @@ private:
     Path get_partial_full_sp_path(PointPtr point, Cache& cache) const;
 
 public:
-    Optimiser(const NoteTrack& track, int resolution,
-              const SyncTrack& sync_track, double early_whammy, double squeeze);
-    [[nodiscard]] const PointSet& points() const { return m_song.points(); }
+    explicit Optimiser(const ProcessedSong* song);
     // Returns an ActResult which says if an activation is valid, and if so the
     // earliest position it can end.
     [[nodiscard]] ActResult
     is_candidate_valid(const ActivationCandidate& activation) const;
-    // Return the minimum and maximum amount of SP can be acquired between two
-    // points. Does not include SP from the point act_start. first_point is
-    // given for the purposes of counting SP grantings notes, e.g. if start is
-    // after the middle of first_point's timing window.
-    [[nodiscard]] SpBar total_available_sp(Beat start, PointPtr first_point,
-                                           PointPtr act_start) const;
     // Return the optimal Star Power path.
     [[nodiscard]] Path optimal_path() const;
     // Return the summary of a path.
