@@ -3,7 +3,7 @@ set(LIBS "${PROJECT_SOURCE_DIR}/libs")
 set(SRC "${PROJECT_SOURCE_DIR}/src")
 
 add_library(catch_main STATIC catch_main.cpp)
-target_include_directories(catch_main PRIVATE "${LIBS}")
+target_include_directories(catch_main PRIVATE ${LIBS})
 set_cpp_standard(catch_main)
 set_warnings(catch_main)
 
@@ -20,9 +20,11 @@ package_add_test(chart_unittest chart_unittest.cpp "${SRC}/chart.cpp")
 
 package_add_test(image_unittest image_unittest.cpp "${SRC}/chart.cpp" "${SRC}/image.cpp")
 
-package_add_test(optimiser_unittest optimiser_unittest.cpp "${SRC}/chart.cpp" "${SRC}/optimiser.cpp" "${SRC}/points.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
+package_add_test(optimiser_unittest optimiser_unittest.cpp "${SRC}/chart.cpp" "${SRC}/optimiser.cpp" "${SRC}/points.cpp" "${SRC}/processed.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
 
 package_add_test(points_unittest points_unittest.cpp "${SRC}/chart.cpp" "${SRC}/points.cpp" "${SRC}/time.cpp")
+
+package_add_test(processed_unittest processed_unittest.cpp "${SRC}/chart.cpp" "${SRC}/points.cpp" "${SRC}/processed.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
 
 package_add_test(sp_unittest sp_unittest.cpp "${SRC}/chart.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
 
