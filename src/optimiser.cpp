@@ -64,7 +64,10 @@ Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
     if (key.point == m_song->points().cend()) {
         return key;
     }
-    const auto pos = key.point->hit_window_start;
+    auto pos = key.point->hit_window_start;
+    if (key.point != m_song->points().cbegin()) {
+        pos = std::prev(key.point)->hit_window_start;
+    }
     if (pos.beat >= key.position.beat) {
         key.position = pos;
     }

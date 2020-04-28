@@ -221,4 +221,21 @@ TEST_CASE("optimal_path produces the correct path")
         REQUIRE(opt_path.score_boost == 750);
         REQUIRE(opt_path.activations.size() == 1);
     }
+
+    // There was a bug where sustains at the start of an SP phrase right after
+    // an activation/start of song had their early whammy discounted, if that
+    // note didn't also grant SP. This affected a squeeze in GH3 Cult of
+    // Personality. This test is to catch that.
+    SECTION("Early whammy at start of an SP phrase is always counted")
+    {
+        std::vector<Note> notes {{0, 1420}, {1500}, {1600}};
+        std::vector<StarPower> phrases {{0, 1550}};
+        NoteTrack note_track {notes, phrases, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+        Optimiser optimiser {&track};
+        auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.score_boost == 50);
+        REQUIRE(opt_path.activations.size() == 1);
+    }
 }
