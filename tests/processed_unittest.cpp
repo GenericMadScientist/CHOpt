@@ -47,7 +47,7 @@ TEST_CASE("total_available_sp counts SP correctly", "Available SP")
         auto result = song.total_available_sp(Beat(4.0), points.cbegin() + 4,
                                               points.cbegin() + 5);
         REQUIRE(result.min() == Approx(0.0));
-        REQUIRE(result.max() == Approx(0.00121528));
+        REQUIRE(result.max() == Approx(0.00112847));
     }
 
     SECTION("Whammy is counted correctly even started mid hold")

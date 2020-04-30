@@ -33,6 +33,7 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
                                int resolution, bool is_note_sp_ender,
                                const TimeConverter& converter, double squeeze)
 {
+    constexpr double HALF_RES_OFFSET = 0.5;
     constexpr int NOTE_VALUE = 50;
     const auto EARLY_WINDOW = Second(0.07 * squeeze);
     const auto LATE_WINDOW = Second(0.07 * squeeze);
@@ -60,13 +61,21 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
                  NOTE_VALUE * chord_size,
                  false,
                  is_note_sp_ender};
-    while (chord_length > 0) {
+    auto sust_ticks = (chord_length + tick_gap - 1) / tick_gap;
+    while (chord_length > (resolution / 4)) {
         pos += tick_gap;
         chord_length -= tick_gap;
-        beat = Beat(pos / float_res);
+        beat = Beat((pos - HALF_RES_OFFSET) / float_res);
         meas = converter.beats_to_measures(beat);
+        --sust_ticks;
         *points++
             = {{beat, meas}, {beat, meas}, {beat, meas}, 1, 1, true, false};
+    }
+    if (sust_ticks > 0) {
+        beat = Beat((pos + HALF_RES_OFFSET) / float_res);
+        meas = converter.beats_to_measures(beat);
+        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, sust_ticks,
+                     sust_ticks,   true,         false};
     }
 }
 
