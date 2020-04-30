@@ -28,7 +28,7 @@ expert if none is provided. The full set of options can be listed by using -h or
 
 ## Limitations
 
-This is version 0.3.1, so there are still some kinks and missing features. The
+This is version 0.3.2, so there are still some kinks and missing features. The
 only supported instrument is five fret guitar, only .chart files are accepted,
 and the drawn paths are sufficient to work out what the path is rather than
 providing all the details like how much to squeeze or not whammy. The
@@ -52,6 +52,8 @@ be no difficulty getting these set up if you want to build chopt.
 initial idea of Clone Hero's parsing behaviour.
 * Dinoguy1000 and shadoweh helped me make sure chopt runs on other peoples'
 machines.
+* The CH Score Challenges server for feedback, especially CyclopsDragon,
+LightlessWalk, and Lucretio.
 
 ## Contact
 
