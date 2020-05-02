@@ -47,10 +47,12 @@ private:
     std::vector<DrawnNote> m_notes;
     std::vector<std::tuple<double, double>> m_green_ranges;
     std::vector<std::tuple<double, double>> m_blue_ranges;
+    std::vector<std::tuple<double, double>> m_solo_ranges;
 
 public:
     DrawingInstructions(const NoteTrack& track, int resolution,
                         const SyncTrack& sync_track);
+    void add_solo_sections(const NoteTrack& track, int resolution);
     void add_sp_phrases(const NoteTrack& track, int resolution);
     void add_sp_acts(const Path& path);
 
@@ -81,6 +83,11 @@ public:
         return m_notes;
     }
     [[nodiscard]] const std::vector<DrawnRow>& rows() const { return m_rows; }
+    [[nodiscard]] const std::vector<std::tuple<double, double>>&
+    solo_ranges() const
+    {
+        return m_solo_ranges;
+    }
 };
 
 class ImageImpl;

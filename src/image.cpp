@@ -167,6 +167,16 @@ DrawingInstructions::DrawingInstructions(const NoteTrack& track, int resolution,
     }
 }
 
+void DrawingInstructions::add_solo_sections(const NoteTrack& track,
+                                            int resolution)
+{
+    for (const auto& solo : track.solos()) {
+        auto start = solo.start / static_cast<double>(resolution);
+        auto end = solo.end / static_cast<double>(resolution);
+        m_solo_ranges.emplace_back(start, end);
+    }
+}
+
 void DrawingInstructions::add_sp_phrases(const NoteTrack& track, int resolution)
 {
     for (const auto& phrase : track.sp_phrases()) {
@@ -441,9 +451,11 @@ Image::Image(const DrawingInstructions& instructions)
 {
     constexpr std::array<unsigned char, 3> green {0, 255, 0};
     constexpr std::array<unsigned char, 3> blue {0, 0, 255};
+    constexpr std::array<unsigned char, 3> solo_blue {0, 51, 128};
 
     constexpr unsigned int IMAGE_WIDTH = 1024;
     constexpr float RANGE_OPACITY = 0.25F;
+    constexpr int SOLO_HEIGHT = 10;
     constexpr unsigned char WHITE = 255;
 
     auto height = static_cast<unsigned int>(
@@ -463,6 +475,12 @@ Image::Image(const DrawingInstructions& instructions)
     for (const auto& range : instructions.blue_ranges()) {
         m_impl->colour_beat_range(instructions, blue, range,
                                   {0, MEASURE_HEIGHT}, RANGE_OPACITY);
+    }
+
+    for (const auto& range : instructions.solo_ranges()) {
+        m_impl->colour_beat_range(instructions, solo_blue, range,
+                                  {-SOLO_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT},
+                                  RANGE_OPACITY);
     }
 }
 

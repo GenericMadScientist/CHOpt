@@ -187,3 +187,13 @@ TEST_CASE("add_sp_acts adds correct ranges")
 
     REQUIRE(insts.blue_ranges() == expected_blue_ranges);
 }
+
+TEST_CASE("add_solo_sections add correct ranges")
+{
+    NoteTrack track {{{0}}, {}, {{192, 384, 0}}};
+    DrawingInstructions insts {track, 192, {}};
+    insts.add_solo_sections(track, 192);
+    std::vector<std::tuple<double, double>> expected_solo_ranges {{1.0, 2.0}};
+
+    REQUIRE(insts.solo_ranges() == expected_solo_ranges);
+}

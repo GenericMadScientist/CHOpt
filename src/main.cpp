@@ -50,6 +50,7 @@ int main(int argc, char** argv)
         DrawingInstructions instructions {track, chart.resolution(),
                                           chart.sync_track()};
         instructions.add_sp_phrases(track, chart.resolution());
+        instructions.add_solo_sections(track, chart.resolution());
 
         if (!settings.blank) {
             const ProcessedSong processed_track {
