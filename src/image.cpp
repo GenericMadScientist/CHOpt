@@ -181,56 +181,6 @@ DrawingInstructions create_instructions(const NoteTrack& track, int resolution,
             notes, green_ranges,    {}};
 }
 
-static void draw_vertical_lines(CImg<int>& image,
-                                const DrawingInstructions& instructions,
-                                const std::vector<double>& positions,
-                                const std::array<unsigned char, 3> colour)
-{
-    for (auto pos : positions) {
-        auto row
-            = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
-                           [=](const auto x) { return x.end > pos; });
-        auto x
-            = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
-        auto y = MARGIN
-            + DIST_BETWEEN_MEASURES
-                * static_cast<int>(
-                    std::distance(instructions.rows.cbegin(), row));
-        image.draw_line(x, y, x, y + MEASURE_HEIGHT, colour.data());
-    }
-}
-
-static void draw_measures(CImg<int>& image,
-                          const DrawingInstructions& instructions)
-{
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
-    constexpr std::array<unsigned char, 3> grey {160, 160, 160};
-    constexpr std::array<unsigned char, 3> light_grey {224, 224, 224};
-    constexpr int COLOUR_DISTANCE = 15;
-
-    draw_vertical_lines(image, instructions, instructions.beat_lines, grey);
-    draw_vertical_lines(image, instructions, instructions.half_beat_lines,
-                        light_grey);
-
-    auto current_row = 0;
-    for (const auto& row : instructions.rows) {
-        auto y = DIST_BETWEEN_MEASURES * current_row + MARGIN;
-        auto x_max = LEFT_MARGIN
-            + static_cast<int>(BEAT_WIDTH * (row.end - row.start));
-        for (int i = 1; i < 4; ++i) {
-            image.draw_line(LEFT_MARGIN, y + COLOUR_DISTANCE * i, x_max,
-                            y + COLOUR_DISTANCE * i, grey.data());
-        }
-        image.draw_rectangle(LEFT_MARGIN, y, x_max, y + MEASURE_HEIGHT,
-                             black.data(), 1.0, ~0U);
-        ++current_row;
-    }
-
-    // We do measure lines after the boxes because we want the measure lines to
-    // lie over the horizontal grey fretboard lines.
-    draw_vertical_lines(image, instructions, instructions.measure_lines, black);
-}
-
 static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
 {
     constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
@@ -284,11 +234,172 @@ static int note_colour_to_offset(NoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_offset");
 }
 
-static void colour_beat_range(CImg<int>& image,
-                              const DrawingInstructions& instructions,
-                              std::array<unsigned char, 3> colour,
-                              std::tuple<double, double> x_range,
-                              std::tuple<int, int> y_range, float opacity)
+class ImageImpl {
+private:
+    CImg<int> m_image;
+
+    void draw_note_circle(int x, int y, NoteColour note_colour);
+    void draw_note_star(int x, int y, NoteColour note_colour);
+    void draw_note_sustain(const DrawingInstructions& instructions,
+                           const DrawnNote& note);
+    void draw_vertical_lines(const DrawingInstructions& instructions,
+                             const std::vector<double>& positions,
+                             std::array<unsigned char, 3> colour);
+
+public:
+    ImageImpl(unsigned int size_x, unsigned int size_y, unsigned int size_z,
+              unsigned int size_c, const int& value)
+        : m_image {size_x, size_y, size_z, size_c, value}
+    {
+    }
+
+    void colour_beat_range(const DrawingInstructions& instructions,
+                           std::array<unsigned char, 3> colour,
+                           std::tuple<double, double> x_range,
+                           std::tuple<int, int> y_range, float opacity);
+    void draw_measures(const DrawingInstructions& instructions);
+    void draw_note(const DrawingInstructions& instructions,
+                   const DrawnNote& note);
+
+    void save(const char* filename) const { m_image.save(filename); }
+};
+
+void ImageImpl::draw_measures(const DrawingInstructions& instructions)
+{
+    constexpr std::array<unsigned char, 3> black {0, 0, 0};
+    constexpr std::array<unsigned char, 3> grey {160, 160, 160};
+    constexpr std::array<unsigned char, 3> light_grey {224, 224, 224};
+    constexpr int COLOUR_DISTANCE = 15;
+
+    draw_vertical_lines(instructions, instructions.beat_lines, grey);
+    draw_vertical_lines(instructions, instructions.half_beat_lines, light_grey);
+
+    auto current_row = 0;
+    for (const auto& row : instructions.rows) {
+        auto y = DIST_BETWEEN_MEASURES * current_row + MARGIN;
+        auto x_max = LEFT_MARGIN
+            + static_cast<int>(BEAT_WIDTH * (row.end - row.start));
+        for (int i = 1; i < 4; ++i) {
+            m_image.draw_line(LEFT_MARGIN, y + COLOUR_DISTANCE * i, x_max,
+                              y + COLOUR_DISTANCE * i, grey.data());
+        }
+        m_image.draw_rectangle(LEFT_MARGIN, y, x_max, y + MEASURE_HEIGHT,
+                               black.data(), 1.0, ~0U);
+        ++current_row;
+    }
+
+    // We do measure lines after the boxes because we want the measure lines to
+    // lie over the horizontal grey fretboard lines.
+    draw_vertical_lines(instructions, instructions.measure_lines, black);
+}
+
+void ImageImpl::draw_vertical_lines(const DrawingInstructions& instructions,
+                                    const std::vector<double>& positions,
+                                    std::array<unsigned char, 3> colour)
+{
+    for (auto pos : positions) {
+        auto row
+            = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
+                           [=](const auto x) { return x.end > pos; });
+        auto x
+            = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
+        auto y = MARGIN
+            + DIST_BETWEEN_MEASURES
+                * static_cast<int>(
+                    std::distance(instructions.rows.cbegin(), row));
+        m_image.draw_line(x, y, x, y + MEASURE_HEIGHT, colour.data());
+    }
+}
+
+void ImageImpl::draw_note(const DrawingInstructions& instructions,
+                          const DrawnNote& note)
+{
+    if (note.length > 0.0) {
+        draw_note_sustain(instructions, note);
+    }
+
+    auto row_iter
+        = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
+                       [&](const auto& r) { return r.end > note.beat; });
+    auto row
+        = static_cast<int>(std::distance(instructions.rows.cbegin(), row_iter));
+    auto beats_along_row = note.beat - row_iter->start;
+    auto x = LEFT_MARGIN + static_cast<int>(beats_along_row * BEAT_WIDTH);
+    auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
+    if (note.is_sp_note) {
+        draw_note_star(x, y, note.colour);
+    } else {
+        draw_note_circle(x, y, note.colour);
+    }
+}
+
+void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour)
+{
+    constexpr std::array<unsigned char, 3> black {0, 0, 0};
+    constexpr int RADIUS = 5;
+
+    auto colour = note_colour_to_colour(note_colour);
+    auto offset = note_colour_to_offset(note_colour);
+
+    if (note_colour == NoteColour::Open) {
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               colour.data(), OPEN_NOTE_OPACITY);
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               black.data(), 1.0, ~0U);
+    } else {
+        m_image.draw_circle(x, y + offset, RADIUS, colour.data());
+        m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
+    }
+}
+
+void ImageImpl::draw_note_star(int x, int y, NoteColour note_colour)
+{
+    constexpr std::array<unsigned char, 3> black {0, 0, 0};
+
+    auto colour = note_colour_to_colour(note_colour);
+    auto offset = note_colour_to_offset(note_colour);
+
+    constexpr unsigned int POINTS_IN_STAR_POLYGON = 10;
+    CImg<int> points {POINTS_IN_STAR_POLYGON, 2};
+    constexpr std::array<int, 20> coords {0, -6, 1, -2, 5, -2, 2,  1,  3, 5, 0,
+                                          2, -3, 5, -2, 1, -5, -2, -1, -2};
+    for (auto i = 0U; i < POINTS_IN_STAR_POLYGON; ++i) {
+        points(i, 0) = coords[2 * i] + x; // NOLINT
+        points(i, 1) = coords[2 * i + 1] + y + offset; // NOLINT
+    }
+
+    if (note_colour == NoteColour::Open) {
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               colour.data(), OPEN_NOTE_OPACITY);
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               black.data(), 1.0, ~0U);
+    } else {
+        m_image.draw_polygon(points, colour.data());
+        m_image.draw_polygon(points, black.data(), 1.0, ~0U);
+    }
+}
+
+void ImageImpl::draw_note_sustain(const DrawingInstructions& instructions,
+                                  const DrawnNote& note)
+{
+    constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
+
+    auto colour = note_colour_to_colour(note.colour);
+    std::tuple<double, double> x_range {note.beat, note.beat + note.length};
+    auto offset = note_colour_to_offset(note.colour);
+    std::tuple<int, int> y_range {offset - 3, offset + 3};
+    float opacity = 1.0F;
+    if (note.colour == NoteColour::Open) {
+        y_range = OPEN_NOTE_Y_RANGE;
+        opacity = OPEN_NOTE_OPACITY;
+    }
+    colour_beat_range(instructions, colour, x_range, y_range, opacity);
+}
+
+void ImageImpl::colour_beat_range(const DrawingInstructions& instructions,
+                                  std::array<unsigned char, 3> colour,
+                                  std::tuple<double, double> x_range,
+                                  std::tuple<int, int> y_range, float opacity)
 {
     auto start = std::get<0>(x_range);
     auto end = std::get<1>(x_range);
@@ -311,116 +422,14 @@ static void colour_beat_range(CImg<int>& image,
             + static_cast<int>(BEAT_WIDTH * (block_end - row_iter->start)) - 1;
         if (x_min <= x_max) {
             auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
-            image.draw_rectangle(x_min, y + y_min, x_max, y + y_max,
-                                 colour.data(), opacity);
+            m_image.draw_rectangle(x_min, y + y_min, x_max, y + y_max,
+                                   colour.data(), opacity);
         }
         start = block_end;
         ++row_iter;
         ++row;
     }
 }
-
-static void draw_note_sustain(CImg<int>& image,
-                              const DrawingInstructions& instructions,
-                              const DrawnNote& note)
-{
-    constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
-
-    auto colour = note_colour_to_colour(note.colour);
-    std::tuple<double, double> x_range {note.beat, note.beat + note.length};
-    auto offset = note_colour_to_offset(note.colour);
-    std::tuple<int, int> y_range {offset - 3, offset + 3};
-    float opacity = 1.0F;
-    if (note.colour == NoteColour::Open) {
-        y_range = OPEN_NOTE_Y_RANGE;
-        opacity = OPEN_NOTE_OPACITY;
-    }
-    colour_beat_range(image, instructions, colour, x_range, y_range, opacity);
-}
-
-static void draw_note_circle(CImg<int>& image, int x, int y,
-                             NoteColour note_colour)
-{
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
-    constexpr int RADIUS = 5;
-
-    auto colour = note_colour_to_colour(note_colour);
-    auto offset = note_colour_to_offset(note_colour);
-
-    if (note_colour == NoteColour::Open) {
-        image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
-                             colour.data(), OPEN_NOTE_OPACITY);
-        image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
-                             black.data(), 1.0, ~0U);
-    } else {
-        image.draw_circle(x, y + offset, RADIUS, colour.data());
-        image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
-    }
-}
-
-static void draw_note_star(CImg<int>& image, int x, int y,
-                           NoteColour note_colour)
-{
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
-
-    auto colour = note_colour_to_colour(note_colour);
-    auto offset = note_colour_to_offset(note_colour);
-
-    constexpr unsigned int POINTS_IN_STAR_POLYGON = 10;
-    CImg<int> points {POINTS_IN_STAR_POLYGON, 2};
-    constexpr std::array<int, 20> coords {0, -6, 1, -2, 5, -2, 2,  1,  3, 5, 0,
-                                          2, -3, 5, -2, 1, -5, -2, -1, -2};
-    for (auto i = 0U; i < POINTS_IN_STAR_POLYGON; ++i) {
-        points(i, 0) = coords[2 * i] + x; // NOLINT
-        points(i, 1) = coords[2 * i + 1] + y + offset; // NOLINT
-    }
-
-    if (note_colour == NoteColour::Open) {
-        image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
-                             colour.data(), OPEN_NOTE_OPACITY);
-        image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
-                             black.data(), 1.0, ~0U);
-    } else {
-        image.draw_polygon(points, colour.data());
-        image.draw_polygon(points, black.data(), 1.0, ~0U);
-    }
-}
-
-static void draw_note(CImg<int>& image, const DrawingInstructions& instructions,
-                      const DrawnNote& note)
-{
-    if (note.length > 0.0) {
-        draw_note_sustain(image, instructions, note);
-    }
-
-    auto row_iter
-        = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
-                       [&](const auto& r) { return r.end > note.beat; });
-    auto row
-        = static_cast<int>(std::distance(instructions.rows.cbegin(), row_iter));
-    auto beats_along_row = note.beat - row_iter->start;
-    auto x = LEFT_MARGIN + static_cast<int>(beats_along_row * BEAT_WIDTH);
-    auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
-    if (note.is_sp_note) {
-        draw_note_star(image, x, y, note.colour);
-    } else {
-        draw_note_circle(image, x, y, note.colour);
-    }
-}
-
-class ImageImpl {
-private:
-    CImg<int> m_image;
-
-public:
-    ImageImpl(unsigned int size_x, unsigned int size_y, unsigned int size_z,
-              unsigned int size_c, const int& value)
-        : m_image {size_x, size_y, size_z, size_c, value}
-    {
-    }
-
-    [[nodiscard]] CImg<int>& image() { return m_image; }
-};
 
 Image::Image(const DrawingInstructions& instructions)
 {
@@ -435,19 +444,19 @@ Image::Image(const DrawingInstructions& instructions)
         MARGIN + DIST_BETWEEN_MEASURES * instructions.rows.size());
 
     m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
-    draw_measures(m_impl->image(), instructions);
+    m_impl->draw_measures(instructions);
 
     for (const auto& note : instructions.notes) {
-        draw_note(m_impl->image(), instructions, note);
+        m_impl->draw_note(instructions, note);
     }
 
     for (const auto& range : instructions.green_ranges) {
-        colour_beat_range(m_impl->image(), instructions, green, range,
-                          {0, MEASURE_HEIGHT}, RANGE_OPACITY);
+        m_impl->colour_beat_range(instructions, green, range,
+                                  {0, MEASURE_HEIGHT}, RANGE_OPACITY);
     }
     for (const auto& range : instructions.blue_ranges) {
-        colour_beat_range(m_impl->image(), instructions, blue, range,
-                          {0, MEASURE_HEIGHT}, RANGE_OPACITY);
+        m_impl->colour_beat_range(instructions, blue, range,
+                                  {0, MEASURE_HEIGHT}, RANGE_OPACITY);
     }
 }
 
@@ -457,4 +466,4 @@ Image::Image(Image&& image) noexcept = default;
 
 Image& Image::operator=(Image&& image) noexcept = default;
 
-void Image::save(const char* filename) const { m_impl->image().save(filename); }
+void Image::save(const char* filename) const { m_impl->save(filename); }
