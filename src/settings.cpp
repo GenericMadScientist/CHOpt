@@ -36,6 +36,7 @@ Settings from_args(int argc, char** argv)
     adder("h,help", "Print usage");
     adder("o,output", "Location to save output image (must be a .bmp)",
           cxxopts::value<std::string>()->default_value("path.bmp"));
+    adder("no-solos", "Do not draw solo sections");
     adder("squeeze", "Squeeze% (0 to 100)",
           cxxopts::value<int>()->default_value("100"));
     adder("early-whammy", "Early whammy% (0 to 100), <= squeeze",
@@ -72,6 +73,8 @@ Settings from_args(int argc, char** argv)
         throw std::invalid_argument("Image output must be a bitmap (.bmp)");
     }
     settings.image_path = image_path;
+
+    settings.draw_solos = !result["no-solos"].as<bool>();
 
     auto squeeze = result["squeeze"].as<int>();
     auto early_whammy = result["early-whammy"].as<int>();

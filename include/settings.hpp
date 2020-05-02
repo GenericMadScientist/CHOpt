@@ -30,6 +30,7 @@ struct Settings {
     std::string help_message;
     std::string filename;
     std::string image_path;
+    bool draw_solos;
     Difficulty difficulty;
     double squeeze;
     double early_whammy;
