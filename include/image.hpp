@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "chart.hpp"
+#include "processed.hpp"
 
 struct DrawnRow {
     double start;
@@ -37,14 +38,49 @@ struct DrawnNote {
     bool is_sp_note;
 };
 
-struct DrawingInstructions {
-    std::vector<DrawnRow> rows;
-    std::vector<double> half_beat_lines;
-    std::vector<double> beat_lines;
-    std::vector<double> measure_lines;
-    std::vector<DrawnNote> notes;
-    std::vector<std::tuple<double, double>> green_ranges;
-    std::vector<std::tuple<double, double>> blue_ranges;
+class DrawingInstructions {
+private:
+    std::vector<DrawnRow> m_rows;
+    std::vector<double> m_half_beat_lines;
+    std::vector<double> m_beat_lines;
+    std::vector<double> m_measure_lines;
+    std::vector<DrawnNote> m_notes;
+    std::vector<std::tuple<double, double>> m_green_ranges;
+    std::vector<std::tuple<double, double>> m_blue_ranges;
+
+public:
+    DrawingInstructions(const NoteTrack& track, int resolution,
+                        const SyncTrack& sync_track);
+    void add_sp_phrases(const NoteTrack& track, int resolution);
+    void add_sp_acts(const Path& path);
+
+    [[nodiscard]] const std::vector<double>& beat_lines() const
+    {
+        return m_beat_lines;
+    }
+    [[nodiscard]] const std::vector<std::tuple<double, double>>&
+    blue_ranges() const
+    {
+        return m_blue_ranges;
+    }
+    [[nodiscard]] const std::vector<std::tuple<double, double>>&
+    green_ranges() const
+    {
+        return m_green_ranges;
+    }
+    [[nodiscard]] const std::vector<double>& half_beat_lines() const
+    {
+        return m_half_beat_lines;
+    }
+    [[nodiscard]] const std::vector<double>& measure_lines() const
+    {
+        return m_measure_lines;
+    }
+    [[nodiscard]] const std::vector<DrawnNote>& notes() const
+    {
+        return m_notes;
+    }
+    [[nodiscard]] const std::vector<DrawnRow>& rows() const { return m_rows; }
 };
 
 class ImageImpl;
@@ -63,8 +99,5 @@ public:
 
     void save(const char* filename) const;
 };
-
-DrawingInstructions create_instructions(const NoteTrack& track, int resolution,
-                                        const SyncTrack& sync_track);
 
 #endif

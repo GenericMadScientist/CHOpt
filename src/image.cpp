@@ -143,42 +143,47 @@ static std::vector<DrawnRow> drawn_rows(const NoteTrack& track, int resolution,
     return rows;
 }
 
-DrawingInstructions create_instructions(const NoteTrack& track, int resolution,
-                                        const SyncTrack& sync_track)
+DrawingInstructions::DrawingInstructions(const NoteTrack& track, int resolution,
+                                         const SyncTrack& sync_track)
+    : m_rows {drawn_rows(track, resolution, sync_track)}
+    , m_notes {drawn_notes(track, resolution)}
 {
-    auto notes = drawn_notes(track, resolution);
-    auto rows = drawn_rows(track, resolution, sync_track);
-
-    std::vector<double> half_beat_lines;
-    std::vector<double> beat_lines;
-    std::vector<double> measure_lines;
     constexpr double HALF_BEAT = 0.5;
-    for (const auto& row : rows) {
+
+    for (const auto& row : m_rows) {
         auto start = row.start;
         while (start < row.end) {
             auto meas_length = get_beat_rate(sync_track, resolution, start);
             auto numer = get_numer(sync_track, resolution, start);
             auto denom = get_denom(sync_track, resolution, start);
-            measure_lines.push_back(start);
-            half_beat_lines.push_back(start + HALF_BEAT * denom);
+            m_measure_lines.push_back(start);
+            m_half_beat_lines.push_back(start + HALF_BEAT * denom);
             for (int i = 1; i < numer; ++i) {
-                beat_lines.push_back(start + i * denom);
-                half_beat_lines.push_back(start + (i + HALF_BEAT) * denom);
+                m_beat_lines.push_back(start + i * denom);
+                m_half_beat_lines.push_back(start + (i + HALF_BEAT) * denom);
             }
             start += meas_length;
         }
     }
+}
 
-    std::vector<std::tuple<double, double>> green_ranges;
+void DrawingInstructions::add_sp_phrases(const NoteTrack& track, int resolution)
+{
     for (const auto& phrase : track.sp_phrases()) {
         auto start = phrase.position / static_cast<double>(resolution);
         auto end = (phrase.position + phrase.length)
             / static_cast<double>(resolution);
-        green_ranges.emplace_back(start, end);
+        m_green_ranges.emplace_back(start, end);
     }
+}
 
-    return {rows,  half_beat_lines, beat_lines, measure_lines,
-            notes, green_ranges,    {}};
+void DrawingInstructions::add_sp_acts(const Path& path)
+{
+    for (const auto& act : path.activations) {
+        auto start = act.act_start->position.beat.value();
+        auto end = act.act_end->position.beat.value();
+        m_blue_ranges.emplace_back(start, end);
+    }
 }
 
 static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
@@ -271,11 +276,12 @@ void ImageImpl::draw_measures(const DrawingInstructions& instructions)
     constexpr std::array<unsigned char, 3> light_grey {224, 224, 224};
     constexpr int COLOUR_DISTANCE = 15;
 
-    draw_vertical_lines(instructions, instructions.beat_lines, grey);
-    draw_vertical_lines(instructions, instructions.half_beat_lines, light_grey);
+    draw_vertical_lines(instructions, instructions.beat_lines(), grey);
+    draw_vertical_lines(instructions, instructions.half_beat_lines(),
+                        light_grey);
 
     auto current_row = 0;
-    for (const auto& row : instructions.rows) {
+    for (const auto& row : instructions.rows()) {
         auto y = DIST_BETWEEN_MEASURES * current_row + MARGIN;
         auto x_max = LEFT_MARGIN
             + static_cast<int>(BEAT_WIDTH * (row.end - row.start));
@@ -290,7 +296,7 @@ void ImageImpl::draw_measures(const DrawingInstructions& instructions)
 
     // We do measure lines after the boxes because we want the measure lines to
     // lie over the horizontal grey fretboard lines.
-    draw_vertical_lines(instructions, instructions.measure_lines, black);
+    draw_vertical_lines(instructions, instructions.measure_lines(), black);
 }
 
 void ImageImpl::draw_vertical_lines(const DrawingInstructions& instructions,
@@ -298,15 +304,15 @@ void ImageImpl::draw_vertical_lines(const DrawingInstructions& instructions,
                                     std::array<unsigned char, 3> colour)
 {
     for (auto pos : positions) {
-        auto row
-            = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
-                           [=](const auto x) { return x.end > pos; });
+        auto row = std::find_if(instructions.rows().cbegin(),
+                                instructions.rows().cend(),
+                                [=](const auto x) { return x.end > pos; });
         auto x
             = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
         auto y = MARGIN
             + DIST_BETWEEN_MEASURES
                 * static_cast<int>(
-                    std::distance(instructions.rows.cbegin(), row));
+                    std::distance(instructions.rows().cbegin(), row));
         m_image.draw_line(x, y, x, y + MEASURE_HEIGHT, colour.data());
     }
 }
@@ -319,10 +325,10 @@ void ImageImpl::draw_note(const DrawingInstructions& instructions,
     }
 
     auto row_iter
-        = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
+        = std::find_if(instructions.rows().cbegin(), instructions.rows().cend(),
                        [&](const auto& r) { return r.end > note.beat; });
-    auto row
-        = static_cast<int>(std::distance(instructions.rows.cbegin(), row_iter));
+    auto row = static_cast<int>(
+        std::distance(instructions.rows().cbegin(), row_iter));
     auto beats_along_row = note.beat - row_iter->start;
     auto x = LEFT_MARGIN + static_cast<int>(beats_along_row * BEAT_WIDTH);
     auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
@@ -404,10 +410,10 @@ void ImageImpl::colour_beat_range(const DrawingInstructions& instructions,
     auto start = std::get<0>(x_range);
     auto end = std::get<1>(x_range);
     auto row_iter
-        = std::find_if(instructions.rows.cbegin(), instructions.rows.cend(),
+        = std::find_if(instructions.rows().cbegin(), instructions.rows().cend(),
                        [=](const auto& r) { return r.end > start; });
-    auto row
-        = static_cast<int>(std::distance(instructions.rows.cbegin(), row_iter));
+    auto row = static_cast<int>(
+        std::distance(instructions.rows().cbegin(), row_iter));
 
     auto y_min = std::get<0>(y_range);
     auto y_max = std::get<1>(y_range);
@@ -441,20 +447,20 @@ Image::Image(const DrawingInstructions& instructions)
     constexpr unsigned char WHITE = 255;
 
     auto height = static_cast<unsigned int>(
-        MARGIN + DIST_BETWEEN_MEASURES * instructions.rows.size());
+        MARGIN + DIST_BETWEEN_MEASURES * instructions.rows().size());
 
     m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
     m_impl->draw_measures(instructions);
 
-    for (const auto& note : instructions.notes) {
+    for (const auto& note : instructions.notes()) {
         m_impl->draw_note(instructions, note);
     }
 
-    for (const auto& range : instructions.green_ranges) {
+    for (const auto& range : instructions.green_ranges()) {
         m_impl->colour_beat_range(instructions, green, range,
                                   {0, MEASURE_HEIGHT}, RANGE_OPACITY);
     }
-    for (const auto& range : instructions.blue_ranges) {
+    for (const auto& range : instructions.blue_ranges()) {
         m_impl->colour_beat_range(instructions, blue, range,
                                   {0, MEASURE_HEIGHT}, RANGE_OPACITY);
     }

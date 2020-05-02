@@ -47,8 +47,9 @@ int main(int argc, char** argv)
                               std::istreambuf_iterator<char>()};
         const auto chart = Chart::parse_chart(contents);
         const auto& track = chart.note_track(settings.difficulty);
-        auto instructions = create_instructions(track, chart.resolution(),
-                                                chart.sync_track());
+        DrawingInstructions instructions {track, chart.resolution(),
+                                          chart.sync_track()};
+        instructions.add_sp_phrases(track, chart.resolution());
 
         if (!settings.blank) {
             const ProcessedSong processed_track {
@@ -56,11 +57,7 @@ int main(int argc, char** argv)
                 settings.early_whammy, settings.squeeze};
             const Optimiser optimiser {&processed_track};
             const auto path = optimiser.optimal_path();
-            for (const auto& act : path.activations) {
-                auto start = act.act_start->position.beat.value();
-                auto end = act.act_end->position.beat.value();
-                instructions.blue_ranges.emplace_back(start, end);
-            }
+            instructions.add_sp_acts(path);
             std::cout << processed_track.path_summary(path) << std::endl;
         }
         const Image image {instructions};
