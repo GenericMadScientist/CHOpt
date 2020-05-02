@@ -45,9 +45,14 @@ Settings from_args(int argc, char** argv)
     auto result = options.parse(argc, argv);
 
     Settings settings;
-    settings.blank = result["blank"].as<bool>();
-    settings.help = result.count("help") != 0;
+    settings.help = result["help"].as<bool>();
     settings.help_message = options.help();
+
+    if (settings.help) {
+        return settings;
+    }
+
+    settings.blank = result["blank"].as<bool>();
     if (result.count("file") != 0) {
         settings.filename = result["file"].as<std::string>();
     } else {

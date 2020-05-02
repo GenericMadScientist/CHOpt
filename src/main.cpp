@@ -37,7 +37,7 @@ int main(int argc, char** argv)
             return EXIT_SUCCESS;
         }
 
-        std::ifstream in(settings.filename);
+        std::ifstream in {settings.filename};
         if (!in.is_open()) {
             std::cerr << "File did not open, please specify a valid file!"
                       << std::endl;
