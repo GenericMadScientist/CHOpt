@@ -19,10 +19,9 @@
 #ifndef CHOPT_IMAGE_HPP
 #define CHOPT_IMAGE_HPP
 
+#include <memory>
 #include <tuple>
 #include <vector>
-
-#include "cimg_wrapper.hpp"
 
 #include "chart.hpp"
 
@@ -48,11 +47,24 @@ struct DrawingInstructions {
     std::vector<std::tuple<double, double>> blue_ranges;
 };
 
+class ImageImpl;
+
+class Image {
+private:
+    std::unique_ptr<ImageImpl> m_impl;
+
+public:
+    explicit Image(const DrawingInstructions& instructions);
+    ~Image();
+    Image(const Image&) = delete;
+    Image(Image&& image) noexcept;
+    Image& operator=(const Image&) = delete;
+    Image& operator=(Image&& image) noexcept;
+
+    void save(const char* filename) const;
+};
+
 DrawingInstructions create_instructions(const NoteTrack& track, int resolution,
                                         const SyncTrack& sync_track);
-
-using Image = cimg_library::CImg<unsigned char>;
-
-Image create_path_image(const DrawingInstructions& instructions);
 
 #endif

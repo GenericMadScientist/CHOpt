@@ -22,8 +22,6 @@
 #include <stdexcept>
 #include <string>
 
-#include "cimg_wrapper.hpp"
-
 #include "chart.hpp"
 #include "image.hpp"
 #include "optimiser.hpp"
@@ -65,7 +63,7 @@ int main(int argc, char** argv)
             }
             std::cout << processed_track.path_summary(path) << std::endl;
         }
-        const auto image = create_path_image(instructions);
+        const Image image {instructions};
         image.save(settings.image_path.c_str());
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {

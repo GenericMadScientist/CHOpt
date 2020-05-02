@@ -20,6 +20,8 @@
 #include <array>
 #include <cmath>
 
+#include "cimg_wrapper.hpp"
+
 #include "image.hpp"
 
 using namespace cimg_library;
@@ -179,7 +181,7 @@ DrawingInstructions create_instructions(const NoteTrack& track, int resolution,
             notes, green_ranges,    {}};
 }
 
-static void draw_vertical_lines(Image& image,
+static void draw_vertical_lines(CImg<int>& image,
                                 const DrawingInstructions& instructions,
                                 const std::vector<double>& positions,
                                 const std::array<unsigned char, 3> colour)
@@ -198,7 +200,8 @@ static void draw_vertical_lines(Image& image,
     }
 }
 
-static void draw_measures(Image& image, const DrawingInstructions& instructions)
+static void draw_measures(CImg<int>& image,
+                          const DrawingInstructions& instructions)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr std::array<unsigned char, 3> grey {160, 160, 160};
@@ -281,7 +284,7 @@ static int note_colour_to_offset(NoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_offset");
 }
 
-static void colour_beat_range(Image& image,
+static void colour_beat_range(CImg<int>& image,
                               const DrawingInstructions& instructions,
                               std::array<unsigned char, 3> colour,
                               std::tuple<double, double> x_range,
@@ -317,7 +320,7 @@ static void colour_beat_range(Image& image,
     }
 }
 
-static void draw_note_sustain(Image& image,
+static void draw_note_sustain(CImg<int>& image,
                               const DrawingInstructions& instructions,
                               const DrawnNote& note)
 {
@@ -335,7 +338,8 @@ static void draw_note_sustain(Image& image,
     colour_beat_range(image, instructions, colour, x_range, y_range, opacity);
 }
 
-static void draw_note_circle(Image& image, int x, int y, NoteColour note_colour)
+static void draw_note_circle(CImg<int>& image, int x, int y,
+                             NoteColour note_colour)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr int RADIUS = 5;
@@ -354,7 +358,8 @@ static void draw_note_circle(Image& image, int x, int y, NoteColour note_colour)
     }
 }
 
-static void draw_note_star(Image& image, int x, int y, NoteColour note_colour)
+static void draw_note_star(CImg<int>& image, int x, int y,
+                           NoteColour note_colour)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
 
@@ -381,7 +386,7 @@ static void draw_note_star(Image& image, int x, int y, NoteColour note_colour)
     }
 }
 
-static void draw_note(Image& image, const DrawingInstructions& instructions,
+static void draw_note(CImg<int>& image, const DrawingInstructions& instructions,
                       const DrawnNote& note)
 {
     if (note.length > 0.0) {
@@ -403,7 +408,21 @@ static void draw_note(Image& image, const DrawingInstructions& instructions,
     }
 }
 
-Image create_path_image(const DrawingInstructions& instructions)
+class ImageImpl {
+private:
+    CImg<int> m_image;
+
+public:
+    ImageImpl(unsigned int size_x, unsigned int size_y, unsigned int size_z,
+              unsigned int size_c, const int& value)
+        : m_image {size_x, size_y, size_z, size_c, value}
+    {
+    }
+
+    [[nodiscard]] CImg<int>& image() { return m_image; }
+};
+
+Image::Image(const DrawingInstructions& instructions)
 {
     constexpr std::array<unsigned char, 3> green {0, 255, 0};
     constexpr std::array<unsigned char, 3> blue {0, 0, 255};
@@ -415,21 +434,27 @@ Image create_path_image(const DrawingInstructions& instructions)
     auto height = static_cast<unsigned int>(
         MARGIN + DIST_BETWEEN_MEASURES * instructions.rows.size());
 
-    CImg<unsigned char> image {IMAGE_WIDTH, height, 1, 3, WHITE};
-    draw_measures(image, instructions);
+    m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
+    draw_measures(m_impl->image(), instructions);
 
     for (const auto& note : instructions.notes) {
-        draw_note(image, instructions, note);
+        draw_note(m_impl->image(), instructions, note);
     }
 
     for (const auto& range : instructions.green_ranges) {
-        colour_beat_range(image, instructions, green, range,
+        colour_beat_range(m_impl->image(), instructions, green, range,
                           {0, MEASURE_HEIGHT}, RANGE_OPACITY);
     }
     for (const auto& range : instructions.blue_ranges) {
-        colour_beat_range(image, instructions, blue, range, {0, MEASURE_HEIGHT},
-                          RANGE_OPACITY);
+        colour_beat_range(m_impl->image(), instructions, blue, range,
+                          {0, MEASURE_HEIGHT}, RANGE_OPACITY);
     }
-
-    return image;
 }
+
+Image::~Image() = default;
+
+Image::Image(Image&& image) noexcept = default;
+
+Image& Image::operator=(Image&& image) noexcept = default;
+
+void Image::save(const char* filename) const { m_impl->image().save(filename); }
