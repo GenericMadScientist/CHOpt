@@ -27,6 +27,12 @@ static bool operator==(const Beat& lhs, const Beat& rhs)
     return lhs.value() == Approx(rhs.value());
 }
 
+static bool operator==(const Position& lhs, const Position& rhs)
+{
+    return lhs.beat.value() == Approx(rhs.beat.value())
+        && lhs.measure.value() == Approx(rhs.measure.value());
+}
+
 static std::vector<int> set_values(const PointSet& points)
 {
     std::vector<int> values;
@@ -257,4 +263,15 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
         REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.9125));
         REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.0875));
     }
+}
+
+TEST_CASE("Solo sections are added")
+{
+    std::vector<Solo> solos {{0, 576, 100}, {768, 1152, 200}};
+    NoteTrack track {{}, {}, solos};
+    PointSet points {track, 192, {{}, 192}, 1.0};
+    std::vector<std::tuple<Position, int>> expected_solo_boosts {
+        {{Beat(3.0), Measure(0.75)}, 100}, {{Beat(6.0), Measure(1.5)}, 200}};
+
+    REQUIRE(points.solo_boosts() == expected_solo_boosts);
 }

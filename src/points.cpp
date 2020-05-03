@@ -115,4 +115,12 @@ PointSet::PointSet(const NoteTrack& track, int resolution,
         const auto multiplier = 1 + std::min(combo / 10, 3U);
         point.value *= multiplier;
     }
+
+    m_solo_boosts.reserve(track.solos().size());
+    for (const auto& solo : track.solos()) {
+        Beat end_beat {solo.end / static_cast<double>(resolution)};
+        Measure end_meas = converter.beats_to_measures(end_beat);
+        Position end_pos {end_beat, end_meas};
+        m_solo_boosts.emplace_back(end_pos, solo.value);
+    }
 }

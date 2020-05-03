@@ -213,4 +213,16 @@ TEST_CASE("add_measure_values gives correct values")
         REQUIRE(insts.base_values() == expected_base_values);
         REQUIRE(insts.score_values() == expected_score_values);
     }
+
+    SECTION("Solos are added")
+    {
+        NoteTrack track {{{768}}, {}, {{0, 100, 100}, {200, 800, 100}}};
+        PointSet points {track, 192, {{}, 192}, 1.0};
+        Path path;
+        DrawingInstructions insts {track, 192, {}};
+        insts.add_measure_values(points, path);
+        std::vector<int> expected_score_values {100, 250};
+
+        REQUIRE(insts.score_values() == expected_score_values);
+    }
 }

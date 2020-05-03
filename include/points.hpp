@@ -19,6 +19,7 @@
 #ifndef CHOPT_POINTS_HPP
 #define CHOPT_POINTS_HPP
 
+#include <tuple>
 #include <vector>
 
 #include "chart.hpp"
@@ -39,12 +40,18 @@ using PointPtr = std::vector<Point>::const_iterator;
 class PointSet {
 private:
     std::vector<Point> m_points;
+    std::vector<std::tuple<Position, int>> m_solo_boosts;
 
 public:
     PointSet(const NoteTrack& track, int resolution,
              const TimeConverter& converter, double squeeze);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
+    [[nodiscard]] const std::vector<std::tuple<Position, int>>&
+    solo_boosts() const
+    {
+        return m_solo_boosts;
+    }
 };
 
 #endif

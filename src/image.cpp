@@ -191,6 +191,17 @@ void DrawingInstructions::add_measure_values(const PointSet& points,
         *score_value_iter += p->value;
     }
 
+    meas_iter = std::next(m_measure_lines.cbegin());
+    score_value_iter = m_score_values.begin();
+    for (const auto& solo : points.solo_boosts()) {
+        while (meas_iter != m_measure_lines.cend()
+               && *meas_iter <= std::get<0>(solo).beat.value()) {
+            ++meas_iter;
+            ++score_value_iter;
+        }
+        *score_value_iter += std::get<1>(solo);
+    }
+
     int score_total = 0;
     for (auto& score : m_score_values) {
         score_total += score;
