@@ -202,6 +202,19 @@ void DrawingInstructions::add_measure_values(const PointSet& points,
         *score_value_iter += std::get<1>(solo);
     }
 
+    for (const auto& act : path.activations) {
+        meas_iter = std::next(m_measure_lines.cbegin());
+        score_value_iter = m_score_values.begin();
+        for (auto p = act.act_start; p <= act.act_end; ++p) {
+            while (meas_iter != m_measure_lines.cend()
+                   && *meas_iter <= p->position.beat.value()) {
+                ++meas_iter;
+                ++score_value_iter;
+            }
+            *score_value_iter += p->value;
+        }
+    }
+
     int score_total = 0;
     for (auto& score : m_score_values) {
         score_total += score;

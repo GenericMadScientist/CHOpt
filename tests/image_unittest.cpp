@@ -225,4 +225,16 @@ TEST_CASE("add_measure_values gives correct values")
 
         REQUIRE(insts.score_values() == expected_score_values);
     }
+
+    SECTION("Activations are added")
+    {
+        NoteTrack track {{{0}, {192}, {384}, {768}}, {}, {}};
+        PointSet points {track, 192, {{}, 192}, 1.0};
+        Path path {{{points.cbegin() + 2, points.cbegin() + 3}}, 100};
+        DrawingInstructions insts {track, 192, {}};
+        insts.add_measure_values(points, path);
+        std::vector<int> expected_score_values {200, 300};
+
+        REQUIRE(insts.score_values() == expected_score_values);
+    }
 }
