@@ -464,6 +464,12 @@ Image::Image(const DrawingInstructions& instructions)
     m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
     m_impl->draw_measures(instructions);
 
+    for (const auto& range : instructions.solo_ranges()) {
+        m_impl->colour_beat_range(instructions, solo_blue, range,
+                                  {-SOLO_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT},
+                                  RANGE_OPACITY / 2);
+    }
+
     for (const auto& note : instructions.notes()) {
         m_impl->draw_note(instructions, note);
     }
@@ -475,12 +481,6 @@ Image::Image(const DrawingInstructions& instructions)
     for (const auto& range : instructions.blue_ranges()) {
         m_impl->colour_beat_range(instructions, blue, range,
                                   {0, MEASURE_HEIGHT}, RANGE_OPACITY);
-    }
-
-    for (const auto& range : instructions.solo_ranges()) {
-        m_impl->colour_beat_range(instructions, solo_blue, range,
-                                  {-SOLO_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT},
-                                  RANGE_OPACITY);
     }
 }
 
