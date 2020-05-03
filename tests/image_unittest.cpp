@@ -197,3 +197,20 @@ TEST_CASE("add_solo_sections add correct ranges")
 
     REQUIRE(insts.solo_ranges() == expected_solo_ranges);
 }
+
+TEST_CASE("add_measure_values gives correct values")
+{
+    SECTION("Notes with no activations or solos")
+    {
+        NoteTrack track {{{0}, {768}}, {}, {}};
+        PointSet points {track, 192, {{}, 192}, 1.0};
+        Path path;
+        DrawingInstructions insts {track, 192, {}};
+        insts.add_measure_values(points, path);
+        std::vector<int> expected_base_values {50, 50};
+        std::vector<int> expected_score_values {50, 100};
+
+        REQUIRE(insts.base_values() == expected_base_values);
+        REQUIRE(insts.score_values() == expected_score_values);
+    }
+}

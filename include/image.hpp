@@ -45,6 +45,8 @@ private:
     std::vector<double> m_beat_lines;
     std::vector<double> m_measure_lines;
     std::vector<DrawnNote> m_notes;
+    std::vector<int> m_base_values;
+    std::vector<int> m_score_values;
     std::vector<std::tuple<double, double>> m_green_ranges;
     std::vector<std::tuple<double, double>> m_blue_ranges;
     std::vector<std::tuple<double, double>> m_solo_ranges;
@@ -52,10 +54,15 @@ private:
 public:
     DrawingInstructions(const NoteTrack& track, int resolution,
                         const SyncTrack& sync_track);
+    void add_measure_values(const PointSet& points, const Path& path);
     void add_solo_sections(const NoteTrack& track, int resolution);
     void add_sp_phrases(const NoteTrack& track, int resolution);
     void add_sp_acts(const Path& path);
 
+    [[nodiscard]] const std::vector<int>& base_values() const
+    {
+        return m_base_values;
+    }
     [[nodiscard]] const std::vector<double>& beat_lines() const
     {
         return m_beat_lines;
@@ -83,6 +90,10 @@ public:
         return m_notes;
     }
     [[nodiscard]] const std::vector<DrawnRow>& rows() const { return m_rows; }
+    [[nodiscard]] const std::vector<int>& score_values() const
+    {
+        return m_score_values;
+    }
     [[nodiscard]] const std::vector<std::tuple<double, double>>&
     solo_ranges() const
     {

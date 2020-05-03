@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <iterator>
 
 #include "cimg_wrapper.hpp"
 
@@ -165,6 +166,38 @@ DrawingInstructions::DrawingInstructions(const NoteTrack& track, int resolution,
             start += meas_length;
         }
     }
+}
+
+void DrawingInstructions::add_measure_values(const PointSet& points,
+                                             const Path& path)
+{
+    m_base_values.clear();
+    m_base_values.resize(m_measure_lines.size());
+
+    m_score_values.clear();
+    m_score_values.resize(m_measure_lines.size());
+
+    auto base_value_iter = m_base_values.begin();
+    auto meas_iter = std::next(m_measure_lines.cbegin());
+    auto score_value_iter = m_score_values.begin();
+    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+        while (meas_iter != m_measure_lines.cend()
+               && *meas_iter <= p->position.beat.value()) {
+            ++meas_iter;
+            ++base_value_iter;
+            ++score_value_iter;
+        }
+        *base_value_iter += p->base_value;
+        *score_value_iter += p->value;
+    }
+
+    int score_total = 0;
+    for (auto& score : m_score_values) {
+        score_total += score;
+        score = score_total;
+    }
+
+    (void)path;
 }
 
 void DrawingInstructions::add_solo_sections(const NoteTrack& track,
