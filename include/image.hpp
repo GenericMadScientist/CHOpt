@@ -24,7 +24,9 @@
 #include <vector>
 
 #include "chart.hpp"
+#include "points.hpp"
 #include "processed.hpp"
+#include "sp.hpp"
 
 struct DrawnRow {
     double start;
@@ -47,6 +49,7 @@ private:
     std::vector<DrawnNote> m_notes;
     std::vector<int> m_base_values;
     std::vector<int> m_score_values;
+    std::vector<double> m_sp_values;
     std::vector<std::tuple<double, double>> m_green_ranges;
     std::vector<std::tuple<double, double>> m_blue_ranges;
     std::vector<std::tuple<double, double>> m_solo_ranges;
@@ -56,8 +59,9 @@ public:
                         const SyncTrack& sync_track);
     void add_measure_values(const PointSet& points, const Path& path);
     void add_solo_sections(const NoteTrack& track, int resolution);
-    void add_sp_phrases(const NoteTrack& track, int resolution);
     void add_sp_acts(const Path& path);
+    void add_sp_phrases(const NoteTrack& track, int resolution);
+    void add_sp_values(const SpData& sp_data);
 
     [[nodiscard]] const std::vector<int>& base_values() const
     {
@@ -98,6 +102,10 @@ public:
     solo_ranges() const
     {
         return m_solo_ranges;
+    }
+    [[nodiscard]] const std::vector<double>& sp_values() const
+    {
+        return m_sp_values;
     }
 };
 

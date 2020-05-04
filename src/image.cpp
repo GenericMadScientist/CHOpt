@@ -20,6 +20,7 @@
 #include <array>
 #include <cmath>
 #include <iterator>
+#include <limits>
 
 #include "cimg_wrapper.hpp"
 
@@ -233,6 +234,15 @@ void DrawingInstructions::add_solo_sections(const NoteTrack& track,
     }
 }
 
+void DrawingInstructions::add_sp_acts(const Path& path)
+{
+    for (const auto& act : path.activations) {
+        auto start = act.act_start->position.beat.value();
+        auto end = act.act_end->position.beat.value();
+        m_blue_ranges.emplace_back(start, end);
+    }
+}
+
 void DrawingInstructions::add_sp_phrases(const NoteTrack& track, int resolution)
 {
     for (const auto& phrase : track.sp_phrases()) {
@@ -243,12 +253,20 @@ void DrawingInstructions::add_sp_phrases(const NoteTrack& track, int resolution)
     }
 }
 
-void DrawingInstructions::add_sp_acts(const Path& path)
+void DrawingInstructions::add_sp_values(const SpData& sp_data)
 {
-    for (const auto& act : path.activations) {
-        auto start = act.act_start->position.beat.value();
-        auto end = act.act_end->position.beat.value();
-        m_blue_ranges.emplace_back(start, end);
+    constexpr double WHAMMY_BEATS_IN_BAR = 30.0;
+    m_sp_values.clear();
+    m_sp_values.resize(m_measure_lines.size());
+
+    for (std::size_t i = 0; i < m_measure_lines.size(); ++i) {
+        Beat start {m_measure_lines[i]};
+        Beat end {std::numeric_limits<double>::infinity()};
+        if (i < m_measure_lines.size() - 1) {
+            end = Beat {m_measure_lines[i + 1]};
+        }
+        m_sp_values[i]
+            = WHAMMY_BEATS_IN_BAR * sp_data.available_whammy(start, end);
     }
 }
 
