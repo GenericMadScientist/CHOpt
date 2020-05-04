@@ -28,6 +28,7 @@
 using namespace cimg_library;
 
 constexpr int BEAT_WIDTH = 60;
+constexpr int FONT_HEIGHT = 13;
 constexpr int LEFT_MARGIN = 31;
 constexpr int MARGIN = 64;
 constexpr int MAX_BEATS_PER_LINE = 16;
@@ -343,7 +344,9 @@ void ImageImpl::draw_measures(const DrawingInstructions& instructions)
     constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
     constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
     constexpr std::array<unsigned char, 3> LIGHT_GREY {224, 224, 224};
+    constexpr std::array<unsigned char, 3> RED {140, 0, 0};
     constexpr int COLOUR_DISTANCE = 15;
+    constexpr int MEASURE_NUMB_GAP = 18;
 
     draw_vertical_lines(instructions, instructions.beat_lines(), GREY);
     draw_vertical_lines(instructions, instructions.half_beat_lines(),
@@ -366,6 +369,23 @@ void ImageImpl::draw_measures(const DrawingInstructions& instructions)
     // We do measure lines after the boxes because we want the measure lines to
     // lie over the horizontal grey fretboard lines.
     draw_vertical_lines(instructions, instructions.measure_lines(), BLACK);
+
+    for (std::size_t i = 0; i < instructions.measure_lines().size(); ++i) {
+        auto pos = instructions.measure_lines()[i];
+        auto row = std::find_if(instructions.rows().cbegin(),
+                                instructions.rows().cend(),
+                                [=](const auto x) { return x.end > pos; });
+        auto x
+            = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
+        auto y = MARGIN
+            + DIST_BETWEEN_MEASURES
+                * static_cast<int>(
+                    std::distance(instructions.rows().cbegin(), row));
+        y -= MEASURE_NUMB_GAP;
+        auto text = std::to_string(i);
+        m_image.draw_text(x, y, text.c_str(), RED.data(), 0, 1.0, // NOLINT
+                          FONT_HEIGHT);
+    }
 }
 
 void ImageImpl::draw_vertical_lines(const DrawingInstructions& instructions,
@@ -392,7 +412,6 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
     constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
 
     constexpr int BASE_VALUE_MARGIN = 5;
-    constexpr int FONT_HEIGHT = 13;
     constexpr int VALUE_GAP = 13;
 
     const auto& rows = instructions.rows();
