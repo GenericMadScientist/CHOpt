@@ -462,7 +462,8 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
                             FONT_HEIGHT);
         if (sp_values[i] > 0) {
             y += VALUE_GAP;
-            std::sprintf(buffer.data(), "%.2fSP", sp_values[i]); // NOLINT
+            std::snprintf(buffer.data(), BUFFER_SIZE "%.2fSP",
+                          sp_values[i]); // NOLINT
             draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
                                 FONT_HEIGHT);
         }
@@ -479,7 +480,8 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
     draw_text_backwards(x, y, text.c_str(), GREEN.data(), 1.0F, FONT_HEIGHT);
     if (sp_values.back() > 0) {
         y += VALUE_GAP;
-        std::sprintf(buffer.data(), "%.2fSP", sp_values.back()); // NOLINT
+        std::snprintf(buffer.data(), BUFFER_SIZE, "%.2fSP",
+                      sp_values.back()); // NOLINT
         draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
                             FONT_HEIGHT);
     }
