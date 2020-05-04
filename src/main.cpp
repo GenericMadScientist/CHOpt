@@ -68,6 +68,7 @@ int main(int argc, char** argv)
         }
 
         instructions.add_measure_values(processed_track.points(), path);
+        instructions.add_sp_values(processed_track.sp_data());
         const Image image {instructions};
         image.save(settings.image_path.c_str());
         return EXIT_SUCCESS;

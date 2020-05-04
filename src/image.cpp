@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdio>
 #include <iterator>
 #include <limits>
 
@@ -426,16 +427,23 @@ void ImageImpl::draw_vertical_lines(const DrawingInstructions& instructions,
 
 void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
 {
+    constexpr std::array<unsigned char, 3> CYAN {0, 160, 160};
     constexpr std::array<unsigned char, 3> GREEN {0, 100, 0};
     constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
 
     constexpr int BASE_VALUE_MARGIN = 5;
+    // This is enough room for the max double (below 10^309, a '.', two more
+    // digits, then "SP").
+    constexpr std::size_t BUFFER_SIZE = 315;
     constexpr int VALUE_GAP = 13;
 
     const auto& rows = instructions.rows();
     const auto& base_values = instructions.base_values();
     const auto& score_values = instructions.score_values();
+    const auto& sp_values = instructions.sp_values();
     const auto& measures = instructions.measure_lines();
+
+    std::array<char, BUFFER_SIZE> buffer {};
 
     for (std::size_t i = 0; i < base_values.size() - 1; ++i) {
         auto pos = measures[i + 1];
@@ -452,6 +460,12 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
         y += VALUE_GAP;
         draw_text_backwards(x, y, text.c_str(), GREEN.data(), 1.0F,
                             FONT_HEIGHT);
+        if (sp_values[i] > 0) {
+            y += VALUE_GAP;
+            std::sprintf(buffer.data(), "%.2fSP", sp_values[i]); // NOLINT
+            draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
+                                FONT_HEIGHT);
+        }
     }
 
     auto x = LEFT_MARGIN
@@ -463,6 +477,12 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
     text = std::to_string(score_values.back());
     y += VALUE_GAP;
     draw_text_backwards(x, y, text.c_str(), GREEN.data(), 1.0F, FONT_HEIGHT);
+    if (sp_values.back() > 0) {
+        y += VALUE_GAP;
+        std::sprintf(buffer.data(), "%.2fSP", sp_values.back()); // NOLINT
+        draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
+                            FONT_HEIGHT);
+    }
 }
 
 // CImg's normal draw_text method draws the text so the top left corner of the
