@@ -29,7 +29,7 @@ using namespace cimg_library;
 
 constexpr int BEAT_WIDTH = 60;
 constexpr int LEFT_MARGIN = 31;
-constexpr int MARGIN = 32;
+constexpr int MARGIN = 64;
 constexpr int MAX_BEATS_PER_LINE = 16;
 constexpr int MEASURE_HEIGHT = 61;
 constexpr float OPEN_NOTE_OPACITY = 0.5F;
@@ -220,8 +220,6 @@ void DrawingInstructions::add_measure_values(const PointSet& points,
         score_total += score;
         score = score_total;
     }
-
-    (void)path;
 }
 
 void DrawingInstructions::add_solo_sections(const NoteTrack& track,
@@ -314,6 +312,9 @@ private:
     void draw_note_star(int x, int y, NoteColour note_colour);
     void draw_note_sustain(const DrawingInstructions& instructions,
                            const DrawnNote& note);
+    void draw_text_backwards(int x, int y, const char* text,
+                             const unsigned char* color, float opacity,
+                             unsigned int font_height);
     void draw_vertical_lines(const DrawingInstructions& instructions,
                              const std::vector<double>& positions,
                              std::array<unsigned char, 3> colour);
@@ -332,20 +333,21 @@ public:
     void draw_measures(const DrawingInstructions& instructions);
     void draw_note(const DrawingInstructions& instructions,
                    const DrawnNote& note);
+    void draw_score_totals(const DrawingInstructions& instructions);
 
     void save(const char* filename) const { m_image.save(filename); }
 };
 
 void ImageImpl::draw_measures(const DrawingInstructions& instructions)
 {
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
-    constexpr std::array<unsigned char, 3> grey {160, 160, 160};
-    constexpr std::array<unsigned char, 3> light_grey {224, 224, 224};
+    constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
+    constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
+    constexpr std::array<unsigned char, 3> LIGHT_GREY {224, 224, 224};
     constexpr int COLOUR_DISTANCE = 15;
 
-    draw_vertical_lines(instructions, instructions.beat_lines(), grey);
+    draw_vertical_lines(instructions, instructions.beat_lines(), GREY);
     draw_vertical_lines(instructions, instructions.half_beat_lines(),
-                        light_grey);
+                        LIGHT_GREY);
 
     auto current_row = 0;
     for (const auto& row : instructions.rows()) {
@@ -354,16 +356,16 @@ void ImageImpl::draw_measures(const DrawingInstructions& instructions)
             + static_cast<int>(BEAT_WIDTH * (row.end - row.start));
         for (int i = 1; i < 4; ++i) {
             m_image.draw_line(LEFT_MARGIN, y + COLOUR_DISTANCE * i, x_max,
-                              y + COLOUR_DISTANCE * i, grey.data());
+                              y + COLOUR_DISTANCE * i, GREY.data());
         }
         m_image.draw_rectangle(LEFT_MARGIN, y, x_max, y + MEASURE_HEIGHT,
-                               black.data(), 1.0, ~0U);
+                               BLACK.data(), 1.0, ~0U);
         ++current_row;
     }
 
     // We do measure lines after the boxes because we want the measure lines to
     // lie over the horizontal grey fretboard lines.
-    draw_vertical_lines(instructions, instructions.measure_lines(), black);
+    draw_vertical_lines(instructions, instructions.measure_lines(), BLACK);
 }
 
 void ImageImpl::draw_vertical_lines(const DrawingInstructions& instructions,
@@ -382,6 +384,65 @@ void ImageImpl::draw_vertical_lines(const DrawingInstructions& instructions,
                     std::distance(instructions.rows().cbegin(), row));
         m_image.draw_line(x, y, x, y + MEASURE_HEIGHT, colour.data());
     }
+}
+
+void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
+{
+    constexpr std::array<unsigned char, 3> GREEN {0, 100, 0};
+    constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
+
+    constexpr int BASE_VALUE_MARGIN = 5;
+    constexpr int FONT_HEIGHT = 13;
+    constexpr int VALUE_GAP = 13;
+
+    const auto& rows = instructions.rows();
+    const auto& base_values = instructions.base_values();
+    const auto& score_values = instructions.score_values();
+    const auto& measures = instructions.measure_lines();
+
+    for (std::size_t i = 0; i < base_values.size() - 1; ++i) {
+        auto pos = measures[i + 1];
+        auto row = std::find_if(rows.cbegin(), rows.cend(),
+                                [=](const auto x) { return x.end >= pos; });
+        auto x
+            = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
+        auto y = BASE_VALUE_MARGIN
+            + DIST_BETWEEN_MEASURES
+                * static_cast<int>(std::distance(rows.cbegin(), row) + 1);
+        auto text = std::to_string(base_values[i]);
+        draw_text_backwards(x, y, text.c_str(), GREY.data(), 1.0F, FONT_HEIGHT);
+        text = std::to_string(score_values[i]);
+        y += VALUE_GAP;
+        draw_text_backwards(x, y, text.c_str(), GREEN.data(), 1.0F,
+                            FONT_HEIGHT);
+    }
+
+    auto x = LEFT_MARGIN
+        + static_cast<int>(BEAT_WIDTH * (rows.back().end - rows.back().start));
+    auto y = BASE_VALUE_MARGIN
+        + DIST_BETWEEN_MEASURES * static_cast<int>(rows.size());
+    auto text = std::to_string(base_values.back());
+    draw_text_backwards(x, y, text.c_str(), GREY.data(), 1.0F, FONT_HEIGHT);
+    text = std::to_string(score_values.back());
+    y += VALUE_GAP;
+    draw_text_backwards(x, y, text.c_str(), GREEN.data(), 1.0F, FONT_HEIGHT);
+}
+
+// CImg's normal draw_text method draws the text so the top left corner of the
+// box is at (x, y). This method draws the text so that the top right corner of
+// the box is at (x, y).
+void ImageImpl::draw_text_backwards(int x, int y, const char* text,
+                                    const unsigned char* color, float opacity,
+                                    unsigned int font_height)
+{
+    // Hack for getting the text box width from the answer at
+    // stackoverflow.com/questions/24190327. NOLINTs are to stop clang-tidy
+    // complaining about C-style vararg functions: CImg isn't under my control.
+    CImg<int> img_text;
+    img_text.draw_text(0, 0, text, color, 0, opacity, font_height); // NOLINT
+    x -= img_text.width();
+
+    m_image.draw_text(x, y, text, color, 0, opacity, font_height); // NOLINT
 }
 
 void ImageImpl::draw_note(const DrawingInstructions& instructions,
@@ -530,6 +591,8 @@ Image::Image(const DrawingInstructions& instructions)
     for (const auto& note : instructions.notes()) {
         m_impl->draw_note(instructions, note);
     }
+
+    m_impl->draw_score_totals(instructions);
 
     for (const auto& range : instructions.green_ranges()) {
         m_impl->colour_beat_range(instructions, green, range,

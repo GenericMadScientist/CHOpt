@@ -55,15 +55,19 @@ int main(int argc, char** argv)
             instructions.add_solo_sections(track, chart.resolution());
         }
 
+        const ProcessedSong processed_track {
+            track, chart.resolution(), chart.sync_track(),
+            settings.early_whammy, settings.squeeze};
+        Path path;
+
         if (!settings.blank) {
-            const ProcessedSong processed_track {
-                track, chart.resolution(), chart.sync_track(),
-                settings.early_whammy, settings.squeeze};
             const Optimiser optimiser {&processed_track};
-            const auto path = optimiser.optimal_path();
+            path = optimiser.optimal_path();
             instructions.add_sp_acts(path);
             std::cout << processed_track.path_summary(path) << std::endl;
         }
+
+        instructions.add_measure_values(processed_track.points(), path);
         const Image image {instructions};
         image.save(settings.image_path.c_str());
         return EXIT_SUCCESS;
