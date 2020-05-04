@@ -462,7 +462,7 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
                             FONT_HEIGHT);
         if (sp_values[i] > 0) {
             y += VALUE_GAP;
-            std::snprintf(buffer.data(), BUFFER_SIZE "%.2fSP",
+            std::snprintf(buffer.data(), BUFFER_SIZE, "%.2fSP",
                           sp_values[i]); // NOLINT
             draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
                                 FONT_HEIGHT);
