@@ -66,7 +66,7 @@ jobs:
         - clang-format-10 -i include/*.hpp src/*.cpp tests/*.cpp
         - git diff --color --exit-code
         - clang-tidy-10 --version
-        - clang-tidy-10 include/*.hpp src/*.cpp -- -std=c++17 -Iinclude -Ilibs -stdlib=libc++
+        - clang-tidy-10 include/*.hpp src/*.cpp -- -Iinclude -Ilibs -std=c++17 -stdlib=libc++
         - clang-tidy-10 tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Iinclude -Ilibs -std=c++17 -stdlib=libc++
 
 before_install:

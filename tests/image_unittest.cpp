@@ -127,7 +127,7 @@ TEST_CASE("Beat lines are correct")
         DrawingInstructions insts {track, 192, {}};
         std::vector<double> expected_half_beat_lines {0.5, 1.5, 2.5, 3.5};
         std::vector<double> expected_beat_lines {1.0, 2.0, 3.0};
-        std::vector<double> expected_measure_lines {0.0};
+        std::vector<double> expected_measure_lines {0.0, 4.0};
 
         REQUIRE(insts.half_beat_lines() == expected_half_beat_lines);
         REQUIRE(insts.beat_lines() == expected_beat_lines);
@@ -142,7 +142,7 @@ TEST_CASE("Beat lines are correct")
         std::vector<double> expected_half_beat_lines {0.25, 0.75, 1.25, 1.75,
                                                       2.25, 2.75, 3.25, 3.75};
         std::vector<double> expected_beat_lines {0.5, 1.0, 1.5, 2.5, 3.0, 3.5};
-        std::vector<double> expected_measure_lines {0.0, 2.0};
+        std::vector<double> expected_measure_lines {0.0, 2.0, 4.0};
 
         REQUIRE(insts.half_beat_lines() == expected_half_beat_lines);
         REQUIRE(insts.beat_lines() == expected_beat_lines);
@@ -157,7 +157,7 @@ TEST_CASE("Beat lines are correct")
         std::vector<double> expected_half_beat_lines {0.5,  1.5,  2.5,  3.5,
                                                       4.25, 4.75, 5.25, 5.75};
         std::vector<double> expected_beat_lines {1.0, 2.0, 3.0, 4.5, 5.0, 5.5};
-        std::vector<double> expected_measure_lines {0.0, 4.0};
+        std::vector<double> expected_measure_lines {0.0, 4.0, 6.0};
 
         REQUIRE(insts.half_beat_lines() == expected_half_beat_lines);
         REQUIRE(insts.beat_lines() == expected_beat_lines);

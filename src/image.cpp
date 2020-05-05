@@ -169,16 +169,17 @@ DrawingInstructions::DrawingInstructions(const NoteTrack& track, int resolution,
             start += meas_length;
         }
     }
+    m_measure_lines.push_back(m_rows.back().end);
 }
 
 void DrawingInstructions::add_measure_values(const PointSet& points,
                                              const Path& path)
 {
     m_base_values.clear();
-    m_base_values.resize(m_measure_lines.size());
+    m_base_values.resize(m_measure_lines.size() - 1);
 
     m_score_values.clear();
-    m_score_values.resize(m_measure_lines.size());
+    m_score_values.resize(m_measure_lines.size() - 1);
 
     auto base_value_iter = m_base_values.begin();
     auto meas_iter = std::next(m_measure_lines.cbegin());
@@ -258,9 +259,9 @@ void DrawingInstructions::add_sp_values(const SpData& sp_data)
 {
     constexpr double WHAMMY_BEATS_IN_BAR = 30.0;
     m_sp_values.clear();
-    m_sp_values.resize(m_measure_lines.size());
+    m_sp_values.resize(m_measure_lines.size() - 1);
 
-    for (std::size_t i = 0; i < m_measure_lines.size(); ++i) {
+    for (std::size_t i = 0; i < m_measure_lines.size() - 1; ++i) {
         Beat start {m_measure_lines[i]};
         Beat end {std::numeric_limits<double>::infinity()};
         if (i < m_measure_lines.size() - 1) {
@@ -386,10 +387,15 @@ void ImageImpl::draw_measures(const DrawingInstructions& instructions)
     }
 
     // We do measure lines after the boxes because we want the measure lines to
-    // lie over the horizontal grey fretboard lines.
-    draw_vertical_lines(instructions, instructions.measure_lines(), BLACK);
+    // lie over the horizontal grey fretboard lines. We make a copy of the
+    // measures missing the last one because we don't want to draw the last
+    // measure line, since that is already dealt with by drawing the boxes.
+    std::vector<double> measure_copy {
+        instructions.measure_lines().cbegin(),
+        std::prev(instructions.measure_lines().cend())};
+    draw_vertical_lines(instructions, measure_copy, BLACK);
 
-    for (std::size_t i = 0; i < instructions.measure_lines().size(); ++i) {
+    for (std::size_t i = 0; i < instructions.measure_lines().size() - 1; ++i) {
         auto pos = instructions.measure_lines()[i];
         auto row = std::find_if(instructions.rows().cbegin(),
                                 instructions.rows().cend(),
@@ -401,7 +407,7 @@ void ImageImpl::draw_measures(const DrawingInstructions& instructions)
                 * static_cast<int>(
                     std::distance(instructions.rows().cbegin(), row));
         y -= MEASURE_NUMB_GAP;
-        auto text = std::to_string(i);
+        auto text = std::to_string(i + 1);
         m_image.draw_text(x, y, text.c_str(), RED.data(), 0, 1.0, // NOLINT
                           FONT_HEIGHT);
     }
@@ -445,7 +451,7 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
 
     std::array<char, BUFFER_SIZE> buffer {};
 
-    for (std::size_t i = 0; i < base_values.size() - 1; ++i) {
+    for (std::size_t i = 0; i < base_values.size(); ++i) {
         auto pos = measures[i + 1];
         auto row = std::find_if(rows.cbegin(), rows.cend(),
                                 [=](const auto x) { return x.end >= pos; });
@@ -467,23 +473,6 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
             draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
                                 FONT_HEIGHT);
         }
-    }
-
-    auto x = LEFT_MARGIN
-        + static_cast<int>(BEAT_WIDTH * (rows.back().end - rows.back().start));
-    auto y = BASE_VALUE_MARGIN
-        + DIST_BETWEEN_MEASURES * static_cast<int>(rows.size());
-    auto text = std::to_string(base_values.back());
-    draw_text_backwards(x, y, text.c_str(), GREY.data(), 1.0F, FONT_HEIGHT);
-    text = std::to_string(score_values.back());
-    y += VALUE_GAP;
-    draw_text_backwards(x, y, text.c_str(), GREEN.data(), 1.0F, FONT_HEIGHT);
-    if (sp_values.back() > 0) {
-        y += VALUE_GAP;
-        std::snprintf(buffer.data(), BUFFER_SIZE, "%.2fSP", // NOLINT
-                      sp_values.back());
-        draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
-                            FONT_HEIGHT);
     }
 }
 
