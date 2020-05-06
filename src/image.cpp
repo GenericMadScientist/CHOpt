@@ -176,7 +176,9 @@ DrawingInstructions::DrawingInstructions(const NoteTrack& track, int resolution,
         auto pos = ts.position / static_cast<double>(resolution);
         auto num = ts.numerator;
         auto denom = ts.denominator;
-        m_time_sigs.emplace_back(pos, num, denom);
+        if (pos < m_rows.back().end) {
+            m_time_sigs.emplace_back(pos, num, denom);
+        }
     }
 
     for (const auto& bpm : sync_track.bpms()) {

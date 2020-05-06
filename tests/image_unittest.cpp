@@ -167,13 +167,25 @@ TEST_CASE("Beat lines are correct")
 
 TEST_CASE("Time signatures are handled correctly")
 {
-    NoteTrack track {{{1920}}, {}, {}};
-    SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
-    DrawingInstructions insts {track, 192, sync_track};
-    std::vector<std::tuple<double, int, int>> expected_time_sigs {{0.0, 4, 4},
-                                                                  {4.0, 4, 8}};
+    SECTION("Normal time signatures are handled correctly")
+    {
+        NoteTrack track {{{1920}}, {}, {}};
+        SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
+        DrawingInstructions insts {track, 192, sync_track};
+        std::vector<std::tuple<double, int, int>> expected_time_sigs {
+            {0.0, 4, 4}, {4.0, 4, 8}};
 
-    REQUIRE(insts.time_sigs() == expected_time_sigs);
+        REQUIRE(insts.time_sigs() == expected_time_sigs);
+    }
+
+    SECTION("Time signature changes past the end of the song are removed")
+    {
+        NoteTrack track {{{768}}, {}, {}};
+        SyncTrack sync_track {{{0, 4, 4}, {1920, 3, 4}}, {}};
+        DrawingInstructions insts {track, 192, sync_track};
+
+        REQUIRE(insts.time_sigs().size() == 1);
+    }
 }
 
 TEST_CASE("Tempos are handled correctly")
