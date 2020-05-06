@@ -32,7 +32,7 @@ using namespace cimg_library;
 constexpr int BEAT_WIDTH = 60;
 constexpr int FONT_HEIGHT = 13;
 constexpr int LEFT_MARGIN = 31;
-constexpr int MARGIN = 64;
+constexpr int MARGIN = 80;
 constexpr int MAX_BEATS_PER_LINE = 16;
 constexpr int MEASURE_HEIGHT = 61;
 constexpr float OPEN_NOTE_OPACITY = 0.5F;
@@ -182,7 +182,9 @@ DrawingInstructions::DrawingInstructions(const NoteTrack& track, int resolution,
     for (const auto& bpm : sync_track.bpms()) {
         auto pos = bpm.position / static_cast<double>(resolution);
         auto tempo = bpm.bpm / MS_PER_SECOND;
-        m_bpms.emplace_back(pos, tempo);
+        if (pos < m_rows.back().end) {
+            m_bpms.emplace_back(pos, tempo);
+        }
     }
 }
 
@@ -347,6 +349,7 @@ private:
     void draw_note_star(int x, int y, NoteColour note_colour);
     void draw_note_sustain(const DrawingInstructions& instructions,
                            const DrawnNote& note);
+    void draw_quarter_note(int x, int y);
     void draw_text_backwards(int x, int y, const char* text,
                              const unsigned char* color, float opacity,
                              unsigned int font_height);
@@ -369,6 +372,7 @@ public:
     void draw_note(const DrawingInstructions& instructions,
                    const DrawnNote& note);
     void draw_score_totals(const DrawingInstructions& instructions);
+    void draw_tempos(const DrawingInstructions& instructions);
     void draw_time_sigs(const DrawingInstructions& instructions);
 
     void save(const char* filename) const { m_image.save(filename); }
@@ -442,6 +446,47 @@ void ImageImpl::draw_vertical_lines(const DrawingInstructions& instructions,
                 * static_cast<int>(
                     std::distance(instructions.rows().cbegin(), row));
         m_image.draw_line(x, y, x, y + MEASURE_HEIGHT, colour.data());
+    }
+}
+
+void ImageImpl::draw_tempos(const DrawingInstructions& instructions)
+{
+    constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
+    constexpr int TEMPO_OFFSET = 31;
+
+    for (const auto& [pos, tempo] : instructions.bpms()) {
+        auto pos_copy = pos;
+        auto row = std::find_if(instructions.rows().cbegin(),
+                                instructions.rows().cend(),
+                                [=](const auto x) { return x.end > pos_copy; });
+        auto x
+            = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
+        auto y = MARGIN
+            + DIST_BETWEEN_MEASURES
+                * static_cast<int>(
+                    std::distance(instructions.rows().cbegin(), row))
+            - TEMPO_OFFSET;
+        m_image.draw_text(x + 1, y, " =%.f", GREY.data(), 0, 1.0, FONT_HEIGHT,
+                          tempo);
+        draw_quarter_note(x, y);
+    }
+}
+
+void ImageImpl::draw_quarter_note(int x, int y)
+{
+    constexpr int GREY_VALUE = 160;
+    constexpr std::array<std::tuple<int, int>, 26> PIXELS {
+        {{4, 0},  {4, 1},  {4, 2},  {4, 3},  {4, 4},  {4, 5},  {4, 6},
+         {4, 7},  {4, 8},  {4, 9},  {4, 10}, {4, 11}, {3, 9},  {3, 10},
+         {3, 11}, {3, 12}, {2, 9},  {2, 10}, {2, 11}, {2, 12}, {1, 9},
+         {1, 10}, {1, 11}, {1, 12}, {0, 10}, {0, 11}}};
+
+    for (const auto& [diff_x, diff_y] : PIXELS) {
+        auto x_pos = static_cast<unsigned int>(x + diff_x);
+        auto y_pos = static_cast<unsigned int>(y + diff_y);
+        m_image(x_pos, y_pos, 0) = GREY_VALUE;
+        m_image(x_pos, y_pos, 1) = GREY_VALUE;
+        m_image(x_pos, y_pos, 2) = GREY_VALUE;
     }
 }
 
@@ -664,6 +709,7 @@ Image::Image(const DrawingInstructions& instructions)
 
     m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
     m_impl->draw_measures(instructions);
+    m_impl->draw_tempos(instructions);
     m_impl->draw_time_sigs(instructions);
 
     for (const auto& range : instructions.solo_ranges()) {

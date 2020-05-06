@@ -178,13 +178,25 @@ TEST_CASE("Time signatures are handled correctly")
 
 TEST_CASE("Tempos are handled correctly")
 {
-    NoteTrack track {{{1920}}, {}, {}};
-    SyncTrack sync_track {{}, {{0, 150000}, {384, 120000}, {768, 200000}}};
-    DrawingInstructions insts {track, 192, sync_track};
-    std::vector<std::tuple<double, double>> expected_bpms {
-        {0.0, 150.0}, {2.0, 120.0}, {4.0, 200.0}};
+    SECTION("Normal tempos are handled correctly")
+    {
+        NoteTrack track {{{1920}}, {}, {}};
+        SyncTrack sync_track {{}, {{0, 150000}, {384, 120000}, {768, 200000}}};
+        DrawingInstructions insts {track, 192, sync_track};
+        std::vector<std::tuple<double, double>> expected_bpms {
+            {0.0, 150.0}, {2.0, 120.0}, {4.0, 200.0}};
 
-    REQUIRE(insts.bpms() == expected_bpms);
+        REQUIRE(insts.bpms() == expected_bpms);
+    }
+
+    SECTION("Tempo changes past the end of the song are removed")
+    {
+        NoteTrack track {{{768}}, {}, {}};
+        SyncTrack sync_track {{}, {{0, 120000}, {1920, 200000}}};
+        DrawingInstructions insts {track, 192, sync_track};
+
+        REQUIRE(insts.bpms().size() == 1);
+    }
 }
 
 TEST_CASE("Green ranges for SP phrases are added correctly")
