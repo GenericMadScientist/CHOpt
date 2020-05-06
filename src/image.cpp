@@ -153,7 +153,6 @@ ImageBuilder::ImageBuilder(const NoteTrack& track, int resolution,
     , m_notes {drawn_notes(track, resolution)}
 {
     constexpr double HALF_BEAT = 0.5;
-    constexpr double MS_PER_SECOND = 1000.0;
 
     for (const auto& row : m_rows) {
         auto start = row.start;
@@ -180,6 +179,13 @@ ImageBuilder::ImageBuilder(const NoteTrack& track, int resolution,
             m_time_sigs.emplace_back(pos, num, denom);
         }
     }
+}
+
+void ImageBuilder::add_bpms(const SyncTrack& sync_track, int resolution)
+{
+    constexpr double MS_PER_SECOND = 1000.0;
+
+    m_bpms.clear();
 
     for (const auto& bpm : sync_track.bpms()) {
         auto pos = bpm.position / static_cast<double>(resolution);

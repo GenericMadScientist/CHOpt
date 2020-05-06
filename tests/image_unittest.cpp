@@ -195,6 +195,7 @@ TEST_CASE("Tempos are handled correctly")
         NoteTrack track {{{1920}}, {}, {}};
         SyncTrack sync_track {{}, {{0, 150000}, {384, 120000}, {768, 200000}}};
         ImageBuilder builder {track, 192, sync_track};
+        builder.add_bpms(sync_track, 192);
         std::vector<std::tuple<double, double>> expected_bpms {
             {0.0, 150.0}, {2.0, 120.0}, {4.0, 200.0}};
 
@@ -206,6 +207,7 @@ TEST_CASE("Tempos are handled correctly")
         NoteTrack track {{{768}}, {}, {}};
         SyncTrack sync_track {{}, {{0, 120000}, {1920, 200000}}};
         ImageBuilder builder {track, 192, sync_track};
+        builder.add_bpms(sync_track, 192);
 
         REQUIRE(builder.bpms().size() == 1);
     }

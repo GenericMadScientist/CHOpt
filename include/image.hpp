@@ -59,6 +59,7 @@ private:
 public:
     ImageBuilder(const NoteTrack& track, int resolution,
                  const SyncTrack& sync_track);
+    void add_bpms(const SyncTrack& sync_track, int resolution);
     void add_measure_values(const PointSet& points, const Path& path);
     void add_solo_sections(const NoteTrack& track, int resolution);
     void add_sp_acts(const Path& path);

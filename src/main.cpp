@@ -50,6 +50,10 @@ int main(int argc, char** argv)
         ImageBuilder builder {track, chart.resolution(), chart.sync_track()};
         builder.add_sp_phrases(track, chart.resolution());
 
+        if (settings.draw_bpms) {
+            builder.add_bpms(chart.sync_track(), chart.resolution());
+        }
+
         if (settings.draw_solos) {
             builder.add_solo_sections(track, chart.resolution());
         }
