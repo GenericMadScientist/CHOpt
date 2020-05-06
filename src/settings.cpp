@@ -38,6 +38,7 @@ Settings from_args(int argc, char** argv)
           cxxopts::value<std::string>()->default_value("path.bmp"));
     adder("no-bpms", "Do not draw BPMs");
     adder("no-solos", "Do not draw solo sections");
+    adder("no-time-sigs", "Do not draw time signatures");
     adder("squeeze", "Squeeze% (0 to 100)",
           cxxopts::value<int>()->default_value("100"));
     adder("early-whammy", "Early whammy% (0 to 100), <= squeeze",
@@ -82,6 +83,7 @@ Settings from_args(int argc, char** argv)
 
     settings.draw_bpms = !result["no-bpms"].as<bool>();
     settings.draw_solos = !result["no-solos"].as<bool>();
+    settings.draw_time_sigs = !result["no-time-sigs"].as<bool>();
 
     auto squeeze = result["squeeze"].as<int>();
     auto early_whammy = result["early-whammy"].as<int>();

@@ -65,6 +65,7 @@ public:
     void add_sp_acts(const Path& path);
     void add_sp_phrases(const NoteTrack& track, int resolution);
     void add_sp_values(const SpData& sp_data);
+    void add_time_sigs(const SyncTrack& sync_track, int resolution);
 
     [[nodiscard]] const std::vector<int>& base_values() const
     {

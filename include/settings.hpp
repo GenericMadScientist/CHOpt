@@ -32,6 +32,7 @@ struct Settings {
     std::string image_path;
     bool draw_bpms;
     bool draw_solos;
+    bool draw_time_sigs;
     Difficulty difficulty;
     double squeeze;
     double early_whammy;

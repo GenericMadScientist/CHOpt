@@ -58,6 +58,10 @@ int main(int argc, char** argv)
             builder.add_solo_sections(track, chart.resolution());
         }
 
+        if (settings.draw_time_sigs) {
+            builder.add_time_sigs(chart.sync_track(), chart.resolution());
+        }
+
         const ProcessedSong processed_track {
             track, chart.resolution(), chart.sync_track(),
             settings.early_whammy, settings.squeeze};

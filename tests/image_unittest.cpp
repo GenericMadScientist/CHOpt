@@ -172,6 +172,7 @@ TEST_CASE("Time signatures are handled correctly")
         NoteTrack track {{{1920}}, {}, {}};
         SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
         ImageBuilder builder {track, 192, sync_track};
+        builder.add_time_sigs(sync_track, 192);
         std::vector<std::tuple<double, int, int>> expected_time_sigs {
             {0.0, 4, 4}, {4.0, 4, 8}};
 
@@ -183,6 +184,7 @@ TEST_CASE("Time signatures are handled correctly")
         NoteTrack track {{{768}}, {}, {}};
         SyncTrack sync_track {{{0, 4, 4}, {1920, 3, 4}}, {}};
         ImageBuilder builder {track, 192, sync_track};
+        builder.add_time_sigs(sync_track, 192);
 
         REQUIRE(builder.time_sigs().size() == 1);
     }

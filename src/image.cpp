@@ -170,15 +170,6 @@ ImageBuilder::ImageBuilder(const NoteTrack& track, int resolution,
         }
     }
     m_measure_lines.push_back(m_rows.back().end);
-
-    for (const auto& ts : sync_track.time_sigs()) {
-        auto pos = ts.position / static_cast<double>(resolution);
-        auto num = ts.numerator;
-        auto denom = ts.denominator;
-        if (pos < m_rows.back().end) {
-            m_time_sigs.emplace_back(pos, num, denom);
-        }
-    }
 }
 
 void ImageBuilder::add_bpms(const SyncTrack& sync_track, int resolution)
@@ -291,6 +282,18 @@ void ImageBuilder::add_sp_values(const SpData& sp_data)
         }
         m_sp_values[i]
             = WHAMMY_BEATS_IN_BAR * sp_data.available_whammy(start, end);
+    }
+}
+
+void ImageBuilder::add_time_sigs(const SyncTrack& sync_track, int resolution)
+{
+    for (const auto& ts : sync_track.time_sigs()) {
+        auto pos = ts.position / static_cast<double>(resolution);
+        auto num = ts.numerator;
+        auto denom = ts.denominator;
+        if (pos < m_rows.back().end) {
+            m_time_sigs.emplace_back(pos, num, denom);
+        }
     }
 }
 
