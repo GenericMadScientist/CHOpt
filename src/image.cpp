@@ -362,6 +362,7 @@ public:
     void draw_note(const DrawingInstructions& instructions,
                    const DrawnNote& note);
     void draw_score_totals(const DrawingInstructions& instructions);
+    void draw_time_sigs(const DrawingInstructions& instructions);
 
     void save(const char* filename) const { m_image.save(filename); }
 };
@@ -415,8 +416,7 @@ void ImageImpl::draw_measures(const DrawingInstructions& instructions)
                     std::distance(instructions.rows().cbegin(), row));
         y -= MEASURE_NUMB_GAP;
         auto text = std::to_string(i + 1);
-        m_image.draw_text(x, y, text.c_str(), RED.data(), 0, 1.0, // NOLINT
-                          FONT_HEIGHT);
+        m_image.draw_text(x, y, text.c_str(), RED.data(), 0, 1.0, FONT_HEIGHT);
     }
 }
 
@@ -435,6 +435,30 @@ void ImageImpl::draw_vertical_lines(const DrawingInstructions& instructions,
                 * static_cast<int>(
                     std::distance(instructions.rows().cbegin(), row));
         m_image.draw_line(x, y, x, y + MEASURE_HEIGHT, colour.data());
+    }
+}
+
+void ImageImpl::draw_time_sigs(const DrawingInstructions& instructions)
+{
+    constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
+    constexpr int TS_FONT_HEIGHT = 38;
+    constexpr int TS_GAP = MEASURE_HEIGHT / 16;
+
+    for (const auto& [pos, num, denom] : instructions.time_sigs()) {
+        auto pos_copy = pos;
+        auto row = std::find_if(instructions.rows().cbegin(),
+                                instructions.rows().cend(),
+                                [=](const auto x) { return x.end > pos_copy; });
+        auto x = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start))
+            + TS_GAP;
+        auto y = MARGIN
+            + DIST_BETWEEN_MEASURES
+                * static_cast<int>(
+                    std::distance(instructions.rows().cbegin(), row))
+            - TS_GAP;
+        m_image.draw_text(x, y, "%d", GREY.data(), 0, 1.0, TS_FONT_HEIGHT, num);
+        m_image.draw_text(x, y + MEASURE_HEIGHT / 2, "%d", GREY.data(), 0, 1.0,
+                          TS_FONT_HEIGHT, denom);
     }
 }
 
@@ -475,8 +499,7 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
                             FONT_HEIGHT);
         if (sp_values[i] > 0) {
             y += VALUE_GAP;
-            std::snprintf(buffer.data(), BUFFER_SIZE, "%.2fSP", // NOLINT
-                          sp_values[i]);
+            std::snprintf(buffer.data(), BUFFER_SIZE, "%.2fSP", sp_values[i]);
             draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
                                 FONT_HEIGHT);
         }
@@ -491,13 +514,11 @@ void ImageImpl::draw_text_backwards(int x, int y, const char* text,
                                     unsigned int font_height)
 {
     // Hack for getting the text box width from the answer at
-    // stackoverflow.com/questions/24190327. NOLINTs are to stop clang-tidy
-    // complaining about C-style vararg functions: CImg isn't under my control.
+    // stackoverflow.com/questions/24190327.
     CImg<int> img_text;
-    img_text.draw_text(0, 0, text, color, 0, opacity, font_height); // NOLINT
+    img_text.draw_text(0, 0, text, color, 0, opacity, font_height);
     x -= img_text.width();
-
-    m_image.draw_text(x, y, text, color, 0, opacity, font_height); // NOLINT
+    m_image.draw_text(x, y, text, color, 0, opacity, font_height);
 }
 
 void ImageImpl::draw_note(const DrawingInstructions& instructions,
@@ -636,6 +657,7 @@ Image::Image(const DrawingInstructions& instructions)
 
     m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
     m_impl->draw_measures(instructions);
+    m_impl->draw_time_sigs(instructions);
 
     for (const auto& range : instructions.solo_ranges()) {
         m_impl->colour_beat_range(instructions, solo_blue, range,
