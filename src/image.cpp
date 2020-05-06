@@ -153,6 +153,7 @@ DrawingInstructions::DrawingInstructions(const NoteTrack& track, int resolution,
     , m_notes {drawn_notes(track, resolution)}
 {
     constexpr double HALF_BEAT = 0.5;
+    constexpr double MS_PER_SECOND = 1000.0;
 
     for (const auto& row : m_rows) {
         auto start = row.start;
@@ -176,6 +177,12 @@ DrawingInstructions::DrawingInstructions(const NoteTrack& track, int resolution,
         auto num = ts.numerator;
         auto denom = ts.denominator;
         m_time_sigs.emplace_back(pos, num, denom);
+    }
+
+    for (const auto& bpm : sync_track.bpms()) {
+        auto pos = bpm.position / static_cast<double>(resolution);
+        auto tempo = bpm.bpm / MS_PER_SECOND;
+        m_bpms.emplace_back(pos, tempo);
     }
 }
 
