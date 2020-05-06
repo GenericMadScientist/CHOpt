@@ -380,6 +380,20 @@ public:
     void save(const char* filename) const { m_image.save(filename); }
 };
 
+static std::tuple<int, int> get_xy(const DrawingInstructions& instructions,
+                                   double pos)
+{
+    auto row
+        = std::find_if(instructions.rows().cbegin(), instructions.rows().cend(),
+                       [=](const auto x) { return x.end > pos; });
+    auto x = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
+    auto y = MARGIN
+        + DIST_BETWEEN_MEASURES
+            * static_cast<int>(
+                std::distance(instructions.rows().cbegin(), row));
+    return {x, y};
+}
+
 void ImageImpl::draw_measures(const DrawingInstructions& instructions)
 {
     constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
@@ -418,18 +432,9 @@ void ImageImpl::draw_measures(const DrawingInstructions& instructions)
 
     for (std::size_t i = 0; i < instructions.measure_lines().size() - 1; ++i) {
         auto pos = instructions.measure_lines()[i];
-        auto row = std::find_if(instructions.rows().cbegin(),
-                                instructions.rows().cend(),
-                                [=](const auto x) { return x.end > pos; });
-        auto x
-            = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
-        auto y = MARGIN
-            + DIST_BETWEEN_MEASURES
-                * static_cast<int>(
-                    std::distance(instructions.rows().cbegin(), row));
+        auto [x, y] = get_xy(instructions, pos);
         y -= MEASURE_NUMB_GAP;
-        auto text = std::to_string(i + 1);
-        m_image.draw_text(x, y, text.c_str(), RED.data(), 0, 1.0, FONT_HEIGHT);
+        m_image.draw_text(x, y, "%u", RED.data(), 0, 1.0, FONT_HEIGHT, i + 1);
     }
 }
 
@@ -438,15 +443,7 @@ void ImageImpl::draw_vertical_lines(const DrawingInstructions& instructions,
                                     std::array<unsigned char, 3> colour)
 {
     for (auto pos : positions) {
-        auto row = std::find_if(instructions.rows().cbegin(),
-                                instructions.rows().cend(),
-                                [=](const auto x) { return x.end > pos; });
-        auto x
-            = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
-        auto y = MARGIN
-            + DIST_BETWEEN_MEASURES
-                * static_cast<int>(
-                    std::distance(instructions.rows().cbegin(), row));
+        auto [x, y] = get_xy(instructions, pos);
         m_image.draw_line(x, y, x, y + MEASURE_HEIGHT, colour.data());
     }
 }
@@ -457,17 +454,8 @@ void ImageImpl::draw_tempos(const DrawingInstructions& instructions)
     constexpr int TEMPO_OFFSET = 31;
 
     for (const auto& [pos, tempo] : instructions.bpms()) {
-        auto pos_copy = pos;
-        auto row = std::find_if(instructions.rows().cbegin(),
-                                instructions.rows().cend(),
-                                [=](const auto x) { return x.end > pos_copy; });
-        auto x
-            = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
-        auto y = MARGIN
-            + DIST_BETWEEN_MEASURES
-                * static_cast<int>(
-                    std::distance(instructions.rows().cbegin(), row))
-            - TEMPO_OFFSET;
+        auto [x, y] = get_xy(instructions, pos);
+        y -= TEMPO_OFFSET;
         m_image.draw_text(x + 1, y, " =%.f", GREY.data(), 0, 1.0, FONT_HEIGHT,
                           tempo);
         draw_quarter_note(x, y);
@@ -499,17 +487,9 @@ void ImageImpl::draw_time_sigs(const DrawingInstructions& instructions)
     constexpr int TS_GAP = MEASURE_HEIGHT / 16;
 
     for (const auto& [pos, num, denom] : instructions.time_sigs()) {
-        auto pos_copy = pos;
-        auto row = std::find_if(instructions.rows().cbegin(),
-                                instructions.rows().cend(),
-                                [=](const auto x) { return x.end > pos_copy; });
-        auto x = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start))
-            + TS_GAP;
-        auto y = MARGIN
-            + DIST_BETWEEN_MEASURES
-                * static_cast<int>(
-                    std::distance(instructions.rows().cbegin(), row))
-            - TS_GAP;
+        auto [x, y] = get_xy(instructions, pos);
+        x += TS_GAP;
+        y -= TS_GAP;
         m_image.draw_text(x, y, "%d", GREY.data(), 0, 1.0, TS_FONT_HEIGHT, num);
         m_image.draw_text(x, y + MEASURE_HEIGHT / 2, "%d", GREY.data(), 0, 1.0,
                           TS_FONT_HEIGHT, denom);
@@ -528,7 +508,6 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
     constexpr std::size_t BUFFER_SIZE = 315;
     constexpr int VALUE_GAP = 13;
 
-    const auto& rows = instructions.rows();
     const auto& base_values = instructions.base_values();
     const auto& score_values = instructions.score_values();
     const auto& sp_values = instructions.sp_values();
@@ -537,14 +516,11 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
     std::array<char, BUFFER_SIZE> buffer {};
 
     for (std::size_t i = 0; i < base_values.size(); ++i) {
-        auto pos = measures[i + 1];
-        auto row = std::find_if(rows.cbegin(), rows.cend(),
-                                [=](const auto x) { return x.end >= pos; });
-        auto x
-            = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
-        auto y = BASE_VALUE_MARGIN
-            + DIST_BETWEEN_MEASURES
-                * static_cast<int>(std::distance(rows.cbegin(), row) + 1);
+        // We need to go to the previous double because otherwise we have an OOB
+        // when drawing the scores for the last measure.
+        auto pos = std::nextafter(measures[i + 1], -1.0);
+        auto [x, y] = get_xy(instructions, pos);
+        y += BASE_VALUE_MARGIN + MEASURE_HEIGHT;
         auto text = std::to_string(base_values[i]);
         draw_text_backwards(x, y, text.c_str(), GREY.data(), 1.0F, FONT_HEIGHT);
         text = std::to_string(score_values[i]);
@@ -582,14 +558,7 @@ void ImageImpl::draw_note(const DrawingInstructions& instructions,
         draw_note_sustain(instructions, note);
     }
 
-    auto row_iter
-        = std::find_if(instructions.rows().cbegin(), instructions.rows().cend(),
-                       [&](const auto& r) { return r.end > note.beat; });
-    auto row = static_cast<int>(
-        std::distance(instructions.rows().cbegin(), row_iter));
-    auto beats_along_row = note.beat - row_iter->start;
-    auto x = LEFT_MARGIN + static_cast<int>(beats_along_row * BEAT_WIDTH);
-    auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
+    const auto [x, y] = get_xy(instructions, note.beat);
     if (note.is_sp_note) {
         draw_note_star(x, y, note.colour);
     } else {
