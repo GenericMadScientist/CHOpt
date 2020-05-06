@@ -147,8 +147,8 @@ static std::vector<DrawnRow> drawn_rows(const NoteTrack& track, int resolution,
     return rows;
 }
 
-DrawingInstructions::DrawingInstructions(const NoteTrack& track, int resolution,
-                                         const SyncTrack& sync_track)
+ImageBuilder::ImageBuilder(const NoteTrack& track, int resolution,
+                           const SyncTrack& sync_track)
     : m_rows {drawn_rows(track, resolution, sync_track)}
     , m_notes {drawn_notes(track, resolution)}
 {
@@ -190,8 +190,7 @@ DrawingInstructions::DrawingInstructions(const NoteTrack& track, int resolution,
     }
 }
 
-void DrawingInstructions::add_measure_values(const PointSet& points,
-                                             const Path& path)
+void ImageBuilder::add_measure_values(const PointSet& points, const Path& path)
 {
     m_base_values.clear();
     m_base_values.resize(m_measure_lines.size() - 1);
@@ -244,8 +243,7 @@ void DrawingInstructions::add_measure_values(const PointSet& points,
     }
 }
 
-void DrawingInstructions::add_solo_sections(const NoteTrack& track,
-                                            int resolution)
+void ImageBuilder::add_solo_sections(const NoteTrack& track, int resolution)
 {
     for (const auto& solo : track.solos()) {
         auto start = solo.start / static_cast<double>(resolution);
@@ -254,7 +252,7 @@ void DrawingInstructions::add_solo_sections(const NoteTrack& track,
     }
 }
 
-void DrawingInstructions::add_sp_acts(const Path& path)
+void ImageBuilder::add_sp_acts(const Path& path)
 {
     for (const auto& act : path.activations) {
         auto start = act.act_start->position.beat.value();
@@ -263,7 +261,7 @@ void DrawingInstructions::add_sp_acts(const Path& path)
     }
 }
 
-void DrawingInstructions::add_sp_phrases(const NoteTrack& track, int resolution)
+void ImageBuilder::add_sp_phrases(const NoteTrack& track, int resolution)
 {
     for (const auto& phrase : track.sp_phrases()) {
         auto start = phrase.position / static_cast<double>(resolution);
@@ -273,7 +271,7 @@ void DrawingInstructions::add_sp_phrases(const NoteTrack& track, int resolution)
     }
 }
 
-void DrawingInstructions::add_sp_values(const SpData& sp_data)
+void ImageBuilder::add_sp_values(const SpData& sp_data)
 {
     constexpr double WHAMMY_BEATS_IN_BAR = 30.0;
     m_sp_values.clear();
@@ -349,13 +347,12 @@ private:
 
     void draw_note_circle(int x, int y, NoteColour note_colour);
     void draw_note_star(int x, int y, NoteColour note_colour);
-    void draw_note_sustain(const DrawingInstructions& instructions,
-                           const DrawnNote& note);
+    void draw_note_sustain(const ImageBuilder& builder, const DrawnNote& note);
     void draw_quarter_note(int x, int y);
     void draw_text_backwards(int x, int y, const char* text,
                              const unsigned char* color, float opacity,
                              unsigned int font_height);
-    void draw_vertical_lines(const DrawingInstructions& instructions,
+    void draw_vertical_lines(const ImageBuilder& builder,
                              const std::vector<double>& positions,
                              std::array<unsigned char, 3> colour);
 
@@ -366,35 +363,31 @@ public:
     {
     }
 
-    void colour_beat_range(const DrawingInstructions& instructions,
+    void colour_beat_range(const ImageBuilder& builder,
                            std::array<unsigned char, 3> colour,
                            std::tuple<double, double> x_range,
                            std::tuple<int, int> y_range, float opacity);
-    void draw_measures(const DrawingInstructions& instructions);
-    void draw_note(const DrawingInstructions& instructions,
-                   const DrawnNote& note);
-    void draw_score_totals(const DrawingInstructions& instructions);
-    void draw_tempos(const DrawingInstructions& instructions);
-    void draw_time_sigs(const DrawingInstructions& instructions);
+    void draw_measures(const ImageBuilder& builder);
+    void draw_note(const ImageBuilder& builder, const DrawnNote& note);
+    void draw_score_totals(const ImageBuilder& builder);
+    void draw_tempos(const ImageBuilder& builder);
+    void draw_time_sigs(const ImageBuilder& builder);
 
     void save(const char* filename) const { m_image.save(filename); }
 };
 
-static std::tuple<int, int> get_xy(const DrawingInstructions& instructions,
-                                   double pos)
+static std::tuple<int, int> get_xy(const ImageBuilder& builder, double pos)
 {
-    auto row
-        = std::find_if(instructions.rows().cbegin(), instructions.rows().cend(),
-                       [=](const auto x) { return x.end > pos; });
+    auto row = std::find_if(builder.rows().cbegin(), builder.rows().cend(),
+                            [=](const auto x) { return x.end > pos; });
     auto x = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
     auto y = MARGIN
         + DIST_BETWEEN_MEASURES
-            * static_cast<int>(
-                std::distance(instructions.rows().cbegin(), row));
+            * static_cast<int>(std::distance(builder.rows().cbegin(), row));
     return {x, y};
 }
 
-void ImageImpl::draw_measures(const DrawingInstructions& instructions)
+void ImageImpl::draw_measures(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
     constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
@@ -403,12 +396,11 @@ void ImageImpl::draw_measures(const DrawingInstructions& instructions)
     constexpr int COLOUR_DISTANCE = 15;
     constexpr int MEASURE_NUMB_GAP = 18;
 
-    draw_vertical_lines(instructions, instructions.beat_lines(), GREY);
-    draw_vertical_lines(instructions, instructions.half_beat_lines(),
-                        LIGHT_GREY);
+    draw_vertical_lines(builder, builder.beat_lines(), GREY);
+    draw_vertical_lines(builder, builder.half_beat_lines(), LIGHT_GREY);
 
     auto current_row = 0;
-    for (const auto& row : instructions.rows()) {
+    for (const auto& row : builder.rows()) {
         auto y = DIST_BETWEEN_MEASURES * current_row + MARGIN;
         auto x_max = LEFT_MARGIN
             + static_cast<int>(BEAT_WIDTH * (row.end - row.start));
@@ -426,35 +418,35 @@ void ImageImpl::draw_measures(const DrawingInstructions& instructions)
     // measures missing the last one because we don't want to draw the last
     // measure line, since that is already dealt with by drawing the boxes.
     std::vector<double> measure_copy {
-        instructions.measure_lines().cbegin(),
-        std::prev(instructions.measure_lines().cend())};
-    draw_vertical_lines(instructions, measure_copy, BLACK);
+        builder.measure_lines().cbegin(),
+        std::prev(builder.measure_lines().cend())};
+    draw_vertical_lines(builder, measure_copy, BLACK);
 
-    for (std::size_t i = 0; i < instructions.measure_lines().size() - 1; ++i) {
-        auto pos = instructions.measure_lines()[i];
-        auto [x, y] = get_xy(instructions, pos);
+    for (std::size_t i = 0; i < builder.measure_lines().size() - 1; ++i) {
+        auto pos = builder.measure_lines()[i];
+        auto [x, y] = get_xy(builder, pos);
         y -= MEASURE_NUMB_GAP;
         m_image.draw_text(x, y, "%u", RED.data(), 0, 1.0, FONT_HEIGHT, i + 1);
     }
 }
 
-void ImageImpl::draw_vertical_lines(const DrawingInstructions& instructions,
+void ImageImpl::draw_vertical_lines(const ImageBuilder& builder,
                                     const std::vector<double>& positions,
                                     std::array<unsigned char, 3> colour)
 {
     for (auto pos : positions) {
-        auto [x, y] = get_xy(instructions, pos);
+        auto [x, y] = get_xy(builder, pos);
         m_image.draw_line(x, y, x, y + MEASURE_HEIGHT, colour.data());
     }
 }
 
-void ImageImpl::draw_tempos(const DrawingInstructions& instructions)
+void ImageImpl::draw_tempos(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
     constexpr int TEMPO_OFFSET = 31;
 
-    for (const auto& [pos, tempo] : instructions.bpms()) {
-        auto [x, y] = get_xy(instructions, pos);
+    for (const auto& [pos, tempo] : builder.bpms()) {
+        auto [x, y] = get_xy(builder, pos);
         y -= TEMPO_OFFSET;
         m_image.draw_text(x + 1, y, " =%.f", GREY.data(), 0, 1.0, FONT_HEIGHT,
                           tempo);
@@ -480,14 +472,14 @@ void ImageImpl::draw_quarter_note(int x, int y)
     }
 }
 
-void ImageImpl::draw_time_sigs(const DrawingInstructions& instructions)
+void ImageImpl::draw_time_sigs(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
     constexpr int TS_FONT_HEIGHT = 38;
     constexpr int TS_GAP = MEASURE_HEIGHT / 16;
 
-    for (const auto& [pos, num, denom] : instructions.time_sigs()) {
-        auto [x, y] = get_xy(instructions, pos);
+    for (const auto& [pos, num, denom] : builder.time_sigs()) {
+        auto [x, y] = get_xy(builder, pos);
         x += TS_GAP;
         y -= TS_GAP;
         m_image.draw_text(x, y, "%d", GREY.data(), 0, 1.0, TS_FONT_HEIGHT, num);
@@ -496,7 +488,7 @@ void ImageImpl::draw_time_sigs(const DrawingInstructions& instructions)
     }
 }
 
-void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
+void ImageImpl::draw_score_totals(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> CYAN {0, 160, 160};
     constexpr std::array<unsigned char, 3> GREEN {0, 100, 0};
@@ -508,10 +500,10 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
     constexpr std::size_t BUFFER_SIZE = 315;
     constexpr int VALUE_GAP = 13;
 
-    const auto& base_values = instructions.base_values();
-    const auto& score_values = instructions.score_values();
-    const auto& sp_values = instructions.sp_values();
-    const auto& measures = instructions.measure_lines();
+    const auto& base_values = builder.base_values();
+    const auto& score_values = builder.score_values();
+    const auto& sp_values = builder.sp_values();
+    const auto& measures = builder.measure_lines();
 
     std::array<char, BUFFER_SIZE> buffer {};
 
@@ -519,7 +511,7 @@ void ImageImpl::draw_score_totals(const DrawingInstructions& instructions)
         // We need to go to the previous double because otherwise we have an OOB
         // when drawing the scores for the last measure.
         auto pos = std::nextafter(measures[i + 1], -1.0);
-        auto [x, y] = get_xy(instructions, pos);
+        auto [x, y] = get_xy(builder, pos);
         y += BASE_VALUE_MARGIN + MEASURE_HEIGHT;
         auto text = std::to_string(base_values[i]);
         draw_text_backwards(x, y, text.c_str(), GREY.data(), 1.0F, FONT_HEIGHT);
@@ -551,14 +543,13 @@ void ImageImpl::draw_text_backwards(int x, int y, const char* text,
     m_image.draw_text(x, y, text, color, 0, opacity, font_height);
 }
 
-void ImageImpl::draw_note(const DrawingInstructions& instructions,
-                          const DrawnNote& note)
+void ImageImpl::draw_note(const ImageBuilder& builder, const DrawnNote& note)
 {
     if (note.length > 0.0) {
-        draw_note_sustain(instructions, note);
+        draw_note_sustain(builder, note);
     }
 
-    const auto [x, y] = get_xy(instructions, note.beat);
+    const auto [x, y] = get_xy(builder, note.beat);
     if (note.is_sp_note) {
         draw_note_star(x, y, note.colour);
     } else {
@@ -612,7 +603,7 @@ void ImageImpl::draw_note_star(int x, int y, NoteColour note_colour)
     }
 }
 
-void ImageImpl::draw_note_sustain(const DrawingInstructions& instructions,
+void ImageImpl::draw_note_sustain(const ImageBuilder& builder,
                                   const DrawnNote& note)
 {
     constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
@@ -626,21 +617,20 @@ void ImageImpl::draw_note_sustain(const DrawingInstructions& instructions,
         y_range = OPEN_NOTE_Y_RANGE;
         opacity = OPEN_NOTE_OPACITY;
     }
-    colour_beat_range(instructions, colour, x_range, y_range, opacity);
+    colour_beat_range(builder, colour, x_range, y_range, opacity);
 }
 
-void ImageImpl::colour_beat_range(const DrawingInstructions& instructions,
+void ImageImpl::colour_beat_range(const ImageBuilder& builder,
                                   std::array<unsigned char, 3> colour,
                                   std::tuple<double, double> x_range,
                                   std::tuple<int, int> y_range, float opacity)
 {
     auto start = std::get<0>(x_range);
     auto end = std::get<1>(x_range);
-    auto row_iter
-        = std::find_if(instructions.rows().cbegin(), instructions.rows().cend(),
-                       [=](const auto& r) { return r.end > start; });
-    auto row = static_cast<int>(
-        std::distance(instructions.rows().cbegin(), row_iter));
+    auto row_iter = std::find_if(builder.rows().cbegin(), builder.rows().cend(),
+                                 [=](const auto& r) { return r.end > start; });
+    auto row
+        = static_cast<int>(std::distance(builder.rows().cbegin(), row_iter));
 
     auto y_min = std::get<0>(y_range);
     auto y_max = std::get<1>(y_range);
@@ -664,7 +654,7 @@ void ImageImpl::colour_beat_range(const DrawingInstructions& instructions,
     }
 }
 
-Image::Image(const DrawingInstructions& instructions)
+Image::Image(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> green {0, 255, 0};
     constexpr std::array<unsigned char, 3> blue {0, 0, 255};
@@ -676,32 +666,32 @@ Image::Image(const DrawingInstructions& instructions)
     constexpr unsigned char WHITE = 255;
 
     auto height = static_cast<unsigned int>(
-        MARGIN + DIST_BETWEEN_MEASURES * instructions.rows().size());
+        MARGIN + DIST_BETWEEN_MEASURES * builder.rows().size());
 
     m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
-    m_impl->draw_measures(instructions);
-    m_impl->draw_tempos(instructions);
-    m_impl->draw_time_sigs(instructions);
+    m_impl->draw_measures(builder);
+    m_impl->draw_tempos(builder);
+    m_impl->draw_time_sigs(builder);
 
-    for (const auto& range : instructions.solo_ranges()) {
-        m_impl->colour_beat_range(instructions, solo_blue, range,
+    for (const auto& range : builder.solo_ranges()) {
+        m_impl->colour_beat_range(builder, solo_blue, range,
                                   {-SOLO_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT},
                                   RANGE_OPACITY / 2);
     }
 
-    for (const auto& note : instructions.notes()) {
-        m_impl->draw_note(instructions, note);
+    for (const auto& note : builder.notes()) {
+        m_impl->draw_note(builder, note);
     }
 
-    m_impl->draw_score_totals(instructions);
+    m_impl->draw_score_totals(builder);
 
-    for (const auto& range : instructions.green_ranges()) {
-        m_impl->colour_beat_range(instructions, green, range,
-                                  {0, MEASURE_HEIGHT}, RANGE_OPACITY);
+    for (const auto& range : builder.green_ranges()) {
+        m_impl->colour_beat_range(builder, green, range, {0, MEASURE_HEIGHT},
+                                  RANGE_OPACITY);
     }
-    for (const auto& range : instructions.blue_ranges()) {
-        m_impl->colour_beat_range(instructions, blue, range,
-                                  {0, MEASURE_HEIGHT}, RANGE_OPACITY);
+    for (const auto& range : builder.blue_ranges()) {
+        m_impl->colour_beat_range(builder, blue, range, {0, MEASURE_HEIGHT},
+                                  RANGE_OPACITY);
     }
 }
 

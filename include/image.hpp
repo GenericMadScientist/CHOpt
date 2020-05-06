@@ -40,7 +40,7 @@ struct DrawnNote {
     bool is_sp_note;
 };
 
-class DrawingInstructions {
+class ImageBuilder {
 private:
     std::vector<DrawnRow> m_rows;
     std::vector<double> m_half_beat_lines;
@@ -57,8 +57,8 @@ private:
     std::vector<std::tuple<double, double>> m_solo_ranges;
 
 public:
-    DrawingInstructions(const NoteTrack& track, int resolution,
-                        const SyncTrack& sync_track);
+    ImageBuilder(const NoteTrack& track, int resolution,
+                 const SyncTrack& sync_track);
     void add_measure_values(const PointSet& points, const Path& path);
     void add_solo_sections(const NoteTrack& track, int resolution);
     void add_sp_acts(const Path& path);
@@ -127,7 +127,7 @@ private:
     std::unique_ptr<ImageImpl> m_impl;
 
 public:
-    explicit Image(const DrawingInstructions& instructions);
+    explicit Image(const ImageBuilder& builder);
     ~Image();
     Image(const Image&) = delete;
     Image(Image&& image) noexcept;

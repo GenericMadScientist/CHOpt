@@ -47,12 +47,11 @@ int main(int argc, char** argv)
                               std::istreambuf_iterator<char>()};
         const auto chart = Chart::parse_chart(contents);
         const auto& track = chart.note_track(settings.difficulty);
-        DrawingInstructions instructions {track, chart.resolution(),
-                                          chart.sync_track()};
-        instructions.add_sp_phrases(track, chart.resolution());
+        ImageBuilder builder {track, chart.resolution(), chart.sync_track()};
+        builder.add_sp_phrases(track, chart.resolution());
 
         if (settings.draw_solos) {
-            instructions.add_solo_sections(track, chart.resolution());
+            builder.add_solo_sections(track, chart.resolution());
         }
 
         const ProcessedSong processed_track {
@@ -63,13 +62,13 @@ int main(int argc, char** argv)
         if (!settings.blank) {
             const Optimiser optimiser {&processed_track};
             path = optimiser.optimal_path();
-            instructions.add_sp_acts(path);
+            builder.add_sp_acts(path);
             std::cout << processed_track.path_summary(path) << std::endl;
         }
 
-        instructions.add_measure_values(processed_track.points(), path);
-        instructions.add_sp_values(processed_track.sp_data());
-        const Image image {instructions};
+        builder.add_measure_values(processed_track.points(), path);
+        builder.add_sp_values(processed_track.sp_data());
+        const Image image {builder};
         image.save(settings.image_path.c_str());
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
