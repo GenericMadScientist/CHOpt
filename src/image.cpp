@@ -170,6 +170,13 @@ DrawingInstructions::DrawingInstructions(const NoteTrack& track, int resolution,
         }
     }
     m_measure_lines.push_back(m_rows.back().end);
+
+    for (const auto& ts : sync_track.time_sigs()) {
+        auto pos = ts.position / static_cast<double>(resolution);
+        auto num = ts.numerator;
+        auto denom = ts.denominator;
+        m_time_sigs.emplace_back(pos, num, denom);
+    }
 }
 
 void DrawingInstructions::add_measure_values(const PointSet& points,

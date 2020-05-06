@@ -165,6 +165,17 @@ TEST_CASE("Beat lines are correct")
     }
 }
 
+TEST_CASE("Time signatures are handled correctly")
+{
+    NoteTrack track {{{1920}}, {}, {}};
+    SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
+    DrawingInstructions insts {track, 192, sync_track};
+    std::vector<std::tuple<double, int, int>> expected_time_sigs {{0.0, 4, 4},
+                                                                  {4.0, 4, 8}};
+
+    REQUIRE(insts.time_sigs() == expected_time_sigs);
+}
+
 TEST_CASE("Green ranges for SP phrases are added correctly")
 {
     NoteTrack track {{{1000}}, {{768, 384}}, {}};

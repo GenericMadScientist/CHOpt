@@ -46,6 +46,7 @@ private:
     std::vector<double> m_half_beat_lines;
     std::vector<double> m_beat_lines;
     std::vector<double> m_measure_lines;
+    std::vector<std::tuple<double, int, int>> m_time_sigs;
     std::vector<DrawnNote> m_notes;
     std::vector<int> m_base_values;
     std::vector<int> m_score_values;
@@ -106,6 +107,11 @@ public:
     [[nodiscard]] const std::vector<double>& sp_values() const
     {
         return m_sp_values;
+    }
+    [[nodiscard]] const std::vector<std::tuple<double, int, int>>&
+    time_sigs() const
+    {
+        return m_time_sigs;
     }
 };
 
