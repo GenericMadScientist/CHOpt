@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <cassert>
 
 #include "points.hpp"
 
@@ -28,26 +29,48 @@ static bool phrase_contains_pos(const StarPower& phrase, int position)
     return position < (phrase.position + phrase.length);
 }
 
+template <class OutputIt>
+static void append_sustain_points(OutputIt points, int position,
+                                  int sust_length, int resolution,
+                                  const TimeConverter& converter)
+{
+    constexpr double HALF_RES_OFFSET = 0.5;
+
+    const double float_res = resolution;
+    const auto tick_gap = std::max(resolution / 25, 1);
+    auto sust_ticks = (sust_length + tick_gap - 1) / tick_gap;
+
+    while (sust_length > (resolution / 4)) {
+        position += tick_gap;
+        sust_length -= tick_gap;
+        Beat beat {(position - HALF_RES_OFFSET) / float_res};
+        auto meas = converter.beats_to_measures(beat);
+        --sust_ticks;
+        *points++
+            = {{beat, meas}, {beat, meas}, {beat, meas}, 1, 1, true, false};
+    }
+    if (sust_ticks > 0) {
+        Beat beat {(position + HALF_RES_OFFSET) / float_res};
+        auto meas = converter.beats_to_measures(beat);
+        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, sust_ticks,
+                     sust_ticks,   true,         false};
+    }
+}
+
 template <class InputIt, class OutputIt>
 static void append_note_points(InputIt first, InputIt last, OutputIt points,
                                int resolution, bool is_note_sp_ender,
                                const TimeConverter& converter, double squeeze)
 {
-    constexpr double HALF_RES_OFFSET = 0.5;
+    assert(first != last); // NOLINT
+
     constexpr int NOTE_VALUE = 50;
     const auto EARLY_WINDOW = Second(0.07 * squeeze);
     const auto LATE_WINDOW = Second(0.07 * squeeze);
 
-    const double float_res = resolution;
-    const auto tick_gap = std::max(resolution / 25, 1);
-
     const auto chord_size = static_cast<int>(std::distance(first, last));
-    auto chord_length
-        = std::max_element(first, last, [](const auto& x, const auto& y) {
-              return x.length < y.length;
-          })->length;
     auto pos = first->position;
-    auto beat = Beat(pos / float_res);
+    Beat beat {pos / static_cast<double>(resolution)};
     auto meas = converter.beats_to_measures(beat);
     auto note_seconds = converter.beats_to_seconds(beat);
     auto early_beat = converter.seconds_to_beats(note_seconds - EARLY_WINDOW);
@@ -61,21 +84,19 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
                  NOTE_VALUE * chord_size,
                  false,
                  is_note_sp_ender};
-    auto sust_ticks = (chord_length + tick_gap - 1) / tick_gap;
-    while (chord_length > (resolution / 4)) {
-        pos += tick_gap;
-        chord_length -= tick_gap;
-        beat = Beat((pos - HALF_RES_OFFSET) / float_res);
-        meas = converter.beats_to_measures(beat);
-        --sust_ticks;
-        *points++
-            = {{beat, meas}, {beat, meas}, {beat, meas}, 1, 1, true, false};
-    }
-    if (sust_ticks > 0) {
-        beat = Beat((pos + HALF_RES_OFFSET) / float_res);
-        meas = converter.beats_to_measures(beat);
-        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, sust_ticks,
-                     sust_ticks,   true,         false};
+
+    auto [min_iter, max_iter]
+        = std::minmax_element(first, last, [](const auto& x, const auto& y) {
+              return x.length < y.length;
+          });
+    if (min_iter->length == max_iter->length) {
+        append_sustain_points(points, pos, max_iter->length, resolution,
+                              converter);
+    } else {
+        for (auto p = first; p < last; ++p) {
+            append_sustain_points(points, pos, p->length, resolution,
+                                  converter);
+        }
     }
 }
 

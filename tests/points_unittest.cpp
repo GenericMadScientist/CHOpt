@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <numeric>
 
 #include "catch.hpp"
 
@@ -113,7 +114,7 @@ TEST_CASE("Hold notes")
     SECTION("Hold note points and chords")
     {
         NoteTrack track {
-            {{768, 7, NoteColour::Green}, {768, 8, NoteColour::Red}}, {}, {}};
+            {{768, 8, NoteColour::Green}, {768, 8, NoteColour::Red}}, {}, {}};
         TimeConverter converter {{}, 192};
         PointSet points {track, 192, converter, 1.0};
         std::vector<int> expected_values {100, 2};
@@ -130,6 +131,22 @@ TEST_CASE("Hold notes")
         PointSet points {track, 1, converter, 1.0};
 
         REQUIRE(std::distance(points.cbegin(), points.cend()) == 3);
+    }
+
+    SECTION("Sustains of uneven length are handled correctly")
+    {
+        NoteTrack track {{{0, 1504, NoteColour::Green},
+                          {0, 1504, NoteColour::Red},
+                          {0, 736, NoteColour::Yellow}},
+                         {},
+                         {}};
+        TimeConverter converter {{}, 192};
+        PointSet points {track, 192, converter, 1.0};
+        auto total_score = std::accumulate(
+            points.cbegin(), points.cend(), 0,
+            [](const auto& a, const auto& b) { return a + b.value; });
+
+        REQUIRE(total_score == 686);
     }
 }
 
