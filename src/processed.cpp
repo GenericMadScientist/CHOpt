@@ -156,15 +156,16 @@ static Position adjusted_hit_window_end(PointPtr point,
     return {adj_end_b, adj_end_m};
 }
 
-bool ProcessedSong::is_restricted_candidate_valid(
+ActResult ProcessedSong::is_restricted_candidate_valid(
     const ActivationCandidate& activation, double squeeze) const
 {
     constexpr double MEASURES_PER_BAR = 8.0;
     constexpr double MINIMUM_SP_AMOUNT = 0.5;
     constexpr double SP_PHRASE_AMOUNT = 0.25;
+    const Position null_position {Beat(0.0), Measure(0.0)};
 
     if (!activation.sp_bar.full_enough_to_activate()) {
-        return false;
+        return {null_position, ActValidity::insufficient_sp};
     }
 
     auto current_position
@@ -185,7 +186,7 @@ bool ProcessedSong::is_restricted_candidate_valid(
             sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
                                                         sp_note_pos, sp_bar);
             if (sp_bar.max() < 0.0) {
-                return false;
+                return {null_position, ActValidity::insufficient_sp};
             }
 
             auto sp_note_end_pos
@@ -209,7 +210,7 @@ bool ProcessedSong::is_restricted_candidate_valid(
     sp_bar = m_sp_data.propagate_sp_over_whammy(current_position, ending_pos,
                                                 sp_bar);
     if (sp_bar.max() < 0.0) {
-        return false;
+        return {null_position, ActValidity::insufficient_sp};
     }
     if (activation.act_end->is_sp_granting_note) {
         sp_bar.add_phrase();
@@ -217,13 +218,20 @@ bool ProcessedSong::is_restricted_candidate_valid(
 
     const auto next_point = std::next(activation.act_end);
     if (next_point == m_points.cend()) {
-        return true;
+        // Return value doesn't matter other than it being non-empty.
+        auto pos_inf = std::numeric_limits<double>::infinity();
+        return {{Beat(pos_inf), Measure(pos_inf)}, ActValidity::success};
     }
 
     auto end_meas
         = ending_pos.measure + Measure(sp_bar.min() * MEASURES_PER_BAR);
-    return end_meas
-        < adjusted_hit_window_end(next_point, m_converter, squeeze).measure;
+    if (end_meas
+        >= adjusted_hit_window_end(next_point, m_converter, squeeze).measure) {
+        return {null_position, ActValidity::surplus_sp};
+    }
+
+    auto end_beat = m_converter.measures_to_beats(end_meas);
+    return {{end_beat, end_meas}, ActValidity::success};
 }
 
 std::string ProcessedSong::path_summary(const Path& path) const

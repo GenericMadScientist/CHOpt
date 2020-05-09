@@ -85,7 +85,7 @@ public:
     is_candidate_valid(const ActivationCandidate& activation) const;
     // Similar to is_candidate_valid but checks squeezes against the given
     // amount only.
-    [[nodiscard]] bool
+    [[nodiscard]] ActResult
     is_restricted_candidate_valid(const ActivationCandidate& activation,
                                   double squeeze) const;
     // Return the summary of a path.

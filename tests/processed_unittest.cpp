@@ -335,8 +335,10 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(!track.is_restricted_candidate_valid(candidate, 0.5));
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0));
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 0.5).validity
+                == ActValidity::insufficient_sp);
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0).validity
+                == ActValidity::success);
     }
 
     SECTION("Intermediate SP front end is restricted")
@@ -351,8 +353,10 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(!track.is_restricted_candidate_valid(candidate, 0.5));
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0));
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 0.5).validity
+                == ActValidity::insufficient_sp);
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0).validity
+                == ActValidity::success);
     }
 
     SECTION("Intermediate SP back end is restricted")
@@ -367,8 +371,10 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
                                        {Beat(0.0), Measure(0.0)},
                                        {1.0, 1.0}};
 
-        REQUIRE(!track.is_restricted_candidate_valid(candidate, 0.5));
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0));
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 0.5).validity
+                == ActValidity::insufficient_sp);
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0).validity
+                == ActValidity::success);
     }
 
     SECTION("Next note back end is restricted")
@@ -382,7 +388,9 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(!track.is_restricted_candidate_valid(candidate, 0.5));
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0));
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 0.5).validity
+                == ActValidity::surplus_sp);
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0).validity
+                == ActValidity::success);
     }
 }
