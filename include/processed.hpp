@@ -58,11 +58,6 @@ struct ActResult {
     ActValidity validity;
 };
 
-struct ProtoPath {
-    std::vector<ProtoActivation> activations;
-    int score_boost;
-};
-
 struct Path {
     std::vector<Activation> activations;
     int score_boost;

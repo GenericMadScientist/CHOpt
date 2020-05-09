@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <iterator>
 #include <limits>
@@ -90,24 +91,23 @@ PointPtr Optimiser::act_end_lower_bound(PointPtr point, Measure pos,
     return std::prev(q);
 }
 
-ProtoPath Optimiser::get_partial_path(CacheKey key, Cache& cache) const
+int Optimiser::get_partial_path(CacheKey key, Cache& cache) const
 {
     if (key.point == m_song->points().cend()) {
-        return {{}, 0};
+        return 0;
     }
     if (cache.paths.find(key) == cache.paths.end()) {
         auto best_path = find_best_subpaths(key, cache, false);
         cache.paths.emplace(key, best_path);
-        return best_path.path;
+        return best_path.score_boost;
     }
-    return cache.paths.at(key).path;
+    return cache.paths.at(key).score_boost;
 }
 
-ProtoPath Optimiser::get_partial_full_sp_path(PointPtr point,
-                                              Cache& cache) const
+int Optimiser::get_partial_full_sp_path(PointPtr point, Cache& cache) const
 {
     if (cache.full_sp_paths.find(point) != cache.full_sp_paths.end()) {
-        return cache.full_sp_paths.at(point).path;
+        return cache.full_sp_paths.at(point).score_boost;
     }
 
     // We only call this from find_best_subpath in a situaiton where we know
@@ -115,7 +115,7 @@ ProtoPath Optimiser::get_partial_full_sp_path(PointPtr point,
     CacheKey key {point, std::prev(point)->hit_window_start};
     auto best_path = find_best_subpaths(key, cache, true);
     cache.full_sp_paths.emplace(point, best_path);
-    return best_path.path;
+    return best_path.score_boost;
 }
 
 // This function is an optimisation for the case where key.point is a tick in
@@ -161,16 +161,8 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
         return {};
     }
 
-    auto score_boost = prev_key_iter->second.path.score_boost;
-    auto next_key = std::get<1>(next_acts[0]);
-    ProtoPath rest_of_path {{}, 0};
-    if (next_key.point != m_song->points().cend()) {
-        rest_of_path = cache.paths.at(next_key).path;
-    }
-    auto act_set = rest_of_path.activations;
-    act_set.insert(act_set.begin(), std::get<0>(next_acts[0]));
-    ProtoPath best_path {act_set, score_boost};
-    return {{best_path, next_acts}};
+    auto score_boost = prev_key_iter->second.score_boost;
+    return {{next_acts, score_boost}};
 }
 
 Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
@@ -187,7 +179,6 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
     std::vector<std::tuple<ProtoActivation, CacheKey>> acts;
     std::set<PointPtr> attained_act_ends;
     auto best_score_boost = 0;
-    ProtoPath best_path {{}, 0};
 
     for (auto p = key.point; p < m_song->points().cend(); ++p) {
         SpBar sp_bar {1.0, 1.0};
@@ -202,10 +193,10 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             && std::prev(p)->is_sp_granting_note) {
             get_partial_full_sp_path(p, cache);
             auto cache_value = cache.full_sp_paths.at(p);
-            if (cache_value.path.score_boost > best_score_boost) {
+            if (cache_value.score_boost > best_score_boost) {
                 return cache_value;
             }
-            if (cache_value.path.score_boost == best_score_boost) {
+            if (cache_value.score_boost == best_score_boost) {
                 const auto& next_acts = cache_value.possible_next_acts;
                 acts.insert(acts.end(), next_acts.cbegin(), next_acts.cend());
             }
@@ -238,13 +229,10 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                 [](const auto& sum, const auto& x) { return sum + x.value; });
             CacheKey next_key {std::next(q), candidate_result.ending_position};
             next_key = advance_cache_key(next_key);
-            auto rest_of_path = get_partial_path(next_key, cache);
-            auto score = act_score + rest_of_path.score_boost;
+            auto rest_of_path_score_boost = get_partial_path(next_key, cache);
+            auto score = act_score + rest_of_path_score_boost;
             if (score > best_score_boost) {
                 best_score_boost = score;
-                auto act_set = rest_of_path.activations;
-                act_set.insert(act_set.begin(), {p, q});
-                best_path = {act_set, score};
                 acts.clear();
                 acts.push_back({{p, q}, next_key});
             } else if (score == best_score_boost) {
@@ -253,7 +241,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         }
     }
 
-    return {best_path, acts};
+    return {acts, best_score_boost};
 }
 
 Path Optimiser::optimal_path() const
@@ -264,15 +252,18 @@ Path Optimiser::optimal_path() const
                         {Beat(neg_inf), Measure(neg_inf)}};
     start_key = advance_cache_key(start_key);
 
-    auto proto_path = get_partial_path(start_key, cache);
-    Path path {{}, 0};
+    auto best_score_boost = get_partial_path(start_key, cache);
+    Path path {{}, best_score_boost};
 
-    for (const auto& proto_act : proto_path.activations) {
+    while (start_key.point != m_song->points().cend()) {
+        const auto& acts = cache.paths.at(start_key).possible_next_acts;
+        assert(!acts.empty()); // NOLINT
+        auto [proto_act, next_key] = acts[0];
         Activation act {proto_act.act_start, proto_act.act_end, Beat {0.0},
                         Beat {0.0}};
         path.activations.push_back(act);
+        start_key = advance_cache_key(next_key);
     }
 
-    path.score_boost = proto_path.score_boost;
     return path;
 }
