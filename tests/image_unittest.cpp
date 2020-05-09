@@ -217,10 +217,11 @@ TEST_CASE("Tempos are handled correctly")
 
 TEST_CASE("Green ranges for SP phrases are added correctly")
 {
-    NoteTrack track {{{1000}}, {{768, 384}}, {}};
+    NoteTrack track {{{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}};
     ImageBuilder builder {track, 192, {}};
     builder.add_sp_phrases(track, 192);
-    std::vector<std::tuple<double, double>> expected_green_ranges {{4.0, 6.0}};
+    std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.0},
+                                                                   {7.0, 7.5}};
 
     REQUIRE(builder.green_ranges() == expected_green_ranges);
 }
