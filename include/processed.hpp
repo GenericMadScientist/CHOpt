@@ -83,6 +83,11 @@ public:
     // earliest position it can end.
     [[nodiscard]] ActResult
     is_candidate_valid(const ActivationCandidate& activation) const;
+    // Similar to is_candidate_valid but checks squeezes against the given
+    // amount only.
+    [[nodiscard]] bool
+    is_restricted_candidate_valid(const ActivationCandidate& activation,
+                                  double squeeze) const;
     // Return the summary of a path.
     [[nodiscard]] std::string path_summary(const Path& path) const;
 

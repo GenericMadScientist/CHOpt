@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <cassert>
 #include <iterator>
 #include <limits>
 #include <numeric>
@@ -123,6 +124,106 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation) const
 
     auto end_beat = m_converter.measures_to_beats(end_meas);
     return {{end_beat, end_meas}, ActValidity::success};
+}
+
+static Position adjusted_hit_window_start(PointPtr point,
+                                          const TimeConverter& converter,
+                                          double squeeze)
+{
+    assert((0.0 <= squeeze) && (squeeze <= 1.0)); // NOLINT
+
+    auto start = converter.beats_to_seconds(point->hit_window_start.beat);
+    auto mid = converter.beats_to_seconds(point->position.beat);
+    auto adj_start_s = start + (mid - start) * (1.0 - squeeze);
+    auto adj_start_b = converter.seconds_to_beats(adj_start_s);
+    auto adj_start_m = converter.beats_to_measures(adj_start_b);
+
+    return {adj_start_b, adj_start_m};
+}
+
+static Position adjusted_hit_window_end(PointPtr point,
+                                        const TimeConverter& converter,
+                                        double squeeze)
+{
+    assert((0.0 <= squeeze) && (squeeze <= 1.0)); // NOLINT
+
+    auto mid = converter.beats_to_seconds(point->position.beat);
+    auto end = converter.beats_to_seconds(point->hit_window_end.beat);
+    auto adj_end_s = mid + (end - mid) * squeeze;
+    auto adj_end_b = converter.seconds_to_beats(adj_end_s);
+    auto adj_end_m = converter.beats_to_measures(adj_end_b);
+
+    return {adj_end_b, adj_end_m};
+}
+
+bool ProcessedSong::is_restricted_candidate_valid(
+    const ActivationCandidate& activation, double squeeze) const
+{
+    constexpr double MEASURES_PER_BAR = 8.0;
+    constexpr double MINIMUM_SP_AMOUNT = 0.5;
+    constexpr double SP_PHRASE_AMOUNT = 0.25;
+
+    if (!activation.sp_bar.full_enough_to_activate()) {
+        return false;
+    }
+
+    auto current_position
+        = adjusted_hit_window_end(activation.act_start, m_converter, squeeze);
+
+    auto sp_bar = activation.sp_bar;
+    sp_bar.min() = std::max(sp_bar.min(), MINIMUM_SP_AMOUNT);
+
+    auto starting_meas_diff = current_position.measure
+        - activation.earliest_activation_point.measure;
+    sp_bar.min() -= starting_meas_diff.value() / MEASURES_PER_BAR;
+    sp_bar.min() = std::max(sp_bar.min(), 0.0);
+
+    for (auto p = activation.act_start; p < activation.act_end; ++p) {
+        if (p->is_sp_granting_note) {
+            auto sp_note_pos
+                = adjusted_hit_window_start(p, m_converter, squeeze);
+            sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
+                                                        sp_note_pos, sp_bar);
+            if (sp_bar.max() < 0.0) {
+                return false;
+            }
+
+            auto sp_note_end_pos
+                = adjusted_hit_window_end(p, m_converter, squeeze);
+
+            auto latest_point_to_hit_sp = m_sp_data.activation_end_point(
+                sp_note_pos, sp_note_end_pos, sp_bar.max());
+            sp_bar.min() += SP_PHRASE_AMOUNT;
+            sp_bar.min() = std::min(sp_bar.min(), 1.0);
+            sp_bar = m_sp_data.propagate_sp_over_whammy(
+                sp_note_pos, latest_point_to_hit_sp, sp_bar);
+            sp_bar.max() += SP_PHRASE_AMOUNT;
+            sp_bar.max() = std::min(sp_bar.max(), 1.0);
+
+            current_position = latest_point_to_hit_sp;
+        }
+    }
+
+    auto ending_pos
+        = adjusted_hit_window_start(activation.act_end, m_converter, squeeze);
+    sp_bar = m_sp_data.propagate_sp_over_whammy(current_position, ending_pos,
+                                                sp_bar);
+    if (sp_bar.max() < 0.0) {
+        return false;
+    }
+    if (activation.act_end->is_sp_granting_note) {
+        sp_bar.add_phrase();
+    }
+
+    const auto next_point = std::next(activation.act_end);
+    if (next_point == m_points.cend()) {
+        return true;
+    }
+
+    auto end_meas
+        = ending_pos.measure + Measure(sp_bar.min() * MEASURES_PER_BAR);
+    return end_meas
+        < adjusted_hit_window_end(next_point, m_converter, squeeze).measure;
 }
 
 std::string ProcessedSong::path_summary(const Path& path) const

@@ -20,7 +20,7 @@
 
 #include "processed.hpp"
 
-TEST_CASE("total_available_sp counts SP correctly", "Available SP")
+TEST_CASE("total_available_sp counts SP correctly")
 {
     std::vector<Note> notes {{0},        {192},  {384},  {576},
                              {768, 192}, {1152}, {1344}, {1536}};
@@ -73,7 +73,7 @@ TEST_CASE("total_available_sp counts SP correctly", "Available SP")
     }
 }
 
-TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
+TEST_CASE("is_candidate_valid works with no whammy")
 {
     std::vector<Note> notes {{0}, {1536}, {3072}, {6144}};
     NoteTrack note_track {notes, {}, {}};
@@ -204,7 +204,7 @@ TEST_CASE("is_candidate_valid works with no whammy", "Valid no whammy acts")
     }
 }
 
-TEST_CASE("is_candidate_valid works with whammy", "Valid whammy acts")
+TEST_CASE("is_candidate_valid works with whammy")
 {
     std::vector<Note> notes {{0, 960}, {3840}, {6144}};
     std::vector<StarPower> phrases {{0, 7000}};
@@ -230,7 +230,7 @@ TEST_CASE("is_candidate_valid works with whammy", "Valid whammy acts")
     }
 }
 
-TEST_CASE("is_candidate_valid takes into account minimum SP", "Min SP")
+TEST_CASE("is_candidate_valid takes into account minimum SP")
 {
     std::vector<Note> notes {{0}, {1536}, {2304}, {3072}, {4608}};
     NoteTrack note_track {notes, {}, {}};
@@ -257,7 +257,7 @@ TEST_CASE("is_candidate_valid takes into account minimum SP", "Min SP")
     }
 }
 
-TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
+TEST_CASE("is_candidate_valid takes into account squeezing")
 {
     SECTION("Front end and back end of the activation endpoints are considered")
     {
@@ -319,5 +319,70 @@ TEST_CASE("is_candidate_valid takes into account squeezing", "Valid squeezes")
 
         REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
+    }
+}
+
+TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
+{
+    SECTION("Front end and back end are restricted")
+    {
+        std::vector<Note> notes {{0}, {3110}};
+        NoteTrack note_track {notes, {}, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+        const auto& points = track.points();
+        ActivationCandidate candidate {points.cbegin(),
+                                       points.cbegin() + 1,
+                                       {Beat(0.0), Measure(0.0)},
+                                       {0.5, 0.5}};
+
+        REQUIRE(!track.is_restricted_candidate_valid(candidate, 0.5));
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0));
+    }
+
+    SECTION("Intermediate SP front end is restricted")
+    {
+        std::vector<Note> notes {{0}, {3102}, {4608}};
+        std::vector<StarPower> phrases {{3100, 100}};
+        NoteTrack note_track {notes, phrases, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+        const auto& points = track.points();
+        ActivationCandidate candidate {points.cbegin(),
+                                       points.cbegin() + 2,
+                                       {Beat(0.0), Measure(0.0)},
+                                       {0.5, 0.5}};
+
+        REQUIRE(!track.is_restricted_candidate_valid(candidate, 0.5));
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0));
+    }
+
+    SECTION("Intermediate SP back end is restricted")
+    {
+        std::vector<Note> notes {{0}, {768}, {6942}};
+        std::vector<StarPower> phrases {{768, 100}};
+        NoteTrack note_track {notes, phrases, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+        const auto& points = track.points();
+        ActivationCandidate candidate {points.cbegin(),
+                                       points.cbegin() + 2,
+                                       {Beat(0.0), Measure(0.0)},
+                                       {1.0, 1.0}};
+
+        REQUIRE(!track.is_restricted_candidate_valid(candidate, 0.5));
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0));
+    }
+
+    SECTION("Next note back end is restricted")
+    {
+        std::vector<Note> notes {{0}, {3034}, {3053}};
+        NoteTrack note_track {notes, {}, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+        const auto& points = track.points();
+        ActivationCandidate candidate {points.cbegin(),
+                                       points.cbegin() + 1,
+                                       {Beat(0.0), Measure(0.0)},
+                                       {0.5, 0.5}};
+
+        REQUIRE(!track.is_restricted_candidate_valid(candidate, 0.5));
+        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0));
     }
 }
