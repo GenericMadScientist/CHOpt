@@ -52,8 +52,8 @@ private:
     };
 
     struct CacheValue {
-        Path path;
-        std::vector<std::tuple<Activation, CacheKey>> possible_next_acts;
+        ProtoPath path;
+        std::vector<std::tuple<ProtoActivation, CacheKey>> possible_next_acts;
     };
 
     struct Cache {
@@ -73,8 +73,8 @@ private:
                                bool has_full_sp) const;
     CacheValue find_best_subpaths(CacheKey key, Cache& cache,
                                   bool has_full_sp) const;
-    Path get_partial_path(CacheKey key, Cache& cache) const;
-    Path get_partial_full_sp_path(PointPtr point, Cache& cache) const;
+    ProtoPath get_partial_path(CacheKey key, Cache& cache) const;
+    ProtoPath get_partial_full_sp_path(PointPtr point, Cache& cache) const;
 
 public:
     explicit Optimiser(const ProcessedSong* song);

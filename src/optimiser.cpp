@@ -90,7 +90,7 @@ PointPtr Optimiser::act_end_lower_bound(PointPtr point, Measure pos,
     return std::prev(q);
 }
 
-Path Optimiser::get_partial_path(CacheKey key, Cache& cache) const
+ProtoPath Optimiser::get_partial_path(CacheKey key, Cache& cache) const
 {
     if (key.point == m_song->points().cend()) {
         return {{}, 0};
@@ -103,7 +103,8 @@ Path Optimiser::get_partial_path(CacheKey key, Cache& cache) const
     return cache.paths.at(key).path;
 }
 
-Path Optimiser::get_partial_full_sp_path(PointPtr point, Cache& cache) const
+ProtoPath Optimiser::get_partial_full_sp_path(PointPtr point,
+                                              Cache& cache) const
 {
     if (cache.full_sp_paths.find(point) != cache.full_sp_paths.end()) {
         return cache.full_sp_paths.at(point).path;
@@ -142,7 +143,7 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
     }
 
     const auto& acts = prev_key_iter->second.possible_next_acts;
-    std::vector<std::tuple<Activation, CacheKey>> next_acts;
+    std::vector<std::tuple<ProtoActivation, CacheKey>> next_acts;
     for (const auto& act : acts) {
         auto [p, q] = std::get<0>(act);
         auto sp_bar
@@ -162,13 +163,13 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
 
     auto score_boost = prev_key_iter->second.path.score_boost;
     auto next_key = std::get<1>(next_acts[0]);
-    Path rest_of_path {{}, 0};
+    ProtoPath rest_of_path {{}, 0};
     if (next_key.point != m_song->points().cend()) {
         rest_of_path = cache.paths.at(next_key).path;
     }
     auto act_set = rest_of_path.activations;
     act_set.insert(act_set.begin(), std::get<0>(next_acts[0]));
-    Path best_path {act_set, score_boost};
+    ProtoPath best_path {act_set, score_boost};
     return {{best_path, next_acts}};
 }
 
@@ -183,10 +184,10 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         return *subpath_from_prev;
     }
 
-    std::vector<std::tuple<Activation, CacheKey>> acts;
+    std::vector<std::tuple<ProtoActivation, CacheKey>> acts;
     std::set<PointPtr> attained_act_ends;
     auto best_score_boost = 0;
-    Path best_path {{}, 0};
+    ProtoPath best_path {{}, 0};
 
     for (auto p = key.point; p < m_song->points().cend(); ++p) {
         SpBar sp_bar {1.0, 1.0};
@@ -263,5 +264,15 @@ Path Optimiser::optimal_path() const
                         {Beat(neg_inf), Measure(neg_inf)}};
     start_key = advance_cache_key(start_key);
 
-    return get_partial_path(start_key, cache);
+    auto proto_path = get_partial_path(start_key, cache);
+    Path path {{}, 0};
+
+    for (const auto& proto_act : proto_path.activations) {
+        Activation act {proto_act.act_start, proto_act.act_end, Beat {0.0},
+                        Beat {0.0}};
+        path.activations.push_back(act);
+    }
+
+    path.score_boost = proto_path.score_boost;
+    return path;
 }

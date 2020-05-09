@@ -232,7 +232,8 @@ TEST_CASE("add_sp_acts adds correct ranges")
     TimeConverter converter {{}, 192};
     PointSet points {track, 192, converter, 1.0};
     ImageBuilder builder {track, 192, {}};
-    Path path {{{points.cbegin(), points.cbegin() + 1}}, 0};
+    Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.0}, Beat {0.0}}},
+               0};
     builder.add_sp_acts(path);
     std::vector<std::tuple<double, double>> expected_blue_ranges {{0.0, 1.0}};
 
@@ -281,7 +282,9 @@ TEST_CASE("add_measure_values gives correct values")
     {
         NoteTrack track {{{0}, {192}, {384}, {768}}, {}, {}};
         PointSet points {track, 192, {{}, 192}, 1.0};
-        Path path {{{points.cbegin() + 2, points.cbegin() + 3}}, 100};
+        Path path {{{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0},
+                     Beat {0.0}}},
+                   100};
         ImageBuilder builder {track, 192, {}};
         builder.add_measure_values(points, path);
         std::vector<int> expected_score_values {200, 300};

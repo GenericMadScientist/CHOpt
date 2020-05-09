@@ -34,9 +34,16 @@ struct ActivationCandidate {
     SpBar sp_bar {0.0, 0.0};
 };
 
+struct ProtoActivation {
+    PointPtr act_start;
+    PointPtr act_end;
+};
+
 struct Activation {
     PointPtr act_start;
     PointPtr act_end;
+    Beat sp_start {0.0};
+    Beat sp_end {0.0};
 };
 
 // Part of the return value of ProcessedSong::is_candidate_valid. Says if an
@@ -49,6 +56,11 @@ enum class ActValidity { success, insufficient_sp, surplus_sp };
 struct ActResult {
     Position ending_position;
     ActValidity validity;
+};
+
+struct ProtoPath {
+    std::vector<ProtoActivation> activations;
+    int score_boost;
 };
 
 struct Path {
