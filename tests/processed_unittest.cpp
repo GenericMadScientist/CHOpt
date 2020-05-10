@@ -393,4 +393,20 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
         REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0).validity
                 == ActValidity::success);
     }
+
+    SECTION("End position is finite if activation goes past last note")
+    {
+        std::vector<Note> notes {{0}};
+        NoteTrack note_track {notes, {}, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+        const auto& points = track.points();
+        ActivationCandidate candidate {points.cbegin(),
+                                       points.cbegin(),
+                                       {Beat(0.0), Measure(0.0)},
+                                       {1.0, 1.0}};
+        auto result = track.is_restricted_candidate_valid(candidate, 1.0);
+
+        REQUIRE(result.validity == ActValidity::success);
+        REQUIRE(result.ending_position.beat.value() < 40.0);
+    }
 }

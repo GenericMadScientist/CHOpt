@@ -217,14 +217,13 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
     }
 
     const auto next_point = std::next(activation.act_end);
-    if (next_point == m_points.cend()) {
-        // Return value doesn't matter other than it being non-empty.
-        auto pos_inf = std::numeric_limits<double>::infinity();
-        return {{Beat(pos_inf), Measure(pos_inf)}, ActValidity::success};
-    }
-
     auto end_meas
         = ending_pos.measure + Measure(sp_bar.min() * MEASURES_PER_BAR);
+    if (next_point == m_points.cend()) {
+        auto end_beat = m_converter.measures_to_beats(end_meas);
+        return {{end_beat, end_meas}, ActValidity::success};
+    }
+
     if (end_meas
         >= adjusted_hit_window_end(next_point, m_converter, squeeze).measure) {
         return {null_position, ActValidity::surplus_sp};

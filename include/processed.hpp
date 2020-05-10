@@ -100,6 +100,7 @@ public:
 
     [[nodiscard]] const PointSet& points() const { return m_points; }
     [[nodiscard]] const SpData& sp_data() const { return m_sp_data; }
+    [[nodiscard]] const TimeConverter& converter() const { return m_converter; }
 };
 
 #endif

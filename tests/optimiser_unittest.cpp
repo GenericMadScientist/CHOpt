@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
+
 #include <algorithm>
 #include <iterator>
 
@@ -25,7 +27,7 @@
 
 static bool operator==(const Beat& lhs, const Beat& rhs)
 {
-    return lhs.value() == Approx(rhs.value());
+    return lhs.value() == Approx(rhs.value()).margin(0.01);
 }
 
 static bool operator==(const Activation& lhs, const Activation& rhs)
@@ -112,8 +114,9 @@ TEST_CASE("optimal_path produces the correct path")
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
         Optimiser optimiser {&track};
         const auto& points = track.points();
-        std::vector<Activation> optimal_acts {
-            {points.cbegin() + 2, points.cbegin() + 2, Beat {0.0}, Beat {0.0}}};
+        std::vector<Activation> optimal_acts {{points.cbegin() + 2,
+                                               points.cbegin() + 2, Beat {2.0},
+                                               Beat {18.0}}};
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 50);
@@ -139,8 +142,9 @@ TEST_CASE("optimal_path produces the correct path")
         Optimiser optimiser {&track};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
-            {points.cbegin() + 2, points.cbegin() + 2, Beat {0.0}, Beat {0.0}},
-            {points.cbegin() + 5, points.cbegin() + 5, Beat {0.0}, Beat {0.0}}};
+            {points.cbegin() + 2, points.cbegin() + 2, Beat {2.0}, Beat {18.0}},
+            {points.cbegin() + 5, points.cbegin() + 5, Beat {54.0},
+             Beat {70.0}}};
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 300);
@@ -155,8 +159,9 @@ TEST_CASE("optimal_path produces the correct path")
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
         Optimiser optimiser {&track};
         const auto& points = track.points();
-        std::vector<Activation> optimal_acts {
-            {points.cbegin() + 2, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}};
+        std::vector<Activation> optimal_acts {{points.cbegin() + 2,
+                                               points.cbegin() + 3, Beat {2.0},
+                                               Beat {18.0}}};
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 100);
@@ -171,8 +176,9 @@ TEST_CASE("optimal_path produces the correct path")
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
         Optimiser optimiser {&track};
         const auto& points = track.points();
-        std::vector<Activation> optimal_acts {
-            {points.cbegin() + 2, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}};
+        std::vector<Activation> optimal_acts {{points.cbegin() + 2,
+                                               points.cbegin() + 3, Beat {2.0},
+                                               Beat {18.0}}};
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 100);
@@ -188,8 +194,9 @@ TEST_CASE("optimal_path produces the correct path")
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
         Optimiser optimiser {&track};
         const auto& points = track.points();
-        std::vector<Activation> optimal_acts {
-            {points.cbegin() + 3, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}};
+        std::vector<Activation> optimal_acts {{points.cbegin() + 3,
+                                               points.cbegin() + 3, Beat {20.0},
+                                               Beat {36.0}}};
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 100);
@@ -207,8 +214,10 @@ TEST_CASE("optimal_path produces the correct path")
         Optimiser optimiser {&track};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
-            {points.cbegin() + 2, points.cbegin() + 2, Beat {0.0}, Beat {0.0}},
-            {points.cbegin() + 5, points.cbegin() + 6, Beat {0.0}, Beat {0.0}}};
+            {points.cbegin() + 2, points.cbegin() + 2, Beat {0.8958},
+             Beat {16.8958}},
+            {points.cbegin() + 5, points.cbegin() + 6, Beat {81.84375},
+             Beat {97.84375}}};
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 150);
