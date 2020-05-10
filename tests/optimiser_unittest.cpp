@@ -115,8 +115,8 @@ TEST_CASE("optimal_path produces the correct path")
         Optimiser optimiser {&track};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
-                                               points.cbegin() + 2, Beat {2.0},
-                                               Beat {18.0}}};
+                                               points.cbegin() + 2, Beat {0.0},
+                                               Beat {2.0}, Beat {18.0}}};
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 50);
@@ -142,8 +142,9 @@ TEST_CASE("optimal_path produces the correct path")
         Optimiser optimiser {&track};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
-            {points.cbegin() + 2, points.cbegin() + 2, Beat {2.0}, Beat {18.0}},
-            {points.cbegin() + 5, points.cbegin() + 5, Beat {54.0},
+            {points.cbegin() + 2, points.cbegin() + 2, Beat {0.0}, Beat {2.0},
+             Beat {18.0}},
+            {points.cbegin() + 5, points.cbegin() + 5, Beat {0.0}, Beat {54.0},
              Beat {70.0}}};
         auto opt_path = optimiser.optimal_path();
 
@@ -160,8 +161,8 @@ TEST_CASE("optimal_path produces the correct path")
         Optimiser optimiser {&track};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
-                                               points.cbegin() + 3, Beat {2.0},
-                                               Beat {18.0}}};
+                                               points.cbegin() + 3, Beat {0.0},
+                                               Beat {2.0}, Beat {18.0}}};
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 100);
@@ -177,8 +178,8 @@ TEST_CASE("optimal_path produces the correct path")
         Optimiser optimiser {&track};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
-                                               points.cbegin() + 3, Beat {2.0},
-                                               Beat {18.0}}};
+                                               points.cbegin() + 3, Beat {0.0},
+                                               Beat {2.0}, Beat {18.0}}};
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 100);
@@ -195,8 +196,8 @@ TEST_CASE("optimal_path produces the correct path")
         Optimiser optimiser {&track};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 3,
-                                               points.cbegin() + 3, Beat {20.0},
-                                               Beat {36.0}}};
+                                               points.cbegin() + 3, Beat {0.0},
+                                               Beat {20.0}, Beat {36.0}}};
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 100);
@@ -214,10 +215,10 @@ TEST_CASE("optimal_path produces the correct path")
         Optimiser optimiser {&track};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
-            {points.cbegin() + 2, points.cbegin() + 2, Beat {0.8958},
-             Beat {16.8958}},
-            {points.cbegin() + 5, points.cbegin() + 6, Beat {81.84375},
-             Beat {97.84375}}};
+            {points.cbegin() + 2, points.cbegin() + 2, Beat {0.0},
+             Beat {0.8958}, Beat {16.8958}},
+            {points.cbegin() + 5, points.cbegin() + 6, Beat {0.0},
+             Beat {81.84375}, Beat {97.84375}}};
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 150);

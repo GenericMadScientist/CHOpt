@@ -316,8 +316,8 @@ Path Optimiser::optimal_path() const
         auto result
             = m_song->is_restricted_candidate_valid(candidate, sqz_level);
         assert(result.validity == ActValidity::success); // NOLINT
-        Activation act {proto_act.act_start, proto_act.act_end, min_pos.beat,
-                        result.ending_position.beat};
+        Activation act {proto_act.act_start, proto_act.act_end, Beat {0.0},
+                        min_pos.beat, result.ending_position.beat};
         path.activations.push_back(act);
         start_key = advance_cache_key(next_key);
     }

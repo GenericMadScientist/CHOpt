@@ -42,6 +42,7 @@ struct ProtoActivation {
 struct Activation {
     PointPtr act_start;
     PointPtr act_end;
+    Beat whammy_end {0.0};
     Beat sp_start {0.0};
     Beat sp_end {0.0};
 };
