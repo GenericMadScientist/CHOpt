@@ -19,6 +19,7 @@
 #ifndef CHOPT_PROCESSED_HPP
 #define CHOPT_PROCESSED_HPP
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -69,6 +70,8 @@ struct Path {
 // upheld by the constructors of the arguments.
 class ProcessedSong {
 private:
+    static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
+
     // The order of these members is important. We must have m_converter before
     // m_points.
     TimeConverter m_converter;
@@ -84,9 +87,11 @@ public:
     // Return the minimum and maximum amount of SP can be acquired between two
     // points. Does not include SP from the point act_start. first_point is
     // given for the purposes of counting SP grantings notes, e.g. if start is
-    // after the middle of first_point's timing window.
-    [[nodiscard]] SpBar total_available_sp(Beat start, PointPtr first_point,
-                                           PointPtr act_start) const;
+    // after the middle of first_point's timing window. All whammy up to
+    // required_whammy_end is mandatory.
+    [[nodiscard]] SpBar
+    total_available_sp(Beat start, PointPtr first_point, PointPtr act_start,
+                       Beat required_whammy_end = Beat {NEG_INF}) const;
     // Returns an ActResult which says if an activation is valid, and if so the
     // earliest position it can end.
     [[nodiscard]] ActResult

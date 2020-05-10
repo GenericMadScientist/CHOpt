@@ -20,7 +20,7 @@
 
 #include "processed.hpp"
 
-TEST_CASE("total_available_sp counts SP correctly")
+TEST_CASE("3 arg total_available_sp counts SP correctly")
 {
     std::vector<Note> notes {{0},        {192},  {384},  {576},
                              {768, 192}, {1152}, {1344}, {1536}};
@@ -56,6 +56,21 @@ TEST_CASE("total_available_sp counts SP correctly")
                                               points.cend() - 3);
         REQUIRE(result.min() == Approx(0.0));
         REQUIRE(result.max() == Approx(0.0166667));
+    }
+
+    SECTION("required_whammy_end is accounted for")
+    {
+        auto result = song.total_available_sp(Beat(4.0), points.cbegin() + 4,
+                                              points.cbegin() + 5, Beat(4.02));
+
+        REQUIRE(result.min() == Approx(0.000666667));
+        REQUIRE(result.max() == Approx(0.00112847));
+
+        result = song.total_available_sp(Beat(4.0), points.cbegin() + 4,
+                                         points.cbegin() + 5, Beat(4.10));
+
+        REQUIRE(result.min() == Approx(0.00112847));
+        REQUIRE(result.max() == Approx(0.00112847));
     }
 
     SECTION("SP does not exceed full bar")

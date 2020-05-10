@@ -38,7 +38,8 @@ ProcessedSong::ProcessedSong(const NoteTrack& track, int resolution,
 }
 
 SpBar ProcessedSong::total_available_sp(Beat start, PointPtr first_point,
-                                        PointPtr act_start) const
+                                        PointPtr act_start,
+                                        Beat required_whammy_end) const
 {
     SpBar sp_bar {0.0, 0.0};
     for (auto p = first_point; p < act_start; ++p) {
@@ -47,8 +48,23 @@ SpBar ProcessedSong::total_available_sp(Beat start, PointPtr first_point,
         }
     }
 
-    sp_bar.max() += m_sp_data.available_whammy(start, act_start->position.beat);
-    sp_bar.max() = std::min(sp_bar.max(), 1.0);
+    if (start >= required_whammy_end) {
+        sp_bar.max()
+            += m_sp_data.available_whammy(start, act_start->position.beat);
+        sp_bar.max() = std::min(sp_bar.max(), 1.0);
+    } else if (required_whammy_end >= act_start->position.beat) {
+        sp_bar.min()
+            += m_sp_data.available_whammy(start, act_start->position.beat);
+        sp_bar.min() = std::min(sp_bar.min(), 1.0);
+        sp_bar.max() = sp_bar.min();
+    } else {
+        sp_bar.min() += m_sp_data.available_whammy(start, required_whammy_end);
+        sp_bar.min() = std::min(sp_bar.min(), 1.0);
+        sp_bar.max() = sp_bar.min();
+        sp_bar.max() += m_sp_data.available_whammy(required_whammy_end,
+                                                   act_start->position.beat);
+        sp_bar.max() = std::min(sp_bar.max(), 1.0);
+    }
 
     return sp_bar;
 }
