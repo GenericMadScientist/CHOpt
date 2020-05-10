@@ -75,6 +75,8 @@ private:
                                   bool has_full_sp) const;
     int get_partial_path(CacheKey key, Cache& cache) const;
     int get_partial_full_sp_path(PointPtr point, Cache& cache) const;
+    [[nodiscard]] double act_squeeze_level(ProtoActivation act,
+                                           CacheKey key) const;
 
 public:
     explicit Optimiser(const ProcessedSong* song);
