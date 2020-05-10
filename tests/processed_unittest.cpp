@@ -410,3 +410,29 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
         REQUIRE(result.ending_position.beat.value() < 40.0);
     }
 }
+
+TEST_CASE("adjusted_hit_window_* functions return correct values")
+{
+    std::vector<Note> notes {{0}};
+    NoteTrack note_track {notes, {}, {}};
+    ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+    const auto& points = track.points();
+
+    SECTION("adjusted_hit_window_start returns correct values")
+    {
+        REQUIRE(
+            track.adjusted_hit_window_start(points.cbegin(), 0.5).beat.value()
+            == Approx(-0.07));
+        REQUIRE(
+            track.adjusted_hit_window_start(points.cbegin(), 1.0).beat.value()
+            == Approx(-0.14));
+    }
+
+    SECTION("adjusted_hit_window_end returns correct values")
+    {
+        REQUIRE(track.adjusted_hit_window_end(points.cbegin(), 0.5).beat.value()
+                == Approx(0.07));
+        REQUIRE(track.adjusted_hit_window_end(points.cbegin(), 1.0).beat.value()
+                == Approx(0.14));
+    }
+}

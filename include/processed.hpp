@@ -98,6 +98,15 @@ public:
     // Return the summary of a path.
     [[nodiscard]] std::string path_summary(const Path& path) const;
 
+    // Return the position that is (100 - squeeze)% along the start of point's
+    // timing window.
+    [[nodiscard]] Position adjusted_hit_window_start(PointPtr point,
+                                                     double squeeze) const;
+    // Return the position that is squeeze% along the end of point's timing
+    // window.
+    [[nodiscard]] Position adjusted_hit_window_end(PointPtr point,
+                                                   double squeeze) const;
+
     [[nodiscard]] const PointSet& points() const { return m_points; }
     [[nodiscard]] const SpData& sp_data() const { return m_sp_data; }
     [[nodiscard]] const TimeConverter& converter() const { return m_converter; }

@@ -126,32 +126,30 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation) const
     return {{end_beat, end_meas}, ActValidity::success};
 }
 
-static Position adjusted_hit_window_start(PointPtr point,
-                                          const TimeConverter& converter,
-                                          double squeeze)
+Position ProcessedSong::adjusted_hit_window_start(PointPtr point,
+                                                  double squeeze) const
 {
     assert((0.0 <= squeeze) && (squeeze <= 1.0)); // NOLINT
 
-    auto start = converter.beats_to_seconds(point->hit_window_start.beat);
-    auto mid = converter.beats_to_seconds(point->position.beat);
+    auto start = m_converter.beats_to_seconds(point->hit_window_start.beat);
+    auto mid = m_converter.beats_to_seconds(point->position.beat);
     auto adj_start_s = start + (mid - start) * (1.0 - squeeze);
-    auto adj_start_b = converter.seconds_to_beats(adj_start_s);
-    auto adj_start_m = converter.beats_to_measures(adj_start_b);
+    auto adj_start_b = m_converter.seconds_to_beats(adj_start_s);
+    auto adj_start_m = m_converter.beats_to_measures(adj_start_b);
 
     return {adj_start_b, adj_start_m};
 }
 
-static Position adjusted_hit_window_end(PointPtr point,
-                                        const TimeConverter& converter,
-                                        double squeeze)
+Position ProcessedSong::adjusted_hit_window_end(PointPtr point,
+                                                double squeeze) const
 {
     assert((0.0 <= squeeze) && (squeeze <= 1.0)); // NOLINT
 
-    auto mid = converter.beats_to_seconds(point->position.beat);
-    auto end = converter.beats_to_seconds(point->hit_window_end.beat);
+    auto mid = m_converter.beats_to_seconds(point->position.beat);
+    auto end = m_converter.beats_to_seconds(point->hit_window_end.beat);
     auto adj_end_s = mid + (end - mid) * squeeze;
-    auto adj_end_b = converter.seconds_to_beats(adj_end_s);
-    auto adj_end_m = converter.beats_to_measures(adj_end_b);
+    auto adj_end_b = m_converter.seconds_to_beats(adj_end_s);
+    auto adj_end_m = m_converter.beats_to_measures(adj_end_b);
 
     return {adj_end_b, adj_end_m};
 }
@@ -169,7 +167,7 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
     }
 
     auto current_position
-        = adjusted_hit_window_end(activation.act_start, m_converter, squeeze);
+        = adjusted_hit_window_end(activation.act_start, squeeze);
 
     auto sp_bar = activation.sp_bar;
     sp_bar.min() = std::max(sp_bar.min(), MINIMUM_SP_AMOUNT);
@@ -181,16 +179,14 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
 
     for (auto p = activation.act_start; p < activation.act_end; ++p) {
         if (p->is_sp_granting_note) {
-            auto sp_note_pos
-                = adjusted_hit_window_start(p, m_converter, squeeze);
+            auto sp_note_pos = adjusted_hit_window_start(p, squeeze);
             sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
                                                         sp_note_pos, sp_bar);
             if (sp_bar.max() < 0.0) {
                 return {null_position, ActValidity::insufficient_sp};
             }
 
-            auto sp_note_end_pos
-                = adjusted_hit_window_end(p, m_converter, squeeze);
+            auto sp_note_end_pos = adjusted_hit_window_end(p, squeeze);
 
             auto latest_point_to_hit_sp = m_sp_data.activation_end_point(
                 sp_note_pos, sp_note_end_pos, sp_bar.max());
@@ -205,8 +201,7 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
         }
     }
 
-    auto ending_pos
-        = adjusted_hit_window_start(activation.act_end, m_converter, squeeze);
+    auto ending_pos = adjusted_hit_window_start(activation.act_end, squeeze);
     sp_bar = m_sp_data.propagate_sp_over_whammy(current_position, ending_pos,
                                                 sp_bar);
     if (sp_bar.max() < 0.0) {
@@ -224,8 +219,7 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
         return {{end_beat, end_meas}, ActValidity::success};
     }
 
-    if (end_meas
-        >= adjusted_hit_window_end(next_point, m_converter, squeeze).measure) {
+    if (end_meas >= adjusted_hit_window_end(next_point, squeeze).measure) {
         return {null_position, ActValidity::surplus_sp};
     }
 
