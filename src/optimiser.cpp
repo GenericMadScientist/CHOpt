@@ -297,7 +297,8 @@ Path Optimiser::optimal_path() const
         }
 
         auto sp_bar = m_song->total_available_sp(
-            start_key.position.beat, start_key.point, proto_act.act_start);
+            start_key.position.beat, start_key.point, proto_act.act_start,
+            min_whammy_force.beat);
         auto min_pos = m_song->adjusted_hit_window_start(prev_point, sqz_level);
         auto max_pos
             = m_song->adjusted_hit_window_end(proto_act.act_start, sqz_level);
@@ -307,7 +308,9 @@ Path Optimiser::optimal_path() const
             Position trial_pos {trial_beat, trial_meas};
             ActivationCandidate candidate {
                 proto_act.act_start, proto_act.act_end, trial_pos, sp_bar};
-            if (m_song->is_restricted_candidate_valid(candidate, sqz_level)
+            if (m_song
+                    ->is_restricted_candidate_valid(candidate, sqz_level,
+                                                    min_whammy_force)
                     .validity
                 == ActValidity::success) {
                 min_pos = trial_pos;

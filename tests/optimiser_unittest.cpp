@@ -297,5 +297,6 @@ TEST_CASE("optimal_path produces the correct path")
         REQUIRE(opt_path.activations.size() == 2);
         REQUIRE(act.whammy_end > Beat {1.06});
         REQUIRE(act.whammy_end < Beat {1.74});
+        REQUIRE(act.sp_start < Beat {3.6});
     }
 }
