@@ -288,7 +288,10 @@ Path Optimiser::optimal_path() const
 
     while (start_key.point != m_song->points().cend()) {
         const auto& acts = cache.paths.at(start_key).possible_next_acts;
-        assert(!acts.empty()); // NOLINT
+        // We can get here if the song ends in say ES1.
+        if (acts.empty()) {
+            break;
+        }
         auto [proto_act, next_key] = acts[0];
         auto prev_point = std::prev(proto_act.act_start);
         auto sqz_level = act_squeeze_level(proto_act, start_key);

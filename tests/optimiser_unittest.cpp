@@ -259,4 +259,18 @@ TEST_CASE("optimal_path produces the correct path")
         REQUIRE(opt_path.score_boost == 50);
         REQUIRE(opt_path.activations.size() == 1);
     }
+
+    SECTION("Songs ending in ES1 are pathed correctly")
+    {
+        std::vector<Note> notes {{0},   {192},  {384}, {576},
+                                 {768}, {4032}, {4224}};
+        std::vector<StarPower> phrases {{0, 50}, {192, 50}, {4032, 50}};
+        NoteTrack note_track {notes, phrases, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+        Optimiser optimiser {&track};
+        auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.score_boost == 150);
+        REQUIRE(opt_path.activations.size() == 1);
+    }
 }
