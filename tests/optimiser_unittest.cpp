@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-
 #include <algorithm>
 #include <iterator>
 
@@ -272,5 +270,32 @@ TEST_CASE("optimal_path produces the correct path")
 
         REQUIRE(opt_path.score_boost == 150);
         REQUIRE(opt_path.activations.size() == 1);
+    }
+
+    SECTION("Compressed whammy is specified correctly")
+    {
+        std::vector<Note> notes {{192, 192},
+                                 {672},
+                                 {1000},
+                                 {1000, 0, NoteColour::Red},
+                                 {1000, 0, NoteColour::Yellow},
+                                 {3840},
+                                 {9984},
+                                 {10176},
+                                 {10176, 0, NoteColour::Red},
+                                 {10176, 0, NoteColour::Yellow}};
+        std::vector<StarPower> phrases {
+            {192, 50}, {672, 50}, {3840, 50}, {9984, 50}};
+        NoteTrack note_track {notes, phrases, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+        Optimiser optimiser {&track};
+
+        auto opt_path = optimiser.optimal_path();
+        auto act = opt_path.activations[0];
+
+        REQUIRE(opt_path.score_boost == 300);
+        REQUIRE(opt_path.activations.size() == 2);
+        REQUIRE(act.whammy_end > Beat {1.06});
+        REQUIRE(act.whammy_end < Beat {1.74});
     }
 }

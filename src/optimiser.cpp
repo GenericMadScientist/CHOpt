@@ -244,6 +244,92 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
     return {acts, best_score_boost};
 }
 
+Path Optimiser::optimal_path() const
+{
+    constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
+    constexpr double POS_INF = std::numeric_limits<double>::infinity();
+    constexpr double THRESHOLD = 0.01;
+
+    Cache cache;
+    CacheKey start_key {m_song->points().cbegin(),
+                        {Beat(NEG_INF), Measure(NEG_INF)}};
+    start_key = advance_cache_key(start_key);
+
+    auto best_score_boost = get_partial_path(start_key, cache);
+    Path path {{}, best_score_boost};
+
+    while (start_key.point != m_song->points().cend()) {
+        const auto& acts = cache.paths.at(start_key).possible_next_acts;
+        // We can get here if the song ends in say ES1.
+        if (acts.empty()) {
+            break;
+        }
+        auto [proto_act, next_key] = acts[0];
+        auto prev_point = std::prev(proto_act.act_start);
+        auto sqz_level = act_squeeze_level(proto_act, start_key);
+
+        auto min_whammy_force = start_key.position;
+        Position max_whammy_force {Beat {POS_INF}, Measure {POS_INF}};
+        auto next_point = std::next(proto_act.act_end);
+        if (next_point != m_song->points().cend()) {
+            max_whammy_force = next_key.position;
+            auto start_pos
+                = m_song->adjusted_hit_window_start(prev_point, sqz_level);
+            while ((max_whammy_force.beat - min_whammy_force.beat).value()
+                   > THRESHOLD) {
+                auto mid_beat = (min_whammy_force.beat + max_whammy_force.beat)
+                    * (1.0 / 2);
+                auto mid_meas = m_song->converter().beats_to_measures(mid_beat);
+                Position mid_pos {mid_beat, mid_meas};
+                auto sp_bar = m_song->total_available_sp(
+                    start_key.position.beat, start_key.point,
+                    proto_act.act_start, mid_beat);
+                ActivationCandidate candidate {
+                    proto_act.act_start, proto_act.act_end, start_pos, sp_bar};
+                auto result = m_song->is_restricted_candidate_valid(
+                    candidate, sqz_level, mid_pos);
+                if (result.validity == ActValidity::success) {
+                    min_whammy_force = mid_pos;
+                } else {
+                    max_whammy_force = mid_pos;
+                }
+            }
+        }
+
+        auto sp_bar = m_song->total_available_sp(
+            start_key.position.beat, start_key.point, proto_act.act_start);
+        auto min_pos = m_song->adjusted_hit_window_start(prev_point, sqz_level);
+        auto max_pos
+            = m_song->adjusted_hit_window_end(proto_act.act_start, sqz_level);
+        while ((max_pos.beat - min_pos.beat).value() > THRESHOLD) {
+            auto trial_beat = (min_pos.beat + max_pos.beat) * (1.0 / 2);
+            auto trial_meas = m_song->converter().beats_to_measures(trial_beat);
+            Position trial_pos {trial_beat, trial_meas};
+            ActivationCandidate candidate {
+                proto_act.act_start, proto_act.act_end, trial_pos, sp_bar};
+            if (m_song->is_restricted_candidate_valid(candidate, sqz_level)
+                    .validity
+                == ActValidity::success) {
+                min_pos = trial_pos;
+            } else {
+                max_pos = trial_pos;
+            }
+        }
+        ActivationCandidate candidate {proto_act.act_start, proto_act.act_end,
+                                       min_pos, sp_bar};
+        auto result
+            = m_song->is_restricted_candidate_valid(candidate, sqz_level);
+        assert(result.validity == ActValidity::success); // NOLINT
+        Activation act {proto_act.act_start, proto_act.act_end,
+                        min_whammy_force.beat, min_pos.beat,
+                        result.ending_position.beat};
+        path.activations.push_back(act);
+        start_key = advance_cache_key(next_key);
+    }
+
+    return path;
+}
+
 double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
 {
     constexpr double THRESHOLD = 0.01;
@@ -271,59 +357,4 @@ double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
         }
     }
     return max_sqz;
-}
-
-Path Optimiser::optimal_path() const
-{
-    constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
-    constexpr double THRESHOLD = 0.01;
-
-    Cache cache;
-    CacheKey start_key {m_song->points().cbegin(),
-                        {Beat(NEG_INF), Measure(NEG_INF)}};
-    start_key = advance_cache_key(start_key);
-
-    auto best_score_boost = get_partial_path(start_key, cache);
-    Path path {{}, best_score_boost};
-
-    while (start_key.point != m_song->points().cend()) {
-        const auto& acts = cache.paths.at(start_key).possible_next_acts;
-        // We can get here if the song ends in say ES1.
-        if (acts.empty()) {
-            break;
-        }
-        auto [proto_act, next_key] = acts[0];
-        auto prev_point = std::prev(proto_act.act_start);
-        auto sqz_level = act_squeeze_level(proto_act, start_key);
-        auto sp_bar = m_song->total_available_sp(
-            start_key.position.beat, start_key.point, proto_act.act_start);
-        auto min_pos = m_song->adjusted_hit_window_start(prev_point, sqz_level);
-        auto max_pos
-            = m_song->adjusted_hit_window_end(proto_act.act_start, sqz_level);
-        while ((max_pos.beat - min_pos.beat).value() > THRESHOLD) {
-            auto trial_beat = (min_pos.beat + max_pos.beat) * (1.0 / 2);
-            auto trial_meas = m_song->converter().beats_to_measures(trial_beat);
-            Position trial_pos {trial_beat, trial_meas};
-            ActivationCandidate candidate {
-                proto_act.act_start, proto_act.act_end, trial_pos, sp_bar};
-            if (m_song->is_restricted_candidate_valid(candidate, sqz_level)
-                    .validity
-                == ActValidity::success) {
-                min_pos = trial_pos;
-            } else {
-                max_pos = trial_pos;
-            }
-        }
-        ActivationCandidate candidate {proto_act.act_start, proto_act.act_end,
-                                       min_pos, sp_bar};
-        auto result
-            = m_song->is_restricted_candidate_valid(candidate, sqz_level);
-        assert(result.validity == ActValidity::success); // NOLINT
-        Activation act {proto_act.act_start, proto_act.act_end, Beat {0.0},
-                        min_pos.beat, result.ending_position.beat};
-        path.activations.push_back(act);
-        start_key = advance_cache_key(next_key);
-    }
-
-    return path;
 }
