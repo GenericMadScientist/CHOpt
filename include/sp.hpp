@@ -20,6 +20,7 @@
 #define CHOPT_SP_HPP
 
 #include <algorithm>
+#include <limits>
 #include <tuple>
 #include <vector>
 
@@ -79,6 +80,7 @@ private:
     };
 
     static constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
+    static constexpr double NEG_INF = std::numeric_limits<double>::infinity();
     static constexpr double SP_GAIN_RATE = 1 / 30.0;
 
     TimeConverter m_converter;
@@ -101,8 +103,10 @@ public:
     // Return how much SP is available at the end after propagating over a
     // range, or -1 if SP runs out at any point. Only includes SP gain from
     // whammy.
-    [[nodiscard]] SpBar propagate_sp_over_whammy(Position start, Position end,
-                                                 SpBar sp_bar) const;
+    [[nodiscard]] SpBar
+    propagate_sp_over_whammy(Position start, Position end, SpBar sp_bar,
+                             Position required_whammy_end = Position {
+                                 Beat {NEG_INF}, Measure {NEG_INF}}) const;
     // Return if a beat is at a place that can be whammied.
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
     // Return the amount of whammy obtainable across a range.

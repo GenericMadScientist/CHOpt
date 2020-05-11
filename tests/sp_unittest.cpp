@@ -172,6 +172,18 @@ TEST_CASE("propagate_sp_over_whammy works correctly")
                     .max()
                 == Approx(0.875));
     }
+
+    SECTION("required_whammy_end is accounted for")
+    {
+        SpData sp_data {track, 192, {}, 1.0};
+
+        REQUIRE(sp_data
+                    .propagate_sp_over_whammy(
+                        {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)},
+                        {0.5, 0.5}, {Beat(2.0), Measure(0.5)})
+                    .min()
+                == Approx(0.441667));
+    }
 }
 
 TEST_CASE("is_in_whammy_ranges works correctly", "Whammy ranges")
