@@ -426,6 +426,30 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
     }
 }
 
+TEST_CASE("is_restricted_candidate_valid takes into account forced whammy")
+{
+    std::vector<Note> notes {{0, 768}, {3072}, {3264}};
+    std::vector<StarPower> phrases {{0, 3300}};
+    NoteTrack note_track {notes, phrases, {}};
+    ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+    const auto& points = track.points();
+    ActivationCandidate candidate {points.cbegin(),
+                                   points.cend() - 2,
+                                   {Beat(0.0), Measure(0.0)},
+                                   {0.5, 0.5}};
+
+    REQUIRE(track
+                .is_restricted_candidate_valid(candidate, 1.0,
+                                               {Beat(0.0), Measure(0.0)})
+                .validity
+            == ActValidity::success);
+    REQUIRE(track
+                .is_restricted_candidate_valid(candidate, 1.0,
+                                               {Beat(4.0), Measure(1.0)})
+                .validity
+            == ActValidity::surplus_sp);
+}
+
 TEST_CASE("adjusted_hit_window_* functions return correct values")
 {
     std::vector<Note> notes {{0}};

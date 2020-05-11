@@ -80,7 +80,7 @@ private:
     };
 
     static constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
-    static constexpr double NEG_INF = std::numeric_limits<double>::infinity();
+    static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
     static constexpr double SP_GAIN_RATE = 1 / 30.0;
 
     TimeConverter m_converter;
@@ -105,8 +105,8 @@ public:
     // whammy.
     [[nodiscard]] SpBar
     propagate_sp_over_whammy(Position start, Position end, SpBar sp_bar,
-                             Position required_whammy_end = Position {
-                                 Beat {NEG_INF}, Measure {NEG_INF}}) const;
+                             Position required_whammy_end
+                             = {Beat {NEG_INF}, Measure {NEG_INF}}) const;
     // Return if a beat is at a place that can be whammied.
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
     // Return the amount of whammy obtainable across a range.

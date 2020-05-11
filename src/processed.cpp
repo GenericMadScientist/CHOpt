@@ -171,7 +171,8 @@ Position ProcessedSong::adjusted_hit_window_end(PointPtr point,
 }
 
 ActResult ProcessedSong::is_restricted_candidate_valid(
-    const ActivationCandidate& activation, double squeeze) const
+    const ActivationCandidate& activation, double squeeze,
+    Position required_whammy_end) const
 {
     constexpr double MEASURES_PER_BAR = 8.0;
     constexpr double MINIMUM_SP_AMOUNT = 0.5;
@@ -196,8 +197,8 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
     for (auto p = activation.act_start; p < activation.act_end; ++p) {
         if (p->is_sp_granting_note) {
             auto sp_note_pos = adjusted_hit_window_start(p, squeeze);
-            sp_bar = m_sp_data.propagate_sp_over_whammy(current_position,
-                                                        sp_note_pos, sp_bar);
+            sp_bar = m_sp_data.propagate_sp_over_whammy(
+                current_position, sp_note_pos, sp_bar, required_whammy_end);
             if (sp_bar.max() < 0.0) {
                 return {null_position, ActValidity::insufficient_sp};
             }
@@ -209,7 +210,8 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
             sp_bar.min() += SP_PHRASE_AMOUNT;
             sp_bar.min() = std::min(sp_bar.min(), 1.0);
             sp_bar = m_sp_data.propagate_sp_over_whammy(
-                sp_note_pos, latest_point_to_hit_sp, sp_bar);
+                sp_note_pos, latest_point_to_hit_sp, sp_bar,
+                required_whammy_end);
             sp_bar.max() += SP_PHRASE_AMOUNT;
             sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
@@ -219,7 +221,7 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
 
     auto ending_pos = adjusted_hit_window_start(activation.act_end, squeeze);
     sp_bar = m_sp_data.propagate_sp_over_whammy(current_position, ending_pos,
-                                                sp_bar);
+                                                sp_bar, required_whammy_end);
     if (sp_bar.max() < 0.0) {
         return {null_position, ActValidity::insufficient_sp};
     }

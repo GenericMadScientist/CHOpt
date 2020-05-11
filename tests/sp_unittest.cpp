@@ -184,6 +184,21 @@ TEST_CASE("propagate_sp_over_whammy works correctly")
                     .min()
                 == Approx(0.441667));
     }
+
+    SECTION("Check optional whammy is not used when not asked for in minimum")
+    {
+        std::vector<Note> second_notes {{0, 768}, {3072}};
+        std::vector<StarPower> second_phrases {{0, 3100}};
+        NoteTrack second_track {second_notes, second_phrases, {}};
+        SpData sp_data {second_track, 192, {}, 1.0};
+
+        REQUIRE(sp_data
+                    .propagate_sp_over_whammy({Beat(0.0), Measure(0.0)},
+                                              {Beat(4.0), Measure(1.0)},
+                                              {0.5, 0.5})
+                    .min()
+                == Approx(0.375));
+    }
 }
 
 TEST_CASE("is_in_whammy_ranges works correctly", "Whammy ranges")
