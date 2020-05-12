@@ -284,6 +284,22 @@ TEST_CASE("add_sp_acts adds correct ranges")
 
         REQUIRE(builder.blue_ranges() == expected_blue_ranges);
     }
+
+    SECTION("Blue ranges are cropped by the end of the song")
+    {
+        NoteTrack track {{{192}}, {}, {}};
+        TimeConverter converter {{}, 192};
+        PointSet points {track, 192, converter, 1.0};
+        ImageBuilder builder {track, 192, {}};
+        Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
+                     Beat {16.0}}},
+                   0};
+        builder.add_sp_acts(points, path);
+        std::vector<std::tuple<double, double>> expected_blue_ranges {
+            {0.0, 4.0}};
+
+        REQUIRE(builder.blue_ranges() == expected_blue_ranges);
+    }
 }
 
 TEST_CASE("add_solo_sections add correct ranges")

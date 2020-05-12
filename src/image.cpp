@@ -264,6 +264,7 @@ void ImageBuilder::add_sp_acts(const PointSet& points, const Path& path)
             blue_end
                 = std::min(blue_end, std::next(act.act_end)->position.beat);
         }
+        blue_end = std::min(blue_end, Beat {m_rows.back().end});
         m_blue_ranges.emplace_back(blue_start.value(), blue_end.value());
         if (act.sp_start > act.act_start->position.beat) {
             m_red_ranges.emplace_back(act.act_start->position.beat.value(),
