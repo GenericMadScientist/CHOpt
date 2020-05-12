@@ -63,11 +63,11 @@ Settings from_args(int argc, char** argv)
     program.add_argument("-o", "--output")
         .default_value(std::string {"path.bmp"})
         .help("location to save output image (must be a .bmp)");
-    program.add_argument("--squeeze")
+    program.add_argument("--sqz", "--squeeze")
         .default_value(MAX_PERCENT)
         .help("squeeze% (0 to 100)")
         .action([](const std::string& value) { return str_to_int(value); });
-    program.add_argument("--early-whammy")
+    program.add_argument("--ew", "--early-whammy")
         .default_value(MAX_PERCENT)
         .help("early whammy% (0 to 100), <= squeeze")
         .action([](const std::string& value) { return str_to_int(value); });
