@@ -313,4 +313,29 @@ TEST_CASE("optimal_path produces the correct path")
 
         REQUIRE(act.whammy_end > Beat {16.0});
     }
+
+    SECTION("Use next point to work out compressed whammy")
+    {
+        std::vector<Note> notes {{0},
+                                 {192},
+                                 {384},
+                                 {384, 0, NoteColour::Red},
+                                 {384, 0, NoteColour::Yellow},
+                                 {3350},
+                                 {3360},
+                                 {9504},
+                                 {9696},
+                                 {9696, 0, NoteColour::Red},
+                                 {9696, 0, NoteColour::Yellow}};
+        std::vector<StarPower> phrases {
+            {0, 50}, {192, 50}, {3350, 50}, {9504, 50}};
+        NoteTrack note_track {notes, phrases, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+        Optimiser optimiser {&track};
+
+        auto opt_path = optimiser.optimal_path();
+        auto act = opt_path.activations[0];
+
+        REQUIRE(act.whammy_end > Beat {17.45});
+    }
 }

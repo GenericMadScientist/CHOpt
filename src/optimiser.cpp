@@ -265,7 +265,7 @@ Path Optimiser::optimal_path() const
         auto [proto_act, next_key] = acts[0];
         auto sqz_level = act_squeeze_level(proto_act, start_key);
         auto min_whammy_force
-            = forced_whammy_end(proto_act, start_key, next_key, sqz_level);
+            = forced_whammy_end(proto_act, start_key, sqz_level);
         auto [start_pos, end_pos]
             = act_duration(proto_act, start_key, sqz_level, min_whammy_force);
         Activation act {proto_act.act_start, proto_act.act_end,
@@ -307,7 +307,7 @@ double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
 }
 
 Position Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
-                                      CacheKey next_key, double sqz_level) const
+                                      double sqz_level) const
 {
     constexpr double POS_INF = std::numeric_limits<double>::infinity();
     constexpr double THRESHOLD = 0.01;
@@ -320,7 +320,7 @@ Position Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
 
     auto prev_point = std::prev(act.act_start);
     auto min_whammy_force = key.position;
-    auto max_whammy_force = next_key.position;
+    auto max_whammy_force = next_point->hit_window_end;
     auto start_pos = m_song->adjusted_hit_window_start(prev_point, sqz_level);
     while ((max_whammy_force.beat - min_whammy_force.beat).value()
            > THRESHOLD) {

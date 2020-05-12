@@ -78,7 +78,6 @@ private:
     [[nodiscard]] double act_squeeze_level(ProtoActivation act,
                                            CacheKey key) const;
     [[nodiscard]] Position forced_whammy_end(ProtoActivation act, CacheKey key,
-                                             CacheKey next_key,
                                              double sqz_level) const;
     [[nodiscard]] std::tuple<Beat, Beat>
     act_duration(ProtoActivation act, CacheKey key, double sqz_level,
