@@ -249,16 +249,30 @@ void ImageBuilder::add_solo_sections(const NoteTrack& track, int resolution)
     }
 }
 
-void ImageBuilder::add_sp_acts(const Path& path)
+void ImageBuilder::add_sp_acts(const PointSet& points, const Path& path)
 {
     std::vector<std::tuple<double, double>> no_whammy_ranges;
 
     for (const auto& act : path.activations) {
-        m_blue_ranges.emplace_back(act.sp_start.value(), act.sp_end.value());
-        m_red_ranges.emplace_back(act.act_start->position.beat.value(),
-                                  act.sp_start.value());
-        m_red_ranges.emplace_back(act.sp_end.value(),
-                                  act.act_end->position.beat.value());
+        auto blue_start = act.sp_start;
+        auto blue_end = act.sp_end;
+        if (act.act_start != points.cbegin()) {
+            blue_start
+                = std::max(blue_start, std::prev(act.act_start)->position.beat);
+        }
+        if (std::next(act.act_end) != points.cend()) {
+            blue_end
+                = std::min(blue_end, std::next(act.act_end)->position.beat);
+        }
+        m_blue_ranges.emplace_back(blue_start.value(), blue_end.value());
+        if (act.sp_start > act.act_start->position.beat) {
+            m_red_ranges.emplace_back(act.act_start->position.beat.value(),
+                                      act.sp_start.value());
+        }
+        if (act.sp_end < act.act_end->position.beat) {
+            m_red_ranges.emplace_back(act.sp_end.value(),
+                                      act.act_end->position.beat.value());
+        }
         no_whammy_ranges.emplace_back(act.whammy_end.value(),
                                       act.sp_end.value());
     }

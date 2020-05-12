@@ -70,7 +70,7 @@ int main(int argc, char** argv)
         if (!settings.blank) {
             const Optimiser optimiser {&processed_track};
             path = optimiser.optimal_path();
-            builder.add_sp_acts(path);
+            builder.add_sp_acts(processed_track.points(), path);
             std::cout << processed_track.path_summary(path) << std::endl;
         }
 

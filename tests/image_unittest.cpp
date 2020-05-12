@@ -238,7 +238,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
                      Beat {0.1}, Beat {0.9}}},
                    0};
         builder.add_sp_phrases(track, 192);
-        builder.add_sp_acts(path);
+        builder.add_sp_acts(points, path);
         std::vector<std::tuple<double, double>> expected_blue_ranges {
             {0.1, 0.9}};
         std::vector<std::tuple<double, double>> expected_red_ranges {
@@ -249,6 +249,40 @@ TEST_CASE("add_sp_acts adds correct ranges")
         REQUIRE(builder.blue_ranges() == expected_blue_ranges);
         REQUIRE(builder.red_ranges() == expected_red_ranges);
         REQUIRE(builder.yellow_ranges() == expected_yellow_ranges);
+    }
+
+    SECTION("Squeezes are only drawn when required")
+    {
+        NoteTrack track {{{0}, {192}, {384}, {576}}, {}, {}};
+        TimeConverter converter {{}, 192};
+        PointSet points {track, 192, converter, 1.0};
+        ImageBuilder builder {track, 192, {}};
+        Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
+                     Beat {0.1}, Beat {1.1}},
+                    {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
+                     Beat {2.0}, Beat {2.9}}},
+                   0};
+        builder.add_sp_acts(points, path);
+        std::vector<std::tuple<double, double>> expected_red_ranges {
+            {0.0, 0.1}, {2.9, 3.0}};
+
+        REQUIRE(builder.red_ranges() == expected_red_ranges);
+    }
+
+    SECTION("Blue ranges are cropped for reverse squeezes")
+    {
+        NoteTrack track {{{192}, {384}, {576}, {768}}, {}, {}};
+        TimeConverter converter {{}, 192};
+        PointSet points {track, 192, converter, 1.0};
+        ImageBuilder builder {track, 192, {}};
+        Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
+                     Beat {0.0}, Beat {5.0}}},
+                   0};
+        builder.add_sp_acts(points, path);
+        std::vector<std::tuple<double, double>> expected_blue_ranges {
+            {1.0, 4.0}};
+
+        REQUIRE(builder.blue_ranges() == expected_blue_ranges);
     }
 }
 
