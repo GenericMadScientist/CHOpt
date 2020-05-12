@@ -228,16 +228,28 @@ TEST_CASE("Green ranges for SP phrases are added correctly")
 
 TEST_CASE("add_sp_acts adds correct ranges")
 {
-    NoteTrack track {{{0}, {192}}, {}, {}};
-    TimeConverter converter {{}, 192};
-    PointSet points {track, 192, converter, 1.0};
-    ImageBuilder builder {track, 192, {}};
-    Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.0}, Beat {0.0}}},
-               0};
-    builder.add_sp_acts(path);
-    std::vector<std::tuple<double, double>> expected_blue_ranges {{0.0, 1.0}};
+    SECTION("Normal path is drawn correctly")
+    {
+        NoteTrack track {{{0, 96}, {192}}, {{0, 50}}, {}};
+        TimeConverter converter {{}, 192};
+        PointSet points {track, 192, converter, 1.0};
+        ImageBuilder builder {track, 192, {}};
+        Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25},
+                     Beat {0.1}, Beat {0.9}}},
+                   0};
+        builder.add_sp_phrases(track, 192);
+        builder.add_sp_acts(path);
+        std::vector<std::tuple<double, double>> expected_blue_ranges {
+            {0.1, 0.9}};
+        std::vector<std::tuple<double, double>> expected_red_ranges {
+            {0.0, 0.1}, {0.9, 1.0}};
+        std::vector<std::tuple<double, double>> expected_yellow_ranges {
+            {0.25, 0.5}};
 
-    REQUIRE(builder.blue_ranges() == expected_blue_ranges);
+        REQUIRE(builder.blue_ranges() == expected_blue_ranges);
+        REQUIRE(builder.red_ranges() == expected_red_ranges);
+        REQUIRE(builder.yellow_ranges() == expected_yellow_ranges);
+    }
 }
 
 TEST_CASE("add_solo_sections add correct ranges")

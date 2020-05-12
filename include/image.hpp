@@ -54,6 +54,8 @@ private:
     std::vector<double> m_sp_values;
     std::vector<std::tuple<double, double>> m_green_ranges;
     std::vector<std::tuple<double, double>> m_blue_ranges;
+    std::vector<std::tuple<double, double>> m_red_ranges;
+    std::vector<std::tuple<double, double>> m_yellow_ranges;
     std::vector<std::tuple<double, double>> m_solo_ranges;
 
 public:
@@ -101,6 +103,11 @@ public:
     {
         return m_notes;
     }
+    [[nodiscard]] const std::vector<std::tuple<double, double>>&
+    red_ranges() const
+    {
+        return m_red_ranges;
+    }
     [[nodiscard]] const std::vector<DrawnRow>& rows() const { return m_rows; }
     [[nodiscard]] const std::vector<int>& score_values() const
     {
@@ -119,6 +126,11 @@ public:
     time_sigs() const
     {
         return m_time_sigs;
+    }
+    [[nodiscard]] const std::vector<std::tuple<double, double>>&
+    yellow_ranges() const
+    {
+        return m_yellow_ranges;
     }
 };
 

@@ -251,10 +251,31 @@ void ImageBuilder::add_solo_sections(const NoteTrack& track, int resolution)
 
 void ImageBuilder::add_sp_acts(const Path& path)
 {
+    std::vector<std::tuple<double, double>> no_whammy_ranges;
+
     for (const auto& act : path.activations) {
-        auto start = act.act_start->position.beat.value();
-        auto end = act.act_end->position.beat.value();
-        m_blue_ranges.emplace_back(start, end);
+        m_blue_ranges.emplace_back(act.sp_start.value(), act.sp_end.value());
+        m_red_ranges.emplace_back(act.act_start->position.beat.value(),
+                                  act.sp_start.value());
+        m_red_ranges.emplace_back(act.sp_end.value(),
+                                  act.act_end->position.beat.value());
+        no_whammy_ranges.emplace_back(act.whammy_end.value(),
+                                      act.sp_end.value());
+    }
+
+    auto p = no_whammy_ranges.cbegin();
+    auto q = m_green_ranges.cbegin();
+    while (p < no_whammy_ranges.cend() && q < m_green_ranges.cend()) {
+        auto start = std::max(std::get<0>(*p), std::get<0>(*q));
+        auto end = std::min(std::get<1>(*p), std::get<1>(*q));
+        if (start < end) {
+            m_yellow_ranges.emplace_back(start, end);
+        }
+        if (std::get<1>(*q) > std::get<1>(*p)) {
+            ++p;
+        } else {
+            ++q;
+        }
     }
 }
 
