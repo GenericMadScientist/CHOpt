@@ -712,6 +712,8 @@ Image::Image(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> green {0, 255, 0};
     constexpr std::array<unsigned char, 3> blue {0, 0, 255};
+    constexpr std::array<unsigned char, 3> yellow {255, 255, 0};
+    constexpr std::array<unsigned char, 3> red {255, 0, 0};
     constexpr std::array<unsigned char, 3> solo_blue {0, 51, 128};
 
     constexpr unsigned int IMAGE_WIDTH = 1024;
@@ -741,6 +743,14 @@ Image::Image(const ImageBuilder& builder)
 
     for (const auto& range : builder.green_ranges()) {
         m_impl->colour_beat_range(builder, green, range, {0, MEASURE_HEIGHT},
+                                  RANGE_OPACITY);
+    }
+    for (const auto& range : builder.yellow_ranges()) {
+        m_impl->colour_beat_range(builder, yellow, range, {0, MEASURE_HEIGHT},
+                                  RANGE_OPACITY);
+    }
+    for (const auto& range : builder.red_ranges()) {
+        m_impl->colour_beat_range(builder, red, range, {0, MEASURE_HEIGHT},
                                   RANGE_OPACITY);
     }
     for (const auto& range : builder.blue_ranges()) {
