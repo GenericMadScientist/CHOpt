@@ -26,8 +26,6 @@
 // This struct represents the options chosen on the command line by the user.
 struct Settings {
     bool blank;
-    bool help;
-    std::string help_message;
     std::string filename;
     std::string image_path;
     bool draw_bpms;

@@ -18,50 +18,71 @@
 
 #include <stdexcept>
 
-#include "cxxopts_wrapper.hpp"
+#include "argparse_wrapper.hpp"
 
 #include "settings.hpp"
+
+static int str_to_int(const std::string& value)
+{
+    std::size_t pos = 0;
+    auto converted_value = std::stoi(value, &pos);
+    if (pos != value.size()) {
+        throw std::invalid_argument("Could not convert string to int");
+    }
+    return converted_value;
+}
 
 Settings from_args(int argc, char** argv)
 {
     constexpr int MAX_PERCENT = 100;
 
-    cxxopts::Options options("chopt", "Star Power optimiser for Clone Hero");
+    argparse::ArgumentParser program {"chopt"};
 
-    auto adder = options.add_options();
-    adder("b,blank", "Give a blank chart image");
-    adder("d,diff", "Difficulty",
-          cxxopts::value<std::string>()->default_value("expert"));
-    adder("f,file", "Chart filename", cxxopts::value<std::string>());
-    adder("h,help", "Print usage");
-    adder("o,output", "Location to save output image (must be a .bmp)",
-          cxxopts::value<std::string>()->default_value("path.bmp"));
-    adder("no-bpms", "Do not draw BPMs");
-    adder("no-solos", "Do not draw solo sections");
-    adder("no-time-sigs", "Do not draw time signatures");
-    adder("squeeze", "Squeeze% (0 to 100)",
-          cxxopts::value<int>()->default_value("100"));
-    adder("early-whammy", "Early whammy% (0 to 100), <= squeeze",
-          cxxopts::value<int>()->default_value("100"));
+    program.add_argument("-b", "--blank")
+        .help("give a blank chart image")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("-d", "--diff")
+        .default_value(std::string {"expert"})
+        .help("difficulty");
+    program.add_argument("-f", "--file")
+        .default_value(std::string {"-"})
+        .help("chart filename");
+    program.add_argument("--no-bpms")
+        .help("do not draw BPMs")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("--no-solos")
+        .help("do not draw solo sections")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("--no-time-sigs")
+        .help("do not time signatures")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("-o", "--output")
+        .default_value(std::string {"path.bmp"})
+        .help("location to save output image (must be a .bmp)");
+    program.add_argument("--squeeze")
+        .default_value(MAX_PERCENT)
+        .help("squeeze% (0 to 100)")
+        .action([](const std::string& value) { return str_to_int(value); });
+    program.add_argument("--early-whammy")
+        .default_value(MAX_PERCENT)
+        .help("early whammy% (0 to 100), <= squeeze")
+        .action([](const std::string& value) { return str_to_int(value); });
 
-    auto result = options.parse(argc, argv);
+    program.parse_args(argc, argv);
 
     Settings settings;
-    settings.help = result["help"].as<bool>();
-    settings.help_message = options.help();
 
-    if (settings.help) {
-        return settings;
-    }
-
-    settings.blank = result["blank"].as<bool>();
-    if (result.count("file") != 0) {
-        settings.filename = result["file"].as<std::string>();
-    } else {
+    settings.blank = program.get<bool>("--blank");
+    settings.filename = program.get<std::string>("--file");
+    if (settings.filename == "-") {
         throw std::invalid_argument("No file was specified");
     }
 
-    auto diff_string = result["diff"].as<std::string>();
+    auto diff_string = program.get<std::string>("--diff");
     if (diff_string == "expert") {
         settings.difficulty = Difficulty::Expert;
     } else if (diff_string == "hard") {
@@ -74,19 +95,19 @@ Settings from_args(int argc, char** argv)
         throw std::invalid_argument("Unrecognised difficulty");
     }
 
-    auto image_path = result["output"].as<std::string>();
+    auto image_path = program.get<std::string>("--output");
     if (image_path.size() < 4
         || image_path.substr(image_path.size() - 4, 4) != ".bmp") {
         throw std::invalid_argument("Image output must be a bitmap (.bmp)");
     }
     settings.image_path = image_path;
 
-    settings.draw_bpms = !result["no-bpms"].as<bool>();
-    settings.draw_solos = !result["no-solos"].as<bool>();
-    settings.draw_time_sigs = !result["no-time-sigs"].as<bool>();
+    settings.draw_bpms = !program.get<bool>("--no-bpms");
+    settings.draw_solos = !program.get<bool>("--no-solos");
+    settings.draw_time_sigs = !program.get<bool>("--no-time-sigs");
 
-    auto squeeze = result["squeeze"].as<int>();
-    auto early_whammy = result["early-whammy"].as<int>();
+    auto squeeze = program.get<int>("--squeeze");
+    auto early_whammy = program.get<int>("--early-whammy");
 
     if (squeeze < 0 || squeeze > MAX_PERCENT) {
         throw std::invalid_argument("Squeeze must lie between 0 and 100");

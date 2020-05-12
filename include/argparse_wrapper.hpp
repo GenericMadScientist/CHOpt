@@ -16,14 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// The entire purpose of this header is to include cxxopts with warnings
+// The entire purpose of this header is to include argparse with warnings
 // disabled. On GCC and Clang this can be dealt with by using -Isystem, and the
 // MSVC equivalent seems to be to use /external:I (see
 // https://devblogs.microsoft.com/cppblog/broken-warnings-theory/). However,
 // clang-cl seems to not have this available yet so this hack will have to do.
 
-#ifndef CHOPT_CXXOPTS_WRAPPER_HPP
-#define CHOPT_CXXOPTS_WRAPPER_HPP
+#ifndef CHOPT_ARGPARSE_WRAPPER_HPP
+#define CHOPT_ARGPARSE_WRAPPER_HPP
 
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -34,7 +34,7 @@
 #pragma warning(push, 0)
 #endif
 
-#include "cxxopts.hpp"
+#include "argparse.hpp"
 
 #if defined(__clang__)
 #pragma clang diagnostic pop

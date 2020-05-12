@@ -32,11 +32,6 @@ int main(int argc, char** argv)
     try {
         const auto settings = from_args(argc, argv);
 
-        if (settings.help) {
-            std::cout << settings.help_message << std::endl;
-            return EXIT_SUCCESS;
-        }
-
         std::ifstream in {settings.filename};
         if (!in.is_open()) {
             std::cerr << "File did not open, please specify a valid file!"
