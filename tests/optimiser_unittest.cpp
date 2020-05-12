@@ -299,4 +299,18 @@ TEST_CASE("optimal_path produces the correct path")
         REQUIRE(act.whammy_end < Beat {1.74});
         REQUIRE(act.sp_start < Beat {3.6});
     }
+
+    SECTION("Acts covering the last note do not compress whammy")
+    {
+        std::vector<Note> notes {{0, 1536}, {1728}};
+        std::vector<StarPower> phrases {{0, 50}};
+        NoteTrack note_track {notes, phrases, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0};
+        Optimiser optimiser {&track};
+
+        auto opt_path = optimiser.optimal_path();
+        auto act = opt_path.activations[0];
+
+        REQUIRE(act.whammy_end > Beat {16.0});
+    }
 }
