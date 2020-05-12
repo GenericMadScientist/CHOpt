@@ -39,9 +39,9 @@ versions.
 
 ## Dependencies
 
+* [argparse](https://github.com/p-ranav/argparse) 2.1 for argument parsing
 * [Catch2](https://github.com/catchorg/Catch2) 2.11.1 for tests
 * [CImg](https://cimg.eu/) 2.9.0 to produce images
-* [cxxopts](https://github.com/jarro2783/cxxopts) 2.2.0 for argument parsing
 
 All of these are header-only libraries in the libs directory, so there should
 be no difficulty getting these set up if you want to build chopt.
