@@ -98,7 +98,7 @@ private:
 
 public:
     SpData(const NoteTrack& track, int resolution, const SyncTrack& sync_track,
-           double early_whammy);
+           double early_whammy, Second lazy_whammy = Second {0.0});
 
     // Return how much SP is available at the end after propagating over a
     // range, or -1 if SP runs out at any point. Only includes SP gain from

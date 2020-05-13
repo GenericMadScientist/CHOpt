@@ -50,11 +50,12 @@ SpData::form_beat_rates(int resolution, const SyncTrack& sync_track)
 }
 
 SpData::SpData(const NoteTrack& track, int resolution,
-               const SyncTrack& sync_track, double early_whammy)
-    : m_converter {TimeConverter(sync_track, resolution)}
+               const SyncTrack& sync_track, double early_whammy,
+               Second lazy_whammy)
+    : m_converter {sync_track, resolution}
     , m_beat_rates {form_beat_rates(resolution, sync_track)}
 {
-    const double EARLY_TIMING_WINDOW = 0.07 * early_whammy;
+    const Second early_timing_window {0.07 * early_whammy};
 
     std::vector<std::tuple<Beat, Beat>> ranges;
     for (const auto& note : track.notes()) {
@@ -70,13 +71,16 @@ SpData::SpData(const NoteTrack& track, int resolution,
             continue;
         }
 
-        auto beat_start = Beat(static_cast<double>(note.position) / resolution);
-        auto second_start = m_converter.beats_to_seconds(beat_start).value();
-        second_start -= EARLY_TIMING_WINDOW;
-        beat_start = m_converter.seconds_to_beats(Second(second_start));
-        auto beat_end = Beat(static_cast<double>(note.position + note.length)
-                             / resolution);
-        ranges.emplace_back(beat_start, beat_end);
+        Beat beat_start {static_cast<double>(note.position) / resolution};
+        auto second_start = m_converter.beats_to_seconds(beat_start);
+        second_start -= early_timing_window;
+        second_start += lazy_whammy;
+        beat_start = m_converter.seconds_to_beats(second_start);
+        Beat beat_end {static_cast<double>(note.position + note.length)
+                       / resolution};
+        if (beat_start < beat_end) {
+            ranges.emplace_back(beat_start, beat_end);
+        }
     }
     std::sort(ranges.begin(), ranges.end());
 

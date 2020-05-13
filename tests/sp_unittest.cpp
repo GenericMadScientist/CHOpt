@@ -241,6 +241,16 @@ TEST_CASE("available_whammy works correctly", "Available whammy")
         REQUIRE(sp_data.available_whammy(Beat(1.0), Beat(8.0))
                 == Approx(0.233333));
     }
+
+    SECTION("Negative early whammy")
+    {
+        SpData sp_data {track, 192, {}, 0.0, Second(2.5)};
+
+        REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(10.0))
+                == Approx(0.166667));
+        REQUIRE(sp_data.available_whammy(Beat(12.0), Beat(16.0))
+                == Approx(0.0));
+    }
 }
 
 TEST_CASE("activation_end_point works correctly")
