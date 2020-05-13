@@ -44,7 +44,7 @@ Settings from_args(int argc, char** argv)
         .implicit_value(true);
     program.add_argument("-d", "--diff")
         .default_value(std::string {"expert"})
-        .help("difficulty, default: expert");
+        .help("difficulty, defaults to expert");
     program.add_argument("-f", "--file")
         .default_value(std::string {"-"})
         .help("chart filename");
@@ -62,16 +62,15 @@ Settings from_args(int argc, char** argv)
         .implicit_value(true);
     program.add_argument("-o", "--output")
         .default_value(std::string {"path.bmp"})
-        .help("location to save output image (must be a .bmp), default: "
+        .help("location to save output image (must be a .bmp), defaults to "
               "path.bmp");
     program.add_argument("--sqz", "--squeeze")
         .default_value(MAX_PERCENT)
-        .help("squeeze% (0 to 100), default: 100")
+        .help("squeeze% (0 to 100), defaults to 100")
         .action([](const std::string& value) { return str_to_int(value); });
     program.add_argument("--ew", "--early-whammy")
-        .default_value(MAX_PERCENT)
-        .help("early whammy% (0 to 100), <= squeeze, default: 100")
-        .action([](const std::string& value) { return str_to_int(value); });
+        .default_value(std::string {"match"})
+        .help("early whammy% (0 to 100), <= squeeze, defaults to squeeze");
 
     program.parse_args(argc, argv);
 
@@ -108,7 +107,10 @@ Settings from_args(int argc, char** argv)
     settings.draw_time_sigs = !program.get<bool>("--no-time-sigs");
 
     auto squeeze = program.get<int>("--squeeze");
-    auto early_whammy = program.get<int>("--early-whammy");
+    auto early_whammy = squeeze;
+    if (program.get<std::string>("--early-whammy") != "match") {
+        early_whammy = str_to_int(program.get<std::string>("--early-whammy"));
+    }
 
     if (squeeze < 0 || squeeze > MAX_PERCENT) {
         throw std::invalid_argument("Squeeze must lie between 0 and 100");
