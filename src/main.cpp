@@ -26,6 +26,7 @@
 #include "image.hpp"
 #include "optimiser.hpp"
 #include "settings.hpp"
+#include "time.hpp"
 
 int main(int argc, char** argv)
 {
@@ -57,9 +58,12 @@ int main(int argc, char** argv)
             builder.add_time_sigs(chart.sync_track(), chart.resolution());
         }
 
-        const ProcessedSong processed_track {
-            track, chart.resolution(), chart.sync_track(),
-            settings.early_whammy, settings.squeeze};
+        const ProcessedSong processed_track {track,
+                                             chart.resolution(),
+                                             chart.sync_track(),
+                                             settings.early_whammy,
+                                             settings.squeeze,
+                                             Second {settings.lazy_whammy}};
         Path path;
 
         if (!settings.blank) {

@@ -82,7 +82,7 @@ private:
 public:
     ProcessedSong(const NoteTrack& track, int resolution,
                   const SyncTrack& sync_track, double early_whammy,
-                  double squeeze);
+                  double squeeze, Second lazy_whammy);
 
     // Return the minimum and maximum amount of SP can be acquired between two
     // points. Does not include SP from the point act_start. first_point is

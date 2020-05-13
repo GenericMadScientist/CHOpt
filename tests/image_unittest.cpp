@@ -358,7 +358,7 @@ TEST_CASE("add_measure_values gives correct values")
 TEST_CASE("add_sp_values gives correct values")
 {
     NoteTrack track {{{0}, {192, 768}}, {{192, 50}}, {}};
-    SpData sp_data {track, 192, {}, 1.0};
+    SpData sp_data {track, 192, {}, 1.0, Second(0.0)};
     ImageBuilder builder {track, 192, {}};
     builder.add_sp_values(sp_data);
     std::vector<double> expected_sp_values {3.14, 1.0};

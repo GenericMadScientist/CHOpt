@@ -53,7 +53,7 @@ initial idea of Clone Hero's parsing behaviour.
 * Dinoguy1000 and shadoweh helped me make sure chopt runs on other peoples'
 machines.
 * The CH Score Challenges server for feedback, especially CyclopsDragon,
-LightlessWalk, and Lucretio.
+LightlessWalk, Lucretio, and Taka.
 
 ## Contact
 

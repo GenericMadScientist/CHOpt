@@ -35,6 +35,7 @@ static int str_to_int(const std::string& value)
 Settings from_args(int argc, char** argv)
 {
     constexpr int MAX_PERCENT = 100;
+    constexpr double MS_PER_SECOND = 1000.0;
 
     argparse::ArgumentParser program {"chopt"};
 
@@ -55,6 +56,11 @@ Settings from_args(int argc, char** argv)
     program.add_argument("--ew", "--early-whammy")
         .default_value(std::string {"match"})
         .help("early whammy% (0 to 100), <= squeeze, defaults to squeeze");
+    program.add_argument("--lazy", "--lazy-whammy")
+        .default_value(0)
+        .help("time before whammying starts on sustains in milliseconds, "
+              "defaults to 0")
+        .action([](const std::string& value) { return str_to_int(value); });
     program.add_argument("-b", "--blank")
         .help("give a blank chart image")
         .default_value(false)
@@ -111,12 +117,17 @@ Settings from_args(int argc, char** argv)
     if (program.get<std::string>("--early-whammy") != "match") {
         early_whammy = str_to_int(program.get<std::string>("--early-whammy"));
     }
+    auto lazy_whammy = program.get<int>("--lazy-whammy");
 
     if (squeeze < 0 || squeeze > MAX_PERCENT) {
         throw std::invalid_argument("Squeeze must lie between 0 and 100");
     }
     if (early_whammy < 0 || early_whammy > MAX_PERCENT) {
         throw std::invalid_argument("Early whammy must lie between 0 and 100");
+    }
+    if (lazy_whammy < 0) {
+        throw std::invalid_argument(
+            "Lazy whammy must be greater than or equal to 0");
     }
     if (early_whammy > squeeze) {
         throw std::invalid_argument(
@@ -125,6 +136,7 @@ Settings from_args(int argc, char** argv)
 
     settings.squeeze = squeeze / 100.0;
     settings.early_whammy = early_whammy / 100.0;
+    settings.lazy_whammy = lazy_whammy / MS_PER_SECOND;
 
     return settings;
 }

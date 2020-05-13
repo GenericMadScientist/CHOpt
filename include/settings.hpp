@@ -34,6 +34,7 @@ struct Settings {
     Difficulty difficulty;
     double squeeze;
     double early_whammy;
+    double lazy_whammy;
 };
 
 // Parses the command line options. If something is wrong with the options
