@@ -38,16 +38,27 @@ Settings from_args(int argc, char** argv)
 
     argparse::ArgumentParser program {"chopt"};
 
+    program.add_argument("-f", "--file")
+        .default_value(std::string {"-"})
+        .help("chart filename");
+    program.add_argument("-o", "--output")
+        .default_value(std::string {"path.bmp"})
+        .help("location to save output image (must be a .bmp), defaults to "
+              "path.bmp");
+    program.add_argument("-d", "--diff")
+        .default_value(std::string {"expert"})
+        .help("difficulty, defaults to expert");
+    program.add_argument("--sqz", "--squeeze")
+        .default_value(MAX_PERCENT)
+        .help("squeeze% (0 to 100), defaults to 100")
+        .action([](const std::string& value) { return str_to_int(value); });
+    program.add_argument("--ew", "--early-whammy")
+        .default_value(std::string {"match"})
+        .help("early whammy% (0 to 100), <= squeeze, defaults to squeeze");
     program.add_argument("-b", "--blank")
         .help("give a blank chart image")
         .default_value(false)
         .implicit_value(true);
-    program.add_argument("-d", "--diff")
-        .default_value(std::string {"expert"})
-        .help("difficulty, defaults to expert");
-    program.add_argument("-f", "--file")
-        .default_value(std::string {"-"})
-        .help("chart filename");
     program.add_argument("--no-bpms")
         .help("do not draw BPMs")
         .default_value(false)
@@ -60,17 +71,6 @@ Settings from_args(int argc, char** argv)
         .help("do not time signatures")
         .default_value(false)
         .implicit_value(true);
-    program.add_argument("-o", "--output")
-        .default_value(std::string {"path.bmp"})
-        .help("location to save output image (must be a .bmp), defaults to "
-              "path.bmp");
-    program.add_argument("--sqz", "--squeeze")
-        .default_value(MAX_PERCENT)
-        .help("squeeze% (0 to 100), defaults to 100")
-        .action([](const std::string& value) { return str_to_int(value); });
-    program.add_argument("--ew", "--early-whammy")
-        .default_value(std::string {"match"})
-        .help("early whammy% (0 to 100), <= squeeze, defaults to squeeze");
 
     program.parse_args(argc, argv);
 
