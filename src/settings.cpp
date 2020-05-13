@@ -68,7 +68,7 @@ Settings from_args(int argc, char** argv)
         .default_value(false)
         .implicit_value(true);
     program.add_argument("--no-time-sigs")
-        .help("do not time signatures")
+        .help("do not draw time signatures")
         .default_value(false)
         .implicit_value(true);
 
