@@ -16,10 +16,10 @@ ON in your CMakeCache.
 ## Usage
 
 This is a command-line program. An example usage to path Trogdor on Hard and
-save the output to trogdor_path.bmp is
+save the output to trogdor_path.png is
 
 ```
-> chopt.exe -f trogdor.chart -d hard -o trogdor_path.bmp
+> chopt.exe -f trogdor.chart -d hard -o trogdor_path.png
 ```
 
 The difficulties are lower case (easy/medium/hard/expert) and defaults to
@@ -41,10 +41,15 @@ versions.
 
 * [argparse](https://github.com/p-ranav/argparse) 2.1 for argument parsing
 * [Catch2](https://github.com/catchorg/Catch2) 2.11.1 for tests
-* [CImg](https://cimg.eu/) 2.9.0 to produce images
+* [CImg](https://cimg.eu) 2.9.0 to produce images
+* [libpng](http://libpng.org/pub/png/libpng.html) 1.6.37 to save pngs
+* [zlib](https://zlib.net) 1.2.11 is a dependency of libpng
 
-All of these are header-only libraries in the libs directory, so there should
-be no difficulty getting these set up if you want to build chopt.
+The first three are header-only libraries that are vendored in the chopt repo.
+The latter two will need to be provided by anyone compiling chopt for
+themselves. They need to be provided to CMake so that
+[FindPNG](https://cmake.org/cmake/help/latest/module/FindPNG.html) can find
+them.
 
 ## Acknowledgements
 
