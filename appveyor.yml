@@ -19,7 +19,7 @@ matrix:
 cache: C:/Tools/vcpkg/installed/
 
 before_build:
-  - vcpkg install zlib:x64-windows
+  - vcpkg install libpng:x64-windows
   - mkdir build
   - cd build
 
