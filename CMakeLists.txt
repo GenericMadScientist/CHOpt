@@ -22,6 +22,8 @@ function(set_warnings TARGET)
     )
 endfunction()
 
+find_package(ZLIB REQUIRED)
+
 add_executable(chopt src/main.cpp src/chart.cpp src/image.cpp src/optimiser.cpp src/points.cpp src/processed.cpp src/settings.cpp src/sp.cpp src/time.cpp)
 target_include_directories(chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs")
 
