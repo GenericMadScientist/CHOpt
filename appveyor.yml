@@ -20,7 +20,13 @@ environment:
 matrix:
   fast_finish: true
 
+cache: c:\tools\vcpkg\installed\
+
 before_build:
+  - vcpkg install zlib:x64-windows
+  - cd c:\tools\vcpkg
+  - vcpkg integrate install
+  - cd C:\projects\chopt
   - mkdir build
   - cd build
 
