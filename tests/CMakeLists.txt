@@ -19,6 +19,8 @@ endfunction()
 package_add_test(chart_unittest chart_unittest.cpp "${SRC}/chart.cpp")
 
 package_add_test(image_unittest image_unittest.cpp "${SRC}/chart.cpp" "${SRC}/image.cpp" "${SRC}/points.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
+target_include_directories(image_unittest PRIVATE ${PNG_INCLUDE_DIRS})
+target_link_libraries(image_unittest PRIVATE ${PNG_LIBRARIES})
 
 package_add_test(optimiser_unittest optimiser_unittest.cpp "${SRC}/chart.cpp" "${SRC}/optimiser.cpp" "${SRC}/points.cpp" "${SRC}/processed.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
 

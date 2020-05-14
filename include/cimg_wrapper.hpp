@@ -35,6 +35,7 @@
 #endif
 
 #define cimg_display 0 // NOLINT
+#define cimg_use_png
 #include "CImg.h"
 
 #if defined(__clang__)

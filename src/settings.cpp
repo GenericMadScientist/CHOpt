@@ -32,6 +32,21 @@ static int str_to_int(const std::string& value)
     return converted_value;
 }
 
+static bool is_valid_image_path(const std::string& path)
+{
+    if (path.size() < 4) {
+        return false;
+    }
+    auto file_type = path.substr(path.size() - 4, 4);
+    if (file_type == ".bmp") {
+        return true;
+    }
+    if (file_type == ".png") {
+        return true;
+    }
+    return false;
+}
+
 Settings from_args(int argc, char** argv)
 {
     constexpr int MAX_PERCENT = 100;
@@ -43,9 +58,9 @@ Settings from_args(int argc, char** argv)
         .default_value(std::string {"-"})
         .help("chart filename");
     program.add_argument("-o", "--output")
-        .default_value(std::string {"path.bmp"})
-        .help("location to save output image (must be a .bmp), defaults to "
-              "path.bmp");
+        .default_value(std::string {"path.png"})
+        .help("location to save output image (must be a .bmp or .png), "
+              "defaults to path.png");
     program.add_argument("-d", "--diff")
         .default_value(std::string {"expert"})
         .help("difficulty, defaults to expert");
@@ -102,9 +117,9 @@ Settings from_args(int argc, char** argv)
     }
 
     auto image_path = program.get<std::string>("--output");
-    if (image_path.size() < 4
-        || image_path.substr(image_path.size() - 4, 4) != ".bmp") {
-        throw std::invalid_argument("Image output must be a bitmap (.bmp)");
+    if (!is_valid_image_path(image_path)) {
+        throw std::invalid_argument(
+            "Image output must be a bitmap or png (.bmp / .png)");
     }
     settings.image_path = image_path;
 
