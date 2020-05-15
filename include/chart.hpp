@@ -20,6 +20,7 @@
 #define CHOPT_CHART_HPP
 
 #include <map>
+#include <string>
 #include <string_view>
 #include <tuple>
 #include <vector>
