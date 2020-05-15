@@ -22,20 +22,22 @@ save the output to trogdor_path.png is
 > chopt.exe -f trogdor.chart -d hard -o trogdor_path.png
 ```
 
-The difficulties are lower case (easy/medium/hard/expert) and defaults to
-expert if none is provided. The full set of options can be listed by using -h or
---help.
+Only the -f parameter is required, the difficulty defaults to Expert and the
+path is by default saved to path.png. The full list of arguments can be found
+by passing -h or --help to chopt, or by consulting the table below.
 
-## Limitations
-
-This is version 0.3.2, so there are still some kinks and missing features. The
-only supported instrument is five fret guitar, only .chart files are accepted,
-and the drawn paths are sufficient to work out what the path is rather than
-providing all the details like how much to squeeze or not whammy. The
-performance is pretty good for most songs (chopt zips through The Ultimate
-Endurance Challenge in a minute on my machine) although some songs cause the
-runtime to go up horribly. I aim to address all of these issues in subsequent
-versions.
+| Arguments            | Action                                  |
+| -------------------- | --------------------------------------- |
+| -h, --help           | List optional arguments                 |
+| -f, --file           | Chart filename                          |
+| -o, --output         | Filename of output image (.bmp or .png) |
+| -d, --diff           | Difficulty (easy/medium/hard/expert)    |
+| --sqz, --squeeze     | Set squeeze %                           |
+| --ew, --early-whammy | Set early whammy %                      |
+| -b, --blank          | Output a blank image without pathing    |
+| --no-bpms            | Do not draw BPMs                        |
+| --no-solos           | Do not draw solo sections               |
+| --no-time-sigs       | Do not draw time signatures             |
 
 ## Dependencies
 
