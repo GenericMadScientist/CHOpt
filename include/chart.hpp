@@ -144,6 +144,13 @@ public:
     [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
 };
 
+struct SongHeader {
+    std::string name;
+    std::string artist;
+    std::string charter;
+    int resolution;
+};
+
 // Invariants:
 // resolution() > 0.
 class Chart {
@@ -151,6 +158,7 @@ private:
     static constexpr int DEFAULT_RESOLUTION = 192;
 
     int m_resolution = DEFAULT_RESOLUTION;
+    SongHeader m_song_header;
     SyncTrack m_sync_track;
     std::map<Difficulty, NoteTrack> m_note_tracks;
     Chart() = default;
@@ -158,6 +166,10 @@ private:
 public:
     static Chart parse_chart(std::string_view input);
     [[nodiscard]] int resolution() const { return m_resolution; }
+    [[nodiscard]] const SongHeader& song_header() const
+    {
+        return m_song_header;
+    }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
     [[nodiscard]] const NoteTrack& note_track(Difficulty diff) const
     {

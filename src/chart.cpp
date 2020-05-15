@@ -46,6 +46,17 @@ struct PreSyncTrack {
     std::vector<BPM> bpms;
 };
 
+// This represents a bundle of data akin to a SongHeader, except it also has the
+// resolution built in.
+struct PreSongHeader {
+    static constexpr int DEFAULT_RESOLUTION = 192;
+
+    std::string name {"Unknown Song"};
+    std::string artist {"Unknown Artist"};
+    std::string charter {"Unknown Charter"};
+    int resolution = DEFAULT_RESOLUTION;
+};
+
 NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
                      std::vector<Solo> solos)
 {
@@ -196,6 +207,17 @@ static std::optional<int> string_view_to_int(std::string_view input)
     return result;
 }
 
+// Return the substring with no leading or trailing quotation marks.
+static std::string_view trim_quotes(std::string_view input)
+{
+    const auto first_non_quote = input.find_first_not_of('"');
+    if (first_non_quote == std::string_view::npos) {
+        return input.substr(0, 0);
+    }
+    const auto last_non_quote = input.find_last_not_of('"');
+    return input.substr(first_non_quote, last_non_quote - first_non_quote + 1);
+}
+
 static std::string_view skip_section(std::string_view input)
 {
     auto next_line = break_off_newline(input);
@@ -211,7 +233,7 @@ static std::string_view skip_section(std::string_view input)
 }
 
 static std::string_view read_song_header(std::string_view input,
-                                         int& resolution)
+                                         PreSongHeader& header)
 {
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("[Song] does not open with {");
@@ -228,8 +250,23 @@ static std::string_view read_song_header(std::string_view input,
             line.remove_prefix(RESOLUTION_LEN);
             const auto result = string_view_to_int(line);
             if (result) {
-                resolution = *result;
+                header.resolution = *result;
             }
+        } else if (string_starts_with(line, "Name = ")) {
+            constexpr auto NAME_LEN = 7;
+            line.remove_prefix(NAME_LEN);
+            line = trim_quotes(line);
+            header.name = line;
+        } else if (string_starts_with(line, "Artist = ")) {
+            constexpr auto ARTIST_LEN = 9;
+            line.remove_prefix(ARTIST_LEN);
+            line = trim_quotes(line);
+            header.artist = line;
+        } else if (string_starts_with(line, "Charter = ")) {
+            constexpr auto CHARTER_LEN = 10;
+            line.remove_prefix(CHARTER_LEN);
+            line = trim_quotes(line);
+            header.charter = line;
         }
     }
 
@@ -429,7 +466,7 @@ Chart Chart::parse_chart(std::string_view input)
 {
     Chart chart;
 
-    int pre_resolution = DEFAULT_RESOLUTION;
+    PreSongHeader pre_song_header;
     PreSyncTrack pre_sync_track;
     std::map<Difficulty, PreNoteTrack> pre_tracks;
 
@@ -441,7 +478,7 @@ Chart Chart::parse_chart(std::string_view input)
     while (!input.empty()) {
         const auto header = break_off_newline(input);
         if (header == "[Song]") {
-            input = read_song_header(input, pre_resolution);
+            input = read_song_header(input, pre_song_header);
         } else if (header == "[SyncTrack]") {
             input = read_sync_track(input, pre_sync_track);
         } else if (header == "[EasySingle]") {
@@ -457,7 +494,11 @@ Chart Chart::parse_chart(std::string_view input)
         }
     }
 
-    chart.m_resolution = pre_resolution;
+    chart.m_resolution = pre_song_header.resolution;
+    chart.m_song_header.name = pre_song_header.name;
+    chart.m_song_header.artist = pre_song_header.artist;
+    chart.m_song_header.charter = pre_song_header.charter;
+
     chart.m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs),
                                    std::move(pre_sync_track.bpms));
 

@@ -21,7 +21,7 @@
 #include "chart.hpp"
 
 // Last checked: 23.2.2
-TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
+TEST_CASE("NoteTrack ctor maintains invariants")
 {
     SECTION("Notes are sorted")
     {
@@ -101,7 +101,7 @@ TEST_CASE("NoteTrack ctor maintains invariants", "NoteTrack")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("SyncTrack ctor maintains invariants", "SyncTrack")
+TEST_CASE("SyncTrack ctor maintains invariants")
 {
     SECTION("BPMs are sorted by position")
     {
@@ -155,7 +155,7 @@ TEST_CASE("SyncTrack ctor maintains invariants", "SyncTrack")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Chart reads resolution", "Song")
+TEST_CASE("Chart reads resolution")
 {
     SECTION("Default is 192 Res")
     {
@@ -178,8 +178,35 @@ TEST_CASE("Chart reads resolution", "Song")
     }
 }
 
+TEST_CASE("Chart reads song header correctly")
+{
+    SECTION("Default values are correct")
+    {
+        const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n}";
+        const auto chart = Chart::parse_chart(text);
+        const auto& header = chart.song_header();
+
+        REQUIRE(header.name == "Unknown Song");
+        REQUIRE(header.artist == "Unknown Artist");
+        REQUIRE(header.charter == "Unknown Charter");
+    }
+
+    SECTION("Read values are correct")
+    {
+        const char* text
+            = "[Song]\n{\nName = \"TestName\"\nArtist = \"GMS\"\nCharter = "
+              "\"NotGMS\"\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
+        const auto chart = Chart::parse_chart(text);
+        const auto& header = chart.song_header();
+
+        REQUIRE(header.name == "TestName");
+        REQUIRE(header.artist == "GMS");
+        REQUIRE(header.charter == "NotGMS");
+    }
+}
+
 // Last checked: 24.0.1555-master
-TEST_CASE("Chart reads sync track correctly", "SyncTrack")
+TEST_CASE("Chart reads sync track correctly")
 {
     const char* text
         = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
@@ -193,7 +220,7 @@ TEST_CASE("Chart reads sync track correctly", "SyncTrack")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Chart reads easy note track correctly", "Easy")
+TEST_CASE("Chart reads easy note track correctly")
 {
     const char* text
         = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[EasySingle]"
@@ -205,7 +232,7 @@ TEST_CASE("Chart reads easy note track correctly", "Easy")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Chart skips UTF-8 BOM", "BOM")
+TEST_CASE("Chart skips UTF-8 BOM")
 {
     const char* text
         = "\xEF\xBB\xBF[Song]\n{\nOffset = "
@@ -217,7 +244,7 @@ TEST_CASE("Chart skips UTF-8 BOM", "BOM")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Chart can end without a newline", "End-NL")
+TEST_CASE("Chart can end without a newline")
 {
     const char* text
         = "\xEF\xBB\xBF[Song]\n{\nOffset = "
@@ -229,7 +256,7 @@ TEST_CASE("Chart can end without a newline", "End-NL")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Chart does not need sections in usual order", "Section order")
+TEST_CASE("Chart does not need sections in usual order")
 {
     SECTION("Non note sections need not be present")
     {
@@ -263,7 +290,7 @@ TEST_CASE("Chart does not need sections in usual order", "Section order")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Only first non-empty part of note sections matter", "Note split")
+TEST_CASE("Only first non-empty part of note sections matter")
 {
     SECTION("Later non-empty sections are ignored")
     {
@@ -288,7 +315,7 @@ TEST_CASE("Only first non-empty part of note sections matter", "Note split")
 }
 
 // Last checked: 23.2.2
-TEST_CASE("Notes should be sorted", "NoteSort")
+TEST_CASE("Notes should be sorted")
 {
     const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n384 = N 0 0\n}";
     const auto chart = Chart::parse_chart(text);
@@ -299,7 +326,7 @@ TEST_CASE("Notes should be sorted", "NoteSort")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Notes with extra spaces", "NoteSpaceSkip")
+TEST_CASE("Notes with extra spaces")
 {
     SECTION("Leading non-empty sections with notes with spaces cause a throw")
     {
@@ -321,7 +348,7 @@ TEST_CASE("Notes with extra spaces", "NoteSpaceSkip")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Solos are read properly", "Solos")
+TEST_CASE("Solos are read properly")
 {
     SECTION("Expected solos are read properly")
     {
