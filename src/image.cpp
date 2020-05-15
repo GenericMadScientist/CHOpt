@@ -36,6 +36,7 @@ constexpr int MARGIN = 80;
 constexpr int MAX_BEATS_PER_LINE = 16;
 constexpr int MEASURE_HEIGHT = 61;
 constexpr float OPEN_NOTE_OPACITY = 0.5F;
+constexpr int TOP_MARGIN = 70;
 constexpr int DIST_BETWEEN_MEASURES = MEASURE_HEIGHT + MARGIN;
 
 static double get_beat_rate(const SyncTrack& sync_track, int resolution,
@@ -429,6 +430,7 @@ public:
                            std::array<unsigned char, 3> colour,
                            std::tuple<double, double> x_range,
                            std::tuple<int, int> y_range, float opacity);
+    void draw_header(const ImageBuilder& builder);
     void draw_measures(const ImageBuilder& builder);
     void draw_note(const ImageBuilder& builder, const DrawnNote& note);
     void draw_score_totals(const ImageBuilder& builder);
@@ -443,10 +445,22 @@ static std::tuple<int, int> get_xy(const ImageBuilder& builder, double pos)
     auto row = std::find_if(builder.rows().cbegin(), builder.rows().cend(),
                             [=](const auto x) { return x.end > pos; });
     auto x = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
-    auto y = MARGIN
+    auto y = TOP_MARGIN + MARGIN
         + DIST_BETWEEN_MEASURES
             * static_cast<int>(std::distance(builder.rows().cbegin(), row));
     return {x, y};
+}
+
+void ImageImpl::draw_header(const ImageBuilder& builder)
+{
+    constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
+    constexpr int HEADER_FONT_HEIGHT = 23;
+
+    auto x = LEFT_MARGIN;
+    auto y = LEFT_MARGIN;
+    m_image.draw_text(x, y, "%s\n%s\n%s", BLACK.data(), 0, 1.0,
+                      HEADER_FONT_HEIGHT, builder.song_name().c_str(),
+                      builder.artist().c_str(), builder.charter().c_str());
 }
 
 void ImageImpl::draw_measures(const ImageBuilder& builder)
@@ -463,7 +477,7 @@ void ImageImpl::draw_measures(const ImageBuilder& builder)
 
     auto current_row = 0;
     for (const auto& row : builder.rows()) {
-        auto y = DIST_BETWEEN_MEASURES * current_row + MARGIN;
+        auto y = TOP_MARGIN + DIST_BETWEEN_MEASURES * current_row + MARGIN;
         auto x_max = LEFT_MARGIN
             + static_cast<int>(BEAT_WIDTH * (row.end - row.start));
         for (int i = 1; i < 4; ++i) {
@@ -706,7 +720,7 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
         auto x_max = LEFT_MARGIN
             + static_cast<int>(BEAT_WIDTH * (block_end - row_iter->start)) - 1;
         if (x_min <= x_max) {
-            auto y = MARGIN + DIST_BETWEEN_MEASURES * row;
+            auto y = TOP_MARGIN + MARGIN + DIST_BETWEEN_MEASURES * row;
             m_image.draw_rectangle(x_min, y + y_min, x_max, y + y_max,
                                    colour.data(), opacity);
         }
@@ -730,9 +744,10 @@ Image::Image(const ImageBuilder& builder)
     constexpr unsigned char WHITE = 255;
 
     auto height = static_cast<unsigned int>(
-        MARGIN + DIST_BETWEEN_MEASURES * builder.rows().size());
+        TOP_MARGIN + MARGIN + DIST_BETWEEN_MEASURES * builder.rows().size());
 
     m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
+    m_impl->draw_header(builder);
     m_impl->draw_measures(builder);
     m_impl->draw_tempos(builder);
     m_impl->draw_time_sigs(builder);

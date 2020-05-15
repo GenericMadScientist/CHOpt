@@ -44,6 +44,7 @@ int main(int argc, char** argv)
         const auto chart = Chart::parse_chart(contents);
         const auto& track = chart.note_track(settings.difficulty);
         ImageBuilder builder {track, chart.resolution(), chart.sync_track()};
+        builder.add_song_header(chart.song_header());
         builder.add_sp_phrases(track, chart.resolution());
 
         if (settings.draw_bpms) {
