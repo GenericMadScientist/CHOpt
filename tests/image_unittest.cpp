@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-
 #include "catch.hpp"
 
 #include "image.hpp"
@@ -213,6 +211,18 @@ TEST_CASE("Tempos are handled correctly")
 
         REQUIRE(builder.bpms().size() == 1);
     }
+}
+
+TEST_CASE("SongHeader information is added")
+{
+    NoteTrack track {{{0}}, {}, {}};
+    ImageBuilder builder {track, 192, {}};
+    SongHeader header {"TestName", "GMS", "NotGMS"};
+    builder.add_song_header(header);
+
+    REQUIRE(builder.song_name() == "TestName");
+    REQUIRE(builder.artist() == "GMS");
+    REQUIRE(builder.charter() == "NotGMS");
 }
 
 TEST_CASE("Green ranges for SP phrases are added correctly")

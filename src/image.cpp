@@ -249,6 +249,13 @@ void ImageBuilder::add_solo_sections(const NoteTrack& track, int resolution)
     }
 }
 
+void ImageBuilder::add_song_header(const SongHeader& header)
+{
+    m_song_name = header.name;
+    m_artist = header.artist;
+    m_charter = header.charter;
+}
+
 void ImageBuilder::add_sp_acts(const PointSet& points, const Path& path)
 {
     std::vector<std::tuple<double, double>> no_whammy_ranges;

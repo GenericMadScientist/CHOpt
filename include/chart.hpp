@@ -149,7 +149,6 @@ struct SongHeader {
     std::string name;
     std::string artist;
     std::string charter;
-    int resolution;
 };
 
 // Invariants:

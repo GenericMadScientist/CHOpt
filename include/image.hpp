@@ -20,6 +20,7 @@
 #define CHOPT_IMAGE_HPP
 
 #include <memory>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -52,6 +53,9 @@ private:
     std::vector<int> m_base_values;
     std::vector<int> m_score_values;
     std::vector<double> m_sp_values;
+    std::string m_song_name;
+    std::string m_artist;
+    std::string m_charter;
     std::vector<std::tuple<double, double>> m_green_ranges;
     std::vector<std::tuple<double, double>> m_blue_ranges;
     std::vector<std::tuple<double, double>> m_red_ranges;
@@ -64,11 +68,13 @@ public:
     void add_bpms(const SyncTrack& sync_track, int resolution);
     void add_measure_values(const PointSet& points, const Path& path);
     void add_solo_sections(const NoteTrack& track, int resolution);
+    void add_song_header(const SongHeader& header);
     void add_sp_acts(const PointSet& points, const Path& path);
     void add_sp_phrases(const NoteTrack& track, int resolution);
     void add_sp_values(const SpData& sp_data);
     void add_time_sigs(const SyncTrack& sync_track, int resolution);
 
+    [[nodiscard]] const std::string& artist() const { return m_artist; }
     [[nodiscard]] const std::vector<int>& base_values() const
     {
         return m_base_values;
@@ -86,6 +92,7 @@ public:
     {
         return m_bpms;
     }
+    [[nodiscard]] const std::string& charter() const { return m_charter; }
     [[nodiscard]] const std::vector<std::tuple<double, double>>&
     green_ranges() const
     {
@@ -118,6 +125,7 @@ public:
     {
         return m_solo_ranges;
     }
+    [[nodiscard]] const std::string& song_name() const { return m_song_name; }
     [[nodiscard]] const std::vector<double>& sp_values() const
     {
         return m_sp_values;
