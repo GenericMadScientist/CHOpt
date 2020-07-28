@@ -45,17 +45,17 @@ static Chart from_filename(const std::string& filename)
         if (!in.is_open()) {
             throw std::invalid_argument("File did not open");
         }
-        std::vector<std::uint8_t> buffer {std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
+        std::vector<std::uint8_t> buffer {std::istreambuf_iterator<char>(in),
+                                          std::istreambuf_iterator<char>()};
         return Chart::from_midi(parse_midi(buffer));
-    } else {
-        std::ifstream in {filename};
-        if (!in.is_open()) {
-            throw std::invalid_argument("File did not open");
-        }
-        std::string contents {std::istreambuf_iterator<char>(in),
-                              std::istreambuf_iterator<char>()};
-        return Chart::parse_chart(contents);
     }
+    std::ifstream in {filename};
+    if (!in.is_open()) {
+        throw std::invalid_argument("File did not open");
+    }
+    std::string contents {std::istreambuf_iterator<char>(in),
+                          std::istreambuf_iterator<char>()};
+    return Chart::parse_chart(contents);
 }
 
 int main(int argc, char** argv)
