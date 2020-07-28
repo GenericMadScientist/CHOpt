@@ -520,3 +520,9 @@ Chart Chart::parse_chart(std::string_view input)
 
     return chart;
 }
+
+Chart Chart::from_midi(const Midi& midi)
+{
+    (void) midi;
+    throw std::invalid_argument("Midi files currently unsupported");
+}

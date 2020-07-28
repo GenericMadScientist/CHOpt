@@ -25,6 +25,8 @@
 #include <tuple>
 #include <vector>
 
+#include "midi.hpp"
+
 enum class Difficulty { Easy, Medium, Hard, Expert };
 
 enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
@@ -164,6 +166,7 @@ private:
     Chart() = default;
 
 public:
+    static Chart from_midi(const Midi& midi);
     static Chart parse_chart(std::string_view input);
     [[nodiscard]] int resolution() const { return m_resolution; }
     [[nodiscard]] const SongHeader& song_header() const
