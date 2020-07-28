@@ -22,6 +22,8 @@ package_add_test(image_unittest image_unittest.cpp "${SRC}/chart.cpp" "${SRC}/im
 target_include_directories(image_unittest PRIVATE ${PNG_INCLUDE_DIRS})
 target_link_libraries(image_unittest PRIVATE ${PNG_LIBRARIES})
 
+package_add_test(midi_unittest midi_unittest.cpp "${SRC}/midi.cpp")
+
 package_add_test(optimiser_unittest optimiser_unittest.cpp "${SRC}/chart.cpp" "${SRC}/optimiser.cpp" "${SRC}/points.cpp" "${SRC}/processed.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
 
 package_add_test(points_unittest points_unittest.cpp "${SRC}/chart.cpp" "${SRC}/points.cpp" "${SRC}/time.cpp")

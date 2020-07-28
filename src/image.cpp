@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <iterator>
 #include <limits>
+#include <stdexcept>
 
 #include "cimg_wrapper.hpp"
 
