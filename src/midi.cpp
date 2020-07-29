@@ -110,6 +110,7 @@ static ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
 {
     constexpr std::array<std::uint8_t, 10> MAGIC_NUMBER {
         0x4D, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1};
+    constexpr int DIVISION_NEGATIVE_SMPTE_MASK = 0x8000;
     constexpr int FIRST_TRACK_OFFSET = 14;
     constexpr int TICKS_OFFSET = 12;
     constexpr int TRACK_COUNT_OFFSET = 10;
@@ -120,7 +121,11 @@ static ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
         throw std::invalid_argument("Invalid MIDI file");
     }
     header.num_of_tracks = read_two_byte_be(span, TRACK_COUNT_OFFSET);
-    header.ticks_per_quarter_note = read_two_byte_be(span, TICKS_OFFSET);
+    auto division = read_two_byte_be(span, TICKS_OFFSET);
+    if ((division & DIVISION_NEGATIVE_SMPTE_MASK) != 0) {
+        throw std::invalid_argument("Only ticks per quarter-note is supported");
+    }
+    header.ticks_per_quarter_note = division;
     return span.subspan(FIRST_TRACK_OFFSET);
 }
 

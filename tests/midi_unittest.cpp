@@ -69,6 +69,14 @@ TEST_CASE("parse_midi reads header correctly")
     REQUIRE_THROWS([&] { return parse_midi(bad_data); }());
 }
 
+TEST_CASE("Division must not be in SMPTE format")
+{
+    std::vector<std::uint8_t> bad_data {0x4D, 0x54, 0x68, 0x64, 0, 0,    0,
+                                        6,    0,    1,    0,    0, 0x80, 0};
+
+    REQUIRE_THROWS([&] { return parse_midi(bad_data); }());
+}
+
 TEST_CASE("Track lengths are read correctly")
 {
     std::vector<std::uint8_t> track_one {0x4D, 0x54, 0x72, 0x6B, 0, 0, 0, 0};
