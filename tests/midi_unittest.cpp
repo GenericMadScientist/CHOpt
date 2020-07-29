@@ -45,6 +45,11 @@ static bool operator==(const MetaEvent& lhs, const MetaEvent& rhs)
     return std::tie(lhs.type, lhs.data) == std::tie(rhs.type, rhs.data);
 }
 
+static bool operator==(const MidiEvent& lhs, const MidiEvent& rhs)
+{
+    return std::tie(lhs.status, lhs.data) == std::tie(rhs.status, rhs.data);
+}
+
 static bool operator==(const TimedEvent& lhs, const TimedEvent& rhs)
 {
     return std::tie(lhs.time, lhs.event) == std::tie(rhs.time, rhs.event);
@@ -116,9 +121,24 @@ TEST_CASE("Meta events are read")
     std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0, 0,    0,   7,
                                      0x60, 0xFF, 0x51, 3,    8, 0x6B, 0xC3};
     auto data = midi_from_tracks({track});
-    std::vector<TimedEvent> events {{0x60, {0x51, {8, 0x6B, 0xC3}}}};
+    std::vector<TimedEvent> events {{0x60, MetaEvent {0x51, {8, 0x6B, 0xC3}}}};
 
     const auto midi = parse_midi(data);
 
     REQUIRE(midi.tracks[0].events == events);
+}
+
+TEST_CASE("Midi events are read")
+{
+    SECTION("A single event is read")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0,    0,
+                                         0,    4,    0,    0x94, 0x7F, 0x64};
+        auto data = midi_from_tracks({track});
+        std::vector<TimedEvent> events {{0, MidiEvent {0x94, {0x7F, 0x64}}}};
+
+        const auto midi = parse_midi(data);
+
+        REQUIRE(midi.tracks[0].events == events);
+    }
 }

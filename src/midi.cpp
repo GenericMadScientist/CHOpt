@@ -57,6 +57,7 @@ public:
     {
         return m_end;
     }
+    [[nodiscard]] std::size_t size() const { return m_size; }
 
     std::uint8_t operator[](std::size_t index) const
     {
@@ -123,8 +124,19 @@ static ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
     return span.subspan(FIRST_TRACK_OFFSET);
 }
 
+static ByteSpan read_meta_event(ByteSpan span, MetaEvent& event)
+{
+    event.type = span[0];
+    auto data_length = span[1];
+    span = span.subspan(2);
+    event.data
+        = std::vector<std::uint8_t> {span.begin(), span.begin() + data_length};
+    return span.subspan(data_length);
+}
+
 static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
 {
+    constexpr int META_EVENT_ID = 0xFF;
     constexpr int TRACK_HEADER_MAGIC_NUMBER = 0x4D54726B;
     constexpr int TRACK_HEADER_SIZE = 8;
     constexpr int VARIABLE_LENGTH_DATA_MASK = 0x7F;
@@ -134,31 +146,35 @@ static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
     if (read_four_byte_be(span, 0) != TRACK_HEADER_MAGIC_NUMBER) {
         throw std::invalid_argument("Invalid MIDI file");
     }
-    auto size = read_four_byte_be(span, 4);
-    track.size = size;
+    track.size = read_four_byte_be(span, 4);
     span = span.subspan(TRACK_HEADER_SIZE);
     auto absolute_time = 0;
-    while (size != 0) {
+    const auto final_span_size
+        = span.size() - static_cast<std::size_t>(track.size);
+    while (span.size() != final_span_size) {
         TimedEvent event {};
         auto delta_time = 0;
         while ((span[0] & VARIABLE_LENGTH_HIGH_MASK) != 0) {
             delta_time <<= VARIABLE_LENGTH_DATA_SIZE;
             delta_time |= span[0] & VARIABLE_LENGTH_DATA_MASK;
             span = span.subspan(1);
-            --size;
         }
         delta_time <<= VARIABLE_LENGTH_DATA_SIZE;
         delta_time |= span[0] & VARIABLE_LENGTH_DATA_MASK;
         absolute_time += delta_time;
         event.time = absolute_time;
-        event.event.type = span[2];
-        auto data_length = span[3];
-        span = span.subspan(4);
-        event.event.data = std::vector<std::uint8_t> {
-            span.begin(), span.begin() + data_length};
+        auto event_type = span[1];
+        span = span.subspan(2);
+        if (event_type == META_EVENT_ID) {
+            MetaEvent meta_event {};
+            span = read_meta_event(span, meta_event);
+            event.event = meta_event;
+        } else {
+            MidiEvent midi_event {event_type, {span[0], span[1]}};
+            event.event = midi_event;
+            span = span.subspan(2);
+        }
         track.events.push_back(event);
-        span = span.subspan(data_length);
-        size -= data_length + 4;
     }
     return span;
 }

@@ -19,7 +19,9 @@
 #ifndef CHOPT_MIDI_HPP
 #define CHOPT_MIDI_HPP
 
+#include <array>
 #include <cstdint>
+#include <variant>
 #include <vector>
 
 struct MetaEvent {
@@ -27,9 +29,14 @@ struct MetaEvent {
     std::vector<std::uint8_t> data;
 };
 
+struct MidiEvent {
+    int status;
+    std::array<std::uint8_t, 2> data;
+};
+
 struct TimedEvent {
     int time {0};
-    MetaEvent event;
+    std::variant<MetaEvent, MidiEvent> event;
 };
 
 struct MidiTrack {
