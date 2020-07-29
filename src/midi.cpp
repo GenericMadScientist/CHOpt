@@ -136,6 +136,7 @@ static ByteSpan read_meta_event(ByteSpan span, MetaEvent& event)
 
 static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
 {
+    constexpr int IS_STATUS_BYTE_MASK = 0x80;
     constexpr int META_EVENT_ID = 0xFF;
     constexpr int TRACK_HEADER_MAGIC_NUMBER = 0x4D54726B;
     constexpr int TRACK_HEADER_SIZE = 8;
@@ -151,6 +152,7 @@ static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
     auto absolute_time = 0;
     const auto final_span_size
         = span.size() - static_cast<std::size_t>(track.size);
+    auto prev_status_byte = -1;
     while (span.size() != final_span_size) {
         TimedEvent event {};
         auto delta_time = 0;
@@ -164,12 +166,23 @@ static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
         absolute_time += delta_time;
         event.time = absolute_time;
         auto event_type = span[1];
-        span = span.subspan(2);
         if (event_type == META_EVENT_ID) {
+            prev_status_byte = -1;
+            span = span.subspan(2);
             MetaEvent meta_event {};
             span = read_meta_event(span, meta_event);
             event.event = meta_event;
         } else {
+            if ((event_type & IS_STATUS_BYTE_MASK) != 0) {
+                prev_status_byte = event_type;
+                span = span.subspan(2);
+            } else if (prev_status_byte != -1) {
+                event_type = static_cast<std::uint8_t>(prev_status_byte);
+                span = span.subspan(1);
+            } else {
+                throw std::invalid_argument("MIDI Event has no status byte and "
+                                            "there is no running status");
+            }
             MidiEvent midi_event {event_type, {span[0], span[1]}};
             event.event = midi_event;
             span = span.subspan(2);

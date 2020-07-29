@@ -141,4 +141,28 @@ TEST_CASE("Midi events are read")
 
         REQUIRE(midi.tracks[0].events == events);
     }
+
+    SECTION("Running status is parsed")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0,
+                                         0,    0,    7,    0,    0x94,
+                                         0x7F, 0x64, 0x10, 0x7F, 0x64};
+        auto data = midi_from_tracks({track});
+        std::vector<TimedEvent> events {{0, MidiEvent {0x94, {0x7F, 0x64}}},
+                                        {0x10, MidiEvent {0x94, {0x7F, 0x64}}}};
+
+        const auto midi = parse_midi(data);
+
+        REQUIRE(midi.tracks[0].events == events);
+    }
+
+    SECTION("Running status is stopped by Meta Events")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0,    0, 0,
+                                         11,   0,    0x94, 0x7F, 0x64, 0, 0xFF,
+                                         2,    0,    0x10, 0x7F, 0x64};
+        auto data = midi_from_tracks({track});
+
+        REQUIRE_THROWS([&] { return parse_midi(data); }());
+    }
 }
