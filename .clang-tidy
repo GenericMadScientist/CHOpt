@@ -1,4 +1,4 @@
-Checks: '*,-fuchsia-*,-google-*,-llvm-*,-cppcoreguidelines-pro-type-vararg,-hicpp-vararg,-modernize-use-trailing-return-type'
+Checks: 'bugprone-*,cppcoreguidelines-*,-cppcoreguidelines-pro-type-vararg,misc-*,modernize-*,-modernize-use-trailing-return-type,performance-*,readability-*'
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle: none

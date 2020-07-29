@@ -20,6 +20,7 @@
 #include <array>
 #include <cstddef>
 #include <stdexcept>
+#include <utility>
 
 #include "midi.hpp"
 
@@ -85,22 +86,61 @@ public:
     }
 };
 
-static bool is_header_valid(ByteSpan span)
+// Read a two byte big endian number from the specified offset.
+static int read_two_byte_be(ByteSpan span, std::size_t offset)
+{
+    return span[offset] << CHAR_BIT | span[offset + 1];
+}
+
+// Read a four byte big endian number from the specified offset.
+static int read_four_byte_be(ByteSpan span, std::size_t offset)
+{
+    return span[offset] << (3 * CHAR_BIT) | span[offset + 1] << (2 * CHAR_BIT)
+        | span[offset + 2] << CHAR_BIT | span[offset + 3];
+}
+
+struct MidiHeader {
+    int ticks_per_quarter_note;
+    int num_of_tracks;
+};
+
+static ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
 {
     constexpr std::array<std::uint8_t, 10> MAGIC_NUMBER {
         0x4D, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1};
-    const auto first_ten_bytes = span.subspan(0, 10);
-    return std::equal(first_ten_bytes.begin(), first_ten_bytes.end(),
-                      MAGIC_NUMBER.cbegin());
+    constexpr int FIRST_TRACK_OFFSET = 14;
+    constexpr int TICKS_OFFSET = 12;
+    constexpr int TRACK_COUNT_OFFSET = 10;
+
+    const auto first_ten_bytes = span.subspan(0, MAGIC_NUMBER.size());
+    if (!std::equal(first_ten_bytes.begin(), first_ten_bytes.end(),
+                    MAGIC_NUMBER.cbegin())) {
+        throw std::invalid_argument("Invalid MIDI file");
+    }
+    header.num_of_tracks = read_two_byte_be(span, TRACK_COUNT_OFFSET);
+    header.ticks_per_quarter_note = read_two_byte_be(span, TICKS_OFFSET);
+    return span.subspan(FIRST_TRACK_OFFSET);
+}
+
+static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
+{
+    constexpr int TRACK_HEADER_SIZE = 8;
+
+    track.size = read_four_byte_be(span, 4);
+    return span.subspan(static_cast<std::size_t>(track.size)
+                        + TRACK_HEADER_SIZE);
 }
 
 Midi parse_midi(const std::vector<std::uint8_t>& data)
 {
     ByteSpan span {data};
-    if (!is_header_valid(span)) {
-        throw std::invalid_argument("Invalid MIDI file");
+    MidiHeader header {};
+    span = read_midi_header(span, header);
+    std::vector<MidiTrack> tracks;
+    for (auto i = 0; i < header.num_of_tracks; ++i) {
+        MidiTrack track {};
+        span = read_midi_track(span, track);
+        tracks.push_back(track);
     }
-    const auto num_of_tracks = (span[10] << 8U) + span[11];
-    const auto ticks_per_quarter_note = (span[12] << 8U) + span[13];
-    return Midi {ticks_per_quarter_note, num_of_tracks};
+    return Midi {header.ticks_per_quarter_note, std::move(tracks)};
 }

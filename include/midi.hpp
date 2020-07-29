@@ -22,9 +22,13 @@
 #include <cstdint>
 #include <vector>
 
+struct MidiTrack {
+    int size;
+};
+
 struct Midi {
     int ticks_per_quarter_note;
-    int num_of_tracks;
+    std::vector<MidiTrack> tracks;
 };
 
 Midi parse_midi(const std::vector<std::uint8_t>& data);
