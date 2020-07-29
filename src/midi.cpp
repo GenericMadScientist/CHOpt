@@ -125,8 +125,12 @@ static ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
 
 static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
 {
+    constexpr int TRACK_HEADER_MAGIC_NUMBER = 0x4D54726B;
     constexpr int TRACK_HEADER_SIZE = 8;
 
+    if (read_four_byte_be(span, 0) != TRACK_HEADER_MAGIC_NUMBER) {
+        throw std::invalid_argument("Invalid MIDI file");
+    }
     track.size = read_four_byte_be(span, 4);
     return span.subspan(static_cast<std::size_t>(track.size)
                         + TRACK_HEADER_SIZE);

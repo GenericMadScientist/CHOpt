@@ -55,9 +55,9 @@ TEST_CASE("parse_midi reads header correctly")
 
 TEST_CASE("Track lengths are read correctly")
 {
-    std::vector<std::uint8_t> track_one = {0x4D, 0x54, 0x72, 0x6B, 0, 0, 0, 0};
-    std::vector<std::uint8_t> track_two
-        = {0x4D, 0x54, 0x72, 0x6B, 0, 0, 0, 2, 0, 0x85};
+    std::vector<std::uint8_t> track_one {0x4D, 0x54, 0x72, 0x6B, 0, 0, 0, 0};
+    std::vector<std::uint8_t> track_two {0x4D, 0x54, 0x72, 0x6B, 0,
+                                         0,    0,    2,    0,    0x85};
     auto data = midi_from_tracks({track_one, track_two});
 
     const auto midi = parse_midi(data);
@@ -65,4 +65,12 @@ TEST_CASE("Track lengths are read correctly")
     REQUIRE(midi.tracks.size() == 2);
     REQUIRE(midi.tracks[0].size == 0);
     REQUIRE(midi.tracks[1].size == 2);
+}
+
+TEST_CASE("Track magic number is checked")
+{
+    std::vector<std::uint8_t> bad_track {0x40, 0x54, 0x72, 0x6B, 0, 0, 0, 0};
+    auto data = midi_from_tracks({bad_track});
+
+    REQUIRE_THROWS([&] { return parse_midi(data); }());
 }
