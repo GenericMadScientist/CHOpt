@@ -23,9 +23,10 @@
 #include <vector>
 
 struct Midi {
-    std::vector<std::uint8_t> data;
+    int ticks_per_quarter_note;
+    int num_of_tracks;
 };
 
-Midi parse_midi(std::vector<std::uint8_t> data);
+Midi parse_midi(const std::vector<std::uint8_t>& data);
 
 #endif

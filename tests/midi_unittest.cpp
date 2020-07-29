@@ -20,10 +20,16 @@
 
 #include "midi.hpp"
 
-TEST_CASE("parse_midi copies bytes")
+TEST_CASE("parse_midi reads header correctly")
 {
-    std::vector<std::uint8_t> data {1, 2, 3};
+    std::vector<std::uint8_t> data {0x4D, 0x54, 0x68, 0x64, 0, 0, 0,
+                                    6,    0,    1,    0,    0, 1, 0xE0};
+    std::vector<std::uint8_t> bad_data {0x4D, 0x53, 0x68, 0x64, 0, 0, 0,
+                                        6,    0,    1,    0,    0, 1, 0xE0};
+
     const auto midi = parse_midi(data);
 
-    REQUIRE(midi.data == data);
+    REQUIRE(midi.ticks_per_quarter_note == 0x1E0);
+    REQUIRE(midi.num_of_tracks == 0);
+    REQUIRE_THROWS([&] { return parse_midi(bad_data); }());
 }
