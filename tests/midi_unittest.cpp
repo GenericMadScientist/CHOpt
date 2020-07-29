@@ -165,4 +165,24 @@ TEST_CASE("Midi events are read")
 
         REQUIRE_THROWS([&] { return parse_midi(data); }());
     }
+
+    SECTION("Not all MIDI events take two data bytes")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0, 0,    0,
+                                         6,    0,    0xC0, 0,    0, 0xD0, 0};
+        auto data = midi_from_tracks({track});
+
+        const auto midi = parse_midi(data);
+
+        REQUIRE(midi.tracks[0].events.size() == 2);
+    }
+
+    SECTION("MIDI events with status byte high nibble F throw")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0, 0,
+                                         0,    4,    0,    0xF0, 0, 0};
+        auto data = midi_from_tracks({track});
+
+        REQUIRE_THROWS([&] { return parse_midi(data); }());
+    }
 }

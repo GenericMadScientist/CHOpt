@@ -136,10 +136,14 @@ static ByteSpan read_meta_event(ByteSpan span, MetaEvent& event)
 
 static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
 {
+    constexpr int CHANNEL_PRESSURE_ID = 0xD0;
     constexpr int IS_STATUS_BYTE_MASK = 0x80;
     constexpr int META_EVENT_ID = 0xFF;
+    constexpr int PROGRAM_CHANGE_ID = 0xC0;
+    constexpr int SYSTEM_COMMON_MSG_ID = 0xF0;
     constexpr int TRACK_HEADER_MAGIC_NUMBER = 0x4D54726B;
     constexpr int TRACK_HEADER_SIZE = 8;
+    constexpr int UPPER_NIBBLE_MASK = 0xF0;
     constexpr int VARIABLE_LENGTH_DATA_MASK = 0x7F;
     constexpr int VARIABLE_LENGTH_DATA_SIZE = 7;
     constexpr int VARIABLE_LENGTH_HIGH_MASK = 0x80;
@@ -183,9 +187,20 @@ static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
                 throw std::invalid_argument("MIDI Event has no status byte and "
                                             "there is no running status");
             }
-            MidiEvent midi_event {event_type, {span[0], span[1]}};
-            event.event = midi_event;
-            span = span.subspan(2);
+            if ((event_type & UPPER_NIBBLE_MASK) == SYSTEM_COMMON_MSG_ID) {
+                throw std::invalid_argument(
+                    "MIDI Events with high nibble 0xF are not supported");
+            }
+            if ((event_type & UPPER_NIBBLE_MASK) == PROGRAM_CHANGE_ID
+                || (event_type & UPPER_NIBBLE_MASK) == CHANNEL_PRESSURE_ID) {
+                MidiEvent midi_event {event_type, {span[0], 0}};
+                event.event = midi_event;
+                span = span.subspan(1);
+            } else {
+                MidiEvent midi_event {event_type, {span[0], span[1]}};
+                event.event = midi_event;
+                span = span.subspan(2);
+            }
         }
         track.events.push_back(event);
     }
