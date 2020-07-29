@@ -127,13 +127,40 @@ static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
 {
     constexpr int TRACK_HEADER_MAGIC_NUMBER = 0x4D54726B;
     constexpr int TRACK_HEADER_SIZE = 8;
+    constexpr int VARIABLE_LENGTH_DATA_MASK = 0x7F;
+    constexpr int VARIABLE_LENGTH_DATA_SIZE = 7;
+    constexpr int VARIABLE_LENGTH_HIGH_MASK = 0x80;
 
     if (read_four_byte_be(span, 0) != TRACK_HEADER_MAGIC_NUMBER) {
         throw std::invalid_argument("Invalid MIDI file");
     }
-    track.size = read_four_byte_be(span, 4);
-    return span.subspan(static_cast<std::size_t>(track.size)
-                        + TRACK_HEADER_SIZE);
+    auto size = read_four_byte_be(span, 4);
+    track.size = size;
+    span = span.subspan(TRACK_HEADER_SIZE);
+    auto absolute_time = 0;
+    while (size != 0) {
+        TimedEvent event {};
+        auto delta_time = 0;
+        while ((span[0] & VARIABLE_LENGTH_HIGH_MASK) != 0) {
+            delta_time <<= VARIABLE_LENGTH_DATA_SIZE;
+            delta_time |= span[0] & VARIABLE_LENGTH_DATA_MASK;
+            span = span.subspan(1);
+            --size;
+        }
+        delta_time <<= VARIABLE_LENGTH_DATA_SIZE;
+        delta_time |= span[0] & VARIABLE_LENGTH_DATA_MASK;
+        absolute_time += delta_time;
+        event.time = absolute_time;
+        event.event.type = span[2];
+        auto data_length = span[3];
+        span = span.subspan(4);
+        event.event.data = std::vector<std::uint8_t> {
+            span.begin(), span.begin() + data_length};
+        track.events.push_back(event);
+        span = span.subspan(data_length);
+        size -= data_length + 4;
+    }
+    return span;
 }
 
 Midi parse_midi(const std::vector<std::uint8_t>& data)

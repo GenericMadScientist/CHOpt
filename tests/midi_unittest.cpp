@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <tuple>
 #include <vector>
 
 #include "catch.hpp"
@@ -39,6 +40,16 @@ midi_from_tracks(const std::vector<std::vector<std::uint8_t>>& track_sections)
     return data;
 }
 
+static bool operator==(const MetaEvent& lhs, const MetaEvent& rhs)
+{
+    return std::tie(lhs.type, lhs.data) == std::tie(rhs.type, rhs.data);
+}
+
+static bool operator==(const TimedEvent& lhs, const TimedEvent& rhs)
+{
+    return std::tie(lhs.time, lhs.event) == std::tie(rhs.time, rhs.event);
+}
+
 TEST_CASE("parse_midi reads header correctly")
 {
     std::vector<std::uint8_t> data {0x4D, 0x54, 0x68, 0x64, 0, 0, 0,
@@ -56,15 +67,15 @@ TEST_CASE("parse_midi reads header correctly")
 TEST_CASE("Track lengths are read correctly")
 {
     std::vector<std::uint8_t> track_one {0x4D, 0x54, 0x72, 0x6B, 0, 0, 0, 0};
-    std::vector<std::uint8_t> track_two {0x4D, 0x54, 0x72, 0x6B, 0,
-                                         0,    0,    2,    0,    0x85};
+    std::vector<std::uint8_t> track_two {0x4D, 0x54, 0x72, 0x6B, 0,    0,
+                                         0,    4,    0,    0x85, 0x60, 0};
     auto data = midi_from_tracks({track_one, track_two});
 
     const auto midi = parse_midi(data);
 
     REQUIRE(midi.tracks.size() == 2);
     REQUIRE(midi.tracks[0].size == 0);
-    REQUIRE(midi.tracks[1].size == 2);
+    REQUIRE(midi.tracks[1].size == 4);
 }
 
 TEST_CASE("Track magic number is checked")
@@ -73,4 +84,41 @@ TEST_CASE("Track magic number is checked")
     auto data = midi_from_tracks({bad_track});
 
     REQUIRE_THROWS([&] { return parse_midi(data); }());
+}
+
+TEST_CASE("Event times are handled correctly")
+{
+    SECTION("Multi-byte delta times are parsed correctly")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0, 0, 0,
+                                         5,    0x8F, 0x10, 0xFF, 2, 0};
+        auto data = midi_from_tracks({track});
+
+        const auto midi = parse_midi(data);
+
+        REQUIRE(midi.tracks[0].events[0].time == 0x790);
+    }
+
+    SECTION("Times are absolute, not delta times")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0, 0,    0, 8,
+                                         0x60, 0xFF, 2,    0,    0, 0xFF, 2, 0};
+        auto data = midi_from_tracks({track});
+
+        const auto midi = parse_midi(data);
+
+        REQUIRE(midi.tracks[0].events[1].time == 0x60);
+    }
+}
+
+TEST_CASE("Meta events are read")
+{
+    std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0, 0,    0,   7,
+                                     0x60, 0xFF, 0x51, 3,    8, 0x6B, 0xC3};
+    auto data = midi_from_tracks({track});
+    std::vector<TimedEvent> events {{0x60, {0x51, {8, 0x6B, 0xC3}}}};
+
+    const auto midi = parse_midi(data);
+
+    REQUIRE(midi.tracks[0].events == events);
 }

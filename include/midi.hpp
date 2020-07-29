@@ -22,8 +22,19 @@
 #include <cstdint>
 #include <vector>
 
+struct MetaEvent {
+    int type;
+    std::vector<std::uint8_t> data;
+};
+
+struct TimedEvent {
+    int time {0};
+    MetaEvent event;
+};
+
 struct MidiTrack {
     int size;
+    std::vector<TimedEvent> events;
 };
 
 struct Midi {
