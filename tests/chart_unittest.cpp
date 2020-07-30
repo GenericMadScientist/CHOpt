@@ -420,7 +420,7 @@ TEST_CASE("First track is read correctly")
         SyncTrack tempos {{}, {{0, 150}, {1920, 200}}};
 
         const auto chart = Chart::from_midi(midi);
-        const auto sync_track = chart.sync_track();
+        const auto& sync_track = chart.sync_track();
 
         REQUIRE(sync_track.bpms() == tempos.bpms());
         REQUIRE(sync_track.time_sigs() == tempos.time_sigs());
@@ -434,7 +434,7 @@ TEST_CASE("First track is read correctly")
         SyncTrack tses {{{0, 6, 4}, {1920, 3, 8}}, {}};
 
         const auto chart = Chart::from_midi(midi);
-        const auto sync_track = chart.sync_track();
+        const auto& sync_track = chart.sync_track();
 
         REQUIRE(sync_track.bpms() == tses.bpms());
         REQUIRE(sync_track.time_sigs() == tses.time_sigs());
