@@ -523,7 +523,44 @@ Chart Chart::parse_chart(std::string_view input)
 
 Chart Chart::from_midi(const Midi& midi)
 {
+    constexpr int SET_TEMPO_ID = 0x51;
+    constexpr int TEXT_EVENT_ID = 1;
+    constexpr int TIME_SIG_ID = 0x58;
+
     Chart chart;
     chart.m_resolution = midi.ticks_per_quarter_note;
+
+    if (midi.tracks.empty()) {
+        return chart;
+    }
+
+    std::vector<BPM> tempos;
+    std::vector<TimeSignature> time_sigs;
+    for (const auto& event : midi.tracks[0].events) {
+        const MetaEvent* meta_event = std::get_if<MetaEvent>(&event.event);
+        if (meta_event == nullptr) {
+            continue;
+        }
+        switch (meta_event->type) {
+        case TEXT_EVENT_ID:
+            chart.m_song_header.name = std::string {meta_event->data.cbegin(),
+                                                    meta_event->data.cend()};
+            break;
+        case SET_TEMPO_ID: {
+            const auto us_per_quarter = meta_event->data[0] << 16
+                | meta_event->data[1] << 8 | meta_event->data[2];
+            const auto bpm = 60000000 / us_per_quarter;
+            tempos.push_back({event.time, bpm});
+            break;
+        }
+        case TIME_SIG_ID:
+            time_sigs.push_back(
+                {event.time, meta_event->data[0], 1 << meta_event->data[1]});
+            break;
+        }
+    }
+
+    chart.m_sync_track = SyncTrack {std::move(time_sigs), std::move(tempos)};
+
     return chart;
 }

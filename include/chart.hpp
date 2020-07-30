@@ -148,9 +148,9 @@ public:
 };
 
 struct SongHeader {
-    std::string name;
-    std::string artist;
-    std::string charter;
+    std::string name {"Unknown Song"};
+    std::string artist {"Unknown Artist"};
+    std::string charter {"Unknown Charter"};
 };
 
 // Invariants:

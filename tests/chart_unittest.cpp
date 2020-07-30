@@ -409,3 +409,55 @@ TEST_CASE("Midi resolution is read correctly")
 
     REQUIRE(chart.resolution() == 200);
 }
+
+TEST_CASE("First track is read correctly")
+{
+    SECTION("Tempos are read correctly")
+    {
+        MidiTrack tempo_track {{{0, {MetaEvent {0x51, {6, 0x1A, 0x80}}}},
+                                {1920, {MetaEvent {0x51, {4, 0x93, 0xE0}}}}}};
+        const Midi midi {192, {tempo_track}};
+        SyncTrack tempos {{}, {{0, 150}, {1920, 200}}};
+
+        const auto chart = Chart::from_midi(midi);
+        const auto sync_track = chart.sync_track();
+
+        REQUIRE(sync_track.bpms() == tempos.bpms());
+        REQUIRE(sync_track.time_sigs() == tempos.time_sigs());
+    }
+
+    SECTION("Time signatures are read correctly")
+    {
+        MidiTrack ts_track {{{0, {MetaEvent {0x58, {6, 2, 24, 8}}}},
+                             {1920, {MetaEvent {0x58, {3, 3, 24, 8}}}}}};
+        const Midi midi {192, {ts_track}};
+        SyncTrack tses {{{0, 6, 4}, {1920, 3, 8}}, {}};
+
+        const auto chart = Chart::from_midi(midi);
+        const auto sync_track = chart.sync_track();
+
+        REQUIRE(sync_track.bpms() == tses.bpms());
+        REQUIRE(sync_track.time_sigs() == tses.time_sigs());
+    }
+
+    SECTION("Song name is read correctly")
+    {
+        MidiTrack name_track {{{0, {MetaEvent {1, {72, 101, 108, 108, 111}}}}}};
+        const Midi midi {192, {name_track}};
+
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE(chart.song_header().name == "Hello");
+    }
+
+    SECTION("Default song header is correct")
+    {
+        const Midi midi {192, {{}}};
+
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE(chart.song_header().name == "Unknown Song");
+        REQUIRE(chart.song_header().artist == "Unknown Artist");
+        REQUIRE(chart.song_header().charter == "Unknown Charter");
+    }
+}
