@@ -44,7 +44,6 @@ struct TimedEvent {
 };
 
 struct MidiTrack {
-    int size;
     std::vector<TimedEvent> events;
 };
 

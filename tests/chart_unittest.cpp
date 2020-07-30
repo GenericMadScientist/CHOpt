@@ -400,3 +400,12 @@ TEST_CASE("Solos are read properly")
         REQUIRE(chart.note_track(Difficulty::Expert).solos() == required_solos);
     }
 }
+
+TEST_CASE("Midi resolution is read correctly")
+{
+    const Midi midi {200, {}};
+
+    const auto chart = Chart::from_midi(midi);
+
+    REQUIRE(chart.resolution() == 200);
+}

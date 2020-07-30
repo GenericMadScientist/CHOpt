@@ -523,6 +523,7 @@ Chart Chart::parse_chart(std::string_view input)
 
 Chart Chart::from_midi(const Midi& midi)
 {
-    (void)midi;
-    throw std::invalid_argument("Midi files currently unsupported");
+    Chart chart;
+    chart.m_resolution = midi.ticks_per_quarter_note;
+    return chart;
 }

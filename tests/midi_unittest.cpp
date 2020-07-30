@@ -92,8 +92,8 @@ TEST_CASE("Track lengths are read correctly")
     const auto midi = parse_midi(data);
 
     REQUIRE(midi.tracks.size() == 2);
-    REQUIRE(midi.tracks[0].size == 0);
-    REQUIRE(midi.tracks[1].size == 4);
+    REQUIRE(midi.tracks[0].events.empty());
+    REQUIRE(midi.tracks[1].events.size() == 1);
 }
 
 TEST_CASE("Track magic number is checked")
