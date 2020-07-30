@@ -129,14 +129,32 @@ static ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
     return span.subspan(FIRST_TRACK_OFFSET);
 }
 
+static ByteSpan read_variable_length_num(ByteSpan span, int& number)
+{
+    constexpr int VARIABLE_LENGTH_DATA_MASK = 0x7F;
+    constexpr int VARIABLE_LENGTH_DATA_SIZE = 7;
+    constexpr int VARIABLE_LENGTH_HIGH_MASK = 0x80;
+
+    number = 0;
+    while ((span[0] & VARIABLE_LENGTH_HIGH_MASK) != 0) {
+        number <<= VARIABLE_LENGTH_DATA_SIZE;
+        number |= span[0] & VARIABLE_LENGTH_DATA_MASK;
+        span = span.subspan(1);
+    }
+    number <<= VARIABLE_LENGTH_DATA_SIZE;
+    number |= span[0] & VARIABLE_LENGTH_DATA_MASK;
+    return span.subspan(1);
+}
+
 static ByteSpan read_meta_event(ByteSpan span, MetaEvent& event)
 {
     event.type = span[0];
-    auto data_length = span[1];
-    span = span.subspan(2);
+    span = span.subspan(1);
+    int data_length = 0;
+    span = read_variable_length_num(span, data_length);
     event.data
         = std::vector<std::uint8_t> {span.begin(), span.begin() + data_length};
-    return span.subspan(data_length);
+    return span.subspan(static_cast<std::size_t>(data_length));
 }
 
 static ByteSpan read_midi_event(ByteSpan span, MidiEvent& event,
@@ -175,26 +193,19 @@ static ByteSpan read_midi_event(ByteSpan span, MidiEvent& event,
     return span;
 }
 
-static ByteSpan read_variable_length_num(ByteSpan span, int& number)
+static ByteSpan read_sysex_event(ByteSpan span, SysexEvent& event)
 {
-    constexpr int VARIABLE_LENGTH_DATA_MASK = 0x7F;
-    constexpr int VARIABLE_LENGTH_DATA_SIZE = 7;
-    constexpr int VARIABLE_LENGTH_HIGH_MASK = 0x80;
-
-    number = 0;
-    while ((span[0] & VARIABLE_LENGTH_HIGH_MASK) != 0) {
-        number <<= VARIABLE_LENGTH_DATA_SIZE;
-        number |= span[0] & VARIABLE_LENGTH_DATA_MASK;
-        span = span.subspan(1);
-    }
-    number <<= VARIABLE_LENGTH_DATA_SIZE;
-    number |= span[0] & VARIABLE_LENGTH_DATA_MASK;
-    return span.subspan(1);
+    int data_length = 0;
+    span = read_variable_length_num(span, data_length);
+    event.data
+        = std::vector<std::uint8_t> {span.begin(), span.begin() + data_length};
+    return span.subspan(static_cast<std::size_t>(data_length));
 }
 
 static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
 {
     constexpr int META_EVENT_ID = 0xFF;
+    constexpr int SYSEX_EVENT_ID = 0xF0;
     constexpr int TRACK_HEADER_MAGIC_NUMBER = 0x4D54726B;
     constexpr int TRACK_HEADER_SIZE = 8;
 
@@ -219,6 +230,12 @@ static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
             MetaEvent meta_event {};
             span = read_meta_event(span, meta_event);
             event.event = meta_event;
+        } else if (event_type == SYSEX_EVENT_ID) {
+            prev_status_byte = -1;
+            span = span.subspan(1);
+            SysexEvent sysex_event {};
+            span = read_sysex_event(span, sysex_event);
+            event.event = sysex_event;
         } else {
             MidiEvent midi_event {};
             span = read_midi_event(span, midi_event, prev_status_byte);

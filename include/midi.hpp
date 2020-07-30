@@ -34,9 +34,13 @@ struct MidiEvent {
     std::array<std::uint8_t, 2> data;
 };
 
+struct SysexEvent {
+    std::vector<std::uint8_t> data;
+};
+
 struct TimedEvent {
     int time {0};
-    std::variant<MetaEvent, MidiEvent> event;
+    std::variant<MetaEvent, MidiEvent, SysexEvent> event;
 };
 
 struct MidiTrack {

@@ -50,6 +50,11 @@ static bool operator==(const MidiEvent& lhs, const MidiEvent& rhs)
     return std::tie(lhs.status, lhs.data) == std::tie(rhs.status, rhs.data);
 }
 
+static bool operator==(const SysexEvent& lhs, const SysexEvent& rhs)
+{
+    return lhs.data == rhs.data;
+}
+
 static bool operator==(const TimedEvent& lhs, const TimedEvent& rhs)
 {
     return std::tie(lhs.time, lhs.event) == std::tie(rhs.time, rhs.event);
@@ -126,14 +131,33 @@ TEST_CASE("Event times are handled correctly")
 
 TEST_CASE("Meta events are read")
 {
-    std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0, 0,    0,   7,
-                                     0x60, 0xFF, 0x51, 3,    8, 0x6B, 0xC3};
-    auto data = midi_from_tracks({track});
-    std::vector<TimedEvent> events {{0x60, MetaEvent {0x51, {8, 0x6B, 0xC3}}}};
+    SECTION("Simple meta event is read")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0,
+                                         0,    0,    7,    0x60, 0xFF,
+                                         0x51, 3,    8,    0x6B, 0xC3};
+        auto data = midi_from_tracks({track});
+        std::vector<TimedEvent> events {
+            {0x60, MetaEvent {0x51, {8, 0x6B, 0xC3}}}};
 
-    const auto midi = parse_midi(data);
+        const auto midi = parse_midi(data);
 
-    REQUIRE(midi.tracks[0].events == events);
+        REQUIRE(midi.tracks[0].events == events);
+    }
+
+    SECTION("Meta event with multi-byte length is read")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0,    0,
+                                         0,    8,    0x60, 0xFF, 0x51, 0x80,
+                                         3,    8,    0x6B, 0xC3};
+        auto data = midi_from_tracks({track});
+        std::vector<TimedEvent> events {
+            {0x60, MetaEvent {0x51, {8, 0x6B, 0xC3}}}};
+
+        const auto midi = parse_midi(data);
+
+        REQUIRE(midi.tracks[0].events == events);
+    }
 }
 
 TEST_CASE("Midi events are read")
@@ -174,6 +198,16 @@ TEST_CASE("Midi events are read")
         REQUIRE_THROWS([&] { return parse_midi(data); }());
     }
 
+    SECTION("Running status is stopped by Syex Events")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0,    0, 0,
+                                         11,   0,    0x94, 0x7F, 0x64, 0, 0xF0,
+                                         1,    0,    0x10, 0x7F, 0x64};
+        auto data = midi_from_tracks({track});
+
+        REQUIRE_THROWS([&] { return parse_midi(data); }());
+    }
+
     SECTION("Not all MIDI events take two data bytes")
     {
         std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0, 0,    0,
@@ -192,5 +226,32 @@ TEST_CASE("Midi events are read")
         auto data = midi_from_tracks({track});
 
         REQUIRE_THROWS([&] { return parse_midi(data); }());
+    }
+}
+
+TEST_CASE("Sysex events are read")
+{
+    SECTION("Simple sysex event is read")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0, 0, 0,
+                                         6,    0x0,  0xF0, 3,    1, 2, 3};
+        auto data = midi_from_tracks({track});
+        std::vector<TimedEvent> events {{0, SysexEvent {{1, 2, 3}}}};
+
+        const auto midi = parse_midi(data);
+
+        REQUIRE(midi.tracks[0].events == events);
+    }
+
+    SECTION("Sysex event with multi-byte length is read")
+    {
+        std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0, 0, 0, 7,
+                                         0x0,  0xF0, 0x80, 3,    1, 2, 3};
+        auto data = midi_from_tracks({track});
+        std::vector<TimedEvent> events {{0, SysexEvent {{1, 2, 3}}}};
+
+        const auto midi = parse_midi(data);
+
+        REQUIRE(midi.tracks[0].events == events);
     }
 }
