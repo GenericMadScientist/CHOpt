@@ -527,6 +527,10 @@ Chart Chart::from_midi(const Midi& midi)
     constexpr int TEXT_EVENT_ID = 1;
     constexpr int TIME_SIG_ID = 0x58;
 
+    if (midi.ticks_per_quarter_note == 0) {
+        throw std::invalid_argument("Resolution must be > 0");
+    }
+
     Chart chart;
     chart.m_resolution = midi.ticks_per_quarter_note;
 

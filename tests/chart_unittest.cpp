@@ -403,11 +403,21 @@ TEST_CASE("Solos are read properly")
 
 TEST_CASE("Midi resolution is read correctly")
 {
-    const Midi midi {200, {}};
+    SECTION("Midi's resolution is read")
+    {
+        const Midi midi {200, {}};
 
-    const auto chart = Chart::from_midi(midi);
+        const auto chart = Chart::from_midi(midi);
 
-    REQUIRE(chart.resolution() == 200);
+        REQUIRE(chart.resolution() == 200);
+    }
+
+    SECTION("Resolution > 0 invariant is upheld")
+    {
+        const Midi midi {0, {}};
+
+        REQUIRE_THROWS([&] { return Chart::from_midi(midi); }());
+    }
 }
 
 TEST_CASE("First track is read correctly")
