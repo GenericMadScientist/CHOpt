@@ -543,6 +543,25 @@ TEST_CASE("Notes are read correctly")
 
         REQUIRE_NOTHROW([&] { return Chart::from_midi(midi); }());
     }
+
+    SECTION("Open notes are read correctly")
+    {
+        MidiTrack note_track {
+            {{0,
+              {MetaEvent {3,
+                          {0x50, 0x41, 0x52, 0x54, 0x20, 0x47, 0x55, 0x49, 0x54,
+                           0x41, 0x52}}}},
+             {768, {MidiEvent {0x90, {96, 64}}}},
+             {768, {SysexEvent {{0x50, 0x53, 0, 0, 3, 1, 1, 0xF7}}}},
+             {770, {SysexEvent {{0x50, 0x53, 0, 0, 3, 1, 0, 0xF7}}}},
+             {960, {MidiEvent {0x90, {96, 0}}}}}};
+        const Midi midi {192, {note_track}};
+
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE(chart.note_track(Difficulty::Expert).notes()[0].colour
+                == NoteColour::Open);
+    }
 }
 
 TEST_CASE("Solos are read")

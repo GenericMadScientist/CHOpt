@@ -614,14 +614,44 @@ static NoteColour colour_from_key(std::uint8_t key)
     }
 }
 
+static bool is_open_event_sysex(const SysexEvent& event)
+{
+    constexpr std::array<std::tuple<std::size_t, std::uint8_t>, 6>
+        REQUIRED_BYTES {
+            std::tuple {0, 0x50}, {1, 0x53}, {2, 0}, {3, 0}, {5, 1}, {7, 0xF7}};
+    constexpr std::array<std::tuple<std::size_t, std::uint8_t>, 2>
+        UPPER_BOUNDS {std::tuple {4, 3}, {6, 1}};
+    constexpr int SYSEX_DATA_SIZE = 8;
+
+    if (event.data.size() != SYSEX_DATA_SIZE) {
+        return false;
+    }
+    for (const auto& pair : REQUIRED_BYTES) {
+        if (event.data[std::get<0>(pair)] != std::get<1>(pair)) {
+            return false;
+        }
+    }
+    for (const auto& pair : UPPER_BOUNDS) {
+        if (event.data[std::get<0>(pair)] > std::get<1>(pair)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 Chart Chart::from_midi(const Midi& midi)
 {
+    constexpr std::array<Difficulty, 4> OPEN_EVENT_DIFFS {
+        Difficulty::Easy, Difficulty::Medium, Difficulty::Hard,
+        Difficulty::Expert};
+
     constexpr int DEFAULT_SUST_CUTOFF = 64;
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int SET_TEMPO_ID = 0x51;
     constexpr int SOLO_NOTE_ID = 103;
     constexpr int SP_NOTE_ID = 116;
+    constexpr int SYSEX_ON_INDEX = 6;
     constexpr int TEXT_EVENT_ID = 1;
     constexpr int TIME_SIG_ID = 0x58;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
@@ -670,6 +700,8 @@ Chart Chart::from_midi(const Midi& midi)
         note_on_events;
     std::map<Difficulty, std::vector<std::tuple<int, NoteColour>>>
         note_off_events;
+    std::map<Difficulty, std::vector<int>> open_on_events;
+    std::map<Difficulty, std::vector<int>> open_off_events;
     std::vector<std::tuple<int, int>> solo_events;
     std::vector<int> sp_on_events;
     std::vector<int> sp_off_events;
@@ -681,6 +713,19 @@ Chart Chart::from_midi(const Midi& midi)
         for (const auto& event : track.events) {
             const auto* midi_event = std::get_if<MidiEvent>(&event.event);
             if (midi_event == nullptr) {
+                const auto* sysex_event = std::get_if<SysexEvent>(&event.event);
+                if (sysex_event == nullptr) {
+                    continue;
+                }
+                if (!is_open_event_sysex(*sysex_event)) {
+                    continue;
+                }
+                Difficulty diff = OPEN_EVENT_DIFFS.at(sysex_event->data[4]);
+                if (sysex_event->data[SYSEX_ON_INDEX] == 0) {
+                    open_off_events[diff].push_back(event.time);
+                } else {
+                    open_on_events[diff].push_back(event.time);
+                }
                 continue;
             }
             switch (midi_event->status & UPPER_NIBBLE_MASK) {
@@ -724,11 +769,25 @@ Chart Chart::from_midi(const Midi& midi)
         }
     }
 
+    std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
+    for (const auto& [diff, open_ons] : open_on_events) {
+        const auto& open_offs = open_off_events.at(diff);
+        for (auto open_on : open_ons) {
+            const auto iter
+                = std::find_if(open_offs.cbegin(), open_offs.cend(),
+                               [&](const auto end) { return end >= open_on; });
+            if (iter == open_offs.cend()) {
+                throw std::invalid_argument("Open on event has no end");
+            }
+            open_events[diff].push_back({open_on, *iter});
+        }
+    }
+
     for (const auto& [diff, note_ons] : note_on_events) {
         const auto& note_offs = note_off_events.at(diff);
         for (const auto& pair : note_ons) {
             const auto pos = std::get<0>(pair);
-            const auto colour = std::get<1>(pair);
+            auto colour = std::get<1>(pair);
             const auto iter = std::find_if(
                 note_offs.cbegin(), note_offs.cend(), [&](const auto& p) {
                     return std::get<0>(p) >= pos && std::get<1>(p) == colour;
@@ -741,6 +800,11 @@ Chart Chart::from_midi(const Midi& midi)
             if (note_length <= (DEFAULT_SUST_CUTOFF * chart.m_resolution)
                     / DEFAULT_RESOLUTION) {
                 note_length = 0;
+            }
+            for (const auto& [open_start, open_end] : open_events[diff]) {
+                if (pos >= open_start && pos < open_end) {
+                    colour = NoteColour::Open;
+                }
             }
             notes[diff].push_back({pos, note_length, colour});
         }
