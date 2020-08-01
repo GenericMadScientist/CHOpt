@@ -329,6 +329,41 @@ static std::string_view read_sync_track(std::string_view input,
     return input;
 }
 
+static std::vector<Solo>
+form_solo_vector(const std::vector<std::tuple<int, int>>& solo_events,
+                 const std::vector<Note>& notes)
+{
+    constexpr int SOLO_NOTE_VALUE = 100;
+
+    std::vector<Solo> solos;
+
+    int start = 0;
+    int end = 0;
+    bool in_solo = false;
+    for (auto [pos, type] : solo_events) {
+        if (type == 0 && !in_solo) {
+            in_solo = true;
+            start = pos;
+        } else if (type == 1 && in_solo) {
+            in_solo = false;
+            end = pos;
+            std::set<int> positions_in_solo;
+            for (const auto& note : notes) {
+                if (note.position >= start && note.position <= end) {
+                    positions_in_solo.insert(note.position);
+                }
+            }
+            if (positions_in_solo.empty()) {
+                continue;
+            }
+            auto note_count = static_cast<int>(positions_in_solo.size());
+            solos.push_back({start, end, SOLO_NOTE_VALUE * note_count});
+        }
+    }
+
+    return solos;
+}
+
 static std::string_view read_single_track(std::string_view input,
                                           PreNoteTrack& track)
 {
@@ -344,8 +379,6 @@ static std::string_view read_single_track(std::string_view input,
     constexpr auto FORCED_CODE = 5;
     constexpr auto TAP_CODE = 6;
     constexpr auto OPEN_CODE = 7;
-
-    constexpr int SOLO_NOTE_VALUE = 100;
 
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("A [*Single] track does not open with {");
@@ -434,30 +467,7 @@ static std::string_view read_single_track(std::string_view input,
     }
 
     std::sort(solo_events.begin(), solo_events.end());
-
-    int start = 0;
-    int end = 0;
-    bool in_solo = false;
-    for (auto [pos, type] : solo_events) {
-        if (type == 0 && !in_solo) {
-            in_solo = true;
-            start = pos;
-        } else if (type == 1 && in_solo) {
-            in_solo = false;
-            end = pos;
-            std::set<int> positions_in_solo;
-            for (const auto& note : track.notes) {
-                if (note.position >= start && note.position <= end) {
-                    positions_in_solo.insert(note.position);
-                }
-            }
-            if (positions_in_solo.empty()) {
-                continue;
-            }
-            auto notes = static_cast<int>(positions_in_solo.size());
-            track.solos.push_back({start, end, SOLO_NOTE_VALUE * notes});
-        }
-    }
+    track.solos = form_solo_vector(solo_events, track.notes);
 
     return input;
 }
@@ -609,6 +619,7 @@ Chart Chart::from_midi(const Midi& midi)
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int SET_TEMPO_ID = 0x51;
+    constexpr int SOLO_NOTE_ID = 103;
     constexpr int TEXT_EVENT_ID = 1;
     constexpr int TIME_SIG_ID = 0x58;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
@@ -657,6 +668,8 @@ Chart Chart::from_midi(const Midi& midi)
         note_on_events;
     std::map<Difficulty, std::vector<std::tuple<int, NoteColour>>>
         note_off_events;
+    std::vector<std::tuple<int, int>> solo_events;
+
     for (const auto& track : midi.tracks) {
         if (!is_part_guitar(track)) {
             continue;
@@ -672,6 +685,8 @@ Chart Chart::from_midi(const Midi& midi)
                 if (diff.has_value()) {
                     const auto colour = colour_from_key(midi_event->data[0]);
                     note_off_events[*diff].push_back({event.time, colour});
+                } else if (midi_event->data[0] == SOLO_NOTE_ID) {
+                    solo_events.emplace_back(event.time, 1);
                 }
                 break;
             }
@@ -683,6 +698,12 @@ Chart Chart::from_midi(const Midi& midi)
                         note_on_events[*diff].push_back({event.time, colour});
                     } else {
                         note_off_events[*diff].push_back({event.time, colour});
+                    }
+                } else if (midi_event->data[0] == SOLO_NOTE_ID) {
+                    if (midi_event->data[1] != 0) {
+                        solo_events.emplace_back(event.time, 0);
+                    } else {
+                        solo_events.emplace_back(event.time, 1);
                     }
                 }
                 break;
@@ -709,7 +730,8 @@ Chart Chart::from_midi(const Midi& midi)
     }
 
     for (const auto& [diff, note_set] : notes) {
-        chart.m_note_tracks[diff] = {note_set, {}, {}};
+        auto solos = form_solo_vector(solo_events, note_set);
+        chart.m_note_tracks[diff] = {note_set, {}, solos};
     }
 
     return chart;
