@@ -692,10 +692,14 @@ Chart Chart::from_midi(const Midi& midi)
         for (const auto& pair : note_ons) {
             const auto pos = std::get<0>(pair);
             const auto colour = std::get<1>(pair);
-            auto iter = std::find_if(
+            const auto iter = std::find_if(
                 note_offs.cbegin(), note_offs.cend(), [&](const auto& p) {
                     return std::get<0>(p) >= pos && std::get<1>(p) == colour;
                 });
+            if (iter == note_offs.cend()) {
+                throw std::invalid_argument("Note On event does not have a "
+                                            "corresponding Note Off event");
+            }
             notes[diff].push_back({pos, std::get<0>(*iter) - pos, colour});
         }
     }

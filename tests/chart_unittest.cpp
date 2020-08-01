@@ -516,4 +516,18 @@ TEST_CASE("Notes are read correctly")
         REQUIRE(chart.note_track(Difficulty::Expert).notes()[0].colour
                 == NoteColour::Red);
     }
+
+    SECTION("Note On events must have a corresponding Note Off event")
+    {
+        MidiTrack note_track {{{0,
+                                {MetaEvent {1,
+                                            {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                             0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                               {768, {MidiEvent {0x90, {96, 64}}}},
+                               {960, {MidiEvent {0x80, {96, 64}}}},
+                               {1152, {MidiEvent {0x90, {96, 64}}}}}};
+        const Midi midi {192, {note_track}};
+
+        REQUIRE_THROWS([&] { return Chart::from_midi(midi); }());
+    }
 }
