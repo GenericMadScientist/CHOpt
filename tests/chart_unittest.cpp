@@ -598,3 +598,21 @@ TEST_CASE("Star Power is read")
         REQUIRE_THROWS([&] { return Chart::from_midi(midi); }());
     }
 }
+
+TEST_CASE("Short midi sustains are trimmed")
+{
+    MidiTrack note_track {{{0,
+                            {MetaEvent {1,
+                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                         0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                           {0, {MidiEvent {0x90, {96, 64}}}},
+                           {65, {MidiEvent {0x80, {96, 0}}}},
+                           {100, {MidiEvent {0x90, {96, 64}}}},
+                           {170, {MidiEvent {0x80, {96, 0}}}}}};
+    const Midi midi {200, {note_track}};
+    const auto chart = Chart::from_midi(midi);
+    const auto& notes = chart.note_track(Difficulty::Expert).notes();
+
+    REQUIRE(notes[0].length == 0);
+    REQUIRE(notes[1].length == 70);
+}

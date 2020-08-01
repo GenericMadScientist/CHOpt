@@ -616,6 +616,8 @@ static NoteColour colour_from_key(std::uint8_t key)
 
 Chart Chart::from_midi(const Midi& midi)
 {
+    constexpr int DEFAULT_RESOLUTION = 192;
+    constexpr int DEFAULT_SUST_CUTOFF = 64;
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int SET_TEMPO_ID = 0x51;
@@ -736,7 +738,12 @@ Chart Chart::from_midi(const Midi& midi)
                 throw std::invalid_argument("Note On event does not have a "
                                             "corresponding Note Off event");
             }
-            notes[diff].push_back({pos, std::get<0>(*iter) - pos, colour});
+            auto note_length = std::get<0>(*iter) - pos;
+            if (note_length <= (DEFAULT_SUST_CUTOFF * chart.m_resolution)
+                    / DEFAULT_RESOLUTION) {
+                note_length = 0;
+            }
+            notes[diff].push_back({pos, note_length, colour});
         }
     }
 
