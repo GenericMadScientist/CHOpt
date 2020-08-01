@@ -427,7 +427,7 @@ TEST_CASE("First track is read correctly")
         MidiTrack tempo_track {{{0, {MetaEvent {0x51, {6, 0x1A, 0x80}}}},
                                 {1920, {MetaEvent {0x51, {4, 0x93, 0xE0}}}}}};
         const Midi midi {192, {tempo_track}};
-        SyncTrack tempos {{}, {{0, 150}, {1920, 200}}};
+        SyncTrack tempos {{}, {{0, 150000}, {1920, 200000}}};
 
         const auto chart = Chart::from_midi(midi);
         const auto& sync_track = chart.sync_track();

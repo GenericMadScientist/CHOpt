@@ -652,8 +652,8 @@ Chart Chart::from_midi(const Midi& midi)
         case SET_TEMPO_ID: {
             const auto us_per_quarter = meta_event->data[0] << 16
                 | meta_event->data[1] << 8 | meta_event->data[2];
-            const auto bpm = 60000000 / us_per_quarter;
-            tempos.push_back({event.time, bpm});
+            const auto bpm = 60000000000 / us_per_quarter;
+            tempos.push_back({event.time, static_cast<int>(bpm)});
             break;
         }
         case TIME_SIG_ID:
