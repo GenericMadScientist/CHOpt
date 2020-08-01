@@ -679,7 +679,11 @@ Chart Chart::from_midi(const Midi& midi)
                 const auto diff = difficulty_from_key(midi_event->data[0]);
                 if (diff.has_value()) {
                     const auto colour = colour_from_key(midi_event->data[0]);
-                    note_on_events[*diff].push_back({event.time, colour});
+                    if (midi_event->data[1] != 0) {
+                        note_on_events[*diff].push_back({event.time, colour});
+                    } else {
+                        note_off_events[*diff].push_back({event.time, colour});
+                    }
                 }
                 break;
             }
