@@ -542,7 +542,7 @@ static bool is_part_guitar(const MidiTrack& track)
     if (meta_event == nullptr) {
         return false;
     }
-    if (meta_event->type != 1) {
+    if (meta_event->type != 3) {
         return false;
     }
     return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),

@@ -477,7 +477,7 @@ TEST_CASE("Notes are read correctly")
     SECTION("Notes of every difficulty are read")
     {
         MidiTrack note_track {{{0,
-                                {MetaEvent {1,
+                                {MetaEvent {3,
                                             {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
                                              0x55, 0x49, 0x54, 0x41, 0x52}}}},
                                {768, {MidiEvent {0x90, {96, 64}}}},
@@ -504,7 +504,7 @@ TEST_CASE("Notes are read correctly")
         MidiTrack other_track {{{768, {MidiEvent {0x90, {96, 64}}}},
                                 {960, {MidiEvent {0x80, {96, 0}}}}}};
         MidiTrack note_track {{{0,
-                                {MetaEvent {1,
+                                {MetaEvent {3,
                                             {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
                                              0x55, 0x49, 0x54, 0x41, 0x52}}}},
                                {768, {MidiEvent {0x90, {97, 64}}}},
@@ -520,7 +520,7 @@ TEST_CASE("Notes are read correctly")
     SECTION("Note On events must have a corresponding Note Off event")
     {
         MidiTrack note_track {{{0,
-                                {MetaEvent {1,
+                                {MetaEvent {3,
                                             {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
                                              0x55, 0x49, 0x54, 0x41, 0x52}}}},
                                {768, {MidiEvent {0x90, {96, 64}}}},
@@ -534,7 +534,7 @@ TEST_CASE("Notes are read correctly")
     SECTION("Note On events with velocity 0 count as Note Off events")
     {
         MidiTrack note_track {{{0,
-                                {MetaEvent {1,
+                                {MetaEvent {3,
                                             {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
                                              0x55, 0x49, 0x54, 0x41, 0x52}}}},
                                {768, {MidiEvent {0x90, {96, 64}}}},
@@ -548,7 +548,7 @@ TEST_CASE("Notes are read correctly")
 TEST_CASE("Solos are read")
 {
     MidiTrack note_track {{{0,
-                            {MetaEvent {1,
+                            {MetaEvent {3,
                                         {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
                                          0x55, 0x49, 0x54, 0x41, 0x52}}}},
                            {768, {MidiEvent {0x90, {103, 64}}}},
@@ -568,7 +568,7 @@ TEST_CASE("Star Power is read")
     SECTION("A single phrase is read")
     {
         MidiTrack note_track {{{0,
-                                {MetaEvent {1,
+                                {MetaEvent {3,
                                             {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
                                              0x55, 0x49, 0x54, 0x41, 0x52}}}},
                                {768, {MidiEvent {0x90, {116, 64}}}},
@@ -587,7 +587,7 @@ TEST_CASE("Star Power is read")
     SECTION("A Note Off event is required for every phrase")
     {
         MidiTrack note_track {{{0,
-                                {MetaEvent {1,
+                                {MetaEvent {3,
                                             {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
                                              0x55, 0x49, 0x54, 0x41, 0x52}}}},
                                {768, {MidiEvent {0x90, {116, 64}}}},
@@ -602,7 +602,7 @@ TEST_CASE("Star Power is read")
 TEST_CASE("Short midi sustains are trimmed")
 {
     MidiTrack note_track {{{0,
-                            {MetaEvent {1,
+                            {MetaEvent {3,
                                         {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
                                          0x55, 0x49, 0x54, 0x41, 0x52}}}},
                            {0, {MidiEvent {0x90, {96, 64}}}},
