@@ -521,6 +521,24 @@ Chart Chart::parse_chart(std::string_view input)
     return chart;
 }
 
+static bool is_part_guitar(const MidiTrack& track)
+{
+    constexpr std::string_view PART_GUITAR {"PART GUITAR"};
+
+    if (track.events.empty()) {
+        return false;
+    }
+    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
+    if (meta_event == nullptr) {
+        return false;
+    }
+    if (meta_event->type != 1) {
+        return false;
+    }
+    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
+                      PART_GUITAR.cbegin(), PART_GUITAR.cend());
+}
+
 static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
 {
     constexpr int EASY_GREEN = 60;
@@ -609,7 +627,7 @@ Chart Chart::from_midi(const Midi& midi)
     std::vector<BPM> tempos;
     std::vector<TimeSignature> time_sigs;
     for (const auto& event : midi.tracks[0].events) {
-        const MetaEvent* meta_event = std::get_if<MetaEvent>(&event.event);
+        const auto* meta_event = std::get_if<MetaEvent>(&event.event);
         if (meta_event == nullptr) {
             continue;
         }
@@ -640,8 +658,11 @@ Chart Chart::from_midi(const Midi& midi)
     std::map<Difficulty, std::vector<std::tuple<int, NoteColour>>>
         note_off_events;
     for (const auto& track : midi.tracks) {
+        if (!is_part_guitar(track)) {
+            continue;
+        }
         for (const auto& event : track.events) {
-            const MidiEvent* midi_event = std::get_if<MidiEvent>(&event.event);
+            const auto* midi_event = std::get_if<MidiEvent>(&event.event);
             if (midi_event == nullptr) {
                 continue;
             }

@@ -476,7 +476,11 @@ TEST_CASE("Notes are read correctly")
 {
     SECTION("Notes of every difficulty are read")
     {
-        MidiTrack note_track {{{768, {MidiEvent {0x90, {96, 64}}}},
+        MidiTrack note_track {{{0,
+                                {MetaEvent {1,
+                                            {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                             0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                               {768, {MidiEvent {0x90, {96, 64}}}},
                                {768, {MidiEvent {0x90, {84, 64}}}},
                                {768, {MidiEvent {0x90, {72, 64}}}},
                                {768, {MidiEvent {0x90, {60, 64}}}},
@@ -493,5 +497,23 @@ TEST_CASE("Notes are read correctly")
         REQUIRE(chart.note_track(Difficulty::Medium).notes() == green_note);
         REQUIRE(chart.note_track(Difficulty::Hard).notes() == green_note);
         REQUIRE(chart.note_track(Difficulty::Expert).notes() == green_note);
+    }
+
+    SECTION("Notes are only read from PART GUITAR")
+    {
+        MidiTrack other_track {{{768, {MidiEvent {0x90, {96, 64}}}},
+                                {960, {MidiEvent {0x80, {96, 0}}}}}};
+        MidiTrack note_track {{{0,
+                                {MetaEvent {1,
+                                            {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                             0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                               {768, {MidiEvent {0x90, {97, 64}}}},
+                               {960, {MidiEvent {0x80, {97, 0}}}}}};
+        const Midi midi {192, {other_track, note_track}};
+
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE(chart.note_track(Difficulty::Expert).notes()[0].colour
+                == NoteColour::Red);
     }
 }
