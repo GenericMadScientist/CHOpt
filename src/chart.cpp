@@ -616,15 +616,15 @@ static NoteColour colour_from_key(std::uint8_t key)
 
 static bool is_open_event_sysex(const SysexEvent& event)
 {
-    constexpr std::array<std::tuple<std::size_t, std::uint8_t>, 6>
-        REQUIRED_BYTES {std::tuple<std::size_t, std::uint8_t> {0, 0x50U},
-                        {1, 0x53U},
-                        {2, 0U},
-                        {3, 0U},
-                        {5, 1U},
-                        {7, 0xF7U}};
-    constexpr std::array<std::tuple<std::size_t, std::uint8_t>, 2>
-        UPPER_BOUNDS {std::tuple<std::size_t, std::uint8_t> {4, 3U}, {6, 1U}};
+    constexpr std::array<std::tuple<std::size_t, int>, 6>
+        REQUIRED_BYTES {std::tuple<std::size_t, int> {0, 0x50},
+                        {1, 0x53},
+                        {2, 0},
+                        {3, 0},
+                        {5, 1},
+                        {7, 0xF7}};
+    constexpr std::array<std::tuple<std::size_t, int>, 2>
+        UPPER_BOUNDS {std::tuple<std::size_t, int> {4, 3}, {6, 1}};
     constexpr int SYSEX_DATA_SIZE = 8;
 
     if (event.data.size() != SYSEX_DATA_SIZE) {
