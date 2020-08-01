@@ -562,3 +562,39 @@ TEST_CASE("Solos are read")
 
     REQUIRE(chart.note_track(Difficulty::Expert).solos() == solos);
 }
+
+TEST_CASE("Star Power is read")
+{
+    SECTION("A single phrase is read")
+    {
+        MidiTrack note_track {{{0,
+                                {MetaEvent {1,
+                                            {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                             0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                               {768, {MidiEvent {0x90, {116, 64}}}},
+                               {768, {MidiEvent {0x90, {96, 64}}}},
+                               {900, {MidiEvent {0x80, {116, 64}}}},
+                               {960, {MidiEvent {0x80, {96, 0}}}}}};
+        const Midi midi {192, {note_track}};
+        const std::vector<StarPower> sp_phrases {{768, 132}};
+
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE(chart.note_track(Difficulty::Expert).sp_phrases()
+                == sp_phrases);
+    }
+
+    SECTION("A Note Off event is required for every phrase")
+    {
+        MidiTrack note_track {{{0,
+                                {MetaEvent {1,
+                                            {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                             0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                               {768, {MidiEvent {0x90, {116, 64}}}},
+                               {768, {MidiEvent {0x90, {96, 64}}}},
+                               {960, {MidiEvent {0x80, {96, 0}}}}}};
+        const Midi midi {192, {note_track}};
+
+        REQUIRE_THROWS([&] { return Chart::from_midi(midi); }());
+    }
+}

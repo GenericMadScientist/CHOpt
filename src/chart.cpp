@@ -620,6 +620,7 @@ Chart Chart::from_midi(const Midi& midi)
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int SET_TEMPO_ID = 0x51;
     constexpr int SOLO_NOTE_ID = 103;
+    constexpr int SP_NOTE_ID = 116;
     constexpr int TEXT_EVENT_ID = 1;
     constexpr int TIME_SIG_ID = 0x58;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
@@ -669,6 +670,8 @@ Chart Chart::from_midi(const Midi& midi)
     std::map<Difficulty, std::vector<std::tuple<int, NoteColour>>>
         note_off_events;
     std::vector<std::tuple<int, int>> solo_events;
+    std::vector<int> sp_on_events;
+    std::vector<int> sp_off_events;
 
     for (const auto& track : midi.tracks) {
         if (!is_part_guitar(track)) {
@@ -687,6 +690,8 @@ Chart Chart::from_midi(const Midi& midi)
                     note_off_events[*diff].push_back({event.time, colour});
                 } else if (midi_event->data[0] == SOLO_NOTE_ID) {
                     solo_events.emplace_back(event.time, 1);
+                } else if (midi_event->data[0] == SP_NOTE_ID) {
+                    sp_off_events.push_back(event.time);
                 }
                 break;
             }
@@ -704,6 +709,12 @@ Chart Chart::from_midi(const Midi& midi)
                         solo_events.emplace_back(event.time, 0);
                     } else {
                         solo_events.emplace_back(event.time, 1);
+                    }
+                } else if (midi_event->data[0] == SP_NOTE_ID) {
+                    if (midi_event->data[1] != 0) {
+                        sp_on_events.push_back(event.time);
+                    } else {
+                        sp_off_events.push_back(event.time);
                     }
                 }
                 break;
@@ -729,9 +740,21 @@ Chart Chart::from_midi(const Midi& midi)
         }
     }
 
+    std::vector<StarPower> sp_phrases;
+    for (auto start : sp_on_events) {
+        const auto iter
+            = std::find_if(sp_off_events.cbegin(), sp_off_events.cend(),
+                           [&](const auto end) { return end >= start; });
+        if (iter == sp_off_events.cend()) {
+            throw std::invalid_argument(
+                "Note On event does not have a corresponding Note Off event");
+        }
+        sp_phrases.push_back({start, *iter - start});
+    }
+
     for (const auto& [diff, note_set] : notes) {
         auto solos = form_solo_vector(solo_events, note_set);
-        chart.m_note_tracks[diff] = {note_set, {}, solos};
+        chart.m_note_tracks[diff] = {note_set, sp_phrases, solos};
     }
 
     return chart;
