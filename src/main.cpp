@@ -47,8 +47,7 @@ static Chart from_filename(const std::string& filename)
         }
         std::vector<std::uint8_t> buffer {std::istreambuf_iterator<char>(in),
                                           std::istreambuf_iterator<char>()};
-        Chart::from_midi(parse_midi(buffer));
-        throw std::invalid_argument("Midi files currently unsupported");
+        return Chart::from_midi(parse_midi(buffer));
     }
     std::ifstream in {filename};
     if (!in.is_open()) {

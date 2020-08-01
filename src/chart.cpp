@@ -521,11 +521,79 @@ Chart Chart::parse_chart(std::string_view input)
     return chart;
 }
 
+static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
+{
+    constexpr int EASY_GREEN = 60;
+    constexpr int EASY_ORANGE = 64;
+    constexpr int EXPERT_GREEN = 96;
+    constexpr int EXPERT_ORANGE = 100;
+    constexpr int HARD_GREEN = 84;
+    constexpr int HARD_ORANGE = 88;
+    constexpr int MEDIUM_GREEN = 72;
+    constexpr int MEDIUM_ORANGE = 76;
+
+    if (key >= EXPERT_GREEN && key <= EXPERT_ORANGE) {
+        return {Difficulty::Expert};
+    }
+    if (key >= HARD_GREEN && key <= HARD_ORANGE) {
+        return {Difficulty::Hard};
+    }
+    if (key >= MEDIUM_GREEN && key <= MEDIUM_ORANGE) {
+        return {Difficulty::Medium};
+    }
+    if (key >= EASY_GREEN && key <= EASY_ORANGE) {
+        return {Difficulty::Easy};
+    }
+    return {};
+}
+
+static NoteColour colour_from_key(std::uint8_t key)
+{
+    constexpr int EASY_GREEN = 60;
+    constexpr int EASY_ORANGE = 64;
+    constexpr int EXPERT_GREEN = 96;
+    constexpr int EXPERT_ORANGE = 100;
+    constexpr int HARD_GREEN = 84;
+    constexpr int HARD_ORANGE = 88;
+    constexpr int MEDIUM_GREEN = 72;
+    constexpr int MEDIUM_ORANGE = 76;
+
+    if (key >= EXPERT_GREEN && key <= EXPERT_ORANGE) {
+        key -= EXPERT_GREEN;
+    } else if (key >= HARD_GREEN && key <= HARD_ORANGE) {
+        key -= HARD_GREEN;
+    } else if (key >= MEDIUM_GREEN && key <= MEDIUM_ORANGE) {
+        key -= MEDIUM_GREEN;
+    } else if (key >= EASY_GREEN && key <= EASY_ORANGE) {
+        key -= EASY_GREEN;
+    } else {
+        throw std::invalid_argument("Invalid key for note");
+    }
+
+    switch (key) {
+    case 0:
+        return NoteColour::Green;
+    case 1:
+        return NoteColour::Red;
+    case 2:
+        return NoteColour::Yellow;
+    case 3:
+        return NoteColour::Blue;
+    case 4:
+        return NoteColour::Orange;
+    default:
+        throw std::invalid_argument("Invalid key for note");
+    }
+}
+
 Chart Chart::from_midi(const Midi& midi)
 {
+    constexpr int NOTE_OFF_ID = 0x80;
+    constexpr int NOTE_ON_ID = 0x90;
     constexpr int SET_TEMPO_ID = 0x51;
     constexpr int TEXT_EVENT_ID = 1;
     constexpr int TIME_SIG_ID = 0x58;
+    constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
     if (midi.ticks_per_quarter_note == 0) {
         throw std::invalid_argument("Resolution must be > 0");
@@ -565,6 +633,55 @@ Chart Chart::from_midi(const Midi& midi)
     }
 
     chart.m_sync_track = SyncTrack {std::move(time_sigs), std::move(tempos)};
+
+    std::map<Difficulty, std::vector<Note>> notes;
+    std::map<Difficulty, std::vector<std::tuple<int, NoteColour>>>
+        note_on_events;
+    std::map<Difficulty, std::vector<std::tuple<int, NoteColour>>>
+        note_off_events;
+    for (const auto& track : midi.tracks) {
+        for (const auto& event : track.events) {
+            const MidiEvent* midi_event = std::get_if<MidiEvent>(&event.event);
+            if (midi_event == nullptr) {
+                continue;
+            }
+            switch (midi_event->status & UPPER_NIBBLE_MASK) {
+            case NOTE_OFF_ID: {
+                const auto diff = difficulty_from_key(midi_event->data[0]);
+                if (diff.has_value()) {
+                    const auto colour = colour_from_key(midi_event->data[0]);
+                    note_off_events[*diff].push_back({event.time, colour});
+                }
+                break;
+            }
+            case NOTE_ON_ID: {
+                const auto diff = difficulty_from_key(midi_event->data[0]);
+                if (diff.has_value()) {
+                    const auto colour = colour_from_key(midi_event->data[0]);
+                    note_on_events[*diff].push_back({event.time, colour});
+                }
+                break;
+            }
+            }
+        }
+    }
+
+    for (const auto& [diff, note_ons] : note_on_events) {
+        const auto& note_offs = note_off_events.at(diff);
+        for (const auto& pair : note_ons) {
+            const auto pos = std::get<0>(pair);
+            const auto colour = std::get<1>(pair);
+            auto iter = std::find_if(
+                note_offs.cbegin(), note_offs.cend(), [&](const auto& p) {
+                    return std::get<0>(p) >= pos && std::get<1>(p) == colour;
+                });
+            notes[diff].push_back({pos, std::get<0>(*iter) - pos, colour});
+        }
+    }
+
+    for (const auto& [diff, note_set] : notes) {
+        chart.m_note_tracks[diff] = {note_set, {}, {}};
+    }
 
     return chart;
 }

@@ -471,3 +471,27 @@ TEST_CASE("First track is read correctly")
         REQUIRE(chart.song_header().charter == "Unknown Charter");
     }
 }
+
+TEST_CASE("Notes are read correctly")
+{
+    SECTION("Notes of every difficulty are read")
+    {
+        MidiTrack note_track {{{768, {MidiEvent {0x90, {96, 64}}}},
+                               {768, {MidiEvent {0x90, {84, 64}}}},
+                               {768, {MidiEvent {0x90, {72, 64}}}},
+                               {768, {MidiEvent {0x90, {60, 64}}}},
+                               {960, {MidiEvent {0x80, {96, 0}}}},
+                               {960, {MidiEvent {0x80, {84, 0}}}},
+                               {960, {MidiEvent {0x80, {72, 0}}}},
+                               {960, {MidiEvent {0x80, {60, 0}}}}}};
+        const Midi midi {192, {note_track}};
+        const std::vector<Note> green_note {{768, 192, NoteColour::Green}};
+
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE(chart.note_track(Difficulty::Easy).notes() == green_note);
+        REQUIRE(chart.note_track(Difficulty::Medium).notes() == green_note);
+        REQUIRE(chart.note_track(Difficulty::Hard).notes() == green_note);
+        REQUIRE(chart.note_track(Difficulty::Expert).notes() == green_note);
+    }
+}
