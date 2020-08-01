@@ -616,7 +616,6 @@ static NoteColour colour_from_key(std::uint8_t key)
 
 Chart Chart::from_midi(const Midi& midi)
 {
-    constexpr int DEFAULT_RESOLUTION = 192;
     constexpr int DEFAULT_SUST_CUTOFF = 64;
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
