@@ -56,8 +56,8 @@ them.
 
 ## Acknowledgements
 
-* FireFox2000000's Moonscraper .chart parser was very helpful for getting an
-initial idea of Clone Hero's parsing behaviour.
+* FireFox2000000's Moonscraper .chart and .mid parsers were very helpful for
+getting an initial idea of Clone Hero's parsing behaviour.
 * Dinoguy1000 and shadoweh helped me make sure chopt runs on other peoples'
 machines.
 * The CH Score Challenges server for feedback, especially CyclopsDragon,
