@@ -638,45 +638,25 @@ static bool is_open_event_sysex(const SysexEvent& event)
     return true;
 }
 
-Chart Chart::from_midi(const Midi& midi)
+static std::tuple<std::string, SyncTrack>
+read_first_midi_track(const MidiTrack& track)
 {
-    constexpr std::array<Difficulty, 4> OPEN_EVENT_DIFFS {
-        Difficulty::Easy, Difficulty::Medium, Difficulty::Hard,
-        Difficulty::Expert};
-
-    constexpr int DEFAULT_SUST_CUTOFF = 64;
-    constexpr int NOTE_OFF_ID = 0x80;
-    constexpr int NOTE_ON_ID = 0x90;
     constexpr int SET_TEMPO_ID = 0x51;
-    constexpr int SOLO_NOTE_ID = 103;
-    constexpr int SP_NOTE_ID = 116;
-    constexpr int SYSEX_ON_INDEX = 6;
     constexpr int TEXT_EVENT_ID = 1;
     constexpr int TIME_SIG_ID = 0x58;
-    constexpr int UPPER_NIBBLE_MASK = 0xF0;
-
-    if (midi.ticks_per_quarter_note == 0) {
-        throw std::invalid_argument("Resolution must be > 0");
-    }
-
-    Chart chart;
-    chart.m_resolution = midi.ticks_per_quarter_note;
-
-    if (midi.tracks.empty()) {
-        return chart;
-    }
 
     std::vector<BPM> tempos;
     std::vector<TimeSignature> time_sigs;
-    for (const auto& event : midi.tracks[0].events) {
+    std::string name {"Unknown Song"};
+    for (const auto& event : track.events) {
         const auto* meta_event = std::get_if<MetaEvent>(&event.event);
         if (meta_event == nullptr) {
             continue;
         }
         switch (meta_event->type) {
         case TEXT_EVENT_ID:
-            chart.m_song_header.name = std::string {meta_event->data.cbegin(),
-                                                    meta_event->data.cend()};
+            name = std::string {meta_event->data.cbegin(),
+                                meta_event->data.cend()};
             break;
         case SET_TEMPO_ID: {
             const auto us_per_quarter = meta_event->data[0] << 16
@@ -692,7 +672,38 @@ Chart Chart::from_midi(const Midi& midi)
         }
     }
 
-    chart.m_sync_track = SyncTrack {std::move(time_sigs), std::move(tempos)};
+    SyncTrack sync_track {std::move(time_sigs), std::move(tempos)};
+    return {name, sync_track};
+}
+
+Chart Chart::from_midi(const Midi& midi)
+{
+    constexpr std::array<Difficulty, 4> OPEN_EVENT_DIFFS {
+        Difficulty::Easy, Difficulty::Medium, Difficulty::Hard,
+        Difficulty::Expert};
+
+    constexpr int DEFAULT_SUST_CUTOFF = 64;
+    constexpr int NOTE_OFF_ID = 0x80;
+    constexpr int NOTE_ON_ID = 0x90;
+    constexpr int SOLO_NOTE_ID = 103;
+    constexpr int SP_NOTE_ID = 116;
+    constexpr int SYSEX_ON_INDEX = 6;
+    constexpr int UPPER_NIBBLE_MASK = 0xF0;
+
+    if (midi.ticks_per_quarter_note == 0) {
+        throw std::invalid_argument("Resolution must be > 0");
+    }
+
+    Chart chart;
+    chart.m_resolution = midi.ticks_per_quarter_note;
+
+    if (midi.tracks.empty()) {
+        return chart;
+    }
+
+    const auto& [name, sync_track] = read_first_midi_track(midi.tracks[0]);
+    chart.m_song_header.name = name;
+    chart.m_sync_track = sync_track;
 
     std::map<Difficulty, std::vector<Note>> notes;
     std::map<Difficulty, std::vector<std::tuple<int, NoteColour>>>
