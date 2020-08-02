@@ -713,85 +713,104 @@ struct InstrumentMidiTrack {
     std::vector<int> sp_off_events;
 };
 
-static std::map<Difficulty, NoteTrack>
-note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
+static void add_sysex_event(InstrumentMidiTrack& track, const SysexEvent& event,
+                            int time)
 {
     constexpr std::array<Difficulty, 4> OPEN_EVENT_DIFFS {
         Difficulty::Easy, Difficulty::Medium, Difficulty::Hard,
         Difficulty::Expert};
+    constexpr int SYSEX_ON_INDEX = 6;
 
-    constexpr int DEFAULT_RESOLUTION = 192;
-    constexpr int DEFAULT_SUST_CUTOFF = 64;
-    constexpr int NOTE_OFF_ID = 0x80;
-    constexpr int NOTE_ON_ID = 0x90;
+    if (!is_open_event_sysex(event)) {
+        return;
+    }
+    Difficulty diff = OPEN_EVENT_DIFFS.at(event.data[4]);
+    if (event.data[SYSEX_ON_INDEX] == 0) {
+        track.open_off_events[diff].push_back(time);
+    } else {
+        track.open_on_events[diff].push_back(time);
+    }
+}
+
+static void add_note_off_event(InstrumentMidiTrack& track,
+                               const std::array<std::uint8_t, 2>& data,
+                               int time)
+{
     constexpr int SOLO_NOTE_ID = 103;
     constexpr int SP_NOTE_ID = 116;
-    constexpr int SYSEX_ON_INDEX = 6;
+
+    const auto diff = difficulty_from_key(data[0]);
+    if (diff.has_value()) {
+        const auto colour = colour_from_key(data[0]);
+        track.note_off_events[{*diff, colour}].push_back(time);
+    } else if (data[0] == SOLO_NOTE_ID) {
+        track.solo_off_events.push_back(time);
+    } else if (data[0] == SP_NOTE_ID) {
+        track.sp_off_events.push_back(time);
+    }
+}
+
+static void add_note_on_event(InstrumentMidiTrack& track,
+                              const std::array<std::uint8_t, 2>& data, int time)
+{
+    constexpr int SOLO_NOTE_ID = 103;
+    constexpr int SP_NOTE_ID = 116;
+
+    // Velocity 0 Note On events are counted as Note Off events.
+    if (data[1] == 0) {
+        add_note_off_event(track, data, time);
+        return;
+    }
+
+    const auto diff = difficulty_from_key(data[0]);
+    if (diff.has_value()) {
+        const auto colour = colour_from_key(data[0]);
+        track.note_on_events[{*diff, colour}].push_back(time);
+    } else if (data[0] == SOLO_NOTE_ID) {
+        track.solo_on_events.push_back(time);
+    } else if (data[0] == SP_NOTE_ID) {
+        track.sp_on_events.push_back(time);
+    }
+}
+
+static InstrumentMidiTrack
+read_instrument_midi_track(const MidiTrack& midi_track)
+{
+    constexpr int NOTE_OFF_ID = 0x80;
+    constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
-    std::map<Difficulty, std::vector<Note>> notes;
     InstrumentMidiTrack event_track;
 
     for (const auto& event : midi_track.events) {
         const auto* midi_event = std::get_if<MidiEvent>(&event.event);
         if (midi_event == nullptr) {
             const auto* sysex_event = std::get_if<SysexEvent>(&event.event);
-            if (sysex_event == nullptr) {
-                continue;
-            }
-            if (!is_open_event_sysex(*sysex_event)) {
-                continue;
-            }
-            Difficulty diff = OPEN_EVENT_DIFFS.at(sysex_event->data[4]);
-            if (sysex_event->data[SYSEX_ON_INDEX] == 0) {
-                event_track.open_off_events[diff].push_back(event.time);
-            } else {
-                event_track.open_on_events[diff].push_back(event.time);
+            if (sysex_event != nullptr) {
+                add_sysex_event(event_track, *sysex_event, event.time);
             }
             continue;
         }
         switch (midi_event->status & UPPER_NIBBLE_MASK) {
-        case NOTE_OFF_ID: {
-            const auto diff = difficulty_from_key(midi_event->data[0]);
-            if (diff.has_value()) {
-                const auto colour = colour_from_key(midi_event->data[0]);
-                event_track.note_off_events[{*diff, colour}].push_back(
-                    event.time);
-            } else if (midi_event->data[0] == SOLO_NOTE_ID) {
-                event_track.solo_off_events.push_back(event.time);
-            } else if (midi_event->data[0] == SP_NOTE_ID) {
-                event_track.sp_off_events.push_back(event.time);
-            }
+        case NOTE_OFF_ID:
+            add_note_off_event(event_track, midi_event->data, event.time);
             break;
-        }
-        case NOTE_ON_ID: {
-            const auto diff = difficulty_from_key(midi_event->data[0]);
-            if (diff.has_value()) {
-                const auto colour = colour_from_key(midi_event->data[0]);
-                if (midi_event->data[1] != 0) {
-                    event_track.note_on_events[{*diff, colour}].push_back(
-                        event.time);
-                } else {
-                    event_track.note_off_events[{*diff, colour}].push_back(
-                        event.time);
-                }
-            } else if (midi_event->data[0] == SOLO_NOTE_ID) {
-                if (midi_event->data[1] != 0) {
-                    event_track.solo_on_events.push_back(event.time);
-                } else {
-                    event_track.solo_off_events.push_back(event.time);
-                }
-            } else if (midi_event->data[0] == SP_NOTE_ID) {
-                if (midi_event->data[1] != 0) {
-                    event_track.sp_on_events.push_back(event.time);
-                } else {
-                    event_track.sp_off_events.push_back(event.time);
-                }
-            }
+        case NOTE_ON_ID:
+            add_note_on_event(event_track, midi_event->data, event.time);
             break;
-        }
         }
     }
+
+    return event_track;
+}
+
+static std::map<Difficulty, NoteTrack>
+note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
+{
+    constexpr int DEFAULT_RESOLUTION = 192;
+    constexpr int DEFAULT_SUST_CUTOFF = 64;
+
+    const auto event_track = read_instrument_midi_track(midi_track);
 
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
     for (const auto& [diff, open_ons] : event_track.open_on_events) {
@@ -799,6 +818,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         open_events[diff] = combine_on_off_events(open_ons, open_offs);
     }
 
+    std::map<Difficulty, std::vector<Note>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour] = key;
         const auto& note_offs = event_track.note_off_events.at(key);
@@ -826,7 +846,6 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     }
 
     std::map<Difficulty, NoteTrack> note_tracks;
-
     for (const auto& [diff, note_set] : notes) {
         auto solos = form_solo_vector(event_track.solo_on_events,
                                       event_track.solo_off_events, note_set);
