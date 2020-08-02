@@ -329,36 +329,58 @@ static std::string_view read_sync_track(std::string_view input,
     return input;
 }
 
+// Takes a sequence of points where some note type/event is turned on, and a
+// sequence where said type is turned off, and returns a tuple of intervals
+// where the event is on.
+static std::vector<std::tuple<int, int>>
+combine_on_off_events(const std::vector<int>& on_events,
+                      const std::vector<int>& off_events)
+{
+    std::vector<std::tuple<int, int>> ranges;
+
+    auto on_iter = on_events.cbegin();
+    auto off_iter = off_events.cbegin();
+
+    while (on_iter < on_events.cend() && off_iter < off_events.cend()) {
+        if (*on_iter > *off_iter) {
+            ++off_iter;
+            continue;
+        }
+        ranges.emplace_back(*on_iter, *off_iter);
+        while (on_iter < on_events.cend() && *on_iter <= *off_iter) {
+            ++on_iter;
+        }
+    }
+
+    if (on_iter != on_events.cend()) {
+        throw std::invalid_argument("on event has no corresponding off event");
+    }
+
+    return ranges;
+}
+
 static std::vector<Solo>
-form_solo_vector(const std::vector<std::tuple<int, int>>& solo_events,
+form_solo_vector(const std::vector<int>& solo_on_events,
+                 const std::vector<int>& solo_off_events,
                  const std::vector<Note>& notes)
 {
     constexpr int SOLO_NOTE_VALUE = 100;
 
     std::vector<Solo> solos;
 
-    int start = 0;
-    int end = 0;
-    bool in_solo = false;
-    for (auto [pos, type] : solo_events) {
-        if (type == 0 && !in_solo) {
-            in_solo = true;
-            start = pos;
-        } else if (type == 1 && in_solo) {
-            in_solo = false;
-            end = pos;
-            std::set<int> positions_in_solo;
-            for (const auto& note : notes) {
-                if (note.position >= start && note.position <= end) {
-                    positions_in_solo.insert(note.position);
-                }
+    for (auto [start, end] :
+         combine_on_off_events(solo_on_events, solo_off_events)) {
+        std::set<int> positions_in_solo;
+        for (const auto& note : notes) {
+            if (note.position >= start && note.position <= end) {
+                positions_in_solo.insert(note.position);
             }
-            if (positions_in_solo.empty()) {
-                continue;
-            }
-            auto note_count = static_cast<int>(positions_in_solo.size());
-            solos.push_back({start, end, SOLO_NOTE_VALUE * note_count});
         }
+        if (positions_in_solo.empty()) {
+            continue;
+        }
+        auto note_count = static_cast<int>(positions_in_solo.size());
+        solos.push_back({start, end, SOLO_NOTE_VALUE * note_count});
     }
 
     return solos;
@@ -384,8 +406,8 @@ static std::string_view read_single_track(std::string_view input,
         throw std::runtime_error("A [*Single] track does not open with {");
     }
 
-    // Pairs are (location, x) where x is 0 for solo and 1 for soloend.
-    std::vector<std::tuple<int, int>> solo_events;
+    std::vector<int> solo_on_events;
+    std::vector<int> solo_off_events;
 
     while (true) {
         const auto line = break_off_newline(input);
@@ -459,15 +481,17 @@ static std::string_view read_single_track(std::string_view input,
             track.sp_phrases.push_back({position, length});
         } else if (type == "E") {
             if (split_string[3] == "solo") {
-                solo_events.emplace_back(position, 0);
+                solo_on_events.push_back(position);
             } else if (split_string[3] == "soloend") {
-                solo_events.emplace_back(position, 1);
+                solo_off_events.push_back(position);
             }
         }
     }
 
-    std::sort(solo_events.begin(), solo_events.end());
-    track.solos = form_solo_vector(solo_events, track.notes);
+    std::sort(solo_on_events.begin(), solo_on_events.end());
+    std::sort(solo_off_events.begin(), solo_off_events.end());
+    track.solos
+        = form_solo_vector(solo_on_events, solo_off_events, track.notes);
 
     return input;
 }
@@ -683,31 +707,11 @@ struct InstrumentMidiTrack {
         note_off_events;
     std::map<Difficulty, std::vector<int>> open_on_events;
     std::map<Difficulty, std::vector<int>> open_off_events;
+    std::vector<int> solo_on_events;
+    std::vector<int> solo_off_events;
     std::vector<int> sp_on_events;
     std::vector<int> sp_off_events;
 };
-
-// Takes a sequence of points where some note type/event is turned on, and a
-// sequence where said type is turned off, and returns a tuple of intervals
-// where the event is on.
-static std::vector<std::tuple<int, int>>
-combine_on_off_events(const std::vector<int>& on_events,
-                      const std::vector<int>& off_events)
-{
-    std::vector<std::tuple<int, int>> ranges;
-
-    for (auto start : on_events) {
-        const auto iter = std::find_if(off_events.cbegin(), off_events.cend(),
-                                       [&](auto end) { return end >= start; });
-        if (iter == off_events.cend()) {
-            throw std::invalid_argument(
-                "on event has no corresponding off event");
-        }
-        ranges.emplace_back(start, *iter);
-    }
-
-    return ranges;
-}
 
 static std::map<Difficulty, NoteTrack>
 note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
@@ -726,7 +730,6 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
     std::map<Difficulty, std::vector<Note>> notes;
-    std::vector<std::tuple<int, int>> solo_events;
     InstrumentMidiTrack event_track;
 
     for (const auto& event : midi_track.events) {
@@ -755,7 +758,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
                 event_track.note_off_events[{*diff, colour}].push_back(
                     event.time);
             } else if (midi_event->data[0] == SOLO_NOTE_ID) {
-                solo_events.emplace_back(event.time, 1);
+                event_track.solo_off_events.push_back(event.time);
             } else if (midi_event->data[0] == SP_NOTE_ID) {
                 event_track.sp_off_events.push_back(event.time);
             }
@@ -774,9 +777,9 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
                 }
             } else if (midi_event->data[0] == SOLO_NOTE_ID) {
                 if (midi_event->data[1] != 0) {
-                    solo_events.emplace_back(event.time, 0);
+                    event_track.solo_on_events.push_back(event.time);
                 } else {
-                    solo_events.emplace_back(event.time, 1);
+                    event_track.solo_off_events.push_back(event.time);
                 }
             } else if (midi_event->data[0] == SP_NOTE_ID) {
                 if (midi_event->data[1] != 0) {
@@ -825,7 +828,8 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     std::map<Difficulty, NoteTrack> note_tracks;
 
     for (const auto& [diff, note_set] : notes) {
-        auto solos = form_solo_vector(solo_events, note_set);
+        auto solos = form_solo_vector(event_track.solo_on_events,
+                                      event_track.solo_off_events, note_set);
         note_tracks[diff] = {note_set, sp_phrases, solos};
     }
 
