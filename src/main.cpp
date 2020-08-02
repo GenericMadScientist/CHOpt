@@ -18,51 +18,21 @@
 
 #include <cstdint>
 #include <cstdlib>
-#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 
 #include "chart.hpp"
 #include "image.hpp"
-#include "midi.hpp"
 #include "optimiser.hpp"
 #include "settings.hpp"
 #include "time.hpp"
-
-static bool is_mid_filename(const std::string& filename)
-{
-    if (filename.size() < 4) {
-        return false;
-    }
-    return filename.substr(filename.size() - 4) == ".mid";
-}
-
-static Chart from_filename(const std::string& filename)
-{
-    if (is_mid_filename(filename)) {
-        std::ifstream in {filename, std::ios::binary};
-        if (!in.is_open()) {
-            throw std::invalid_argument("File did not open");
-        }
-        std::vector<std::uint8_t> buffer {std::istreambuf_iterator<char>(in),
-                                          std::istreambuf_iterator<char>()};
-        return Chart::from_midi(parse_midi(buffer));
-    }
-    std::ifstream in {filename};
-    if (!in.is_open()) {
-        throw std::invalid_argument("File did not open");
-    }
-    std::string contents {std::istreambuf_iterator<char>(in),
-                          std::istreambuf_iterator<char>()};
-    return Chart::parse_chart(contents);
-}
 
 int main(int argc, char** argv)
 {
     try {
         const auto settings = from_args(argc, argv);
-        const auto chart = from_filename(settings.filename);
+        const auto chart = Chart::from_filename(settings.filename);
         const auto& track = chart.note_track(settings.difficulty);
         ImageBuilder builder {track, chart.resolution(), chart.sync_track()};
         builder.add_song_header(chart.song_header());

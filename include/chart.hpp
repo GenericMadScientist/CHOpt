@@ -166,6 +166,7 @@ private:
     Chart() = default;
 
 public:
+    static Chart from_filename(const std::string& filename);
     static Chart from_midi(const Midi& midi);
     static Chart parse_chart(std::string_view input);
     [[nodiscard]] int resolution() const { return m_resolution; }
