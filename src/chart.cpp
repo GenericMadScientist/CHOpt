@@ -687,6 +687,28 @@ struct InstrumentMidiTrack {
     std::vector<int> sp_off_events;
 };
 
+// Takes a sequence of points where some note type/event is turned on, and a
+// sequence where said type is turned off, and returns a tuple of intervals
+// where the event is on.
+static std::vector<std::tuple<int, int>>
+combine_on_off_events(const std::vector<int>& on_events,
+                      const std::vector<int>& off_events)
+{
+    std::vector<std::tuple<int, int>> ranges;
+
+    for (auto start : on_events) {
+        const auto iter = std::find_if(off_events.cbegin(), off_events.cend(),
+                                       [&](auto end) { return end >= start; });
+        if (iter == off_events.cend()) {
+            throw std::invalid_argument(
+                "on event has no corresponding off event");
+        }
+        ranges.emplace_back(start, *iter);
+    }
+
+    return ranges;
+}
+
 static std::map<Difficulty, NoteTrack>
 note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
@@ -771,29 +793,15 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
     for (const auto& [diff, open_ons] : event_track.open_on_events) {
         const auto& open_offs = event_track.open_off_events.at(diff);
-        for (auto open_on : open_ons) {
-            const auto iter
-                = std::find_if(open_offs.cbegin(), open_offs.cend(),
-                               [&](const auto end) { return end >= open_on; });
-            if (iter == open_offs.cend()) {
-                throw std::invalid_argument("Open on event has no end");
-            }
-            open_events[diff].push_back({open_on, *iter});
-        }
+        open_events[diff] = combine_on_off_events(open_ons, open_offs);
     }
 
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour] = key;
         const auto& note_offs = event_track.note_off_events.at(key);
-        for (const auto& pos : note_ons) {
-            const auto iter
-                = std::find_if(note_offs.cbegin(), note_offs.cend(),
-                               [&](const auto& p) { return p >= pos; });
-            if (iter == note_offs.cend()) {
-                throw std::invalid_argument("Note On event does not have a "
-                                            "corresponding Note Off event");
-            }
-            auto note_length = *iter - pos;
+        for (const auto& [pos, end] :
+             combine_on_off_events(note_ons, note_offs)) {
+            auto note_length = end - pos;
             if (note_length
                 <= (DEFAULT_SUST_CUTOFF * resolution) / DEFAULT_RESOLUTION) {
                 note_length = 0;
@@ -809,16 +817,9 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     }
 
     std::vector<StarPower> sp_phrases;
-    for (auto start : event_track.sp_on_events) {
-        const auto iter
-            = std::find_if(event_track.sp_off_events.cbegin(),
-                           event_track.sp_off_events.cend(),
-                           [&](const auto end) { return end >= start; });
-        if (iter == event_track.sp_off_events.cend()) {
-            throw std::invalid_argument(
-                "Note On event does not have a corresponding Note Off event");
-        }
-        sp_phrases.push_back({start, *iter - start});
+    for (const auto& [start, end] : combine_on_off_events(
+             event_track.sp_on_events, event_track.sp_off_events)) {
+        sp_phrases.push_back({start, end - start});
     }
 
     std::map<Difficulty, NoteTrack> note_tracks;
