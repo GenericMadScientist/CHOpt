@@ -676,12 +676,25 @@ read_first_midi_track(const MidiTrack& track)
     return {name, sync_track};
 }
 
-Chart Chart::from_midi(const Midi& midi)
+struct InstrumentMidiTrack {
+    std::map<std::tuple<Difficulty, NoteColour>, std::vector<int>>
+        note_on_events;
+    std::map<std::tuple<Difficulty, NoteColour>, std::vector<int>>
+        note_off_events;
+    std::map<Difficulty, std::vector<int>> open_on_events;
+    std::map<Difficulty, std::vector<int>> open_off_events;
+    std::vector<int> sp_on_events;
+    std::vector<int> sp_off_events;
+};
+
+static std::map<Difficulty, NoteTrack>
+note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
     constexpr std::array<Difficulty, 4> OPEN_EVENT_DIFFS {
         Difficulty::Easy, Difficulty::Medium, Difficulty::Hard,
         Difficulty::Expert};
 
+    constexpr int DEFAULT_RESOLUTION = 192;
     constexpr int DEFAULT_SUST_CUTOFF = 64;
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
@@ -690,6 +703,136 @@ Chart Chart::from_midi(const Midi& midi)
     constexpr int SYSEX_ON_INDEX = 6;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
+    std::map<Difficulty, std::vector<Note>> notes;
+    std::vector<std::tuple<int, int>> solo_events;
+    InstrumentMidiTrack event_track;
+
+    for (const auto& event : midi_track.events) {
+        const auto* midi_event = std::get_if<MidiEvent>(&event.event);
+        if (midi_event == nullptr) {
+            const auto* sysex_event = std::get_if<SysexEvent>(&event.event);
+            if (sysex_event == nullptr) {
+                continue;
+            }
+            if (!is_open_event_sysex(*sysex_event)) {
+                continue;
+            }
+            Difficulty diff = OPEN_EVENT_DIFFS.at(sysex_event->data[4]);
+            if (sysex_event->data[SYSEX_ON_INDEX] == 0) {
+                event_track.open_off_events[diff].push_back(event.time);
+            } else {
+                event_track.open_on_events[diff].push_back(event.time);
+            }
+            continue;
+        }
+        switch (midi_event->status & UPPER_NIBBLE_MASK) {
+        case NOTE_OFF_ID: {
+            const auto diff = difficulty_from_key(midi_event->data[0]);
+            if (diff.has_value()) {
+                const auto colour = colour_from_key(midi_event->data[0]);
+                event_track.note_off_events[{*diff, colour}].push_back(
+                    event.time);
+            } else if (midi_event->data[0] == SOLO_NOTE_ID) {
+                solo_events.emplace_back(event.time, 1);
+            } else if (midi_event->data[0] == SP_NOTE_ID) {
+                event_track.sp_off_events.push_back(event.time);
+            }
+            break;
+        }
+        case NOTE_ON_ID: {
+            const auto diff = difficulty_from_key(midi_event->data[0]);
+            if (diff.has_value()) {
+                const auto colour = colour_from_key(midi_event->data[0]);
+                if (midi_event->data[1] != 0) {
+                    event_track.note_on_events[{*diff, colour}].push_back(
+                        event.time);
+                } else {
+                    event_track.note_off_events[{*diff, colour}].push_back(
+                        event.time);
+                }
+            } else if (midi_event->data[0] == SOLO_NOTE_ID) {
+                if (midi_event->data[1] != 0) {
+                    solo_events.emplace_back(event.time, 0);
+                } else {
+                    solo_events.emplace_back(event.time, 1);
+                }
+            } else if (midi_event->data[0] == SP_NOTE_ID) {
+                if (midi_event->data[1] != 0) {
+                    event_track.sp_on_events.push_back(event.time);
+                } else {
+                    event_track.sp_off_events.push_back(event.time);
+                }
+            }
+            break;
+        }
+        }
+    }
+
+    std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
+    for (const auto& [diff, open_ons] : event_track.open_on_events) {
+        const auto& open_offs = event_track.open_off_events.at(diff);
+        for (auto open_on : open_ons) {
+            const auto iter
+                = std::find_if(open_offs.cbegin(), open_offs.cend(),
+                               [&](const auto end) { return end >= open_on; });
+            if (iter == open_offs.cend()) {
+                throw std::invalid_argument("Open on event has no end");
+            }
+            open_events[diff].push_back({open_on, *iter});
+        }
+    }
+
+    for (const auto& [key, note_ons] : event_track.note_on_events) {
+        const auto& [diff, colour] = key;
+        const auto& note_offs = event_track.note_off_events.at(key);
+        for (const auto& pos : note_ons) {
+            const auto iter
+                = std::find_if(note_offs.cbegin(), note_offs.cend(),
+                               [&](const auto& p) { return p >= pos; });
+            if (iter == note_offs.cend()) {
+                throw std::invalid_argument("Note On event does not have a "
+                                            "corresponding Note Off event");
+            }
+            auto note_length = *iter - pos;
+            if (note_length
+                <= (DEFAULT_SUST_CUTOFF * resolution) / DEFAULT_RESOLUTION) {
+                note_length = 0;
+            }
+            auto note_colour = colour;
+            for (const auto& [open_start, open_end] : open_events[diff]) {
+                if (pos >= open_start && pos < open_end) {
+                    note_colour = NoteColour::Open;
+                }
+            }
+            notes[diff].push_back({pos, note_length, note_colour});
+        }
+    }
+
+    std::vector<StarPower> sp_phrases;
+    for (auto start : event_track.sp_on_events) {
+        const auto iter
+            = std::find_if(event_track.sp_off_events.cbegin(),
+                           event_track.sp_off_events.cend(),
+                           [&](const auto end) { return end >= start; });
+        if (iter == event_track.sp_off_events.cend()) {
+            throw std::invalid_argument(
+                "Note On event does not have a corresponding Note Off event");
+        }
+        sp_phrases.push_back({start, *iter - start});
+    }
+
+    std::map<Difficulty, NoteTrack> note_tracks;
+
+    for (const auto& [diff, note_set] : notes) {
+        auto solos = form_solo_vector(solo_events, note_set);
+        note_tracks[diff] = {note_set, sp_phrases, solos};
+    }
+
+    return note_tracks;
+}
+
+Chart Chart::from_midi(const Midi& midi)
+{
     if (midi.ticks_per_quarter_note == 0) {
         throw std::invalid_argument("Resolution must be > 0");
     }
@@ -705,136 +848,11 @@ Chart Chart::from_midi(const Midi& midi)
     chart.m_song_header.name = name;
     chart.m_sync_track = sync_track;
 
-    std::map<Difficulty, std::vector<Note>> notes;
-    std::map<Difficulty, std::vector<std::tuple<int, NoteColour>>>
-        note_on_events;
-    std::map<Difficulty, std::vector<std::tuple<int, NoteColour>>>
-        note_off_events;
-    std::map<Difficulty, std::vector<int>> open_on_events;
-    std::map<Difficulty, std::vector<int>> open_off_events;
-    std::vector<std::tuple<int, int>> solo_events;
-    std::vector<int> sp_on_events;
-    std::vector<int> sp_off_events;
-
     for (const auto& track : midi.tracks) {
-        if (!is_part_guitar(track)) {
-            continue;
+        if (is_part_guitar(track)) {
+            chart.m_note_tracks
+                = note_tracks_from_midi(track, chart.m_resolution);
         }
-        for (const auto& event : track.events) {
-            const auto* midi_event = std::get_if<MidiEvent>(&event.event);
-            if (midi_event == nullptr) {
-                const auto* sysex_event = std::get_if<SysexEvent>(&event.event);
-                if (sysex_event == nullptr) {
-                    continue;
-                }
-                if (!is_open_event_sysex(*sysex_event)) {
-                    continue;
-                }
-                Difficulty diff = OPEN_EVENT_DIFFS.at(sysex_event->data[4]);
-                if (sysex_event->data[SYSEX_ON_INDEX] == 0) {
-                    open_off_events[diff].push_back(event.time);
-                } else {
-                    open_on_events[diff].push_back(event.time);
-                }
-                continue;
-            }
-            switch (midi_event->status & UPPER_NIBBLE_MASK) {
-            case NOTE_OFF_ID: {
-                const auto diff = difficulty_from_key(midi_event->data[0]);
-                if (diff.has_value()) {
-                    const auto colour = colour_from_key(midi_event->data[0]);
-                    note_off_events[*diff].push_back({event.time, colour});
-                } else if (midi_event->data[0] == SOLO_NOTE_ID) {
-                    solo_events.emplace_back(event.time, 1);
-                } else if (midi_event->data[0] == SP_NOTE_ID) {
-                    sp_off_events.push_back(event.time);
-                }
-                break;
-            }
-            case NOTE_ON_ID: {
-                const auto diff = difficulty_from_key(midi_event->data[0]);
-                if (diff.has_value()) {
-                    const auto colour = colour_from_key(midi_event->data[0]);
-                    if (midi_event->data[1] != 0) {
-                        note_on_events[*diff].push_back({event.time, colour});
-                    } else {
-                        note_off_events[*diff].push_back({event.time, colour});
-                    }
-                } else if (midi_event->data[0] == SOLO_NOTE_ID) {
-                    if (midi_event->data[1] != 0) {
-                        solo_events.emplace_back(event.time, 0);
-                    } else {
-                        solo_events.emplace_back(event.time, 1);
-                    }
-                } else if (midi_event->data[0] == SP_NOTE_ID) {
-                    if (midi_event->data[1] != 0) {
-                        sp_on_events.push_back(event.time);
-                    } else {
-                        sp_off_events.push_back(event.time);
-                    }
-                }
-                break;
-            }
-            }
-        }
-    }
-
-    std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
-    for (const auto& [diff, open_ons] : open_on_events) {
-        const auto& open_offs = open_off_events.at(diff);
-        for (auto open_on : open_ons) {
-            const auto iter
-                = std::find_if(open_offs.cbegin(), open_offs.cend(),
-                               [&](const auto end) { return end >= open_on; });
-            if (iter == open_offs.cend()) {
-                throw std::invalid_argument("Open on event has no end");
-            }
-            open_events[diff].push_back({open_on, *iter});
-        }
-    }
-
-    for (const auto& [diff, note_ons] : note_on_events) {
-        const auto& note_offs = note_off_events.at(diff);
-        for (const auto& pair : note_ons) {
-            const auto pos = std::get<0>(pair);
-            auto colour = std::get<1>(pair);
-            const auto iter = std::find_if(
-                note_offs.cbegin(), note_offs.cend(), [&](const auto& p) {
-                    return std::get<0>(p) >= pos && std::get<1>(p) == colour;
-                });
-            if (iter == note_offs.cend()) {
-                throw std::invalid_argument("Note On event does not have a "
-                                            "corresponding Note Off event");
-            }
-            auto note_length = std::get<0>(*iter) - pos;
-            if (note_length <= (DEFAULT_SUST_CUTOFF * chart.m_resolution)
-                    / DEFAULT_RESOLUTION) {
-                note_length = 0;
-            }
-            for (const auto& [open_start, open_end] : open_events[diff]) {
-                if (pos >= open_start && pos < open_end) {
-                    colour = NoteColour::Open;
-                }
-            }
-            notes[diff].push_back({pos, note_length, colour});
-        }
-    }
-
-    std::vector<StarPower> sp_phrases;
-    for (auto start : sp_on_events) {
-        const auto iter
-            = std::find_if(sp_off_events.cbegin(), sp_off_events.cend(),
-                           [&](const auto end) { return end >= start; });
-        if (iter == sp_off_events.cend()) {
-            throw std::invalid_argument(
-                "Note On event does not have a corresponding Note Off event");
-        }
-        sp_phrases.push_back({start, *iter - start});
-    }
-
-    for (const auto& [diff, note_set] : notes) {
-        auto solos = form_solo_vector(solo_events, note_set);
-        chart.m_note_tracks[diff] = {note_set, sp_phrases, solos};
     }
 
     return chart;
