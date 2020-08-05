@@ -43,6 +43,7 @@ const static NoteTrack& track_from_inst_diff(const Settings& settings,
     case Instrument::Keys:
         return chart.keys_note_track(settings.difficulty);
     }
+    throw std::invalid_argument("Invalid instrument");
 }
 
 int main(int argc, char** argv)
