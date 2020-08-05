@@ -537,7 +537,11 @@ Chart Chart::parse_chart(std::string_view input)
 
     PreSongHeader pre_song_header;
     PreSyncTrack pre_sync_track;
-    std::map<Difficulty, PreNoteTrack> pre_tracks;
+    std::map<Difficulty, PreNoteTrack> pre_bass_tracks;
+    std::map<Difficulty, PreNoteTrack> pre_guitar_tracks;
+    std::map<Difficulty, PreNoteTrack> pre_guitar_coop_tracks;
+    std::map<Difficulty, PreNoteTrack> pre_keys_tracks;
+    std::map<Difficulty, PreNoteTrack> pre_rhythm_tracks;
 
     // Trim off UTF-8 BOM if present
     if (string_starts_with(input, "\xEF\xBB\xBF")) {
@@ -551,13 +555,61 @@ Chart Chart::parse_chart(std::string_view input)
         } else if (header == "[SyncTrack]") {
             input = read_sync_track(input, pre_sync_track);
         } else if (header == "[EasySingle]") {
-            input = read_single_track(input, pre_tracks[Difficulty::Easy]);
+            input
+                = read_single_track(input, pre_guitar_tracks[Difficulty::Easy]);
         } else if (header == "[MediumSingle]") {
-            input = read_single_track(input, pre_tracks[Difficulty::Medium]);
+            input = read_single_track(input,
+                                      pre_guitar_tracks[Difficulty::Medium]);
         } else if (header == "[HardSingle]") {
-            input = read_single_track(input, pre_tracks[Difficulty::Hard]);
+            input
+                = read_single_track(input, pre_guitar_tracks[Difficulty::Hard]);
         } else if (header == "[ExpertSingle]") {
-            input = read_single_track(input, pre_tracks[Difficulty::Expert]);
+            input = read_single_track(input,
+                                      pre_guitar_tracks[Difficulty::Expert]);
+        } else if (header == "[EasyDoubleGuitar]") {
+            input = read_single_track(input,
+                                      pre_guitar_coop_tracks[Difficulty::Easy]);
+        } else if (header == "[MediumDoubleGuitar]") {
+            input = read_single_track(
+                input, pre_guitar_coop_tracks[Difficulty::Medium]);
+        } else if (header == "[HardDoubleGuitar]") {
+            input = read_single_track(input,
+                                      pre_guitar_coop_tracks[Difficulty::Hard]);
+        } else if (header == "[ExpertDoubleGuitar]") {
+            input = read_single_track(
+                input, pre_guitar_coop_tracks[Difficulty::Expert]);
+        } else if (header == "[EasyDoubleBass]") {
+            input = read_single_track(input, pre_bass_tracks[Difficulty::Easy]);
+        } else if (header == "[MediumDoubleBass]") {
+            input
+                = read_single_track(input, pre_bass_tracks[Difficulty::Medium]);
+        } else if (header == "[HardDoubleBass]") {
+            input = read_single_track(input, pre_bass_tracks[Difficulty::Hard]);
+        } else if (header == "[ExpertDoubleBass]") {
+            input
+                = read_single_track(input, pre_bass_tracks[Difficulty::Expert]);
+        } else if (header == "[EasyDoubleRhythm]") {
+            input
+                = read_single_track(input, pre_rhythm_tracks[Difficulty::Easy]);
+        } else if (header == "[MediumDoubleRhythm]") {
+            input = read_single_track(input,
+                                      pre_rhythm_tracks[Difficulty::Medium]);
+        } else if (header == "[HardDoubleRhythm]") {
+            input
+                = read_single_track(input, pre_rhythm_tracks[Difficulty::Hard]);
+        } else if (header == "[ExpertDoubleRhythm]") {
+            input = read_single_track(input,
+                                      pre_rhythm_tracks[Difficulty::Expert]);
+        } else if (header == "[EasyKeyboard]") {
+            input = read_single_track(input, pre_keys_tracks[Difficulty::Easy]);
+        } else if (header == "[MediumKeyboard]") {
+            input
+                = read_single_track(input, pre_keys_tracks[Difficulty::Medium]);
+        } else if (header == "[HardKeyboard]") {
+            input = read_single_track(input, pre_keys_tracks[Difficulty::Hard]);
+        } else if (header == "[ExpertKeyboard]") {
+            input
+                = read_single_track(input, pre_keys_tracks[Difficulty::Expert]);
         } else {
             input = skip_section(input);
         }
@@ -571,7 +623,7 @@ Chart Chart::parse_chart(std::string_view input)
     chart.m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs),
                                    std::move(pre_sync_track.bpms));
 
-    for (auto& key_track : pre_tracks) {
+    for (auto& key_track : pre_guitar_tracks) {
         auto diff = key_track.first;
         auto& track = key_track.second;
         if (track.notes.empty()) {
@@ -580,10 +632,62 @@ Chart Chart::parse_chart(std::string_view input)
         auto new_track
             = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
                         std::move(track.solos));
-        chart.m_note_tracks.emplace(diff, std::move(new_track));
+        chart.m_guitar_note_tracks.emplace(diff, std::move(new_track));
     }
 
-    if (chart.m_note_tracks.empty()) {
+    for (auto& key_track : pre_guitar_coop_tracks) {
+        auto diff = key_track.first;
+        auto& track = key_track.second;
+        if (track.notes.empty()) {
+            continue;
+        }
+        auto new_track
+            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
+                        std::move(track.solos));
+        chart.m_guitar_coop_note_tracks.emplace(diff, std::move(new_track));
+    }
+
+    for (auto& key_track : pre_bass_tracks) {
+        auto diff = key_track.first;
+        auto& track = key_track.second;
+        if (track.notes.empty()) {
+            continue;
+        }
+        auto new_track
+            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
+                        std::move(track.solos));
+        chart.m_bass_note_tracks.emplace(diff, std::move(new_track));
+    }
+
+    for (auto& key_track : pre_rhythm_tracks) {
+        auto diff = key_track.first;
+        auto& track = key_track.second;
+        if (track.notes.empty()) {
+            continue;
+        }
+        auto new_track
+            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
+                        std::move(track.solos));
+        chart.m_rhythm_note_tracks.emplace(diff, std::move(new_track));
+    }
+
+    for (auto& key_track : pre_keys_tracks) {
+        auto diff = key_track.first;
+        auto& track = key_track.second;
+        if (track.notes.empty()) {
+            continue;
+        }
+        auto new_track
+            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
+                        std::move(track.solos));
+        chart.m_keys_note_tracks.emplace(diff, std::move(new_track));
+    }
+
+    if (chart.m_guitar_note_tracks.empty()
+        && chart.m_guitar_coop_note_tracks.empty()
+        && chart.m_bass_note_tracks.empty()
+        && chart.m_rhythm_note_tracks.empty()
+        && chart.m_keys_note_tracks.empty()) {
         throw std::invalid_argument("Chart has no notes");
     }
 
@@ -909,7 +1013,7 @@ Chart Chart::from_midi(const Midi& midi)
 
     for (const auto& track : midi.tracks) {
         if (is_part_guitar(track)) {
-            chart.m_note_tracks
+            chart.m_guitar_note_tracks
                 = note_tracks_from_midi(track, chart.m_resolution);
         }
     }

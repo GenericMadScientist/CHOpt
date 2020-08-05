@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     try {
         const auto settings = from_args(argc, argv);
         const auto chart = Chart::from_filename(settings.filename);
-        const auto& track = chart.note_track(settings.difficulty);
+        const auto& track = chart.guitar_note_track(settings.difficulty);
         ImageBuilder builder {track, chart.resolution(), chart.sync_track()};
         builder.add_song_header(chart.song_header());
         builder.add_sp_phrases(track, chart.resolution());

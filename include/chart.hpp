@@ -162,7 +162,11 @@ private:
     int m_resolution = DEFAULT_RESOLUTION;
     SongHeader m_song_header;
     SyncTrack m_sync_track;
-    std::map<Difficulty, NoteTrack> m_note_tracks;
+    std::map<Difficulty, NoteTrack> m_bass_note_tracks;
+    std::map<Difficulty, NoteTrack> m_guitar_note_tracks;
+    std::map<Difficulty, NoteTrack> m_guitar_coop_note_tracks;
+    std::map<Difficulty, NoteTrack> m_keys_note_tracks;
+    std::map<Difficulty, NoteTrack> m_rhythm_note_tracks;
     Chart() = default;
 
 public:
@@ -175,9 +179,25 @@ public:
         return m_song_header;
     }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
-    [[nodiscard]] const NoteTrack& note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack& guitar_note_track(Difficulty diff) const
     {
-        return m_note_tracks.at(diff);
+        return m_guitar_note_tracks.at(diff);
+    }
+    [[nodiscard]] const NoteTrack& guitar_coop_note_track(Difficulty diff) const
+    {
+        return m_guitar_coop_note_tracks.at(diff);
+    }
+    [[nodiscard]] const NoteTrack& bass_note_track(Difficulty diff) const
+    {
+        return m_bass_note_tracks.at(diff);
+    }
+    [[nodiscard]] const NoteTrack& rhythm_note_track(Difficulty diff) const
+    {
+        return m_rhythm_note_tracks.at(diff);
+    }
+    [[nodiscard]] const NoteTrack& keys_note_track(Difficulty diff) const
+    {
+        return m_keys_note_tracks.at(diff);
     }
 };
 
