@@ -64,6 +64,10 @@ Settings from_args(int argc, char** argv)
     program.add_argument("-d", "--diff")
         .default_value(std::string {"expert"})
         .help("difficulty, defaults to expert");
+    program.add_argument("-i", "--instrument")
+        .default_value(std::string {"guitar"})
+        .help("instrument, options are guitar, coop, bass, rhythm, keys, "
+              "defaults to guitar");
     program.add_argument("--sqz", "--squeeze")
         .default_value(MAX_PERCENT)
         .help("squeeze% (0 to 100), defaults to 100")
@@ -114,6 +118,21 @@ Settings from_args(int argc, char** argv)
         settings.difficulty = Difficulty::Easy;
     } else {
         throw std::invalid_argument("Unrecognised difficulty");
+    }
+
+    auto inst_string = program.get<std::string>("--instrument");
+    if (inst_string == "guitar") {
+        settings.instrument = Instrument::Guitar;
+    } else if (inst_string == "coop") {
+        settings.instrument = Instrument::GuitarCoop;
+    } else if (inst_string == "bass") {
+        settings.instrument = Instrument::Bass;
+    } else if (inst_string == "rhythm") {
+        settings.instrument = Instrument::Rhythm;
+    } else if (inst_string == "keys") {
+        settings.instrument = Instrument::Keys;
+    } else {
+        throw std::invalid_argument("Unrecognised instrument");
     }
 
     auto image_path = program.get<std::string>("--output");

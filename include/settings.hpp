@@ -23,6 +23,8 @@
 
 #include "chart.hpp"
 
+enum class Instrument { Guitar, GuitarCoop, Bass, Rhythm, Keys };
+
 // This struct represents the options chosen on the command line by the user.
 struct Settings {
     bool blank;
@@ -32,6 +34,7 @@ struct Settings {
     bool draw_solos;
     bool draw_time_sigs;
     Difficulty difficulty;
+    Instrument instrument;
     double squeeze;
     double early_whammy;
     double lazy_whammy;

@@ -28,12 +28,29 @@
 #include "settings.hpp"
 #include "time.hpp"
 
+const static NoteTrack& track_from_inst_diff(const Settings& settings,
+                                             const Chart& chart)
+{
+    switch (settings.instrument) {
+    case Instrument::Guitar:
+        return chart.guitar_note_track(settings.difficulty);
+    case Instrument::GuitarCoop:
+        return chart.guitar_coop_note_track(settings.difficulty);
+    case Instrument::Bass:
+        return chart.bass_note_track(settings.difficulty);
+    case Instrument::Rhythm:
+        return chart.rhythm_note_track(settings.difficulty);
+    case Instrument::Keys:
+        return chart.keys_note_track(settings.difficulty);
+    }
+}
+
 int main(int argc, char** argv)
 {
     try {
         const auto settings = from_args(argc, argv);
         const auto chart = Chart::from_filename(settings.filename);
-        const auto& track = chart.guitar_note_track(settings.difficulty);
+        const auto& track = track_from_inst_diff(settings, chart);
         ImageBuilder builder {track, chart.resolution(), chart.sync_track()};
         builder.add_song_header(chart.song_header());
         builder.add_sp_phrases(track, chart.resolution());
