@@ -84,10 +84,11 @@ static double get_denom(const SyncTrack& sync_track, int resolution,
     return BASE_BEAT_RATE / ts->denominator;
 }
 
-static std::vector<DrawnNote> drawn_notes(const NoteTrack<NoteColour>& track,
-                                          int resolution)
+template <typename T>
+static std::vector<DrawnNote<T>> drawn_notes(const NoteTrack<T>& track,
+                                             int resolution)
 {
-    std::vector<DrawnNote> notes;
+    std::vector<DrawnNote<T>> notes;
 
     for (const auto& note : track.notes()) {
         auto beat = note.position / static_cast<double>(resolution);
@@ -105,7 +106,8 @@ static std::vector<DrawnNote> drawn_notes(const NoteTrack<NoteColour>& track,
     return notes;
 }
 
-static std::vector<DrawnRow> drawn_rows(const NoteTrack<NoteColour>& track,
+template <typename T>
+static std::vector<DrawnRow> drawn_rows(const NoteTrack<T>& track,
                                         int resolution,
                                         const SyncTrack& sync_track)
 {
@@ -154,6 +156,31 @@ ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track, int resolution,
                            const SyncTrack& sync_track)
     : m_rows {drawn_rows(track, resolution, sync_track)}
     , m_notes {drawn_notes(track, resolution)}
+{
+    constexpr double HALF_BEAT = 0.5;
+
+    for (const auto& row : m_rows) {
+        auto start = row.start;
+        while (start < row.end) {
+            auto meas_length = get_beat_rate(sync_track, resolution, start);
+            auto numer = get_numer(sync_track, resolution, start);
+            auto denom = get_denom(sync_track, resolution, start);
+            m_measure_lines.push_back(start);
+            m_half_beat_lines.push_back(start + HALF_BEAT * denom);
+            for (int i = 1; i < numer; ++i) {
+                m_beat_lines.push_back(start + i * denom);
+                m_half_beat_lines.push_back(start + (i + HALF_BEAT) * denom);
+            }
+            start += meas_length;
+        }
+    }
+    m_measure_lines.push_back(m_rows.back().end);
+}
+
+ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
+                           int resolution, const SyncTrack& sync_track)
+    : m_rows {drawn_rows(track, resolution, sync_track)}
+    , m_ghl_notes {drawn_notes(track, resolution)}
 {
     constexpr double HALF_BEAT = 0.5;
 
@@ -414,7 +441,8 @@ private:
 
     void draw_note_circle(int x, int y, NoteColour note_colour);
     void draw_note_star(int x, int y, NoteColour note_colour);
-    void draw_note_sustain(const ImageBuilder& builder, const DrawnNote& note);
+    void draw_note_sustain(const ImageBuilder& builder,
+                           const DrawnNote<NoteColour>& note);
     void draw_quarter_note(int x, int y);
     void draw_text_backwards(int x, int y, const char* text,
                              const unsigned char* color, float opacity,
@@ -436,7 +464,8 @@ public:
                            std::tuple<int, int> y_range, float opacity);
     void draw_header(const ImageBuilder& builder);
     void draw_measures(const ImageBuilder& builder);
-    void draw_note(const ImageBuilder& builder, const DrawnNote& note);
+    void draw_note(const ImageBuilder& builder,
+                   const DrawnNote<NoteColour>& note);
     void draw_score_totals(const ImageBuilder& builder);
     void draw_tempos(const ImageBuilder& builder);
     void draw_time_sigs(const ImageBuilder& builder);
@@ -623,7 +652,8 @@ void ImageImpl::draw_text_backwards(int x, int y, const char* text,
     m_image.draw_text(x, y, text, color, 0, opacity, font_height);
 }
 
-void ImageImpl::draw_note(const ImageBuilder& builder, const DrawnNote& note)
+void ImageImpl::draw_note(const ImageBuilder& builder,
+                          const DrawnNote<NoteColour>& note)
 {
     if (note.length > 0.0) {
         draw_note_sustain(builder, note);
@@ -684,7 +714,7 @@ void ImageImpl::draw_note_star(int x, int y, NoteColour note_colour)
 }
 
 void ImageImpl::draw_note_sustain(const ImageBuilder& builder,
-                                  const DrawnNote& note)
+                                  const DrawnNote<NoteColour>& note)
 {
     constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
 

@@ -20,7 +20,8 @@
 
 #include "image.hpp"
 
-static bool operator==(const DrawnNote& lhs, const DrawnNote& rhs)
+template <typename T>
+static bool operator==(const DrawnNote<T>& lhs, const DrawnNote<T>& rhs)
 {
     return lhs.beat == Approx(rhs.beat) && lhs.length == Approx(rhs.length)
         && lhs.colour == rhs.colour && lhs.is_sp_note == rhs.is_sp_note;
@@ -37,7 +38,7 @@ TEST_CASE("Notes are handled correclty")
     {
         NoteTrack<NoteColour> track {{{0}, {768, 0, NoteColour::Red}}, {}, {}};
         ImageBuilder builder {track, 192, {}};
-        std::vector<DrawnNote> expected_notes {
+        std::vector<DrawnNote<NoteColour>> expected_notes {
             {0.0, 0.0, NoteColour::Green, false},
             {4.0, 0.0, NoteColour::Red, false}};
 
@@ -48,7 +49,7 @@ TEST_CASE("Notes are handled correclty")
     {
         NoteTrack<NoteColour> track {{{0, 96}}, {}, {}};
         ImageBuilder builder {track, 192, {}};
-        std::vector<DrawnNote> expected_notes {
+        std::vector<DrawnNote<NoteColour>> expected_notes {
             {0.0, 0.5, NoteColour::Green, false}};
 
         REQUIRE(builder.notes() == expected_notes);
@@ -58,11 +59,23 @@ TEST_CASE("Notes are handled correclty")
     {
         NoteTrack<NoteColour> track {{{0}, {768}}, {{768, 100}}, {}};
         ImageBuilder builder {track, 192, {}};
-        std::vector<DrawnNote> expected_notes {
+        std::vector<DrawnNote<NoteColour>> expected_notes {
             {0.0, 0.0, NoteColour::Green, false},
             {4.0, 0.0, NoteColour::Green, true}};
 
         REQUIRE(builder.notes() == expected_notes);
+    }
+
+    SECTION("6 fret notes are handled correctly")
+    {
+        NoteTrack<GHLNoteColour> track {
+            {{0}, {768, 0, GHLNoteColour::BlackHigh}}, {}, {}};
+        ImageBuilder builder {track, 192, {}};
+        std::vector<DrawnNote<GHLNoteColour>> expected_notes {
+            {0.0, 0.0, GHLNoteColour::WhiteLow, false},
+            {4.0, 0.0, GHLNoteColour::BlackHigh, false}};
+
+        REQUIRE(builder.ghl_notes() == expected_notes);
     }
 }
 
