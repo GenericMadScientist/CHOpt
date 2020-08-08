@@ -100,7 +100,7 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
     }
 }
 
-PointSet::PointSet(const NoteTrack& track, int resolution,
+PointSet::PointSet(const NoteTrack<NoteColour>& track, int resolution,
                    const TimeConverter& converter, double squeeze)
 {
     const auto& notes = track.notes();

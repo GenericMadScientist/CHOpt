@@ -84,7 +84,7 @@ static double get_denom(const SyncTrack& sync_track, int resolution,
     return BASE_BEAT_RATE / ts->denominator;
 }
 
-static std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
+static std::vector<DrawnNote> drawn_notes(const NoteTrack<NoteColour>& track,
                                           int resolution)
 {
     std::vector<DrawnNote> notes;
@@ -105,7 +105,8 @@ static std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
     return notes;
 }
 
-static std::vector<DrawnRow> drawn_rows(const NoteTrack& track, int resolution,
+static std::vector<DrawnRow> drawn_rows(const NoteTrack<NoteColour>& track,
+                                        int resolution,
                                         const SyncTrack& sync_track)
 {
     int max_pos = 0;
@@ -149,7 +150,7 @@ static std::vector<DrawnRow> drawn_rows(const NoteTrack& track, int resolution,
     return rows;
 }
 
-ImageBuilder::ImageBuilder(const NoteTrack& track, int resolution,
+ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track, int resolution,
                            const SyncTrack& sync_track)
     : m_rows {drawn_rows(track, resolution, sync_track)}
     , m_notes {drawn_notes(track, resolution)}
@@ -242,7 +243,8 @@ void ImageBuilder::add_measure_values(const PointSet& points, const Path& path)
     }
 }
 
-void ImageBuilder::add_solo_sections(const NoteTrack& track, int resolution)
+void ImageBuilder::add_solo_sections(const NoteTrack<NoteColour>& track,
+                                     int resolution)
 {
     for (const auto& solo : track.solos()) {
         auto start = solo.start / static_cast<double>(resolution);
@@ -303,7 +305,8 @@ void ImageBuilder::add_sp_acts(const PointSet& points, const Path& path)
     }
 }
 
-void ImageBuilder::add_sp_phrases(const NoteTrack& track, int resolution)
+void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
+                                  int resolution)
 {
     for (const auto& phrase : track.sp_phrases()) {
         auto p = track.notes().cbegin();

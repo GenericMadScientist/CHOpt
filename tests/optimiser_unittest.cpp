@@ -36,10 +36,10 @@ static bool operator==(const Activation& lhs, const Activation& rhs)
 
 TEST_CASE("path_summary produces the correct output", "Path summary")
 {
-    std::vector<Note> notes {{0}, {192}, {384}, {576}, {6144}};
+    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
     std::vector<Solo> solos {{0, 50, 100}};
-    NoteTrack note_track {notes, phrases, solos};
+    NoteTrack<NoteColour> note_track {notes, phrases, solos};
     ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
     const auto& points = track.points();
 
@@ -91,7 +91,7 @@ TEST_CASE("path_summary produces the correct output", "Path summary")
     SECTION("No SP is denoted correctly")
     {
         Path path {{}, 0};
-        NoteTrack second_note_track {notes, {}, solos};
+        NoteTrack<NoteColour> second_note_track {notes, {}, solos};
         ProcessedSong second_track {second_note_track, 192, {}, 1.0, 1.0,
                                     Second(0.0)};
 
@@ -107,9 +107,9 @@ TEST_CASE("optimal_path produces the correct path")
 {
     SECTION("Simplest song with a non-empty path")
     {
-        std::vector<Note> notes {{0}, {192}, {384}};
+        std::vector<Note<NoteColour>> notes {{0}, {192}, {384}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
         const auto& points = track.points();
@@ -124,19 +124,19 @@ TEST_CASE("optimal_path produces the correct path")
 
     SECTION("Simplest song with multiple acts")
     {
-        std::vector<Note> notes {{0},
-                                 {192},
-                                 {384},
-                                 {384, 0, NoteColour::Red},
-                                 {384, 0, NoteColour::Yellow},
-                                 {3840},
-                                 {4032},
-                                 {10368},
-                                 {10368, 0, NoteColour::Red},
-                                 {10368, 0, NoteColour::Yellow}};
+        std::vector<Note<NoteColour>> notes {{0},
+                                             {192},
+                                             {384},
+                                             {384, 0, NoteColour::Red},
+                                             {384, 0, NoteColour::Yellow},
+                                             {3840},
+                                             {4032},
+                                             {10368},
+                                             {10368, 0, NoteColour::Red},
+                                             {10368, 0, NoteColour::Yellow}};
         std::vector<StarPower> phrases {
             {0, 50}, {192, 50}, {3840, 50}, {4032, 50}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
         const auto& points = track.points();
@@ -153,9 +153,9 @@ TEST_CASE("optimal_path produces the correct path")
 
     SECTION("Simplest song with an act containing more than one note")
     {
-        std::vector<Note> notes {{0}, {192}, {384}, {576}};
+        std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
         const auto& points = track.points();
@@ -170,9 +170,9 @@ TEST_CASE("optimal_path produces the correct path")
 
     SECTION("Simplest song with an act that must go as long as possible")
     {
-        std::vector<Note> notes {{0}, {192}, {384}, {3360}};
+        std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {3360}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
         const auto& points = track.points();
@@ -187,10 +187,10 @@ TEST_CASE("optimal_path produces the correct path")
 
     SECTION("Simplest song where greedy algorithm fails")
     {
-        std::vector<Note> notes {
+        std::vector<Note<NoteColour>> notes {
             {0}, {192}, {384}, {3840}, {3840, 0, NoteColour::Red}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
         const auto& points = track.points();
@@ -205,11 +205,11 @@ TEST_CASE("optimal_path produces the correct path")
 
     SECTION("Simplest song where a phrase must be hit early")
     {
-        std::vector<Note> notes {{0},    {192},   {384},  {3224},
-                                 {9378}, {15714}, {15715}};
+        std::vector<Note<NoteColour>> notes {{0},    {192},   {384},  {3224},
+                                             {9378}, {15714}, {15715}};
         std::vector<StarPower> phrases {
             {0, 50}, {192, 50}, {3224, 50}, {9378, 50}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
         const auto& points = track.points();
@@ -229,11 +229,11 @@ TEST_CASE("optimal_path produces the correct path")
     // optimal path is really 3.
     SECTION("Simplest song where activations ending late matter")
     {
-        std::vector<Note> notes {
+        std::vector<Note<NoteColour>> notes {
             {0},     {192},   {384},   {3234, 1440}, {10944}, {10945}, {10946},
             {10947}, {10948}, {10949}, {10950},      {10951}, {10952}, {10953}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}, {3234, 50}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
         auto opt_path = optimiser.optimal_path();
@@ -248,9 +248,9 @@ TEST_CASE("optimal_path produces the correct path")
     // Personality. This test is to catch that.
     SECTION("Early whammy at start of an SP phrase is always counted")
     {
-        std::vector<Note> notes {{0, 1420}, {1500}, {1600}};
+        std::vector<Note<NoteColour>> notes {{0, 1420}, {1500}, {1600}};
         std::vector<StarPower> phrases {{0, 1550}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
         auto opt_path = optimiser.optimal_path();
@@ -261,10 +261,10 @@ TEST_CASE("optimal_path produces the correct path")
 
     SECTION("Songs ending in ES1 are pathed correctly")
     {
-        std::vector<Note> notes {{0},   {192},  {384}, {576},
-                                 {768}, {4032}, {4224}};
+        std::vector<Note<NoteColour>> notes {{0},   {192},  {384}, {576},
+                                             {768}, {4032}, {4224}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}, {4032, 50}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
         auto opt_path = optimiser.optimal_path();
@@ -275,19 +275,19 @@ TEST_CASE("optimal_path produces the correct path")
 
     SECTION("Compressed whammy is specified correctly")
     {
-        std::vector<Note> notes {{192, 192},
-                                 {672},
-                                 {1000},
-                                 {1000, 0, NoteColour::Red},
-                                 {1000, 0, NoteColour::Yellow},
-                                 {3840},
-                                 {9984},
-                                 {10176},
-                                 {10176, 0, NoteColour::Red},
-                                 {10176, 0, NoteColour::Yellow}};
+        std::vector<Note<NoteColour>> notes {{192, 192},
+                                             {672},
+                                             {1000},
+                                             {1000, 0, NoteColour::Red},
+                                             {1000, 0, NoteColour::Yellow},
+                                             {3840},
+                                             {9984},
+                                             {10176},
+                                             {10176, 0, NoteColour::Red},
+                                             {10176, 0, NoteColour::Yellow}};
         std::vector<StarPower> phrases {
             {192, 50}, {672, 50}, {3840, 50}, {9984, 50}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
 
@@ -303,9 +303,9 @@ TEST_CASE("optimal_path produces the correct path")
 
     SECTION("Acts covering the last note do not compress whammy")
     {
-        std::vector<Note> notes {{0, 1536}, {1728}};
+        std::vector<Note<NoteColour>> notes {{0, 1536}, {1728}};
         std::vector<StarPower> phrases {{0, 50}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
 
@@ -317,20 +317,20 @@ TEST_CASE("optimal_path produces the correct path")
 
     SECTION("Use next point to work out compressed whammy")
     {
-        std::vector<Note> notes {{0},
-                                 {192},
-                                 {384},
-                                 {384, 0, NoteColour::Red},
-                                 {384, 0, NoteColour::Yellow},
-                                 {3350},
-                                 {3360},
-                                 {9504},
-                                 {9696},
-                                 {9696, 0, NoteColour::Red},
-                                 {9696, 0, NoteColour::Yellow}};
+        std::vector<Note<NoteColour>> notes {{0},
+                                             {192},
+                                             {384},
+                                             {384, 0, NoteColour::Red},
+                                             {384, 0, NoteColour::Yellow},
+                                             {3350},
+                                             {3360},
+                                             {9504},
+                                             {9696},
+                                             {9696, 0, NoteColour::Red},
+                                             {9696, 0, NoteColour::Yellow}};
         std::vector<StarPower> phrases {
             {0, 50}, {192, 50}, {3350, 50}, {9504, 50}};
-        NoteTrack note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track};
 

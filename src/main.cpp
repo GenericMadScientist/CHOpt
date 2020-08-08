@@ -28,8 +28,8 @@
 #include "settings.hpp"
 #include "time.hpp"
 
-const static NoteTrack& track_from_inst_diff(const Settings& settings,
-                                             const Chart& chart)
+const static NoteTrack<NoteColour>&
+track_from_inst_diff(const Settings& settings, const Chart& chart)
 {
     switch (settings.instrument) {
     case Instrument::Guitar:

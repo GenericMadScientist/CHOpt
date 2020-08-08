@@ -80,7 +80,7 @@ private:
     int m_total_solo_boost;
 
 public:
-    ProcessedSong(const NoteTrack& track, int resolution,
+    ProcessedSong(const NoteTrack<NoteColour>& track, int resolution,
                   const SyncTrack& sync_track, double early_whammy,
                   double squeeze, Second lazy_whammy);
 

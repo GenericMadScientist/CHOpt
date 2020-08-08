@@ -25,45 +25,45 @@ TEST_CASE("NoteTrack ctor maintains invariants")
 {
     SECTION("Notes are sorted")
     {
-        std::vector<Note> notes {{768}, {384}};
-        NoteTrack track {notes, {}, {}};
-        std::vector<Note> sorted_notes {{384}, {768}};
+        std::vector<Note<NoteColour>> notes {{768}, {384}};
+        NoteTrack<NoteColour> track {notes, {}, {}};
+        std::vector<Note<NoteColour>> sorted_notes {{384}, {768}};
 
         REQUIRE(track.notes() == sorted_notes);
     }
 
     SECTION("Notes of the same colour and position are merged")
     {
-        std::vector<Note> notes {{768, 0}, {768, 768}};
-        NoteTrack track {notes, {}, {}};
-        std::vector<Note> required_notes {{768, 768}};
+        std::vector<Note<NoteColour>> notes {{768, 0}, {768, 768}};
+        NoteTrack<NoteColour> track {notes, {}, {}};
+        std::vector<Note<NoteColour>> required_notes {{768, 768}};
 
         REQUIRE(track.notes() == required_notes);
 
-        std::vector<Note> second_notes {{768, 768}, {768, 0}};
-        NoteTrack second_track {second_notes, {}, {}};
-        std::vector<Note> second_required_notes {{768, 0}};
+        std::vector<Note<NoteColour>> second_notes {{768, 768}, {768, 0}};
+        NoteTrack<NoteColour> second_track {second_notes, {}, {}};
+        std::vector<Note<NoteColour>> second_required_notes {{768, 0}};
 
         REQUIRE(second_track.notes() == second_required_notes);
     }
 
     SECTION("Notes of different colours are dealt with separately")
     {
-        std::vector<Note> notes {{768, 0, NoteColour::Green},
-                                 {768, 0, NoteColour::Red},
-                                 {768, 768, NoteColour::Green}};
-        NoteTrack track {notes, {}, {}};
-        std::vector<Note> required_notes {{768, 768, NoteColour::Green},
-                                          {768, 0, NoteColour::Red}};
+        std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green},
+                                             {768, 0, NoteColour::Red},
+                                             {768, 768, NoteColour::Green}};
+        NoteTrack<NoteColour> track {notes, {}, {}};
+        std::vector<Note<NoteColour>> required_notes {
+            {768, 768, NoteColour::Green}, {768, 0, NoteColour::Red}};
 
         REQUIRE(track.notes() == required_notes);
     }
 
     SECTION("Empty SP phrases are culled")
     {
-        std::vector<Note> notes {{768}};
+        std::vector<Note<NoteColour>> notes {{768}};
         std::vector<StarPower> phrases {{0, 100}, {700, 100}, {1000, 100}};
-        NoteTrack track {notes, phrases, {}};
+        NoteTrack<NoteColour> track {notes, phrases, {}};
         std::vector<StarPower> required_phrases {{700, 100}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
@@ -71,9 +71,9 @@ TEST_CASE("NoteTrack ctor maintains invariants")
 
     SECTION("SP phrases are sorted")
     {
-        std::vector<Note> notes {{768}, {1000}};
+        std::vector<Note<NoteColour>> notes {{768}, {1000}};
         std::vector<StarPower> phrases {{1000, 1}, {768, 1}};
-        NoteTrack track {notes, phrases, {}};
+        NoteTrack<NoteColour> track {notes, phrases, {}};
         std::vector<StarPower> required_phrases {{768, 1}, {1000, 1}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
@@ -81,9 +81,9 @@ TEST_CASE("NoteTrack ctor maintains invariants")
 
     SECTION("SP phrases do not overlap")
     {
-        std::vector<Note> notes {{768}, {1000}};
+        std::vector<Note<NoteColour>> notes {{768}, {1000}};
         std::vector<StarPower> phrases {{768, 1000}, {900, 150}};
-        NoteTrack track {notes, phrases, {}};
+        NoteTrack<NoteColour> track {notes, phrases, {}};
         std::vector<StarPower> required_phrases {{768, 132}, {900, 150}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
@@ -91,9 +91,9 @@ TEST_CASE("NoteTrack ctor maintains invariants")
 
     SECTION("Solos are sorted")
     {
-        std::vector<Note> notes {{0}, {768}};
+        std::vector<Note<NoteColour>> notes {{0}, {768}};
         std::vector<Solo> solos {{768, 868, 100}, {0, 100, 100}};
-        NoteTrack track {notes, {}, solos};
+        NoteTrack<NoteColour> track {notes, {}, solos};
         std::vector<Solo> required_solos {{0, 100, 100}, {768, 868, 100}};
 
         REQUIRE(track.solos() == required_solos);
@@ -226,7 +226,8 @@ TEST_CASE("Chart reads easy note track correctly")
         = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[EasySingle]"
           "\n{\n768 = N 0 0\n768 = S 2 100\n}\n";
     const auto chart = Chart::parse_chart(text);
-    NoteTrack note_track {{{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
+    NoteTrack<NoteColour> note_track {
+        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
 
     REQUIRE(chart.guitar_note_track(Difficulty::Easy) == note_track);
 }
@@ -280,7 +281,7 @@ TEST_CASE("Chart does not need sections in usual order")
             = "[SyncTrack]\n{\n0 = B 200000\n}\n[ExpertSingle]\n{\n768 = "
               "N 0 0\n}\n[Song]\n{\nResolution = 200\n}";
         const auto chart = Chart::parse_chart(text);
-        std::vector<Note> notes {{768}};
+        std::vector<Note<NoteColour>> notes {{768}};
         std::vector<BPM> bpms {{0, 200000}};
 
         REQUIRE(chart.resolution() == 200);
@@ -298,7 +299,7 @@ TEST_CASE("Only first non-empty part of note sections matter")
             = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 = N "
               "1 0\n}";
         const auto chart = Chart::parse_chart(text);
-        std::vector<Note> notes {{768, 0, NoteColour::Green}};
+        std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green}};
 
         REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes() == notes);
     }
@@ -308,7 +309,7 @@ TEST_CASE("Only first non-empty part of note sections matter")
         const char* text
             = "[ExpertSingle]\n{\n}\n[ExpertSingle]\n{\n768 = N 1 0\n}";
         const auto chart = Chart::parse_chart(text);
-        std::vector<Note> notes {{768, 0, NoteColour::Red}};
+        std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Red}};
 
         REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes() == notes);
     }
@@ -319,8 +320,8 @@ TEST_CASE("Notes should be sorted")
 {
     const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n384 = N 0 0\n}";
     const auto chart = Chart::parse_chart(text);
-    std::vector<Note> notes {{384, 0, NoteColour::Green},
-                             {768, 0, NoteColour::Green}};
+    std::vector<Note<NoteColour>> notes {{384, 0, NoteColour::Green},
+                                         {768, 0, NoteColour::Green}};
 
     REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes() == notes);
 }
@@ -341,7 +342,7 @@ TEST_CASE("Notes with extra spaces")
             = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
               "= N  1 0\n}";
         const auto chart = Chart::parse_chart(text);
-        std::vector<Note> required_notes {{768}};
+        std::vector<Note<NoteColour>> required_notes {{768}};
 
         REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes()
                 == required_notes);
@@ -445,6 +446,18 @@ TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
     }
 }
 
+TEST_CASE("6 fret guitar is read correctly")
+{
+    const char* text = "[ExpertGHLGuitar]\n{\n192 = N 0 0\n384 = N 3 0\n}";
+    const auto chart = Chart::parse_chart(text);
+    std::vector<Note<GHLNoteColour>> notes {{192, 0, GHLNoteColour::WhiteLow},
+                                            {384, 0, GHLNoteColour::BlackLow}};
+
+    const auto track = chart.ghl_guitar_note_track(Difficulty::Expert);
+
+    REQUIRE(track.notes() == notes);
+}
+
 TEST_CASE("Midi resolution is read correctly")
 {
     SECTION("Midi's resolution is read")
@@ -533,7 +546,8 @@ TEST_CASE("Notes are read correctly")
                                {960, {MidiEvent {0x80, {72, 0}}}},
                                {960, {MidiEvent {0x80, {60, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const std::vector<Note> green_note {{768, 192, NoteColour::Green}};
+        const std::vector<Note<NoteColour>> green_note {
+            {768, 192, NoteColour::Green}};
 
         const auto chart = Chart::from_midi(midi);
 

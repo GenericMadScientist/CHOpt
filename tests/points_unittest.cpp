@@ -71,7 +71,7 @@ TEST_CASE("Non-hold notes")
 {
     SECTION("Single notes give 50 points")
     {
-        NoteTrack track {{{768}, {960}}, {}, {}};
+        NoteTrack<NoteColour> track {{{768}, {960}}, {}, {}};
         TimeConverter converter {{}, 192};
         PointSet points {track, 192, converter, 1.0};
         std::vector<int> expected_values {50, 50};
@@ -81,7 +81,7 @@ TEST_CASE("Non-hold notes")
 
     SECTION("Chords give multiples of 50 points")
     {
-        NoteTrack track {
+        NoteTrack<NoteColour> track {
             {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}}, {}, {}};
         TimeConverter converter {{}, 192};
         PointSet points {track, 192, converter, 1.0};
@@ -95,7 +95,7 @@ TEST_CASE("Hold notes")
 {
     SECTION("Hold note points depend on resolution")
     {
-        NoteTrack track {{{768, 15}}, {}, {}};
+        NoteTrack<NoteColour> track {{{768, 15}}, {}, {}};
         TimeConverter converter {{}, 192};
         PointSet first_points {track, 192, converter, 1.0};
         std::vector<int> first_expected_values {50, 3};
@@ -113,7 +113,7 @@ TEST_CASE("Hold notes")
 
     SECTION("Hold note points and chords")
     {
-        NoteTrack track {
+        NoteTrack<NoteColour> track {
             {{768, 8, NoteColour::Green}, {768, 8, NoteColour::Red}}, {}, {}};
         TimeConverter converter {{}, 192};
         PointSet points {track, 192, converter, 1.0};
@@ -126,7 +126,7 @@ TEST_CASE("Hold notes")
 
     SECTION("Resolutions below 25 do not enter an infinite loop")
     {
-        NoteTrack track {{{768, 2}}, {}, {}};
+        NoteTrack<NoteColour> track {{{768, 2}}, {}, {}};
         TimeConverter converter {{}, 1};
         PointSet points {track, 1, converter, 1.0};
 
@@ -135,11 +135,11 @@ TEST_CASE("Hold notes")
 
     SECTION("Sustains of uneven length are handled correctly")
     {
-        NoteTrack track {{{0, 1504, NoteColour::Green},
-                          {0, 1504, NoteColour::Red},
-                          {0, 736, NoteColour::Yellow}},
-                         {},
-                         {}};
+        NoteTrack<NoteColour> track {{{0, 1504, NoteColour::Green},
+                                      {0, 1504, NoteColour::Red},
+                                      {0, 736, NoteColour::Yellow}},
+                                     {},
+                                     {}};
         TimeConverter converter {{}, 192};
         PointSet points {track, 192, converter, 1.0};
         auto total_score = std::accumulate(
@@ -152,7 +152,7 @@ TEST_CASE("Hold notes")
 
 TEST_CASE("Points are sorted")
 {
-    NoteTrack track {{{768, 15}, {770, 0}}, {}, {}};
+    NoteTrack<NoteColour> track {{{768, 15}, {770, 0}}, {}, {}};
     TimeConverter converter {{}, 192};
     PointSet points {track, 192, converter, 1.0};
     const auto beats = set_position_beats(points);
@@ -162,7 +162,7 @@ TEST_CASE("Points are sorted")
 
 TEST_CASE("End of SP phrase points")
 {
-    NoteTrack track {
+    NoteTrack<NoteColour> track {
         {{768}, {960}, {1152}}, {{768, 1}, {900, 50}, {1100, 53}}, {}};
     TimeConverter converter {{}, 192};
     PointSet points {track, 192, converter, 1.0};
@@ -176,12 +176,12 @@ TEST_CASE("Combo multiplier is taken into account")
 {
     SECTION("Multiplier applies to non-holds")
     {
-        std::vector<Note> notes;
+        std::vector<Note<NoteColour>> notes;
         notes.reserve(50);
         for (int i = 0; i < 50; ++i) {
             notes.push_back({192 * i});
         }
-        NoteTrack track {notes, {}, {}};
+        NoteTrack<NoteColour> track {notes, {}, {}};
         TimeConverter converter {{}, 192};
         PointSet points {track, 192, converter, 1.0};
         std::vector<int> expected_values;
@@ -200,14 +200,14 @@ TEST_CASE("Combo multiplier is taken into account")
 
     SECTION("Hold points are multiplied")
     {
-        std::vector<Note> notes;
+        std::vector<Note<NoteColour>> notes;
         notes.reserve(50);
         for (int i = 0; i < 50; ++i) {
             notes.push_back({192 * i});
         }
         notes.push_back({9600, 192});
 
-        NoteTrack track {notes, {}, {}};
+        NoteTrack<NoteColour> track {notes, {}, {}};
         TimeConverter converter {{}, 192};
         PointSet points {track, 192, converter, 1.0};
 
@@ -217,14 +217,14 @@ TEST_CASE("Combo multiplier is taken into account")
 
     SECTION("Later hold points in extended sustains are multiplied")
     {
-        std::vector<Note> notes;
+        std::vector<Note<NoteColour>> notes;
         notes.reserve(10);
         for (int i = 0; i < 10; ++i) {
             notes.push_back({192 * i});
         }
         notes[0].length = 2000;
 
-        NoteTrack track {notes, {}, {}};
+        NoteTrack<NoteColour> track {notes, {}, {}};
         TimeConverter converter {{}, 192};
         PointSet points {track, 192, converter, 1.0};
 
@@ -239,8 +239,8 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
 
     SECTION("Hit window starts for notes are correct")
     {
-        std::vector<Note> notes {{192}, {787}};
-        NoteTrack track {notes, {}, {}};
+        std::vector<Note<NoteColour>> notes {{192}, {787}};
+        NoteTrack<NoteColour> track {notes, {}, {}};
         PointSet points {track, 192, converter, 1.0};
 
         REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.825));
@@ -250,8 +250,8 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
 
     SECTION("Hit window ends for notes are correct")
     {
-        std::vector<Note> notes {{192}, {749}};
-        NoteTrack track {notes, {}, {}};
+        std::vector<Note<NoteColour>> notes {{192}, {749}};
+        NoteTrack<NoteColour> track {notes, {}, {}};
         PointSet points {track, 192, converter, 1.0};
 
         REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.175));
@@ -261,8 +261,8 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
 
     SECTION("Hit window starts and ends for hold points are correct")
     {
-        std::vector<Note> notes {{672, 192}};
-        NoteTrack track {notes, {}, {}};
+        std::vector<Note<NoteColour>> notes {{672, 192}};
+        NoteTrack<NoteColour> track {notes, {}, {}};
         PointSet points {track, 192, converter, 1.0};
 
         for (auto p = std::next(points.cbegin()); p < points.cend(); ++p) {
@@ -273,8 +273,8 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
 
     SECTION("Squeeze setting is accounted for")
     {
-        std::vector<Note> notes {{192}};
-        NoteTrack track {notes, {}, {}};
+        std::vector<Note<NoteColour>> notes {{192}};
+        NoteTrack<NoteColour> track {notes, {}, {}};
         PointSet points {track, 192, converter, 0.5};
 
         REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.9125));
@@ -285,7 +285,7 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
 TEST_CASE("Solo sections are added")
 {
     std::vector<Solo> solos {{0, 576, 100}, {768, 1152, 200}};
-    NoteTrack track {{}, {}, solos};
+    NoteTrack<NoteColour> track {{}, {}, solos};
     PointSet points {track, 192, {{}, 192}, 1.0};
     std::vector<std::tuple<Position, int>> expected_solo_boosts {
         {{Beat(3.0), Measure(0.75)}, 100}, {{Beat(6.0), Measure(1.5)}, 200}};

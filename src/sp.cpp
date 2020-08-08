@@ -49,7 +49,7 @@ SpData::form_beat_rates(int resolution, const SyncTrack& sync_track)
     return beat_rates;
 }
 
-SpData::SpData(const NoteTrack& track, int resolution,
+SpData::SpData(const NoteTrack<NoteColour>& track, int resolution,
                const SyncTrack& sync_track, double early_whammy,
                Second lazy_whammy)
     : m_converter {sync_track, resolution}

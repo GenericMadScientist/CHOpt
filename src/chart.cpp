@@ -24,6 +24,7 @@
 #include <optional>
 #include <set>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "chart.hpp"
@@ -63,13 +64,13 @@ Chart Chart::from_filename(const std::string& filename)
 
 // This represents a bundle of data akin to a NoteTrack, except it is only for
 // mid-parser usage. Unlike a NoteTrack, there are no invariants.
-struct PreNoteTrack {
-    std::vector<Note> notes;
+template <typename T> struct PreNoteTrack {
+    std::vector<Note<T>> notes;
     std::vector<StarPower> sp_phrases;
     std::vector<Solo> solos;
 };
 
-static bool is_empty(const PreNoteTrack& track)
+template <typename T> static bool is_empty(const PreNoteTrack<T>& track)
 {
     return track.notes.empty() && track.sp_phrases.empty();
 }
@@ -91,59 +92,6 @@ struct PreSongHeader {
     std::string charter {"Unknown Charter"};
     int resolution = DEFAULT_RESOLUTION;
 };
-
-NoteTrack::NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
-                     std::vector<Solo> solos)
-{
-    std::stable_sort(notes.begin(), notes.end(),
-                     [](const auto& lhs, const auto& rhs) {
-                         return std::tie(lhs.position, lhs.colour)
-                             < std::tie(rhs.position, rhs.colour);
-                     });
-
-    if (!notes.empty()) {
-        auto prev_note = notes.cbegin();
-        for (auto p = notes.cbegin() + 1; p < notes.cend(); ++p) {
-            if (p->position != prev_note->position
-                || p->colour != prev_note->colour) {
-                m_notes.push_back(*prev_note);
-            }
-            prev_note = p;
-        }
-        m_notes.push_back(*prev_note);
-    }
-
-    std::stable_sort(sp_phrases.begin(), sp_phrases.end(),
-                     [](const auto& lhs, const auto& rhs) {
-                         return lhs.position < rhs.position;
-                     });
-
-    for (auto p = sp_phrases.begin(); p < sp_phrases.end(); ++p) {
-        const auto next_phrase = p + 1;
-        if (next_phrase == sp_phrases.end()) {
-            continue;
-        }
-        p->length = std::min(p->length, next_phrase->position - p->position);
-    }
-
-    for (const auto& phrase : sp_phrases) {
-        const auto first_note = std::lower_bound(
-            m_notes.cbegin(), m_notes.cend(), phrase.position,
-            [](const auto& lhs, const auto& rhs) {
-                return lhs.position < rhs;
-            });
-        if ((first_note != m_notes.cend())
-            && (first_note->position < (phrase.position + phrase.length))) {
-            m_sp_phrases.push_back(phrase);
-        }
-    }
-
-    std::stable_sort(
-        solos.begin(), solos.end(),
-        [](const auto& lhs, const auto& rhs) { return lhs.start < rhs.start; });
-
-    m_solos = std::move(solos);
-}
 
 SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
                      std::vector<BPM> bpms)
@@ -394,10 +342,11 @@ combine_on_off_events(const std::vector<int>& on_events,
     return ranges;
 }
 
+template <typename T>
 static std::vector<Solo>
 form_solo_vector(const std::vector<int>& solo_on_events,
                  const std::vector<int>& solo_off_events,
-                 const std::vector<Note>& notes)
+                 const std::vector<Note<T>>& notes)
 {
     constexpr int SOLO_NOTE_VALUE = 100;
 
@@ -421,13 +370,9 @@ form_solo_vector(const std::vector<int>& solo_on_events,
     return solos;
 }
 
-static std::string_view read_single_track(std::string_view input,
-                                          PreNoteTrack& track)
+static std::optional<Note<NoteColour>>
+note_from_note_colour(int position, int length, int fret_type)
 {
-    if (!is_empty(track)) {
-        return skip_section(input);
-    }
-
     constexpr auto GREEN_CODE = 0;
     constexpr auto RED_CODE = 1;
     constexpr auto YELLOW_CODE = 2;
@@ -436,6 +381,71 @@ static std::string_view read_single_track(std::string_view input,
     constexpr auto FORCED_CODE = 5;
     constexpr auto TAP_CODE = 6;
     constexpr auto OPEN_CODE = 7;
+
+    switch (fret_type) {
+    case GREEN_CODE:
+        return Note<NoteColour> {position, length, NoteColour::Green};
+    case RED_CODE:
+        return Note<NoteColour> {position, length, NoteColour::Red};
+    case YELLOW_CODE:
+        return Note<NoteColour> {position, length, NoteColour::Yellow};
+    case BLUE_CODE:
+        return Note<NoteColour> {position, length, NoteColour::Blue};
+    case ORANGE_CODE:
+        return Note<NoteColour> {position, length, NoteColour::Orange};
+    case FORCED_CODE:
+    case TAP_CODE:
+        return {};
+    case OPEN_CODE:
+        return Note<NoteColour> {position, length, NoteColour::Open};
+    default:
+        throw std::invalid_argument("Invalid note type");
+    }
+}
+
+static std::optional<Note<GHLNoteColour>>
+note_from_ghl_note_colour(int position, int length, int fret_type)
+{
+    constexpr auto WHITE_LOW_CODE = 0;
+    constexpr auto WHITE_MID_CODE = 1;
+    constexpr auto WHITE_HIGH_CODE = 2;
+    constexpr auto BLACK_LOW_CODE = 3;
+    constexpr auto BLACK_MID_CODE = 4;
+    constexpr auto FORCED_CODE = 5;
+    constexpr auto TAP_CODE = 6;
+    constexpr auto OPEN_CODE = 7;
+    constexpr auto BLACK_HIGH_CODE = 8;
+
+    switch (fret_type) {
+    case WHITE_LOW_CODE:
+        return Note<GHLNoteColour> {position, length, GHLNoteColour::WhiteLow};
+    case WHITE_MID_CODE:
+        return Note<GHLNoteColour> {position, length, GHLNoteColour::WhiteMid};
+    case WHITE_HIGH_CODE:
+        return Note<GHLNoteColour> {position, length, GHLNoteColour::WhiteHigh};
+    case BLACK_LOW_CODE:
+        return Note<GHLNoteColour> {position, length, GHLNoteColour::BlackLow};
+    case BLACK_MID_CODE:
+        return Note<GHLNoteColour> {position, length, GHLNoteColour::BlackMid};
+    case BLACK_HIGH_CODE:
+        return Note<GHLNoteColour> {position, length, GHLNoteColour::BlackHigh};
+    case FORCED_CODE:
+    case TAP_CODE:
+        return {};
+    case OPEN_CODE:
+        return Note<GHLNoteColour> {position, length, GHLNoteColour::Open};
+    default:
+        throw std::invalid_argument("Invalid note type");
+    }
+}
+
+template <typename T>
+static std::string_view read_single_track(std::string_view input,
+                                          PreNoteTrack<T>& track)
+{
+    if (!is_empty(track)) {
+        return skip_section(input);
+    }
 
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("A [*Single] track does not open with {");
@@ -475,30 +485,23 @@ static std::string_view read_single_track(std::string_view input,
                 throw std::invalid_argument("Note has invalid length");
             }
             const auto length = *pre_length;
-            switch (*fret_type) {
-            case GREEN_CODE:
-                track.notes.push_back({position, length, NoteColour::Green});
-                break;
-            case RED_CODE:
-                track.notes.push_back({position, length, NoteColour::Red});
-                break;
-            case YELLOW_CODE:
-                track.notes.push_back({position, length, NoteColour::Yellow});
-                break;
-            case BLUE_CODE:
-                track.notes.push_back({position, length, NoteColour::Blue});
-                break;
-            case ORANGE_CODE:
-                track.notes.push_back({position, length, NoteColour::Orange});
-                break;
-            case FORCED_CODE:
-            case TAP_CODE:
-                break;
-            case OPEN_CODE:
-                track.notes.push_back({position, length, NoteColour::Open});
-                break;
-            default:
-                throw std::invalid_argument("Invalid note type");
+            if constexpr (std::is_same_v<T, NoteColour>) {
+                const auto note
+                    = note_from_note_colour(position, length, *fret_type);
+                if (note.has_value()) {
+                    track.notes.push_back(*note);
+                }
+            } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
+                const auto note
+                    = note_from_ghl_note_colour(position, length, *fret_type);
+                if (note.has_value()) {
+                    track.notes.push_back(*note);
+                }
+            } else {
+                static_assert(
+                    std::is_same_v<
+                        T, NoteColour> || std::is_same_v<T, GHLNoteColour>,
+                    "Invalid note type");
             }
         } else if (type == "S") {
             constexpr auto SP_EVENT_LENGTH = 5;
@@ -537,11 +540,12 @@ Chart Chart::parse_chart(std::string_view input)
 
     PreSongHeader pre_song_header;
     PreSyncTrack pre_sync_track;
-    std::map<Difficulty, PreNoteTrack> pre_bass_tracks;
-    std::map<Difficulty, PreNoteTrack> pre_guitar_tracks;
-    std::map<Difficulty, PreNoteTrack> pre_guitar_coop_tracks;
-    std::map<Difficulty, PreNoteTrack> pre_keys_tracks;
-    std::map<Difficulty, PreNoteTrack> pre_rhythm_tracks;
+    std::map<Difficulty, PreNoteTrack<NoteColour>> pre_bass_tracks;
+    std::map<Difficulty, PreNoteTrack<NoteColour>> pre_guitar_tracks;
+    std::map<Difficulty, PreNoteTrack<NoteColour>> pre_guitar_coop_tracks;
+    std::map<Difficulty, PreNoteTrack<NoteColour>> pre_keys_tracks;
+    std::map<Difficulty, PreNoteTrack<NoteColour>> pre_rhythm_tracks;
+    std::map<Difficulty, PreNoteTrack<GHLNoteColour>> pre_ghl_guitar_tracks;
 
     // Trim off UTF-8 BOM if present
     if (string_starts_with(input, "\xEF\xBB\xBF")) {
@@ -610,6 +614,18 @@ Chart Chart::parse_chart(std::string_view input)
         } else if (header == "[ExpertKeyboard]") {
             input
                 = read_single_track(input, pre_keys_tracks[Difficulty::Expert]);
+        } else if (header == "[EasyGHLGuitar]") {
+            input = read_single_track(input,
+                                      pre_ghl_guitar_tracks[Difficulty::Easy]);
+        } else if (header == "[MediumGHLGuitar]") {
+            input = read_single_track(
+                input, pre_ghl_guitar_tracks[Difficulty::Medium]);
+        } else if (header == "[HardGHLGuitar]") {
+            input = read_single_track(input,
+                                      pre_ghl_guitar_tracks[Difficulty::Hard]);
+        } else if (header == "[ExpertGHLGuitar]") {
+            input = read_single_track(
+                input, pre_ghl_guitar_tracks[Difficulty::Expert]);
         } else {
             input = skip_section(input);
         }
@@ -629,9 +645,9 @@ Chart Chart::parse_chart(std::string_view input)
         if (track.notes.empty()) {
             continue;
         }
-        auto new_track
-            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
-                        std::move(track.solos));
+        NoteTrack<NoteColour> new_track {std::move(track.notes),
+                                         std::move(track.sp_phrases),
+                                         std::move(track.solos)};
         chart.m_guitar_note_tracks.emplace(diff, std::move(new_track));
     }
 
@@ -641,9 +657,9 @@ Chart Chart::parse_chart(std::string_view input)
         if (track.notes.empty()) {
             continue;
         }
-        auto new_track
-            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
-                        std::move(track.solos));
+        NoteTrack<NoteColour> new_track {std::move(track.notes),
+                                         std::move(track.sp_phrases),
+                                         std::move(track.solos)};
         chart.m_guitar_coop_note_tracks.emplace(diff, std::move(new_track));
     }
 
@@ -653,9 +669,9 @@ Chart Chart::parse_chart(std::string_view input)
         if (track.notes.empty()) {
             continue;
         }
-        auto new_track
-            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
-                        std::move(track.solos));
+        NoteTrack<NoteColour> new_track {std::move(track.notes),
+                                         std::move(track.sp_phrases),
+                                         std::move(track.solos)};
         chart.m_bass_note_tracks.emplace(diff, std::move(new_track));
     }
 
@@ -665,9 +681,9 @@ Chart Chart::parse_chart(std::string_view input)
         if (track.notes.empty()) {
             continue;
         }
-        auto new_track
-            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
-                        std::move(track.solos));
+        NoteTrack<NoteColour> new_track {std::move(track.notes),
+                                         std::move(track.sp_phrases),
+                                         std::move(track.solos)};
         chart.m_rhythm_note_tracks.emplace(diff, std::move(new_track));
     }
 
@@ -677,17 +693,30 @@ Chart Chart::parse_chart(std::string_view input)
         if (track.notes.empty()) {
             continue;
         }
-        auto new_track
-            = NoteTrack(std::move(track.notes), std::move(track.sp_phrases),
-                        std::move(track.solos));
+        NoteTrack<NoteColour> new_track {std::move(track.notes),
+                                         std::move(track.sp_phrases),
+                                         std::move(track.solos)};
         chart.m_keys_note_tracks.emplace(diff, std::move(new_track));
+    }
+
+    for (auto& key_track : pre_ghl_guitar_tracks) {
+        auto diff = key_track.first;
+        auto& track = key_track.second;
+        if (track.notes.empty()) {
+            continue;
+        }
+        NoteTrack<GHLNoteColour> new_track {std::move(track.notes),
+                                            std::move(track.sp_phrases),
+                                            std::move(track.solos)};
+        chart.m_ghl_guitar_note_tracks.emplace(diff, std::move(new_track));
     }
 
     if (chart.m_guitar_note_tracks.empty()
         && chart.m_guitar_coop_note_tracks.empty()
         && chart.m_bass_note_tracks.empty()
         && chart.m_rhythm_note_tracks.empty()
-        && chart.m_keys_note_tracks.empty()) {
+        && chart.m_keys_note_tracks.empty()
+        && chart.m_ghl_guitar_note_tracks.empty()) {
         throw std::invalid_argument("Chart has no notes");
     }
 
@@ -943,7 +972,7 @@ read_instrument_midi_track(const MidiTrack& midi_track)
     return event_track;
 }
 
-static std::map<Difficulty, NoteTrack>
+static std::map<Difficulty, NoteTrack<NoteColour>>
 note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
     constexpr int DEFAULT_RESOLUTION = 192;
@@ -957,7 +986,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         open_events[diff] = combine_on_off_events(open_ons, open_offs);
     }
 
-    std::map<Difficulty, std::vector<Note>> notes;
+    std::map<Difficulty, std::vector<Note<NoteColour>>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour] = key;
         const auto& note_offs = event_track.note_off_events.at(key);
@@ -984,7 +1013,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         sp_phrases.push_back({start, end - start});
     }
 
-    std::map<Difficulty, NoteTrack> note_tracks;
+    std::map<Difficulty, NoteTrack<NoteColour>> note_tracks;
     for (const auto& [diff, note_set] : notes) {
         auto solos = form_solo_vector(event_track.solo_on_events,
                                       event_track.solo_off_events, note_set);

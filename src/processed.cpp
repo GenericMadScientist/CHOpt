@@ -25,7 +25,7 @@
 
 #include "processed.hpp"
 
-ProcessedSong::ProcessedSong(const NoteTrack& track, int resolution,
+ProcessedSong::ProcessedSong(const NoteTrack<NoteColour>& track, int resolution,
                              const SyncTrack& sync_track, double early_whammy,
                              double squeeze, Second lazy_whammy)
     : m_converter {sync_track, resolution}

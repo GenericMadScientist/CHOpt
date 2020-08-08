@@ -31,6 +31,16 @@ enum class Difficulty { Easy, Medium, Hard, Expert };
 
 enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
 
+enum class GHLNoteColour {
+    WhiteLow,
+    WhiteMid,
+    WhiteHigh,
+    BlackLow,
+    BlackMid,
+    BlackHigh,
+    Open
+};
+
 struct TimeSignature {
     int position;
     int numerator;
@@ -54,10 +64,10 @@ struct BPM {
     }
 };
 
-struct Note {
+template <typename T> struct Note {
     int position {0};
     int length {0};
-    NoteColour colour = NoteColour::Green;
+    T colour = {};
 
     friend bool operator==(const Note& lhs, const Note& rhs)
     {
@@ -97,18 +107,70 @@ struct Solo {
 // sp_phrases() will only return phrases with a note in their range.
 // sp_phrases() will return non-overlapping phrases.
 // solos() will always return a vector of sorted solos.
-class NoteTrack {
+template <typename T> class NoteTrack {
 private:
-    std::vector<Note> m_notes;
+    std::vector<Note<T>> m_notes;
     std::vector<StarPower> m_sp_phrases;
     std::vector<Solo> m_solos;
 
 public:
     NoteTrack() = default;
-    NoteTrack(std::vector<Note> notes, std::vector<StarPower> sp_phrases,
-              std::vector<Solo> solos);
+    NoteTrack(std::vector<Note<T>> notes, std::vector<StarPower> sp_phrases,
+              std::vector<Solo> solos)
+    {
+        std::stable_sort(notes.begin(), notes.end(),
+                         [](const auto& lhs, const auto& rhs) {
+                             return std::tie(lhs.position, lhs.colour)
+                                 < std::tie(rhs.position, rhs.colour);
+                         });
 
-    [[nodiscard]] const std::vector<Note>& notes() const { return m_notes; }
+        if (!notes.empty()) {
+            auto prev_note = notes.cbegin();
+            for (auto p = notes.cbegin() + 1; p < notes.cend(); ++p) {
+                if (p->position != prev_note->position
+                    || p->colour != prev_note->colour) {
+                    m_notes.push_back(*prev_note);
+                }
+                prev_note = p;
+            }
+            m_notes.push_back(*prev_note);
+        }
+
+        std::stable_sort(sp_phrases.begin(), sp_phrases.end(),
+                         [](const auto& lhs, const auto& rhs) {
+                             return lhs.position < rhs.position;
+                         });
+
+        for (auto p = sp_phrases.begin(); p < sp_phrases.end(); ++p) {
+            const auto next_phrase = p + 1;
+            if (next_phrase == sp_phrases.end()) {
+                continue;
+            }
+            p->length
+                = std::min(p->length, next_phrase->position - p->position);
+        }
+
+        for (const auto& phrase : sp_phrases) {
+            const auto first_note = std::lower_bound(
+                m_notes.cbegin(), m_notes.cend(), phrase.position,
+                [](const auto& lhs, const auto& rhs) {
+                    return lhs.position < rhs;
+                });
+            if ((first_note != m_notes.cend())
+                && (first_note->position < (phrase.position + phrase.length))) {
+                m_sp_phrases.push_back(phrase);
+            }
+        }
+
+        std::stable_sort(solos.begin(), solos.end(),
+                         [](const auto& lhs, const auto& rhs) {
+                             return lhs.start < rhs.start;
+                         });
+
+        m_solos = std::move(solos);
+    }
+
+    [[nodiscard]] const std::vector<Note<T>>& notes() const { return m_notes; }
     [[nodiscard]] const std::vector<StarPower>& sp_phrases() const
     {
         return m_sp_phrases;
@@ -162,11 +224,12 @@ private:
     int m_resolution = DEFAULT_RESOLUTION;
     SongHeader m_song_header;
     SyncTrack m_sync_track;
-    std::map<Difficulty, NoteTrack> m_bass_note_tracks;
-    std::map<Difficulty, NoteTrack> m_guitar_note_tracks;
-    std::map<Difficulty, NoteTrack> m_guitar_coop_note_tracks;
-    std::map<Difficulty, NoteTrack> m_keys_note_tracks;
-    std::map<Difficulty, NoteTrack> m_rhythm_note_tracks;
+    std::map<Difficulty, NoteTrack<NoteColour>> m_bass_note_tracks;
+    std::map<Difficulty, NoteTrack<NoteColour>> m_guitar_note_tracks;
+    std::map<Difficulty, NoteTrack<NoteColour>> m_guitar_coop_note_tracks;
+    std::map<Difficulty, NoteTrack<NoteColour>> m_keys_note_tracks;
+    std::map<Difficulty, NoteTrack<NoteColour>> m_rhythm_note_tracks;
+    std::map<Difficulty, NoteTrack<GHLNoteColour>> m_ghl_guitar_note_tracks;
     Chart() = default;
 
 public:
@@ -179,25 +242,35 @@ public:
         return m_song_header;
     }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
-    [[nodiscard]] const NoteTrack& guitar_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack<NoteColour>&
+    guitar_note_track(Difficulty diff) const
     {
         return m_guitar_note_tracks.at(diff);
     }
-    [[nodiscard]] const NoteTrack& guitar_coop_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack<NoteColour>&
+    guitar_coop_note_track(Difficulty diff) const
     {
         return m_guitar_coop_note_tracks.at(diff);
     }
-    [[nodiscard]] const NoteTrack& bass_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack<NoteColour>&
+    bass_note_track(Difficulty diff) const
     {
         return m_bass_note_tracks.at(diff);
     }
-    [[nodiscard]] const NoteTrack& rhythm_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack<NoteColour>&
+    rhythm_note_track(Difficulty diff) const
     {
         return m_rhythm_note_tracks.at(diff);
     }
-    [[nodiscard]] const NoteTrack& keys_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack<NoteColour>&
+    keys_note_track(Difficulty diff) const
     {
         return m_keys_note_tracks.at(diff);
+    }
+    [[nodiscard]] const NoteTrack<GHLNoteColour>&
+    ghl_guitar_note_track(Difficulty diff) const
+    {
+        return m_ghl_guitar_note_tracks.at(diff);
     }
 };
 
