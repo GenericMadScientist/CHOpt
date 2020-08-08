@@ -554,6 +554,8 @@ static int numb_of_fret_lines(TrackType track_type)
     case TrackType::SixFret:
         return 2;
     }
+
+    throw std::invalid_argument("Invalid TrackType");
 }
 
 void ImageImpl::draw_measures(const ImageBuilder& builder)
