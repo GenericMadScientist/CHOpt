@@ -19,6 +19,7 @@
 #ifndef CHOPT_CHART_HPP
 #define CHOPT_CHART_HPP
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <string_view>
