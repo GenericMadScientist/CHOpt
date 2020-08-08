@@ -154,7 +154,8 @@ static std::vector<DrawnRow> drawn_rows(const NoteTrack<T>& track,
 
 ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track, int resolution,
                            const SyncTrack& sync_track)
-    : m_rows {drawn_rows(track, resolution, sync_track)}
+    : m_track_type {TrackType::FiveFret}
+    , m_rows {drawn_rows(track, resolution, sync_track)}
     , m_notes {drawn_notes(track, resolution)}
 {
     constexpr double HALF_BEAT = 0.5;
@@ -179,7 +180,8 @@ ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track, int resolution,
 
 ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
                            int resolution, const SyncTrack& sync_track)
-    : m_rows {drawn_rows(track, resolution, sync_track)}
+    : m_track_type {TrackType::SixFret}
+    , m_rows {drawn_rows(track, resolution, sync_track)}
     , m_ghl_notes {drawn_notes(track, resolution)}
 {
     constexpr double HALF_BEAT = 0.5;

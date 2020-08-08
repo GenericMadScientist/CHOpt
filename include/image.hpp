@@ -41,8 +41,11 @@ template <typename T> struct DrawnNote {
     bool is_sp_note;
 };
 
+enum class TrackType { FiveFret, SixFret };
+
 class ImageBuilder {
 private:
+    const TrackType m_track_type;
     std::vector<DrawnRow> m_rows;
     std::vector<double> m_half_beat_lines;
     std::vector<double> m_beat_lines;
@@ -143,6 +146,7 @@ public:
     {
         return m_time_sigs;
     }
+    [[nodiscard]] TrackType track_type() const { return m_track_type; }
     [[nodiscard]] const std::vector<std::tuple<double, double>>&
     yellow_ranges() const
     {

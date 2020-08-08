@@ -32,6 +32,25 @@ static bool operator==(const DrawnRow& lhs, const DrawnRow& rhs)
     return lhs.start == Approx(rhs.start) && lhs.end == Approx(rhs.end);
 }
 
+TEST_CASE("Track type is stored correctly")
+{
+    SECTION("Five fret gets the right track type")
+    {
+        NoteTrack<NoteColour> track;
+        ImageBuilder builder {track, 192, {}};
+
+        REQUIRE(builder.track_type() == TrackType::FiveFret);
+    }
+
+    SECTION("Six fret gets the right track type")
+    {
+        NoteTrack<GHLNoteColour> track;
+        ImageBuilder builder {track, 192, {}};
+
+        REQUIRE(builder.track_type() == TrackType::SixFret);
+    }
+}
+
 TEST_CASE("Notes are handled correclty")
 {
     SECTION("Non-SP non-sustains are handled correctly")
