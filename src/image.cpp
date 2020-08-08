@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <iterator>
 #include <limits>
+#include <set>
 #include <stdexcept>
 
 #include "cimg_wrapper.hpp"
@@ -458,6 +459,28 @@ static int note_colour_to_offset(NoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_offset");
 }
 
+static int note_colour_to_offset(GHLNoteColour colour)
+{
+    constexpr int LOW_OFFSET = 0;
+    constexpr int MID_OFFSET = 30;
+    constexpr int HIGH_OFFSET = 60;
+
+    switch (colour) {
+    case GHLNoteColour::BlackLow:
+    case GHLNoteColour::WhiteLow:
+        return LOW_OFFSET;
+    case GHLNoteColour::BlackMid:
+    case GHLNoteColour::WhiteMid:
+    case GHLNoteColour::Open:
+        return MID_OFFSET;
+    case GHLNoteColour::BlackHigh:
+    case GHLNoteColour::WhiteHigh:
+        return HIGH_OFFSET;
+    }
+
+    throw std::invalid_argument("Invalid colour to note_colour_to_offset");
+}
+
 class ImageImpl {
 private:
     CImg<int> m_image;
@@ -466,6 +489,10 @@ private:
     void draw_note_star(int x, int y, NoteColour note_colour);
     void draw_note_sustain(const ImageBuilder& builder,
                            const DrawnNote<NoteColour>& note);
+    void draw_ghl_note(int x, int y,
+                       const std::set<GHLNoteColour>& note_colours);
+    void draw_ghl_note_sustain(const ImageBuilder& builder,
+                               const DrawnNote<GHLNoteColour>& note);
     void draw_quarter_note(int x, int y);
     void draw_text_backwards(int x, int y, const char* text,
                              const unsigned char* color, float opacity,
@@ -487,8 +514,8 @@ public:
                            std::tuple<int, int> y_range, float opacity);
     void draw_header(const ImageBuilder& builder);
     void draw_measures(const ImageBuilder& builder);
-    void draw_note(const ImageBuilder& builder,
-                   const DrawnNote<NoteColour>& note);
+    void draw_notes(const ImageBuilder& builder);
+    void draw_ghl_notes(const ImageBuilder& builder);
     void draw_score_totals(const ImageBuilder& builder);
     void draw_tempos(const ImageBuilder& builder);
     void draw_time_sigs(const ImageBuilder& builder);
@@ -687,19 +714,80 @@ void ImageImpl::draw_text_backwards(int x, int y, const char* text,
     m_image.draw_text(x, y, text, color, 0, opacity, font_height);
 }
 
-void ImageImpl::draw_note(const ImageBuilder& builder,
-                          const DrawnNote<NoteColour>& note)
+void ImageImpl::draw_notes(const ImageBuilder& builder)
 {
-    if (note.length > 0.0) {
-        draw_note_sustain(builder, note);
+    for (const auto& note : builder.notes()) {
+        if (note.length > 0.0) {
+            draw_note_sustain(builder, note);
+        }
+
+        const auto [x, y] = get_xy(builder, note.beat);
+        if (note.is_sp_note) {
+            draw_note_star(x, y, note.colour);
+        } else {
+            draw_note_circle(x, y, note.colour);
+        }
+    }
+}
+
+void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
+{
+    for (const auto& note : builder.ghl_notes()) {
+        if (note.length > 0.0) {
+            draw_ghl_note_sustain(builder, note);
+        }
     }
 
-    const auto [x, y] = get_xy(builder, note.beat);
-    if (note.is_sp_note) {
-        draw_note_star(x, y, note.colour);
-    } else {
-        draw_note_circle(x, y, note.colour);
+    // double is beat, std::set is colours of note
+    std::vector<std::tuple<double, std::set<GHLNoteColour>>> note_groups;
+    for (const auto& note : builder.ghl_notes()) {
+        if (note_groups.empty()
+            || std::get<0>(note_groups.back()) < note.beat) {
+            note_groups.push_back({note.beat, {note.colour}});
+        }
+        std::get<1>(note_groups.back()).insert(note.colour);
     }
+
+    for (const auto& [pos, colours] : note_groups) {
+        const auto [x, y] = get_xy(builder, pos);
+        draw_ghl_note(x, y, colours);
+    }
+}
+
+// Codes are
+// 0 - No note
+// 1 - White note
+// 2 - Black note
+// 3 - White and black note
+static std::array<int, 3>
+ghl_note_colour_codes(const std::set<GHLNoteColour>& note_colours)
+{
+    std::array<int, 3> codes {0, 0, 0};
+    for (const auto& colour : note_colours) {
+        switch (colour) {
+        case GHLNoteColour::Open:
+            return {0, 0, 0};
+        case GHLNoteColour::WhiteLow:
+            codes[0] |= 1;
+            break;
+        case GHLNoteColour::WhiteMid:
+            codes[1] |= 1;
+            break;
+        case GHLNoteColour::WhiteHigh:
+            codes[2] |= 1;
+            break;
+        case GHLNoteColour::BlackLow:
+            codes[0] |= 2;
+            break;
+        case GHLNoteColour::BlackMid:
+            codes[1] |= 2;
+            break;
+        case GHLNoteColour::BlackHigh:
+            codes[2] |= 2;
+            break;
+        }
+    }
+    return codes;
 }
 
 void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour)
@@ -718,6 +806,45 @@ void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour)
     } else {
         m_image.draw_circle(x, y + offset, RADIUS, colour.data());
         m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
+    }
+}
+
+void ImageImpl::draw_ghl_note(int x, int y,
+                              const std::set<GHLNoteColour>& note_colours)
+{
+    constexpr std::array<unsigned char, 3> black {0, 0, 0};
+    constexpr std::array<unsigned char, 3> grey {30, 30, 30};
+    constexpr std::array<unsigned char, 3> white {255, 255, 255};
+    constexpr int RADIUS = 5;
+
+    if (note_colours.count(GHLNoteColour::Open)) {
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               white.data(), OPEN_NOTE_OPACITY);
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               black.data(), 1.0, ~0U);
+        return;
+    }
+
+    const auto codes = ghl_note_colour_codes(note_colours);
+
+    for (auto i = 0U; i < 3; ++i) {
+        auto offset = 30 * static_cast<int>(i);
+        if (codes[i] == 0) {
+            continue;
+        } else if (codes[i] == 1) {
+            m_image.draw_circle(x, y + offset, RADIUS, white.data());
+            m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
+        } else if (codes[i] == 2) {
+            m_image.draw_circle(x, y + offset, RADIUS, grey.data());
+            m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
+        } else if (codes[i] == 3) {
+            m_image.draw_rectangle(x - RADIUS, y + offset - RADIUS, x + RADIUS,
+                                   y + offset, grey.data());
+            m_image.draw_rectangle(x - RADIUS, y + offset, x + RADIUS,
+                                   y + offset + RADIUS, white.data());
+            m_image.draw_rectangle(x - RADIUS, y + offset, x + RADIUS,
+                                   y + offset + RADIUS, black.data(), 1.0, ~0U);
+        }
     }
 }
 
@@ -763,6 +890,23 @@ void ImageImpl::draw_note_sustain(const ImageBuilder& builder,
         opacity = OPEN_NOTE_OPACITY;
     }
     colour_beat_range(builder, colour, x_range, y_range, opacity);
+}
+
+void ImageImpl::draw_ghl_note_sustain(const ImageBuilder& builder,
+                                      const DrawnNote<GHLNoteColour>& note)
+{
+    constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
+    constexpr std::array<unsigned char, 3> SUST_COLOUR {150, 150, 150};
+
+    std::tuple<double, double> x_range {note.beat, note.beat + note.length};
+    auto offset = note_colour_to_offset(note.colour);
+    std::tuple<int, int> y_range {offset - 3, offset + 3};
+    float opacity = 1.0F;
+    if (note.colour == GHLNoteColour::Open) {
+        y_range = OPEN_NOTE_Y_RANGE;
+        opacity = OPEN_NOTE_OPACITY;
+    }
+    colour_beat_range(builder, SUST_COLOUR, x_range, y_range, opacity);
 }
 
 void ImageImpl::colour_beat_range(const ImageBuilder& builder,
@@ -827,8 +971,13 @@ Image::Image(const ImageBuilder& builder)
                                   RANGE_OPACITY / 2);
     }
 
-    for (const auto& note : builder.notes()) {
-        m_impl->draw_note(builder, note);
+    switch (builder.track_type()) {
+    case TrackType::FiveFret:
+        m_impl->draw_notes(builder);
+        break;
+    case TrackType::SixFret:
+        m_impl->draw_ghl_notes(builder);
+        break;
     }
 
     m_impl->draw_score_totals(builder);
