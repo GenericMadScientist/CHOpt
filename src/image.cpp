@@ -519,14 +519,26 @@ void ImageImpl::draw_header(const ImageBuilder& builder)
                       builder.artist().c_str(), builder.charter().c_str());
 }
 
+static int numb_of_fret_lines(TrackType track_type)
+{
+    switch (track_type) {
+    case TrackType::FiveFret:
+        return 4;
+    case TrackType::SixFret:
+        return 2;
+    }
+}
+
 void ImageImpl::draw_measures(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
     constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
     constexpr std::array<unsigned char, 3> LIGHT_GREY {224, 224, 224};
     constexpr std::array<unsigned char, 3> RED {140, 0, 0};
-    constexpr int COLOUR_DISTANCE = 15;
     constexpr int MEASURE_NUMB_GAP = 18;
+
+    const int fret_lines = numb_of_fret_lines(builder.track_type());
+    const int colour_distance = (MEASURE_HEIGHT - 1) / fret_lines;
 
     draw_vertical_lines(builder, builder.beat_lines(), GREY);
     draw_vertical_lines(builder, builder.half_beat_lines(), LIGHT_GREY);
@@ -536,9 +548,9 @@ void ImageImpl::draw_measures(const ImageBuilder& builder)
         auto y = TOP_MARGIN + DIST_BETWEEN_MEASURES * current_row + MARGIN;
         auto x_max = LEFT_MARGIN
             + static_cast<int>(BEAT_WIDTH * (row.end - row.start));
-        for (int i = 1; i < 4; ++i) {
-            m_image.draw_line(LEFT_MARGIN, y + COLOUR_DISTANCE * i, x_max,
-                              y + COLOUR_DISTANCE * i, GREY.data());
+        for (int i = 1; i < fret_lines; ++i) {
+            m_image.draw_line(LEFT_MARGIN, y + colour_distance * i, x_max,
+                              y + colour_distance * i, GREY.data());
         }
         m_image.draw_rectangle(LEFT_MARGIN, y, x_max, y + MEASURE_HEIGHT,
                                BLACK.data(), 1.0, ~0U);
