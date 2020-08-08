@@ -817,9 +817,10 @@ void ImageImpl::draw_ghl_note(int x, int y,
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr std::array<unsigned char, 3> grey {30, 30, 30};
     constexpr std::array<unsigned char, 3> white {255, 255, 255};
+    constexpr int FRET_GAP = 30;
     constexpr int RADIUS = 5;
 
-    if (note_colours.count(GHLNoteColour::Open)) {
+    if (note_colours.count(GHLNoteColour::Open) != 0) {
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                white.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
@@ -830,16 +831,17 @@ void ImageImpl::draw_ghl_note(int x, int y,
     const auto codes = ghl_note_colour_codes(note_colours);
 
     for (auto i = 0U; i < 3; ++i) {
-        auto offset = 30 * static_cast<int>(i);
-        if (codes[i] == 0) {
+        auto offset = FRET_GAP * static_cast<int>(i);
+        if (codes.at(i) == 0) {
             continue;
-        } else if (codes[i] == 1) {
+        }
+        if (codes.at(i) == 1) {
             m_image.draw_circle(x, y + offset, RADIUS, white.data());
             m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
-        } else if (codes[i] == 2) {
+        } else if (codes.at(i) == 2) {
             m_image.draw_circle(x, y + offset, RADIUS, grey.data());
             m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
-        } else if (codes[i] == 3) {
+        } else if (codes.at(i) == 3) {
             m_image.draw_rectangle(x - RADIUS, y + offset - RADIUS, x + RADIUS,
                                    y + offset, grey.data());
             m_image.draw_rectangle(x - RADIUS, y + offset, x + RADIUS,
