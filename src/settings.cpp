@@ -131,6 +131,8 @@ Settings from_args(int argc, char** argv)
         settings.instrument = Instrument::Rhythm;
     } else if (inst_string == "keys") {
         settings.instrument = Instrument::Keys;
+    } else if (inst_string == "ghl") {
+        settings.instrument = Instrument::GHLGuitar;
     } else {
         throw std::invalid_argument("Unrecognised instrument");
     }
