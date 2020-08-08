@@ -545,6 +545,7 @@ Chart Chart::parse_chart(std::string_view input)
     std::map<Difficulty, PreNoteTrack<NoteColour>> pre_keys_tracks;
     std::map<Difficulty, PreNoteTrack<NoteColour>> pre_rhythm_tracks;
     std::map<Difficulty, PreNoteTrack<GHLNoteColour>> pre_ghl_guitar_tracks;
+    std::map<Difficulty, PreNoteTrack<GHLNoteColour>> pre_ghl_bass_tracks;
 
     // Trim off UTF-8 BOM if present
     if (string_starts_with(input, "\xEF\xBB\xBF")) {
@@ -625,6 +626,18 @@ Chart Chart::parse_chart(std::string_view input)
         } else if (header == "[ExpertGHLGuitar]") {
             input = read_single_track(
                 input, pre_ghl_guitar_tracks[Difficulty::Expert]);
+        } else if (header == "[EasyGHLBass]") {
+            input = read_single_track(input,
+                                      pre_ghl_bass_tracks[Difficulty::Easy]);
+        } else if (header == "[MediumGHLBass]") {
+            input = read_single_track(input,
+                                      pre_ghl_bass_tracks[Difficulty::Medium]);
+        } else if (header == "[HardGHLBass]") {
+            input = read_single_track(input,
+                                      pre_ghl_bass_tracks[Difficulty::Hard]);
+        } else if (header == "[ExpertGHLBass]") {
+            input = read_single_track(input,
+                                      pre_ghl_bass_tracks[Difficulty::Expert]);
         } else {
             input = skip_section(input);
         }
@@ -710,12 +723,25 @@ Chart Chart::parse_chart(std::string_view input)
         chart.m_ghl_guitar_note_tracks.emplace(diff, std::move(new_track));
     }
 
+    for (auto& key_track : pre_ghl_bass_tracks) {
+        auto diff = key_track.first;
+        auto& track = key_track.second;
+        if (track.notes.empty()) {
+            continue;
+        }
+        NoteTrack<GHLNoteColour> new_track {std::move(track.notes),
+                                            std::move(track.sp_phrases),
+                                            std::move(track.solos)};
+        chart.m_ghl_bass_note_tracks.emplace(diff, std::move(new_track));
+    }
+
     if (chart.m_guitar_note_tracks.empty()
         && chart.m_guitar_coop_note_tracks.empty()
         && chart.m_bass_note_tracks.empty()
         && chart.m_rhythm_note_tracks.empty()
         && chart.m_keys_note_tracks.empty()
-        && chart.m_ghl_guitar_note_tracks.empty()) {
+        && chart.m_ghl_guitar_note_tracks.empty()
+        && chart.m_ghl_bass_note_tracks.empty()) {
         throw std::invalid_argument("Chart has no notes");
     }
 

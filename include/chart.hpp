@@ -231,6 +231,7 @@ private:
     std::map<Difficulty, NoteTrack<NoteColour>> m_keys_note_tracks;
     std::map<Difficulty, NoteTrack<NoteColour>> m_rhythm_note_tracks;
     std::map<Difficulty, NoteTrack<GHLNoteColour>> m_ghl_guitar_note_tracks;
+    std::map<Difficulty, NoteTrack<GHLNoteColour>> m_ghl_bass_note_tracks;
     Chart() = default;
 
 public:
@@ -272,6 +273,11 @@ public:
     ghl_guitar_note_track(Difficulty diff) const
     {
         return m_ghl_guitar_note_tracks.at(diff);
+    }
+    [[nodiscard]] const NoteTrack<GHLNoteColour>&
+    ghl_bass_note_track(Difficulty diff) const
+    {
+        return m_ghl_bass_note_tracks.at(diff);
     }
 };
 

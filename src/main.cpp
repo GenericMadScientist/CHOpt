@@ -44,7 +44,10 @@ track_from_inst_diff(const Settings& settings, const Chart& chart)
         return chart.keys_note_track(settings.difficulty);
     case Instrument::GHLGuitar:
         throw std::invalid_argument("GHL Guitar is not 5 fret");
+    case Instrument::GHLBass:
+        throw std::invalid_argument("GHL Bass is not 5 fret");
     }
+
     throw std::invalid_argument("Invalid instrument");
 }
 
@@ -94,6 +97,9 @@ static ImageBuilder make_builder(const Chart& chart, const Settings& settings)
 {
     if (settings.instrument == Instrument::GHLGuitar) {
         const auto& track = chart.ghl_guitar_note_track(settings.difficulty);
+        return make_builder_from_track(chart, track, settings);
+    } else if (settings.instrument == Instrument::GHLBass) {
+        const auto& track = chart.ghl_bass_note_track(settings.difficulty);
         return make_builder_from_track(chart, track, settings);
     }
     const auto& track = track_from_inst_diff(settings, chart);
