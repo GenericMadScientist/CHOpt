@@ -19,23 +19,9 @@
 #include <algorithm>
 #include <cassert>
 #include <iterator>
-#include <limits>
-#include <numeric>
 #include <sstream>
 
 #include "processed.hpp"
-
-ProcessedSong::ProcessedSong(const NoteTrack<NoteColour>& track, int resolution,
-                             const SyncTrack& sync_track, double early_whammy,
-                             double squeeze, Second lazy_whammy)
-    : m_converter {sync_track, resolution}
-    , m_points {track, resolution, m_converter, squeeze}
-    , m_sp_data {track, resolution, sync_track, early_whammy, lazy_whammy}
-{
-    m_total_solo_boost = std::accumulate(
-        track.solos().cbegin(), track.solos().cend(), 0,
-        [](const auto x, const auto& y) { return x + y.value; });
-}
 
 SpBar ProcessedSong::total_available_sp(Beat start, PointPtr first_point,
                                         PointPtr act_start,

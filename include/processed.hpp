@@ -20,6 +20,7 @@
 #define CHOPT_PROCESSED_HPP
 
 #include <limits>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -80,9 +81,18 @@ private:
     int m_total_solo_boost;
 
 public:
-    ProcessedSong(const NoteTrack<NoteColour>& track, int resolution,
+    template <typename T>
+    ProcessedSong(const NoteTrack<T>& track, int resolution,
                   const SyncTrack& sync_track, double early_whammy,
-                  double squeeze, Second lazy_whammy);
+                  double squeeze, Second lazy_whammy)
+        : m_converter {sync_track, resolution}
+        , m_points {track, resolution, m_converter, squeeze}
+        , m_sp_data {track, resolution, sync_track, early_whammy, lazy_whammy}
+    {
+        m_total_solo_boost = std::accumulate(
+            track.solos().cbegin(), track.solos().cend(), 0,
+            [](const auto x, const auto& y) { return x + y.value; });
+    }
 
     // Return the minimum and maximum amount of SP can be acquired between two
     // points. Does not include SP from the point act_start. first_point is

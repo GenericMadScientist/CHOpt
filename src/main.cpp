@@ -42,8 +42,62 @@ track_from_inst_diff(const Settings& settings, const Chart& chart)
         return chart.rhythm_note_track(settings.difficulty);
     case Instrument::Keys:
         return chart.keys_note_track(settings.difficulty);
+    case Instrument::GHLGuitar:
+        throw std::invalid_argument("GHL Guitar is not 5 fret");
     }
     throw std::invalid_argument("Invalid instrument");
+}
+
+template <typename T>
+static ImageBuilder make_builder_from_track(const Chart& chart,
+                                            const NoteTrack<T>& track,
+                                            const Settings& settings)
+{
+    ImageBuilder builder {track, chart.resolution(), chart.sync_track()};
+    builder.add_song_header(chart.song_header());
+    builder.add_sp_phrases(track, chart.resolution());
+
+    if (settings.draw_bpms) {
+        builder.add_bpms(chart.sync_track(), chart.resolution());
+    }
+
+    if (settings.draw_solos) {
+        builder.add_solo_sections(track.solos(), chart.resolution());
+    }
+
+    if (settings.draw_time_sigs) {
+        builder.add_time_sigs(chart.sync_track(), chart.resolution());
+    }
+
+    const ProcessedSong processed_track {track,
+                                         chart.resolution(),
+                                         chart.sync_track(),
+                                         settings.early_whammy,
+                                         settings.squeeze,
+                                         Second {settings.lazy_whammy}};
+    Path path;
+
+    if (!settings.blank) {
+        const Optimiser optimiser {&processed_track};
+        path = optimiser.optimal_path();
+        builder.add_sp_acts(processed_track.points(), path);
+        std::cout << processed_track.path_summary(path) << std::endl;
+    }
+
+    builder.add_measure_values(processed_track.points(), path);
+    builder.add_sp_values(processed_track.sp_data());
+
+    return builder;
+}
+
+static ImageBuilder make_builder(const Chart& chart, const Settings& settings)
+{
+    if (settings.instrument == Instrument::GHLGuitar) {
+        const auto& track = chart.ghl_guitar_note_track(settings.difficulty);
+        return make_builder_from_track(chart, track, settings);
+    }
+    const auto& track = track_from_inst_diff(settings, chart);
+    return make_builder_from_track(chart, track, settings);
 }
 
 int main(int argc, char** argv)
@@ -51,40 +105,7 @@ int main(int argc, char** argv)
     try {
         const auto settings = from_args(argc, argv);
         const auto chart = Chart::from_filename(settings.filename);
-        const auto& track = track_from_inst_diff(settings, chart);
-        ImageBuilder builder {track, chart.resolution(), chart.sync_track()};
-        builder.add_song_header(chart.song_header());
-        builder.add_sp_phrases(track, chart.resolution());
-
-        if (settings.draw_bpms) {
-            builder.add_bpms(chart.sync_track(), chart.resolution());
-        }
-
-        if (settings.draw_solos) {
-            builder.add_solo_sections(track, chart.resolution());
-        }
-
-        if (settings.draw_time_sigs) {
-            builder.add_time_sigs(chart.sync_track(), chart.resolution());
-        }
-
-        const ProcessedSong processed_track {track,
-                                             chart.resolution(),
-                                             chart.sync_track(),
-                                             settings.early_whammy,
-                                             settings.squeeze,
-                                             Second {settings.lazy_whammy}};
-        Path path;
-
-        if (!settings.blank) {
-            const Optimiser optimiser {&processed_track};
-            path = optimiser.optimal_path();
-            builder.add_sp_acts(processed_track.points(), path);
-            std::cout << processed_track.path_summary(path) << std::endl;
-        }
-
-        builder.add_measure_values(processed_track.points(), path);
-        builder.add_sp_values(processed_track.sp_data());
+        const auto builder = make_builder(chart, settings);
         const Image image {builder};
         image.save(settings.image_path.c_str());
         return EXIT_SUCCESS;

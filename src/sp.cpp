@@ -49,7 +49,8 @@ SpData::form_beat_rates(int resolution, const SyncTrack& sync_track)
     return beat_rates;
 }
 
-SpData::SpData(const NoteTrack<NoteColour>& track, int resolution,
+SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
+               const std::vector<StarPower>& phrases, int resolution,
                const SyncTrack& sync_track, double early_whammy,
                Second lazy_whammy)
     : m_converter {sync_track, resolution}
@@ -58,30 +59,29 @@ SpData::SpData(const NoteTrack<NoteColour>& track, int resolution,
     const Second early_timing_window {0.07 * early_whammy};
 
     std::vector<std::tuple<Beat, Beat>> ranges;
-    for (const auto& note : track.notes()) {
-        if (note.length == 0) {
+    for (const auto& [position, length] : note_spans) {
+        if (length == 0) {
             continue;
         }
-        auto phrase
-            = std::find_if(track.sp_phrases().cbegin(),
-                           track.sp_phrases().cend(), [&](const auto& p) {
-                               return phrase_contains_pos(p, note.position);
-                           });
-        if (phrase == track.sp_phrases().cend()) {
+        const int pos_copy = position;
+        const auto phrase = std::find_if(
+            phrases.cbegin(), phrases.cend(),
+            [&](const auto& p) { return phrase_contains_pos(p, pos_copy); });
+        if (phrase == phrases.cend()) {
             continue;
         }
 
-        Beat beat_start {static_cast<double>(note.position) / resolution};
+        Beat beat_start {static_cast<double>(position) / resolution};
         auto second_start = m_converter.beats_to_seconds(beat_start);
         second_start -= early_timing_window;
         second_start += lazy_whammy;
         beat_start = m_converter.seconds_to_beats(second_start);
-        Beat beat_end {static_cast<double>(note.position + note.length)
-                       / resolution};
+        Beat beat_end {static_cast<double>(position + length) / resolution};
         if (beat_start < beat_end) {
             ranges.emplace_back(beat_start, beat_end);
         }
     }
+
     std::sort(ranges.begin(), ranges.end());
 
     if (!ranges.empty()) {

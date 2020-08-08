@@ -270,10 +270,10 @@ void ImageBuilder::add_measure_values(const PointSet& points, const Path& path)
     }
 }
 
-void ImageBuilder::add_solo_sections(const NoteTrack<NoteColour>& track,
+void ImageBuilder::add_solo_sections(const std::vector<Solo>& solos,
                                      int resolution)
 {
-    for (const auto& solo : track.solos()) {
+    for (const auto& solo : solos) {
         auto start = solo.start / static_cast<double>(resolution);
         auto end = solo.end / static_cast<double>(resolution);
         m_solo_ranges.emplace_back(start, end);
@@ -333,6 +333,27 @@ void ImageBuilder::add_sp_acts(const PointSet& points, const Path& path)
 }
 
 void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
+                                  int resolution)
+{
+    for (const auto& phrase : track.sp_phrases()) {
+        auto p = track.notes().cbegin();
+        while (p->position < phrase.position) {
+            ++p;
+        }
+        auto start = p->position / static_cast<double>(resolution);
+        auto phrase_end = phrase.position + phrase.length;
+        auto end = start;
+        while (p < track.notes().cend() && p->position < phrase_end) {
+            auto current_end
+                = (p->position + p->length) / static_cast<double>(resolution);
+            end = std::max(end, current_end);
+            ++p;
+        }
+        m_green_ranges.emplace_back(start, end);
+    }
+}
+
+void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
                                   int resolution)
 {
     for (const auto& phrase : track.sp_phrases()) {

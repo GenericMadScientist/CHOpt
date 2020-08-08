@@ -66,7 +66,7 @@ Settings from_args(int argc, char** argv)
         .help("difficulty, defaults to expert");
     program.add_argument("-i", "--instrument")
         .default_value(std::string {"guitar"})
-        .help("instrument, options are guitar, coop, bass, rhythm, keys, "
+        .help("instrument, options are guitar, coop, bass, rhythm, keys, ghl, "
               "defaults to guitar");
     program.add_argument("--sqz", "--squeeze")
         .default_value(MAX_PERCENT)

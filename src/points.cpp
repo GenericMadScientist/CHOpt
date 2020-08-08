@@ -145,3 +145,49 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track, int resolution,
         m_solo_boosts.emplace_back(end_pos, solo.value);
     }
 }
+
+PointSet::PointSet(const NoteTrack<GHLNoteColour>& track, int resolution,
+                   const TimeConverter& converter, double squeeze)
+{
+    const auto& notes = track.notes();
+
+    auto current_phrase = track.sp_phrases().cbegin();
+    for (auto p = notes.cbegin(); p != notes.cend();) {
+        const auto q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
+            return x.position == p->position;
+        });
+        auto is_note_sp_ender = false;
+        if (current_phrase != track.sp_phrases().cend()
+            && phrase_contains_pos(*current_phrase, p->position)
+            && ((q == notes.cend())
+                || !phrase_contains_pos(*current_phrase, q->position))) {
+            is_note_sp_ender = true;
+            ++current_phrase;
+        }
+        append_note_points(p, q, std::back_inserter(m_points), resolution,
+                           is_note_sp_ender, converter, squeeze);
+        p = q;
+    }
+
+    std::stable_sort(m_points.begin(), m_points.end(),
+                     [](const auto& x, const auto& y) {
+                         return x.position.beat < y.position.beat;
+                     });
+
+    auto combo = 0U;
+    for (auto& point : m_points) {
+        if (!point.is_hold_point) {
+            ++combo;
+        }
+        const auto multiplier = 1 + std::min(combo / 10, 3U);
+        point.value *= multiplier;
+    }
+
+    m_solo_boosts.reserve(track.solos().size());
+    for (const auto& solo : track.solos()) {
+        Beat end_beat {solo.end / static_cast<double>(resolution)};
+        Measure end_meas = converter.beats_to_measures(end_beat);
+        Position end_pos {end_beat, end_meas};
+        m_solo_boosts.emplace_back(end_pos, solo.value);
+    }
+}

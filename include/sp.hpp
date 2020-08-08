@@ -96,10 +96,30 @@ private:
     static std::vector<BeatRate> form_beat_rates(int resolution,
                                                  const SyncTrack& sync_track);
 
-public:
-    SpData(const NoteTrack<NoteColour>& track, int resolution,
+    template <typename T>
+    static std::vector<std::tuple<int, int>>
+    note_spans(const NoteTrack<T>& track)
+    {
+        std::vector<std::tuple<int, int>> spans;
+        for (const auto& note : track.notes()) {
+            spans.push_back({note.position, note.length});
+        }
+        return spans;
+    }
+
+    SpData(const std::vector<std::tuple<int, int>>& note_spans,
+           const std::vector<StarPower>& phrases, int resolution,
            const SyncTrack& sync_track, double early_whammy,
            Second lazy_whammy);
+
+public:
+    template <typename T>
+    SpData(const NoteTrack<T>& track, int resolution,
+           const SyncTrack& sync_track, double early_whammy, Second lazy_whammy)
+        : SpData(note_spans(track), track.sp_phrases(), resolution, sync_track,
+                 early_whammy, lazy_whammy)
+    {
+    }
 
     // Return how much SP is available at the end after propagating over a
     // range, or -1 if SP runs out at any point. Only includes SP gain from

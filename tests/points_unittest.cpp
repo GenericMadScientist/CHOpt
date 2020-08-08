@@ -89,6 +89,16 @@ TEST_CASE("Non-hold notes")
 
         REQUIRE(set_values(points) == expected_values);
     }
+
+    SECTION("GHL notes behave the same as 5 fret notes")
+    {
+        NoteTrack<GHLNoteColour> track {{{768}, {960}}, {}, {}};
+        TimeConverter converter {{}, 192};
+        PointSet points {track, 192, converter, 1.0};
+        std::vector<int> expected_values {50, 50};
+
+        REQUIRE(set_values(points) == expected_values);
+    }
 }
 
 TEST_CASE("Hold notes")
