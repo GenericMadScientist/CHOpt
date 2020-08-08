@@ -453,7 +453,7 @@ TEST_CASE("6 fret guitar is read correctly")
     std::vector<Note<GHLNoteColour>> notes {{192, 0, GHLNoteColour::WhiteLow},
                                             {384, 0, GHLNoteColour::BlackLow}};
 
-    const auto track = chart.ghl_guitar_note_track(Difficulty::Expert);
+    const auto& track = chart.ghl_guitar_note_track(Difficulty::Expert);
 
     REQUIRE(track.notes() == notes);
 }
