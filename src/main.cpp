@@ -98,7 +98,8 @@ static ImageBuilder make_builder(const Chart& chart, const Settings& settings)
     if (settings.instrument == Instrument::GHLGuitar) {
         const auto& track = chart.ghl_guitar_note_track(settings.difficulty);
         return make_builder_from_track(chart, track, settings);
-    } else if (settings.instrument == Instrument::GHLBass) {
+    }
+    if (settings.instrument == Instrument::GHLBass) {
         const auto& track = chart.ghl_bass_note_track(settings.difficulty);
         return make_builder_from_track(chart, track, settings);
     }
