@@ -480,6 +480,33 @@ static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_colour");
 }
 
+static std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
+{
+    constexpr std::array<unsigned char, 3> RED {255, 0, 0};
+    constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
+    constexpr std::array<unsigned char, 3> BLUE {0, 0, 255};
+    constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
+    constexpr std::array<unsigned char, 3> PURPLE {128, 0, 128};
+
+    switch (colour) {
+    case DrumNoteColour::Red:
+        return RED;
+    case DrumNoteColour::Yellow:
+    case DrumNoteColour::YellowCymbal:
+        return YELLOW;
+    case DrumNoteColour::Blue:
+    case DrumNoteColour::BlueCymbal:
+        return BLUE;
+    case DrumNoteColour::Green:
+    case DrumNoteColour::GreenCymbal:
+        return GREEN;
+    case DrumNoteColour::Kick:
+        return PURPLE;
+    }
+
+    throw std::invalid_argument("Invalid colour to note_colour_to_colour");
+}
+
 static int note_colour_to_offset(NoteColour colour)
 {
     constexpr int GREEN_OFFSET = 0;
@@ -528,6 +555,33 @@ static int note_colour_to_offset(GHLNoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_offset");
 }
 
+static int note_colour_to_offset(DrumNoteColour colour)
+{
+    constexpr int RED_OFFSET = 0;
+    constexpr int YELLOW_OFFSET = 20;
+    constexpr int BLUE_OFFSET = 40;
+    constexpr int GREEN_OFFSET = 60;
+    constexpr int KICK_OFFSET = 30;
+
+    switch (colour) {
+    case DrumNoteColour::Red:
+        return RED_OFFSET;
+    case DrumNoteColour::Yellow:
+    case DrumNoteColour::YellowCymbal:
+        return YELLOW_OFFSET;
+    case DrumNoteColour::Blue:
+    case DrumNoteColour::BlueCymbal:
+        return BLUE_OFFSET;
+    case DrumNoteColour::Green:
+    case DrumNoteColour::GreenCymbal:
+        return GREEN_OFFSET;
+    case DrumNoteColour::Kick:
+        return KICK_OFFSET;
+    }
+
+    throw std::invalid_argument("Invalid colour to note_colour_to_offset");
+}
+
 class ImageImpl {
 private:
     CImg<int> m_image;
@@ -540,6 +594,7 @@ private:
                        const std::set<GHLNoteColour>& note_colours);
     void draw_ghl_note_sustain(const ImageBuilder& builder,
                                const DrawnNote<GHLNoteColour>& note);
+    void draw_drum_note(int x, int y, DrumNoteColour note_colour);
     void draw_quarter_note(int x, int y);
     void draw_text_backwards(int x, int y, const char* text,
                              const unsigned char* color, float opacity,
@@ -563,6 +618,7 @@ public:
     void draw_measures(const ImageBuilder& builder);
     void draw_notes(const ImageBuilder& builder);
     void draw_ghl_notes(const ImageBuilder& builder);
+    void draw_drum_notes(const ImageBuilder& builder);
     void draw_score_totals(const ImageBuilder& builder);
     void draw_tempos(const ImageBuilder& builder);
     void draw_time_sigs(const ImageBuilder& builder);
@@ -805,6 +861,14 @@ void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
     }
 }
 
+void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
+{
+    for (const auto& note : builder.drum_notes()) {
+        const auto [x, y] = get_xy(builder, note.beat);
+        draw_drum_note(x, y, note.colour);
+    }
+}
+
 // Codes are
 // 0 - No note
 // 1 - White note
@@ -898,6 +962,25 @@ void ImageImpl::draw_ghl_note(int x, int y,
             m_image.draw_rectangle(x - RADIUS, y + offset, x + RADIUS,
                                    y + offset + RADIUS, black.data(), 1.0, ~0U);
         }
+    }
+}
+
+void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
+{
+    constexpr std::array<unsigned char, 3> black {0, 0, 0};
+    constexpr int RADIUS = 5;
+
+    auto colour = note_colour_to_colour(note_colour);
+    auto offset = note_colour_to_offset(note_colour);
+
+    if (note_colour == DrumNoteColour::Kick) {
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               colour.data(), OPEN_NOTE_OPACITY);
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               black.data(), 1.0, ~0U);
+    } else {
+        m_image.draw_circle(x, y + offset, RADIUS, colour.data());
+        m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
     }
 }
 
@@ -1032,7 +1115,8 @@ Image::Image(const ImageBuilder& builder)
         m_impl->draw_ghl_notes(builder);
         break;
     case TrackType::Drums:
-        throw std::invalid_argument("Fuck");
+        m_impl->draw_drum_notes(builder);
+        break;
     }
 
     m_impl->draw_score_totals(builder);
