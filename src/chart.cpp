@@ -439,7 +439,7 @@ note_from_ghl_note_colour(int position, int length, int fret_type)
 }
 
 static std::optional<Note<DrumNoteColour>>
-note_from_drum_note_colour(int position, int fret_type)
+note_from_drum_note_colour(int position, int length, int fret_type)
 {
     constexpr auto KICK_CODE = 0;
     constexpr auto RED_CODE = 1;
@@ -449,6 +449,8 @@ note_from_drum_note_colour(int position, int fret_type)
     constexpr auto YELLOW_CYMBAL_CODE = 66;
     constexpr auto BLUE_CYMBAL_CODE = 67;
     constexpr auto GREEN_CYMBAL_CODE = 68;
+
+    (void) length;
 
     switch (fret_type) {
     case KICK_CODE:
@@ -532,7 +534,7 @@ static std::string_view read_single_track(std::string_view input,
                 }
             } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
                 const auto note
-                    = note_from_drum_note_colour(position, *fret_type);
+                    = note_from_drum_note_colour(position, length, *fret_type);
                 if (note.has_value()) {
                     track.notes.push_back(*note);
                 }
