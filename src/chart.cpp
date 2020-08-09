@@ -450,7 +450,7 @@ note_from_drum_note_colour(int position, int length, int fret_type)
     constexpr auto BLUE_CYMBAL_CODE = 67;
     constexpr auto GREEN_CYMBAL_CODE = 68;
 
-    (void) length;
+    (void)length;
 
     switch (fret_type) {
     case KICK_CODE:
