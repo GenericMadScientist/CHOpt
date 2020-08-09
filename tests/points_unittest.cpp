@@ -245,6 +245,7 @@ TEST_CASE("Combo multiplier is taken into account")
     SECTION("Drum notes have the multiplier handled correctly")
     {
         std::vector<Note<DrumNoteColour>> notes;
+        notes.reserve(10);
         for (int i = 0; i < 9; ++i) {
             notes.push_back({192 * i, 0, DrumNoteColour::Red});
         }
