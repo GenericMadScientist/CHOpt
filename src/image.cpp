@@ -863,7 +863,20 @@ void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
 
 void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
 {
+    // We draw all the kicks first because we want RYBG to lie on top of the
+    // kicks, not underneath.
     for (const auto& note : builder.drum_notes()) {
+        if (note.colour != DrumNoteColour::Kick) {
+            continue;
+        }
+        const auto [x, y] = get_xy(builder, note.beat);
+        draw_drum_note(x, y, note.colour);
+    }
+
+    for (const auto& note : builder.drum_notes()) {
+        if (note.colour == DrumNoteColour::Kick) {
+            continue;
+        }
         const auto [x, y] = get_xy(builder, note.beat);
         draw_drum_note(x, y, note.colour);
     }
@@ -965,9 +978,28 @@ void ImageImpl::draw_ghl_note(int x, int y,
     }
 }
 
+static bool is_cymbal_colour(DrumNoteColour note_colour)
+{
+    switch (note_colour) {
+    case DrumNoteColour::YellowCymbal:
+    case DrumNoteColour::BlueCymbal:
+    case DrumNoteColour::GreenCymbal:
+        return true;
+    case DrumNoteColour::Red:
+    case DrumNoteColour::Yellow:
+    case DrumNoteColour::Blue:
+    case DrumNoteColour::Green:
+    case DrumNoteColour::Kick:
+        return false;
+    }
+
+    throw std::invalid_argument("Invalid DrumNoteColour");
+}
+
 void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
+    constexpr std::array<unsigned char, 3> white {255, 255, 255};
     constexpr int RADIUS = 5;
 
     auto colour = note_colour_to_colour(note_colour);
@@ -981,6 +1013,12 @@ void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
     } else {
         m_image.draw_circle(x, y + offset, RADIUS, colour.data());
         m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
+        if (is_cymbal_colour(note_colour)) {
+            m_image.draw_circle(x, y + offset, RADIUS - 1, white.data(), 1.0,
+                                ~0U);
+            m_image.draw_circle(x, y + offset, RADIUS - 2, white.data(), 1.0,
+                                ~0U);
+        }
     }
 }
 
