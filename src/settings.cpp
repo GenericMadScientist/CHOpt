@@ -67,7 +67,7 @@ Settings from_args(int argc, char** argv)
     program.add_argument("-i", "--instrument")
         .default_value(std::string {"guitar"})
         .help("instrument, options are guitar, coop, bass, rhythm, keys, ghl, "
-              "defaults to guitar");
+              "drums, defaults to guitar");
     program.add_argument("--sqz", "--squeeze")
         .default_value(MAX_PERCENT)
         .help("squeeze% (0 to 100), defaults to 100")
@@ -135,6 +135,8 @@ Settings from_args(int argc, char** argv)
         settings.instrument = Instrument::GHLGuitar;
     } else if (inst_string == "ghlbass") {
         settings.instrument = Instrument::GHLBass;
+    } else if (inst_string == "drums") {
+        settings.instrument = Instrument::Drums;
     } else {
         throw std::invalid_argument("Unrecognised instrument");
     }

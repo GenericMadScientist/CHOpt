@@ -403,6 +403,27 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
     }
 }
 
+void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
+                                  int resolution)
+{
+    for (const auto& phrase : track.sp_phrases()) {
+        auto p = track.notes().cbegin();
+        while (p->position < phrase.position) {
+            ++p;
+        }
+        auto start = p->position / static_cast<double>(resolution);
+        auto phrase_end = phrase.position + phrase.length;
+        auto end = start;
+        while (p < track.notes().cend() && p->position < phrase_end) {
+            auto current_end
+                = (p->position + p->length) / static_cast<double>(resolution);
+            end = std::max(end, current_end);
+            ++p;
+        }
+        m_green_ranges.emplace_back(start, end);
+    }
+}
+
 void ImageBuilder::add_sp_values(const SpData& sp_data)
 {
     constexpr double WHAMMY_BEATS_IN_BAR = 30.0;

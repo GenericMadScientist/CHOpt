@@ -30,7 +30,8 @@ enum class Instrument {
     Rhythm,
     Keys,
     GHLGuitar,
-    GHLBass
+    GHLBass,
+    Drums
 };
 
 // This struct represents the options chosen on the command line by the user.

@@ -81,6 +81,7 @@ public:
     void add_sp_acts(const PointSet& points, const Path& path);
     void add_sp_phrases(const NoteTrack<NoteColour>& track, int resolution);
     void add_sp_phrases(const NoteTrack<GHLNoteColour>& track, int resolution);
+    void add_sp_phrases(const NoteTrack<DrumNoteColour>& track, int resolution);
     void add_sp_values(const SpData& sp_data);
     void add_time_sigs(const SyncTrack& sync_track, int resolution);
 

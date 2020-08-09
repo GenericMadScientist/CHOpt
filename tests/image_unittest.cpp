@@ -301,6 +301,18 @@ TEST_CASE("Green ranges for six fret SP phrases are added correctly")
     REQUIRE(builder.green_ranges() == expected_green_ranges);
 }
 
+TEST_CASE("Green ranges for drums SP phrases are added correctly")
+{
+    NoteTrack<DrumNoteColour> track {
+        {{960}, {1344}}, {{768, 384}, {1200, 150}}, {}};
+    ImageBuilder builder {track, 192, {}};
+    builder.add_sp_phrases(track, 192);
+    std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.0},
+                                                                   {7.0, 7.0}};
+
+    REQUIRE(builder.green_ranges() == expected_green_ranges);
+}
+
 TEST_CASE("add_sp_acts adds correct ranges")
 {
     SECTION("Normal path is drawn correctly")
