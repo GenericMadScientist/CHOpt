@@ -63,11 +63,12 @@ Settings from_args(int argc, char** argv)
               "defaults to path.png");
     program.add_argument("-d", "--diff")
         .default_value(std::string {"expert"})
-        .help("difficulty, defaults to expert");
+        .help("difficulty, options are easy, medium, hard, expert, defaults to "
+              "expert");
     program.add_argument("-i", "--instrument")
         .default_value(std::string {"guitar"})
         .help("instrument, options are guitar, coop, bass, rhythm, keys, ghl, "
-              "drums, defaults to guitar");
+              "ghlbass, drums, defaults to guitar");
     program.add_argument("--sqz", "--squeeze")
         .default_value(MAX_PERCENT)
         .help("squeeze% (0 to 100), defaults to 100")

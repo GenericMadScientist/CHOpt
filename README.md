@@ -26,19 +26,20 @@ Only the -f parameter is required, the difficulty defaults to Expert and the
 path is by default saved to path.png. The full list of arguments can be found
 by passing -h or --help to chopt, or by consulting the table below.
 
-| Arguments             | Action                                      |
-| --------------------- | ------------------------------------------- |
-| -h, --help            | List optional arguments                     |
-| -f, --file            | Chart filename                              |
-| -o, --output          | Filename of output image (.bmp or .png)     |
-| -d, --diff            | Difficulty (easy/medium/hard/expert)        |
-| --sqz, --squeeze      | Set squeeze %                               |
-| --ew, --early-whammy  | Set early whammy %                          |
-| --lazy, --lazy-whammy | Set number of ms of whammy lost per sustain |
-| -b, --blank           | Output a blank image without pathing        |
-| --no-bpms             | Do not draw BPMs                            |
-| --no-solos            | Do not draw solo sections                   |
-| --no-time-sigs        | Do not draw time signatures                 |
+| Arguments             | Action                                                      |
+| --------------------- | ----------------------------------------------------------- |
+| -h, --help            | List optional arguments                                     |
+| -f, --file            | Chart filename                                              |
+| -o, --output          | Filename of output image (.bmp or .png)                     |
+| -d, --diff            | Difficulty (easy/medium/hard/expert)                        |
+| -i, --instrument      | Instrument (guitar/coop/bass/rhythm/keys/ghl/ghlbass/drums) |
+| --sqz, --squeeze      | Set squeeze %                                               |
+| --ew, --early-whammy  | Set early whammy %                                          |
+| --lazy, --lazy-whammy | Set number of ms of whammy lost per sustain                 |
+| -b, --blank           | Output a blank image without pathing                        |
+| --no-bpms             | Do not draw BPMs                                            |
+| --no-solos            | Do not draw solo sections                                   |
+| --no-time-sigs        | Do not draw time signatures                                 |
 
 ## Dependencies
 
@@ -60,8 +61,8 @@ them.
 getting an initial idea of Clone Hero's parsing behaviour.
 * Dinoguy1000 and shadoweh helped me make sure chopt runs on other peoples'
 machines.
-* The CH Score Challenges server for feedback, especially CyclopsDragon,
-LightlessWalk, Lucretio, and Taka.
+* Various users for feedback, including CyclopsDragon, LightlessWalk, Lucretio,
+RileyTheFox, and Taka.
 
 ## Contact
 
