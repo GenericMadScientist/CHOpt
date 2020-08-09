@@ -42,6 +42,17 @@ enum class GHLNoteColour {
     Open
 };
 
+enum class DrumNoteColour {
+    Red,
+    Yellow,
+    Blue,
+    Green,
+    YellowCymbal,
+    BlueCymbal,
+    GreenCymbal,
+    Kick
+};
+
 struct TimeSignature {
     int position;
     int numerator;
@@ -232,6 +243,7 @@ private:
     std::map<Difficulty, NoteTrack<NoteColour>> m_rhythm_note_tracks;
     std::map<Difficulty, NoteTrack<GHLNoteColour>> m_ghl_guitar_note_tracks;
     std::map<Difficulty, NoteTrack<GHLNoteColour>> m_ghl_bass_note_tracks;
+    std::map<Difficulty, NoteTrack<DrumNoteColour>> m_drum_note_tracks;
     Chart() = default;
 
 public:
@@ -278,6 +290,11 @@ public:
     ghl_bass_note_track(Difficulty diff) const
     {
         return m_ghl_bass_note_tracks.at(diff);
+    }
+    [[nodiscard]] const NoteTrack<DrumNoteColour>&
+    drum_note_track(Difficulty diff) const
+    {
+        return m_drum_note_tracks.at(diff);
     }
 };
 

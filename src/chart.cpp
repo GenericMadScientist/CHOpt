@@ -438,6 +438,40 @@ note_from_ghl_note_colour(int position, int length, int fret_type)
     }
 }
 
+static std::optional<Note<DrumNoteColour>>
+note_from_drum_note_colour(int position, int fret_type)
+{
+    constexpr auto KICK_CODE = 0;
+    constexpr auto RED_CODE = 1;
+    constexpr auto YELLOW_CODE = 2;
+    constexpr auto BLUE_CODE = 3;
+    constexpr auto GREEN_CODE = 4;
+    constexpr auto YELLOW_CYMBAL_CODE = 66;
+    constexpr auto BLUE_CYMBAL_CODE = 67;
+    constexpr auto GREEN_CYMBAL_CODE = 68;
+
+    switch (fret_type) {
+    case KICK_CODE:
+        return Note<DrumNoteColour> {position, 0, DrumNoteColour::Kick};
+    case RED_CODE:
+        return Note<DrumNoteColour> {position, 0, DrumNoteColour::Red};
+    case YELLOW_CODE:
+        return Note<DrumNoteColour> {position, 0, DrumNoteColour::Yellow};
+    case BLUE_CODE:
+        return Note<DrumNoteColour> {position, 0, DrumNoteColour::Blue};
+    case GREEN_CODE:
+        return Note<DrumNoteColour> {position, 0, DrumNoteColour::Green};
+    case YELLOW_CYMBAL_CODE:
+        return Note<DrumNoteColour> {position, 0, DrumNoteColour::YellowCymbal};
+    case BLUE_CYMBAL_CODE:
+        return Note<DrumNoteColour> {position, 0, DrumNoteColour::BlueCymbal};
+    case GREEN_CYMBAL_CODE:
+        return Note<DrumNoteColour> {position, 0, DrumNoteColour::GreenCymbal};
+    default:
+        throw std::invalid_argument("Invalid note type");
+    }
+}
+
 template <typename T>
 static std::string_view read_single_track(std::string_view input,
                                           PreNoteTrack<T>& track)
@@ -496,10 +530,17 @@ static std::string_view read_single_track(std::string_view input,
                 if (note.has_value()) {
                     track.notes.push_back(*note);
                 }
+            } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
+                const auto note
+                    = note_from_drum_note_colour(position, *fret_type);
+                if (note.has_value()) {
+                    track.notes.push_back(*note);
+                }
             } else {
                 static_assert(
                     std::is_same_v<
-                        T, NoteColour> || std::is_same_v<T, GHLNoteColour>,
+                        T,
+                        NoteColour> || std::is_same_v<T, GHLNoteColour> || std::is_same_v<T, DrumNoteColour>,
                     "Invalid note type");
             }
         } else if (type == "S") {
@@ -525,6 +566,54 @@ static std::string_view read_single_track(std::string_view input,
         }
     }
 
+    // Handle cymbals
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        std::set<unsigned int> deletion_spots;
+        for (auto i = 0U; i < track.notes.size(); ++i) {
+            const auto& cymbal_note = track.notes[i];
+            DrumNoteColour non_cymbal_colour;
+            switch (cymbal_note.colour) {
+            case DrumNoteColour::YellowCymbal:
+                non_cymbal_colour = DrumNoteColour::Yellow;
+                break;
+            case DrumNoteColour::BlueCymbal:
+                non_cymbal_colour = DrumNoteColour::Blue;
+                break;
+            case DrumNoteColour::GreenCymbal:
+                non_cymbal_colour = DrumNoteColour::Green;
+                break;
+            case DrumNoteColour::Red:
+            case DrumNoteColour::Yellow:
+            case DrumNoteColour::Blue:
+            case DrumNoteColour::Green:
+            case DrumNoteColour::Kick:
+                continue;
+            }
+            bool delete_cymbal = true;
+            for (auto j = 0U; j < track.notes.size(); ++j) {
+                const auto& non_cymbal_note = track.notes[j];
+                if (non_cymbal_note.position != cymbal_note.position) {
+                    continue;
+                }
+                if (non_cymbal_note.colour != non_cymbal_colour) {
+                    continue;
+                }
+                delete_cymbal = false;
+                deletion_spots.insert(j);
+            }
+            if (delete_cymbal) {
+                deletion_spots.insert(i);
+            }
+        }
+        std::vector<Note<DrumNoteColour>> new_notes;
+        for (auto i = 0U; i < track.notes.size(); ++i) {
+            if (deletion_spots.count(i) == 0) {
+                new_notes.push_back(track.notes[i]);
+            }
+        }
+        track.notes = std::move(new_notes);
+    }
+
     std::sort(solo_on_events.begin(), solo_on_events.end());
     std::sort(solo_off_events.begin(), solo_off_events.end());
     track.solos
@@ -546,6 +635,7 @@ Chart Chart::parse_chart(std::string_view input)
     std::map<Difficulty, PreNoteTrack<NoteColour>> pre_rhythm_tracks;
     std::map<Difficulty, PreNoteTrack<GHLNoteColour>> pre_ghl_guitar_tracks;
     std::map<Difficulty, PreNoteTrack<GHLNoteColour>> pre_ghl_bass_tracks;
+    std::map<Difficulty, PreNoteTrack<DrumNoteColour>> pre_drum_tracks;
 
     // Trim off UTF-8 BOM if present
     if (string_starts_with(input, "\xEF\xBB\xBF")) {
@@ -638,6 +728,16 @@ Chart Chart::parse_chart(std::string_view input)
         } else if (header == "[ExpertGHLBass]") {
             input = read_single_track(input,
                                       pre_ghl_bass_tracks[Difficulty::Expert]);
+        } else if (header == "[EasyDrums]") {
+            input = read_single_track(input, pre_drum_tracks[Difficulty::Easy]);
+        } else if (header == "[MediumDrums]") {
+            input
+                = read_single_track(input, pre_drum_tracks[Difficulty::Medium]);
+        } else if (header == "[HardDrums]") {
+            input = read_single_track(input, pre_drum_tracks[Difficulty::Hard]);
+        } else if (header == "[ExpertDrums]") {
+            input
+                = read_single_track(input, pre_drum_tracks[Difficulty::Expert]);
         } else {
             input = skip_section(input);
         }
@@ -735,13 +835,26 @@ Chart Chart::parse_chart(std::string_view input)
         chart.m_ghl_bass_note_tracks.emplace(diff, std::move(new_track));
     }
 
+    for (auto& key_track : pre_drum_tracks) {
+        auto diff = key_track.first;
+        auto& track = key_track.second;
+        if (track.notes.empty()) {
+            continue;
+        }
+        NoteTrack<DrumNoteColour> new_track {std::move(track.notes),
+                                             std::move(track.sp_phrases),
+                                             std::move(track.solos)};
+        chart.m_drum_note_tracks.emplace(diff, std::move(new_track));
+    }
+
     if (chart.m_guitar_note_tracks.empty()
         && chart.m_guitar_coop_note_tracks.empty()
         && chart.m_bass_note_tracks.empty()
         && chart.m_rhythm_note_tracks.empty()
         && chart.m_keys_note_tracks.empty()
         && chart.m_ghl_guitar_note_tracks.empty()
-        && chart.m_ghl_bass_note_tracks.empty()) {
+        && chart.m_ghl_bass_note_tracks.empty()
+        && chart.m_drum_note_tracks.empty()) {
         throw std::invalid_argument("Chart has no notes");
     }
 
