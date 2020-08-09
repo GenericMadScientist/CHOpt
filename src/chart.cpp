@@ -573,7 +573,7 @@ static std::string_view read_single_track(std::string_view input,
         std::set<unsigned int> deletion_spots;
         for (auto i = 0U; i < track.notes.size(); ++i) {
             const auto& cymbal_note = track.notes[i];
-            DrumNoteColour non_cymbal_colour;
+            DrumNoteColour non_cymbal_colour = DrumNoteColour::Kick;
             switch (cymbal_note.colour) {
             case DrumNoteColour::YellowCymbal:
                 non_cymbal_colour = DrumNoteColour::Yellow;
