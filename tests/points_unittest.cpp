@@ -241,6 +241,21 @@ TEST_CASE("Combo multiplier is taken into account")
         REQUIRE(std::prev(points.cend(), 2)->value == 2);
         REQUIRE(std::prev(points.cend(), 2)->base_value == 1);
     }
+
+    SECTION("Drum notes have the multiplier handled correctly")
+    {
+        std::vector<Note<DrumNoteColour>> notes;
+        for (int i = 0; i < 9; ++i) {
+            notes.push_back({192 * i, 0, DrumNoteColour::Red});
+        }
+        notes.push_back({192 * 7, 0, DrumNoteColour::Yellow});
+
+        NoteTrack<DrumNoteColour> track {notes, {}, {}};
+        TimeConverter converter {{}, 192};
+        PointSet points {track, 192, converter, 1.0};
+
+        REQUIRE(std::prev(points.cend(), 1)->value == 100);
+    }
 }
 
 TEST_CASE("hit_window_start and hit_window_end are set correctly")

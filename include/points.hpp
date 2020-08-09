@@ -47,6 +47,8 @@ public:
              const TimeConverter& converter, double squeeze);
     PointSet(const NoteTrack<GHLNoteColour>& track, int resolution,
              const TimeConverter& converter, double squeeze);
+    PointSet(const NoteTrack<DrumNoteColour>& track, int resolution,
+             const TimeConverter& converter, double squeeze);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
     [[nodiscard]] const std::vector<std::tuple<Position, int>>&
