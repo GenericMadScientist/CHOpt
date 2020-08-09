@@ -205,6 +205,32 @@ ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
     m_measure_lines.push_back(m_rows.back().end);
 }
 
+ImageBuilder::ImageBuilder(const NoteTrack<DrumNoteColour>& track,
+                           int resolution, const SyncTrack& sync_track)
+    : m_track_type {TrackType::Drums}
+    , m_rows {drawn_rows(track, resolution, sync_track)}
+    , m_drum_notes {drawn_notes(track, resolution)}
+{
+    constexpr double HALF_BEAT = 0.5;
+
+    for (const auto& row : m_rows) {
+        auto start = row.start;
+        while (start < row.end) {
+            auto meas_length = get_beat_rate(sync_track, resolution, start);
+            auto numer = get_numer(sync_track, resolution, start);
+            auto denom = get_denom(sync_track, resolution, start);
+            m_measure_lines.push_back(start);
+            m_half_beat_lines.push_back(start + HALF_BEAT * denom);
+            for (int i = 1; i < numer; ++i) {
+                m_beat_lines.push_back(start + i * denom);
+                m_half_beat_lines.push_back(start + (i + HALF_BEAT) * denom);
+            }
+            start += meas_length;
+        }
+    }
+    m_measure_lines.push_back(m_rows.back().end);
+}
+
 void ImageBuilder::add_bpms(const SyncTrack& sync_track, int resolution)
 {
     constexpr double MS_PER_SECOND = 1000.0;
@@ -553,6 +579,8 @@ static int numb_of_fret_lines(TrackType track_type)
         return 4;
     case TrackType::SixFret:
         return 2;
+    case TrackType::Drums:
+        return 3;
     }
 
     throw std::invalid_argument("Invalid TrackType");
@@ -982,6 +1010,8 @@ Image::Image(const ImageBuilder& builder)
     case TrackType::SixFret:
         m_impl->draw_ghl_notes(builder);
         break;
+    case TrackType::Drums:
+        throw std::invalid_argument("Fuck");
     }
 
     m_impl->draw_score_totals(builder);

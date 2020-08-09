@@ -41,7 +41,7 @@ template <typename T> struct DrawnNote {
     bool is_sp_note;
 };
 
-enum class TrackType { FiveFret, SixFret };
+enum class TrackType { FiveFret, SixFret, Drums };
 
 class ImageBuilder {
 private:
@@ -54,6 +54,7 @@ private:
     std::vector<std::tuple<double, int, int>> m_time_sigs;
     std::vector<DrawnNote<NoteColour>> m_notes;
     std::vector<DrawnNote<GHLNoteColour>> m_ghl_notes;
+    std::vector<DrawnNote<DrumNoteColour>> m_drum_notes;
     std::vector<int> m_base_values;
     std::vector<int> m_score_values;
     std::vector<double> m_sp_values;
@@ -70,6 +71,8 @@ public:
     ImageBuilder(const NoteTrack<NoteColour>& track, int resolution,
                  const SyncTrack& sync_track);
     ImageBuilder(const NoteTrack<GHLNoteColour>& track, int resolution,
+                 const SyncTrack& sync_track);
+    ImageBuilder(const NoteTrack<DrumNoteColour>& track, int resolution,
                  const SyncTrack& sync_track);
     void add_bpms(const SyncTrack& sync_track, int resolution);
     void add_measure_values(const PointSet& points, const Path& path);
@@ -120,6 +123,11 @@ public:
     [[nodiscard]] const std::vector<DrawnNote<GHLNoteColour>>& ghl_notes() const
     {
         return m_ghl_notes;
+    }
+    [[nodiscard]] const std::vector<DrawnNote<DrumNoteColour>>&
+    drum_notes() const
+    {
+        return m_drum_notes;
     }
     [[nodiscard]] const std::vector<std::tuple<double, double>>&
     red_ranges() const

@@ -49,6 +49,14 @@ TEST_CASE("Track type is stored correctly")
 
         REQUIRE(builder.track_type() == TrackType::SixFret);
     }
+
+    SECTION("Drums gets the right track type")
+    {
+        NoteTrack<DrumNoteColour> track;
+        ImageBuilder builder {track, 192, {}};
+
+        REQUIRE(builder.track_type() == TrackType::Drums);
+    }
 }
 
 TEST_CASE("Notes are handled correclty")
@@ -95,6 +103,18 @@ TEST_CASE("Notes are handled correclty")
             {4.0, 0.0, GHLNoteColour::BlackHigh, false}};
 
         REQUIRE(builder.ghl_notes() == expected_notes);
+    }
+
+    SECTION("Drum notes are handled correctly")
+    {
+        NoteTrack<DrumNoteColour> track {
+            {{0}, {768, 0, DrumNoteColour::YellowCymbal}}, {}, {}};
+        ImageBuilder builder {track, 192, {}};
+        std::vector<DrawnNote<DrumNoteColour>> expected_notes {
+            {0.0, 0.0, DrumNoteColour::Red, false},
+            {4.0, 0.0, DrumNoteColour::YellowCymbal, false}};
+
+        REQUIRE(builder.drum_notes() == expected_notes);
     }
 }
 
