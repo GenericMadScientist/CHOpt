@@ -1053,6 +1053,10 @@ template <typename T> static T colour_from_key(std::uint8_t key)
         constexpr int MEDIUM_GREEN = 72;
         constexpr int MEDIUM_ORANGE = 76;
 
+        constexpr std::array<NoteColour, 5> NOTE_COLOURS {
+            NoteColour::Green, NoteColour::Red, NoteColour::Yellow,
+            NoteColour::Blue, NoteColour::Orange};
+
         if (key >= EXPERT_GREEN && key <= EXPERT_ORANGE) {
             key -= EXPERT_GREEN;
         } else if (key >= HARD_GREEN && key <= HARD_ORANGE) {
@@ -1065,20 +1069,7 @@ template <typename T> static T colour_from_key(std::uint8_t key)
             throw std::invalid_argument("Invalid key for note");
         }
 
-        switch (key) {
-        case 0:
-            return NoteColour::Green;
-        case 1:
-            return NoteColour::Red;
-        case 2:
-            return NoteColour::Yellow;
-        case 3:
-            return NoteColour::Blue;
-        case 4:
-            return NoteColour::Orange;
-        default:
-            throw std::invalid_argument("Invalid key for note");
-        }
+        return NOTE_COLOURS.at(key);
     } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
         constexpr int EASY_OPEN = 58;
         constexpr int EASY_BLACK_HIGH = 64;
@@ -1088,6 +1079,12 @@ template <typename T> static T colour_from_key(std::uint8_t key)
         constexpr int HARD_BLACK_HIGH = 88;
         constexpr int MEDIUM_OPEN = 70;
         constexpr int MEDIUM_BLACK_HIGH = 76;
+
+        constexpr std::array<GHLNoteColour, 7> GHL_NOTE_COLOURS {
+            GHLNoteColour::Open,     GHLNoteColour::WhiteLow,
+            GHLNoteColour::WhiteMid, GHLNoteColour::WhiteHigh,
+            GHLNoteColour::BlackLow, GHLNoteColour::BlackMid,
+            GHLNoteColour::BlackHigh};
 
         if (key >= EXPERT_OPEN && key <= EXPERT_BLACK_HIGH) {
             key -= EXPERT_OPEN;
@@ -1101,24 +1098,7 @@ template <typename T> static T colour_from_key(std::uint8_t key)
             throw std::invalid_argument("Invalid key for note");
         }
 
-        switch (key) {
-        case 0:
-            return GHLNoteColour::Open;
-        case 1:
-            return GHLNoteColour::WhiteLow;
-        case 2:
-            return GHLNoteColour::WhiteMid;
-        case 3:
-            return GHLNoteColour::WhiteHigh;
-        case 4:
-            return GHLNoteColour::BlackLow;
-        case 5:
-            return GHLNoteColour::BlackMid;
-        case 6:
-            return GHLNoteColour::BlackHigh;
-        default:
-            throw std::invalid_argument("Invalid key for note");
-        }
+        return GHL_NOTE_COLOURS.at(key);
     }
 }
 
