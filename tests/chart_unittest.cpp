@@ -791,3 +791,38 @@ TEST_CASE("Other 5 fret instruments are read from .mid")
             [&] { return chart.keys_note_track(Difficulty::Expert); }());
     }
 }
+
+TEST_CASE("6 fret instruments are read correctly from .mid")
+{
+    SECTION("6 fret guitar is read correctly")
+    {
+        MidiTrack note_track {
+            {{0,
+              {MetaEvent {3,
+                          {0x50, 0x41, 0x52, 0x54, 0x20, 0x47, 0x55, 0x49, 0x54,
+                           0x41, 0x52, 0x20, 0x47, 0x48, 0x4C}}}},
+             {0, {MidiEvent {0x90, {94, 64}}}},
+             {65, {MidiEvent {0x80, {94, 0}}}}}};
+        const Midi midi {192, {note_track}};
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE_NOTHROW(
+            [&] { return chart.ghl_guitar_note_track(Difficulty::Expert); }());
+    }
+
+    SECTION("6 fret bass is read correctly")
+    {
+        MidiTrack note_track {
+            {{0,
+              {MetaEvent {3,
+                          {0x50, 0x41, 0x52, 0x54, 0x20, 0x42, 0x41, 0x53, 0x53,
+                           0x20, 0x47, 0x48, 0x4C}}}},
+             {0, {MidiEvent {0x90, {94, 64}}}},
+             {65, {MidiEvent {0x80, {94, 0}}}}}};
+        const Midi midi {192, {note_track}};
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE_NOTHROW(
+            [&] { return chart.ghl_bass_note_track(Difficulty::Expert); }());
+    }
+}

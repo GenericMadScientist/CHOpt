@@ -953,68 +953,172 @@ static bool is_part_keys(const MidiTrack& track)
                       PART_KEYS.cbegin(), PART_KEYS.cend());
 }
 
-static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
+static bool is_part_ghl_guitar(const MidiTrack& track)
 {
-    constexpr int EASY_GREEN = 60;
-    constexpr int EASY_ORANGE = 64;
-    constexpr int EXPERT_GREEN = 96;
-    constexpr int EXPERT_ORANGE = 100;
-    constexpr int HARD_GREEN = 84;
-    constexpr int HARD_ORANGE = 88;
-    constexpr int MEDIUM_GREEN = 72;
-    constexpr int MEDIUM_ORANGE = 76;
+    constexpr std::string_view PART_GUITAR_GHL {"PART GUITAR GHL"};
 
-    if (key >= EXPERT_GREEN && key <= EXPERT_ORANGE) {
-        return {Difficulty::Expert};
+    if (track.events.empty()) {
+        return false;
     }
-    if (key >= HARD_GREEN && key <= HARD_ORANGE) {
-        return {Difficulty::Hard};
+    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
+    if (meta_event == nullptr) {
+        return false;
     }
-    if (key >= MEDIUM_GREEN && key <= MEDIUM_ORANGE) {
-        return {Difficulty::Medium};
+    if (meta_event->type != 3) {
+        return false;
     }
-    if (key >= EASY_GREEN && key <= EASY_ORANGE) {
-        return {Difficulty::Easy};
-    }
-    return {};
+    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
+                      PART_GUITAR_GHL.cbegin(), PART_GUITAR_GHL.cend());
 }
 
-static NoteColour colour_from_key(std::uint8_t key)
+static bool is_part_ghl_bass(const MidiTrack& track)
 {
-    constexpr int EASY_GREEN = 60;
-    constexpr int EASY_ORANGE = 64;
-    constexpr int EXPERT_GREEN = 96;
-    constexpr int EXPERT_ORANGE = 100;
-    constexpr int HARD_GREEN = 84;
-    constexpr int HARD_ORANGE = 88;
-    constexpr int MEDIUM_GREEN = 72;
-    constexpr int MEDIUM_ORANGE = 76;
+    constexpr std::string_view PART_BASS_GHL {"PART BASS GHL"};
 
-    if (key >= EXPERT_GREEN && key <= EXPERT_ORANGE) {
-        key -= EXPERT_GREEN;
-    } else if (key >= HARD_GREEN && key <= HARD_ORANGE) {
-        key -= HARD_GREEN;
-    } else if (key >= MEDIUM_GREEN && key <= MEDIUM_ORANGE) {
-        key -= MEDIUM_GREEN;
-    } else if (key >= EASY_GREEN && key <= EASY_ORANGE) {
-        key -= EASY_GREEN;
-    } else {
-        throw std::invalid_argument("Invalid key for note");
+    if (track.events.empty()) {
+        return false;
     }
+    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
+    if (meta_event == nullptr) {
+        return false;
+    }
+    if (meta_event->type != 3) {
+        return false;
+    }
+    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
+                      PART_BASS_GHL.cbegin(), PART_BASS_GHL.cend());
+}
 
-    switch (key) {
-    case 0:
-        return NoteColour::Green;
-    case 1:
-        return NoteColour::Red;
-    case 2:
-        return NoteColour::Yellow;
-    case 3:
-        return NoteColour::Blue;
-    case 4:
-        return NoteColour::Orange;
-    default:
-        throw std::invalid_argument("Invalid key for note");
+template <typename T>
+static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
+{
+    if constexpr (std::is_same_v<T, NoteColour>) {
+        constexpr int EASY_GREEN = 60;
+        constexpr int EASY_ORANGE = 64;
+        constexpr int EXPERT_GREEN = 96;
+        constexpr int EXPERT_ORANGE = 100;
+        constexpr int HARD_GREEN = 84;
+        constexpr int HARD_ORANGE = 88;
+        constexpr int MEDIUM_GREEN = 72;
+        constexpr int MEDIUM_ORANGE = 76;
+
+        if (key >= EXPERT_GREEN && key <= EXPERT_ORANGE) {
+            return {Difficulty::Expert};
+        }
+        if (key >= HARD_GREEN && key <= HARD_ORANGE) {
+            return {Difficulty::Hard};
+        }
+        if (key >= MEDIUM_GREEN && key <= MEDIUM_ORANGE) {
+            return {Difficulty::Medium};
+        }
+        if (key >= EASY_GREEN && key <= EASY_ORANGE) {
+            return {Difficulty::Easy};
+        }
+        return {};
+    } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
+        constexpr int EASY_OPEN = 58;
+        constexpr int EASY_BLACK_HIGH = 64;
+        constexpr int EXPERT_OPEN = 94;
+        constexpr int EXPERT_BLACK_HIGH = 100;
+        constexpr int HARD_OPEN = 82;
+        constexpr int HARD_BLACK_HIGH = 88;
+        constexpr int MEDIUM_OPEN = 70;
+        constexpr int MEDIUM_BLACK_HIGH = 76;
+
+        if (key >= EXPERT_OPEN && key <= EXPERT_BLACK_HIGH) {
+            return {Difficulty::Expert};
+        }
+        if (key >= HARD_OPEN && key <= HARD_BLACK_HIGH) {
+            return {Difficulty::Hard};
+        }
+        if (key >= MEDIUM_OPEN && key <= MEDIUM_BLACK_HIGH) {
+            return {Difficulty::Medium};
+        }
+        if (key >= EASY_OPEN && key <= EASY_BLACK_HIGH) {
+            return {Difficulty::Easy};
+        }
+        return {};
+    }
+}
+
+template <typename T> static T colour_from_key(std::uint8_t key)
+{
+    if constexpr (std::is_same_v<T, NoteColour>) {
+        constexpr int EASY_GREEN = 60;
+        constexpr int EASY_ORANGE = 64;
+        constexpr int EXPERT_GREEN = 96;
+        constexpr int EXPERT_ORANGE = 100;
+        constexpr int HARD_GREEN = 84;
+        constexpr int HARD_ORANGE = 88;
+        constexpr int MEDIUM_GREEN = 72;
+        constexpr int MEDIUM_ORANGE = 76;
+
+        if (key >= EXPERT_GREEN && key <= EXPERT_ORANGE) {
+            key -= EXPERT_GREEN;
+        } else if (key >= HARD_GREEN && key <= HARD_ORANGE) {
+            key -= HARD_GREEN;
+        } else if (key >= MEDIUM_GREEN && key <= MEDIUM_ORANGE) {
+            key -= MEDIUM_GREEN;
+        } else if (key >= EASY_GREEN && key <= EASY_ORANGE) {
+            key -= EASY_GREEN;
+        } else {
+            throw std::invalid_argument("Invalid key for note");
+        }
+
+        switch (key) {
+        case 0:
+            return NoteColour::Green;
+        case 1:
+            return NoteColour::Red;
+        case 2:
+            return NoteColour::Yellow;
+        case 3:
+            return NoteColour::Blue;
+        case 4:
+            return NoteColour::Orange;
+        default:
+            throw std::invalid_argument("Invalid key for note");
+        }
+    } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
+        constexpr int EASY_OPEN = 58;
+        constexpr int EASY_BLACK_HIGH = 64;
+        constexpr int EXPERT_OPEN = 94;
+        constexpr int EXPERT_BLACK_HIGH = 100;
+        constexpr int HARD_OPEN = 82;
+        constexpr int HARD_BLACK_HIGH = 88;
+        constexpr int MEDIUM_OPEN = 70;
+        constexpr int MEDIUM_BLACK_HIGH = 76;
+
+        if (key >= EXPERT_OPEN && key <= EXPERT_BLACK_HIGH) {
+            key -= EXPERT_OPEN;
+        } else if (key >= HARD_OPEN && key <= HARD_BLACK_HIGH) {
+            key -= HARD_OPEN;
+        } else if (key >= MEDIUM_OPEN && key <= MEDIUM_BLACK_HIGH) {
+            key -= MEDIUM_OPEN;
+        } else if (key >= EASY_OPEN && key <= EASY_BLACK_HIGH) {
+            key -= EASY_OPEN;
+        } else {
+            throw std::invalid_argument("Invalid key for note");
+        }
+
+        switch (key) {
+        case 0:
+            return GHLNoteColour::Open;
+        case 1:
+            return GHLNoteColour::WhiteLow;
+        case 2:
+            return GHLNoteColour::WhiteMid;
+        case 3:
+            return GHLNoteColour::WhiteHigh;
+        case 4:
+            return GHLNoteColour::BlackLow;
+        case 5:
+            return GHLNoteColour::BlackMid;
+        case 6:
+            return GHLNoteColour::BlackHigh;
+        default:
+            throw std::invalid_argument("Invalid key for note");
+        }
     }
 }
 
@@ -1080,11 +1184,9 @@ read_first_midi_track(const MidiTrack& track)
     return {name, sync_track};
 }
 
-struct InstrumentMidiTrack {
-    std::map<std::tuple<Difficulty, NoteColour>, std::vector<int>>
-        note_on_events;
-    std::map<std::tuple<Difficulty, NoteColour>, std::vector<int>>
-        note_off_events;
+template <typename T> struct InstrumentMidiTrack {
+    std::map<std::tuple<Difficulty, T>, std::vector<int>> note_on_events;
+    std::map<std::tuple<Difficulty, T>, std::vector<int>> note_off_events;
     std::map<Difficulty, std::vector<int>> open_on_events;
     std::map<Difficulty, std::vector<int>> open_off_events;
     std::vector<int> solo_on_events;
@@ -1093,8 +1195,9 @@ struct InstrumentMidiTrack {
     std::vector<int> sp_off_events;
 };
 
-static void add_sysex_event(InstrumentMidiTrack& track, const SysexEvent& event,
-                            int time)
+template <typename T>
+static void add_sysex_event(InstrumentMidiTrack<T>& track,
+                            const SysexEvent& event, int time)
 {
     constexpr std::array<Difficulty, 4> OPEN_EVENT_DIFFS {
         Difficulty::Easy, Difficulty::Medium, Difficulty::Hard,
@@ -1112,16 +1215,17 @@ static void add_sysex_event(InstrumentMidiTrack& track, const SysexEvent& event,
     }
 }
 
-static void add_note_off_event(InstrumentMidiTrack& track,
+template <typename T>
+static void add_note_off_event(InstrumentMidiTrack<T>& track,
                                const std::array<std::uint8_t, 2>& data,
                                int time)
 {
     constexpr int SOLO_NOTE_ID = 103;
     constexpr int SP_NOTE_ID = 116;
 
-    const auto diff = difficulty_from_key(data[0]);
+    const auto diff = difficulty_from_key<T>(data[0]);
     if (diff.has_value()) {
-        const auto colour = colour_from_key(data[0]);
+        const auto colour = colour_from_key<T>(data[0]);
         track.note_off_events[{*diff, colour}].push_back(time);
     } else if (data[0] == SOLO_NOTE_ID) {
         track.solo_off_events.push_back(time);
@@ -1130,7 +1234,8 @@ static void add_note_off_event(InstrumentMidiTrack& track,
     }
 }
 
-static void add_note_on_event(InstrumentMidiTrack& track,
+template <typename T>
+static void add_note_on_event(InstrumentMidiTrack<T>& track,
                               const std::array<std::uint8_t, 2>& data, int time)
 {
     constexpr int SOLO_NOTE_ID = 103;
@@ -1142,9 +1247,9 @@ static void add_note_on_event(InstrumentMidiTrack& track,
         return;
     }
 
-    const auto diff = difficulty_from_key(data[0]);
+    const auto diff = difficulty_from_key<T>(data[0]);
     if (diff.has_value()) {
-        const auto colour = colour_from_key(data[0]);
+        const auto colour = colour_from_key<T>(data[0]);
         track.note_on_events[{*diff, colour}].push_back(time);
     } else if (data[0] == SOLO_NOTE_ID) {
         track.solo_on_events.push_back(time);
@@ -1153,14 +1258,15 @@ static void add_note_on_event(InstrumentMidiTrack& track,
     }
 }
 
-static InstrumentMidiTrack
+template <typename T>
+static InstrumentMidiTrack<T>
 read_instrument_midi_track(const MidiTrack& midi_track)
 {
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
-    InstrumentMidiTrack event_track;
+    InstrumentMidiTrack<T> event_track;
 
     for (const auto& event : midi_track.events) {
         const auto* midi_event = std::get_if<MidiEvent>(&event.event);
@@ -1190,7 +1296,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     constexpr int DEFAULT_RESOLUTION = 192;
     constexpr int DEFAULT_SUST_CUTOFF = 64;
 
-    const auto event_track = read_instrument_midi_track(midi_track);
+    const auto event_track = read_instrument_midi_track<NoteColour>(midi_track);
 
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
     for (const auto& [diff, open_ons] : event_track.open_on_events) {
@@ -1235,6 +1341,46 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     return note_tracks;
 }
 
+static std::map<Difficulty, NoteTrack<GHLNoteColour>>
+ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
+{
+    constexpr int DEFAULT_RESOLUTION = 192;
+    constexpr int DEFAULT_SUST_CUTOFF = 64;
+
+    const auto event_track
+        = read_instrument_midi_track<GHLNoteColour>(midi_track);
+
+    std::map<Difficulty, std::vector<Note<GHLNoteColour>>> notes;
+    for (const auto& [key, note_ons] : event_track.note_on_events) {
+        const auto& [diff, colour] = key;
+        const auto& note_offs = event_track.note_off_events.at(key);
+        for (const auto& [pos, end] :
+             combine_on_off_events(note_ons, note_offs)) {
+            auto note_length = end - pos;
+            if (note_length
+                <= (DEFAULT_SUST_CUTOFF * resolution) / DEFAULT_RESOLUTION) {
+                note_length = 0;
+            }
+            notes[diff].push_back({pos, note_length, colour});
+        }
+    }
+
+    std::vector<StarPower> sp_phrases;
+    for (const auto& [start, end] : combine_on_off_events(
+             event_track.sp_on_events, event_track.sp_off_events)) {
+        sp_phrases.push_back({start, end - start});
+    }
+
+    std::map<Difficulty, NoteTrack<GHLNoteColour>> note_tracks;
+    for (const auto& [diff, note_set] : notes) {
+        auto solos = form_solo_vector(event_track.solo_on_events,
+                                      event_track.solo_off_events, note_set);
+        note_tracks[diff] = {note_set, sp_phrases, solos};
+    }
+
+    return note_tracks;
+}
+
 Chart Chart::from_midi(const Midi& midi)
 {
     if (midi.ticks_per_quarter_note == 0) {
@@ -1268,6 +1414,12 @@ Chart Chart::from_midi(const Midi& midi)
         } else if (is_part_keys(track)) {
             chart.m_keys_note_tracks
                 = note_tracks_from_midi(track, chart.m_resolution);
+        } else if (is_part_ghl_guitar(track)) {
+            chart.m_ghl_guitar_note_tracks
+                = ghl_note_tracks_from_midi(track, chart.m_resolution);
+        } else if (is_part_ghl_bass(track)) {
+            chart.m_ghl_bass_note_tracks
+                = ghl_note_tracks_from_midi(track, chart.m_resolution);
         }
     }
 
