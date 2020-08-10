@@ -584,7 +584,7 @@ static int note_colour_to_offset(DrumNoteColour colour)
 
 class ImageImpl {
 private:
-    CImg<int> m_image;
+    CImg<unsigned char> m_image;
 
     void draw_note_circle(int x, int y, NoteColour note_colour);
     void draw_note_star(int x, int y, NoteColour note_colour);
@@ -605,7 +605,7 @@ private:
 
 public:
     ImageImpl(unsigned int size_x, unsigned int size_y, unsigned int size_z,
-              unsigned int size_c, const int& value)
+              unsigned int size_c, const unsigned char& value)
         : m_image {size_x, size_y, size_z, size_c, value}
     {
     }
