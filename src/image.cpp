@@ -364,6 +364,8 @@ void ImageBuilder::add_sp_acts(const PointSet& points, const Path& path)
 void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
                                   int resolution)
 {
+    constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
+
     for (const auto& phrase : track.sp_phrases()) {
         auto p = track.notes().cbegin();
         while (p->position < phrase.position) {
@@ -378,6 +380,7 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
             end = std::max(end, current_end);
             ++p;
         }
+        end = std::max(end, start + MINIMUM_GREEN_RANGE_SIZE);
         m_green_ranges.emplace_back(start, end);
     }
 }
