@@ -415,7 +415,7 @@ TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
         const auto chart = Chart::parse_chart(text);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.guitar_coop_note_track(Difficulty::Expert); });
+            [&] { return chart.guitar_coop_note_track(Difficulty::Expert); }());
     }
 
     SECTION("Bass is read")
@@ -424,7 +424,7 @@ TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
         const auto chart = Chart::parse_chart(text);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.bass_note_track(Difficulty::Expert); });
+            [&] { return chart.bass_note_track(Difficulty::Expert); }());
     }
 
     SECTION("Rhythm is read")
@@ -433,7 +433,7 @@ TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
         const auto chart = Chart::parse_chart(text);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.rhythm_note_track(Difficulty::Expert); });
+            [&] { return chart.rhythm_note_track(Difficulty::Expert); }());
     }
 
     SECTION("Keys is read")
@@ -442,7 +442,7 @@ TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
         const auto chart = Chart::parse_chart(text);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.keys_note_track(Difficulty::Expert); });
+            [&] { return chart.keys_note_track(Difficulty::Expert); }());
     }
 }
 
@@ -726,4 +726,68 @@ TEST_CASE("Short midi sustains are trimmed")
 
     REQUIRE(notes[0].length == 0);
     REQUIRE(notes[1].length == 70);
+}
+
+TEST_CASE("Other 5 fret instruments are read from .mid")
+{
+    SECTION("Guitar Co-op is read")
+    {
+        MidiTrack note_track {
+            {{0,
+              {MetaEvent {3,
+                          {0x50, 0x41, 0x52, 0x54, 0x20, 0x47, 0x55, 0x49, 0x54,
+                           0x41, 0x52, 0x20, 0x43, 0x4F, 0x4F, 0x50}}}},
+             {0, {MidiEvent {0x90, {96, 64}}}},
+             {65, {MidiEvent {0x80, {96, 0}}}}}};
+        const Midi midi {192, {note_track}};
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE_NOTHROW(
+            [&] { return chart.guitar_coop_note_track(Difficulty::Expert); }());
+    }
+
+    SECTION("Bass is read")
+    {
+        MidiTrack note_track {
+            {{0,
+              {MetaEvent {
+                  3, {0x50, 0x41, 0x52, 0x54, 0x20, 0x42, 0x41, 0x53, 0x53}}}},
+             {0, {MidiEvent {0x90, {96, 64}}}},
+             {65, {MidiEvent {0x80, {96, 0}}}}}};
+        const Midi midi {192, {note_track}};
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE_NOTHROW(
+            [&] { return chart.bass_note_track(Difficulty::Expert); }());
+    }
+
+    SECTION("Rhythm is read")
+    {
+        MidiTrack note_track {{{0,
+                                {MetaEvent {3,
+                                            {0x50, 0x41, 0x52, 0x54, 0x20, 0x52,
+                                             0x48, 0x59, 0x54, 0x48, 0x4D}}}},
+                               {0, {MidiEvent {0x90, {96, 64}}}},
+                               {65, {MidiEvent {0x80, {96, 0}}}}}};
+        const Midi midi {192, {note_track}};
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE_NOTHROW(
+            [&] { return chart.rhythm_note_track(Difficulty::Expert); }());
+    }
+
+    SECTION("Keys is read")
+    {
+        MidiTrack note_track {
+            {{0,
+              {MetaEvent {
+                  3, {0x50, 0x41, 0x52, 0x54, 0x20, 0x4B, 0x45, 0x59, 0x53}}}},
+             {0, {MidiEvent {0x90, {96, 64}}}},
+             {65, {MidiEvent {0x80, {96, 0}}}}}};
+        const Midi midi {192, {note_track}};
+        const auto chart = Chart::from_midi(midi);
+
+        REQUIRE_NOTHROW(
+            [&] { return chart.keys_note_track(Difficulty::Expert); }());
+    }
 }

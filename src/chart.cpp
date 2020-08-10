@@ -881,6 +881,78 @@ static bool is_part_guitar(const MidiTrack& track)
                       PART_GUITAR.cbegin(), PART_GUITAR.cend());
 }
 
+static bool is_part_guitar_coop(const MidiTrack& track)
+{
+    constexpr std::string_view PART_GUITAR_COOP {"PART GUITAR COOP"};
+
+    if (track.events.empty()) {
+        return false;
+    }
+    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
+    if (meta_event == nullptr) {
+        return false;
+    }
+    if (meta_event->type != 3) {
+        return false;
+    }
+    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
+                      PART_GUITAR_COOP.cbegin(), PART_GUITAR_COOP.cend());
+}
+
+static bool is_part_bass(const MidiTrack& track)
+{
+    constexpr std::string_view PART_BASS {"PART BASS"};
+
+    if (track.events.empty()) {
+        return false;
+    }
+    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
+    if (meta_event == nullptr) {
+        return false;
+    }
+    if (meta_event->type != 3) {
+        return false;
+    }
+    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
+                      PART_BASS.cbegin(), PART_BASS.cend());
+}
+
+static bool is_part_rhythm(const MidiTrack& track)
+{
+    constexpr std::string_view PART_RHYTHM {"PART RHYTHM"};
+
+    if (track.events.empty()) {
+        return false;
+    }
+    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
+    if (meta_event == nullptr) {
+        return false;
+    }
+    if (meta_event->type != 3) {
+        return false;
+    }
+    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
+                      PART_RHYTHM.cbegin(), PART_RHYTHM.cend());
+}
+
+static bool is_part_keys(const MidiTrack& track)
+{
+    constexpr std::string_view PART_KEYS {"PART KEYS"};
+
+    if (track.events.empty()) {
+        return false;
+    }
+    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
+    if (meta_event == nullptr) {
+        return false;
+    }
+    if (meta_event->type != 3) {
+        return false;
+    }
+    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
+                      PART_KEYS.cbegin(), PART_KEYS.cend());
+}
+
 static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
 {
     constexpr int EASY_GREEN = 60;
@@ -1183,6 +1255,18 @@ Chart Chart::from_midi(const Midi& midi)
     for (const auto& track : midi.tracks) {
         if (is_part_guitar(track)) {
             chart.m_guitar_note_tracks
+                = note_tracks_from_midi(track, chart.m_resolution);
+        } else if (is_part_guitar_coop(track)) {
+            chart.m_guitar_coop_note_tracks
+                = note_tracks_from_midi(track, chart.m_resolution);
+        } else if (is_part_bass(track)) {
+            chart.m_bass_note_tracks
+                = note_tracks_from_midi(track, chart.m_resolution);
+        } else if (is_part_rhythm(track)) {
+            chart.m_rhythm_note_tracks
+                = note_tracks_from_midi(track, chart.m_resolution);
+        } else if (is_part_keys(track)) {
+            chart.m_keys_note_tracks
                 = note_tracks_from_midi(track, chart.m_resolution);
         }
     }
