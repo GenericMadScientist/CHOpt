@@ -805,9 +805,11 @@ TEST_CASE("6 fret instruments are read correctly from .mid")
              {65, {MidiEvent {0x80, {94, 0}}}}}};
         const Midi midi {192, {note_track}};
         const auto chart = Chart::from_midi(midi);
+        const auto& track = chart.ghl_guitar_note_track(Difficulty::Expert);
 
-        REQUIRE_NOTHROW(
-            [&] { return chart.ghl_guitar_note_track(Difficulty::Expert); }());
+        std::vector<Note<GHLNoteColour>> notes {{0, 65, GHLNoteColour::Open}};
+
+        REQUIRE(track.notes() == notes);
     }
 
     SECTION("6 fret bass is read correctly")
@@ -821,8 +823,30 @@ TEST_CASE("6 fret instruments are read correctly from .mid")
              {65, {MidiEvent {0x80, {94, 0}}}}}};
         const Midi midi {192, {note_track}};
         const auto chart = Chart::from_midi(midi);
+        const auto& track = chart.ghl_bass_note_track(Difficulty::Expert);
 
-        REQUIRE_NOTHROW(
-            [&] { return chart.ghl_bass_note_track(Difficulty::Expert); }());
+        std::vector<Note<GHLNoteColour>> notes {{0, 65, GHLNoteColour::Open}};
+
+        REQUIRE(track.notes() == notes);
     }
+}
+
+TEST_CASE("Drums are read correctly from .mid")
+{
+    MidiTrack note_track {{
+        {0,
+         {MetaEvent {
+             3, {0x50, 0x41, 0x52, 0x54, 0x20, 0x44, 0x52, 0x55, 0x4D, 0x53}}}},
+        {0, {MidiEvent {0x90, {98, 64}}}},
+        {0, {MidiEvent {0x90, {110, 64}}}},
+        {65, {MidiEvent {0x80, {98, 0}}}},
+        {65, {MidiEvent {0x80, {110, 0}}}},
+    }};
+    const Midi midi {192, {note_track}};
+    const auto chart = Chart::from_midi(midi);
+    const auto& track = chart.drum_note_track(Difficulty::Expert);
+
+    std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::Yellow}};
+
+    REQUIRE(track.notes() == notes);
 }

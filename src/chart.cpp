@@ -989,10 +989,29 @@ static bool is_part_ghl_bass(const MidiTrack& track)
                       PART_BASS_GHL.cbegin(), PART_BASS_GHL.cend());
 }
 
+static bool is_part_drums(const MidiTrack& track)
+{
+    constexpr std::string_view PART_DRUMS {"PART DRUMS"};
+
+    if (track.events.empty()) {
+        return false;
+    }
+    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
+    if (meta_event == nullptr) {
+        return false;
+    }
+    if (meta_event->type != 3) {
+        return false;
+    }
+    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
+                      PART_DRUMS.cbegin(), PART_DRUMS.cend());
+}
+
 template <typename T>
 static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
 {
-    if constexpr (std::is_same_v<T, NoteColour>) {
+    if constexpr (std::is_same_v<
+                      T, NoteColour> || std::is_same_v<T, DrumNoteColour>) {
         constexpr int EASY_GREEN = 60;
         constexpr int EASY_ORANGE = 64;
         constexpr int EXPERT_GREEN = 96;
@@ -1099,6 +1118,34 @@ template <typename T> static T colour_from_key(std::uint8_t key)
         }
 
         return GHL_NOTE_COLOURS.at(key);
+    } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        constexpr int EASY_KICK = 60;
+        constexpr int EASY_GREEN = 64;
+        constexpr int EXPERT_KICK = 96;
+        constexpr int EXPERT_GREEN = 100;
+        constexpr int HARD_KICK = 84;
+        constexpr int HARD_GREEN = 88;
+        constexpr int MEDIUM_KICK = 72;
+        constexpr int MEDIUM_GREEN = 76;
+
+        constexpr std::array<DrumNoteColour, 5> DRUM_NOTE_COLOURS {
+            DrumNoteColour::Kick, DrumNoteColour::Red,
+            DrumNoteColour::YellowCymbal, DrumNoteColour::BlueCymbal,
+            DrumNoteColour::GreenCymbal};
+
+        if (key >= EXPERT_KICK && key <= EXPERT_GREEN) {
+            key -= EXPERT_KICK;
+        } else if (key >= HARD_KICK && key <= HARD_GREEN) {
+            key -= HARD_KICK;
+        } else if (key >= MEDIUM_KICK && key <= MEDIUM_GREEN) {
+            key -= MEDIUM_KICK;
+        } else if (key >= EASY_KICK && key <= EASY_GREEN) {
+            key -= EASY_KICK;
+        } else {
+            throw std::invalid_argument("Invalid key for note");
+        }
+
+        return DRUM_NOTE_COLOURS.at(key);
     }
 }
 
@@ -1169,6 +1216,12 @@ template <typename T> struct InstrumentMidiTrack {
     std::map<std::tuple<Difficulty, T>, std::vector<int>> note_off_events;
     std::map<Difficulty, std::vector<int>> open_on_events;
     std::map<Difficulty, std::vector<int>> open_off_events;
+    std::vector<int> yellow_tom_on_events;
+    std::vector<int> yellow_tom_off_events;
+    std::vector<int> blue_tom_on_events;
+    std::vector<int> blue_tom_off_events;
+    std::vector<int> green_tom_on_events;
+    std::vector<int> green_tom_off_events;
     std::vector<int> solo_on_events;
     std::vector<int> solo_off_events;
     std::vector<int> sp_on_events;
@@ -1200,6 +1253,9 @@ static void add_note_off_event(InstrumentMidiTrack<T>& track,
                                const std::array<std::uint8_t, 2>& data,
                                int time)
 {
+    constexpr int YELLOW_TOM_ID = 110;
+    constexpr int BLUE_TOM_ID = 111;
+    constexpr int GREEN_TOM_ID = 112;
     constexpr int SOLO_NOTE_ID = 103;
     constexpr int SP_NOTE_ID = 116;
 
@@ -1207,6 +1263,12 @@ static void add_note_off_event(InstrumentMidiTrack<T>& track,
     if (diff.has_value()) {
         const auto colour = colour_from_key<T>(data[0]);
         track.note_off_events[{*diff, colour}].push_back(time);
+    } else if (data[0] == YELLOW_TOM_ID) {
+        track.yellow_tom_off_events.push_back(time);
+    } else if (data[0] == BLUE_TOM_ID) {
+        track.blue_tom_off_events.push_back(time);
+    } else if (data[0] == GREEN_TOM_ID) {
+        track.green_tom_off_events.push_back(time);
     } else if (data[0] == SOLO_NOTE_ID) {
         track.solo_off_events.push_back(time);
     } else if (data[0] == SP_NOTE_ID) {
@@ -1218,6 +1280,9 @@ template <typename T>
 static void add_note_on_event(InstrumentMidiTrack<T>& track,
                               const std::array<std::uint8_t, 2>& data, int time)
 {
+    constexpr int YELLOW_TOM_ID = 110;
+    constexpr int BLUE_TOM_ID = 111;
+    constexpr int GREEN_TOM_ID = 112;
     constexpr int SOLO_NOTE_ID = 103;
     constexpr int SP_NOTE_ID = 116;
 
@@ -1231,6 +1296,12 @@ static void add_note_on_event(InstrumentMidiTrack<T>& track,
     if (diff.has_value()) {
         const auto colour = colour_from_key<T>(data[0]);
         track.note_on_events[{*diff, colour}].push_back(time);
+    } else if (data[0] == YELLOW_TOM_ID) {
+        track.yellow_tom_on_events.push_back(time);
+    } else if (data[0] == BLUE_TOM_ID) {
+        track.blue_tom_on_events.push_back(time);
+    } else if (data[0] == GREEN_TOM_ID) {
+        track.green_tom_on_events.push_back(time);
     } else if (data[0] == SOLO_NOTE_ID) {
         track.solo_on_events.push_back(time);
     } else if (data[0] == SP_NOTE_ID) {
@@ -1361,6 +1432,65 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     return note_tracks;
 }
 
+static std::map<Difficulty, NoteTrack<DrumNoteColour>>
+drum_note_tracks_from_midi(const MidiTrack& midi_track)
+{
+    const auto event_track
+        = read_instrument_midi_track<DrumNoteColour>(midi_track);
+
+    const auto yellow_tom_events = combine_on_off_events(
+        event_track.yellow_tom_on_events, event_track.yellow_tom_off_events);
+    const auto blue_tom_events = combine_on_off_events(
+        event_track.blue_tom_on_events, event_track.blue_tom_off_events);
+    const auto green_tom_events = combine_on_off_events(
+        event_track.green_tom_on_events, event_track.green_tom_off_events);
+
+    std::map<Difficulty, std::vector<Note<DrumNoteColour>>> notes;
+    for (const auto& [key, note_ons] : event_track.note_on_events) {
+        const auto& [diff, colour] = key;
+        const auto& note_offs = event_track.note_off_events.at(key);
+        for (const auto& [pos, end] :
+             combine_on_off_events(note_ons, note_offs)) {
+            auto note_colour = colour;
+            if (note_colour == DrumNoteColour::YellowCymbal) {
+                for (const auto& [open_start, open_end] : yellow_tom_events) {
+                    if (pos >= open_start && pos < open_end) {
+                        note_colour = DrumNoteColour::Yellow;
+                    }
+                }
+            } else if (note_colour == DrumNoteColour::BlueCymbal) {
+                for (const auto& [open_start, open_end] : blue_tom_events) {
+                    if (pos >= open_start && pos < open_end) {
+                        note_colour = DrumNoteColour::Blue;
+                    }
+                }
+            } else if (note_colour == DrumNoteColour::GreenCymbal) {
+                for (const auto& [open_start, open_end] : green_tom_events) {
+                    if (pos >= open_start && pos < open_end) {
+                        note_colour = DrumNoteColour::Green;
+                    }
+                }
+            }
+            notes[diff].push_back({pos, 0, note_colour});
+        }
+    }
+
+    std::vector<StarPower> sp_phrases;
+    for (const auto& [start, end] : combine_on_off_events(
+             event_track.sp_on_events, event_track.sp_off_events)) {
+        sp_phrases.push_back({start, end - start});
+    }
+
+    std::map<Difficulty, NoteTrack<DrumNoteColour>> note_tracks;
+    for (const auto& [diff, note_set] : notes) {
+        auto solos = form_solo_vector(event_track.solo_on_events,
+                                      event_track.solo_off_events, note_set);
+        note_tracks[diff] = {note_set, sp_phrases, solos};
+    }
+
+    return note_tracks;
+}
+
 Chart Chart::from_midi(const Midi& midi)
 {
     if (midi.ticks_per_quarter_note == 0) {
@@ -1400,6 +1530,8 @@ Chart Chart::from_midi(const Midi& midi)
         } else if (is_part_ghl_bass(track)) {
             chart.m_ghl_bass_note_tracks
                 = ghl_note_tracks_from_midi(track, chart.m_resolution);
+        } else if (is_part_drums(track)) {
+            chart.m_drum_note_tracks = drum_note_tracks_from_midi(track);
         }
     }
 
