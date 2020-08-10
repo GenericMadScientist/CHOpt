@@ -407,6 +407,13 @@ TEST_CASE("Solos are read properly")
     }
 }
 
+TEST_CASE("Parser does not infinite loop on unfinished sections")
+{
+    const char* text = "[UnrecognisedSection]\n{\n";
+
+    REQUIRE_THROWS([&] { return Chart::parse_chart(text); }());
+}
+
 TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
 {
     SECTION("Guitar Co-op is read")

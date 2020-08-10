@@ -143,6 +143,10 @@ static std::string_view skip_whitespace(std::string_view input)
 // detected newline character that is not a whitespace character.
 static std::string_view break_off_newline(std::string_view& input)
 {
+    if (input.empty()) {
+        throw std::invalid_argument("No lines left");
+    }
+
     const auto newline_location = input.find_first_of("\r\n");
     if (newline_location == std::string_view::npos) {
         const auto line = input;
