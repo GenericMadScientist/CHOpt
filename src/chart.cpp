@@ -867,10 +867,9 @@ Chart Chart::parse_chart(std::string_view input)
     return chart;
 }
 
-static bool is_part_guitar(const MidiTrack& track)
+static bool has_track_title(const MidiTrack& track,
+                            std::string_view desired_title)
 {
-    constexpr std::string_view PART_GUITAR {"PART GUITAR"};
-
     if (track.events.empty()) {
         return false;
     }
@@ -882,133 +881,7 @@ static bool is_part_guitar(const MidiTrack& track)
         return false;
     }
     return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
-                      PART_GUITAR.cbegin(), PART_GUITAR.cend());
-}
-
-static bool is_part_guitar_coop(const MidiTrack& track)
-{
-    constexpr std::string_view PART_GUITAR_COOP {"PART GUITAR COOP"};
-
-    if (track.events.empty()) {
-        return false;
-    }
-    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
-    if (meta_event == nullptr) {
-        return false;
-    }
-    if (meta_event->type != 3) {
-        return false;
-    }
-    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
-                      PART_GUITAR_COOP.cbegin(), PART_GUITAR_COOP.cend());
-}
-
-static bool is_part_bass(const MidiTrack& track)
-{
-    constexpr std::string_view PART_BASS {"PART BASS"};
-
-    if (track.events.empty()) {
-        return false;
-    }
-    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
-    if (meta_event == nullptr) {
-        return false;
-    }
-    if (meta_event->type != 3) {
-        return false;
-    }
-    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
-                      PART_BASS.cbegin(), PART_BASS.cend());
-}
-
-static bool is_part_rhythm(const MidiTrack& track)
-{
-    constexpr std::string_view PART_RHYTHM {"PART RHYTHM"};
-
-    if (track.events.empty()) {
-        return false;
-    }
-    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
-    if (meta_event == nullptr) {
-        return false;
-    }
-    if (meta_event->type != 3) {
-        return false;
-    }
-    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
-                      PART_RHYTHM.cbegin(), PART_RHYTHM.cend());
-}
-
-static bool is_part_keys(const MidiTrack& track)
-{
-    constexpr std::string_view PART_KEYS {"PART KEYS"};
-
-    if (track.events.empty()) {
-        return false;
-    }
-    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
-    if (meta_event == nullptr) {
-        return false;
-    }
-    if (meta_event->type != 3) {
-        return false;
-    }
-    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
-                      PART_KEYS.cbegin(), PART_KEYS.cend());
-}
-
-static bool is_part_ghl_guitar(const MidiTrack& track)
-{
-    constexpr std::string_view PART_GUITAR_GHL {"PART GUITAR GHL"};
-
-    if (track.events.empty()) {
-        return false;
-    }
-    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
-    if (meta_event == nullptr) {
-        return false;
-    }
-    if (meta_event->type != 3) {
-        return false;
-    }
-    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
-                      PART_GUITAR_GHL.cbegin(), PART_GUITAR_GHL.cend());
-}
-
-static bool is_part_ghl_bass(const MidiTrack& track)
-{
-    constexpr std::string_view PART_BASS_GHL {"PART BASS GHL"};
-
-    if (track.events.empty()) {
-        return false;
-    }
-    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
-    if (meta_event == nullptr) {
-        return false;
-    }
-    if (meta_event->type != 3) {
-        return false;
-    }
-    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
-                      PART_BASS_GHL.cbegin(), PART_BASS_GHL.cend());
-}
-
-static bool is_part_drums(const MidiTrack& track)
-{
-    constexpr std::string_view PART_DRUMS {"PART DRUMS"};
-
-    if (track.events.empty()) {
-        return false;
-    }
-    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
-    if (meta_event == nullptr) {
-        return false;
-    }
-    if (meta_event->type != 3) {
-        return false;
-    }
-    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
-                      PART_DRUMS.cbegin(), PART_DRUMS.cend());
+                      desired_title.cbegin(), desired_title.cend());
 }
 
 template <typename T>
@@ -1513,28 +1386,28 @@ Chart Chart::from_midi(const Midi& midi)
     chart.m_sync_track = sync_track;
 
     for (const auto& track : midi.tracks) {
-        if (is_part_guitar(track)) {
+        if (has_track_title(track, "PART GUITAR")) {
             chart.m_guitar_note_tracks
                 = note_tracks_from_midi(track, chart.m_resolution);
-        } else if (is_part_guitar_coop(track)) {
+        } else if (has_track_title(track, "PART GUITAR COOP")) {
             chart.m_guitar_coop_note_tracks
                 = note_tracks_from_midi(track, chart.m_resolution);
-        } else if (is_part_bass(track)) {
+        } else if (has_track_title(track, "PART BASS")) {
             chart.m_bass_note_tracks
                 = note_tracks_from_midi(track, chart.m_resolution);
-        } else if (is_part_rhythm(track)) {
+        } else if (has_track_title(track, "PART RHYTHM")) {
             chart.m_rhythm_note_tracks
                 = note_tracks_from_midi(track, chart.m_resolution);
-        } else if (is_part_keys(track)) {
+        } else if (has_track_title(track, "PART KEYS")) {
             chart.m_keys_note_tracks
                 = note_tracks_from_midi(track, chart.m_resolution);
-        } else if (is_part_ghl_guitar(track)) {
+        } else if (has_track_title(track, "PART GUITAR GHL")) {
             chart.m_ghl_guitar_note_tracks
                 = ghl_note_tracks_from_midi(track, chart.m_resolution);
-        } else if (is_part_ghl_bass(track)) {
+        } else if (has_track_title(track, "PART BASS GHL")) {
             chart.m_ghl_bass_note_tracks
                 = ghl_note_tracks_from_midi(track, chart.m_resolution);
-        } else if (is_part_drums(track)) {
+        } else if (has_track_title(track, "PART DRUMS")) {
             chart.m_drum_note_tracks = drum_note_tracks_from_midi(track);
         }
     }
