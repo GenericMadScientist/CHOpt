@@ -24,16 +24,29 @@
 #include <string_view>
 #include <vector>
 
-struct ChartEvent {
+struct BpmEvent {
     int position;
-    std::string event_type;
-    std::string data;
+    int bpm;
+};
+
+struct NoteEvent {
+    int position;
+    int fret;
+    int length;
+};
+
+struct TimeSigEvent {
+    int position;
+    int numerator;
+    int denominator;
 };
 
 struct ChartSection {
     std::string name;
     std::map<std::string, std::string> key_value_pairs;
-    std::vector<ChartEvent> events;
+    std::vector<BpmEvent> bpm_events;
+    std::vector<NoteEvent> note_events;
+    std::vector<TimeSigEvent> ts_events;
 };
 
 struct Chart {

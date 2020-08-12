@@ -102,7 +102,7 @@ static std::vector<std::string_view> split_by_space(std::string_view input)
 static ChartSection read_section(std::string_view& input)
 {
     const auto header = strip_square_brackets(break_off_newline(input));
-    ChartSection section {std::string(header), {}, {}};
+    ChartSection section {std::string(header), {}, {}, {}, {}};
 
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("Section does not open with {");
@@ -118,12 +118,21 @@ static ChartSection read_section(std::string_view& input)
         const auto key_val = string_view_to_int(key);
         if (key_val.has_value()) {
             const auto pos = *key_val;
-            const std::string event_type {separated_line[2]};
-            std::string data {separated_line[3]};
-            for (auto i = 4U; i < separated_line.size(); ++i) {
-                data.append(separated_line[i]);
+            if (separated_line[2] == "N") {
+                const auto fret = *string_view_to_int(separated_line[3]);
+                const auto length = *string_view_to_int(separated_line[4]);
+                section.note_events.push_back(NoteEvent {pos, fret, length});
+            } else if (separated_line[2] == "B") {
+                const auto bpm = *string_view_to_int(separated_line[3]);
+                section.bpm_events.push_back(BpmEvent {pos, bpm});
+            } else if (separated_line[2] == "TS") {
+                const auto numer = *string_view_to_int(separated_line[3]);
+                auto denom = 2;
+                if (separated_line.size() >= 5) {
+                    denom = *string_view_to_int(separated_line[4]);
+                }
+                section.ts_events.push_back(TimeSigEvent {pos, numer, denom});
             }
-            section.events.push_back(ChartEvent {pos, event_type, data});
         } else {
             std::string value {separated_line[2]};
             for (auto i = 3U; i < separated_line.size(); ++i) {
