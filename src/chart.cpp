@@ -69,9 +69,23 @@ static std::string_view strip_square_brackets(std::string_view input)
     return input.substr(1, input.size() - 2);
 }
 
+static bool string_starts_with(std::string_view input, std::string_view pattern)
+{
+    if (input.size() < pattern.size()) {
+        return false;
+    }
+
+    return input.substr(0, pattern.size()) == pattern;
+}
+
 Chart parse_chart(std::string_view data)
 {
     Chart chart;
+
+    // Trim off UTF-8 BOM if present
+    if (string_starts_with(data, "\xEF\xBB\xBF")) {
+        data.remove_prefix(3);
+    }
 
     while (!data.empty()) {
         const auto header = strip_square_brackets(break_off_newline(data));

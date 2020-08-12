@@ -233,30 +233,6 @@ TEST_CASE("Chart reads easy note track correctly")
 }
 
 // Last checked: 24.0.1555-master
-TEST_CASE("Chart skips UTF-8 BOM")
-{
-    const char* text
-        = "\xEF\xBB\xBF[Song]\n{\nOffset = "
-          "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
-          "\n768 = N 0 0\n}";
-    const auto resolution = Song::parse_chart(text).resolution();
-
-    REQUIRE(resolution == 192);
-}
-
-// Last checked: 24.0.1555-master
-TEST_CASE("Chart can end without a newline")
-{
-    const char* text
-        = "\xEF\xBB\xBF[Song]\n{\nOffset = "
-          "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
-          "\n768 = N 0 0\n}";
-    const auto resolution = Song::parse_chart(text).resolution();
-
-    REQUIRE(resolution == 192);
-}
-
-// Last checked: 24.0.1555-master
 TEST_CASE("Chart does not need sections in usual order")
 {
     SECTION("Non note sections need not be present")

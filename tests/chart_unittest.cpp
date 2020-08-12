@@ -22,11 +22,28 @@
 
 TEST_CASE("Section names are read")
 {
-    const char* text = "[SectionA]\n{\n}\n[SectionB]\n{\n}";
+    const char* text = "[SectionA]\n{\n}\n[SectionB]\n{\n}\n";
 
     const auto chart = parse_chart(text);
 
     REQUIRE(chart.sections.size() == 2);
     REQUIRE(chart.sections[0].name == "SectionA");
     REQUIRE(chart.sections[1].name == "SectionB");
+}
+
+TEST_CASE("Parser skips UTF-8 BOM")
+{
+    const char* text = "\xEF\xBB\xBF[Song]\n{\n}\n";
+
+    const auto chart = parse_chart(text);
+
+    REQUIRE(chart.sections.size() == 1);
+    REQUIRE(chart.sections[0].name == "Song");
+}
+
+TEST_CASE("Chart can end without a newline")
+{
+    const char* text = "[Song]\n{\n}";
+
+    REQUIRE_NOTHROW([&] { return parse_chart(text); }());
 }
