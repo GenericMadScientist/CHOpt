@@ -628,6 +628,27 @@ static std::string_view read_single_track(std::string_view input,
     return input;
 }
 
+template <typename T>
+static std::map<Difficulty, NoteTrack<T>>
+tracks_from_pre_tracks(std::map<Difficulty, PreNoteTrack<T>> pre_tracks)
+{
+    std::map<Difficulty, NoteTrack<T>> tracks;
+
+    for (auto& key_track : pre_tracks) {
+        auto diff = key_track.first;
+        auto& track = key_track.second;
+        if (track.notes.empty()) {
+            continue;
+        }
+        NoteTrack<T> new_track {std::move(track.notes),
+                                std::move(track.sp_phrases),
+                                std::move(track.solos)};
+        tracks.emplace(diff, std::move(new_track));
+    }
+
+    return tracks;
+}
+
 Chart Chart::parse_chart(std::string_view input)
 {
     Chart chart;
@@ -756,102 +777,22 @@ Chart Chart::parse_chart(std::string_view input)
 
     chart.m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs),
                                    std::move(pre_sync_track.bpms));
-
-    for (auto& key_track : pre_guitar_tracks) {
-        auto diff = key_track.first;
-        auto& track = key_track.second;
-        if (track.notes.empty()) {
-            continue;
-        }
-        NoteTrack<NoteColour> new_track {std::move(track.notes),
-                                         std::move(track.sp_phrases),
-                                         std::move(track.solos)};
-        chart.m_guitar_note_tracks.emplace(diff, std::move(new_track));
-    }
-
-    for (auto& key_track : pre_guitar_coop_tracks) {
-        auto diff = key_track.first;
-        auto& track = key_track.second;
-        if (track.notes.empty()) {
-            continue;
-        }
-        NoteTrack<NoteColour> new_track {std::move(track.notes),
-                                         std::move(track.sp_phrases),
-                                         std::move(track.solos)};
-        chart.m_guitar_coop_note_tracks.emplace(diff, std::move(new_track));
-    }
-
-    for (auto& key_track : pre_bass_tracks) {
-        auto diff = key_track.first;
-        auto& track = key_track.second;
-        if (track.notes.empty()) {
-            continue;
-        }
-        NoteTrack<NoteColour> new_track {std::move(track.notes),
-                                         std::move(track.sp_phrases),
-                                         std::move(track.solos)};
-        chart.m_bass_note_tracks.emplace(diff, std::move(new_track));
-    }
-
-    for (auto& key_track : pre_rhythm_tracks) {
-        auto diff = key_track.first;
-        auto& track = key_track.second;
-        if (track.notes.empty()) {
-            continue;
-        }
-        NoteTrack<NoteColour> new_track {std::move(track.notes),
-                                         std::move(track.sp_phrases),
-                                         std::move(track.solos)};
-        chart.m_rhythm_note_tracks.emplace(diff, std::move(new_track));
-    }
-
-    for (auto& key_track : pre_keys_tracks) {
-        auto diff = key_track.first;
-        auto& track = key_track.second;
-        if (track.notes.empty()) {
-            continue;
-        }
-        NoteTrack<NoteColour> new_track {std::move(track.notes),
-                                         std::move(track.sp_phrases),
-                                         std::move(track.solos)};
-        chart.m_keys_note_tracks.emplace(diff, std::move(new_track));
-    }
-
-    for (auto& key_track : pre_ghl_guitar_tracks) {
-        auto diff = key_track.first;
-        auto& track = key_track.second;
-        if (track.notes.empty()) {
-            continue;
-        }
-        NoteTrack<GHLNoteColour> new_track {std::move(track.notes),
-                                            std::move(track.sp_phrases),
-                                            std::move(track.solos)};
-        chart.m_ghl_guitar_note_tracks.emplace(diff, std::move(new_track));
-    }
-
-    for (auto& key_track : pre_ghl_bass_tracks) {
-        auto diff = key_track.first;
-        auto& track = key_track.second;
-        if (track.notes.empty()) {
-            continue;
-        }
-        NoteTrack<GHLNoteColour> new_track {std::move(track.notes),
-                                            std::move(track.sp_phrases),
-                                            std::move(track.solos)};
-        chart.m_ghl_bass_note_tracks.emplace(diff, std::move(new_track));
-    }
-
-    for (auto& key_track : pre_drum_tracks) {
-        auto diff = key_track.first;
-        auto& track = key_track.second;
-        if (track.notes.empty()) {
-            continue;
-        }
-        NoteTrack<DrumNoteColour> new_track {std::move(track.notes),
-                                             std::move(track.sp_phrases),
-                                             std::move(track.solos)};
-        chart.m_drum_note_tracks.emplace(diff, std::move(new_track));
-    }
+    chart.m_guitar_note_tracks
+        = tracks_from_pre_tracks(std::move(pre_guitar_tracks));
+    chart.m_guitar_coop_note_tracks
+        = tracks_from_pre_tracks(std::move(pre_guitar_coop_tracks));
+    chart.m_bass_note_tracks
+        = tracks_from_pre_tracks(std::move(pre_bass_tracks));
+    chart.m_rhythm_note_tracks
+        = tracks_from_pre_tracks(std::move(pre_rhythm_tracks));
+    chart.m_keys_note_tracks
+        = tracks_from_pre_tracks(std::move(pre_keys_tracks));
+    chart.m_ghl_guitar_note_tracks
+        = tracks_from_pre_tracks(std::move(pre_ghl_guitar_tracks));
+    chart.m_ghl_bass_note_tracks
+        = tracks_from_pre_tracks(std::move(pre_ghl_bass_tracks));
+    chart.m_drum_note_tracks
+        = tracks_from_pre_tracks(std::move(pre_drum_tracks));
 
     if (chart.m_guitar_note_tracks.empty()
         && chart.m_guitar_coop_note_tracks.empty()
