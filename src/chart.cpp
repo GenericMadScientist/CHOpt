@@ -101,8 +101,10 @@ static std::vector<std::string_view> split_by_space(std::string_view input)
 
 static ChartSection read_section(std::string_view& input)
 {
-    const auto header = strip_square_brackets(break_off_newline(input));
-    ChartSection section {std::string(header), {}, {}, {}, {}};
+    constexpr int FULL_TS_EVENT_SIZE = 5;
+
+    ChartSection section;
+    section.name = strip_square_brackets(break_off_newline(input));
 
     if (break_off_newline(input) != "{") {
         throw std::runtime_error("Section does not open with {");
@@ -128,7 +130,7 @@ static ChartSection read_section(std::string_view& input)
             } else if (separated_line[2] == "TS") {
                 const auto numer = *string_view_to_int(separated_line[3]);
                 auto denom = 2;
-                if (separated_line.size() >= 5) {
+                if (separated_line.size() >= FULL_TS_EVENT_SIZE) {
                     denom = *string_view_to_int(separated_line[4]);
                 }
                 section.ts_events.push_back(TimeSigEvent {pos, numer, denom});
