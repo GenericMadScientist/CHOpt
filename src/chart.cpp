@@ -17,6 +17,8 @@
  */
 
 #include <algorithm>
+#include <charconv>
+#include <optional>
 #include <stdexcept>
 
 #include "chart.hpp"
@@ -50,20 +52,6 @@ static std::string_view break_off_newline(std::string_view& input)
     return line;
 }
 
-static std::string_view skip_section(std::string_view input)
-{
-    auto next_line = break_off_newline(input);
-    if (next_line != "{") {
-        throw std::runtime_error("Section does not open with {");
-    }
-
-    do {
-        next_line = break_off_newline(input);
-    } while (next_line != "}");
-
-    return input;
-}
-
 static std::string_view strip_square_brackets(std::string_view input)
 {
     return input.substr(1, input.size() - 2);
@@ -78,6 +66,76 @@ static bool string_starts_with(std::string_view input, std::string_view pattern)
     return input.substr(0, pattern.size()) == pattern;
 }
 
+// Convert a string_view to an int. If there are any problems with the input,
+// this function throws.
+static std::optional<int> string_view_to_int(std::string_view input)
+{
+    int result = 0;
+    const char* last = input.data() + input.size();
+    auto [p, ec] = std::from_chars(input.data(), last, result);
+    if ((ec != std::errc()) || (p != last)) {
+        return {};
+    }
+    return result;
+}
+
+// Split input by space characters, similar to .Split(' ') in C#. Note that
+// the lifetime of the string_views in the output is the same as that of the
+// input.
+static std::vector<std::string_view> split_by_space(std::string_view input)
+{
+    std::vector<std::string_view> substrings;
+
+    while (true) {
+        const auto space_location = input.find(' ');
+        if (space_location == std::string_view::npos) {
+            break;
+        }
+        substrings.push_back(input.substr(0, space_location));
+        input.remove_prefix(space_location + 1);
+    }
+
+    substrings.push_back(input);
+    return substrings;
+}
+
+static ChartSection read_section(std::string_view& input)
+{
+    const auto header = strip_square_brackets(break_off_newline(input));
+    ChartSection section {std::string(header), {}, {}};
+
+    if (break_off_newline(input) != "{") {
+        throw std::runtime_error("Section does not open with {");
+    }
+
+    while (true) {
+        const auto next_line = break_off_newline(input);
+        if (next_line == "}") {
+            break;
+        }
+        const auto separated_line = split_by_space(next_line);
+        const auto key = separated_line[0];
+        const auto key_val = string_view_to_int(key);
+        if (key_val.has_value()) {
+            const auto pos = *key_val;
+            const std::string event_type {separated_line[2]};
+            std::string data {separated_line[3]};
+            for (auto i = 4U; i < separated_line.size(); ++i) {
+                data.append(separated_line[i]);
+            }
+            section.events.push_back(ChartEvent {pos, event_type, data});
+        } else {
+            std::string value {separated_line[2]};
+            for (auto i = 3U; i < separated_line.size(); ++i) {
+                value.append(separated_line[i]);
+            }
+            section.key_value_pairs[std::string(key)] = value;
+        }
+    }
+
+    return section;
+}
+
 Chart parse_chart(std::string_view data)
 {
     Chart chart;
@@ -88,9 +146,7 @@ Chart parse_chart(std::string_view data)
     }
 
     while (!data.empty()) {
-        const auto header = strip_square_brackets(break_off_newline(data));
-        chart.sections.push_back(ChartSection {std::string(header)});
-        data = skip_section(data);
+        chart.sections.push_back(read_section(data));
     }
 
     return chart;

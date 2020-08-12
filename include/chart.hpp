@@ -19,12 +19,21 @@
 #ifndef CHOPT_CHART_HPP
 #define CHOPT_CHART_HPP
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
 
+struct ChartEvent {
+    int position;
+    std::string event_type;
+    std::string data;
+};
+
 struct ChartSection {
     std::string name;
+    std::map<std::string, std::string> key_value_pairs;
+    std::vector<ChartEvent> events;
 };
 
 struct Chart {
