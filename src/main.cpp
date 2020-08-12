@@ -22,26 +22,26 @@
 #include <stdexcept>
 #include <string>
 
-#include "chart.hpp"
 #include "image.hpp"
 #include "optimiser.hpp"
 #include "settings.hpp"
+#include "song.hpp"
 #include "time.hpp"
 
 const static NoteTrack<NoteColour>&
-track_from_inst_diff(const Settings& settings, const Chart& chart)
+track_from_inst_diff(const Settings& settings, const Song& song)
 {
     switch (settings.instrument) {
     case Instrument::Guitar:
-        return chart.guitar_note_track(settings.difficulty);
+        return song.guitar_note_track(settings.difficulty);
     case Instrument::GuitarCoop:
-        return chart.guitar_coop_note_track(settings.difficulty);
+        return song.guitar_coop_note_track(settings.difficulty);
     case Instrument::Bass:
-        return chart.bass_note_track(settings.difficulty);
+        return song.bass_note_track(settings.difficulty);
     case Instrument::Rhythm:
-        return chart.rhythm_note_track(settings.difficulty);
+        return song.rhythm_note_track(settings.difficulty);
     case Instrument::Keys:
-        return chart.keys_note_track(settings.difficulty);
+        return song.keys_note_track(settings.difficulty);
     case Instrument::GHLGuitar:
         throw std::invalid_argument("GHL Guitar is not 5 fret");
     case Instrument::GHLBass:
@@ -54,29 +54,29 @@ track_from_inst_diff(const Settings& settings, const Chart& chart)
 }
 
 template <typename T>
-static ImageBuilder make_builder_from_track(const Chart& chart,
+static ImageBuilder make_builder_from_track(const Song& song,
                                             const NoteTrack<T>& track,
                                             const Settings& settings)
 {
-    ImageBuilder builder {track, chart.resolution(), chart.sync_track()};
-    builder.add_song_header(chart.song_header());
-    builder.add_sp_phrases(track, chart.resolution());
+    ImageBuilder builder {track, song.resolution(), song.sync_track()};
+    builder.add_song_header(song.song_header());
+    builder.add_sp_phrases(track, song.resolution());
 
     if (settings.draw_bpms) {
-        builder.add_bpms(chart.sync_track(), chart.resolution());
+        builder.add_bpms(song.sync_track(), song.resolution());
     }
 
     if (settings.draw_solos) {
-        builder.add_solo_sections(track.solos(), chart.resolution());
+        builder.add_solo_sections(track.solos(), song.resolution());
     }
 
     if (settings.draw_time_sigs) {
-        builder.add_time_sigs(chart.sync_track(), chart.resolution());
+        builder.add_time_sigs(song.sync_track(), song.resolution());
     }
 
     const ProcessedSong processed_track {track,
-                                         chart.resolution(),
-                                         chart.sync_track(),
+                                         song.resolution(),
+                                         song.sync_track(),
                                          settings.early_whammy,
                                          settings.squeeze,
                                          Second {settings.lazy_whammy}};
@@ -95,30 +95,30 @@ static ImageBuilder make_builder_from_track(const Chart& chart,
     return builder;
 }
 
-static ImageBuilder make_builder(const Chart& chart, const Settings& settings)
+static ImageBuilder make_builder(const Song& song, const Settings& settings)
 {
     if (settings.instrument == Instrument::GHLGuitar) {
-        const auto& track = chart.ghl_guitar_note_track(settings.difficulty);
-        return make_builder_from_track(chart, track, settings);
+        const auto& track = song.ghl_guitar_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings);
     }
     if (settings.instrument == Instrument::GHLBass) {
-        const auto& track = chart.ghl_bass_note_track(settings.difficulty);
-        return make_builder_from_track(chart, track, settings);
+        const auto& track = song.ghl_bass_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings);
     }
     if (settings.instrument == Instrument::Drums) {
-        const auto& track = chart.drum_note_track(settings.difficulty);
-        return make_builder_from_track(chart, track, settings);
+        const auto& track = song.drum_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings);
     }
-    const auto& track = track_from_inst_diff(settings, chart);
-    return make_builder_from_track(chart, track, settings);
+    const auto& track = track_from_inst_diff(settings, song);
+    return make_builder_from_track(song, track, settings);
 }
 
 int main(int argc, char** argv)
 {
     try {
         const auto settings = from_args(argc, argv);
-        const auto chart = Chart::from_filename(settings.filename);
-        const auto builder = make_builder(chart, settings);
+        const auto song = Song::from_filename(settings.filename);
+        const auto builder = make_builder(song, settings);
         const Image image {builder};
         image.save(settings.image_path.c_str());
         return EXIT_SUCCESS;

@@ -24,8 +24,8 @@
 #include <string>
 #include <vector>
 
-#include "chart.hpp"
 #include "points.hpp"
+#include "song.hpp"
 #include "sp.hpp"
 #include "time.hpp"
 

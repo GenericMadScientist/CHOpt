@@ -22,7 +22,7 @@
 #include <tuple>
 #include <vector>
 
-#include "chart.hpp"
+#include "song.hpp"
 #include "time.hpp"
 
 struct Point {

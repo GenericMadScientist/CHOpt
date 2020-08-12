@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef CHOPT_CHART_HPP
-#define CHOPT_CHART_HPP
+#ifndef CHOPT_SONG_HPP
+#define CHOPT_SONG_HPP
 
 #include <algorithm>
 #include <map>
@@ -229,7 +229,7 @@ struct SongHeader {
 
 // Invariants:
 // resolution() > 0.
-class Chart {
+class Song {
 private:
     static constexpr int DEFAULT_RESOLUTION = 192;
 
@@ -244,12 +244,12 @@ private:
     std::map<Difficulty, NoteTrack<GHLNoteColour>> m_ghl_guitar_note_tracks;
     std::map<Difficulty, NoteTrack<GHLNoteColour>> m_ghl_bass_note_tracks;
     std::map<Difficulty, NoteTrack<DrumNoteColour>> m_drum_note_tracks;
-    Chart() = default;
+    Song() = default;
 
 public:
-    static Chart from_filename(const std::string& filename);
-    static Chart from_midi(const Midi& midi);
-    static Chart parse_chart(std::string_view input);
+    static Song from_filename(const std::string& filename);
+    static Song from_midi(const Midi& midi);
+    static Song parse_chart(std::string_view input);
     [[nodiscard]] int resolution() const { return m_resolution; }
     [[nodiscard]] const SongHeader& song_header() const
     {

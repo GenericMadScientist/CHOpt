@@ -24,9 +24,9 @@
 #include <tuple>
 #include <vector>
 
-#include "chart.hpp"
 #include "points.hpp"
 #include "processed.hpp"
+#include "song.hpp"
 #include "sp.hpp"
 
 struct DrawnRow {

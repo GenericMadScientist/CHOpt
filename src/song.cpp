@@ -26,7 +26,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "chart.hpp"
+#include "song.hpp"
 
 static bool ends_in_suffix(const std::string& string, const char* suffix)
 {
@@ -38,7 +38,7 @@ static bool ends_in_suffix(const std::string& string, const char* suffix)
     return string.substr(string.size() - suffix_len) == suffix;
 }
 
-Chart Chart::from_filename(const std::string& filename)
+Song Song::from_filename(const std::string& filename)
 {
     if (ends_in_suffix(filename, ".chart")) {
         std::ifstream in {filename};
@@ -47,7 +47,7 @@ Chart Chart::from_filename(const std::string& filename)
         }
         std::string contents {std::istreambuf_iterator<char>(in),
                               std::istreambuf_iterator<char>()};
-        return Chart::parse_chart(contents);
+        return Song::parse_chart(contents);
     }
     if (ends_in_suffix(filename, ".mid")) {
         std::ifstream in {filename, std::ios::binary};
@@ -56,7 +56,7 @@ Chart Chart::from_filename(const std::string& filename)
         }
         std::vector<std::uint8_t> buffer {std::istreambuf_iterator<char>(in),
                                           std::istreambuf_iterator<char>()};
-        return Chart::from_midi(parse_midi(buffer));
+        return Song::from_midi(parse_midi(buffer));
     }
     throw std::invalid_argument("file should be .chart or .mid");
 }
@@ -649,9 +649,9 @@ tracks_from_pre_tracks(std::map<Difficulty, PreNoteTrack<T>> pre_tracks)
     return tracks;
 }
 
-Chart Chart::parse_chart(std::string_view input)
+Song Song::parse_chart(std::string_view input)
 {
-    Chart chart;
+    Song song;
 
     PreSongHeader pre_song_header;
     PreSyncTrack pre_sync_track;
@@ -770,42 +770,41 @@ Chart Chart::parse_chart(std::string_view input)
         }
     }
 
-    chart.m_resolution = pre_song_header.resolution;
-    chart.m_song_header.name = pre_song_header.name;
-    chart.m_song_header.artist = pre_song_header.artist;
-    chart.m_song_header.charter = pre_song_header.charter;
+    song.m_resolution = pre_song_header.resolution;
+    song.m_song_header.name = pre_song_header.name;
+    song.m_song_header.artist = pre_song_header.artist;
+    song.m_song_header.charter = pre_song_header.charter;
 
-    chart.m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs),
-                                   std::move(pre_sync_track.bpms));
-    chart.m_guitar_note_tracks
+    song.m_sync_track = SyncTrack(std::move(pre_sync_track.time_sigs),
+                                  std::move(pre_sync_track.bpms));
+    song.m_guitar_note_tracks
         = tracks_from_pre_tracks(std::move(pre_guitar_tracks));
-    chart.m_guitar_coop_note_tracks
+    song.m_guitar_coop_note_tracks
         = tracks_from_pre_tracks(std::move(pre_guitar_coop_tracks));
-    chart.m_bass_note_tracks
+    song.m_bass_note_tracks
         = tracks_from_pre_tracks(std::move(pre_bass_tracks));
-    chart.m_rhythm_note_tracks
+    song.m_rhythm_note_tracks
         = tracks_from_pre_tracks(std::move(pre_rhythm_tracks));
-    chart.m_keys_note_tracks
+    song.m_keys_note_tracks
         = tracks_from_pre_tracks(std::move(pre_keys_tracks));
-    chart.m_ghl_guitar_note_tracks
+    song.m_ghl_guitar_note_tracks
         = tracks_from_pre_tracks(std::move(pre_ghl_guitar_tracks));
-    chart.m_ghl_bass_note_tracks
+    song.m_ghl_bass_note_tracks
         = tracks_from_pre_tracks(std::move(pre_ghl_bass_tracks));
-    chart.m_drum_note_tracks
+    song.m_drum_note_tracks
         = tracks_from_pre_tracks(std::move(pre_drum_tracks));
 
-    if (chart.m_guitar_note_tracks.empty()
-        && chart.m_guitar_coop_note_tracks.empty()
-        && chart.m_bass_note_tracks.empty()
-        && chart.m_rhythm_note_tracks.empty()
-        && chart.m_keys_note_tracks.empty()
-        && chart.m_ghl_guitar_note_tracks.empty()
-        && chart.m_ghl_bass_note_tracks.empty()
-        && chart.m_drum_note_tracks.empty()) {
+    if (song.m_guitar_note_tracks.empty()
+        && song.m_guitar_coop_note_tracks.empty()
+        && song.m_bass_note_tracks.empty() && song.m_rhythm_note_tracks.empty()
+        && song.m_keys_note_tracks.empty()
+        && song.m_ghl_guitar_note_tracks.empty()
+        && song.m_ghl_bass_note_tracks.empty()
+        && song.m_drum_note_tracks.empty()) {
         throw std::invalid_argument("Chart has no notes");
     }
 
-    return chart;
+    return song;
 }
 
 static bool has_track_title(const MidiTrack& track,
@@ -1309,49 +1308,49 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track)
     return note_tracks;
 }
 
-Chart Chart::from_midi(const Midi& midi)
+Song Song::from_midi(const Midi& midi)
 {
     if (midi.ticks_per_quarter_note == 0) {
         throw std::invalid_argument("Resolution must be > 0");
     }
 
-    Chart chart;
-    chart.m_resolution = midi.ticks_per_quarter_note;
+    Song song;
+    song.m_resolution = midi.ticks_per_quarter_note;
 
     if (midi.tracks.empty()) {
-        return chart;
+        return song;
     }
 
     const auto& [name, sync_track] = read_first_midi_track(midi.tracks[0]);
-    chart.m_song_header.name = name;
-    chart.m_sync_track = sync_track;
+    song.m_song_header.name = name;
+    song.m_sync_track = sync_track;
 
     for (const auto& track : midi.tracks) {
         if (has_track_title(track, "PART GUITAR")) {
-            chart.m_guitar_note_tracks
-                = note_tracks_from_midi(track, chart.m_resolution);
+            song.m_guitar_note_tracks
+                = note_tracks_from_midi(track, song.m_resolution);
         } else if (has_track_title(track, "PART GUITAR COOP")) {
-            chart.m_guitar_coop_note_tracks
-                = note_tracks_from_midi(track, chart.m_resolution);
+            song.m_guitar_coop_note_tracks
+                = note_tracks_from_midi(track, song.m_resolution);
         } else if (has_track_title(track, "PART BASS")) {
-            chart.m_bass_note_tracks
-                = note_tracks_from_midi(track, chart.m_resolution);
+            song.m_bass_note_tracks
+                = note_tracks_from_midi(track, song.m_resolution);
         } else if (has_track_title(track, "PART RHYTHM")) {
-            chart.m_rhythm_note_tracks
-                = note_tracks_from_midi(track, chart.m_resolution);
+            song.m_rhythm_note_tracks
+                = note_tracks_from_midi(track, song.m_resolution);
         } else if (has_track_title(track, "PART KEYS")) {
-            chart.m_keys_note_tracks
-                = note_tracks_from_midi(track, chart.m_resolution);
+            song.m_keys_note_tracks
+                = note_tracks_from_midi(track, song.m_resolution);
         } else if (has_track_title(track, "PART GUITAR GHL")) {
-            chart.m_ghl_guitar_note_tracks
-                = ghl_note_tracks_from_midi(track, chart.m_resolution);
+            song.m_ghl_guitar_note_tracks
+                = ghl_note_tracks_from_midi(track, song.m_resolution);
         } else if (has_track_title(track, "PART BASS GHL")) {
-            chart.m_ghl_bass_note_tracks
-                = ghl_note_tracks_from_midi(track, chart.m_resolution);
+            song.m_ghl_bass_note_tracks
+                = ghl_note_tracks_from_midi(track, song.m_resolution);
         } else if (has_track_title(track, "PART DRUMS")) {
-            chart.m_drum_note_tracks = drum_note_tracks_from_midi(track);
+            song.m_drum_note_tracks = drum_note_tracks_from_midi(track);
         }
     }
 
-    return chart;
+    return song;
 }

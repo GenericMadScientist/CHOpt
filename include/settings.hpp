@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include "chart.hpp"
+#include "song.hpp"
 
 enum class Instrument {
     Guitar,

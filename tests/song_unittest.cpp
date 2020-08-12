@@ -18,7 +18,7 @@
 
 #include "catch.hpp"
 
-#include "chart.hpp"
+#include "song.hpp"
 
 // Last checked: 23.2.2
 TEST_CASE("NoteTrack ctor maintains invariants")
@@ -161,7 +161,7 @@ TEST_CASE("Chart reads resolution")
     {
         const char* text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n["
                            "ExpertSingle]\n{\n768 = N 0 0\n}";
-        const auto resolution = Chart::parse_chart(text).resolution();
+        const auto resolution = Song::parse_chart(text).resolution();
 
         REQUIRE(resolution == 192);
     }
@@ -172,7 +172,7 @@ TEST_CASE("Chart reads resolution")
             = "[Song]\n{\nResolution = 200\nOffset = "
               "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]"
               "\n{\n768 = N 0 0\n}";
-        const auto resolution = Chart::parse_chart(text).resolution();
+        const auto resolution = Song::parse_chart(text).resolution();
 
         REQUIRE(resolution == 200);
     }
@@ -183,8 +183,8 @@ TEST_CASE("Chart reads song header correctly")
     SECTION("Default values are correct")
     {
         const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n}";
-        const auto chart = Chart::parse_chart(text);
-        const auto& header = chart.song_header();
+        const auto song = Song::parse_chart(text);
+        const auto& header = song.song_header();
 
         REQUIRE(header.name == "Unknown Song");
         REQUIRE(header.artist == "Unknown Artist");
@@ -196,8 +196,8 @@ TEST_CASE("Chart reads song header correctly")
         const char* text
             = "[Song]\n{\nName = \"TestName\"\nArtist = \"GMS\"\nCharter = "
               "\"NotGMS\"\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
-        const auto chart = Chart::parse_chart(text);
-        const auto& header = chart.song_header();
+        const auto song = Song::parse_chart(text);
+        const auto& header = song.song_header();
 
         REQUIRE(header.name == "TestName");
         REQUIRE(header.artist == "GMS");
@@ -211,7 +211,7 @@ TEST_CASE("Chart reads sync track correctly")
     const char* text
         = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
           "TS 4 1\n}\n[Events]\n{\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
-    const auto sync_track = Chart::parse_chart(text).sync_track();
+    const auto sync_track = Song::parse_chart(text).sync_track();
     std::vector<TimeSignature> time_sigs {{0, 4, 4}, {768, 4, 2}};
     std::vector<BPM> bpms {{0, 200000}};
 
@@ -225,11 +225,11 @@ TEST_CASE("Chart reads easy note track correctly")
     const char* text
         = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[EasySingle]"
           "\n{\n768 = N 0 0\n768 = S 2 100\n}\n";
-    const auto chart = Chart::parse_chart(text);
+    const auto song = Song::parse_chart(text);
     NoteTrack<NoteColour> note_track {
         {{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
 
-    REQUIRE(chart.guitar_note_track(Difficulty::Easy) == note_track);
+    REQUIRE(song.guitar_note_track(Difficulty::Easy) == note_track);
 }
 
 // Last checked: 24.0.1555-master
@@ -239,7 +239,7 @@ TEST_CASE("Chart skips UTF-8 BOM")
         = "\xEF\xBB\xBF[Song]\n{\nOffset = "
           "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
           "\n768 = N 0 0\n}";
-    const auto resolution = Chart::parse_chart(text).resolution();
+    const auto resolution = Song::parse_chart(text).resolution();
 
     REQUIRE(resolution == 192);
 }
@@ -251,7 +251,7 @@ TEST_CASE("Chart can end without a newline")
         = "\xEF\xBB\xBF[Song]\n{\nOffset = "
           "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]\n{"
           "\n768 = N 0 0\n}";
-    const auto resolution = Chart::parse_chart(text).resolution();
+    const auto resolution = Song::parse_chart(text).resolution();
 
     REQUIRE(resolution == 192);
 }
@@ -262,17 +262,17 @@ TEST_CASE("Chart does not need sections in usual order")
     SECTION("Non note sections need not be present")
     {
         const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
 
-        REQUIRE(chart.resolution() == 192);
+        REQUIRE(song.resolution() == 192);
     }
 
     SECTION("At least one non-empty note section must be present")
     {
         const char* text = "[ExpertSingle]\n{\n768 = S 2 100\n}";
 
-        REQUIRE_THROWS([] { return Chart::parse_chart(""); }());
-        REQUIRE_THROWS([&] { return Chart::parse_chart(text); }());
+        REQUIRE_THROWS([] { return Song::parse_chart(""); }());
+        REQUIRE_THROWS([&] { return Song::parse_chart(text); }());
     }
 
     SECTION("Non note sections can be in any order")
@@ -280,13 +280,13 @@ TEST_CASE("Chart does not need sections in usual order")
         const char* text
             = "[SyncTrack]\n{\n0 = B 200000\n}\n[ExpertSingle]\n{\n768 = "
               "N 0 0\n}\n[Song]\n{\nResolution = 200\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
         std::vector<Note<NoteColour>> notes {{768}};
         std::vector<BPM> bpms {{0, 200000}};
 
-        REQUIRE(chart.resolution() == 200);
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes() == notes);
-        REQUIRE(chart.sync_track().bpms() == bpms);
+        REQUIRE(song.resolution() == 200);
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).notes() == notes);
+        REQUIRE(song.sync_track().bpms() == bpms);
     }
 }
 
@@ -298,20 +298,20 @@ TEST_CASE("Only first non-empty part of note sections matter")
         const char* text
             = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 = N "
               "1 0\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
         std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green}};
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes() == notes);
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).notes() == notes);
     }
 
     SECTION("Leading empty sections are ignored")
     {
         const char* text
             = "[ExpertSingle]\n{\n}\n[ExpertSingle]\n{\n768 = N 1 0\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
         std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Red}};
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes() == notes);
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).notes() == notes);
     }
 }
 
@@ -319,11 +319,11 @@ TEST_CASE("Only first non-empty part of note sections matter")
 TEST_CASE("Notes should be sorted")
 {
     const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n384 = N 0 0\n}";
-    const auto chart = Chart::parse_chart(text);
+    const auto song = Song::parse_chart(text);
     std::vector<Note<NoteColour>> notes {{384, 0, NoteColour::Green},
                                          {768, 0, NoteColour::Green}};
 
-    REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes() == notes);
+    REQUIRE(song.guitar_note_track(Difficulty::Expert).notes() == notes);
 }
 
 // Last checked: 24.0.1555-master
@@ -333,7 +333,7 @@ TEST_CASE("Notes with extra spaces")
     {
         const char* text = "[ExpertSingle]\n{\n768 = N  0 0\n}";
 
-        REQUIRE_THROWS([&] { return Chart::parse_chart(text); }());
+        REQUIRE_THROWS([&] { return Song::parse_chart(text); }());
     }
 
     SECTION("Non-leading non-empty sections with broken notes are ignored")
@@ -341,10 +341,10 @@ TEST_CASE("Notes with extra spaces")
         const char* text
             = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
               "= N  1 0\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
         std::vector<Note<NoteColour>> required_notes {{768}};
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes()
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).notes()
                 == required_notes);
     }
 }
@@ -357,10 +357,10 @@ TEST_CASE("Solos are read properly")
         const char* text = "[ExpertSingle]\n{\n0 = E solo\n100 = N 0 0\n200 = "
                            "E soloend\n300 = E solo\n300 = N 0 0\n400 = N 0 "
                            "0\n400 = E soloend\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
         std::vector<Solo> required_solos {{0, 200, 100}, {300, 400, 200}};
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).solos()
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
     }
 
@@ -368,10 +368,10 @@ TEST_CASE("Solos are read properly")
     {
         const char* text = "[ExpertSingle]\n{\n0 = E solo\n100 = N 0 0\n100 = "
                            "N 1 0\n200 = E soloend\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
         std::vector<Solo> required_solos {{0, 200, 100}};
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).solos()
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
     }
 
@@ -379,19 +379,19 @@ TEST_CASE("Solos are read properly")
     {
         const char* text
             = "[ExpertSingle]\n{\n0 = N 0 0\n100 = E solo\n200 = E soloend\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).solos().empty());
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos().empty());
     }
 
     SECTION("Repeated solo starts and ends don't matter")
     {
         const char* text = "[ExpertSingle]\n{\n0 = E solo\n100 = E solo\n100 = "
                            "N 0 0\n200 = E soloend\n300 = E soloend\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
         std::vector<Solo> required_solos {{0, 200, 100}};
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).solos()
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
     }
 
@@ -399,10 +399,10 @@ TEST_CASE("Solos are read properly")
     {
         const char* text
             = "[ExpertSingle]\n{\n384 = E soloend\n192 = N 0 0\n0 = E solo\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
         std::vector<Solo> required_solos {{0, 384, 100}};
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).solos()
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
     }
 }
@@ -411,7 +411,7 @@ TEST_CASE("Parser does not infinite loop on unfinished sections")
 {
     const char* text = "[UnrecognisedSection]\n{\n";
 
-    REQUIRE_THROWS([&] { return Chart::parse_chart(text); }());
+    REQUIRE_THROWS([&] { return Song::parse_chart(text); }());
 }
 
 TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
@@ -419,37 +419,37 @@ TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
     SECTION("Guitar Co-op is read")
     {
         const char* text = "[ExpertDoubleGuitar]\n{\n192 = N 0 0\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.guitar_coop_note_track(Difficulty::Expert); }());
+            [&] { return song.guitar_coop_note_track(Difficulty::Expert); }());
     }
 
     SECTION("Bass is read")
     {
         const char* text = "[ExpertDoubleBass]\n{\n192 = N 0 0\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.bass_note_track(Difficulty::Expert); }());
+            [&] { return song.bass_note_track(Difficulty::Expert); }());
     }
 
     SECTION("Rhythm is read")
     {
         const char* text = "[ExpertDoubleRhythm]\n{\n192 = N 0 0\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.rhythm_note_track(Difficulty::Expert); }());
+            [&] { return song.rhythm_note_track(Difficulty::Expert); }());
     }
 
     SECTION("Keys is read")
     {
         const char* text = "[ExpertKeyboard]\n{\n192 = N 0 0\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.keys_note_track(Difficulty::Expert); }());
+            [&] { return song.keys_note_track(Difficulty::Expert); }());
     }
 }
 
@@ -458,12 +458,12 @@ TEST_CASE("6 fret instruments are read correctly from .chart")
     SECTION("6 fret guitar is read correctly")
     {
         const char* text = "[ExpertGHLGuitar]\n{\n192 = N 0 0\n384 = N 3 0\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
         std::vector<Note<GHLNoteColour>> notes {
             {192, 0, GHLNoteColour::WhiteLow},
             {384, 0, GHLNoteColour::BlackLow}};
 
-        const auto& track = chart.ghl_guitar_note_track(Difficulty::Expert);
+        const auto& track = song.ghl_guitar_note_track(Difficulty::Expert);
 
         REQUIRE(track.notes() == notes);
     }
@@ -471,12 +471,12 @@ TEST_CASE("6 fret instruments are read correctly from .chart")
     SECTION("6 fret bass is read correctly")
     {
         const char* text = "[ExpertGHLBass]\n{\n192 = N 0 0\n384 = N 3 0\n}";
-        const auto chart = Chart::parse_chart(text);
+        const auto song = Song::parse_chart(text);
         std::vector<Note<GHLNoteColour>> notes {
             {192, 0, GHLNoteColour::WhiteLow},
             {384, 0, GHLNoteColour::BlackLow}};
 
-        const auto& track = chart.ghl_bass_note_track(Difficulty::Expert);
+        const auto& track = song.ghl_bass_note_track(Difficulty::Expert);
 
         REQUIRE(track.notes() == notes);
     }
@@ -486,11 +486,11 @@ TEST_CASE("Drums are read correctly from .chart")
 {
     const char* text
         = "[ExpertDrums]\n{\n192 = N 1 0\n384 = N 2 0\n384 = N 66 0\n}";
-    const auto chart = Chart::parse_chart(text);
+    const auto song = Song::parse_chart(text);
     std::vector<Note<DrumNoteColour>> notes {
         {192, 0, DrumNoteColour::Red}, {384, 0, DrumNoteColour::YellowCymbal}};
 
-    const auto& track = chart.drum_note_track(Difficulty::Expert);
+    const auto& track = song.drum_note_track(Difficulty::Expert);
 
     REQUIRE(track.notes() == notes);
 }
@@ -501,16 +501,16 @@ TEST_CASE("Midi resolution is read correctly")
     {
         const Midi midi {200, {}};
 
-        const auto chart = Chart::from_midi(midi);
+        const auto song = Song::from_midi(midi);
 
-        REQUIRE(chart.resolution() == 200);
+        REQUIRE(song.resolution() == 200);
     }
 
     SECTION("Resolution > 0 invariant is upheld")
     {
         const Midi midi {0, {}};
 
-        REQUIRE_THROWS([&] { return Chart::from_midi(midi); }());
+        REQUIRE_THROWS([&] { return Song::from_midi(midi); }());
     }
 }
 
@@ -523,8 +523,8 @@ TEST_CASE("First track is read correctly")
         const Midi midi {192, {tempo_track}};
         SyncTrack tempos {{}, {{0, 150000}, {1920, 200000}}};
 
-        const auto chart = Chart::from_midi(midi);
-        const auto& sync_track = chart.sync_track();
+        const auto song = Song::from_midi(midi);
+        const auto& sync_track = song.sync_track();
 
         REQUIRE(sync_track.bpms() == tempos.bpms());
         REQUIRE(sync_track.time_sigs() == tempos.time_sigs());
@@ -537,8 +537,8 @@ TEST_CASE("First track is read correctly")
         const Midi midi {192, {ts_track}};
         SyncTrack tses {{{0, 6, 4}, {1920, 3, 8}}, {}};
 
-        const auto chart = Chart::from_midi(midi);
-        const auto& sync_track = chart.sync_track();
+        const auto song = Song::from_midi(midi);
+        const auto& sync_track = song.sync_track();
 
         REQUIRE(sync_track.bpms() == tses.bpms());
         REQUIRE(sync_track.time_sigs() == tses.time_sigs());
@@ -549,20 +549,20 @@ TEST_CASE("First track is read correctly")
         MidiTrack name_track {{{0, {MetaEvent {1, {72, 101, 108, 108, 111}}}}}};
         const Midi midi {192, {name_track}};
 
-        const auto chart = Chart::from_midi(midi);
+        const auto song = Song::from_midi(midi);
 
-        REQUIRE(chart.song_header().name == "Hello");
+        REQUIRE(song.song_header().name == "Hello");
     }
 
     SECTION("Default song header is correct")
     {
         const Midi midi {192, {{}}};
 
-        const auto chart = Chart::from_midi(midi);
+        const auto song = Song::from_midi(midi);
 
-        REQUIRE(chart.song_header().name == "Unknown Song");
-        REQUIRE(chart.song_header().artist == "Unknown Artist");
-        REQUIRE(chart.song_header().charter == "Unknown Charter");
+        REQUIRE(song.song_header().name == "Unknown Song");
+        REQUIRE(song.song_header().artist == "Unknown Artist");
+        REQUIRE(song.song_header().charter == "Unknown Charter");
     }
 }
 
@@ -586,15 +586,13 @@ TEST_CASE("Notes are read correctly")
         const std::vector<Note<NoteColour>> green_note {
             {768, 192, NoteColour::Green}};
 
-        const auto chart = Chart::from_midi(midi);
+        const auto song = Song::from_midi(midi);
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Easy).notes()
+        REQUIRE(song.guitar_note_track(Difficulty::Easy).notes() == green_note);
+        REQUIRE(song.guitar_note_track(Difficulty::Medium).notes()
                 == green_note);
-        REQUIRE(chart.guitar_note_track(Difficulty::Medium).notes()
-                == green_note);
-        REQUIRE(chart.guitar_note_track(Difficulty::Hard).notes()
-                == green_note);
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes()
+        REQUIRE(song.guitar_note_track(Difficulty::Hard).notes() == green_note);
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).notes()
                 == green_note);
     }
 
@@ -610,9 +608,9 @@ TEST_CASE("Notes are read correctly")
                                {960, {MidiEvent {0x80, {97, 0}}}}}};
         const Midi midi {192, {other_track, note_track}};
 
-        const auto chart = Chart::from_midi(midi);
+        const auto song = Song::from_midi(midi);
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes()[0].colour
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).notes()[0].colour
                 == NoteColour::Red);
     }
 
@@ -627,7 +625,7 @@ TEST_CASE("Notes are read correctly")
                                {1152, {MidiEvent {0x90, {96, 64}}}}}};
         const Midi midi {192, {note_track}};
 
-        REQUIRE_THROWS([&] { return Chart::from_midi(midi); }());
+        REQUIRE_THROWS([&] { return Song::from_midi(midi); }());
     }
 
     SECTION("Note On events with velocity 0 count as Note Off events")
@@ -640,7 +638,7 @@ TEST_CASE("Notes are read correctly")
                                {960, {MidiEvent {0x90, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
 
-        REQUIRE_NOTHROW([&] { return Chart::from_midi(midi); }());
+        REQUIRE_NOTHROW([&] { return Song::from_midi(midi); }());
     }
 
     SECTION("Open notes are read correctly")
@@ -656,9 +654,9 @@ TEST_CASE("Notes are read correctly")
              {960, {MidiEvent {0x90, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
 
-        const auto chart = Chart::from_midi(midi);
+        const auto song = Song::from_midi(midi);
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).notes()[0].colour
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).notes()[0].colour
                 == NoteColour::Open);
     }
 }
@@ -676,9 +674,9 @@ TEST_CASE("Solos are read")
     const Midi midi {192, {note_track}};
     const std::vector<Solo> solos {{768, 900, 100}};
 
-    const auto chart = Chart::from_midi(midi);
+    const auto song = Song::from_midi(midi);
 
-    REQUIRE(chart.guitar_note_track(Difficulty::Expert).solos() == solos);
+    REQUIRE(song.guitar_note_track(Difficulty::Expert).solos() == solos);
 }
 
 TEST_CASE("Star Power is read")
@@ -696,9 +694,9 @@ TEST_CASE("Star Power is read")
         const Midi midi {192, {note_track}};
         const std::vector<StarPower> sp_phrases {{768, 132}};
 
-        const auto chart = Chart::from_midi(midi);
+        const auto song = Song::from_midi(midi);
 
-        REQUIRE(chart.guitar_note_track(Difficulty::Expert).sp_phrases()
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).sp_phrases()
                 == sp_phrases);
     }
 
@@ -713,7 +711,7 @@ TEST_CASE("Star Power is read")
                                {960, {MidiEvent {0x80, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
 
-        REQUIRE_THROWS([&] { return Chart::from_midi(midi); }());
+        REQUIRE_THROWS([&] { return Song::from_midi(midi); }());
     }
 }
 
@@ -728,8 +726,8 @@ TEST_CASE("Short midi sustains are trimmed")
                            {100, {MidiEvent {0x90, {96, 64}}}},
                            {170, {MidiEvent {0x80, {96, 0}}}}}};
     const Midi midi {200, {note_track}};
-    const auto chart = Chart::from_midi(midi);
-    const auto& notes = chart.guitar_note_track(Difficulty::Expert).notes();
+    const auto song = Song::from_midi(midi);
+    const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
 
     REQUIRE(notes[0].length == 0);
     REQUIRE(notes[1].length == 70);
@@ -747,10 +745,10 @@ TEST_CASE("Other 5 fret instruments are read from .mid")
              {0, {MidiEvent {0x90, {96, 64}}}},
              {65, {MidiEvent {0x80, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto chart = Chart::from_midi(midi);
+        const auto song = Song::from_midi(midi);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.guitar_coop_note_track(Difficulty::Expert); }());
+            [&] { return song.guitar_coop_note_track(Difficulty::Expert); }());
     }
 
     SECTION("Bass is read")
@@ -762,10 +760,10 @@ TEST_CASE("Other 5 fret instruments are read from .mid")
              {0, {MidiEvent {0x90, {96, 64}}}},
              {65, {MidiEvent {0x80, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto chart = Chart::from_midi(midi);
+        const auto song = Song::from_midi(midi);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.bass_note_track(Difficulty::Expert); }());
+            [&] { return song.bass_note_track(Difficulty::Expert); }());
     }
 
     SECTION("Rhythm is read")
@@ -777,10 +775,10 @@ TEST_CASE("Other 5 fret instruments are read from .mid")
                                {0, {MidiEvent {0x90, {96, 64}}}},
                                {65, {MidiEvent {0x80, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto chart = Chart::from_midi(midi);
+        const auto song = Song::from_midi(midi);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.rhythm_note_track(Difficulty::Expert); }());
+            [&] { return song.rhythm_note_track(Difficulty::Expert); }());
     }
 
     SECTION("Keys is read")
@@ -792,10 +790,10 @@ TEST_CASE("Other 5 fret instruments are read from .mid")
              {0, {MidiEvent {0x90, {96, 64}}}},
              {65, {MidiEvent {0x80, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto chart = Chart::from_midi(midi);
+        const auto song = Song::from_midi(midi);
 
         REQUIRE_NOTHROW(
-            [&] { return chart.keys_note_track(Difficulty::Expert); }());
+            [&] { return song.keys_note_track(Difficulty::Expert); }());
     }
 }
 
@@ -811,8 +809,8 @@ TEST_CASE("6 fret instruments are read correctly from .mid")
              {0, {MidiEvent {0x90, {94, 64}}}},
              {65, {MidiEvent {0x80, {94, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto chart = Chart::from_midi(midi);
-        const auto& track = chart.ghl_guitar_note_track(Difficulty::Expert);
+        const auto song = Song::from_midi(midi);
+        const auto& track = song.ghl_guitar_note_track(Difficulty::Expert);
 
         std::vector<Note<GHLNoteColour>> notes {{0, 65, GHLNoteColour::Open}};
 
@@ -829,8 +827,8 @@ TEST_CASE("6 fret instruments are read correctly from .mid")
              {0, {MidiEvent {0x90, {94, 64}}}},
              {65, {MidiEvent {0x80, {94, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto chart = Chart::from_midi(midi);
-        const auto& track = chart.ghl_bass_note_track(Difficulty::Expert);
+        const auto song = Song::from_midi(midi);
+        const auto& track = song.ghl_bass_note_track(Difficulty::Expert);
 
         std::vector<Note<GHLNoteColour>> notes {{0, 65, GHLNoteColour::Open}};
 
@@ -850,8 +848,8 @@ TEST_CASE("Drums are read correctly from .mid")
         {65, {MidiEvent {0x80, {110, 0}}}},
     }};
     const Midi midi {192, {note_track}};
-    const auto chart = Chart::from_midi(midi);
-    const auto& track = chart.drum_note_track(Difficulty::Expert);
+    const auto song = Song::from_midi(midi);
+    const auto& track = song.drum_note_track(Difficulty::Expert);
 
     std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::Yellow}};
 
