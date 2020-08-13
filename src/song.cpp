@@ -1326,7 +1326,8 @@ Song Song::from_midi(const Midi& midi)
     song.m_sync_track = sync_track;
 
     for (const auto& track : midi.tracks) {
-        if (has_track_title(track, "PART GUITAR")) {
+        if (has_track_title(track, "PART GUITAR")
+            || has_track_title(track, "T1 GEMS")) {
             song.m_guitar_note_tracks
                 = note_tracks_from_midi(track, song.m_resolution);
         } else if (has_track_title(track, "PART GUITAR COOP")) {

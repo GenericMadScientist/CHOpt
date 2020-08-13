@@ -590,6 +590,22 @@ TEST_CASE("Notes are read correctly")
                 == NoteColour::Red);
     }
 
+    SECTION("Guitar notes are also read from T1 GEMS")
+    {
+        MidiTrack other_track {{{768, {MidiEvent {0x90, {96, 64}}}},
+                                {960, {MidiEvent {0x80, {96, 0}}}}}};
+        MidiTrack note_track {
+            {{0, {MetaEvent {3, {0x54, 0x31, 0x20, 0x47, 0x45, 0x4D, 0x53}}}},
+             {768, {MidiEvent {0x90, {97, 64}}}},
+             {960, {MidiEvent {0x80, {97, 0}}}}}};
+        const Midi midi {192, {other_track, note_track}};
+
+        const auto song = Song::from_midi(midi);
+
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).notes()[0].colour
+                == NoteColour::Red);
+    }
+
     SECTION("Note On events must have a corresponding Note Off event")
     {
         MidiTrack note_track {{{0,
