@@ -328,12 +328,12 @@ combine_on_off_events(const std::vector<int>& on_events,
     auto off_iter = off_events.cbegin();
 
     while (on_iter < on_events.cend() && off_iter < off_events.cend()) {
-        if (*on_iter > *off_iter) {
+        if (*on_iter >= *off_iter) {
             ++off_iter;
             continue;
         }
         ranges.emplace_back(*on_iter, *off_iter);
-        while (on_iter < on_events.cend() && *on_iter <= *off_iter) {
+        while (on_iter < on_events.cend() && *on_iter < *off_iter) {
             ++on_iter;
         }
     }

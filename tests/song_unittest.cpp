@@ -596,7 +596,7 @@ TEST_CASE("Notes are read correctly")
                 == green_note);
     }
 
-    SECTION("Notes are only read from PART GUITAR")
+    SECTION("Notes are read from PART GUITAR")
     {
         MidiTrack other_track {{{768, {MidiEvent {0x90, {96, 64}}}},
                                 {960, {MidiEvent {0x80, {96, 0}}}}}};
@@ -626,6 +626,28 @@ TEST_CASE("Notes are read correctly")
         const Midi midi {192, {note_track}};
 
         REQUIRE_THROWS([&] { return Song::from_midi(midi); }());
+    }
+
+    SECTION("Corresponding Note Off events are after Note On events")
+    {
+        MidiTrack note_track {{
+            {0,
+             {MetaEvent {3,
+                         {0x50, 0x41, 0x52, 0x54, 0x20, 0x47, 0x55, 0x49, 0x54,
+                          0x41, 0x52}}}},
+            {480, {MidiEvent {0x90, {96, 64}}}},
+            {480, {MidiEvent {0x80, {96, 64}}}},
+            {960, {MidiEvent {0x80, {96, 64}}}},
+            {960, {MidiEvent {0x90, {96, 64}}}},
+            {1440, {MidiEvent {0x80, {96, 64}}}},
+        }};
+        const Midi midi {480, {note_track}};
+
+        const auto song = Song::from_midi(midi);
+        const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
+
+        REQUIRE(notes.size() == 2);
+        REQUIRE(notes[0].length == 480);
     }
 
     SECTION("Note On events with velocity 0 count as Note Off events")
