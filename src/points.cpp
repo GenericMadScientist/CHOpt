@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iterator>
 
 #include "points.hpp"
 
