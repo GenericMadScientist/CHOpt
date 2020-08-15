@@ -134,6 +134,9 @@ static ChartSection read_section(std::string_view& input)
                     denom = *string_view_to_int(separated_line[4]);
                 }
                 section.ts_events.push_back(TimeSigEvent {pos, numer, denom});
+            } else if (separated_line[2] == "E") {
+                section.events.push_back(
+                    Event {pos, std::string {separated_line[3]}});
             }
         } else {
             std::string value {separated_line[2]};

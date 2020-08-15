@@ -27,6 +27,11 @@ static bool operator==(const BpmEvent& lhs, const BpmEvent& rhs)
     return std::tie(lhs.position, lhs.bpm) == std::tie(rhs.position, rhs.bpm);
 }
 
+static bool operator==(const Event& lhs, const Event& rhs)
+{
+    return std::tie(lhs.position, lhs.data) == std::tie(rhs.position, rhs.data);
+}
+
 static bool operator==(const NoteEvent& lhs, const NoteEvent& rhs)
 {
     return std::tie(lhs.position, lhs.fret, lhs.length)
@@ -108,6 +113,16 @@ TEST_CASE("TS events are read")
     REQUIRE(section.ts_events == events);
 }
 
+TEST_CASE("E events are read")
+{
+    const char* text = "[Section]\n{\n1000 = E soloing\n}";
+    const std::vector<Event> events {{1000, "soloing"}};
+
+    const auto section = parse_chart(text).sections[0];
+
+    REQUIRE(section.events == events);
+}
+
 TEST_CASE("Other events are ignored")
 {
     const char* text = "[Section]\n{\n1105 = A 133\n}";
@@ -117,4 +132,5 @@ TEST_CASE("Other events are ignored")
     REQUIRE(section.note_events.empty());
     REQUIRE(section.bpm_events.empty());
     REQUIRE(section.ts_events.empty());
+    REQUIRE(section.events.empty());
 }

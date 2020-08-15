@@ -29,6 +29,11 @@ struct BpmEvent {
     int bpm;
 };
 
+struct Event {
+    int position;
+    std::string data;
+};
+
 struct NoteEvent {
     int position;
     int fret;
@@ -45,6 +50,7 @@ struct ChartSection {
     std::string name;
     std::map<std::string, std::string> key_value_pairs;
     std::vector<BpmEvent> bpm_events;
+    std::vector<Event> events;
     std::vector<NoteEvent> note_events;
     std::vector<TimeSigEvent> ts_events;
 };
