@@ -157,22 +157,31 @@ TEST_CASE("SyncTrack ctor maintains invariants")
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart reads resolution")
 {
+    ChartSection sync_track {"SyncTrack", {}, {}, {}, {}, {}};
+    ChartSection events {"Events", {}, {}, {}, {}, {}};
+    ChartSection expert_single {"ExpertSingle", {}, {}, {}, {{768, 0, 0}}, {}};
+
     SECTION("Default is 192 Res")
     {
-        const char* text = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n["
-                           "ExpertSingle]\n{\n768 = N 0 0\n}";
-        const auto resolution = Song::parse_chart(text).resolution();
+        ChartSection header {"Song", {}, {}, {}, {}, {}};
+        std::vector<ChartSection> sections {header, sync_track, events,
+                                            expert_single};
+        const Chart chart {sections};
+
+        const auto resolution = Song::from_chart(chart).resolution();
 
         REQUIRE(resolution == 192);
     }
 
     SECTION("Default is overriden by specified value")
     {
-        const char* text
-            = "[Song]\n{\nResolution = 200\nOffset = "
-              "100\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[ExpertSingle]"
-              "\n{\n768 = N 0 0\n}";
-        const auto resolution = Song::parse_chart(text).resolution();
+        ChartSection header {
+            "Song", {{"Resolution", "200"}, {"Offset", "100"}}, {}, {}, {}, {}};
+        std::vector<ChartSection> sections {header, sync_track, events,
+                                            expert_single};
+        const Chart chart {sections};
+
+        const auto resolution = Song::from_chart(chart).resolution();
 
         REQUIRE(resolution == 200);
     }

@@ -807,6 +807,22 @@ Song Song::parse_chart(std::string_view input)
     return song;
 }
 
+Song Song::from_chart(const Chart& chart)
+{
+    Song song;
+
+    for (const auto& section : chart.sections) {
+        if (section.name == "Song") {
+            const auto iter = section.key_value_pairs.find("Resolution");
+            if (iter != section.key_value_pairs.end()) {
+                song.m_resolution = std::stoi(iter->second);
+            }
+        }
+    }
+
+    return song;
+}
+
 static bool has_track_title(const MidiTrack& track,
                             std::string_view desired_title)
 {
