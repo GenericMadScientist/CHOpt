@@ -832,6 +832,17 @@ Song Song::from_chart(const Chart& chart)
                 section.key_value_pairs, "Artist", "Unknown Artist"));
             song.m_song_header.charter = trim_quotes(get_with_default(
                 section.key_value_pairs, "Charter", "Unknown Charter"));
+        } else if (section.name == "SyncTrack") {
+            std::vector<BPM> bpms;
+            for (const auto& bpm : section.bpm_events) {
+                bpms.push_back({bpm.position, bpm.bpm});
+            }
+            std::vector<TimeSignature> tses;
+            for (const auto& ts : section.ts_events) {
+                tses.push_back(
+                    {ts.position, ts.numerator, 1 << ts.denominator});
+            }
+            song.m_sync_track = SyncTrack {std::move(tses), std::move(bpms)};
         }
     }
 

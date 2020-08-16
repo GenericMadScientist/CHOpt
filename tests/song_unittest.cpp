@@ -163,9 +163,7 @@ TEST_CASE("Chart reads resolution")
 
     SECTION("Default is 192 Res")
     {
-        ChartSection header {"Song", {}, {}, {}, {}, {}};
-        std::vector<ChartSection> sections {header, sync_track, events,
-                                            expert_single};
+        std::vector<ChartSection> sections {expert_single};
         const Chart chart {sections};
 
         const auto resolution = Song::from_chart(chart).resolution();
@@ -177,8 +175,7 @@ TEST_CASE("Chart reads resolution")
     {
         ChartSection header {
             "Song", {{"Resolution", "200"}, {"Offset", "100"}}, {}, {}, {}, {}};
-        std::vector<ChartSection> sections {header, sync_track, events,
-                                            expert_single};
+        std::vector<ChartSection> sections {header, expert_single};
         const Chart chart {sections};
 
         const auto resolution = Song::from_chart(chart).resolution();
@@ -227,15 +224,18 @@ TEST_CASE("Chart reads song header correctly")
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart reads sync track correctly")
 {
-    const char* text
-        = "[Song]\n{\n}\n[SyncTrack]\n{\n0 = B 200000\n0 = TS 4\n768 = "
-          "TS 4 1\n}\n[Events]\n{\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
-    const auto sync_track = Song::parse_chart(text).sync_track();
+    ChartSection sync_track {"SyncTrack", {}, {{0, 200000}},
+                             {},          {}, {{0, 4, 2}, {768, 4, 1}}};
+    ChartSection expert_single {"ExpertSingle", {}, {}, {}, {{768, 0, 0}}, {}};
+    std::vector<ChartSection> sections {sync_track, expert_single};
+    const Chart chart {sections};
     std::vector<TimeSignature> time_sigs {{0, 4, 4}, {768, 4, 2}};
     std::vector<BPM> bpms {{0, 200000}};
 
-    REQUIRE(sync_track.time_sigs() == time_sigs);
-    REQUIRE(sync_track.bpms() == bpms);
+    const auto chart_sync_track = Song::from_chart(chart).sync_track();
+
+    REQUIRE(chart_sync_track.time_sigs() == time_sigs);
+    REQUIRE(chart_sync_track.bpms() == bpms);
 }
 
 // Last checked: 24.0.1555-master
