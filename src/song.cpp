@@ -823,43 +823,62 @@ diff_inst_from_header(const std::string& header)
 {
     if (header == "EasySingle") {
         return {{Difficulty::Easy, Instrument::Guitar}};
-    } else if (header == "MediumSingle") {
+    }
+    if (header == "MediumSingle") {
         return {{Difficulty::Medium, Instrument::Guitar}};
-    } else if (header == "HardSingle") {
+    }
+    if (header == "HardSingle") {
         return {{Difficulty::Hard, Instrument::Guitar}};
-    } else if (header == "ExpertSingle") {
+    }
+    if (header == "ExpertSingle") {
         return {{Difficulty::Expert, Instrument::Guitar}};
-    } else if (header == "EasyDoubleGuitar") {
+    }
+    if (header == "EasyDoubleGuitar") {
         return {{Difficulty::Easy, Instrument::GuitarCoop}};
-    } else if (header == "MediumDoubleGuitar") {
+    }
+    if (header == "MediumDoubleGuitar") {
         return {{Difficulty::Medium, Instrument::GuitarCoop}};
-    } else if (header == "HardDoubleGuitar") {
+    }
+    if (header == "HardDoubleGuitar") {
         return {{Difficulty::Hard, Instrument::GuitarCoop}};
-    } else if (header == "ExpertDoubleGuitar") {
+    }
+    if (header == "ExpertDoubleGuitar") {
         return {{Difficulty::Expert, Instrument::GuitarCoop}};
-    } else if (header == "EasyDoubleBass") {
+    }
+    if (header == "EasyDoubleBass") {
         return {{Difficulty::Easy, Instrument::Bass}};
-    } else if (header == "MediumDoubleBass") {
+    }
+    if (header == "MediumDoubleBass") {
         return {{Difficulty::Medium, Instrument::Bass}};
-    } else if (header == "HardDoubleBass") {
+    }
+    if (header == "HardDoubleBass") {
         return {{Difficulty::Hard, Instrument::Bass}};
-    } else if (header == "ExpertDoubleBass") {
+    }
+    if (header == "ExpertDoubleBass") {
         return {{Difficulty::Expert, Instrument::Bass}};
-    } else if (header == "EasyDoubleRhythm") {
+    }
+    if (header == "EasyDoubleRhythm") {
         return {{Difficulty::Easy, Instrument::Rhythm}};
-    } else if (header == "MediumDoubleRhythm") {
+    }
+    if (header == "MediumDoubleRhythm") {
         return {{Difficulty::Medium, Instrument::Rhythm}};
-    } else if (header == "HardDoubleRhythm") {
+    }
+    if (header == "HardDoubleRhythm") {
         return {{Difficulty::Hard, Instrument::Rhythm}};
-    } else if (header == "ExpertDoubleRhythm") {
+    }
+    if (header == "ExpertDoubleRhythm") {
         return {{Difficulty::Expert, Instrument::Rhythm}};
-    } else if (header == "EasyKeyboard") {
+    }
+    if (header == "EasyKeyboard") {
         return {{Difficulty::Easy, Instrument::Keys}};
-    } else if (header == "MediumKeyboard") {
+    }
+    if (header == "MediumKeyboard") {
         return {{Difficulty::Medium, Instrument::Keys}};
-    } else if (header == "HardKeyboard") {
+    }
+    if (header == "HardKeyboard") {
         return {{Difficulty::Hard, Instrument::Keys}};
-    } else if (header == "ExpertKeyboard") {
+    }
+    if (header == "ExpertKeyboard") {
         return {{Difficulty::Expert, Instrument::Keys}};
     }
     return {};
