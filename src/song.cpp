@@ -23,26 +23,29 @@
 #include <optional>
 #include <set>
 #include <stdexcept>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
-#include <string_view>
-
 #include "song.hpp"
 
-static bool ends_in_suffix(const std::string& string, const char* suffix)
+static bool starts_with_prefix(const std::string& string,
+                               std::string_view prefix)
 {
-    const auto suffix_len = std::strlen(suffix);
+    return string.substr(0, prefix.size()) == prefix;
+}
 
-    if (string.size() < suffix_len) {
+static bool ends_with_suffix(const std::string& string, std::string_view suffix)
+{
+    if (string.size() < suffix.size()) {
         return false;
     }
-    return string.substr(string.size() - suffix_len) == suffix;
+    return string.substr(string.size() - suffix.size()) == suffix;
 }
 
 Song Song::from_filename(const std::string& filename)
 {
-    if (ends_in_suffix(filename, ".chart")) {
+    if (ends_with_suffix(filename, ".chart")) {
         std::ifstream in {filename};
         if (!in.is_open()) {
             throw std::invalid_argument("File did not open");
@@ -51,7 +54,7 @@ Song Song::from_filename(const std::string& filename)
                               std::istreambuf_iterator<char>()};
         return Song::from_chart(parse_chart(contents));
     }
-    if (ends_in_suffix(filename, ".mid")) {
+    if (ends_with_suffix(filename, ".mid")) {
         std::ifstream in {filename, std::ios::binary};
         if (!in.is_open()) {
             throw std::invalid_argument("File did not open");
@@ -62,37 +65,6 @@ Song Song::from_filename(const std::string& filename)
     }
     throw std::invalid_argument("file should be .chart or .mid");
 }
-
-// This represents a bundle of data akin to a NoteTrack, except it is only for
-// mid-parser usage. Unlike a NoteTrack, there are no invariants.
-template <typename T> struct PreNoteTrack {
-    std::vector<Note<T>> notes;
-    std::vector<StarPower> sp_phrases;
-    std::vector<Solo> solos;
-};
-
-template <typename T> static bool is_empty(const PreNoteTrack<T>& track)
-{
-    return track.notes.empty() && track.sp_phrases.empty();
-}
-
-// This represents a bundle of data akin to a SyncTrack, except it is only for
-// mid-parser usage. Unlike a SyncTrack, there are no invariants.
-struct PreSyncTrack {
-    std::vector<TimeSignature> time_sigs;
-    std::vector<BPM> bpms;
-};
-
-// This represents a bundle of data akin to a SongHeader, except it also has the
-// resolution built in.
-struct PreSongHeader {
-    static constexpr int DEFAULT_RESOLUTION = 192;
-
-    std::string name {"Unknown Song"};
-    std::string artist {"Unknown Artist"};
-    std::string charter {"Unknown Charter"};
-    int resolution = DEFAULT_RESOLUTION;
-};
 
 SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
                      std::vector<BPM> bpms)
@@ -193,130 +165,54 @@ form_solo_vector(const std::vector<int>& solo_on_events,
     return solos;
 }
 
-static std::optional<Note<NoteColour>>
-note_from_note_colour(int position, int length, int fret_type)
-{
-    constexpr auto GREEN_CODE = 0;
-    constexpr auto RED_CODE = 1;
-    constexpr auto YELLOW_CODE = 2;
-    constexpr auto BLUE_CODE = 3;
-    constexpr auto ORANGE_CODE = 4;
-    constexpr auto FORCED_CODE = 5;
-    constexpr auto TAP_CODE = 6;
-    constexpr auto OPEN_CODE = 7;
-
-    switch (fret_type) {
-    case GREEN_CODE:
-        return Note<NoteColour> {position, length, NoteColour::Green};
-    case RED_CODE:
-        return Note<NoteColour> {position, length, NoteColour::Red};
-    case YELLOW_CODE:
-        return Note<NoteColour> {position, length, NoteColour::Yellow};
-    case BLUE_CODE:
-        return Note<NoteColour> {position, length, NoteColour::Blue};
-    case ORANGE_CODE:
-        return Note<NoteColour> {position, length, NoteColour::Orange};
-    case FORCED_CODE:
-    case TAP_CODE:
-        return {};
-    case OPEN_CODE:
-        return Note<NoteColour> {position, length, NoteColour::Open};
-    default:
-        throw std::invalid_argument("Invalid note type");
-    }
-}
-
-static std::optional<Note<GHLNoteColour>>
-note_from_ghl_note_colour(int position, int length, int fret_type)
-{
-    constexpr auto WHITE_LOW_CODE = 0;
-    constexpr auto WHITE_MID_CODE = 1;
-    constexpr auto WHITE_HIGH_CODE = 2;
-    constexpr auto BLACK_LOW_CODE = 3;
-    constexpr auto BLACK_MID_CODE = 4;
-    constexpr auto FORCED_CODE = 5;
-    constexpr auto TAP_CODE = 6;
-    constexpr auto OPEN_CODE = 7;
-    constexpr auto BLACK_HIGH_CODE = 8;
-
-    switch (fret_type) {
-    case WHITE_LOW_CODE:
-        return Note<GHLNoteColour> {position, length, GHLNoteColour::WhiteLow};
-    case WHITE_MID_CODE:
-        return Note<GHLNoteColour> {position, length, GHLNoteColour::WhiteMid};
-    case WHITE_HIGH_CODE:
-        return Note<GHLNoteColour> {position, length, GHLNoteColour::WhiteHigh};
-    case BLACK_LOW_CODE:
-        return Note<GHLNoteColour> {position, length, GHLNoteColour::BlackLow};
-    case BLACK_MID_CODE:
-        return Note<GHLNoteColour> {position, length, GHLNoteColour::BlackMid};
-    case BLACK_HIGH_CODE:
-        return Note<GHLNoteColour> {position, length, GHLNoteColour::BlackHigh};
-    case FORCED_CODE:
-    case TAP_CODE:
-        return {};
-    case OPEN_CODE:
-        return Note<GHLNoteColour> {position, length, GHLNoteColour::Open};
-    default:
-        throw std::invalid_argument("Invalid note type");
-    }
-}
-
-static std::optional<Note<DrumNoteColour>>
-note_from_drum_note_colour(int position, int length, int fret_type)
-{
-    constexpr auto KICK_CODE = 0;
-    constexpr auto RED_CODE = 1;
-    constexpr auto YELLOW_CODE = 2;
-    constexpr auto BLUE_CODE = 3;
-    constexpr auto GREEN_CODE = 4;
-    constexpr auto YELLOW_CYMBAL_CODE = 66;
-    constexpr auto BLUE_CYMBAL_CODE = 67;
-    constexpr auto GREEN_CYMBAL_CODE = 68;
-
-    (void)length;
-
-    switch (fret_type) {
-    case KICK_CODE:
-        return Note<DrumNoteColour> {position, 0, DrumNoteColour::Kick};
-    case RED_CODE:
-        return Note<DrumNoteColour> {position, 0, DrumNoteColour::Red};
-    case YELLOW_CODE:
-        return Note<DrumNoteColour> {position, 0, DrumNoteColour::Yellow};
-    case BLUE_CODE:
-        return Note<DrumNoteColour> {position, 0, DrumNoteColour::Blue};
-    case GREEN_CODE:
-        return Note<DrumNoteColour> {position, 0, DrumNoteColour::Green};
-    case YELLOW_CYMBAL_CODE:
-        return Note<DrumNoteColour> {position, 0, DrumNoteColour::YellowCymbal};
-    case BLUE_CYMBAL_CODE:
-        return Note<DrumNoteColour> {position, 0, DrumNoteColour::BlueCymbal};
-    case GREEN_CYMBAL_CODE:
-        return Note<DrumNoteColour> {position, 0, DrumNoteColour::GreenCymbal};
-    default:
-        throw std::invalid_argument("Invalid note type");
-    }
-}
-
 template <typename T>
-static std::map<Difficulty, NoteTrack<T>>
-tracks_from_pre_tracks(std::map<Difficulty, PreNoteTrack<T>> pre_tracks)
+static std::optional<Note<T>> note_from_note_colour(int position, int length,
+                                                    int fret_type)
 {
-    std::map<Difficulty, NoteTrack<T>> tracks;
-
-    for (auto& key_track : pre_tracks) {
-        auto diff = key_track.first;
-        auto& track = key_track.second;
-        if (track.notes.empty()) {
-            continue;
+    if constexpr (std::is_same_v<T, NoteColour>) {
+        constexpr std::array<std::optional<NoteColour>, 8> COLOURS {
+            NoteColour::Green,
+            NoteColour::Red,
+            NoteColour::Yellow,
+            NoteColour::Blue,
+            NoteColour::Orange,
+            {},
+            {},
+            NoteColour::Open};
+        const auto colour = COLOURS.at(fret_type);
+        if (!colour.has_value()) {
+            return {};
         }
-        NoteTrack<T> new_track {std::move(track.notes),
-                                std::move(track.sp_phrases),
-                                std::move(track.solos)};
-        tracks.emplace(diff, std::move(new_track));
+        return Note<NoteColour> {position, length, *colour};
+    } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
+        constexpr std::array<std::optional<GHLNoteColour>, 9> COLOURS {
+            GHLNoteColour::WhiteLow,
+            GHLNoteColour::WhiteMid,
+            GHLNoteColour::WhiteHigh,
+            GHLNoteColour::BlackLow,
+            GHLNoteColour::BlackMid,
+            {},
+            {},
+            GHLNoteColour::Open,
+            GHLNoteColour::BlackHigh};
+        const auto colour = COLOURS.at(fret_type);
+        if (!colour.has_value()) {
+            return {};
+        }
+        return Note<GHLNoteColour> {position, length, *colour};
+    } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        static const std::map<int, DrumNoteColour> COLOURS {
+            {0, DrumNoteColour::Kick},
+            {1, DrumNoteColour::Red},
+            {2, DrumNoteColour::Yellow},
+            {3, DrumNoteColour::Blue},
+            {4, DrumNoteColour::Green},
+            {66, DrumNoteColour::YellowCymbal},
+            {67, DrumNoteColour::BlueCymbal},
+            {68, DrumNoteColour::GreenCymbal}};
+        const auto colour = COLOURS.at(fret_type);
+        return Note<DrumNoteColour> {position, 0, colour};
     }
-
-    return tracks;
 }
 
 static std::string
@@ -333,191 +229,42 @@ get_with_default(const std::map<std::string, std::string>& map,
 static std::optional<std::tuple<Difficulty, Instrument>>
 diff_inst_from_header(const std::string& header)
 {
-    if (header == "EasySingle") {
-        return {{Difficulty::Easy, Instrument::Guitar}};
+    using namespace std::literals;
+
+    static const std::array<std::tuple<std::string_view, Difficulty>, 4>
+        DIFFICULTIES {std::tuple {"Easy"sv, Difficulty::Easy},
+                      {"Medium"sv, Difficulty::Medium},
+                      {"Hard"sv, Difficulty::Hard},
+                      {"Expert"sv, Difficulty::Expert}};
+    static const std::array<std::tuple<std::string_view, Instrument>, 8>
+        INSTRUMENTS {std::tuple {"Single"sv, Instrument::Guitar},
+                     {"DoubleGuitar"sv, Instrument::GuitarCoop},
+                     {"DoubleBass"sv, Instrument::Bass},
+                     {"DoubleRhythm"sv, Instrument::Rhythm},
+                     {"Keyboard"sv, Instrument::Keys},
+                     {"GHLGuitar"sv, Instrument::GHLGuitar},
+                     {"GHLBass"sv, Instrument::GHLBass},
+                     {"Drums"sv, Instrument::Drums}};
+    const auto diff_iter = std::find_if(
+        DIFFICULTIES.cbegin(), DIFFICULTIES.cend(), [&](const auto& pair) {
+            return starts_with_prefix(header, std::get<0>(pair));
+        });
+    if (diff_iter == DIFFICULTIES.cend()) {
+        return {};
     }
-    if (header == "MediumSingle") {
-        return {{Difficulty::Medium, Instrument::Guitar}};
+    const auto inst_iter = std::find_if(
+        INSTRUMENTS.cbegin(), INSTRUMENTS.cend(), [&](const auto& pair) {
+            return ends_with_suffix(header, std::get<0>(pair));
+        });
+    if (inst_iter == INSTRUMENTS.cend()) {
+        return {};
     }
-    if (header == "HardSingle") {
-        return {{Difficulty::Hard, Instrument::Guitar}};
-    }
-    if (header == "ExpertSingle") {
-        return {{Difficulty::Expert, Instrument::Guitar}};
-    }
-    if (header == "EasyDoubleGuitar") {
-        return {{Difficulty::Easy, Instrument::GuitarCoop}};
-    }
-    if (header == "MediumDoubleGuitar") {
-        return {{Difficulty::Medium, Instrument::GuitarCoop}};
-    }
-    if (header == "HardDoubleGuitar") {
-        return {{Difficulty::Hard, Instrument::GuitarCoop}};
-    }
-    if (header == "ExpertDoubleGuitar") {
-        return {{Difficulty::Expert, Instrument::GuitarCoop}};
-    }
-    if (header == "EasyDoubleBass") {
-        return {{Difficulty::Easy, Instrument::Bass}};
-    }
-    if (header == "MediumDoubleBass") {
-        return {{Difficulty::Medium, Instrument::Bass}};
-    }
-    if (header == "HardDoubleBass") {
-        return {{Difficulty::Hard, Instrument::Bass}};
-    }
-    if (header == "ExpertDoubleBass") {
-        return {{Difficulty::Expert, Instrument::Bass}};
-    }
-    if (header == "EasyDoubleRhythm") {
-        return {{Difficulty::Easy, Instrument::Rhythm}};
-    }
-    if (header == "MediumDoubleRhythm") {
-        return {{Difficulty::Medium, Instrument::Rhythm}};
-    }
-    if (header == "HardDoubleRhythm") {
-        return {{Difficulty::Hard, Instrument::Rhythm}};
-    }
-    if (header == "ExpertDoubleRhythm") {
-        return {{Difficulty::Expert, Instrument::Rhythm}};
-    }
-    if (header == "EasyKeyboard") {
-        return {{Difficulty::Easy, Instrument::Keys}};
-    }
-    if (header == "MediumKeyboard") {
-        return {{Difficulty::Medium, Instrument::Keys}};
-    }
-    if (header == "HardKeyboard") {
-        return {{Difficulty::Hard, Instrument::Keys}};
-    }
-    if (header == "ExpertKeyboard") {
-        return {{Difficulty::Expert, Instrument::Keys}};
-    }
-    if (header == "EasyGHLGuitar") {
-        return {{Difficulty::Easy, Instrument::GHLGuitar}};
-    }
-    if (header == "MediumGHLGuitar") {
-        return {{Difficulty::Medium, Instrument::GHLGuitar}};
-    }
-    if (header == "HardGHLGuitar") {
-        return {{Difficulty::Hard, Instrument::GHLGuitar}};
-    }
-    if (header == "ExpertGHLGuitar") {
-        return {{Difficulty::Expert, Instrument::GHLGuitar}};
-    }
-    if (header == "EasyGHLBass") {
-        return {{Difficulty::Easy, Instrument::GHLBass}};
-    }
-    if (header == "MediumGHLBass") {
-        return {{Difficulty::Medium, Instrument::GHLBass}};
-    }
-    if (header == "HardGHLBass") {
-        return {{Difficulty::Hard, Instrument::GHLBass}};
-    }
-    if (header == "ExpertGHLBass") {
-        return {{Difficulty::Expert, Instrument::GHLBass}};
-    }
-    if (header == "EasyDrums") {
-        return {{Difficulty::Easy, Instrument::Drums}};
-    }
-    if (header == "MediumDrums") {
-        return {{Difficulty::Medium, Instrument::Drums}};
-    }
-    if (header == "HardDrums") {
-        return {{Difficulty::Hard, Instrument::Drums}};
-    }
-    if (header == "ExpertDrums") {
-        return {{Difficulty::Expert, Instrument::Drums}};
-    }
-    return {};
+    return std::tuple {std::get<1>(*diff_iter), std::get<1>(*inst_iter)};
 }
 
-static NoteTrack<NoteColour>
-note_track_from_section(const ChartSection& section)
+std::vector<Note<DrumNoteColour>>
+apply_cymbal_events(const std::vector<Note<DrumNoteColour>>& notes)
 {
-    std::vector<Note<NoteColour>> notes;
-    for (const auto& note_event : section.note_events) {
-        const auto note = note_from_note_colour(
-            note_event.position, note_event.length, note_event.fret);
-        if (note.has_value()) {
-            notes.push_back(*note);
-        }
-    }
-    std::vector<StarPower> sp;
-    for (const auto& phrase : section.sp_events) {
-        sp.push_back(StarPower {phrase.position, phrase.length});
-    }
-    std::vector<int> solo_on_events;
-    std::vector<int> solo_off_events;
-    for (const auto& event : section.events) {
-        if (event.data == "solo") {
-            solo_on_events.push_back(event.position);
-        } else if (event.data == "soloend") {
-            solo_off_events.push_back(event.position);
-        }
-    }
-    std::sort(solo_on_events.begin(), solo_on_events.end());
-    std::sort(solo_off_events.begin(), solo_off_events.end());
-    auto solos = form_solo_vector(solo_on_events, solo_off_events, notes);
-    return NoteTrack<NoteColour> {std::move(notes), std::move(sp),
-                                  std::move(solos)};
-}
-
-static NoteTrack<GHLNoteColour>
-ghl_note_track_from_section(const ChartSection& section)
-{
-    std::vector<Note<GHLNoteColour>> notes;
-    for (const auto& note_event : section.note_events) {
-        const auto note = note_from_ghl_note_colour(
-            note_event.position, note_event.length, note_event.fret);
-        if (note.has_value()) {
-            notes.push_back(*note);
-        }
-    }
-    std::vector<StarPower> sp;
-    for (const auto& phrase : section.sp_events) {
-        sp.push_back(StarPower {phrase.position, phrase.length});
-    }
-    std::vector<int> solo_on_events;
-    std::vector<int> solo_off_events;
-    for (const auto& event : section.events) {
-        if (event.data == "solo") {
-            solo_on_events.push_back(event.position);
-        } else if (event.data == "soloend") {
-            solo_off_events.push_back(event.position);
-        }
-    }
-    std::sort(solo_on_events.begin(), solo_on_events.end());
-    std::sort(solo_off_events.begin(), solo_off_events.end());
-    auto solos = form_solo_vector(solo_on_events, solo_off_events, notes);
-    return NoteTrack<GHLNoteColour> {std::move(notes), std::move(sp),
-                                     std::move(solos)};
-}
-
-static NoteTrack<DrumNoteColour>
-drum_note_track_from_section(const ChartSection& section)
-{
-    std::vector<Note<DrumNoteColour>> notes;
-    for (const auto& note_event : section.note_events) {
-        const auto note = note_from_drum_note_colour(
-            note_event.position, note_event.length, note_event.fret);
-        if (note.has_value()) {
-            notes.push_back(*note);
-        }
-    }
-    std::vector<StarPower> sp;
-    for (const auto& phrase : section.sp_events) {
-        sp.push_back(StarPower {phrase.position, phrase.length});
-    }
-    std::vector<int> solo_on_events;
-    std::vector<int> solo_off_events;
-    for (const auto& event : section.events) {
-        if (event.data == "solo") {
-            solo_on_events.push_back(event.position);
-        } else if (event.data == "soloend") {
-            solo_off_events.push_back(event.position);
-        }
-    }
     std::set<unsigned int> deletion_spots;
     for (auto i = 0U; i < notes.size(); ++i) {
         const auto& cymbal_note = notes[i];
@@ -561,12 +308,49 @@ drum_note_track_from_section(const ChartSection& section)
             new_notes.push_back(notes[i]);
         }
     }
-    notes = std::move(new_notes);
+    return new_notes;
+}
+
+template <typename T>
+static NoteTrack<T> note_track_from_section(const ChartSection& section)
+{
+    std::vector<Note<T>> notes;
+    for (const auto& note_event : section.note_events) {
+        const auto note = note_from_note_colour<T>(
+            note_event.position, note_event.length, note_event.fret);
+        if (note.has_value()) {
+            notes.push_back(*note);
+        }
+    }
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        notes = apply_cymbal_events(notes);
+    }
+
+    std::vector<StarPower> sp;
+    for (const auto& phrase : section.sp_events) {
+        sp.push_back(StarPower {phrase.position, phrase.length});
+    }
+
+    std::vector<int> solo_on_events;
+    std::vector<int> solo_off_events;
+    for (const auto& event : section.events) {
+        if (event.data == "solo") {
+            solo_on_events.push_back(event.position);
+        } else if (event.data == "soloend") {
+            solo_off_events.push_back(event.position);
+        }
+    }
     std::sort(solo_on_events.begin(), solo_on_events.end());
     std::sort(solo_off_events.begin(), solo_off_events.end());
     auto solos = form_solo_vector(solo_on_events, solo_off_events, notes);
-    return NoteTrack<DrumNoteColour> {std::move(notes), std::move(sp),
-                                      std::move(solos)};
+
+    return NoteTrack<T> {std::move(notes), std::move(sp), std::move(solos)};
+}
+
+static bool is_six_fret_instrument(Instrument instrument)
+{
+    return instrument == Instrument::GHLGuitar
+        || instrument == Instrument::GHLBass;
 }
 
 Song Song::from_chart(const Chart& chart)
@@ -600,87 +384,40 @@ Song Song::from_chart(const Chart& chart)
                 continue;
             }
             auto [diff, inst] = *pair;
-            if (inst == Instrument::GHLGuitar) {
-                auto note_track = ghl_note_track_from_section(section);
+            if (is_six_fret_instrument(inst)) {
+                auto note_track
+                    = note_track_from_section<GHLNoteColour>(section);
                 if (note_track.notes().empty()) {
                     continue;
                 }
-                song.m_ghl_guitar_note_tracks.insert(
-                    {diff, std::move(note_track)});
-                continue;
-            }
-            if (inst == Instrument::GHLBass) {
-                auto note_track = ghl_note_track_from_section(section);
-                if (note_track.notes().empty()) {
-                    continue;
-                }
-                song.m_ghl_bass_note_tracks.insert(
-                    {diff, std::move(note_track)});
+                song.m_six_fret_tracks.insert(
+                    {{inst, diff}, std::move(note_track)});
                 continue;
             }
             if (inst == Instrument::Drums) {
-                auto note_track = drum_note_track_from_section(section);
+                auto note_track
+                    = note_track_from_section<DrumNoteColour>(section);
                 if (note_track.notes().empty()) {
                     continue;
                 }
                 song.m_drum_note_tracks.insert({diff, std::move(note_track)});
                 continue;
             }
-            auto note_track = note_track_from_section(section);
+            auto note_track = note_track_from_section<NoteColour>(section);
             if (note_track.notes().empty()) {
                 continue;
             }
-            switch (inst) {
-            case Instrument::Guitar:
-                song.m_guitar_note_tracks.insert({diff, std::move(note_track)});
-                break;
-            case Instrument::GuitarCoop:
-                song.m_guitar_coop_note_tracks.insert(
-                    {diff, std::move(note_track)});
-                break;
-            case Instrument::Bass:
-                song.m_bass_note_tracks.insert({diff, std::move(note_track)});
-                break;
-            case Instrument::Rhythm:
-                song.m_rhythm_note_tracks.insert({diff, std::move(note_track)});
-                break;
-            case Instrument::Keys:
-                song.m_keys_note_tracks.insert({diff, std::move(note_track)});
-                break;
-            default:
-                break;
-            }
+            song.m_five_fret_tracks.insert(
+                {{inst, diff}, std::move(note_track)});
         }
     }
 
-    if (song.m_guitar_note_tracks.empty()
-        && song.m_guitar_coop_note_tracks.empty()
-        && song.m_bass_note_tracks.empty() && song.m_rhythm_note_tracks.empty()
-        && song.m_keys_note_tracks.empty()
-        && song.m_ghl_guitar_note_tracks.empty()
-        && song.m_ghl_bass_note_tracks.empty()
+    if (song.m_five_fret_tracks.empty() && song.m_six_fret_tracks.empty()
         && song.m_drum_note_tracks.empty()) {
         throw std::invalid_argument("Chart has no notes");
     }
 
     return song;
-}
-
-static bool has_track_title(const MidiTrack& track,
-                            std::string_view desired_title)
-{
-    if (track.events.empty()) {
-        return false;
-    }
-    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
-    if (meta_event == nullptr) {
-        return false;
-    }
-    if (meta_event->type != 3) {
-        return false;
-    }
-    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
-                      desired_title.cbegin(), desired_title.cend());
 }
 
 template <typename T>
@@ -1167,6 +904,39 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track)
     return note_tracks;
 }
 
+static std::optional<Instrument> midi_section_instrument(const MidiTrack& track)
+{
+    static const std::map<std::string, Instrument> INSTRUMENTS {
+        {"PART GUITAR", Instrument::Guitar},
+        {"T1 GEMS", Instrument::Guitar},
+        {"PART GUITAR COOP", Instrument::GuitarCoop},
+        {"PART BASS", Instrument::Bass},
+        {"PART RHYTHM", Instrument::Rhythm},
+        {"PART KEYS", Instrument::Keys},
+        {"PART GUITAR GHL", Instrument::GHLGuitar},
+        {"PART BASS GHL", Instrument::GHLBass},
+        {"PART DRUMS", Instrument::Drums}};
+
+    if (track.events.empty()) {
+        return {};
+    }
+    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
+    if (meta_event == nullptr) {
+        return {};
+    }
+    if (meta_event->type != 3) {
+        return {};
+    }
+    const std::string track_name {meta_event->data.cbegin(),
+                                  meta_event->data.cend()};
+
+    const auto iter = INSTRUMENTS.find(track_name);
+    if (iter == INSTRUMENTS.end()) {
+        return {};
+    }
+    return iter->second;
+}
+
 Song Song::from_midi(const Midi& midi)
 {
     if (midi.ticks_per_quarter_note == 0) {
@@ -1185,30 +955,22 @@ Song Song::from_midi(const Midi& midi)
     song.m_sync_track = sync_track;
 
     for (const auto& track : midi.tracks) {
-        if (has_track_title(track, "PART GUITAR")
-            || has_track_title(track, "T1 GEMS")) {
-            song.m_guitar_note_tracks
-                = note_tracks_from_midi(track, song.m_resolution);
-        } else if (has_track_title(track, "PART GUITAR COOP")) {
-            song.m_guitar_coop_note_tracks
-                = note_tracks_from_midi(track, song.m_resolution);
-        } else if (has_track_title(track, "PART BASS")) {
-            song.m_bass_note_tracks
-                = note_tracks_from_midi(track, song.m_resolution);
-        } else if (has_track_title(track, "PART RHYTHM")) {
-            song.m_rhythm_note_tracks
-                = note_tracks_from_midi(track, song.m_resolution);
-        } else if (has_track_title(track, "PART KEYS")) {
-            song.m_keys_note_tracks
-                = note_tracks_from_midi(track, song.m_resolution);
-        } else if (has_track_title(track, "PART GUITAR GHL")) {
-            song.m_ghl_guitar_note_tracks
-                = ghl_note_tracks_from_midi(track, song.m_resolution);
-        } else if (has_track_title(track, "PART BASS GHL")) {
-            song.m_ghl_bass_note_tracks
-                = ghl_note_tracks_from_midi(track, song.m_resolution);
-        } else if (has_track_title(track, "PART DRUMS")) {
+        const auto inst = midi_section_instrument(track);
+        if (!inst.has_value()) {
+            continue;
+        }
+        if (is_six_fret_instrument(*inst)) {
+            auto tracks = ghl_note_tracks_from_midi(track, song.m_resolution);
+            for (auto& [diff, track] : tracks) {
+                song.m_six_fret_tracks[{*inst, diff}] = std::move(track);
+            }
+        } else if (*inst == Instrument::Drums) {
             song.m_drum_note_tracks = drum_note_tracks_from_midi(track);
+        } else {
+            auto tracks = note_tracks_from_midi(track, song.m_resolution);
+            for (auto& [diff, track] : tracks) {
+                song.m_five_fret_tracks[{*inst, diff}] = std::move(track);
+            }
         }
     }
 

@@ -247,13 +247,10 @@ private:
     int m_resolution = DEFAULT_RESOLUTION;
     SongHeader m_song_header;
     SyncTrack m_sync_track;
-    std::map<Difficulty, NoteTrack<NoteColour>> m_bass_note_tracks;
-    std::map<Difficulty, NoteTrack<NoteColour>> m_guitar_note_tracks;
-    std::map<Difficulty, NoteTrack<NoteColour>> m_guitar_coop_note_tracks;
-    std::map<Difficulty, NoteTrack<NoteColour>> m_keys_note_tracks;
-    std::map<Difficulty, NoteTrack<NoteColour>> m_rhythm_note_tracks;
-    std::map<Difficulty, NoteTrack<GHLNoteColour>> m_ghl_guitar_note_tracks;
-    std::map<Difficulty, NoteTrack<GHLNoteColour>> m_ghl_bass_note_tracks;
+    std::map<std::tuple<Instrument, Difficulty>, NoteTrack<NoteColour>>
+        m_five_fret_tracks;
+    std::map<std::tuple<Instrument, Difficulty>, NoteTrack<GHLNoteColour>>
+        m_six_fret_tracks;
     std::map<Difficulty, NoteTrack<DrumNoteColour>> m_drum_note_tracks;
     Song() = default;
 
@@ -270,37 +267,37 @@ public:
     [[nodiscard]] const NoteTrack<NoteColour>&
     guitar_note_track(Difficulty diff) const
     {
-        return m_guitar_note_tracks.at(diff);
+        return m_five_fret_tracks.at({Instrument::Guitar, diff});
     }
     [[nodiscard]] const NoteTrack<NoteColour>&
     guitar_coop_note_track(Difficulty diff) const
     {
-        return m_guitar_coop_note_tracks.at(diff);
+        return m_five_fret_tracks.at({Instrument::GuitarCoop, diff});
     }
     [[nodiscard]] const NoteTrack<NoteColour>&
     bass_note_track(Difficulty diff) const
     {
-        return m_bass_note_tracks.at(diff);
+        return m_five_fret_tracks.at({Instrument::Bass, diff});
     }
     [[nodiscard]] const NoteTrack<NoteColour>&
     rhythm_note_track(Difficulty diff) const
     {
-        return m_rhythm_note_tracks.at(diff);
+        return m_five_fret_tracks.at({Instrument::Rhythm, diff});
     }
     [[nodiscard]] const NoteTrack<NoteColour>&
     keys_note_track(Difficulty diff) const
     {
-        return m_keys_note_tracks.at(diff);
+        return m_five_fret_tracks.at({Instrument::Keys, diff});
     }
     [[nodiscard]] const NoteTrack<GHLNoteColour>&
     ghl_guitar_note_track(Difficulty diff) const
     {
-        return m_ghl_guitar_note_tracks.at(diff);
+        return m_six_fret_tracks.at({Instrument::GHLGuitar, diff});
     }
     [[nodiscard]] const NoteTrack<GHLNoteColour>&
     ghl_bass_note_track(Difficulty diff) const
     {
-        return m_ghl_bass_note_tracks.at(diff);
+        return m_six_fret_tracks.at({Instrument::GHLBass, diff});
     }
     [[nodiscard]] const NoteTrack<DrumNoteColour>&
     drum_note_track(Difficulty diff) const
