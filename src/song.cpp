@@ -1009,7 +1009,8 @@ Song Song::from_chart(const Chart& chart)
                 song.m_ghl_guitar_note_tracks.insert(
                     {diff, std::move(note_track)});
                 continue;
-            } else if (inst == Instrument::GHLBass) {
+            }
+            if (inst == Instrument::GHLBass) {
                 auto note_track = ghl_note_track_from_section(section);
                 if (note_track.notes().empty()) {
                     continue;
