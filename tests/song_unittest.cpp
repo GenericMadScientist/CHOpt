@@ -157,9 +157,10 @@ TEST_CASE("SyncTrack ctor maintains invariants")
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart reads resolution")
 {
-    ChartSection sync_track {"SyncTrack", {}, {}, {}, {}, {}};
-    ChartSection events {"Events", {}, {}, {}, {}, {}};
-    ChartSection expert_single {"ExpertSingle", {}, {}, {}, {{768, 0, 0}}, {}};
+    ChartSection sync_track {"SyncTrack", {}, {}, {}, {}, {}, {}};
+    ChartSection events {"Events", {}, {}, {}, {}, {}, {}};
+    ChartSection expert_single {"ExpertSingle", {}, {}, {},
+                                {{768, 0, 0}},  {}, {}};
 
     SECTION("Default is 192 Res")
     {
@@ -174,7 +175,8 @@ TEST_CASE("Chart reads resolution")
     SECTION("Default is overriden by specified value")
     {
         ChartSection header {
-            "Song", {{"Resolution", "200"}, {"Offset", "100"}}, {}, {}, {}, {}};
+            "Song", {{"Resolution", "200"}, {"Offset", "100"}}, {}, {}, {}, {},
+            {}};
         std::vector<ChartSection> sections {header, expert_single};
         const Chart chart {sections};
 
@@ -186,7 +188,8 @@ TEST_CASE("Chart reads resolution")
 
 TEST_CASE("Chart reads song header correctly")
 {
-    ChartSection expert_single {"ExpertSingle", {}, {}, {}, {{768, 0, 0}}, {}};
+    ChartSection expert_single {"ExpertSingle", {}, {}, {},
+                                {{768, 0, 0}},  {}, {}};
 
     SECTION("Default values are correct")
     {
@@ -209,6 +212,7 @@ TEST_CASE("Chart reads song header correctly")
                                      {},
                                      {},
                                      {},
+                                     {},
                                      {}};
         std::vector<ChartSection> sections {header_section, expert_single};
         const Chart chart {sections};
@@ -224,9 +228,10 @@ TEST_CASE("Chart reads song header correctly")
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart reads sync track correctly")
 {
-    ChartSection sync_track {"SyncTrack", {}, {{0, 200000}},
+    ChartSection sync_track {"SyncTrack", {}, {{0, 200000}},           {},
                              {},          {}, {{0, 4, 2}, {768, 4, 1}}};
-    ChartSection expert_single {"ExpertSingle", {}, {}, {}, {{768, 0, 0}}, {}};
+    ChartSection expert_single {"ExpertSingle", {}, {}, {},
+                                {{768, 0, 0}},  {}, {}};
     std::vector<ChartSection> sections {sync_track, expert_single};
     const Chart chart {sections};
     std::vector<TimeSignature> time_sigs {{0, 4, 4}, {768, 4, 2}};
@@ -241,12 +246,14 @@ TEST_CASE("Chart reads sync track correctly")
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart reads easy note track correctly")
 {
-    const char* text
-        = "[Song]\n{\n}\n[SyncTrack]\n{\n}\n[Events]\n{\n}\n[EasySingle]"
-          "\n{\n768 = N 0 0\n768 = S 2 100\n}\n";
-    const auto song = Song::parse_chart(text);
+    ChartSection easy_single {"EasySingle",    {}, {}, {}, {{768, 0, 0}},
+                              {{768, 2, 100}}, {}};
+    std::vector<ChartSection> sections {easy_single};
+    const Chart chart {sections};
     NoteTrack<NoteColour> note_track {
         {{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
+
+    const auto song = Song::from_chart(chart);
 
     REQUIRE(song.guitar_note_track(Difficulty::Easy) == note_track);
 }
@@ -256,28 +263,39 @@ TEST_CASE("Chart does not need sections in usual order")
 {
     SECTION("Non note sections need not be present")
     {
-        const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_single {"ExpertSingle", {}, {}, {},
+                                    {{768, 0, 0}},  {}, {}};
+        std::vector<ChartSection> sections {expert_single};
+        const Chart chart {sections};
 
-        REQUIRE(song.resolution() == 192);
+        REQUIRE_NOTHROW([&] { return Song::from_chart(chart); }());
     }
 
     SECTION("At least one non-empty note section must be present")
     {
-        const char* text = "[ExpertSingle]\n{\n768 = S 2 100\n}";
+        ChartSection expert_single {"ExpertSingle",  {}, {}, {}, {},
+                                    {{768, 2, 100}}, {}};
+        std::vector<ChartSection> sections {expert_single};
+        const Chart chart {sections};
 
-        REQUIRE_THROWS([] { return Song::parse_chart(""); }());
-        REQUIRE_THROWS([&] { return Song::parse_chart(text); }());
+        REQUIRE_THROWS([] { return Song::from_chart({}); }());
+        REQUIRE_THROWS([&] { return Song::from_chart(chart); }());
     }
 
     SECTION("Non note sections can be in any order")
     {
-        const char* text
-            = "[SyncTrack]\n{\n0 = B 200000\n}\n[ExpertSingle]\n{\n768 = "
-              "N 0 0\n}\n[Song]\n{\nResolution = 200\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_single {"ExpertSingle", {}, {}, {},
+                                    {{768, 0, 0}},  {}, {}};
+        ChartSection sync_track {"SyncTrack", {}, {{0, 200000}}, {}, {},
+                                 {},          {}};
+        ChartSection header {"Song", {{"Resolution", "200"}}, {}, {}, {}, {},
+                             {}};
+        std::vector<ChartSection> sections {sync_track, expert_single, header};
+        const Chart chart {sections};
         std::vector<Note<NoteColour>> notes {{768}};
         std::vector<BPM> bpms {{0, 200000}};
+
+        const auto song = Song::from_chart(chart);
 
         REQUIRE(song.resolution() == 200);
         REQUIRE(song.guitar_note_track(Difficulty::Expert).notes() == notes);

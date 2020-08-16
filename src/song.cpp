@@ -843,7 +843,53 @@ Song Song::from_chart(const Chart& chart)
                     {ts.position, ts.numerator, 1 << ts.denominator});
             }
             song.m_sync_track = SyncTrack {std::move(tses), std::move(bpms)};
+        } else if (section.name == "EasySingle") {
+            if (section.note_events.empty()) {
+                continue;
+            }
+            std::vector<Note<NoteColour>> notes;
+            for (const auto& note_event : section.note_events) {
+                const auto note = note_from_note_colour(
+                    note_event.position, note_event.length, note_event.fret);
+                if (note.has_value()) {
+                    notes.push_back(*note);
+                }
+            }
+            std::vector<StarPower> sp;
+            for (const auto& phrase : section.sp_events) {
+                sp.push_back(StarPower {phrase.position, phrase.length});
+            }
+            song.m_guitar_note_tracks[Difficulty::Easy]
+                = NoteTrack {notes, sp, {}};
+        } else if (section.name == "ExpertSingle") {
+            if (section.note_events.empty()) {
+                continue;
+            }
+            std::vector<Note<NoteColour>> notes;
+            for (const auto& note_event : section.note_events) {
+                const auto note = note_from_note_colour(
+                    note_event.position, note_event.length, note_event.fret);
+                if (note.has_value()) {
+                    notes.push_back(*note);
+                }
+            }
+            std::vector<StarPower> sp;
+            for (const auto& phrase : section.sp_events) {
+                sp.push_back(StarPower {phrase.position, phrase.length});
+            }
+            song.m_guitar_note_tracks[Difficulty::Expert]
+                = NoteTrack {notes, sp, {}};
         }
+    }
+
+    if (song.m_guitar_note_tracks.empty()
+        && song.m_guitar_coop_note_tracks.empty()
+        && song.m_bass_note_tracks.empty() && song.m_rhythm_note_tracks.empty()
+        && song.m_keys_note_tracks.empty()
+        && song.m_ghl_guitar_note_tracks.empty()
+        && song.m_ghl_bass_note_tracks.empty()
+        && song.m_drum_note_tracks.empty()) {
+        throw std::invalid_argument("Chart has no notes");
     }
 
     return song;
