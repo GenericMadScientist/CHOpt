@@ -818,6 +818,24 @@ get_with_default(const std::map<std::string, std::string>& map,
     return iter->second;
 }
 
+static NoteTrack<NoteColour>
+note_track_from_section(const ChartSection& section)
+{
+    std::vector<Note<NoteColour>> notes;
+    for (const auto& note_event : section.note_events) {
+        const auto note = note_from_note_colour(
+            note_event.position, note_event.length, note_event.fret);
+        if (note.has_value()) {
+            notes.push_back(*note);
+        }
+    }
+    std::vector<StarPower> sp;
+    for (const auto& phrase : section.sp_events) {
+        sp.push_back(StarPower {phrase.position, phrase.length});
+    }
+    return NoteTrack<NoteColour> {notes, sp, {}};
+}
+
 Song Song::from_chart(const Chart& chart)
 {
     Song song;
@@ -844,41 +862,17 @@ Song Song::from_chart(const Chart& chart)
             }
             song.m_sync_track = SyncTrack {std::move(tses), std::move(bpms)};
         } else if (section.name == "EasySingle") {
-            if (section.note_events.empty()) {
-                continue;
+            auto note_track = note_track_from_section(section);
+            if (!note_track.notes().empty()) {
+                song.m_guitar_note_tracks.insert(
+                    {Difficulty::Easy, std::move(note_track)});
             }
-            std::vector<Note<NoteColour>> notes;
-            for (const auto& note_event : section.note_events) {
-                const auto note = note_from_note_colour(
-                    note_event.position, note_event.length, note_event.fret);
-                if (note.has_value()) {
-                    notes.push_back(*note);
-                }
-            }
-            std::vector<StarPower> sp;
-            for (const auto& phrase : section.sp_events) {
-                sp.push_back(StarPower {phrase.position, phrase.length});
-            }
-            song.m_guitar_note_tracks[Difficulty::Easy]
-                = NoteTrack {notes, sp, {}};
         } else if (section.name == "ExpertSingle") {
-            if (section.note_events.empty()) {
-                continue;
+            auto note_track = note_track_from_section(section);
+            if (!note_track.notes().empty()) {
+                song.m_guitar_note_tracks.insert(
+                    {Difficulty::Expert, std::move(note_track)});
             }
-            std::vector<Note<NoteColour>> notes;
-            for (const auto& note_event : section.note_events) {
-                const auto note = note_from_note_colour(
-                    note_event.position, note_event.length, note_event.fret);
-                if (note.has_value()) {
-                    notes.push_back(*note);
-                }
-            }
-            std::vector<StarPower> sp;
-            for (const auto& phrase : section.sp_events) {
-                sp.push_back(StarPower {phrase.position, phrase.length});
-            }
-            song.m_guitar_note_tracks[Difficulty::Expert]
-                = NoteTrack {notes, sp, {}};
         }
     }
 

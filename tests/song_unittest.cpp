@@ -308,57 +308,33 @@ TEST_CASE("Only first non-empty part of note sections matter")
 {
     SECTION("Later non-empty sections are ignored")
     {
-        const char* text
-            = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 = N "
-              "1 0\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_single_one {"ExpertSingle", {}, {}, {},
+                                        {{768, 0, 0}},  {}, {}};
+        ChartSection expert_single_two {"ExpertSingle", {}, {}, {},
+                                        {{768, 1, 0}},  {}, {}};
+        std::vector<ChartSection> sections {expert_single_one,
+                                            expert_single_two};
+        const Chart chart {sections};
         std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green}};
+
+        const auto song = Song::from_chart(chart);
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).notes() == notes);
     }
 
     SECTION("Leading empty sections are ignored")
     {
-        const char* text
-            = "[ExpertSingle]\n{\n}\n[ExpertSingle]\n{\n768 = N 1 0\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_single_one {"ExpertSingle", {}, {}, {}, {}, {}, {}};
+        ChartSection expert_single_two {"ExpertSingle", {}, {}, {},
+                                        {{768, 1, 0}},  {}, {}};
+        std::vector<ChartSection> sections {expert_single_one,
+                                            expert_single_two};
+        const Chart chart {sections};
         std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Red}};
 
+        const auto song = Song::from_chart(chart);
+
         REQUIRE(song.guitar_note_track(Difficulty::Expert).notes() == notes);
-    }
-}
-
-// Last checked: 23.2.2
-TEST_CASE("Notes should be sorted")
-{
-    const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n384 = N 0 0\n}";
-    const auto song = Song::parse_chart(text);
-    std::vector<Note<NoteColour>> notes {{384, 0, NoteColour::Green},
-                                         {768, 0, NoteColour::Green}};
-
-    REQUIRE(song.guitar_note_track(Difficulty::Expert).notes() == notes);
-}
-
-// Last checked: 24.0.1555-master
-TEST_CASE("Notes with extra spaces")
-{
-    SECTION("Leading non-empty sections with notes with spaces cause a throw")
-    {
-        const char* text = "[ExpertSingle]\n{\n768 = N  0 0\n}";
-
-        REQUIRE_THROWS([&] { return Song::parse_chart(text); }());
-    }
-
-    SECTION("Non-leading non-empty sections with broken notes are ignored")
-    {
-        const char* text
-            = "[ExpertSingle]\n{\n768 = N 0 0\n}\n[ExpertSingle]\n{\n768 "
-              "= N  1 0\n}";
-        const auto song = Song::parse_chart(text);
-        std::vector<Note<NoteColour>> required_notes {{768}};
-
-        REQUIRE(song.guitar_note_track(Difficulty::Expert).notes()
-                == required_notes);
     }
 }
 
@@ -418,13 +394,6 @@ TEST_CASE("Solos are read properly")
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
     }
-}
-
-TEST_CASE("Parser does not infinite loop on unfinished sections")
-{
-    const char* text = "[UnrecognisedSection]\n{\n";
-
-    REQUIRE_THROWS([&] { return Song::parse_chart(text); }());
 }
 
 TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")

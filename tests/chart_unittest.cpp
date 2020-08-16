@@ -78,6 +78,13 @@ TEST_CASE("Chart can end without a newline")
     REQUIRE_NOTHROW([&] { return parse_chart(text); }());
 }
 
+TEST_CASE("Parser does not infinite loop on an unfinished section")
+{
+    const char* text = "[UnrecognisedSection]\n{\n";
+
+    REQUIRE_THROWS([&] { return parse_chart(text); }());
+}
+
 TEST_CASE("Key value pairs are read")
 {
     const char* text = "[Section]\n{\nKey = Value\nKey2 = Value2\n}";
@@ -97,6 +104,13 @@ TEST_CASE("Note events are read")
     const auto section = parse_chart(text).sections[0];
 
     REQUIRE(section.note_events == events);
+}
+
+TEST_CASE("Note events with extra spaces cause an exception")
+{
+    const char* text = "[Section]\n{\n768 = N  0 0\n}";
+
+    REQUIRE_THROWS([&] { return parse_chart(text); }());
 }
 
 TEST_CASE("BPM events are read")
@@ -145,6 +159,7 @@ TEST_CASE("Other events are ignored")
 
     const auto section = parse_chart(text).sections[0];
 
+    REQUIRE(section.note_events.empty());
     REQUIRE(section.note_events.empty());
     REQUIRE(section.bpm_events.empty());
     REQUIRE(section.ts_events.empty());

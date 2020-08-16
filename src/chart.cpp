@@ -121,21 +121,25 @@ static ChartSection read_section(std::string_view& input)
         if (key_val.has_value()) {
             const auto pos = *key_val;
             if (separated_line[2] == "N") {
-                const auto fret = *string_view_to_int(separated_line[3]);
-                const auto length = *string_view_to_int(separated_line[4]);
+                const auto fret = string_view_to_int(separated_line[3]).value();
+                const auto length
+                    = string_view_to_int(separated_line[4]).value();
                 section.note_events.push_back(NoteEvent {pos, fret, length});
             } else if (separated_line[2] == "S") {
-                const auto sp_key = *string_view_to_int(separated_line[3]);
-                const auto length = *string_view_to_int(separated_line[4]);
+                const auto sp_key
+                    = string_view_to_int(separated_line[3]).value();
+                const auto length
+                    = string_view_to_int(separated_line[4]).value();
                 section.sp_events.push_back(SPEvent {pos, sp_key, length});
             } else if (separated_line[2] == "B") {
-                const auto bpm = *string_view_to_int(separated_line[3]);
+                const auto bpm = string_view_to_int(separated_line[3]).value();
                 section.bpm_events.push_back(BpmEvent {pos, bpm});
             } else if (separated_line[2] == "TS") {
-                const auto numer = *string_view_to_int(separated_line[3]);
+                const auto numer
+                    = string_view_to_int(separated_line[3]).value();
                 auto denom = 2;
                 if (separated_line.size() >= FULL_TS_EVENT_SIZE) {
-                    denom = *string_view_to_int(separated_line[4]);
+                    denom = string_view_to_int(separated_line[4]).value();
                 }
                 section.ts_events.push_back(TimeSigEvent {pos, numer, denom});
             } else if (separated_line[2] == "E") {
