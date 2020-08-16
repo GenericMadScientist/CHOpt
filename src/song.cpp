@@ -881,6 +881,30 @@ diff_inst_from_header(const std::string& header)
     if (header == "ExpertKeyboard") {
         return {{Difficulty::Expert, Instrument::Keys}};
     }
+    if (header == "EasyGHLGuitar") {
+        return {{Difficulty::Easy, Instrument::GHLGuitar}};
+    }
+    if (header == "MediumGHLGuitar") {
+        return {{Difficulty::Medium, Instrument::GHLGuitar}};
+    }
+    if (header == "HardGHLGuitar") {
+        return {{Difficulty::Hard, Instrument::GHLGuitar}};
+    }
+    if (header == "ExpertGHLGuitar") {
+        return {{Difficulty::Expert, Instrument::GHLGuitar}};
+    }
+    if (header == "EasyGHLBass") {
+        return {{Difficulty::Easy, Instrument::GHLBass}};
+    }
+    if (header == "MediumGHLBass") {
+        return {{Difficulty::Medium, Instrument::GHLBass}};
+    }
+    if (header == "HardGHLBass") {
+        return {{Difficulty::Hard, Instrument::GHLBass}};
+    }
+    if (header == "ExpertGHLBass") {
+        return {{Difficulty::Expert, Instrument::GHLBass}};
+    }
     return {};
 }
 
@@ -915,6 +939,37 @@ note_track_from_section(const ChartSection& section)
                                   std::move(solos)};
 }
 
+static NoteTrack<GHLNoteColour>
+ghl_note_track_from_section(const ChartSection& section)
+{
+    std::vector<Note<GHLNoteColour>> notes;
+    for (const auto& note_event : section.note_events) {
+        const auto note = note_from_ghl_note_colour(
+            note_event.position, note_event.length, note_event.fret);
+        if (note.has_value()) {
+            notes.push_back(*note);
+        }
+    }
+    std::vector<StarPower> sp;
+    for (const auto& phrase : section.sp_events) {
+        sp.push_back(StarPower {phrase.position, phrase.length});
+    }
+    std::vector<int> solo_on_events;
+    std::vector<int> solo_off_events;
+    for (const auto& event : section.events) {
+        if (event.data == "solo") {
+            solo_on_events.push_back(event.position);
+        } else if (event.data == "soloend") {
+            solo_off_events.push_back(event.position);
+        }
+    }
+    std::sort(solo_on_events.begin(), solo_on_events.end());
+    std::sort(solo_off_events.begin(), solo_off_events.end());
+    auto solos = form_solo_vector(solo_on_events, solo_off_events, notes);
+    return NoteTrack<GHLNoteColour> {std::move(notes), std::move(sp),
+                                     std::move(solos)};
+}
+
 Song Song::from_chart(const Chart& chart)
 {
     Song song;
@@ -946,6 +1001,23 @@ Song Song::from_chart(const Chart& chart)
                 continue;
             }
             auto [diff, inst] = *pair;
+            if (inst == Instrument::GHLGuitar) {
+                auto note_track = ghl_note_track_from_section(section);
+                if (note_track.notes().empty()) {
+                    continue;
+                }
+                song.m_ghl_guitar_note_tracks.insert(
+                    {diff, std::move(note_track)});
+                continue;
+            } else if (inst == Instrument::GHLBass) {
+                auto note_track = ghl_note_track_from_section(section);
+                if (note_track.notes().empty()) {
+                    continue;
+                }
+                song.m_ghl_bass_note_tracks.insert(
+                    {diff, std::move(note_track)});
+                continue;
+            }
             auto note_track = note_track_from_section(section);
             if (note_track.notes().empty()) {
                 continue;

@@ -488,12 +488,15 @@ TEST_CASE("6 fret instruments are read correctly from .chart")
 {
     SECTION("6 fret guitar is read correctly")
     {
-        const char* text = "[ExpertGHLGuitar]\n{\n192 = N 0 0\n384 = N 3 0\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_double {"ExpertGHLGuitar",          {}, {}, {},
+                                    {{192, 0, 0}, {384, 3, 0}}, {}, {}};
+        std::vector<ChartSection> sections {expert_double};
+        const Chart chart {sections};
         std::vector<Note<GHLNoteColour>> notes {
             {192, 0, GHLNoteColour::WhiteLow},
             {384, 0, GHLNoteColour::BlackLow}};
 
+        const auto song = Song::from_chart(chart);
         const auto& track = song.ghl_guitar_note_track(Difficulty::Expert);
 
         REQUIRE(track.notes() == notes);
@@ -501,12 +504,15 @@ TEST_CASE("6 fret instruments are read correctly from .chart")
 
     SECTION("6 fret bass is read correctly")
     {
-        const char* text = "[ExpertGHLBass]\n{\n192 = N 0 0\n384 = N 3 0\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_double {
+            "ExpertGHLBass", {}, {}, {}, {{192, 0, 0}, {384, 3, 0}}, {}, {}};
+        std::vector<ChartSection> sections {expert_double};
+        const Chart chart {sections};
         std::vector<Note<GHLNoteColour>> notes {
             {192, 0, GHLNoteColour::WhiteLow},
             {384, 0, GHLNoteColour::BlackLow}};
 
+        const auto song = Song::from_chart(chart);
         const auto& track = song.ghl_bass_note_track(Difficulty::Expert);
 
         REQUIRE(track.notes() == notes);
