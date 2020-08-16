@@ -905,6 +905,18 @@ diff_inst_from_header(const std::string& header)
     if (header == "ExpertGHLBass") {
         return {{Difficulty::Expert, Instrument::GHLBass}};
     }
+    if (header == "EasyDrums") {
+        return {{Difficulty::Easy, Instrument::Drums}};
+    }
+    if (header == "MediumDrums") {
+        return {{Difficulty::Medium, Instrument::Drums}};
+    }
+    if (header == "HardDrums") {
+        return {{Difficulty::Hard, Instrument::Drums}};
+    }
+    if (header == "ExpertDrums") {
+        return {{Difficulty::Expert, Instrument::Drums}};
+    }
     return {};
 }
 
@@ -970,6 +982,81 @@ ghl_note_track_from_section(const ChartSection& section)
                                      std::move(solos)};
 }
 
+static NoteTrack<DrumNoteColour>
+drum_note_track_from_section(const ChartSection& section)
+{
+    std::vector<Note<DrumNoteColour>> notes;
+    for (const auto& note_event : section.note_events) {
+        const auto note = note_from_drum_note_colour(
+            note_event.position, note_event.length, note_event.fret);
+        if (note.has_value()) {
+            notes.push_back(*note);
+        }
+    }
+    std::vector<StarPower> sp;
+    for (const auto& phrase : section.sp_events) {
+        sp.push_back(StarPower {phrase.position, phrase.length});
+    }
+    std::vector<int> solo_on_events;
+    std::vector<int> solo_off_events;
+    for (const auto& event : section.events) {
+        if (event.data == "solo") {
+            solo_on_events.push_back(event.position);
+        } else if (event.data == "soloend") {
+            solo_off_events.push_back(event.position);
+        }
+    }
+    std::set<unsigned int> deletion_spots;
+    for (auto i = 0U; i < notes.size(); ++i) {
+        const auto& cymbal_note = notes[i];
+        DrumNoteColour non_cymbal_colour = DrumNoteColour::Kick;
+        switch (cymbal_note.colour) {
+        case DrumNoteColour::YellowCymbal:
+            non_cymbal_colour = DrumNoteColour::Yellow;
+            break;
+        case DrumNoteColour::BlueCymbal:
+            non_cymbal_colour = DrumNoteColour::Blue;
+            break;
+        case DrumNoteColour::GreenCymbal:
+            non_cymbal_colour = DrumNoteColour::Green;
+            break;
+        case DrumNoteColour::Red:
+        case DrumNoteColour::Yellow:
+        case DrumNoteColour::Blue:
+        case DrumNoteColour::Green:
+        case DrumNoteColour::Kick:
+            continue;
+        }
+        bool delete_cymbal = true;
+        for (auto j = 0U; j < notes.size(); ++j) {
+            const auto& non_cymbal_note = notes[j];
+            if (non_cymbal_note.position != cymbal_note.position) {
+                continue;
+            }
+            if (non_cymbal_note.colour != non_cymbal_colour) {
+                continue;
+            }
+            delete_cymbal = false;
+            deletion_spots.insert(j);
+        }
+        if (delete_cymbal) {
+            deletion_spots.insert(i);
+        }
+    }
+    std::vector<Note<DrumNoteColour>> new_notes;
+    for (auto i = 0U; i < notes.size(); ++i) {
+        if (deletion_spots.count(i) == 0) {
+            new_notes.push_back(notes[i]);
+        }
+    }
+    notes = std::move(new_notes);
+    std::sort(solo_on_events.begin(), solo_on_events.end());
+    std::sort(solo_off_events.begin(), solo_off_events.end());
+    auto solos = form_solo_vector(solo_on_events, solo_off_events, notes);
+    return NoteTrack<DrumNoteColour> {std::move(notes), std::move(sp),
+                                      std::move(solos)};
+}
+
 Song Song::from_chart(const Chart& chart)
 {
     Song song;
@@ -1017,6 +1104,14 @@ Song Song::from_chart(const Chart& chart)
                 }
                 song.m_ghl_bass_note_tracks.insert(
                     {diff, std::move(note_track)});
+                continue;
+            }
+            if (inst == Instrument::Drums) {
+                auto note_track = drum_note_track_from_section(section);
+                if (note_track.notes().empty()) {
+                    continue;
+                }
+                song.m_drum_note_tracks.insert({diff, std::move(note_track)});
                 continue;
             }
             auto note_track = note_track_from_section(section);

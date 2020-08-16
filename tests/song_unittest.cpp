@@ -521,12 +521,19 @@ TEST_CASE("6 fret instruments are read correctly from .chart")
 
 TEST_CASE("Drums are read correctly from .chart")
 {
-    const char* text
-        = "[ExpertDrums]\n{\n192 = N 1 0\n384 = N 2 0\n384 = N 66 0\n}";
-    const auto song = Song::parse_chart(text);
+    ChartSection expert_drums {"ExpertDrums",
+                               {},
+                               {},
+                               {},
+                               {{192, 1, 0}, {384, 2, 0}, {384, 66, 0}},
+                               {},
+                               {}};
+    std::vector<ChartSection> sections {expert_drums};
+    const Chart chart {sections};
     std::vector<Note<DrumNoteColour>> notes {
         {192, 0, DrumNoteColour::Red}, {384, 0, DrumNoteColour::YellowCymbal}};
 
+    const auto song = Song::from_chart(chart);
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
     REQUIRE(track.notes() == notes);
