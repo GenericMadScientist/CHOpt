@@ -189,10 +189,13 @@ TEST_CASE("Chart reads resolution")
 
 TEST_CASE("Chart reads song header correctly")
 {
+    ChartSection expert_single {"ExpertSingle", {}, {}, {}, {{768, 0, 0}}, {}};
+
     SECTION("Default values are correct")
     {
-        const char* text = "[ExpertSingle]\n{\n768 = N 0 0\n}";
-        const auto song = Song::parse_chart(text);
+        std::vector<ChartSection> sections {expert_single};
+        const Chart chart {sections};
+        const auto song = Song::from_chart(chart);
         const auto& header = song.song_header();
 
         REQUIRE(header.name == "Unknown Song");
@@ -202,10 +205,17 @@ TEST_CASE("Chart reads song header correctly")
 
     SECTION("Read values are correct")
     {
-        const char* text
-            = "[Song]\n{\nName = \"TestName\"\nArtist = \"GMS\"\nCharter = "
-              "\"NotGMS\"\n}\n[ExpertSingle]\n{\n768 = N 0 0\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection header_section {"Song",
+                                     {{"Name", "\"TestName\""},
+                                      {"Artist", "\"GMS\""},
+                                      {"Charter", "\"NotGMS\""}},
+                                     {},
+                                     {},
+                                     {},
+                                     {}};
+        std::vector<ChartSection> sections {header_section, expert_single};
+        const Chart chart {sections};
+        const auto song = Song::from_chart(chart);
         const auto& header = song.song_header();
 
         REQUIRE(header.name == "TestName");

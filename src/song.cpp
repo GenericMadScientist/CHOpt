@@ -807,16 +807,31 @@ Song Song::parse_chart(std::string_view input)
     return song;
 }
 
+static std::string
+get_with_default(const std::map<std::string, std::string>& map,
+                 const std::string& key, std::string default_value)
+{
+    const auto iter = map.find(key);
+    if (iter == map.end()) {
+        return default_value;
+    }
+    return iter->second;
+}
+
 Song Song::from_chart(const Chart& chart)
 {
     Song song;
 
     for (const auto& section : chart.sections) {
         if (section.name == "Song") {
-            const auto iter = section.key_value_pairs.find("Resolution");
-            if (iter != section.key_value_pairs.end()) {
-                song.m_resolution = std::stoi(iter->second);
-            }
+            song.m_resolution = std::stoi(
+                get_with_default(section.key_value_pairs, "Resolution", "192"));
+            song.m_song_header.name = trim_quotes(get_with_default(
+                section.key_value_pairs, "Name", "Unknown Song"));
+            song.m_song_header.artist = trim_quotes(get_with_default(
+                section.key_value_pairs, "Artist", "Unknown Artist"));
+            song.m_song_header.charter = trim_quotes(get_with_default(
+                section.key_value_pairs, "Charter", "Unknown Charter"));
         }
     }
 
