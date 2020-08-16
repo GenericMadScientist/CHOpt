@@ -24,7 +24,7 @@ endfunction()
 
 find_package(PNG REQUIRED)
 
-add_executable(chopt src/main.cpp src/image.cpp src/midi.cpp src/optimiser.cpp src/points.cpp src/processed.cpp src/settings.cpp src/song.cpp src/sp.cpp src/time.cpp)
+add_executable(chopt src/main.cpp src/chart.cpp src/image.cpp src/midi.cpp src/optimiser.cpp src/points.cpp src/processed.cpp src/settings.cpp src/song.cpp src/sp.cpp src/time.cpp)
 target_include_directories(chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
 target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES})
 

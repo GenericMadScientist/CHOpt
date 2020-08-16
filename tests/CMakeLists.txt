@@ -18,20 +18,20 @@ endfunction()
 
 package_add_test(chart_unittest chart_unittest.cpp "${SRC}/chart.cpp")
 
-package_add_test(image_unittest image_unittest.cpp "${SRC}/image.cpp" "${SRC}/midi.cpp" "${SRC}/points.cpp" "${SRC}/song.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
+package_add_test(image_unittest image_unittest.cpp "${SRC}/chart.cpp" "${SRC}/image.cpp" "${SRC}/midi.cpp" "${SRC}/points.cpp" "${SRC}/song.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
 target_include_directories(image_unittest PRIVATE ${PNG_INCLUDE_DIRS})
 target_link_libraries(image_unittest PRIVATE ${PNG_LIBRARIES})
 
 package_add_test(midi_unittest midi_unittest.cpp "${SRC}/midi.cpp")
 
-package_add_test(optimiser_unittest optimiser_unittest.cpp "${SRC}/midi.cpp" "${SRC}/optimiser.cpp" "${SRC}/points.cpp" "${SRC}/processed.cpp" "${SRC}/song.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
+package_add_test(optimiser_unittest optimiser_unittest.cpp "${SRC}/chart.cpp" "${SRC}/midi.cpp" "${SRC}/optimiser.cpp" "${SRC}/points.cpp" "${SRC}/processed.cpp" "${SRC}/song.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
 
-package_add_test(points_unittest points_unittest.cpp "${SRC}/midi.cpp" "${SRC}/points.cpp" "${SRC}/song.cpp" "${SRC}/time.cpp")
+package_add_test(points_unittest points_unittest.cpp "${SRC}/chart.cpp" "${SRC}/midi.cpp" "${SRC}/points.cpp" "${SRC}/song.cpp" "${SRC}/time.cpp")
 
-package_add_test(processed_unittest processed_unittest.cpp "${SRC}/midi.cpp" "${SRC}/points.cpp" "${SRC}/processed.cpp" "${SRC}/song.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
+package_add_test(processed_unittest processed_unittest.cpp "${SRC}/chart.cpp" "${SRC}/midi.cpp" "${SRC}/points.cpp" "${SRC}/processed.cpp" "${SRC}/song.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
 
-package_add_test(song_unittest song_unittest.cpp "${SRC}/midi.cpp" "${SRC}/song.cpp")
+package_add_test(song_unittest song_unittest.cpp "${SRC}/chart.cpp" "${SRC}/midi.cpp" "${SRC}/song.cpp")
 
-package_add_test(sp_unittest sp_unittest.cpp "${SRC}/midi.cpp" "${SRC}/song.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
+package_add_test(sp_unittest sp_unittest.cpp "${SRC}/chart.cpp" "${SRC}/midi.cpp" "${SRC}/song.cpp" "${SRC}/sp.cpp" "${SRC}/time.cpp")
 
-package_add_test(time_unittest time_unittest.cpp "${SRC}/midi.cpp" "${SRC}/song.cpp" "${SRC}/time.cpp")
+package_add_test(time_unittest time_unittest.cpp "${SRC}/chart.cpp" "${SRC}/midi.cpp" "${SRC}/song.cpp" "${SRC}/time.cpp")

@@ -22,7 +22,6 @@
 #include <algorithm>
 #include <map>
 #include <string>
-#include <string_view>
 #include <tuple>
 #include <vector>
 
@@ -262,7 +261,6 @@ public:
     static Song from_filename(const std::string& filename);
     static Song from_chart(const Chart& chart);
     static Song from_midi(const Midi& midi);
-    static Song parse_chart(std::string_view input);
     [[nodiscard]] int resolution() const { return m_resolution; }
     [[nodiscard]] const SongHeader& song_header() const
     {
