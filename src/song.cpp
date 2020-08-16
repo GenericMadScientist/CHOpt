@@ -833,7 +833,20 @@ note_track_from_section(const ChartSection& section)
     for (const auto& phrase : section.sp_events) {
         sp.push_back(StarPower {phrase.position, phrase.length});
     }
-    return NoteTrack<NoteColour> {notes, sp, {}};
+    std::vector<int> solo_on_events;
+    std::vector<int> solo_off_events;
+    for (const auto& event : section.events) {
+        if (event.data == "solo") {
+            solo_on_events.push_back(event.position);
+        } else if (event.data == "soloend") {
+            solo_off_events.push_back(event.position);
+        }
+    }
+    std::sort(solo_on_events.begin(), solo_on_events.end());
+    std::sort(solo_off_events.begin(), solo_off_events.end());
+    auto solos = form_solo_vector(solo_on_events, solo_off_events, notes);
+    return NoteTrack<NoteColour> {std::move(notes), std::move(sp),
+                                  std::move(solos)};
 }
 
 Song Song::from_chart(const Chart& chart)

@@ -343,11 +343,19 @@ TEST_CASE("Solos are read properly")
 {
     SECTION("Expected solos are read properly")
     {
-        const char* text = "[ExpertSingle]\n{\n0 = E solo\n100 = N 0 0\n200 = "
-                           "E soloend\n300 = E solo\n300 = N 0 0\n400 = N 0 "
-                           "0\n400 = E soloend\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_single {
+            "ExpertSingle",
+            {},
+            {},
+            {{0, "solo"}, {200, "soloend"}, {300, "solo"}, {400, "soloend"}},
+            {{100, 0, 0}, {300, 0, 0}, {400, 0, 0}},
+            {},
+            {}};
+        std::vector<ChartSection> sections {expert_single};
+        const Chart chart {sections};
         std::vector<Solo> required_solos {{0, 200, 100}, {300, 400, 200}};
+
+        const auto song = Song::from_chart(chart);
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
@@ -355,10 +363,18 @@ TEST_CASE("Solos are read properly")
 
     SECTION("Chords are not counted double")
     {
-        const char* text = "[ExpertSingle]\n{\n0 = E solo\n100 = N 0 0\n100 = "
-                           "N 1 0\n200 = E soloend\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_single {"ExpertSingle",
+                                    {},
+                                    {},
+                                    {{0, "solo"}, {200, "soloend"}},
+                                    {{100, 0, 0}, {100, 1, 0}},
+                                    {},
+                                    {}};
+        std::vector<ChartSection> sections {expert_single};
+        const Chart chart {sections};
         std::vector<Solo> required_solos {{0, 200, 100}};
+
+        const auto song = Song::from_chart(chart);
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
@@ -366,19 +382,32 @@ TEST_CASE("Solos are read properly")
 
     SECTION("Empty solos are ignored")
     {
-        const char* text
-            = "[ExpertSingle]\n{\n0 = N 0 0\n100 = E solo\n200 = E soloend\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_single {
+            "ExpertSingle", {}, {}, {{100, "solo"}, {200, "soloend"}},
+            {{0, 0, 0}},    {}, {}};
+        std::vector<ChartSection> sections {expert_single};
+        const Chart chart {sections};
+
+        const auto song = Song::from_chart(chart);
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos().empty());
     }
 
     SECTION("Repeated solo starts and ends don't matter")
     {
-        const char* text = "[ExpertSingle]\n{\n0 = E solo\n100 = E solo\n100 = "
-                           "N 0 0\n200 = E soloend\n300 = E soloend\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_single {
+            "ExpertSingle",
+            {},
+            {},
+            {{0, "solo"}, {100, "solo"}, {200, "soloend"}, {300, "soloend"}},
+            {{100, 0, 0}},
+            {},
+            {}};
+        std::vector<ChartSection> sections {expert_single};
+        const Chart chart {sections};
         std::vector<Solo> required_solos {{0, 200, 100}};
+
+        const auto song = Song::from_chart(chart);
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
@@ -386,10 +415,14 @@ TEST_CASE("Solos are read properly")
 
     SECTION("Solo markers are sorted")
     {
-        const char* text
-            = "[ExpertSingle]\n{\n384 = E soloend\n192 = N 0 0\n0 = E solo\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_single {
+            "ExpertSingle", {}, {}, {{384, "soloend"}, {0, "solo"}},
+            {{192, 0, 0}},  {}, {}};
+        std::vector<ChartSection> sections {expert_single};
+        const Chart chart {sections};
         std::vector<Solo> required_solos {{0, 384, 100}};
+
+        const auto song = Song::from_chart(chart);
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
