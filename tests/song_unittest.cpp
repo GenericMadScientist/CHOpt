@@ -429,12 +429,16 @@ TEST_CASE("Solos are read properly")
     }
 }
 
-TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
+TEST_CASE("Other 5 fret instruments are read from Chart")
 {
     SECTION("Guitar Co-op is read")
     {
-        const char* text = "[ExpertDoubleGuitar]\n{\n192 = N 0 0\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_double {"ExpertDoubleGuitar", {}, {}, {},
+                                    {{192, 0, 0}},        {}, {}};
+        std::vector<ChartSection> sections {expert_double};
+        const Chart chart {sections};
+
+        const auto song = Song::from_chart(chart);
 
         REQUIRE_NOTHROW(
             [&] { return song.guitar_coop_note_track(Difficulty::Expert); }());
@@ -442,8 +446,12 @@ TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
 
     SECTION("Bass is read")
     {
-        const char* text = "[ExpertDoubleBass]\n{\n192 = N 0 0\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_double {"ExpertDoubleBass", {}, {}, {},
+                                    {{192, 0, 0}},      {}, {}};
+        std::vector<ChartSection> sections {expert_double};
+        const Chart chart {sections};
+
+        const auto song = Song::from_chart(chart);
 
         REQUIRE_NOTHROW(
             [&] { return song.bass_note_track(Difficulty::Expert); }());
@@ -451,8 +459,12 @@ TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
 
     SECTION("Rhythm is read")
     {
-        const char* text = "[ExpertDoubleRhythm]\n{\n192 = N 0 0\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_double {"ExpertDoubleRhythm", {}, {}, {},
+                                    {{192, 0, 0}},        {}, {}};
+        std::vector<ChartSection> sections {expert_double};
+        const Chart chart {sections};
+
+        const auto song = Song::from_chart(chart);
 
         REQUIRE_NOTHROW(
             [&] { return song.rhythm_note_track(Difficulty::Expert); }());
@@ -460,8 +472,12 @@ TEST_CASE("Other 5 fret guitar-like instruments are read from .chart")
 
     SECTION("Keys is read")
     {
-        const char* text = "[ExpertKeyboard]\n{\n192 = N 0 0\n}";
-        const auto song = Song::parse_chart(text);
+        ChartSection expert_double {"ExpertKeyboard", {}, {}, {},
+                                    {{192, 0, 0}},    {}, {}};
+        std::vector<ChartSection> sections {expert_double};
+        const Chart chart {sections};
+
+        const auto song = Song::from_chart(chart);
 
         REQUIRE_NOTHROW(
             [&] { return song.keys_note_track(Difficulty::Expert); }());

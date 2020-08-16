@@ -31,6 +31,17 @@
 
 enum class Difficulty { Easy, Medium, Hard, Expert };
 
+enum class Instrument {
+    Guitar,
+    GuitarCoop,
+    Bass,
+    Rhythm,
+    Keys,
+    GHLGuitar,
+    GHLBass,
+    Drums
+};
+
 enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
 
 enum class GHLNoteColour {

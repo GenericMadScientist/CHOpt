@@ -23,17 +23,6 @@
 
 #include "song.hpp"
 
-enum class Instrument {
-    Guitar,
-    GuitarCoop,
-    Bass,
-    Rhythm,
-    Keys,
-    GHLGuitar,
-    GHLBass,
-    Drums
-};
-
 // This struct represents the options chosen on the command line by the user.
 struct Settings {
     bool blank;

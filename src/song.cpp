@@ -818,6 +818,53 @@ get_with_default(const std::map<std::string, std::string>& map,
     return iter->second;
 }
 
+static std::optional<std::tuple<Difficulty, Instrument>>
+diff_inst_from_header(const std::string& header)
+{
+    if (header == "EasySingle") {
+        return {{Difficulty::Easy, Instrument::Guitar}};
+    } else if (header == "MediumSingle") {
+        return {{Difficulty::Medium, Instrument::Guitar}};
+    } else if (header == "HardSingle") {
+        return {{Difficulty::Hard, Instrument::Guitar}};
+    } else if (header == "ExpertSingle") {
+        return {{Difficulty::Expert, Instrument::Guitar}};
+    } else if (header == "EasyDoubleGuitar") {
+        return {{Difficulty::Easy, Instrument::GuitarCoop}};
+    } else if (header == "MediumDoubleGuitar") {
+        return {{Difficulty::Medium, Instrument::GuitarCoop}};
+    } else if (header == "HardDoubleGuitar") {
+        return {{Difficulty::Hard, Instrument::GuitarCoop}};
+    } else if (header == "ExpertDoubleGuitar") {
+        return {{Difficulty::Expert, Instrument::GuitarCoop}};
+    } else if (header == "EasyDoubleBass") {
+        return {{Difficulty::Easy, Instrument::Bass}};
+    } else if (header == "MediumDoubleBass") {
+        return {{Difficulty::Medium, Instrument::Bass}};
+    } else if (header == "HardDoubleBass") {
+        return {{Difficulty::Hard, Instrument::Bass}};
+    } else if (header == "ExpertDoubleBass") {
+        return {{Difficulty::Expert, Instrument::Bass}};
+    } else if (header == "EasyDoubleRhythm") {
+        return {{Difficulty::Easy, Instrument::Rhythm}};
+    } else if (header == "MediumDoubleRhythm") {
+        return {{Difficulty::Medium, Instrument::Rhythm}};
+    } else if (header == "HardDoubleRhythm") {
+        return {{Difficulty::Hard, Instrument::Rhythm}};
+    } else if (header == "ExpertDoubleRhythm") {
+        return {{Difficulty::Expert, Instrument::Rhythm}};
+    } else if (header == "EasyKeyboard") {
+        return {{Difficulty::Easy, Instrument::Keys}};
+    } else if (header == "MediumKeyboard") {
+        return {{Difficulty::Medium, Instrument::Keys}};
+    } else if (header == "HardKeyboard") {
+        return {{Difficulty::Hard, Instrument::Keys}};
+    } else if (header == "ExpertKeyboard") {
+        return {{Difficulty::Expert, Instrument::Keys}};
+    }
+    return {};
+}
+
 static NoteTrack<NoteColour>
 note_track_from_section(const ChartSection& section)
 {
@@ -874,17 +921,35 @@ Song Song::from_chart(const Chart& chart)
                     {ts.position, ts.numerator, 1 << ts.denominator});
             }
             song.m_sync_track = SyncTrack {std::move(tses), std::move(bpms)};
-        } else if (section.name == "EasySingle") {
-            auto note_track = note_track_from_section(section);
-            if (!note_track.notes().empty()) {
-                song.m_guitar_note_tracks.insert(
-                    {Difficulty::Easy, std::move(note_track)});
+        } else {
+            auto pair = diff_inst_from_header(section.name);
+            if (!pair.has_value()) {
+                continue;
             }
-        } else if (section.name == "ExpertSingle") {
+            auto [diff, inst] = *pair;
             auto note_track = note_track_from_section(section);
-            if (!note_track.notes().empty()) {
-                song.m_guitar_note_tracks.insert(
-                    {Difficulty::Expert, std::move(note_track)});
+            if (note_track.notes().empty()) {
+                continue;
+            }
+            switch (inst) {
+            case Instrument::Guitar:
+                song.m_guitar_note_tracks.insert({diff, std::move(note_track)});
+                break;
+            case Instrument::GuitarCoop:
+                song.m_guitar_coop_note_tracks.insert(
+                    {diff, std::move(note_track)});
+                break;
+            case Instrument::Bass:
+                song.m_bass_note_tracks.insert({diff, std::move(note_track)});
+                break;
+            case Instrument::Rhythm:
+                song.m_rhythm_note_tracks.insert({diff, std::move(note_track)});
+                break;
+            case Instrument::Keys:
+                song.m_keys_note_tracks.insert({diff, std::move(note_track)});
+                break;
+            default:
+                break;
             }
         }
     }
