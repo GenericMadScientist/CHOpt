@@ -125,9 +125,9 @@ static ChartSection read_section(std::string_view& input)
                 const auto length = *string_view_to_int(separated_line[4]);
                 section.note_events.push_back(NoteEvent {pos, fret, length});
             } else if (separated_line[2] == "S") {
-                const auto key = *string_view_to_int(separated_line[3]);
+                const auto sp_key = *string_view_to_int(separated_line[3]);
                 const auto length = *string_view_to_int(separated_line[4]);
-                section.sp_events.push_back(SPEvent {pos, key, length});
+                section.sp_events.push_back(SPEvent {pos, sp_key, length});
             } else if (separated_line[2] == "B") {
                 const auto bpm = *string_view_to_int(separated_line[3]);
                 section.bpm_events.push_back(BpmEvent {pos, bpm});
