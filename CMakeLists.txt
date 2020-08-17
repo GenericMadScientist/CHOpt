@@ -5,6 +5,8 @@ project(chopt
     DESCRIPTION "A tool to generate optimal SP paths for Clone Hero"
     LANGUAGES CXX)
 
+include(cmake/Sanitisers.cmake)
+
 # Require standard C++17
 function(set_cpp_standard TARGET)
     set_target_properties(${TARGET} PROPERTIES
@@ -30,6 +32,7 @@ target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES})
 
 set_cpp_standard(chopt)
 set_warnings(chopt)
+enable_sanitisers(chopt)
 
 include(CTest)
 

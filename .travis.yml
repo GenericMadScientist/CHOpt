@@ -69,6 +69,42 @@ jobs:
         - clang-tidy-10 include/*.hpp src/*.cpp -- -Iinclude -Ilibs -std=c++17 -stdlib=libc++
         - clang-tidy-10 tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Iinclude -Ilibs -std=c++17 -stdlib=libc++
 
+    # Run of AddressSanitizer and UndefinedBehaviourSanitizer
+    - addons:
+        apt:
+          sources:
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-10
+            - libc++-10-dev
+            - libc++abi-10-dev
+      script:
+        - clang++-10 --version
+        - mkdir -p build
+        - cd build
+        - cmake -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DENABLE_SANITISER_ADDRESS -DENABLE_SANITISER_UNDEFINED ..
+        - cmake --build . --verbose
+        - ctest --verbose
+
+    # Run of MemorySanitizer
+    - addons:
+        apt:
+          sources:
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-10
+            - libc++-10-dev
+            - libc++abi-10-dev
+      script:
+        - clang++-10 --version
+        - mkdir -p build
+        - cd build
+        - cmake -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DENABLE_SANITISER_MEMORY ..
+        - cmake --build . --verbose
+        - ctest --verbose
+
 before_install:
   - eval "${MATRIX_EVAL}"
 

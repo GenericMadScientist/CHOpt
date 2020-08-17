@@ -14,6 +14,7 @@ function(package_add_test TESTNAME)
     add_test(NAME ${TESTNAME} COMMAND ${TESTNAME})
     set_cpp_standard(${TESTNAME})
     set_warnings(${TESTNAME})
+    enable_sanitisers(${TESTNAME})
 endfunction()
 
 package_add_test(chart_unittest chart_unittest.cpp "${SRC}/chart.cpp")
