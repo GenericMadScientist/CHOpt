@@ -211,6 +211,7 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
             {67, DrumNoteColour::BlueCymbal},
             {68, DrumNoteColour::GreenCymbal}};
         const auto colour = COLOURS.at(fret_type);
+        (void)length;
         return Note<DrumNoteColour> {position, 0, colour};
     }
 }
@@ -245,14 +246,14 @@ diff_inst_from_header(const std::string& header)
                      {"GHLGuitar"sv, Instrument::GHLGuitar},
                      {"GHLBass"sv, Instrument::GHLBass},
                      {"Drums"sv, Instrument::Drums}};
-    const auto* diff_iter = std::find_if(
+    auto diff_iter = std::find_if(
         DIFFICULTIES.cbegin(), DIFFICULTIES.cend(), [&](const auto& pair) {
             return starts_with_prefix(header, std::get<0>(pair));
         });
     if (diff_iter == DIFFICULTIES.cend()) {
         return {};
     }
-    const auto* inst_iter = std::find_if(
+    auto inst_iter = std::find_if(
         INSTRUMENTS.cbegin(), INSTRUMENTS.cend(), [&](const auto& pair) {
             return ends_with_suffix(header, std::get<0>(pair));
         });
