@@ -246,17 +246,16 @@ diff_inst_from_header(const std::string& header)
                      {"GHLGuitar"sv, Instrument::GHLGuitar},
                      {"GHLBass"sv, Instrument::GHLBass},
                      {"Drums"sv, Instrument::Drums}};
-    // We do the two decltypes because clang-tidy complains if we do auto,
-    // saying we should do const auto*, but then VS2017 won't compile with debug
-    // iterators.
-    decltype(DIFFICULTIES.cbegin()) diff_iter = std::find_if(
+    // NOLINT is required because following clang-tidy here causes the VS2017
+    // compile to fail.
+    auto diff_iter = std::find_if( // NOLINT
         DIFFICULTIES.cbegin(), DIFFICULTIES.cend(), [&](const auto& pair) {
             return starts_with_prefix(header, std::get<0>(pair));
         });
     if (diff_iter == DIFFICULTIES.cend()) {
         return {};
     }
-    decltype(INSTRUMENTS.cbegin()) inst_iter = std::find_if(
+    auto inst_iter = std::find_if( // NOLINT
         INSTRUMENTS.cbegin(), INSTRUMENTS.cend(), [&](const auto& pair) {
             return ends_with_suffix(header, std::get<0>(pair));
         });
