@@ -170,7 +170,7 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
                                                     int fret_type)
 {
     if constexpr (std::is_same_v<T, NoteColour>) {
-        constexpr std::array<std::optional<NoteColour>, 8> COLOURS {
+        static const std::array<std::optional<NoteColour>, 8> COLOURS {
             NoteColour::Green,
             NoteColour::Red,
             NoteColour::Yellow,
@@ -185,7 +185,7 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
         }
         return Note<NoteColour> {position, length, *colour};
     } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
-        constexpr std::array<std::optional<GHLNoteColour>, 9> COLOURS {
+        static const std::array<std::optional<GHLNoteColour>, 9> COLOURS {
             GHLNoteColour::WhiteLow,
             GHLNoteColour::WhiteMid,
             GHLNoteColour::WhiteHigh,
@@ -245,14 +245,14 @@ diff_inst_from_header(const std::string& header)
                      {"GHLGuitar"sv, Instrument::GHLGuitar},
                      {"GHLBass"sv, Instrument::GHLBass},
                      {"Drums"sv, Instrument::Drums}};
-    const auto diff_iter = std::find_if(
+    const auto* diff_iter = std::find_if(
         DIFFICULTIES.cbegin(), DIFFICULTIES.cend(), [&](const auto& pair) {
             return starts_with_prefix(header, std::get<0>(pair));
         });
     if (diff_iter == DIFFICULTIES.cend()) {
         return {};
     }
-    const auto inst_iter = std::find_if(
+    const auto* inst_iter = std::find_if(
         INSTRUMENTS.cbegin(), INSTRUMENTS.cend(), [&](const auto& pair) {
             return ends_with_suffix(header, std::get<0>(pair));
         });
@@ -387,28 +387,21 @@ Song Song::from_chart(const Chart& chart)
             if (is_six_fret_instrument(inst)) {
                 auto note_track
                     = note_track_from_section<GHLNoteColour>(section);
-                if (note_track.notes().empty()) {
-                    continue;
+                if (!note_track.notes().empty()) {
+                    song.m_six_fret_tracks.insert({{inst, diff}, note_track});
                 }
-                song.m_six_fret_tracks.insert(
-                    {{inst, diff}, std::move(note_track)});
-                continue;
-            }
-            if (inst == Instrument::Drums) {
+            } else if (inst == Instrument::Drums) {
                 auto note_track
                     = note_track_from_section<DrumNoteColour>(section);
-                if (note_track.notes().empty()) {
-                    continue;
+                if (!note_track.notes().empty()) {
+                    song.m_drum_note_tracks.insert({diff, note_track});
                 }
-                song.m_drum_note_tracks.insert({diff, std::move(note_track)});
-                continue;
+            } else {
+                auto note_track = note_track_from_section<NoteColour>(section);
+                if (!note_track.notes().empty()) {
+                    song.m_five_fret_tracks.insert({{inst, diff}, note_track});
+                }
             }
-            auto note_track = note_track_from_section<NoteColour>(section);
-            if (note_track.notes().empty()) {
-                continue;
-            }
-            song.m_five_fret_tracks.insert(
-                {{inst, diff}, std::move(note_track)});
         }
     }
 
