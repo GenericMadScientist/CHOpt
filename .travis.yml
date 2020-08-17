@@ -76,11 +76,12 @@ jobs:
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
               key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - g++-9
-            - valgrind
+            - clang-10
+            - libc++-10-dev
+            - libc++abi-10-dev
       script:
-        - CXX=g++-9
-        - g++-9 --version
+        - CXX=clang++-10
+        - clang++-10 --version
         - mkdir -p build
         - cd build
         - cmake -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DENABLE_SANITISER_ADDRESS=ON -DENABLE_SANITISER_UNDEFINED_BEHAVIOUR=ON ..
@@ -94,12 +95,11 @@ jobs:
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
               key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
-            - clang-10
-            - libc++-10-dev
-            - libc++abi-10-dev
+            - g++-9
+            - valgrind
       script:
-        - CXX=clang++-10
-        - clang++-10 --version
+        - CXX=g++-9
+        - g++-9 --version
         - mkdir -p build
         - cd build
         - cmake -DCMAKE_CXX_FLAGS=-g ..
