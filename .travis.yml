@@ -88,25 +88,6 @@ jobs:
         - cmake --build . --verbose
         - ctest --verbose
 
-    # Run of MemorySanitizer
-    - addons:
-        apt:
-          sources:
-            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
-              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
-          packages:
-            - clang-10
-            - libc++-10-dev
-            - libc++abi-10-dev
-      script:
-        - CXX=clang++-10
-        - clang++-10 --version
-        - mkdir -p build
-        - cd build
-        - cmake -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DENABLE_SANITISER_MEMORY=ON ..
-        - cmake --build . --verbose
-        - ctest --verbose
-
 before_install:
   - eval "${MATRIX_EVAL}"
 
