@@ -246,14 +246,17 @@ diff_inst_from_header(const std::string& header)
                      {"GHLGuitar"sv, Instrument::GHLGuitar},
                      {"GHLBass"sv, Instrument::GHLBass},
                      {"Drums"sv, Instrument::Drums}};
-    auto diff_iter = std::find_if(
+    // We do the two decltypes because clang-tidy complains if we do auto,
+    // saying we should do const auto*, but then VS2017 won't compile with debug
+    // iterators.
+    decltype(DIFFICULTIES.cbegin()) diff_iter = std::find_if(
         DIFFICULTIES.cbegin(), DIFFICULTIES.cend(), [&](const auto& pair) {
             return starts_with_prefix(header, std::get<0>(pair));
         });
     if (diff_iter == DIFFICULTIES.cend()) {
         return {};
     }
-    auto inst_iter = std::find_if(
+    decltype(INSTRUMENTS.cbegin()) inst_iter = std::find_if(
         INSTRUMENTS.cbegin(), INSTRUMENTS.cend(), [&](const auto& pair) {
             return ends_with_suffix(header, std::get<0>(pair));
         });
@@ -955,15 +958,15 @@ Song Song::from_midi(const Midi& midi)
         }
         if (is_six_fret_instrument(*inst)) {
             auto tracks = ghl_note_tracks_from_midi(track, song.m_resolution);
-            for (auto& [diff, track] : tracks) {
-                song.m_six_fret_tracks[{*inst, diff}] = std::move(track);
+            for (auto& [diff, note_track] : tracks) {
+                song.m_six_fret_tracks[{*inst, diff}] = std::move(note_track);
             }
         } else if (*inst == Instrument::Drums) {
             song.m_drum_note_tracks = drum_note_tracks_from_midi(track);
         } else {
             auto tracks = note_tracks_from_midi(track, song.m_resolution);
-            for (auto& [diff, track] : tracks) {
-                song.m_five_fret_tracks[{*inst, diff}] = std::move(track);
+            for (auto& [diff, note_track] : tracks) {
+                song.m_five_fret_tracks[{*inst, diff}] = std::move(note_track);
             }
         }
     }
