@@ -103,7 +103,7 @@ jobs:
         - cd build
         - cmake -DCMAKE_CXX_FLAGS=-g ..
         - cmake --build . --verbose
-        - valgrind --leak-check=yes ctest --verbose
+        - valgrind --leak-check=yes --trace-children=yes ctest --verbose
 
 before_install:
   - eval "${MATRIX_EVAL}"
