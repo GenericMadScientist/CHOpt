@@ -69,7 +69,25 @@ jobs:
         - clang-tidy-10 include/*.hpp src/*.cpp -- -Iinclude -Ilibs -std=c++17 -stdlib=libc++
         - clang-tidy-10 tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Iinclude -Ilibs -std=c++17 -stdlib=libc++
 
-    # Run of AddressSanitizer and UndefinedBehaviourSanitizer
+    # AddressSanitizer and UndefinedBehaviourSanitizer
+    - addons:
+        apt:
+          sources:
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - g++-9
+            - valgrind
+      script:
+        - CXX=g++-9
+        - g++-9 --version
+        - mkdir -p build
+        - cd build
+        - cmake -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DENABLE_SANITISER_ADDRESS=ON -DENABLE_SANITISER_UNDEFINED_BEHAVIOUR=ON ..
+        - cmake --build . --verbose
+        - ctest --verbose
+
+    # Valgrind
     - addons:
         apt:
           sources:
@@ -84,9 +102,9 @@ jobs:
         - clang++-10 --version
         - mkdir -p build
         - cd build
-        - cmake -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DENABLE_SANITISER_ADDRESS=ON -DENABLE_SANITISER_UNDEFINED_BEHAVIOUR=ON ..
+        - cmake -DCMAKE_CXX_FLAGS=-g ..
         - cmake --build . --verbose
-        - ctest --verbose
+        - valgrind --leak-check=yes ctest --verbose
 
 before_install:
   - eval "${MATRIX_EVAL}"
