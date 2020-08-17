@@ -39,8 +39,8 @@ using PointPtr = std::vector<Point>::const_iterator;
 
 class PointSet {
 private:
-    std::vector<Point> m_points;
-    std::vector<std::tuple<Position, int>> m_solo_boosts;
+    const std::vector<Point> m_points;
+    const std::vector<std::tuple<Position, int>> m_solo_boosts;
 
 public:
     PointSet(const NoteTrack<NoteColour>& track, int resolution,

@@ -30,7 +30,7 @@ static bool phrase_contains_pos(const StarPower& phrase, int position)
     return position < (phrase.position + phrase.length);
 }
 
-template <class OutputIt>
+template <typename OutputIt>
 static void append_sustain_points(OutputIt points, int position,
                                   int sust_length, int resolution,
                                   const TimeConverter& converter)
@@ -58,7 +58,7 @@ static void append_sustain_points(OutputIt points, int position,
     }
 }
 
-template <class InputIt, class OutputIt>
+template <typename InputIt, typename OutputIt>
 static void append_note_points(InputIt first, InputIt last, OutputIt points,
                                int resolution, bool is_note_sp_ender,
                                const TimeConverter& converter, double squeeze)
@@ -101,16 +101,22 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
     }
 }
 
-PointSet::PointSet(const NoteTrack<NoteColour>& track, int resolution,
-                   const TimeConverter& converter, double squeeze)
+template <typename T>
+static std::vector<Point>
+points_from_track(const NoteTrack<T>& track, int resolution,
+                  const TimeConverter& converter, double squeeze)
 {
     const auto& notes = track.notes();
+    std::vector<Point> points;
 
     auto current_phrase = track.sp_phrases().cbegin();
     for (auto p = notes.cbegin(); p != notes.cend();) {
-        const auto q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
-            return x.position == p->position;
-        });
+        auto q = std::next(p);
+        if constexpr (!std::is_same_v<T, DrumNoteColour>) {
+            q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
+                return x.position == p->position;
+            });
+        }
         auto is_note_sp_ender = false;
         if (current_phrase != track.sp_phrases().cend()
             && phrase_contains_pos(*current_phrase, p->position)
@@ -119,18 +125,18 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track, int resolution,
             is_note_sp_ender = true;
             ++current_phrase;
         }
-        append_note_points(p, q, std::back_inserter(m_points), resolution,
+        append_note_points(p, q, std::back_inserter(points), resolution,
                            is_note_sp_ender, converter, squeeze);
         p = q;
     }
 
-    std::stable_sort(m_points.begin(), m_points.end(),
+    std::stable_sort(points.begin(), points.end(),
                      [](const auto& x, const auto& y) {
                          return x.position.beat < y.position.beat;
                      });
 
     auto combo = 0U;
-    for (auto& point : m_points) {
+    for (auto& point : points) {
         if (!point.is_hold_point) {
             ++combo;
         }
@@ -138,101 +144,44 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track, int resolution,
         point.value *= multiplier;
     }
 
-    m_solo_boosts.reserve(track.solos().size());
-    for (const auto& solo : track.solos()) {
+    return points;
+}
+
+static std::vector<std::tuple<Position, int>>
+solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
+                       const TimeConverter& converter)
+{
+    std::vector<std::tuple<Position, int>> solo_boosts;
+    solo_boosts.reserve(solos.size());
+    for (const auto& solo : solos) {
         Beat end_beat {solo.end / static_cast<double>(resolution)};
         Measure end_meas = converter.beats_to_measures(end_beat);
         Position end_pos {end_beat, end_meas};
-        m_solo_boosts.emplace_back(end_pos, solo.value);
+        solo_boosts.emplace_back(end_pos, solo.value);
     }
+    return solo_boosts;
+}
+
+PointSet::PointSet(const NoteTrack<NoteColour>& track, int resolution,
+                   const TimeConverter& converter, double squeeze)
+    : m_points {points_from_track(track, resolution, converter, squeeze)}
+    , m_solo_boosts {
+          solo_boosts_from_solos(track.solos(), resolution, converter)}
+{
 }
 
 PointSet::PointSet(const NoteTrack<GHLNoteColour>& track, int resolution,
                    const TimeConverter& converter, double squeeze)
+    : m_points {points_from_track(track, resolution, converter, squeeze)}
+    , m_solo_boosts {
+          solo_boosts_from_solos(track.solos(), resolution, converter)}
 {
-    const auto& notes = track.notes();
-
-    auto current_phrase = track.sp_phrases().cbegin();
-    for (auto p = notes.cbegin(); p != notes.cend();) {
-        const auto q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
-            return x.position == p->position;
-        });
-        auto is_note_sp_ender = false;
-        if (current_phrase != track.sp_phrases().cend()
-            && phrase_contains_pos(*current_phrase, p->position)
-            && ((q == notes.cend())
-                || !phrase_contains_pos(*current_phrase, q->position))) {
-            is_note_sp_ender = true;
-            ++current_phrase;
-        }
-        append_note_points(p, q, std::back_inserter(m_points), resolution,
-                           is_note_sp_ender, converter, squeeze);
-        p = q;
-    }
-
-    std::stable_sort(m_points.begin(), m_points.end(),
-                     [](const auto& x, const auto& y) {
-                         return x.position.beat < y.position.beat;
-                     });
-
-    auto combo = 0U;
-    for (auto& point : m_points) {
-        if (!point.is_hold_point) {
-            ++combo;
-        }
-        const auto multiplier = 1 + std::min(combo / 10, 3U);
-        point.value *= multiplier;
-    }
-
-    m_solo_boosts.reserve(track.solos().size());
-    for (const auto& solo : track.solos()) {
-        Beat end_beat {solo.end / static_cast<double>(resolution)};
-        Measure end_meas = converter.beats_to_measures(end_beat);
-        Position end_pos {end_beat, end_meas};
-        m_solo_boosts.emplace_back(end_pos, solo.value);
-    }
 }
 
 PointSet::PointSet(const NoteTrack<DrumNoteColour>& track, int resolution,
                    const TimeConverter& converter, double squeeze)
+    : m_points {points_from_track(track, resolution, converter, squeeze)}
+    , m_solo_boosts {
+          solo_boosts_from_solos(track.solos(), resolution, converter)}
 {
-    const auto& notes = track.notes();
-
-    auto current_phrase = track.sp_phrases().cbegin();
-    for (auto p = notes.cbegin(); p != notes.cend();) {
-        const auto q = std::next(p);
-        auto is_note_sp_ender = false;
-        if (current_phrase != track.sp_phrases().cend()
-            && phrase_contains_pos(*current_phrase, p->position)
-            && ((q == notes.cend())
-                || !phrase_contains_pos(*current_phrase, q->position))) {
-            is_note_sp_ender = true;
-            ++current_phrase;
-        }
-        append_note_points(p, q, std::back_inserter(m_points), resolution,
-                           is_note_sp_ender, converter, squeeze);
-        p = q;
-    }
-
-    std::stable_sort(m_points.begin(), m_points.end(),
-                     [](const auto& x, const auto& y) {
-                         return x.position.beat < y.position.beat;
-                     });
-
-    auto combo = 0U;
-    for (auto& point : m_points) {
-        if (!point.is_hold_point) {
-            ++combo;
-        }
-        const auto multiplier = 1 + std::min(combo / 10, 3U);
-        point.value *= multiplier;
-    }
-
-    m_solo_boosts.reserve(track.solos().size());
-    for (const auto& solo : track.solos()) {
-        Beat end_beat {solo.end / static_cast<double>(resolution)};
-        Measure end_meas = converter.beats_to_measures(end_beat);
-        Position end_pos {end_beat, end_meas};
-        m_solo_boosts.emplace_back(end_pos, solo.value);
-    }
 }
