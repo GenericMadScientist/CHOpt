@@ -80,6 +80,7 @@ jobs:
             - libc++-10-dev
             - libc++abi-10-dev
       script:
+        - CXX=clang++-10
         - clang++-10 --version
         - mkdir -p build
         - cd build
@@ -98,6 +99,7 @@ jobs:
             - libc++-10-dev
             - libc++abi-10-dev
       script:
+        - CXX=clang++-10
         - clang++-10 --version
         - mkdir -p build
         - cd build
