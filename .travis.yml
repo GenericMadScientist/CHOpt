@@ -84,7 +84,7 @@ jobs:
         - clang++-10 --version
         - mkdir -p build
         - cd build
-        - cmake -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DENABLE_SANITISER_ADDRESS=ON -DENABLE_SANITISER_UNDEFINED=ON ..
+        - cmake -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DENABLE_SANITISER_ADDRESS=ON -DENABLE_SANITISER_UNDEFINED_BEHAVIOUR=ON ..
         - cmake --build . --verbose
         - ctest --verbose
 
