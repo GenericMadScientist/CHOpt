@@ -533,13 +533,14 @@ TEST_CASE("6 fret instruments are read correctly from .chart")
 
 TEST_CASE("Drums are read correctly from .chart")
 {
-    ChartSection expert_drums {"ExpertDrums",
-                               {},
-                               {},
-                               {},
-                               {{192, 1, 0}, {384, 2, 0}, {384, 66, 0}},
-                               {},
-                               {}};
+    ChartSection expert_drums {
+        "ExpertDrums",
+        {},
+        {},
+        {},
+        {{192, 1, 0}, {384, 2, 0}, {384, 66, 0}, {576, 5, 0}},
+        {},
+        {}};
     std::vector<ChartSection> sections {expert_drums};
     const Chart chart {sections};
     std::vector<Note<DrumNoteColour>> notes {

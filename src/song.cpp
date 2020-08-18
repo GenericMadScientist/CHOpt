@@ -202,18 +202,22 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
         }
         return Note<GHLNoteColour> {position, length, *colour};
     } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        const std::map<int, DrumNoteColour> COLOURS {
-            {0, DrumNoteColour::Kick},
-            {1, DrumNoteColour::Red},
-            {2, DrumNoteColour::Yellow},
-            {3, DrumNoteColour::Blue},
-            {4, DrumNoteColour::Green},
-            {66, DrumNoteColour::YellowCymbal},
-            {67, DrumNoteColour::BlueCymbal},
-            {68, DrumNoteColour::GreenCymbal}};
+        const std::map<int, std::optional<DrumNoteColour>> COLOURS {
+            {0, {DrumNoteColour::Kick}},
+            {1, {DrumNoteColour::Red}},
+            {2, {DrumNoteColour::Yellow}},
+            {3, {DrumNoteColour::Blue}},
+            {4, {DrumNoteColour::Green}},
+            {5, {}},
+            {66, {DrumNoteColour::YellowCymbal}},
+            {67, {DrumNoteColour::BlueCymbal}},
+            {68, {DrumNoteColour::GreenCymbal}}};
         const auto colour = COLOURS.at(fret_type);
+        if (!colour.has_value()) {
+            return {};
+        }
         (void)length;
-        return Note<DrumNoteColour> {position, 0, colour};
+        return Note<DrumNoteColour> {position, 0, *colour};
     }
 }
 
