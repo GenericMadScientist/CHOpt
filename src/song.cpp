@@ -112,7 +112,8 @@ static std::string_view trim_quotes(std::string_view input)
 // where the event is on.
 static std::vector<std::tuple<int, int>>
 combine_on_off_events(const std::vector<int>& on_events,
-                      const std::vector<int>& off_events)
+                      const std::vector<int>& off_events,
+                      bool throw_on_unmatched_on_event)
 {
     std::vector<std::tuple<int, int>> ranges;
 
@@ -130,7 +131,7 @@ combine_on_off_events(const std::vector<int>& on_events,
         }
     }
 
-    if (on_iter != on_events.cend()) {
+    if (throw_on_unmatched_on_event && on_iter != on_events.cend()) {
         throw std::invalid_argument("on event has no corresponding off event");
     }
 
@@ -148,7 +149,7 @@ form_solo_vector(const std::vector<int>& solo_on_events,
     std::vector<Solo> solos;
 
     for (auto [start, end] :
-         combine_on_off_events(solo_on_events, solo_off_events)) {
+         combine_on_off_events(solo_on_events, solo_off_events, false)) {
         std::set<int> positions_in_solo;
         for (const auto& note : notes) {
             if (note.position >= start && note.position <= end) {
@@ -179,7 +180,7 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
             {},
             {},
             NoteColour::Open};
-        const auto colour = COLOURS.at(fret_type);
+        const auto colour = COLOURS.at(static_cast<std::size_t>(fret_type));
         if (!colour.has_value()) {
             return {};
         }
@@ -195,13 +196,13 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
             {},
             GHLNoteColour::Open,
             GHLNoteColour::BlackHigh};
-        const auto colour = COLOURS.at(fret_type);
+        const auto colour = COLOURS.at(static_cast<std::size_t>(fret_type));
         if (!colour.has_value()) {
             return {};
         }
         return Note<GHLNoteColour> {position, length, *colour};
     } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        static const std::map<int, DrumNoteColour> COLOURS {
+        const std::map<int, DrumNoteColour> COLOURS {
             {0, DrumNoteColour::Kick},
             {1, DrumNoteColour::Red},
             {2, DrumNoteColour::Yellow},
@@ -265,7 +266,7 @@ diff_inst_from_header(const std::string& header)
     return std::tuple {std::get<1>(*diff_iter), std::get<1>(*inst_iter)};
 }
 
-std::vector<Note<DrumNoteColour>>
+static std::vector<Note<DrumNoteColour>>
 apply_cymbal_events(const std::vector<Note<DrumNoteColour>>& notes)
 {
     std::set<unsigned int> deletion_spots;
@@ -761,7 +762,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
     for (const auto& [diff, open_ons] : event_track.open_on_events) {
         const auto& open_offs = event_track.open_off_events.at(diff);
-        open_events[diff] = combine_on_off_events(open_ons, open_offs);
+        open_events[diff] = combine_on_off_events(open_ons, open_offs, true);
     }
 
     std::map<Difficulty, std::vector<Note<NoteColour>>> notes;
@@ -769,7 +770,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         const auto& [diff, colour] = key;
         const auto& note_offs = event_track.note_off_events.at(key);
         for (const auto& [pos, end] :
-             combine_on_off_events(note_ons, note_offs)) {
+             combine_on_off_events(note_ons, note_offs, true)) {
             auto note_length = end - pos;
             if (note_length
                 <= (DEFAULT_SUST_CUTOFF * resolution) / DEFAULT_RESOLUTION) {
@@ -787,7 +788,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_on_off_events(
-             event_track.sp_on_events, event_track.sp_off_events)) {
+             event_track.sp_on_events, event_track.sp_off_events, true)) {
         sp_phrases.push_back({start, end - start});
     }
 
@@ -815,7 +816,7 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         const auto& [diff, colour] = key;
         const auto& note_offs = event_track.note_off_events.at(key);
         for (const auto& [pos, end] :
-             combine_on_off_events(note_ons, note_offs)) {
+             combine_on_off_events(note_ons, note_offs, true)) {
             auto note_length = end - pos;
             if (note_length
                 <= (DEFAULT_SUST_CUTOFF * resolution) / DEFAULT_RESOLUTION) {
@@ -827,7 +828,7 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_on_off_events(
-             event_track.sp_on_events, event_track.sp_off_events)) {
+             event_track.sp_on_events, event_track.sp_off_events, true)) {
         sp_phrases.push_back({start, end - start});
     }
 
@@ -847,19 +848,21 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track)
     const auto event_track
         = read_instrument_midi_track<DrumNoteColour>(midi_track);
 
-    const auto yellow_tom_events = combine_on_off_events(
-        event_track.yellow_tom_on_events, event_track.yellow_tom_off_events);
+    const auto yellow_tom_events
+        = combine_on_off_events(event_track.yellow_tom_on_events,
+                                event_track.yellow_tom_off_events, true);
     const auto blue_tom_events = combine_on_off_events(
-        event_track.blue_tom_on_events, event_track.blue_tom_off_events);
-    const auto green_tom_events = combine_on_off_events(
-        event_track.green_tom_on_events, event_track.green_tom_off_events);
+        event_track.blue_tom_on_events, event_track.blue_tom_off_events, true);
+    const auto green_tom_events
+        = combine_on_off_events(event_track.green_tom_on_events,
+                                event_track.green_tom_off_events, true);
 
     std::map<Difficulty, std::vector<Note<DrumNoteColour>>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour] = key;
         const auto& note_offs = event_track.note_off_events.at(key);
         for (const auto& [pos, end] :
-             combine_on_off_events(note_ons, note_offs)) {
+             combine_on_off_events(note_ons, note_offs, true)) {
             auto note_colour = colour;
             if (note_colour == DrumNoteColour::YellowCymbal) {
                 for (const auto& [open_start, open_end] : yellow_tom_events) {
@@ -886,7 +889,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track)
 
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_on_off_events(
-             event_track.sp_on_events, event_track.sp_off_events)) {
+             event_track.sp_on_events, event_track.sp_off_events, true)) {
         sp_phrases.push_back({start, end - start});
     }
 
@@ -902,7 +905,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track)
 
 static std::optional<Instrument> midi_section_instrument(const MidiTrack& track)
 {
-    static const std::map<std::string, Instrument> INSTRUMENTS {
+    const std::map<std::string, Instrument> INSTRUMENTS {
         {"PART GUITAR", Instrument::Guitar},
         {"T1 GEMS", Instrument::Guitar},
         {"PART GUITAR COOP", Instrument::GuitarCoop},

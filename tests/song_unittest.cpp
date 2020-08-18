@@ -427,6 +427,18 @@ TEST_CASE("Solos are read properly")
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
     }
+
+    SECTION("Solos with no soloend event are ignored")
+    {
+        ChartSection expert_single {"ExpertSingle", {}, {}, {{0, "solo"}},
+                                    {{192, 0, 0}},  {}, {}};
+        std::vector<ChartSection> sections {expert_single};
+        const Chart chart {sections};
+
+        const auto song = Song::from_chart(chart);
+
+        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos().empty());
+    }
 }
 
 TEST_CASE("Other 5 fret instruments are read from Chart")
