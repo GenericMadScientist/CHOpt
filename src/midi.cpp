@@ -225,13 +225,11 @@ static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
         TimedEvent event {absolute_time, {}};
         const auto event_type = span[0];
         if (event_type == META_EVENT_ID) {
-            prev_status_byte = -1;
             span = span.subspan(1);
             MetaEvent meta_event {};
             span = read_meta_event(span, meta_event);
             event.event = meta_event;
         } else if (event_type == SYSEX_EVENT_ID) {
-            prev_status_byte = -1;
             span = span.subspan(1);
             SysexEvent sysex_event {};
             span = read_sysex_event(span, sysex_event);

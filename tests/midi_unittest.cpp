@@ -188,24 +188,24 @@ TEST_CASE("Midi events are read")
         REQUIRE(midi.tracks[0].events == events);
     }
 
-    SECTION("Running status is stopped by Meta Events")
+    SECTION("Running status is not stopped by Meta Events")
     {
         std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0,    0, 0,
                                          11,   0,    0x94, 0x7F, 0x64, 0, 0xFF,
                                          2,    0,    0x10, 0x7F, 0x64};
         auto data = midi_from_tracks({track});
 
-        REQUIRE_THROWS([&] { return parse_midi(data); }());
+        REQUIRE_NOTHROW([&] { return parse_midi(data); }());
     }
 
-    SECTION("Running status is stopped by Syex Events")
+    SECTION("Running status is not stopped by Syex Events")
     {
         std::vector<std::uint8_t> track {0x4D, 0x54, 0x72, 0x6B, 0,    0, 0,
                                          11,   0,    0x94, 0x7F, 0x64, 0, 0xF0,
                                          1,    0,    0x10, 0x7F, 0x64};
         auto data = midi_from_tracks({track});
 
-        REQUIRE_THROWS([&] { return parse_midi(data); }());
+        REQUIRE_NOTHROW([&] { return parse_midi(data); }());
     }
 
     SECTION("Not all MIDI events take two data bytes")
