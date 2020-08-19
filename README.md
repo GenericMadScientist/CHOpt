@@ -8,10 +8,10 @@ A command-line tool to work out optimal Star Power paths for Clone Hero songs.
 ## Install
 
 Download the latest version from the [Releases page](../../releases). If you're
-on something other than Windows, then either compile it yourself or ask me. The
-tests do pass on Mac OS and Linux, but I've not tried the program proper on
-them. If you do plan to compile chopt yourself, make sure to set ENABLE_LTO to
-ON in your CMakeCache.
+on something other than Windows or Linux, then either compile it yourself or ask
+me. The tests do pass on Mac OS, but I've not tried the program proper on it. If
+you do plan to compile chopt yourself, make sure to set ENABLE_LTO to ON in your
+CMakeCache.
 
 ## Usage
 
