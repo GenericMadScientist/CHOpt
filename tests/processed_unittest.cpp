@@ -258,6 +258,25 @@ TEST_CASE("is_candidate_valid works with whammy")
                 == ActValidity::success);
     }
 
+    // This comes up in Epidox: otherwise, chopt doesn't think you can squeeze
+    // to the G after the B in the Robotic Buildup activation.
+    SECTION("Check whammy from end of SP sustain before note is counted")
+    {
+        auto notes_copy = notes;
+        notes_copy[1].position = 2880;
+        NoteTrack<NoteColour> note_track_two {notes_copy, phrases, {}};
+        ProcessedSong track_two {note_track_two, 192, {}, 1.0, 1.0,
+                                 Second(0.0)};
+        const auto& points_two = track_two.points();
+        ActivationCandidate candidate_two {points_two.cend() - 2,
+                                           points_two.cend() - 1,
+                                           {Beat(1.0), Measure(0.25)},
+                                           {0.5, 0.5}};
+
+        REQUIRE(track_two.is_candidate_valid(candidate_two).validity
+                == ActValidity::success);
+    }
+
     SECTION("Check compressed activations are counted")
     {
         candidate.sp_bar.max() = 0.9;
