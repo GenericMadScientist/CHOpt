@@ -490,6 +490,23 @@ TEST_CASE("is_restricted_candidate_valid takes into account forced whammy")
             == ActValidity::surplus_sp);
 }
 
+TEST_CASE("is_restricted_candidate_whammy also takes account of whammy from "
+          "end of SP sustain before note is counted")
+{
+    std::vector<Note<NoteColour>> notes {{0, 960}, {2880}, {6144}};
+    std::vector<StarPower> phrases {{0, 7000}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+    const auto& points = track.points();
+    ActivationCandidate candidate {points.cend() - 2,
+                                   points.cend() - 1,
+                                   {Beat(1.0), Measure(0.25)},
+                                   {0.5, 0.5}};
+
+    REQUIRE(track.is_restricted_candidate_valid(candidate, 0.0).validity
+            == ActValidity::success);
+}
+
 TEST_CASE("adjusted_hit_window_* functions return correct values")
 {
     std::vector<Note<NoteColour>> notes {{0}};
