@@ -259,6 +259,23 @@ TEST_CASE("optimal_path produces the correct path")
         REQUIRE(opt_path.activations.size() == 1);
     }
 
+    // There was a bug where an activation on a note right after an SP sustain
+    // could double count the whammy available between the burst at the end of
+    // the sustain and the note. This affected a squeeze in Epidox, making chopt
+    // think you could squeeze from the O right before Robotic Buildup to a B in
+    // the next section. This test is to catch that.
+    SECTION("Whammy just before the activation point is not double counted")
+    {
+        std::vector<Note<NoteColour>> notes {{192, 1440}, {1632}, {6336}};
+        std::vector<StarPower> phrases {{192, 1}, {1632, 1}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        Optimiser optimiser {&track};
+        auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.score_boost < 100);
+    }
+
     SECTION("Songs ending in ES1 are pathed correctly")
     {
         std::vector<Note<NoteColour>> notes {{0},   {192},  {384}, {576},

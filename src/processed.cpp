@@ -55,6 +55,50 @@ SpBar ProcessedSong::total_available_sp(Beat start, PointPtr first_point,
     return sp_bar;
 }
 
+std::tuple<SpBar, Position> ProcessedSong::total_available_sp_with_earliest_pos(
+    Beat start, PointPtr first_point, PointPtr act_start,
+    Position earliest_potential_pos) const
+{
+    SpBar sp_bar {0.0, 0.0};
+    for (auto p = first_point; p < act_start; ++p) {
+        if (p->is_sp_granting_note) {
+            sp_bar.add_phrase();
+        }
+    }
+
+    sp_bar.max()
+        += m_sp_data.available_whammy(start, earliest_potential_pos.beat);
+    sp_bar.max() = std::min(sp_bar.max(), 1.0);
+
+    if (sp_bar.full_enough_to_activate()) {
+        return {sp_bar, earliest_potential_pos};
+    }
+
+    const auto extra_sp_required = 0.5 - sp_bar.max();
+    auto first_beat = earliest_potential_pos.beat;
+    auto last_beat = act_start->position.beat;
+    if (m_sp_data.available_whammy(first_beat, last_beat) < extra_sp_required) {
+        return {sp_bar, earliest_potential_pos};
+    }
+
+    while (last_beat - first_beat > Beat {0.0001}) {
+        const auto mid_beat = (first_beat + last_beat) * 0.5;
+        if (m_sp_data.available_whammy(earliest_potential_pos.beat, mid_beat)
+            < extra_sp_required) {
+            first_beat = mid_beat;
+        } else {
+            last_beat = mid_beat;
+        }
+    }
+
+    sp_bar.max()
+        += m_sp_data.available_whammy(earliest_potential_pos.beat, last_beat);
+    sp_bar.max() = std::min(sp_bar.max(), 1.0);
+
+    return {sp_bar,
+            Position {last_beat, m_converter.beats_to_measures(last_beat)}};
+}
+
 ActResult
 ProcessedSong::is_candidate_valid(const ActivationCandidate& activation) const
 {

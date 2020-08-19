@@ -19,6 +19,7 @@
 #ifndef CHOPT_OPTIMISER_HPP
 #define CHOPT_OPTIMISER_HPP
 
+#include <limits>
 #include <map>
 #include <optional>
 #include <tuple>
@@ -61,6 +62,7 @@ private:
         std::map<PointPtr, CacheValue> full_sp_paths;
     };
 
+    static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
     const ProcessedSong* m_song;
     std::vector<PointPtr> m_next_candidate_points;
 

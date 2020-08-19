@@ -88,6 +88,23 @@ TEST_CASE("3 arg total_available_sp counts SP correctly")
     }
 }
 
+TEST_CASE("total_available_sp_with_earliest_pos counts SP correctly and gives "
+          "earliest posiiton")
+{
+    std::vector<Note<NoteColour>> notes {{0, 1459}, {1459}};
+    std::vector<StarPower> phrases {{0, 100}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    ProcessedSong song {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+    const auto& points = song.points();
+
+    const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
+        Beat(0.0), points.cbegin(), std::prev(points.cend()),
+        std::prev(points.cend(), 2)->position);
+
+    REQUIRE(sp_bar.max() == Approx(0.5));
+    REQUIRE(pos.beat.value() == Approx(7.5));
+}
+
 TEST_CASE("is_candidate_valid works with no whammy")
 {
     std::vector<Note<NoteColour>> notes {{0}, {1536}, {3072}, {6144}};

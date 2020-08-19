@@ -20,7 +20,6 @@
 #include <cassert>
 #include <cstddef>
 #include <iterator>
-#include <limits>
 #include <numeric>
 #include <set>
 
@@ -182,9 +181,16 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
 
     for (auto p = key.point; p < m_song->points().cend(); ++p) {
         SpBar sp_bar {1.0, 1.0};
+        Position starting_pos {Beat {NEG_INF}, Measure {NEG_INF}};
+        if (p != m_song->points().cbegin()) {
+            starting_pos = std::prev(p)->hit_window_start;
+        }
         if (!has_full_sp) {
-            sp_bar
-                = m_song->total_available_sp(key.position.beat, key.point, p);
+            const auto& [new_sp, new_pos]
+                = m_song->total_available_sp_with_earliest_pos(
+                    key.position.beat, key.point, p, starting_pos);
+            sp_bar = new_sp;
+            starting_pos = new_pos;
         }
         if (!sp_bar.full_enough_to_activate()) {
             continue;
@@ -202,7 +208,6 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             }
             break;
         }
-        auto starting_pos = std::prev(p)->hit_window_start;
         auto q_min = act_end_lower_bound(
             p, starting_pos.measure, std::max(MINIMUM_SP_AMOUNT, sp_bar.min()));
         for (auto q = q_min; q < m_song->points().cend(); ++q) {
@@ -246,8 +251,6 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
 
 Path Optimiser::optimal_path() const
 {
-    constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
-
     Cache cache;
     CacheKey start_key {m_song->points().cbegin(),
                         {Beat(NEG_INF), Measure(NEG_INF)}};

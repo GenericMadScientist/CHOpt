@@ -22,6 +22,7 @@
 #include <limits>
 #include <numeric>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "points.hpp"
@@ -102,6 +103,14 @@ public:
     [[nodiscard]] SpBar
     total_available_sp(Beat start, PointPtr first_point, PointPtr act_start,
                        Beat required_whammy_end = Beat {NEG_INF}) const;
+    // Similar to total_available_sp, but no whammy is required and if it is
+    // possible to get a half bar then the earliest position >=
+    // earliest_potential_pos that grants a half bar is returned along with the
+    // SP only up to that position.
+    [[nodiscard]] std::tuple<SpBar, Position>
+    total_available_sp_with_earliest_pos(Beat start, PointPtr first_point,
+                                         PointPtr act_start,
+                                         Position earliest_potential_pos) const;
     // Returns an ActResult which says if an activation is valid, and if so the
     // earliest position it can end.
     [[nodiscard]] ActResult
