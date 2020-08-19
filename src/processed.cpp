@@ -59,6 +59,8 @@ std::tuple<SpBar, Position> ProcessedSong::total_available_sp_with_earliest_pos(
     Beat start, PointPtr first_point, PointPtr act_start,
     Position earliest_potential_pos) const
 {
+    const Beat BEAT_EPSILON {0.0001};
+
     SpBar sp_bar {0.0, 0.0};
     for (auto p = first_point; p < act_start; ++p) {
         if (p->is_sp_granting_note) {
@@ -81,7 +83,7 @@ std::tuple<SpBar, Position> ProcessedSong::total_available_sp_with_earliest_pos(
         return {sp_bar, earliest_potential_pos};
     }
 
-    while (last_beat - first_beat > Beat {0.0001}) {
+    while (last_beat - first_beat > BEAT_EPSILON) {
         const auto mid_beat = (first_beat + last_beat) * 0.5;
         if (m_sp_data.available_whammy(earliest_potential_pos.beat, mid_beat)
             < extra_sp_required) {
