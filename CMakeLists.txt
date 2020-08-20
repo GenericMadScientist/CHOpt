@@ -34,9 +34,25 @@ set_cpp_standard(chopt)
 set_warnings(chopt)
 enable_sanitisers(chopt)
 
+option(BUILD_GUI "Build the GUI version" ON)
+if(BUILD_GUI)
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
+    set(CMAKE_AUTOUIC ON)
+
+    find_package(Qt5 COMPONENTS Widgets REQUIRED)
+
+    add_executable(choptgui gui/main.cpp gui/mainwindow.cpp gui/mainwindow.ui)
+    target_link_libraries(choptgui PRIVATE Qt5::Widgets)
+
+    set_cpp_standard(choptgui)
+endif()
+
 include(CTest)
 
-option(PACKAGE_TESTS "Build the tests" ON)
+option(PACKAGE_TESTS "Build the tests" OFF)
 if(PACKAGE_TESTS)
     enable_testing()
     add_subdirectory(tests)

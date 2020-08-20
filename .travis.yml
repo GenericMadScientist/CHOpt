@@ -63,7 +63,7 @@ jobs:
         - echo "CMake not required for static analysis job"
       script:
         - clang-format-10 --version
-        - clang-format-10 -i include/*.hpp src/*.cpp tests/*.cpp
+        - clang-format-10 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp
         - git diff --color --exit-code
         - clang-tidy-10 --version
         - clang-tidy-10 include/*.hpp src/*.cpp -- -Iinclude -Ilibs -std=c++17 -stdlib=libc++
@@ -84,7 +84,7 @@ jobs:
         - clang++-10 --version
         - mkdir -p build
         - cd build
-        - cmake -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DENABLE_SANITISER_ADDRESS=ON -DENABLE_SANITISER_UNDEFINED_BEHAVIOUR=ON ..
+        - cmake -DCMAKE_CXX_FLAGS=-stdlib=libc++ -DENABLE_SANITISER_ADDRESS=ON -DENABLE_SANITISER_UNDEFINED_BEHAVIOUR=ON -DBUILD_GUI=OFF ..
         - cmake --build . --verbose
         - ctest --verbose
 
@@ -101,7 +101,7 @@ jobs:
         - g++-9 --version
         - mkdir -p build
         - cd build
-        - cmake -DCMAKE_CXX_FLAGS=-g ..
+        - cmake -DCMAKE_CXX_FLAGS=-g -DBUILD_GUI=OFF ..
         - cmake --build . --verbose
         - valgrind --leak-check=yes --trace-children=yes ctest --verbose
 
@@ -119,6 +119,6 @@ script:
   - ${CXX} --version
   - mkdir -p build
   - cd build
-  - cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
+  - cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} -DBUILD_GUI=OFF ..
   - cmake --build . --verbose
   - ctest --verbose
