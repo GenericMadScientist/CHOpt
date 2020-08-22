@@ -168,9 +168,8 @@ void MainWindow::on_findPathButton_clicked()
 
 void MainWindow::on_selectFileButton_clicked()
 {
-    const auto file_name
-        = QFileDialog::getOpenFileName(this, "Open Image", ".",
-                                       "Song charts (*.chart *.mid)");
+    const auto file_name = QFileDialog::getOpenFileName(
+        this, "Open Image", ".", "Song charts (*.chart *.mid)");
     if (!file_name.isEmpty()) {
         song = Song::from_filename(file_name.toStdString());
 
