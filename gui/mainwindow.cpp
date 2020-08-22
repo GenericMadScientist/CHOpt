@@ -25,8 +25,6 @@
 #include "image.hpp"
 #include "mainwindow.hpp"
 #include "optimiser.hpp"
-#include "settings.hpp"
-#include "song.hpp"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget* parent)
@@ -34,29 +32,9 @@ MainWindow::MainWindow(QWidget* parent)
     , ui {std::make_unique<Ui::MainWindow>()}
 {
     ui->setupUi(this);
-
-    ui->instrumentComboBox->addItem("Guitar",
-                                    static_cast<int>(Instrument::Guitar));
-    ui->instrumentComboBox->addItem("Guitar Co-op",
-                                    static_cast<int>(Instrument::GuitarCoop));
-    ui->instrumentComboBox->addItem("Bass", static_cast<int>(Instrument::Bass));
-    ui->instrumentComboBox->addItem("Rhythm",
-                                    static_cast<int>(Instrument::Rhythm));
-    ui->instrumentComboBox->addItem("Keys", static_cast<int>(Instrument::Keys));
-    ui->instrumentComboBox->addItem("GHL Guitar",
-                                    static_cast<int>(Instrument::GHLGuitar));
-    ui->instrumentComboBox->addItem("GHL Bass",
-                                    static_cast<int>(Instrument::GHLBass));
-    ui->instrumentComboBox->addItem("Drums",
-                                    static_cast<int>(Instrument::Drums));
-
-    ui->difficultyComboBox->addItem("Easy", static_cast<int>(Difficulty::Easy));
-    ui->difficultyComboBox->addItem("Medium",
-                                    static_cast<int>(Difficulty::Medium));
-    ui->difficultyComboBox->addItem("Hard", static_cast<int>(Difficulty::Hard));
-    ui->difficultyComboBox->addItem("Expert",
-                                    static_cast<int>(Difficulty::Expert));
-    ui->difficultyComboBox->setCurrentIndex(3);
+    ui->instrumentComboBox->setEnabled(false);
+    ui->difficultyComboBox->setEnabled(false);
+    ui->findPathButton->setEnabled(false);
 
     ui->lazyWhammyLineEdit->setValidator(new QIntValidator(
         0, std::numeric_limits<int>::max(), ui->lazyWhammyLineEdit));
@@ -94,7 +72,6 @@ Settings MainWindow::get_settings() const
     Settings settings;
 
     settings.blank = ui->blankPathCheckBox->isChecked();
-    settings.filename = file_name;
     settings.image_path = "path.png";
     settings.draw_bpms = true;
     settings.draw_solos = true;
@@ -184,18 +161,50 @@ static ImageBuilder make_builder(const Song& song, const Settings& settings)
 void MainWindow::on_findPathButton_clicked()
 {
     const auto settings = get_settings();
-    const auto song = Song::from_filename(file_name);
-    qDebug() << "Parsing complete";
-    const auto builder = make_builder(song, settings);
+    const auto builder = make_builder(*song, settings);
     const Image image {builder};
     image.save(settings.image_path.c_str());
 }
 
 void MainWindow::on_selectFileButton_clicked()
 {
-    file_name = QFileDialog::getOpenFileName(this, "Open Image", ".",
-                                             "Song charts (*.chart *.mid)")
-                    .toStdString();
+    const auto file_name
+        = QFileDialog::getOpenFileName(this, "Open Image", ".",
+                                       "Song charts (*.chart *.mid)");
+    if (!file_name.isEmpty()) {
+        song = Song::from_filename(file_name.toStdString());
+
+        ui->instrumentComboBox->addItem("Guitar",
+                                        static_cast<int>(Instrument::Guitar));
+        ui->instrumentComboBox->addItem(
+            "Guitar Co-op", static_cast<int>(Instrument::GuitarCoop));
+        ui->instrumentComboBox->addItem("Bass",
+                                        static_cast<int>(Instrument::Bass));
+        ui->instrumentComboBox->addItem("Rhythm",
+                                        static_cast<int>(Instrument::Rhythm));
+        ui->instrumentComboBox->addItem("Keys",
+                                        static_cast<int>(Instrument::Keys));
+        ui->instrumentComboBox->addItem(
+            "GHL Guitar", static_cast<int>(Instrument::GHLGuitar));
+        ui->instrumentComboBox->addItem("GHL Bass",
+                                        static_cast<int>(Instrument::GHLBass));
+        ui->instrumentComboBox->addItem("Drums",
+                                        static_cast<int>(Instrument::Drums));
+
+        ui->difficultyComboBox->addItem("Easy",
+                                        static_cast<int>(Difficulty::Easy));
+        ui->difficultyComboBox->addItem("Medium",
+                                        static_cast<int>(Difficulty::Medium));
+        ui->difficultyComboBox->addItem("Hard",
+                                        static_cast<int>(Difficulty::Hard));
+        ui->difficultyComboBox->addItem("Expert",
+                                        static_cast<int>(Difficulty::Expert));
+        ui->difficultyComboBox->setCurrentIndex(3);
+
+        ui->findPathButton->setEnabled(true);
+        ui->instrumentComboBox->setEnabled(true);
+        ui->difficultyComboBox->setEnabled(true);
+    }
 }
 
 void MainWindow::on_squeezeSlider_valueChanged(int value)

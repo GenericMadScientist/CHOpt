@@ -20,10 +20,12 @@
 #define CHOPT_MAINWINDOW_HPP
 
 #include <memory>
+#include <optional>
 
 #include <QMainWindow>
 
 #include "settings.hpp"
+#include "song.hpp"
 
 namespace Ui {
 class MainWindow;
@@ -34,7 +36,7 @@ class MainWindow : public QMainWindow {
 
 private:
     std::unique_ptr<Ui::MainWindow> ui;
-    std::string file_name;
+    std::optional<Song> song;
     Settings get_settings() const;
 
 public:
