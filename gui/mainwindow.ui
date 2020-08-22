@@ -38,7 +38,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QComboBox" name="comboBox_3"/>
+       <widget class="QComboBox" name="instrumentComboBox"/>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_4">
@@ -48,7 +48,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QComboBox" name="comboBox_4"/>
+       <widget class="QComboBox" name="difficultyComboBox"/>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_7">
@@ -58,7 +58,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="blankPathCheckBox">
         <property name="layoutDirection">
          <enum>Qt::LeftToRight</enum>
         </property>
@@ -75,9 +75,21 @@
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QSlider" name="horizontalSlider">
+       <widget class="QSlider" name="squeezeSlider">
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksBelow</enum>
+        </property>
+        <property name="tickInterval">
+         <number>10</number>
         </property>
        </widget>
       </item>
@@ -89,9 +101,21 @@
        </widget>
       </item>
       <item row="5" column="1">
-       <widget class="QSlider" name="horizontalSlider_2">
+       <widget class="QSlider" name="earlyWhammySlider">
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksBelow</enum>
+        </property>
+        <property name="tickInterval">
+         <number>10</number>
         </property>
        </widget>
       </item>
@@ -105,12 +129,16 @@
       <item row="6" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Lazy Whammy</string>
+         <string>Lazy Whammy (ms)</string>
         </property>
        </widget>
       </item>
       <item row="6" column="1">
-       <widget class="QLineEdit" name="lineEdit"/>
+       <widget class="QLineEdit" name="lazyWhammyLineEdit">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

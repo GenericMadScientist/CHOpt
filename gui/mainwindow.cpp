@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <limits>
 #include <stdexcept>
 
 #include <QDebug>
@@ -33,6 +34,32 @@ MainWindow::MainWindow(QWidget* parent)
     , ui {std::make_unique<Ui::MainWindow>()}
 {
     ui->setupUi(this);
+
+    ui->instrumentComboBox->addItem("Guitar",
+                                    static_cast<int>(Instrument::Guitar));
+    ui->instrumentComboBox->addItem("Guitar Co-op",
+                                    static_cast<int>(Instrument::GuitarCoop));
+    ui->instrumentComboBox->addItem("Bass", static_cast<int>(Instrument::Bass));
+    ui->instrumentComboBox->addItem("Rhythm",
+                                    static_cast<int>(Instrument::Rhythm));
+    ui->instrumentComboBox->addItem("Keys", static_cast<int>(Instrument::Keys));
+    ui->instrumentComboBox->addItem("GHL Guitar",
+                                    static_cast<int>(Instrument::GHLGuitar));
+    ui->instrumentComboBox->addItem("GHL Bass",
+                                    static_cast<int>(Instrument::GHLBass));
+    ui->instrumentComboBox->addItem("Drums",
+                                    static_cast<int>(Instrument::Drums));
+
+    ui->difficultyComboBox->addItem("Easy", static_cast<int>(Difficulty::Easy));
+    ui->difficultyComboBox->addItem("Medium",
+                                    static_cast<int>(Difficulty::Medium));
+    ui->difficultyComboBox->addItem("Hard", static_cast<int>(Difficulty::Hard));
+    ui->difficultyComboBox->addItem("Expert",
+                                    static_cast<int>(Difficulty::Expert));
+    ui->difficultyComboBox->setCurrentIndex(3);
+
+    ui->lazyWhammyLineEdit->setValidator(new QIntValidator(
+        0, std::numeric_limits<int>::max(), ui->lazyWhammyLineEdit));
 }
 
 MainWindow::~MainWindow() = default;
@@ -66,27 +93,35 @@ Settings MainWindow::get_settings() const
 {
     Settings settings;
 
-    settings.blank = false;
+    settings.blank = ui->blankPathCheckBox->isChecked();
     settings.filename = file_name;
     settings.image_path = "path.png";
     settings.draw_bpms = true;
     settings.draw_solos = true;
     settings.draw_time_sigs = true;
-    settings.difficulty = Difficulty::Expert;
-    settings.instrument = Instrument::Guitar;
-    settings.squeeze = 1;
-    settings.early_whammy = 1;
-    settings.lazy_whammy = 1;
+    settings.difficulty = static_cast<Difficulty>(
+        ui->difficultyComboBox->currentData().toInt());
+    settings.instrument = static_cast<Instrument>(
+        ui->instrumentComboBox->currentData().toInt());
+    settings.squeeze = ui->squeezeSlider->value() / 100.0;
+    settings.early_whammy = ui->earlyWhammySlider->value() / 100.0;
+    settings.lazy_whammy = 0.0;
+
+    const auto lazy_whammy_text = ui->lazyWhammyLineEdit->text();
+    bool ok;
+    auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok, 10);
+    if (ok) {
+        settings.lazy_whammy = lazy_whammy_ms / 1000.0;
+    }
 
     return settings;
 }
 
-void MainWindow::on_findPathButton_clicked()
+template <typename T>
+static ImageBuilder make_builder_from_track(const Song& song,
+                                            const NoteTrack<T>& track,
+                                            const Settings& settings)
 {
-    const auto settings = get_settings();
-    const auto song = Song::from_filename(file_name);
-    qDebug() << "Parsing complete";
-    const auto& track = track_from_inst_diff(settings, song);
     ImageBuilder builder {track, song.resolution(), song.sync_track()};
     builder.add_song_header(song.song_header());
     builder.add_sp_phrases(track, song.resolution());
@@ -125,6 +160,33 @@ void MainWindow::on_findPathButton_clicked()
     builder.add_measure_values(processed_track.points(), path);
     builder.add_sp_values(processed_track.sp_data());
 
+    return builder;
+}
+
+static ImageBuilder make_builder(const Song& song, const Settings& settings)
+{
+    if (settings.instrument == Instrument::GHLGuitar) {
+        const auto& track = song.ghl_guitar_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings);
+    }
+    if (settings.instrument == Instrument::GHLBass) {
+        const auto& track = song.ghl_bass_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings);
+    }
+    if (settings.instrument == Instrument::Drums) {
+        const auto& track = song.drum_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings);
+    }
+    const auto& track = track_from_inst_diff(settings, song);
+    return make_builder_from_track(song, track, settings);
+}
+
+void MainWindow::on_findPathButton_clicked()
+{
+    const auto settings = get_settings();
+    const auto song = Song::from_filename(file_name);
+    qDebug() << "Parsing complete";
+    const auto builder = make_builder(song, settings);
     const Image image {builder};
     image.save(settings.image_path.c_str());
 }
@@ -134,4 +196,20 @@ void MainWindow::on_selectFileButton_clicked()
     file_name = QFileDialog::getOpenFileName(this, "Open Image", ".",
                                              "Song charts (*.chart *.mid)")
                     .toStdString();
+}
+
+void MainWindow::on_squeezeSlider_valueChanged(int value)
+{
+    const auto ew_value = ui->earlyWhammySlider->value();
+    if (ew_value > value) {
+        ui->earlyWhammySlider->setValue(value);
+    }
+}
+
+void MainWindow::on_earlyWhammySlider_valueChanged(int value)
+{
+    const auto sqz_value = ui->squeezeSlider->value();
+    if (sqz_value < value) {
+        ui->earlyWhammySlider->setValue(sqz_value);
+    }
 }

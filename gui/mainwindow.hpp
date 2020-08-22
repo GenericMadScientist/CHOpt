@@ -42,8 +42,10 @@ public:
     ~MainWindow();
 
 private slots:
+    void on_earlyWhammySlider_valueChanged(int value);
     void on_findPathButton_clicked();
     void on_selectFileButton_clicked();
+    void on_squeezeSlider_valueChanged(int value);
 };
 
 #endif
