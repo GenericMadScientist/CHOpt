@@ -23,6 +23,8 @@
 
 #include <QMainWindow>
 
+#include "settings.hpp"
+
 namespace Ui {
 class MainWindow;
 }
@@ -30,12 +32,18 @@ class MainWindow;
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
+private:
+    std::unique_ptr<Ui::MainWindow> ui;
+    std::string file_name;
+    Settings get_settings() const;
+
 public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-private:
-    std::unique_ptr<Ui::MainWindow> ui;
+private slots:
+    void on_findPathButton_clicked();
+    void on_selectFileButton_clicked();
 };
 
 #endif

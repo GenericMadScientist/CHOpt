@@ -44,8 +44,9 @@ if(BUILD_GUI)
 
     find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-    add_executable(choptgui WIN32 gui/main.cpp gui/mainwindow.cpp gui/mainwindow.ui)
-    target_link_libraries(choptgui PRIVATE Qt5::Widgets)
+    add_executable(choptgui gui/main.cpp gui/mainwindow.cpp gui/mainwindow.ui src/chart.cpp src/image.cpp src/midi.cpp src/optimiser.cpp src/points.cpp src/processed.cpp src/song.cpp src/sp.cpp src/time.cpp)
+    target_include_directories(choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
+    target_link_libraries(choptgui PRIVATE ${PNG_LIBRARIES} Qt5::Widgets)
 
     set_cpp_standard(choptgui)
 endif()
