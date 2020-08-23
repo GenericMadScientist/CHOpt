@@ -73,6 +73,31 @@ static ImageBuilder make_builder_from_track(const Song& song,
     return builder;
 }
 
+const static NoteTrack<NoteColour>&
+track_from_inst_diff(const Settings& settings, const Song& song)
+{
+    switch (settings.instrument) {
+    case Instrument::Guitar:
+        return song.guitar_note_track(settings.difficulty);
+    case Instrument::GuitarCoop:
+        return song.guitar_coop_note_track(settings.difficulty);
+    case Instrument::Bass:
+        return song.bass_note_track(settings.difficulty);
+    case Instrument::Rhythm:
+        return song.rhythm_note_track(settings.difficulty);
+    case Instrument::Keys:
+        return song.keys_note_track(settings.difficulty);
+    case Instrument::GHLGuitar:
+        throw std::invalid_argument("GHL Guitar is not 5 fret");
+    case Instrument::GHLBass:
+        throw std::invalid_argument("GHL Bass is not 5 fret");
+    case Instrument::Drums:
+        throw std::invalid_argument("Drums is not 5 fret");
+    }
+
+    throw std::invalid_argument("Invalid instrument");
+}
+
 template <typename F>
 static ImageBuilder make_builder(const Song& song, const Settings& settings,
                                  F write)
@@ -189,31 +214,6 @@ MainWindow::~MainWindow()
 void MainWindow::write_message(const QString& message)
 {
     m_ui->messageBox->append(message);
-}
-
-const static NoteTrack<NoteColour>&
-track_from_inst_diff(const Settings& settings, const Song& song)
-{
-    switch (settings.instrument) {
-    case Instrument::Guitar:
-        return song.guitar_note_track(settings.difficulty);
-    case Instrument::GuitarCoop:
-        return song.guitar_coop_note_track(settings.difficulty);
-    case Instrument::Bass:
-        return song.bass_note_track(settings.difficulty);
-    case Instrument::Rhythm:
-        return song.rhythm_note_track(settings.difficulty);
-    case Instrument::Keys:
-        return song.keys_note_track(settings.difficulty);
-    case Instrument::GHLGuitar:
-        throw std::invalid_argument("GHL Guitar is not 5 fret");
-    case Instrument::GHLBass:
-        throw std::invalid_argument("GHL Bass is not 5 fret");
-    case Instrument::Drums:
-        throw std::invalid_argument("Drums is not 5 fret");
-    }
-
-    throw std::invalid_argument("Invalid instrument");
 }
 
 Settings MainWindow::get_settings() const
