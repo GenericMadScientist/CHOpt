@@ -73,22 +73,23 @@ Settings MainWindow::get_settings() const
 
     settings.blank = ui->blankPathCheckBox->isChecked();
     settings.image_path = "path.png";
-    settings.draw_bpms = true;
-    settings.draw_solos = true;
-    settings.draw_time_sigs = true;
+    settings.draw_bpms = ui->drawBpmsCheckBox->isChecked();
+    settings.draw_solos = ui->drawSolosCheckBox->isChecked();
+    settings.draw_time_sigs = ui->drawTsesCheckBox->isChecked();
     settings.difficulty = static_cast<Difficulty>(
         ui->difficultyComboBox->currentData().toInt());
     settings.instrument = static_cast<Instrument>(
         ui->instrumentComboBox->currentData().toInt());
     settings.squeeze = ui->squeezeSlider->value() / 100.0;
     settings.early_whammy = ui->earlyWhammySlider->value() / 100.0;
-    settings.lazy_whammy = 0.0;
 
     const auto lazy_whammy_text = ui->lazyWhammyLineEdit->text();
     bool ok;
     auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok, 10);
     if (ok) {
         settings.lazy_whammy = lazy_whammy_ms / 1000.0;
+    } else {
+        settings.lazy_whammy = 0.0;
     }
 
     return settings;
