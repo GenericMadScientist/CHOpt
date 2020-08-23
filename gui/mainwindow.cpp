@@ -19,7 +19,6 @@
 #include <limits>
 #include <stdexcept>
 
-#include <QDebug>
 #include <QFileDialog>
 
 #include "image.hpp"
@@ -27,6 +26,8 @@
 #include "optimiser.hpp"
 #include "ui_mainwindow.h"
 
+Q_DECLARE_METATYPE(Difficulty)
+Q_DECLARE_METATYPE(Instrument)
 Q_DECLARE_METATYPE(std::optional<Song>)
 
 template <typename T, typename F>
@@ -223,10 +224,10 @@ Settings MainWindow::get_settings() const
     settings.draw_bpms = m_ui->drawBpmsCheckBox->isChecked();
     settings.draw_solos = m_ui->drawSolosCheckBox->isChecked();
     settings.draw_time_sigs = m_ui->drawTsesCheckBox->isChecked();
-    settings.difficulty = static_cast<Difficulty>(
-        m_ui->difficultyComboBox->currentData().toInt());
-    settings.instrument = static_cast<Instrument>(
-        m_ui->instrumentComboBox->currentData().toInt());
+    settings.difficulty
+        = m_ui->difficultyComboBox->currentData().value<Difficulty>();
+    settings.instrument
+        = m_ui->instrumentComboBox->currentData().value<Instrument>();
     settings.squeeze = m_ui->squeezeSlider->value() / 100.0;
     settings.early_whammy = m_ui->earlyWhammySlider->value() / 100.0;
 
@@ -303,32 +304,30 @@ void MainWindow::song_read(const std::optional<Song>& song)
     m_song = song;
 
     m_ui->instrumentComboBox->clear();
-    m_ui->instrumentComboBox->addItem("Guitar",
-                                      static_cast<int>(Instrument::Guitar));
-    m_ui->instrumentComboBox->addItem("Guitar Co-op",
-                                      static_cast<int>(Instrument::GuitarCoop));
-    m_ui->instrumentComboBox->addItem("Bass",
-                                      static_cast<int>(Instrument::Bass));
-    m_ui->instrumentComboBox->addItem("Rhythm",
-                                      static_cast<int>(Instrument::Rhythm));
-    m_ui->instrumentComboBox->addItem("Keys",
-                                      static_cast<int>(Instrument::Keys));
-    m_ui->instrumentComboBox->addItem("GHL Guitar",
-                                      static_cast<int>(Instrument::GHLGuitar));
-    m_ui->instrumentComboBox->addItem("GHL Bass",
-                                      static_cast<int>(Instrument::GHLBass));
-    m_ui->instrumentComboBox->addItem("Drums",
-                                      static_cast<int>(Instrument::Drums));
+    const std::map<Instrument, QString> INST_NAMES {
+        {Instrument::Guitar, "Guitar"},
+        {Instrument::GuitarCoop, "Guitar Co-op"},
+        {Instrument::Bass, "Bass"},
+        {Instrument::Rhythm, "Rhythm"},
+        {Instrument::Keys, "Keys"},
+        {Instrument::GHLGuitar, "GHL Guitar"},
+        {Instrument::GHLBass, "GHL Bass"},
+        {Instrument::Drums, "Drums"}};
+    for (auto inst : m_song->instruments()) {
+        m_ui->instrumentComboBox->addItem(INST_NAMES.at(inst),
+                                          QVariant::fromValue(inst));
+    }
+    m_ui->instrumentComboBox->setCurrentIndex(0);
 
     m_ui->difficultyComboBox->clear();
     m_ui->difficultyComboBox->addItem("Easy",
-                                      static_cast<int>(Difficulty::Easy));
+                                      QVariant::fromValue(Difficulty::Easy));
     m_ui->difficultyComboBox->addItem("Medium",
-                                      static_cast<int>(Difficulty::Medium));
+                                      QVariant::fromValue(Difficulty::Medium));
     m_ui->difficultyComboBox->addItem("Hard",
-                                      static_cast<int>(Difficulty::Hard));
+                                      QVariant::fromValue(Difficulty::Hard));
     m_ui->difficultyComboBox->addItem("Expert",
-                                      static_cast<int>(Difficulty::Expert));
+                                      QVariant::fromValue(Difficulty::Expert));
     m_ui->difficultyComboBox->setCurrentIndex(3);
 
     write_message("Song loaded");

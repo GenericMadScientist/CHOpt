@@ -355,6 +355,25 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section)
     return NoteTrack<T> {std::move(notes), std::move(sp), std::move(solos)};
 }
 
+std::vector<Instrument> Song::instruments() const
+{
+    std::set<Instrument> instrument_set;
+    for (const auto& [key, val] : m_five_fret_tracks) {
+        instrument_set.insert(std::get<0>(key));
+    }
+    for (const auto& [key, val] : m_six_fret_tracks) {
+        instrument_set.insert(std::get<0>(key));
+    }
+    if (!m_drum_note_tracks.empty()) {
+        instrument_set.insert(Instrument::Drums);
+    }
+
+    std::vector<Instrument> instruments {instrument_set.cbegin(),
+                                         instrument_set.cend()};
+    std::sort(instruments.begin(), instruments.end());
+    return instruments;
+}
+
 static bool is_six_fret_instrument(Instrument instrument)
 {
     return instrument == Instrument::GHLGuitar
