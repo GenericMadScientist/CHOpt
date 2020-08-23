@@ -1,57 +1,52 @@
-function(enable_sanitisers TARGET)
+# Enable the selected sanitisers; only supports GCC and Clang
+function(enable_sanitisers target)
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                              ".*Clang")
-    set(SANITISERS "")
+    set(sanitisers "")
 
     option(ENABLE_SANITISER_ADDRESS "Enable address sanitiser" OFF)
     if(ENABLE_SANITISER_ADDRESS)
-      list(APPEND SANITISERS "address")
+      list(APPEND sanitisers "address")
     endif()
 
     option(ENABLE_SANITISER_LEAK "Enable leak sanitiser" OFF)
     if(ENABLE_SANITISER_LEAK)
-      list(APPEND SANITISERS "leak")
+      list(APPEND sanitisers "leak")
     endif()
 
     option(ENABLE_SANITISER_UNDEFINED_BEHAVIOR
            "Enable undefined behavior sanitiser" OFF)
     if(ENABLE_SANITISER_UNDEFINED_BEHAVIOR)
-      list(APPEND SANITISERS "undefined")
+      list(APPEND sanitisers "undefined")
     endif()
 
     option(ENABLE_SANITISER_THREAD "Enable thread sanitiser" OFF)
     if(ENABLE_SANITISER_THREAD)
-      if("address" IN_LIST SANITISERS OR "leak" IN_LIST SANITISERS)
-        message(
-          WARNING
-            "Thread sanitiser does not work with Address or Leak sanitiser enabled"
-        )
+      if("address" IN_LIST sanitisers OR "leak" IN_LIST sanitisers)
+        message(WARNING "TSan does not work with ASan or LSan enabled")
       else()
-        list(APPEND SANITISERS "thread")
+        list(APPEND sanitisers "thread")
       endif()
     endif()
 
     option(ENABLE_SANITISER_MEMORY "Enable memory sanitiser" OFF)
     if(ENABLE_SANITISER_MEMORY AND CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-      if("address" IN_LIST SANITISERS
-         OR "thread" IN_LIST SANITISERS
-         OR "leak" IN_LIST SANITISERS)
-        message(
-          WARNING
-            "Memory sanitiser does not work with Address, Thread, or Leak sanitiser enabled"
-        )
+      if("address" IN_LIST sanitisers
+         OR "thread" IN_LIST sanitisers
+         OR "leak" IN_LIST sanitisers)
+        message(WARNING "MSan does not work with ASan, LSan, or TSan enabled")
       else()
-        list(APPEND SANITISERS "memory")
+        list(APPEND sanitisers "memory")
       endif()
     endif()
 
-    list(JOIN SANITISERS "," LIST_OF_SANITISERS)
+    list(JOIN sanitisers "," list_of_sanitisers)
   endif()
 
-  if(LIST_OF_SANITISERS)
-    if(NOT "${LIST_OF_SANITISERS}" STREQUAL "")
-      target_compile_options(${TARGET} PRIVATE -fsanitize=${LIST_OF_SANITISERS})
-      target_link_libraries(${TARGET} PRIVATE -fsanitize=${LIST_OF_SANITISERS})
+  if(list_of_sanitisers)
+    if(NOT "${list_of_sanitisers}" STREQUAL "")
+      target_compile_options(${target} PRIVATE -fsanitize=${list_of_sanitisers})
+      target_link_libraries(${target} PRIVATE -fsanitize=${list_of_sanitisers})
     endif()
   endif()
 endfunction()

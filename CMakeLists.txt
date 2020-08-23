@@ -9,18 +9,18 @@ project(
 include(cmake/Sanitisers.cmake)
 
 # Require standard C++17
-function(set_cpp_standard TARGET)
+function(set_cpp_standard target)
   set_target_properties(
-    ${TARGET}
+    ${target}
     PROPERTIES CXX_STANDARD 17
                CXX_STANDARD_REQUIRED ON
                CXX_EXTENSIONS OFF)
 endfunction()
 
 # Set warning flags
-function(set_warnings TARGET)
+function(set_warnings target)
   target_compile_options(
-    ${TARGET}
+    ${target}
     PRIVATE $<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>:
             -Wall
             -Wextra
