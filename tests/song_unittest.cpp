@@ -455,6 +455,23 @@ TEST_CASE("instruments returns the supported instruments")
     REQUIRE(song.instruments() == instruments);
 }
 
+TEST_CASE("difficulties returns the difficulties for an instrument")
+{
+    ChartSection guitar {"ExpertSingle", {}, {}, {}, {{192, 0, 0}}, {}, {}};
+    ChartSection hard_guitar {"HardSingle", {}, {}, {}, {{192, 0, 0}}, {}, {}};
+    ChartSection drums {"ExpertDrums", {}, {}, {}, {{192, 0, 0}}, {}, {}};
+    std::vector<ChartSection> sections {guitar, hard_guitar, drums};
+    const Chart chart {sections};
+    std::vector<Difficulty> guitar_difficulties {Difficulty::Hard,
+                                                 Difficulty::Expert};
+    std::vector<Difficulty> drum_difficulties {Difficulty::Expert};
+
+    const auto song = Song::from_chart(chart);
+
+    REQUIRE(song.difficulties(Instrument::Guitar) == guitar_difficulties);
+    REQUIRE(song.difficulties(Instrument::Drums) == drum_difficulties);
+}
+
 TEST_CASE("Other 5 fret instruments are read from Chart")
 {
     SECTION("Guitar Co-op is read")

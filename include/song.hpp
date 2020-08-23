@@ -265,6 +265,8 @@ public:
     }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
     [[nodiscard]] std::vector<Instrument> instruments() const;
+    [[nodiscard]] std::vector<Difficulty>
+    difficulties(Instrument instrument) const;
     [[nodiscard]] const NoteTrack<NoteColour>&
     guitar_note_track(Difficulty diff) const
     {

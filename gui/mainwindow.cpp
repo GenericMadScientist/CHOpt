@@ -319,17 +319,6 @@ void MainWindow::song_read(const std::optional<Song>& song)
     }
     m_ui->instrumentComboBox->setCurrentIndex(0);
 
-    m_ui->difficultyComboBox->clear();
-    m_ui->difficultyComboBox->addItem("Easy",
-                                      QVariant::fromValue(Difficulty::Easy));
-    m_ui->difficultyComboBox->addItem("Medium",
-                                      QVariant::fromValue(Difficulty::Medium));
-    m_ui->difficultyComboBox->addItem("Hard",
-                                      QVariant::fromValue(Difficulty::Hard));
-    m_ui->difficultyComboBox->addItem("Expert",
-                                      QVariant::fromValue(Difficulty::Expert));
-    m_ui->difficultyComboBox->setCurrentIndex(3);
-
     write_message("Song loaded");
 
     m_ui->findPathButton->setEnabled(true);
@@ -343,6 +332,28 @@ void MainWindow::path_found()
     m_thread = nullptr;
     m_ui->selectFileButton->setEnabled(true);
     m_ui->findPathButton->setEnabled(true);
+}
+
+void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
+{
+    m_ui->difficultyComboBox->clear();
+
+    if (index == -1) {
+        return;
+    }
+    const std::map<Difficulty, QString> DIFF_NAMES {
+        {Difficulty::Easy, "Easy"},
+        {Difficulty::Medium, "Medium"},
+        {Difficulty::Hard, "Hard"},
+        {Difficulty::Expert, "Expert"}};
+    const auto inst
+        = m_ui->difficultyComboBox->currentData().value<Instrument>();
+    for (auto diff : m_song->difficulties(inst)) {
+        m_ui->difficultyComboBox->addItem(DIFF_NAMES.at(diff),
+                                          QVariant::fromValue(diff));
+    }
+    const auto count = m_ui->difficultyComboBox->count();
+    m_ui->difficultyComboBox->setCurrentIndex(count - 1);
 }
 
 void MainWindow::on_squeezeSlider_valueChanged(int value)

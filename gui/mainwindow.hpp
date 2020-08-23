@@ -49,6 +49,7 @@ public:
 private slots:
     void on_earlyWhammySlider_valueChanged(int value);
     void on_findPathButton_clicked();
+    void on_instrumentComboBox_currentIndexChanged(int value);
     void on_selectFileButton_clicked();
     void on_squeezeSlider_valueChanged(int value);
     void path_found();

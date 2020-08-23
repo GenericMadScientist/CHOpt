@@ -380,6 +380,30 @@ static bool is_six_fret_instrument(Instrument instrument)
         || instrument == Instrument::GHLBass;
 }
 
+std::vector<Difficulty> Song::difficulties(Instrument instrument) const
+{
+    std::vector<Difficulty> difficulties;
+    if (instrument == Instrument::Drums) {
+        for (const auto& [key, val] : m_drum_note_tracks) {
+            difficulties.push_back(key);
+        }
+    } else if (is_six_fret_instrument(instrument)) {
+        for (const auto& [key, val] : m_six_fret_tracks) {
+            if (std::get<0>(key) == instrument) {
+                difficulties.push_back(std::get<1>(key));
+            }
+        }
+    } else {
+        for (const auto& [key, val] : m_five_fret_tracks) {
+            if (std::get<0>(key) == instrument) {
+                difficulties.push_back(std::get<1>(key));
+            }
+        }
+    }
+    std::sort(difficulties.begin(), difficulties.end());
+    return difficulties;
+}
+
 Song Song::from_chart(const Chart& chart)
 {
     Song song;
