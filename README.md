@@ -47,13 +47,17 @@ by passing -h or --help to chopt, or by consulting the table below.
 * [Catch2](https://github.com/catchorg/Catch2) 2.13.0 for tests
 * [CImg](https://cimg.eu) 2.9.1 to produce images
 * [libpng](http://libpng.org/pub/png/libpng.html) 1.6.37 to save pngs
+* [Qt](https://www.qt.io) 5.15.0 for the GUI
 * [zlib](https://zlib.net) 1.2.11 is a dependency of libpng
 
 The first three are header-only libraries that are vendored in the chopt repo.
-The latter two will need to be provided by anyone compiling chopt for
-themselves. They need to be provided to CMake so that
+The latter three will need to be provided by anyone compiling chopt for
+themselves, although Qt is only required if the GUI version is being compiled.
+libpng and zlib need to be set up so that
 [FindPNG](https://cmake.org/cmake/help/latest/module/FindPNG.html) can find
-them.
+them, and the same is true for Qt (see
+[this page](https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html) for
+details).
 
 ## Acknowledgements
 
