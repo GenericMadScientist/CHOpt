@@ -106,9 +106,11 @@ public:
 
     void run() override
     {
-        std::optional<Song> song;
-        song = Song::from_filename(m_file_name.toStdString());
-        emit result_ready(song);
+        try {
+            emit result_ready(Song::from_filename(m_file_name.toStdString()));
+        } catch (const std::exception&) {
+            emit result_ready({});
+        }
     }
 
     void set_file_name(const QString& file_name) { m_file_name = file_name; }
@@ -240,6 +242,26 @@ Settings MainWindow::get_settings() const
     return settings;
 }
 
+void MainWindow::on_selectFileButton_clicked()
+{
+    const auto file_name = QFileDialog::getOpenFileName(
+        this, "Open song", "../", "Song charts (*.chart *.mid)");
+    if (file_name.isEmpty()) {
+        return;
+    }
+
+    m_ui->selectFileButton->setEnabled(false);
+
+    auto* worker_thread = new ParserThread(this);
+    worker_thread->set_file_name(file_name);
+    connect(worker_thread, &ParserThread::result_ready, this,
+            &MainWindow::song_read);
+    connect(worker_thread, &ParserThread::finished, worker_thread,
+            &QObject::deleteLater);
+    m_thread = worker_thread;
+    worker_thread->start();
+}
+
 void MainWindow::on_findPathButton_clicked()
 {
     const auto file_name = QFileDialog::getSaveFileName(this, "Save image", ".",
@@ -263,26 +285,6 @@ void MainWindow::on_findPathButton_clicked()
     connect(worker_thread, &OptimiserThread::finished, this,
             &MainWindow::path_found);
     connect(worker_thread, &OptimiserThread::finished, worker_thread,
-            &QObject::deleteLater);
-    m_thread = worker_thread;
-    worker_thread->start();
-}
-
-void MainWindow::on_selectFileButton_clicked()
-{
-    const auto file_name = QFileDialog::getOpenFileName(
-        this, "Open song", "../", "Song charts (*.chart *.mid)");
-    if (file_name.isEmpty()) {
-        return;
-    }
-
-    m_ui->selectFileButton->setEnabled(false);
-
-    auto* worker_thread = new ParserThread(this);
-    worker_thread->set_file_name(file_name);
-    connect(worker_thread, &ParserThread::result_ready, this,
-            &MainWindow::song_read);
-    connect(worker_thread, &ParserThread::finished, worker_thread,
             &QObject::deleteLater);
     m_thread = worker_thread;
     worker_thread->start();
