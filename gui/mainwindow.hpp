@@ -23,6 +23,8 @@
 #include <optional>
 
 #include <QMainWindow>
+#include <QString>
+#include <QThread>
 
 #include "settings.hpp"
 #include "song.hpp"
@@ -38,6 +40,7 @@ private:
     std::unique_ptr<Ui::MainWindow> ui;
     std::optional<Song> song;
     Settings get_settings() const;
+    QThread* thread = nullptr;
 
 public:
     MainWindow(QWidget* parent = nullptr);
@@ -48,6 +51,8 @@ private slots:
     void on_findPathButton_clicked();
     void on_selectFileButton_clicked();
     void on_squeezeSlider_valueChanged(int value);
+    void path_found();
+    void write_message(const QString& message);
 };
 
 #endif

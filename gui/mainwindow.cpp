@@ -19,13 +19,112 @@
 #include <limits>
 #include <stdexcept>
 
-#include <QDebug>
 #include <QFileDialog>
 
 #include "image.hpp"
 #include "mainwindow.hpp"
 #include "optimiser.hpp"
 #include "ui_mainwindow.h"
+
+template <typename T, typename F>
+static ImageBuilder make_builder_from_track(const Song& song,
+                                            const NoteTrack<T>& track,
+                                            const Settings& settings, F write)
+{
+    ImageBuilder builder {track, song.resolution(), song.sync_track()};
+    builder.add_song_header(song.song_header());
+    builder.add_sp_phrases(track, song.resolution());
+
+    if (settings.draw_bpms) {
+        builder.add_bpms(song.sync_track(), song.resolution());
+    }
+
+    if (settings.draw_solos) {
+        builder.add_solo_sections(track.solos(), song.resolution());
+    }
+
+    if (settings.draw_time_sigs) {
+        builder.add_time_sigs(song.sync_track(), song.resolution());
+    }
+
+    const ProcessedSong processed_track {track,
+                                         song.resolution(),
+                                         song.sync_track(),
+                                         settings.early_whammy,
+                                         settings.squeeze,
+                                         Second {settings.lazy_whammy}};
+    Path path;
+
+    if (!settings.blank) {
+        write("Optimising, please wait...");
+        const Optimiser optimiser {&processed_track};
+        path = optimiser.optimal_path();
+        builder.add_sp_acts(processed_track.points(), path);
+        write(processed_track.path_summary(path).c_str());
+    }
+
+    builder.add_measure_values(processed_track.points(), path);
+    builder.add_sp_values(processed_track.sp_data());
+
+    return builder;
+}
+
+template <typename F>
+static ImageBuilder make_builder(const Song& song, const Settings& settings,
+                                 F write)
+{
+    if (settings.instrument == Instrument::GHLGuitar) {
+        const auto& track = song.ghl_guitar_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings, write);
+    }
+    if (settings.instrument == Instrument::GHLBass) {
+        const auto& track = song.ghl_bass_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings, write);
+    }
+    if (settings.instrument == Instrument::Drums) {
+        const auto& track = song.drum_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings, write);
+    }
+    const auto& track = track_from_inst_diff(settings, song);
+    return make_builder_from_track(song, track, settings, write);
+}
+
+class OptimisationWorkerThread : public QThread {
+    Q_OBJECT
+
+private:
+    Settings m_settings;
+    std::optional<Song> m_song;
+    QString m_file_name;
+
+public:
+    OptimisationWorkerThread(QObject* parent = nullptr)
+        : QThread(parent)
+    {
+    }
+
+    void run() override
+    {
+        const auto builder
+            = make_builder(*m_song, m_settings,
+                           [&](const QString& text) { emit write_text(text); });
+        emit write_text("Saving image...");
+        const Image image {builder};
+        image.save(m_file_name.toStdString().c_str());
+        emit write_text("Image saved");
+    }
+
+    void set_data(const Settings& settings, const Song& song,
+                  const QString& file_name)
+    {
+        m_settings = settings;
+        m_song = song;
+        m_file_name = file_name;
+    }
+
+signals:
+    void write_text(const QString& text);
+};
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -40,7 +139,24 @@ MainWindow::MainWindow(QWidget* parent)
         0, std::numeric_limits<int>::max(), ui->lazyWhammyLineEdit));
 }
 
-MainWindow::~MainWindow() = default;
+MainWindow::~MainWindow()
+{
+    if (thread != nullptr) {
+        thread->quit();
+        // We give the thread 5 seconds to obey, then kill it. Although all the
+        // thread does apart from CPU-bound work is write to a file at the very
+        // end, so the call to terminate is not so bad.
+        if (!thread->wait(5000)) {
+            thread->terminate();
+            thread->wait();
+        }
+    }
+}
+
+void MainWindow::write_message(const QString& message)
+{
+    ui->messageBox->append(message);
+}
 
 const static NoteTrack<NoteColour>&
 track_from_inst_diff(const Settings& settings, const Song& song)
@@ -95,70 +211,6 @@ Settings MainWindow::get_settings() const
     return settings;
 }
 
-template <typename T>
-static ImageBuilder make_builder_from_track(const Song& song,
-                                            const NoteTrack<T>& track,
-                                            const Settings& settings)
-{
-    ImageBuilder builder {track, song.resolution(), song.sync_track()};
-    builder.add_song_header(song.song_header());
-    builder.add_sp_phrases(track, song.resolution());
-
-    if (settings.draw_bpms) {
-        builder.add_bpms(song.sync_track(), song.resolution());
-    }
-
-    if (settings.draw_solos) {
-        builder.add_solo_sections(track.solos(), song.resolution());
-    }
-
-    if (settings.draw_time_sigs) {
-        builder.add_time_sigs(song.sync_track(), song.resolution());
-    }
-
-    qDebug() << "Optimisation begins";
-
-    const ProcessedSong processed_track {track,
-                                         song.resolution(),
-                                         song.sync_track(),
-                                         settings.early_whammy,
-                                         settings.squeeze,
-                                         Second {settings.lazy_whammy}};
-    Path path;
-
-    if (settings.blank) {
-        qDebug() << "Blank path chosen";
-    } else {
-        const Optimiser optimiser {&processed_track};
-        path = optimiser.optimal_path();
-        builder.add_sp_acts(processed_track.points(), path);
-        qDebug() << processed_track.path_summary(path).c_str();
-    }
-
-    builder.add_measure_values(processed_track.points(), path);
-    builder.add_sp_values(processed_track.sp_data());
-
-    return builder;
-}
-
-static ImageBuilder make_builder(const Song& song, const Settings& settings)
-{
-    if (settings.instrument == Instrument::GHLGuitar) {
-        const auto& track = song.ghl_guitar_note_track(settings.difficulty);
-        return make_builder_from_track(song, track, settings);
-    }
-    if (settings.instrument == Instrument::GHLBass) {
-        const auto& track = song.ghl_bass_note_track(settings.difficulty);
-        return make_builder_from_track(song, track, settings);
-    }
-    if (settings.instrument == Instrument::Drums) {
-        const auto& track = song.drum_note_track(settings.difficulty);
-        return make_builder_from_track(song, track, settings);
-    }
-    const auto& track = track_from_inst_diff(settings, song);
-    return make_builder_from_track(song, track, settings);
-}
-
 void MainWindow::on_findPathButton_clicked()
 {
     const auto file_name = QFileDialog::getSaveFileName(this, "Save image", ".",
@@ -167,20 +219,37 @@ void MainWindow::on_findPathButton_clicked()
         return;
     }
     if (!file_name.endsWith(".bmp") && !file_name.endsWith(".png")) {
-        qDebug() << "Not a valid image file";
+        write_message("Not a valid image file");
         return;
     }
 
+    ui->selectFileButton->setEnabled(false);
+    ui->findPathButton->setEnabled(false);
+
     const auto settings = get_settings();
-    const auto builder = make_builder(*song, settings);
-    const Image image {builder};
-    image.save(file_name.toStdString().c_str());
+    auto* worker_thread = new OptimisationWorkerThread(this);
+    worker_thread->set_data(settings, *song, file_name);
+    connect(worker_thread, &OptimisationWorkerThread::write_text, this,
+            &MainWindow::write_message);
+    connect(worker_thread, &OptimisationWorkerThread::finished, this,
+            &MainWindow::path_found);
+    connect(worker_thread, &OptimisationWorkerThread::finished, worker_thread,
+            &QObject::deleteLater);
+    thread = worker_thread;
+    worker_thread->start();
+}
+
+void MainWindow::path_found()
+{
+    thread = nullptr;
+    ui->selectFileButton->setEnabled(true);
+    ui->findPathButton->setEnabled(true);
 }
 
 void MainWindow::on_selectFileButton_clicked()
 {
     const auto file_name = QFileDialog::getOpenFileName(
-        this, "Open Image", ".", "Song charts (*.chart *.mid)");
+        this, "Open song", "../", "Song charts (*.chart *.mid)");
     if (file_name.isEmpty()) {
         return;
     }
@@ -213,6 +282,8 @@ void MainWindow::on_selectFileButton_clicked()
     ui->findPathButton->setEnabled(true);
     ui->instrumentComboBox->setEnabled(true);
     ui->difficultyComboBox->setEnabled(true);
+
+    write_message("Song loaded");
 }
 
 void MainWindow::on_squeezeSlider_valueChanged(int value)
@@ -230,3 +301,5 @@ void MainWindow::on_earlyWhammySlider_valueChanged(int value)
         ui->earlyWhammySlider->setValue(sqz_value);
     }
 }
+
+#include "mainwindow.moc"
