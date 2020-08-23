@@ -161,17 +161,30 @@ static ImageBuilder make_builder(const Song& song, const Settings& settings)
 
 void MainWindow::on_findPathButton_clicked()
 {
+    const auto file_name = QFileDialog::getSaveFileName(
+        this, "Save image", ".", "Images (*.png *.bmp)");
+    if (file_name.isEmpty()) {
+        return;
+    }
+    if (!file_name.endsWith(".bmp") && !file_name.endsWith(".png")) {
+        qDebug() << "Not a valid image file";
+        return;
+    }
+
     const auto settings = get_settings();
     const auto builder = make_builder(*song, settings);
     const Image image {builder};
-    image.save(settings.image_path.c_str());
+    image.save(file_name.toStdString().c_str());
 }
 
 void MainWindow::on_selectFileButton_clicked()
 {
     const auto file_name = QFileDialog::getOpenFileName(
         this, "Open Image", ".", "Song charts (*.chart *.mid)");
-    if (!file_name.isEmpty()) {
+    if (file_name.isEmpty()) {
+        return;
+    }
+
         song = Song::from_filename(file_name.toStdString());
 
         ui->instrumentComboBox->addItem("Guitar",
@@ -204,7 +217,6 @@ void MainWindow::on_selectFileButton_clicked()
         ui->findPathButton->setEnabled(true);
         ui->instrumentComboBox->setEnabled(true);
         ui->difficultyComboBox->setEnabled(true);
-    }
 }
 
 void MainWindow::on_squeezeSlider_valueChanged(int value)
