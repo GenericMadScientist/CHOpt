@@ -19,12 +19,15 @@
 #include <limits>
 #include <stdexcept>
 
+#include <QDebug>
 #include <QFileDialog>
 
 #include "image.hpp"
 #include "mainwindow.hpp"
 #include "optimiser.hpp"
 #include "ui_mainwindow.h"
+
+Q_DECLARE_METATYPE(std::optional<Song>)
 
 template <typename T, typename F>
 static ImageBuilder make_builder_from_track(const Song& song,
@@ -89,7 +92,32 @@ static ImageBuilder make_builder(const Song& song, const Settings& settings,
     return make_builder_from_track(song, track, settings, write);
 }
 
-class OptimisationWorkerThread : public QThread {
+class ParserThread : public QThread {
+    Q_OBJECT
+
+private:
+    QString m_file_name;
+
+public:
+    ParserThread(QObject* parent = nullptr)
+        : QThread(parent)
+    {
+    }
+
+    void run() override
+    {
+        std::optional<Song> song;
+        song = Song::from_filename(m_file_name.toStdString());
+        emit result_ready(song);
+    }
+
+    void set_file_name(const QString& file_name) { m_file_name = file_name; }
+
+signals:
+    void result_ready(const std::optional<Song>& song);
+};
+
+class OptimiserThread : public QThread {
     Q_OBJECT
 
 private:
@@ -98,7 +126,7 @@ private:
     QString m_file_name;
 
 public:
-    OptimisationWorkerThread(QObject* parent = nullptr)
+    OptimiserThread(QObject* parent = nullptr)
         : QThread(parent)
     {
     }
@@ -128,34 +156,36 @@ signals:
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
-    , ui {std::make_unique<Ui::MainWindow>()}
+    , m_ui {std::make_unique<Ui::MainWindow>()}
 {
-    ui->setupUi(this);
-    ui->instrumentComboBox->setEnabled(false);
-    ui->difficultyComboBox->setEnabled(false);
-    ui->findPathButton->setEnabled(false);
+    qRegisterMetaType<std::optional<Song>>();
 
-    ui->lazyWhammyLineEdit->setValidator(new QIntValidator(
-        0, std::numeric_limits<int>::max(), ui->lazyWhammyLineEdit));
+    m_ui->setupUi(this);
+    m_ui->instrumentComboBox->setEnabled(false);
+    m_ui->difficultyComboBox->setEnabled(false);
+    m_ui->findPathButton->setEnabled(false);
+
+    m_ui->lazyWhammyLineEdit->setValidator(new QIntValidator(
+        0, std::numeric_limits<int>::max(), m_ui->lazyWhammyLineEdit));
 }
 
 MainWindow::~MainWindow()
 {
-    if (thread != nullptr) {
-        thread->quit();
+    if (m_thread != nullptr) {
+        m_thread->quit();
         // We give the thread 5 seconds to obey, then kill it. Although all the
         // thread does apart from CPU-bound work is write to a file at the very
         // end, so the call to terminate is not so bad.
-        if (!thread->wait(5000)) {
-            thread->terminate();
-            thread->wait();
+        if (!m_thread->wait(5000)) {
+            m_thread->terminate();
+            m_thread->wait();
         }
     }
 }
 
 void MainWindow::write_message(const QString& message)
 {
-    ui->messageBox->append(message);
+    m_ui->messageBox->append(message);
 }
 
 const static NoteTrack<NoteColour>&
@@ -187,19 +217,18 @@ Settings MainWindow::get_settings() const
 {
     Settings settings;
 
-    settings.blank = ui->blankPathCheckBox->isChecked();
-    settings.image_path = "path.png";
-    settings.draw_bpms = ui->drawBpmsCheckBox->isChecked();
-    settings.draw_solos = ui->drawSolosCheckBox->isChecked();
-    settings.draw_time_sigs = ui->drawTsesCheckBox->isChecked();
+    settings.blank = m_ui->blankPathCheckBox->isChecked();
+    settings.draw_bpms = m_ui->drawBpmsCheckBox->isChecked();
+    settings.draw_solos = m_ui->drawSolosCheckBox->isChecked();
+    settings.draw_time_sigs = m_ui->drawTsesCheckBox->isChecked();
     settings.difficulty = static_cast<Difficulty>(
-        ui->difficultyComboBox->currentData().toInt());
+        m_ui->difficultyComboBox->currentData().toInt());
     settings.instrument = static_cast<Instrument>(
-        ui->instrumentComboBox->currentData().toInt());
-    settings.squeeze = ui->squeezeSlider->value() / 100.0;
-    settings.early_whammy = ui->earlyWhammySlider->value() / 100.0;
+        m_ui->instrumentComboBox->currentData().toInt());
+    settings.squeeze = m_ui->squeezeSlider->value() / 100.0;
+    settings.early_whammy = m_ui->earlyWhammySlider->value() / 100.0;
 
-    const auto lazy_whammy_text = ui->lazyWhammyLineEdit->text();
+    const auto lazy_whammy_text = m_ui->lazyWhammyLineEdit->text();
     bool ok;
     auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok, 10);
     if (ok) {
@@ -223,27 +252,20 @@ void MainWindow::on_findPathButton_clicked()
         return;
     }
 
-    ui->selectFileButton->setEnabled(false);
-    ui->findPathButton->setEnabled(false);
+    m_ui->selectFileButton->setEnabled(false);
+    m_ui->findPathButton->setEnabled(false);
 
     const auto settings = get_settings();
-    auto* worker_thread = new OptimisationWorkerThread(this);
-    worker_thread->set_data(settings, *song, file_name);
-    connect(worker_thread, &OptimisationWorkerThread::write_text, this,
+    auto* worker_thread = new OptimiserThread(this);
+    worker_thread->set_data(settings, *m_song, file_name);
+    connect(worker_thread, &OptimiserThread::write_text, this,
             &MainWindow::write_message);
-    connect(worker_thread, &OptimisationWorkerThread::finished, this,
+    connect(worker_thread, &OptimiserThread::finished, this,
             &MainWindow::path_found);
-    connect(worker_thread, &OptimisationWorkerThread::finished, worker_thread,
+    connect(worker_thread, &OptimiserThread::finished, worker_thread,
             &QObject::deleteLater);
-    thread = worker_thread;
+    m_thread = worker_thread;
     worker_thread->start();
-}
-
-void MainWindow::path_found()
-{
-    thread = nullptr;
-    ui->selectFileButton->setEnabled(true);
-    ui->findPathButton->setEnabled(true);
 }
 
 void MainWindow::on_selectFileButton_clicked()
@@ -254,51 +276,87 @@ void MainWindow::on_selectFileButton_clicked()
         return;
     }
 
-    song = Song::from_filename(file_name.toStdString());
+    m_ui->selectFileButton->setEnabled(false);
 
-    ui->instrumentComboBox->addItem("Guitar",
-                                    static_cast<int>(Instrument::Guitar));
-    ui->instrumentComboBox->addItem("Guitar Co-op",
-                                    static_cast<int>(Instrument::GuitarCoop));
-    ui->instrumentComboBox->addItem("Bass", static_cast<int>(Instrument::Bass));
-    ui->instrumentComboBox->addItem("Rhythm",
-                                    static_cast<int>(Instrument::Rhythm));
-    ui->instrumentComboBox->addItem("Keys", static_cast<int>(Instrument::Keys));
-    ui->instrumentComboBox->addItem("GHL Guitar",
-                                    static_cast<int>(Instrument::GHLGuitar));
-    ui->instrumentComboBox->addItem("GHL Bass",
-                                    static_cast<int>(Instrument::GHLBass));
-    ui->instrumentComboBox->addItem("Drums",
-                                    static_cast<int>(Instrument::Drums));
+    auto* worker_thread = new ParserThread(this);
+    worker_thread->set_file_name(file_name);
+    connect(worker_thread, &ParserThread::result_ready, this,
+            &MainWindow::song_read);
+    connect(worker_thread, &ParserThread::finished, worker_thread,
+            &QObject::deleteLater);
+    m_thread = worker_thread;
+    worker_thread->start();
+}
 
-    ui->difficultyComboBox->addItem("Easy", static_cast<int>(Difficulty::Easy));
-    ui->difficultyComboBox->addItem("Medium",
-                                    static_cast<int>(Difficulty::Medium));
-    ui->difficultyComboBox->addItem("Hard", static_cast<int>(Difficulty::Hard));
-    ui->difficultyComboBox->addItem("Expert",
-                                    static_cast<int>(Difficulty::Expert));
-    ui->difficultyComboBox->setCurrentIndex(3);
+void MainWindow::song_read(const std::optional<Song>& song)
+{
+    m_thread = nullptr;
 
-    ui->findPathButton->setEnabled(true);
-    ui->instrumentComboBox->setEnabled(true);
-    ui->difficultyComboBox->setEnabled(true);
+    if (!song.has_value()) {
+        write_message("Song file invalid");
+        m_ui->selectFileButton->setEnabled(true);
+        return;
+    }
+
+    m_song = song;
+
+    m_ui->instrumentComboBox->clear();
+    m_ui->instrumentComboBox->addItem("Guitar",
+                                      static_cast<int>(Instrument::Guitar));
+    m_ui->instrumentComboBox->addItem("Guitar Co-op",
+                                      static_cast<int>(Instrument::GuitarCoop));
+    m_ui->instrumentComboBox->addItem("Bass",
+                                      static_cast<int>(Instrument::Bass));
+    m_ui->instrumentComboBox->addItem("Rhythm",
+                                      static_cast<int>(Instrument::Rhythm));
+    m_ui->instrumentComboBox->addItem("Keys",
+                                      static_cast<int>(Instrument::Keys));
+    m_ui->instrumentComboBox->addItem("GHL Guitar",
+                                      static_cast<int>(Instrument::GHLGuitar));
+    m_ui->instrumentComboBox->addItem("GHL Bass",
+                                      static_cast<int>(Instrument::GHLBass));
+    m_ui->instrumentComboBox->addItem("Drums",
+                                      static_cast<int>(Instrument::Drums));
+
+    m_ui->difficultyComboBox->clear();
+    m_ui->difficultyComboBox->addItem("Easy",
+                                      static_cast<int>(Difficulty::Easy));
+    m_ui->difficultyComboBox->addItem("Medium",
+                                      static_cast<int>(Difficulty::Medium));
+    m_ui->difficultyComboBox->addItem("Hard",
+                                      static_cast<int>(Difficulty::Hard));
+    m_ui->difficultyComboBox->addItem("Expert",
+                                      static_cast<int>(Difficulty::Expert));
+    m_ui->difficultyComboBox->setCurrentIndex(3);
 
     write_message("Song loaded");
+
+    m_ui->findPathButton->setEnabled(true);
+    m_ui->instrumentComboBox->setEnabled(true);
+    m_ui->difficultyComboBox->setEnabled(true);
+    m_ui->selectFileButton->setEnabled(true);
+}
+
+void MainWindow::path_found()
+{
+    m_thread = nullptr;
+    m_ui->selectFileButton->setEnabled(true);
+    m_ui->findPathButton->setEnabled(true);
 }
 
 void MainWindow::on_squeezeSlider_valueChanged(int value)
 {
-    const auto ew_value = ui->earlyWhammySlider->value();
+    const auto ew_value = m_ui->earlyWhammySlider->value();
     if (ew_value > value) {
-        ui->earlyWhammySlider->setValue(value);
+        m_ui->earlyWhammySlider->setValue(value);
     }
 }
 
 void MainWindow::on_earlyWhammySlider_valueChanged(int value)
 {
-    const auto sqz_value = ui->squeezeSlider->value();
+    const auto sqz_value = m_ui->squeezeSlider->value();
     if (sqz_value < value) {
-        ui->earlyWhammySlider->setValue(sqz_value);
+        m_ui->earlyWhammySlider->setValue(sqz_value);
     }
 }
 

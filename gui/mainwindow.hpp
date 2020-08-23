@@ -37,10 +37,10 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 private:
-    std::unique_ptr<Ui::MainWindow> ui;
-    std::optional<Song> song;
+    std::unique_ptr<Ui::MainWindow> m_ui;
+    std::optional<Song> m_song;
+    QThread* m_thread = nullptr;
     Settings get_settings() const;
-    QThread* thread = nullptr;
 
 public:
     MainWindow(QWidget* parent = nullptr);
@@ -52,6 +52,7 @@ private slots:
     void on_selectFileButton_clicked();
     void on_squeezeSlider_valueChanged(int value);
     void path_found();
+    void song_read(const std::optional<Song>& song);
     void write_message(const QString& message);
 };
 
