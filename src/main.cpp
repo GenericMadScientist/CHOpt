@@ -118,6 +118,20 @@ int main(int argc, char** argv)
     try {
         const auto settings = from_args(argc, argv);
         const auto song = Song::from_filename(settings.filename);
+        const auto instruments = song.instruments();
+        if (std::find(instruments.cbegin(), instruments.cend(),
+                      settings.instrument)
+            == instruments.cend()) {
+            throw std::invalid_argument(
+                "Chosen instrument not present in song");
+        }
+        const auto difficulties = song.difficulties(settings.instrument);
+        if (std::find(difficulties.cbegin(), difficulties.cend(),
+                      settings.difficulty)
+            == difficulties.cend()) {
+            throw std::invalid_argument(
+                "Difficulty not available for chosen instrument");
+        }
         const auto builder = make_builder(song, settings);
         const Image image {builder};
         image.save(settings.image_path.c_str());
