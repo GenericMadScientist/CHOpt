@@ -50,6 +50,7 @@ jobs:
       install:
         - which cmake || brew install cmake
 
+    # clang-format and clang-tidy
     - addons:
         apt:
           sources:
@@ -59,15 +60,15 @@ jobs:
             - clang-format-10
             - clang-tidy-10
             - libc++-10-dev
-      install:
-        - echo "CMake not required for static analysis job"
       script:
+        - mkdir -p build
+        - cmake -DBUILD_GUI=OFF build/
         - clang-format-10 --version
         - clang-format-10 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp
         - git diff --color --exit-code
         - clang-tidy-10 --version
-        - clang-tidy-10 include/*.hpp src/*.cpp -- -Iinclude -Ilibs -std=c++17 -stdlib=libc++
-        - clang-tidy-10 tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Iinclude -Ilibs -std=c++17 -stdlib=libc++
+        - clang-tidy-10 include/*.hpp src/*.cpp -- -Iinclude -I_deps/nowide-src/include -Ilibs -std=c++17 -stdlib=libc++
+        - clang-tidy-10 tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Iinclude -Ilibs I_deps/nowide-src/include -std=c++17 -stdlib=libc++
 
     # AddressSanitizer and UndefinedBehaviourSanitizer
     - addons:
