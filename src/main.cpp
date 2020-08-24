@@ -22,8 +22,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <nowide/args.hpp>
-#include <nowide/iostream.hpp>
+#include "nowide_wrapper.hpp"
 
 #include "image.hpp"
 #include "optimiser.hpp"

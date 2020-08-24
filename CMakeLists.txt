@@ -31,6 +31,17 @@ function(set_warnings target)
             /WX>)
 endfunction()
 
+# Link a library without throwing warnings during compilation. From
+# https://stackoverflow.com/a/61933129/13212204
+function(target_link_libraries_system target scope)
+  set(libs ${ARGN})
+  foreach(lib ${libs})
+    get_target_property(lib_include_dirs ${lib} INTERFACE_INCLUDE_DIRECTORIES)
+    target_include_directories(${target} SYSTEM ${scope} ${lib_include_dirs})
+    target_link_libraries(${target} ${scope} ${lib})
+  endforeach()
+endfunction()
+
 find_package(PNG REQUIRED)
 
 include(FetchContent)
@@ -58,7 +69,8 @@ add_executable(
 target_include_directories(
   chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs"
                 ${PNG_INCLUDE_DIRS})
-target_link_libraries(chopt PRIVATE nowide ${PNG_LIBRARIES})
+target_link_libraries_system(chopt PRIVATE nowide)
+target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES})
 
 set_cpp_standard(chopt)
 set_warnings(chopt)

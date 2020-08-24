@@ -27,7 +27,7 @@
 #include <type_traits>
 #include <utility>
 
-#include <nowide/fstream.hpp>
+#include "nowide_wrapper.hpp"
 
 #include "song.hpp"
 
