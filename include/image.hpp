@@ -19,6 +19,7 @@
 #ifndef CHOPT_IMAGE_HPP
 #define CHOPT_IMAGE_HPP
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -26,6 +27,7 @@
 
 #include "points.hpp"
 #include "processed.hpp"
+#include "settings.hpp"
 #include "song.hpp"
 #include "sp.hpp"
 
@@ -162,6 +164,9 @@ public:
         return m_yellow_ranges;
     }
 };
+
+ImageBuilder make_builder(const Song& song, const Settings& settings,
+                          std::function<void(const char*)> write);
 
 class ImageImpl;
 

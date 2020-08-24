@@ -28,6 +28,7 @@
 #include "cimg_wrapper.hpp"
 
 #include "image.hpp"
+#include "optimiser.hpp"
 
 using namespace cimg_library;
 
@@ -454,6 +455,94 @@ void ImageBuilder::add_time_sigs(const SyncTrack& sync_track, int resolution)
             m_time_sigs.emplace_back(pos, num, denom);
         }
     }
+}
+
+const static NoteTrack<NoteColour>&
+track_from_inst_diff(const Settings& settings, const Song& song)
+{
+    switch (settings.instrument) {
+    case Instrument::Guitar:
+        return song.guitar_note_track(settings.difficulty);
+    case Instrument::GuitarCoop:
+        return song.guitar_coop_note_track(settings.difficulty);
+    case Instrument::Bass:
+        return song.bass_note_track(settings.difficulty);
+    case Instrument::Rhythm:
+        return song.rhythm_note_track(settings.difficulty);
+    case Instrument::Keys:
+        return song.keys_note_track(settings.difficulty);
+    case Instrument::GHLGuitar:
+        throw std::invalid_argument("GHL Guitar is not 5 fret");
+    case Instrument::GHLBass:
+        throw std::invalid_argument("GHL Bass is not 5 fret");
+    case Instrument::Drums:
+        throw std::invalid_argument("Drums is not 5 fret");
+    }
+
+    throw std::invalid_argument("Invalid instrument");
+}
+
+template <typename T>
+static ImageBuilder
+make_builder_from_track(const Song& song, const NoteTrack<T>& track,
+                        const Settings& settings,
+                        std::function<void(const char*)> write)
+{
+    ImageBuilder builder {track, song.resolution(), song.sync_track()};
+    builder.add_song_header(song.song_header());
+    builder.add_sp_phrases(track, song.resolution());
+
+    if (settings.draw_bpms) {
+        builder.add_bpms(song.sync_track(), song.resolution());
+    }
+
+    if (settings.draw_solos) {
+        builder.add_solo_sections(track.solos(), song.resolution());
+    }
+
+    if (settings.draw_time_sigs) {
+        builder.add_time_sigs(song.sync_track(), song.resolution());
+    }
+
+    const ProcessedSong processed_track {track,
+                                         song.resolution(),
+                                         song.sync_track(),
+                                         settings.early_whammy,
+                                         settings.squeeze,
+                                         Second {settings.lazy_whammy}};
+    Path path;
+
+    if (!settings.blank) {
+        write("Optimising, please wait...");
+        const Optimiser optimiser {&processed_track};
+        path = optimiser.optimal_path();
+        builder.add_sp_acts(processed_track.points(), path);
+        write(processed_track.path_summary(path).c_str());
+    }
+
+    builder.add_measure_values(processed_track.points(), path);
+    builder.add_sp_values(processed_track.sp_data());
+
+    return builder;
+}
+
+ImageBuilder make_builder(const Song& song, const Settings& settings,
+                          std::function<void(const char*)> write)
+{
+    if (settings.instrument == Instrument::GHLGuitar) {
+        const auto& track = song.ghl_guitar_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings, write);
+    }
+    if (settings.instrument == Instrument::GHLBass) {
+        const auto& track = song.ghl_bass_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings, write);
+    }
+    if (settings.instrument == Instrument::Drums) {
+        const auto& track = song.drum_note_track(settings.difficulty);
+        return make_builder_from_track(song, track, settings, write);
+    }
+    const auto& track = track_from_inst_diff(settings, song);
+    return make_builder_from_track(song, track, settings, write);
 }
 
 static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)

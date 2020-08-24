@@ -26,7 +26,9 @@ package_add_test(
   "${SRC}/chart.cpp"
   "${SRC}/image.cpp"
   "${SRC}/midi.cpp"
+  "${SRC}/optimiser.cpp"
   "${SRC}/points.cpp"
+  "${SRC}/processed.cpp"
   "${SRC}/song.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/time.cpp")
