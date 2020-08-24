@@ -33,6 +33,15 @@ endfunction()
 
 find_package(PNG REQUIRED)
 
+include(FetchContent)
+
+FetchContent_Declare(
+  Nowide
+  GIT_REPOSITORY "https://github.com/boostorg/nowide"
+  GIT_TAG "02f40f0b5f5686627fcddae93ff88ca399db4766")
+
+FetchContent_MakeAvailable(Nowide)
+
 add_executable(
   chopt
   src/main.cpp
@@ -49,7 +58,7 @@ add_executable(
 target_include_directories(
   chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs"
                 ${PNG_INCLUDE_DIRS})
-target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES})
+target_link_libraries(chopt PRIVATE nowide ${PNG_LIBRARIES})
 
 set_cpp_standard(chopt)
 set_warnings(chopt)
@@ -84,14 +93,14 @@ if(BUILD_GUI)
   target_include_directories(
     choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include"
                      "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
-  target_link_libraries(choptgui PRIVATE ${PNG_LIBRARIES} Qt5::Widgets)
+  target_link_libraries(choptgui PRIVATE nowide ${PNG_LIBRARIES} Qt5::Widgets)
 
   set_cpp_standard(choptgui)
 endif()
 
 include(CTest)
 
-option(PACKAGE_TESTS "Build the tests" OFF)
+option(PACKAGE_TESTS "Build the tests" ON)
 if(PACKAGE_TESTS)
   enable_testing()
   add_subdirectory(tests)

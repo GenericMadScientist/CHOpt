@@ -19,13 +19,15 @@
 #include <charconv>
 #include <cstdlib>
 #include <cstring>
-#include <fstream>
+#include <ios>
 #include <optional>
 #include <set>
 #include <stdexcept>
 #include <string_view>
 #include <type_traits>
 #include <utility>
+
+#include <nowide/fstream.hpp>
 
 #include "song.hpp"
 
@@ -46,7 +48,7 @@ static bool ends_with_suffix(const std::string& string, std::string_view suffix)
 Song Song::from_filename(const std::string& filename)
 {
     if (ends_with_suffix(filename, ".chart")) {
-        std::ifstream in {filename};
+        nowide::ifstream in {filename};
         if (!in.is_open()) {
             throw std::invalid_argument("File did not open");
         }
@@ -55,7 +57,7 @@ Song Song::from_filename(const std::string& filename)
         return Song::from_chart(parse_chart(contents));
     }
     if (ends_with_suffix(filename, ".mid")) {
-        std::ifstream in {filename, std::ios::binary};
+        nowide::ifstream in {filename, std::ios::binary};
         if (!in.is_open()) {
             throw std::invalid_argument("File did not open");
         }

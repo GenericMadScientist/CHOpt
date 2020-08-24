@@ -18,9 +18,12 @@
 
 #include <cstdint>
 #include <cstdlib>
-#include <iostream>
+#include <ostream>
 #include <stdexcept>
 #include <string>
+
+#include <nowide/args.hpp>
+#include <nowide/iostream.hpp>
 
 #include "image.hpp"
 #include "optimiser.hpp"
@@ -86,7 +89,7 @@ static ImageBuilder make_builder_from_track(const Song& song,
         const Optimiser optimiser {&processed_track};
         path = optimiser.optimal_path();
         builder.add_sp_acts(processed_track.points(), path);
-        std::cout << processed_track.path_summary(path) << std::endl;
+        nowide::cout << processed_track.path_summary(path) << std::endl;
     }
 
     builder.add_measure_values(processed_track.points(), path);
@@ -116,6 +119,7 @@ static ImageBuilder make_builder(const Song& song, const Settings& settings)
 int main(int argc, char** argv)
 {
     try {
+        nowide::args a(argc, argv);
         const auto settings = from_args(argc, argv);
         const auto song = Song::from_filename(settings.filename);
         const auto instruments = song.instruments();
@@ -137,10 +141,10 @@ int main(int argc, char** argv)
         image.save(settings.image_path.c_str());
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        nowide::cerr << "Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     } catch (...) {
-        std::cerr << "Unexpected non-exception error!" << std::endl;
+        nowide::cerr << "Unexpected non-exception error!" << std::endl;
         return EXIT_FAILURE;
     }
 }
