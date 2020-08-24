@@ -69,7 +69,7 @@ jobs:
         - clang-format-10 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp
         - git diff --color --exit-code
         - clang-tidy-10 --version
-        - clang-tidy-10 include/*.hpp src/*.cpp -- -Iinclude -I_deps/nowide-src/include -Ilibs -std=c++17 -stdlib=libc++
+        - clang-tidy-10 include/*.hpp src/*.cpp -- -Iinclude -Ilibs -Ibuild/_deps/nowide-src/include -std=c++17 -stdlib=libc++
         - clang-tidy-10 tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Iinclude -Ilibs Ibuild/_deps/nowide-src/include -std=c++17 -stdlib=libc++
 
     # AddressSanitizer and UndefinedBehaviourSanitizer
