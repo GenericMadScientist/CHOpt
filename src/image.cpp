@@ -486,7 +486,7 @@ template <typename T>
 static ImageBuilder
 make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                         const Settings& settings,
-                        std::function<void(const char*)> write)
+                        const std::function<void(const char*)>& write)
 {
     ImageBuilder builder {track, song.resolution(), song.sync_track()};
     builder.add_song_header(song.song_header());
@@ -527,7 +527,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
 }
 
 ImageBuilder make_builder(const Song& song, const Settings& settings,
-                          std::function<void(const char*)> write)
+                          const std::function<void(const char*)>& write)
 {
     if (settings.instrument == Instrument::GHLGuitar) {
         const auto& track = song.ghl_guitar_note_track(settings.difficulty);

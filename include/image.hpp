@@ -166,7 +166,7 @@ public:
 };
 
 ImageBuilder make_builder(const Song& song, const Settings& settings,
-                          std::function<void(const char*)> write);
+                          const std::function<void(const char*)>& write);
 
 class ImageImpl;
 
