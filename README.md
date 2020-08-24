@@ -47,8 +47,8 @@ by passing -h or --help to chopt, or by consulting the table below.
 * [Catch2](https://github.com/catchorg/Catch2) 2.13.0 for tests
 * [CImg](https://cimg.eu) 2.9.1 to produce images
 * [libpng](http://libpng.org/pub/png/libpng.html) 1.6.37 to save pngs
-* [nowide](https://github.com/boostorg/nowide) 11.0.0 to handle long filenames
-  and UTF-8 on Windows
+* [nowide](https://github.com/boostorg/nowide) 11.0.0 to handle UTF-8 filenames
+  on Windows
 * [Qt](https://www.qt.io) 5.15.0 for the GUI
 * [zlib](https://zlib.net) 1.2.11 is a dependency of libpng
 
