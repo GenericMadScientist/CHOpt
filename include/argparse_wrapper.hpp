@@ -34,7 +34,7 @@
 #pragma warning(push, 0)
 #endif
 
-#include "argparse.hpp"
+#include <argparse.hpp>
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
