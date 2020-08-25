@@ -80,6 +80,7 @@ target_include_directories(
 target_link_libraries_system(chopt PRIVATE argparse nowide)
 target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES})
 
+set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 set_cpp_standard(chopt)
 set_warnings(chopt)
 enable_sanitisers(chopt)
@@ -119,6 +120,7 @@ if(BUILD_GUI)
   target_link_libraries_system(choptgui PRIVATE argparse nowide)
   target_link_libraries(choptgui PRIVATE ${PNG_LIBRARIES} Qt5::Widgets)
 
+  set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
   set_cpp_standard(choptgui)
 endif()
 
