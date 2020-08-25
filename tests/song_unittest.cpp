@@ -260,8 +260,8 @@ TEST_CASE("Chart reads easy note track correctly")
 
 TEST_CASE("SP phrases are read correctly from Chart")
 {
-    ChartSection expert_single {"ExpertSingle",    {}, {}, {}, {{768, 0, 0}},
-                              {{768, 1, 100}}, {}};
+    ChartSection expert_single {"ExpertSingle",  {}, {}, {}, {{768, 0, 0}},
+                                {{768, 1, 100}}, {}};
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
     NoteTrack<NoteColour> note_track {
