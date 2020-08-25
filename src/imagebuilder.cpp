@@ -470,9 +470,11 @@ track_from_inst_diff(const Settings& settings, const Song& song)
 }
 
 template <typename T>
-static ImageBuilder make_builder_from_track(
-    const Song& song, const NoteTrack<T>& track, const Settings& settings,
-    const std::function<void(const char*)>& write, std::atomic<bool>& terminate)
+static ImageBuilder
+make_builder_from_track(const Song& song, const NoteTrack<T>& track,
+                        const Settings& settings,
+                        const std::function<void(const char*)>& write,
+                        const std::atomic<bool>* terminate)
 {
     ImageBuilder builder {track, song.resolution(), song.sync_track()};
     builder.add_song_header(song.song_header());
@@ -500,8 +502,8 @@ static ImageBuilder make_builder_from_track(
 
     if (!settings.blank) {
         write("Optimising, please wait...");
-        const Optimiser optimiser {&processed_track};
-        path = optimiser.optimal_path(terminate);
+        const Optimiser optimiser {&processed_track, terminate};
+        path = optimiser.optimal_path();
         builder.add_sp_acts(processed_track.points(), path);
         write(processed_track.path_summary(path).c_str());
     }
@@ -514,7 +516,7 @@ static ImageBuilder make_builder_from_track(
 
 ImageBuilder make_builder(const Song& song, const Settings& settings,
                           const std::function<void(const char*)>& write,
-                          std::atomic<bool>& terminate)
+                          const std::atomic<bool>* terminate)
 {
     if (settings.instrument == Instrument::GHLGuitar) {
         const auto& track = song.ghl_guitar_note_track(settings.difficulty);

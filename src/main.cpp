@@ -50,10 +50,10 @@ int main(int argc, char** argv)
             throw std::invalid_argument(
                 "Difficulty not available for chosen instrument");
         }
-        std::atomic<bool> terminate {false};
+        const std::atomic<bool> terminate {false};
         const auto builder = make_builder(
             song, settings, [&](auto p) { nowide::cout << p << std::endl; },
-            terminate);
+            &terminate);
         const Image image {builder};
         image.save(settings.image_path.c_str());
         return EXIT_SUCCESS;

@@ -78,7 +78,7 @@ public:
             const auto builder = make_builder(
                 *m_song, m_settings,
                 [&](const QString& text) { emit write_text(text); },
-                m_terminate);
+                &m_terminate);
             emit write_text("Saving image...");
             const Image image {builder};
             image.save(m_file_name.toStdString().c_str());

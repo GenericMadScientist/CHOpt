@@ -167,6 +167,6 @@ public:
 
 ImageBuilder make_builder(const Song& song, const Settings& settings,
                           const std::function<void(const char*)>& write,
-                          std::atomic<bool>& terminate);
+                          const std::atomic<bool>* terminate);
 
 #endif

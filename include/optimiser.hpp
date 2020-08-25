@@ -65,6 +65,7 @@ private:
 
     static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
     const ProcessedSong* m_song;
+    const std::atomic<bool>* m_terminate;
     std::vector<PointPtr> m_next_candidate_points;
 
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
@@ -74,12 +75,10 @@ private:
     [[nodiscard]] std::optional<CacheValue>
     try_previous_best_subpaths(CacheKey key, const Cache& cache,
                                bool has_full_sp) const;
-    CacheValue find_best_subpaths(CacheKey key, Cache& cache, bool has_full_sp,
-                                  std::atomic<bool>& terminate) const;
-    int get_partial_path(CacheKey key, Cache& cache,
-                         std::atomic<bool>& terminate) const;
-    int get_partial_full_sp_path(PointPtr point, Cache& cache,
-                                 std::atomic<bool>& terminate) const;
+    CacheValue find_best_subpaths(CacheKey key, Cache& cache,
+                                  bool has_full_sp) const;
+    int get_partial_path(CacheKey key, Cache& cache) const;
+    int get_partial_full_sp_path(PointPtr point, Cache& cache) const;
     [[nodiscard]] double act_squeeze_level(ProtoActivation act,
                                            CacheKey key) const;
     [[nodiscard]] Position forced_whammy_end(ProtoActivation act, CacheKey key,
@@ -89,11 +88,9 @@ private:
                  Position min_whammy_force) const;
 
 public:
-    explicit Optimiser(const ProcessedSong* song);
+    Optimiser(const ProcessedSong* song, const std::atomic<bool>* terminate);
     // Return the optimal Star Power path.
     [[nodiscard]] Path optimal_path() const;
-    // Return the optimal Star Power path, with support for pausing.
-    [[nodiscard]] Path optimal_path(std::atomic<bool>& terminate) const;
 };
 
 #endif
