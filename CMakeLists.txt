@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.15.0)
 
 project(
   chopt
-  VERSION 0.6.2
-  DESCRIPTION "A tool to generate optimal SP paths for Clone Hero"
+  VERSION 1.0.0
+  DESCRIPTION "A program to generate optimal Star Power paths for Clone Hero"
   LANGUAGES CXX)
 
 include(cmake/Sanitisers.cmake)

@@ -52,7 +52,7 @@ Settings from_args(int argc, char** argv)
     constexpr int MAX_PERCENT = 100;
     constexpr double MS_PER_SECOND = 1000.0;
 
-    argparse::ArgumentParser program {"chopt"};
+    argparse::ArgumentParser program {"CHOpt"};
 
     program.add_argument("-f", "--file")
         .default_value(std::string {"-"})

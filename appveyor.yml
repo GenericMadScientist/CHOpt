@@ -1,4 +1,4 @@
-version: 0.6.2.{build}-{branch}
+version: 1.0.0.{build}-{branch}
 
 configuration:
   - Debug
