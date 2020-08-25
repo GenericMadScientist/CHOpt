@@ -116,6 +116,9 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_ui->lazyWhammyLineEdit->setValidator(new QIntValidator(
         0, std::numeric_limits<int>::max(), m_ui->lazyWhammyLineEdit));
+
+    m_ui->squeezeLabel->setMinimumWidth(30);
+    m_ui->earlyWhammyLabel->setMinimumWidth(30);
 }
 
 MainWindow::~MainWindow()
@@ -287,6 +290,7 @@ void MainWindow::on_squeezeSlider_valueChanged(int value)
     if (ew_value > value) {
         m_ui->earlyWhammySlider->setValue(value);
     }
+    m_ui->squeezeLabel->setText(QString::number(value));
 }
 
 void MainWindow::on_earlyWhammySlider_valueChanged(int value)
@@ -295,6 +299,8 @@ void MainWindow::on_earlyWhammySlider_valueChanged(int value)
     if (sqz_value < value) {
         m_ui->earlyWhammySlider->setValue(sqz_value);
     }
+    m_ui->earlyWhammyLabel->setText(
+        QString::number(std::min(value, sqz_value)));
 }
 
 #include "mainwindow.moc"
