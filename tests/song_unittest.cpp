@@ -258,6 +258,20 @@ TEST_CASE("Chart reads easy note track correctly")
     REQUIRE(song.guitar_note_track(Difficulty::Easy) == note_track);
 }
 
+TEST_CASE("SP phrases are read correctly from Chart")
+{
+    ChartSection expert_single {"ExpertSingle",    {}, {}, {}, {{768, 0, 0}},
+                              {{768, 1, 100}}, {}};
+    std::vector<ChartSection> sections {expert_single};
+    const Chart chart {sections};
+    NoteTrack<NoteColour> note_track {
+        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
+
+    const auto song = Song::from_chart(chart);
+
+    REQUIRE(song.guitar_note_track(Difficulty::Expert).sp_phrases().empty());
+}
+
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart does not need sections in usual order")
 {

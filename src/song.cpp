@@ -338,7 +338,9 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section)
 
     std::vector<StarPower> sp;
     for (const auto& phrase : section.sp_events) {
-        sp.push_back(StarPower {phrase.position, phrase.length});
+        if (phrase.key == 2) {
+            sp.push_back(StarPower {phrase.position, phrase.length});
+        }
     }
 
     std::vector<int> solo_on_events;
