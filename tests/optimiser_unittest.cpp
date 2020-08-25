@@ -263,7 +263,7 @@ TEST_CASE("optimal_path produces the correct path")
     // could double count the whammy available between the burst at the end of
     // the sustain and the note. This affected a squeeze in Epidox, making chopt
     // think you could squeeze from the O right before Robotic Buildup to a B in
-    // the next section. This test is to catch that.
+    // the next section.
     SECTION("Whammy just before the activation point is not double counted")
     {
         std::vector<Note<NoteColour>> notes {{192, 1440}, {1632}, {6336}};
@@ -274,6 +274,22 @@ TEST_CASE("optimal_path produces the correct path")
         auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost < 100);
+    }
+
+    // There was a bug where an activation on a note right after an SP sustain
+    // could be drawn starting right after the tick burst, rather than the
+    // proper place. An example is the last activation of Gamer National Anthem
+    // in CSC August 2020.
+    SECTION("Activation right after a SP sustain is drawn correctly")
+    {
+        std::vector<Note<NoteColour>> notes {{0, 1488}, {2880, 3264}};
+        std::vector<StarPower> phrases {{0, 1}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        Optimiser optimiser {&track};
+        auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.activations[0].sp_start >= Beat(15.0));
     }
 
     SECTION("Songs ending in ES1 are pathed correctly")

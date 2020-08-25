@@ -286,17 +286,20 @@ double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
 
     auto min_sqz = 0.0;
     auto max_sqz = 1.0;
-    auto sp_bar = m_song->total_available_sp(key.position.beat, key.point,
-                                             act.act_start);
     auto prev_point = std::prev(act.act_start);
     while (max_sqz - min_sqz > THRESHOLD) {
         auto trial_sqz = (min_sqz + max_sqz) / 2;
-        auto prev_point_pos
+        auto start_pos
             = m_song->adjusted_hit_window_start(prev_point, trial_sqz);
-        auto start_pos = prev_point_pos;
         if (start_pos.beat < key.position.beat) {
             start_pos = key.position;
         }
+
+        const auto& [sp_bar, new_pos]
+            = m_song->total_available_sp_with_earliest_pos(
+                key.position.beat, key.point, act.act_start, start_pos);
+        start_pos = new_pos;
+
         ActivationCandidate candidate {act.act_start, act.act_end, start_pos,
                                        sp_bar};
         if (m_song->is_restricted_candidate_valid(candidate, trial_sqz).validity
