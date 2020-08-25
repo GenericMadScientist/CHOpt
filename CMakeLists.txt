@@ -72,7 +72,8 @@ add_executable(
   src/song.cpp
   src/sp.cpp
   src/time.cpp
-  src/chopt.exe.manifest)
+  resources/chopt.exe.manifest
+  resources/chopt-icon.rc)
 target_include_directories(
   chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs"
                 ${PNG_INCLUDE_DIRS})
@@ -109,7 +110,8 @@ if(BUILD_GUI)
     src/song.cpp
     src/sp.cpp
     src/time.cpp
-    gui/choptgui.exe.manifest)
+    resources/choptgui.exe.manifest
+    resources/chopt-icon.rc)
   target_include_directories(
     choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include"
                      "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
