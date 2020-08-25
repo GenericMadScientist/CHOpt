@@ -1,16 +1,16 @@
-# chopt
+# CHOpt
 
 A command-line tool to work out optimal Star Power paths for Clone Hero songs.
 
-[![Build Status](https://travis-ci.com/GenericMadScientist/chopt.svg?branch=develop)](https://travis-ci.com/GenericMadScientist/chopt)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/GenericMadScientist/chopt?branch=develop&svg=true)](https://ci.appveyor.com/project/GenericMadScientist/chopt)
+[![Build Status](https://travis-ci.com/GenericMadScientist/CHOpt.svg?branch=develop)](https://travis-ci.com/GenericMadScientist/CHOpt)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/GenericMadScientist/CHOpt?branch=develop&svg=true)](https://ci.appveyor.com/project/GenericMadScientist/CHOpt)
 
 ## Install
 
 Download the latest version from the [Releases page](../../releases). If you're
 on something other than Windows or Linux, then either compile it yourself or ask
 me. The tests do pass on Mac OS, but I've not tried the program proper on it. If
-you do plan to compile chopt yourself, make sure to set ENABLE_LTO to ON in your
+you do plan to compile CHOpt yourself, make sure to set ENABLE_LTO to ON in your
 CMakeCache.
 
 ## Usage
@@ -19,7 +19,7 @@ This is a command-line program. An example usage to path Trogdor on Hard and
 save the output to trogdor_path.png is
 
 ```
-> chopt.exe -f trogdor.chart -d hard -o trogdor_path.png
+> CHOpt.exe -f trogdor.chart -d hard -o trogdor_path.png
 ```
 
 Only the -f parameter is required, the difficulty defaults to Expert and the

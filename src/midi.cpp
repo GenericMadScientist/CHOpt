@@ -1,5 +1,5 @@
 /*
- * chopt - Star Power optimiser for Clone Hero
+ * CHOpt - Star Power optimiser for Clone Hero
  * Copyright (C) 2020 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
