@@ -22,6 +22,7 @@
 #include <iterator>
 #include <numeric>
 #include <set>
+#include <stdexcept>
 
 #include "optimiser.hpp"
 
@@ -90,20 +91,25 @@ PointPtr Optimiser::act_end_lower_bound(PointPtr point, Measure pos,
     return std::prev(q);
 }
 
-int Optimiser::get_partial_path(CacheKey key, Cache& cache) const
+int Optimiser::get_partial_path(CacheKey key, Cache& cache,
+                                std::atomic<bool>& terminate) const
 {
+    if (terminate) {
+        throw std::runtime_error("Thread halted");
+    }
     if (key.point == m_song->points().cend()) {
         return 0;
     }
     if (cache.paths.find(key) == cache.paths.end()) {
-        auto best_path = find_best_subpaths(key, cache, false);
+        auto best_path = find_best_subpaths(key, cache, false, terminate);
         cache.paths.emplace(key, best_path);
         return best_path.score_boost;
     }
     return cache.paths.at(key).score_boost;
 }
 
-int Optimiser::get_partial_full_sp_path(PointPtr point, Cache& cache) const
+int Optimiser::get_partial_full_sp_path(PointPtr point, Cache& cache,
+                                        std::atomic<bool>& terminate) const
 {
     if (cache.full_sp_paths.find(point) != cache.full_sp_paths.end()) {
         return cache.full_sp_paths.at(point).score_boost;
@@ -112,7 +118,7 @@ int Optimiser::get_partial_full_sp_path(PointPtr point, Cache& cache) const
     // We only call this from find_best_subpath in a situaiton where we know
     // point is not m_points.cend(), so we may assume point is a real Point.
     CacheKey key {point, std::prev(point)->hit_window_start};
-    auto best_path = find_best_subpaths(key, cache, true);
+    auto best_path = find_best_subpaths(key, cache, true, terminate);
     cache.full_sp_paths.emplace(point, best_path);
     return best_path.score_boost;
 }
@@ -164,8 +170,9 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
     return {{next_acts, score_boost}};
 }
 
-Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
-                                                    bool has_full_sp) const
+Optimiser::CacheValue
+Optimiser::find_best_subpaths(CacheKey key, Cache& cache, bool has_full_sp,
+                              std::atomic<bool>& terminate) const
 {
     constexpr double MINIMUM_SP_AMOUNT = 0.5;
 
@@ -197,7 +204,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         }
         if (p != key.point && sp_bar.max() == 1.0
             && std::prev(p)->is_sp_granting_note) {
-            get_partial_full_sp_path(p, cache);
+            get_partial_full_sp_path(p, cache, terminate);
             auto cache_value = cache.full_sp_paths.at(p);
             if (cache_value.score_boost > best_score_boost) {
                 return cache_value;
@@ -234,7 +241,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                 [](const auto& sum, const auto& x) { return sum + x.value; });
             CacheKey next_key {std::next(q), candidate_result.ending_position};
             next_key = advance_cache_key(next_key);
-            auto rest_of_path_score_boost = get_partial_path(next_key, cache);
+            auto rest_of_path_score_boost
+                = get_partial_path(next_key, cache, terminate);
             auto score = act_score + rest_of_path_score_boost;
             if (score > best_score_boost) {
                 best_score_boost = score;
@@ -251,12 +259,18 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
 
 Path Optimiser::optimal_path() const
 {
+    std::atomic<bool> terminate {false};
+    return optimal_path(terminate);
+}
+
+Path Optimiser::optimal_path(std::atomic<bool>& terminate) const
+{
     Cache cache;
     CacheKey start_key {m_song->points().cbegin(),
                         {Beat(NEG_INF), Measure(NEG_INF)}};
     start_key = advance_cache_key(start_key);
 
-    auto best_score_boost = get_partial_path(start_key, cache);
+    auto best_score_boost = get_partial_path(start_key, cache, terminate);
     Path path {{}, best_score_boost};
 
     while (start_key.point != m_song->points().cend()) {

@@ -470,10 +470,9 @@ track_from_inst_diff(const Settings& settings, const Song& song)
 }
 
 template <typename T>
-static ImageBuilder
-make_builder_from_track(const Song& song, const NoteTrack<T>& track,
-                        const Settings& settings,
-                        const std::function<void(const char*)>& write)
+static ImageBuilder make_builder_from_track(
+    const Song& song, const NoteTrack<T>& track, const Settings& settings,
+    const std::function<void(const char*)>& write, std::atomic<bool>& terminate)
 {
     ImageBuilder builder {track, song.resolution(), song.sync_track()};
     builder.add_song_header(song.song_header());
@@ -502,7 +501,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     if (!settings.blank) {
         write("Optimising, please wait...");
         const Optimiser optimiser {&processed_track};
-        path = optimiser.optimal_path();
+        path = optimiser.optimal_path(terminate);
         builder.add_sp_acts(processed_track.points(), path);
         write(processed_track.path_summary(path).c_str());
     }
@@ -514,20 +513,21 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
 }
 
 ImageBuilder make_builder(const Song& song, const Settings& settings,
-                          const std::function<void(const char*)>& write)
+                          const std::function<void(const char*)>& write,
+                          std::atomic<bool>& terminate)
 {
     if (settings.instrument == Instrument::GHLGuitar) {
         const auto& track = song.ghl_guitar_note_track(settings.difficulty);
-        return make_builder_from_track(song, track, settings, write);
+        return make_builder_from_track(song, track, settings, write, terminate);
     }
     if (settings.instrument == Instrument::GHLBass) {
         const auto& track = song.ghl_bass_note_track(settings.difficulty);
-        return make_builder_from_track(song, track, settings, write);
+        return make_builder_from_track(song, track, settings, write, terminate);
     }
     if (settings.instrument == Instrument::Drums) {
         const auto& track = song.drum_note_track(settings.difficulty);
-        return make_builder_from_track(song, track, settings, write);
+        return make_builder_from_track(song, track, settings, write, terminate);
     }
     const auto& track = track_from_inst_diff(settings, song);
-    return make_builder_from_track(song, track, settings, write);
+    return make_builder_from_track(song, track, settings, write, terminate);
 }

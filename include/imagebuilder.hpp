@@ -19,6 +19,7 @@
 #ifndef CHOPT_IMAGEBUILDER_HPP
 #define CHOPT_IMAGEBUILDER_HPP
 
+#include <atomic>
 #include <functional>
 #include <string>
 #include <tuple>
@@ -165,6 +166,7 @@ public:
 };
 
 ImageBuilder make_builder(const Song& song, const Settings& settings,
-                          const std::function<void(const char*)>& write);
+                          const std::function<void(const char*)>& write,
+                          std::atomic<bool>& terminate);
 
 #endif

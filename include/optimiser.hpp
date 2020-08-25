@@ -19,6 +19,7 @@
 #ifndef CHOPT_OPTIMISER_HPP
 #define CHOPT_OPTIMISER_HPP
 
+#include <atomic>
 #include <limits>
 #include <map>
 #include <optional>
@@ -73,10 +74,12 @@ private:
     [[nodiscard]] std::optional<CacheValue>
     try_previous_best_subpaths(CacheKey key, const Cache& cache,
                                bool has_full_sp) const;
-    CacheValue find_best_subpaths(CacheKey key, Cache& cache,
-                                  bool has_full_sp) const;
-    int get_partial_path(CacheKey key, Cache& cache) const;
-    int get_partial_full_sp_path(PointPtr point, Cache& cache) const;
+    CacheValue find_best_subpaths(CacheKey key, Cache& cache, bool has_full_sp,
+                                  std::atomic<bool>& terminate) const;
+    int get_partial_path(CacheKey key, Cache& cache,
+                         std::atomic<bool>& terminate) const;
+    int get_partial_full_sp_path(PointPtr point, Cache& cache,
+                                 std::atomic<bool>& terminate) const;
     [[nodiscard]] double act_squeeze_level(ProtoActivation act,
                                            CacheKey key) const;
     [[nodiscard]] Position forced_whammy_end(ProtoActivation act, CacheKey key,
@@ -89,6 +92,8 @@ public:
     explicit Optimiser(const ProcessedSong* song);
     // Return the optimal Star Power path.
     [[nodiscard]] Path optimal_path() const;
+    // Return the optimal Star Power path, with support for pausing.
+    [[nodiscard]] Path optimal_path(std::atomic<bool>& terminate) const;
 };
 
 #endif

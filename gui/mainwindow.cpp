@@ -61,6 +61,7 @@ class OptimiserThread : public QThread {
     Q_OBJECT
 
 private:
+    std::atomic<bool> m_terminate = false;
     Settings m_settings;
     std::optional<Song> m_song;
     QString m_file_name;
@@ -73,13 +74,19 @@ public:
 
     void run() override
     {
-        const auto builder
-            = make_builder(*m_song, m_settings,
-                           [&](const QString& text) { emit write_text(text); });
-        emit write_text("Saving image...");
-        const Image image {builder};
-        image.save(m_file_name.toStdString().c_str());
-        emit write_text("Image saved");
+        try {
+            const auto builder = make_builder(
+                *m_song, m_settings,
+                [&](const QString& text) { emit write_text(text); },
+                m_terminate);
+            emit write_text("Saving image...");
+            const Image image {builder};
+            image.save(m_file_name.toStdString().c_str());
+            emit write_text("Image saved");
+        } catch (const std::runtime_error&) {
+            // We ignore this exception because it's how we break out of the
+            // computation on program close.
+        }
     }
 
     void set_data(const Settings& settings, const Song& song,
@@ -89,6 +96,8 @@ public:
         m_song = song;
         m_file_name = file_name;
     }
+
+    void end_thread() { m_terminate = true; }
 
 signals:
     void write_text(const QString& text);
@@ -112,6 +121,10 @@ MainWindow::MainWindow(QWidget* parent)
 MainWindow::~MainWindow()
 {
     if (m_thread != nullptr) {
+        auto* opt_thread = dynamic_cast<OptimiserThread*>(m_thread);
+        if (opt_thread != nullptr) {
+            opt_thread->end_thread();
+        }
         m_thread->quit();
         // We give the thread 5 seconds to obey, then kill it. Although all the
         // thread does apart from CPU-bound work is write to a file at the very
