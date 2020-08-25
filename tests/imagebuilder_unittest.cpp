@@ -18,7 +18,7 @@
 
 #include "catch.hpp"
 
-#include "image.hpp"
+#include "imagebuilder.hpp"
 
 template <typename T>
 static bool operator==(const DrawnNote<T>& lhs, const DrawnNote<T>& rhs)

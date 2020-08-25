@@ -21,10 +21,10 @@ endfunction()
 package_add_test(chart_unittest chart_unittest.cpp "${SRC}/chart.cpp")
 
 package_add_test(
-  image_unittest
-  image_unittest.cpp
+  imagebuilder_unittest
+  imagebuilder_unittest.cpp
   "${SRC}/chart.cpp"
-  "${SRC}/image.cpp"
+  "${SRC}/imagebuilder.cpp"
   "${SRC}/midi.cpp"
   "${SRC}/optimiser.cpp"
   "${SRC}/points.cpp"
@@ -32,8 +32,8 @@ package_add_test(
   "${SRC}/song.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/time.cpp")
-target_include_directories(image_unittest PRIVATE ${PNG_INCLUDE_DIRS})
-target_link_libraries(image_unittest PRIVATE ${PNG_LIBRARIES})
+target_include_directories(imagebuilder_unittest PRIVATE ${PNG_INCLUDE_DIRS})
+target_link_libraries(imagebuilder_unittest PRIVATE ${PNG_LIBRARIES})
 
 package_add_test(midi_unittest midi_unittest.cpp "${SRC}/midi.cpp")
 

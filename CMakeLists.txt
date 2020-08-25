@@ -64,6 +64,7 @@ add_executable(
   src/main.cpp
   src/chart.cpp
   src/image.cpp
+  src/imagebuilder.cpp
   src/midi.cpp
   src/optimiser.cpp
   src/points.cpp
@@ -104,6 +105,7 @@ if(BUILD_GUI)
     gui/mainwindow.ui
     src/chart.cpp
     src/image.cpp
+    src/imagebuilder.cpp
     src/midi.cpp
     src/optimiser.cpp
     src/points.cpp
