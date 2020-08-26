@@ -160,4 +160,3 @@ if(ENABLE_LTO)
     message(WARNING "LTO is not supported: ${output}")
   endif()
 endif()
-

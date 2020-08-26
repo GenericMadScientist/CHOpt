@@ -74,7 +74,7 @@ static std::optional<int> string_view_to_int(std::string_view input)
     const char* last = input.data() + input.size();
     auto [p, ec] = std::from_chars(input.data(), last, result);
     if ((ec != std::errc()) || (p != last)) {
-        return {};
+        return std::nullopt;
     }
     return result;
 }

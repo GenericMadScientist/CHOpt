@@ -174,17 +174,12 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
 {
     if constexpr (std::is_same_v<T, NoteColour>) {
         static const std::array<std::optional<NoteColour>, 8> COLOURS {
-            NoteColour::Green,
-            NoteColour::Red,
-            NoteColour::Yellow,
-            NoteColour::Blue,
-            NoteColour::Orange,
-            {},
-            {},
-            NoteColour::Open};
+            NoteColour::Green, NoteColour::Red,    NoteColour::Yellow,
+            NoteColour::Blue,  NoteColour::Orange, std::nullopt,
+            std::nullopt,      NoteColour::Open};
         const auto colour = COLOURS.at(static_cast<std::size_t>(fret_type));
         if (!colour.has_value()) {
-            return {};
+            return std::nullopt;
         }
         return Note<NoteColour> {position, length, *colour};
     } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
@@ -194,13 +189,13 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
             GHLNoteColour::WhiteHigh,
             GHLNoteColour::BlackLow,
             GHLNoteColour::BlackMid,
-            {},
-            {},
+            std::nullopt,
+            std::nullopt,
             GHLNoteColour::Open,
             GHLNoteColour::BlackHigh};
         const auto colour = COLOURS.at(static_cast<std::size_t>(fret_type));
         if (!colour.has_value()) {
-            return {};
+            return std::nullopt;
         }
         return Note<GHLNoteColour> {position, length, *colour};
     } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
@@ -210,13 +205,13 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
             {2, {DrumNoteColour::Yellow}},
             {3, {DrumNoteColour::Blue}},
             {4, {DrumNoteColour::Green}},
-            {5, {}},
+            {5, std::nullopt},
             {66, {DrumNoteColour::YellowCymbal}},
             {67, {DrumNoteColour::BlueCymbal}},
             {68, {DrumNoteColour::GreenCymbal}}};
         const auto colour = COLOURS.at(fret_type);
         if (!colour.has_value()) {
-            return {};
+            return std::nullopt;
         }
         (void)length;
         return Note<DrumNoteColour> {position, 0, *colour};
@@ -260,14 +255,14 @@ diff_inst_from_header(const std::string& header)
             return starts_with_prefix(header, std::get<0>(pair));
         });
     if (diff_iter == DIFFICULTIES.cend()) {
-        return {};
+        return std::nullopt;
     }
     auto inst_iter = std::find_if( // NOLINT
         INSTRUMENTS.cbegin(), INSTRUMENTS.cend(), [&](const auto& pair) {
             return ends_with_suffix(header, std::get<0>(pair));
         });
     if (inst_iter == INSTRUMENTS.cend()) {
-        return {};
+        return std::nullopt;
     }
     return std::tuple {std::get<1>(*diff_iter), std::get<1>(*inst_iter)};
 }
@@ -494,7 +489,7 @@ static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
         if (key >= EASY_GREEN && key <= EASY_ORANGE) {
             return {Difficulty::Easy};
         }
-        return {};
+        return std::nullopt;
     } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
         constexpr int EASY_OPEN = 58;
         constexpr int EASY_BLACK_HIGH = 64;
@@ -517,7 +512,7 @@ static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
         if (key >= EASY_OPEN && key <= EASY_BLACK_HIGH) {
             return {Difficulty::Easy};
         }
-        return {};
+        return std::nullopt;
     }
 }
 
@@ -968,21 +963,21 @@ static std::optional<Instrument> midi_section_instrument(const MidiTrack& track)
         {"PART DRUMS", Instrument::Drums}};
 
     if (track.events.empty()) {
-        return {};
+        return std::nullopt;
     }
     const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
     if (meta_event == nullptr) {
-        return {};
+        return std::nullopt;
     }
     if (meta_event->type != 3) {
-        return {};
+        return std::nullopt;
     }
     const std::string track_name {meta_event->data.cbegin(),
                                   meta_event->data.cend()};
 
     const auto iter = INSTRUMENTS.find(track_name);
     if (iter == INSTRUMENTS.end()) {
-        return {};
+        return std::nullopt;
     }
     return iter->second;
 }

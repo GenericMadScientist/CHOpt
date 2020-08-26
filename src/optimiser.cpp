@@ -138,17 +138,17 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
 {
     if (has_full_sp || !key.point->is_hold_point
         || !std::prev(key.point)->is_hold_point) {
-        return {};
+        return std::nullopt;
     }
 
     auto prev_key_iter = cache.paths.lower_bound(key);
     if (prev_key_iter == cache.paths.begin()) {
-        return {};
+        return std::nullopt;
     }
 
     prev_key_iter = std::prev(prev_key_iter);
     if (std::distance(prev_key_iter->first.point, key.point) > 1) {
-        return {};
+        return std::nullopt;
     }
 
     const auto& acts = prev_key_iter->second.possible_next_acts;
@@ -167,7 +167,7 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
         }
     }
     if (next_acts.empty()) {
-        return {};
+        return std::nullopt;
     }
 
     auto score_boost = prev_key_iter->second.score_boost;
