@@ -1,6 +1,6 @@
 language: cpp
 os: linux
-dist: bionic
+dist: focal
 
 jobs:
   include:
@@ -110,13 +110,6 @@ jobs:
 
 before_install:
   - eval "${MATRIX_EVAL}"
-
-install:
-  - CMAKE_URL="https://github.com/Kitware/CMake/releases/download/v3.15.0/cmake-3.15.0-Linux-x86_64.tar.gz"
-  - DEPS_DIR=${TRAVIS_BUILD_DIR}/deps
-  - mkdir -p ${DEPS_DIR}/cmake
-  - travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${DEPS_DIR}/cmake
-  - export PATH=${DEPS_DIR}/cmake/bin:${PATH}
 
 script:
   - ${CXX} --version
