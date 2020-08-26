@@ -4,6 +4,7 @@ dist: focal
 
 jobs:
   include:
+    # GCC 8
     - addons:
         apt:
           packages:
@@ -11,15 +12,11 @@ jobs:
       env:
         - MATRIX_EVAL="CXX=g++-8"
 
-    - addons:
-        apt:
-          sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
-          packages:
-            - g++-9
-      env:
+    # GCC 9
+    - env:
         - MATRIX_EVAL="CXX=g++-9"
 
+    # Clang 9
     - addons:
         apt:
           packages:
@@ -30,6 +27,7 @@ jobs:
         - CXX_FLAGS="-stdlib=libc++"
         - MATRIX_EVAL="CXX=clang++-9"
 
+    # Clang 10
     - addons:
         apt:
           packages:
@@ -40,6 +38,7 @@ jobs:
         - CXX_FLAGS="-stdlib=libc++"
         - MATRIX_EVAL="CXX=clang++-10"
 
+    # OS X
     - os: osx
       osx_image: xcode11.3
       env:
@@ -85,10 +84,7 @@ jobs:
     # Valgrind
     - addons:
         apt:
-          sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
           packages:
-            - g++-9
             - valgrind
       script:
         - CXX=g++-9
