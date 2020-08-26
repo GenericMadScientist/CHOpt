@@ -15,8 +15,10 @@ CMakeCache.
 
 ## Usage
 
-This is a command-line program. An example usage to path Trogdor on Hard and
-save the output to trogdor_path.png is
+CHOpt has two versions, a command-line version and a graphical version. The
+graphical version has the same options as the command-line version and is
+self-explanatory enough. As for the command-line version, an example usage to
+path Trogdor on Hard and save the output to trogdor_path.png is
 
 ```
 > CHOpt.exe -f trogdor.chart -d hard -o trogdor_path.png
@@ -24,7 +26,7 @@ save the output to trogdor_path.png is
 
 Only the -f parameter is required, the difficulty defaults to Expert and the
 path is by default saved to path.png. The full list of arguments can be found
-by passing -h or --help to chopt, or by consulting the table below.
+by passing -h or --help to CHOpt, or by consulting the table below.
 
 | Arguments             | Action                                                      |
 | --------------------- | ----------------------------------------------------------- |
