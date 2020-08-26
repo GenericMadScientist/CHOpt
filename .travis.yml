@@ -32,9 +32,6 @@ jobs:
 
     - addons:
         apt:
-          sources:
-            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
-              key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
             - clang-10
             - libc++-10-dev
