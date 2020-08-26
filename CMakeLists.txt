@@ -59,6 +59,14 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Argparse)
 FetchContent_MakeAvailable(Nowide)
 
+cmake_policy(SET CMP0083 NEW)
+include(CheckPIESupported)
+check_pie_supported(OUTPUT_VARIABLE output LANGUAGES CXX)
+if(NOT CMAKE_CXX_LINK_NO_PIE_SUPPORTED)
+  message(WARNING "No PIE is not supported at link time: ${output}.\n"
+                  "PIE link options will not be passed to linker.")
+endif()
+
 add_executable(
   chopt
   src/main.cpp
@@ -145,7 +153,11 @@ if(ENABLE_LTO)
     LANGUAGES CXX)
   if(supported)
     set_property(TARGET chopt PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    if(BUILD_GUI)
+      set_property(TARGET choptgui PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    endif()
   else()
     message(WARNING "LTO is not supported: ${output}")
   endif()
 endif()
+
