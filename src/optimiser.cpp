@@ -188,7 +188,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
     std::vector<std::uint8_t> attained_act_ends;
     attained_act_ends.resize(
         std::distance(m_song->points().cbegin(), m_song->points().cend()));
-    std::fill(attained_act_ends.begin(), attained_act_ends.end(), 0);
+    std::fill(attained_act_ends.begin(), attained_act_ends.end(), 0U);
     auto best_score_boost = 0;
 
     for (auto p = key.point; p < m_song->points().cend(); ++p) {
