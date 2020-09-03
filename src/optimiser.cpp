@@ -186,8 +186,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
 
     std::vector<std::tuple<ProtoActivation, CacheKey>> acts;
     std::vector<std::uint8_t> attained_act_ends;
-    attained_act_ends.resize(
-        std::distance(m_song->points().cbegin(), m_song->points().cend()));
+    attained_act_ends.resize(static_cast<std::size_t>(
+        std::distance(m_song->points().cbegin(), m_song->points().cend())));
     std::fill(attained_act_ends.begin(), attained_act_ends.end(),
               static_cast<std::uint8_t>(0));
     auto best_score_boost = 0;
@@ -224,7 +224,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         auto q_min = act_end_lower_bound(
             p, starting_pos.measure, std::max(MINIMUM_SP_AMOUNT, sp_bar.min()));
         for (auto q = q_min; q < m_song->points().cend();) {
-            auto q_index = std::distance(m_song->points().cbegin(), q);
+            auto q_index = static_cast<std::size_t>(
+                std::distance(m_song->points().cbegin(), q));
             if (attained_act_ends[q_index] != 0) {
                 ++q;
                 continue;

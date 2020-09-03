@@ -20,6 +20,8 @@
 #include <cassert>
 #include <iterator>
 
+#include <iostream>
+
 #include "points.hpp"
 
 static bool phrase_contains_pos(const StarPower& phrase, int position)
@@ -150,16 +152,23 @@ points_from_track(const NoteTrack<T>& track, int resolution,
 static std::vector<PointPtr>
 next_sp_note_vector(const std::vector<Point>& points)
 {
+    std::cout << "Hello" << std::endl;
     if (points.empty()) {
         return {};
     }
+    std::cout << "World" << std::endl;
     std::vector<PointPtr> next_sp_notes;
     auto next_sp_note = points.cend();
-    for (auto p = std::prev(points.cend()); p >= points.cbegin(); --p) {
+    for (auto p = std::prev(points.cend());; --p) {
         if (p->is_sp_granting_note) {
             next_sp_note = p;
         }
         next_sp_notes.push_back(next_sp_note);
+        // We can't have the loop condition be p >= points.cbegin() because
+        // decrementing past .begin() is undefined behaviour.
+        if (p == points.cbegin()) {
+            break;
+        }
     }
     std::reverse(next_sp_notes.begin(), next_sp_notes.end());
     return next_sp_notes;
@@ -209,5 +218,7 @@ PointSet::PointSet(const NoteTrack<DrumNoteColour>& track, int resolution,
 
 PointPtr PointSet::next_sp_granting_note(PointPtr point) const
 {
-    return m_next_sp_granting_note[std::distance(m_points.cbegin(), point)];
+    const auto index
+        = static_cast<std::size_t>(std::distance(m_points.cbegin(), point));
+    return m_next_sp_granting_note[index];
 }
