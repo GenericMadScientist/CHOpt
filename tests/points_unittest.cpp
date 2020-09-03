@@ -308,6 +308,23 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     }
 }
 
+TEST_CASE("next_sp_granting_note is correct")
+{
+    std::vector<Note<NoteColour>> notes {{100, 0}, {200, 100}, {400, 0}};
+    std::vector<StarPower> phrases {{200, 1}, {400, 1}};
+    NoteTrack<NoteColour> track {notes, phrases, {}};
+    TimeConverter converter {{}, 192};
+
+    PointSet points {track, 192, converter, 1.0};
+
+    REQUIRE(points.next_sp_granting_note(points.cbegin())
+            == std::next(points.cbegin()));
+    REQUIRE(points.next_sp_granting_note(std::next(points.cbegin()))
+            == std::next(points.cbegin()));
+    REQUIRE(points.next_sp_granting_note(std::next(points.cbegin(), 2))
+            == std::prev(points.cend()));
+}
+
 TEST_CASE("Solo sections are added")
 {
     std::vector<Solo> solos {{0, 576, 100}, {768, 1152, 200}};

@@ -40,6 +40,7 @@ using PointPtr = std::vector<Point>::const_iterator;
 class PointSet {
 private:
     const std::vector<Point> m_points;
+    const std::vector<PointPtr> m_next_sp_granting_note;
     const std::vector<std::tuple<Position, int>> m_solo_boosts;
 
 public:
@@ -51,6 +52,7 @@ public:
              const TimeConverter& converter, double squeeze);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
+    [[nodiscard]] PointPtr next_sp_granting_note(PointPtr point) const;
     [[nodiscard]] const std::vector<std::tuple<Position, int>>&
     solo_boosts() const
     {

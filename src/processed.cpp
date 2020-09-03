@@ -125,39 +125,38 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation) const
                                       current_position_for_late_end.beat);
     sp_for_late_end = std::min(sp_for_late_end, 1.0);
 
-    for (auto p = activation.act_start; p < activation.act_end; ++p) {
-        if (p->is_sp_granting_note) {
-            auto earliest_sp_hit_on_late = p->hit_window_start;
-            if (p->hit_window_start.beat < current_position_for_late_end.beat) {
-                earliest_sp_hit_on_late = current_position_for_late_end;
-            }
-            sp_for_late_end = m_sp_data
-                                  .propagate_sp_over_whammy(
-                                      current_position_for_late_end,
-                                      earliest_sp_hit_on_late,
-                                      SpBar {sp_for_late_end, sp_for_late_end})
-                                  .max();
-            if (sp_for_late_end < 0.0) {
-                return {null_position, ActValidity::insufficient_sp};
-            }
-            sp_for_late_end
-                = m_sp_data
-                      .propagate_sp_over_whammy(
-                          earliest_sp_hit_on_late, p->hit_window_end,
-                          SpBar {sp_for_late_end, sp_for_late_end})
-                      .max();
-            sp_for_late_end += SP_PHRASE_AMOUNT;
-            sp_for_late_end = std::min(sp_for_late_end, 1.0);
-            current_position_for_late_end = p->hit_window_end;
-
-            auto meas_diff = p->hit_window_start.measure
-                - current_position_for_early_end.measure;
-            sp_for_early_end -= meas_diff.value() / MEASURES_PER_BAR;
-            sp_for_early_end = std::max(sp_for_early_end, 0.0);
-            sp_for_early_end += SP_PHRASE_AMOUNT;
-            sp_for_early_end = std::min(sp_for_early_end, 1.0);
-            current_position_for_early_end = p->hit_window_start;
+    for (auto p = m_points.next_sp_granting_note(activation.act_start);
+         p < activation.act_end;
+         p = m_points.next_sp_granting_note(std::next(p))) {
+        auto earliest_sp_hit_on_late = p->hit_window_start;
+        if (p->hit_window_start.beat < current_position_for_late_end.beat) {
+            earliest_sp_hit_on_late = current_position_for_late_end;
         }
+        sp_for_late_end
+            = m_sp_data
+                  .propagate_sp_over_whammy(
+                      current_position_for_late_end, earliest_sp_hit_on_late,
+                      SpBar {sp_for_late_end, sp_for_late_end})
+                  .max();
+        if (sp_for_late_end < 0.0) {
+            return {null_position, ActValidity::insufficient_sp};
+        }
+        sp_for_late_end = m_sp_data
+                              .propagate_sp_over_whammy(
+                                  earliest_sp_hit_on_late, p->hit_window_end,
+                                  SpBar {sp_for_late_end, sp_for_late_end})
+                              .max();
+        sp_for_late_end += SP_PHRASE_AMOUNT;
+        sp_for_late_end = std::min(sp_for_late_end, 1.0);
+        current_position_for_late_end = p->hit_window_end;
+
+        auto meas_diff = p->hit_window_start.measure
+            - current_position_for_early_end.measure;
+        sp_for_early_end -= meas_diff.value() / MEASURES_PER_BAR;
+        sp_for_early_end = std::max(sp_for_early_end, 0.0);
+        sp_for_early_end += SP_PHRASE_AMOUNT;
+        sp_for_early_end = std::min(sp_for_early_end, 1.0);
+        current_position_for_early_end = p->hit_window_start;
     }
 
     auto ending_pos = activation.act_end->hit_window_start;

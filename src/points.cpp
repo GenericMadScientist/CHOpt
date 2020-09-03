@@ -147,6 +147,24 @@ points_from_track(const NoteTrack<T>& track, int resolution,
     return points;
 }
 
+static std::vector<PointPtr>
+next_sp_note_vector(const std::vector<Point>& points)
+{
+    if (points.empty()) {
+        return {};
+    }
+    std::vector<PointPtr> next_sp_notes;
+    auto next_sp_note = points.cend();
+    for (auto p = std::prev(points.cend()); p >= points.cbegin(); --p) {
+        if (p->is_sp_granting_note) {
+            next_sp_note = p;
+        }
+        next_sp_notes.push_back(next_sp_note);
+    }
+    std::reverse(next_sp_notes.begin(), next_sp_notes.end());
+    return next_sp_notes;
+}
+
 static std::vector<std::tuple<Position, int>>
 solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
                        const TimeConverter& converter)
@@ -165,6 +183,7 @@ solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
 PointSet::PointSet(const NoteTrack<NoteColour>& track, int resolution,
                    const TimeConverter& converter, double squeeze)
     : m_points {points_from_track(track, resolution, converter, squeeze)}
+    , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {
           solo_boosts_from_solos(track.solos(), resolution, converter)}
 {
@@ -173,6 +192,7 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track, int resolution,
 PointSet::PointSet(const NoteTrack<GHLNoteColour>& track, int resolution,
                    const TimeConverter& converter, double squeeze)
     : m_points {points_from_track(track, resolution, converter, squeeze)}
+    , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {
           solo_boosts_from_solos(track.solos(), resolution, converter)}
 {
@@ -181,7 +201,13 @@ PointSet::PointSet(const NoteTrack<GHLNoteColour>& track, int resolution,
 PointSet::PointSet(const NoteTrack<DrumNoteColour>& track, int resolution,
                    const TimeConverter& converter, double squeeze)
     : m_points {points_from_track(track, resolution, converter, squeeze)}
+    , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {
           solo_boosts_from_solos(track.solos(), resolution, converter)}
 {
+}
+
+PointPtr PointSet::next_sp_granting_note(PointPtr point) const
+{
+    return m_next_sp_granting_note[std::distance(m_points.cbegin(), point)];
 }
