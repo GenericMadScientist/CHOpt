@@ -220,8 +220,9 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         }
         auto q_min = act_end_lower_bound(
             p, starting_pos.measure, std::max(MINIMUM_SP_AMOUNT, sp_bar.min()));
-        for (auto q = q_min; q < m_song->points().cend(); ++q) {
+        for (auto q = q_min; q < m_song->points().cend();) {
             if (attained_act_ends.find(q) != attained_act_ends.end()) {
+                ++q;
                 continue;
             }
 
@@ -233,9 +234,17 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                 // We cannot hit any later points if q is not a hold point, so
                 // we are done.
                 break;
+            } else {
+                // We cannot hit any subsequent hold point, so go straight to
+                // the next non-hold point.
+                q = std::find_if(
+                    q, m_song->points().cend(),
+                    [](const auto& pt) { return !pt.is_hold_point; });
+                continue;
             }
 
             if (candidate_result.validity != ActValidity::success) {
+                ++q;
                 continue;
             }
 
@@ -253,6 +262,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             } else if (score == best_score_boost) {
                 acts.push_back({{p, q}, next_key});
             }
+            ++q;
         }
     }
 
