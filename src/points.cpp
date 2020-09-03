@@ -20,8 +20,6 @@
 #include <cassert>
 #include <iterator>
 
-#include <iostream>
-
 #include "points.hpp"
 
 static bool phrase_contains_pos(const StarPower& phrase, int position)
@@ -152,11 +150,9 @@ points_from_track(const NoteTrack<T>& track, int resolution,
 static std::vector<PointPtr>
 next_sp_note_vector(const std::vector<Point>& points)
 {
-    std::cout << "Hello" << std::endl;
     if (points.empty()) {
         return {};
     }
-    std::cout << "World" << std::endl;
     std::vector<PointPtr> next_sp_notes;
     auto next_sp_note = points.cend();
     for (auto p = std::prev(points.cend());; --p) {
