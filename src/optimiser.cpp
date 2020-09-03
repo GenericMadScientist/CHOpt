@@ -21,7 +21,6 @@
 #include <cstddef>
 #include <iterator>
 #include <numeric>
-#include <set>
 #include <stdexcept>
 
 #include "optimiser.hpp"
@@ -186,7 +185,10 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
     }
 
     std::vector<std::tuple<ProtoActivation, CacheKey>> acts;
-    std::set<PointPtr> attained_act_ends;
+    std::vector<std::uint8_t> attained_act_ends;
+    attained_act_ends.resize(
+        std::distance(m_song->points().cbegin(), m_song->points().cend()));
+    std::fill(attained_act_ends.begin(), attained_act_ends.end(), 0);
     auto best_score_boost = 0;
 
     for (auto p = key.point; p < m_song->points().cend(); ++p) {
@@ -221,7 +223,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         auto q_min = act_end_lower_bound(
             p, starting_pos.measure, std::max(MINIMUM_SP_AMOUNT, sp_bar.min()));
         for (auto q = q_min; q < m_song->points().cend();) {
-            if (attained_act_ends.find(q) != attained_act_ends.end()) {
+            auto q_index = std::distance(m_song->points().cbegin(), q);
+            if (attained_act_ends[q_index] != 0) {
                 ++q;
                 continue;
             }
@@ -229,7 +232,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             ActivationCandidate candidate {p, q, starting_pos, sp_bar};
             auto candidate_result = m_song->is_candidate_valid(candidate);
             if (candidate_result.validity != ActValidity::insufficient_sp) {
-                attained_act_ends.insert(q);
+                attained_act_ends[q_index] = 1;
             } else if (!q->is_hold_point) {
                 // We cannot hit any later points if q is not a hold point, so
                 // we are done.
