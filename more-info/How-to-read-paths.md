@@ -80,4 +80,4 @@ Feeling from the Guitar Hero 1 rip. It is necessary to forego the whammy before
 the m76 activation because the whammy starting on m80 is needed to get maximum
 ticks in the next activation.
 
-![GH1 More Than A Feeling path](more-than-a-feeling.png)
+[GH1 More Than A Feeling path](more-than-a-feeling.png)
