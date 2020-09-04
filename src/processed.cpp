@@ -285,6 +285,8 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
                                    SpBar {sp_for_early_end, sp_for_early_end},
                                    required_whammy_end)
                                .min();
+        sp_for_early_end += SP_PHRASE_AMOUNT;
+        sp_for_early_end = std::min(sp_for_early_end, 1.0);
         current_position_for_early_end = earliest_sp_hit_on_early;
     }
 
