@@ -15,6 +15,9 @@ CMakeCache.
 
 ## Usage
 
+If you are unfamiliar with the intricacies of reading paths, read
+[this guide](more-info/How-to-read-paths.md).
+
 CHOpt has two versions, a command-line version and a graphical version. The
 graphical version has the same options as the command-line version and is
 self-explanatory enough. As for the command-line version, an example usage to
