@@ -305,6 +305,7 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
                                SpBar {sp_for_early_end, sp_for_early_end},
                                required_whammy_end)
                            .min();
+    sp_for_early_end = std::max(sp_for_early_end, 0.0);
     if (activation.act_end->is_sp_granting_note) {
         sp_for_early_end += SP_PHRASE_AMOUNT;
         sp_for_early_end = std::min(sp_for_early_end, 1.0);

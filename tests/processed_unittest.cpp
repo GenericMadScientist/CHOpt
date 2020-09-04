@@ -528,6 +528,29 @@ TEST_CASE("is_restricted_candidate_valid takes account of overlapped phrase at "
     REQUIRE(result.ending_position.beat > Beat(20.0));
 }
 
+// This is to stop a bug that appears in Time Traveler from CB: some of the
+// mid-sustain activations were misdrawn. The exact problem is that if we must
+// activate past the earliest activation point in order for the activation to
+// work, then the minimum sp after hitting the point is not clamped to 0, which
+// caused the endpoint to be too early.
+TEST_CASE("is_restricted_candidate_valid correctly clamps low SP")
+{
+    std::vector<Note<NoteColour>> notes {{0, 6720}};
+    std::vector<StarPower> phrases {{0, 1}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    SyncTrack sync_track {{{0, 1, 4}}, {}};
+    ProcessedSong track {note_track, 192, sync_track, 0.0, 0.0, Second(0.0)};
+    const auto& points = track.points();
+    ActivationCandidate candidate {points.cbegin() + 500,
+                                   points.cbegin() + 750,
+                                   {Beat(0.0), Measure(0.0)},
+                                   {1.0, 1.0}};
+
+    auto result = track.is_restricted_candidate_valid(candidate, 0.0);
+
+    REQUIRE(result.ending_position.beat > Beat(27.3));
+}
+
 TEST_CASE("adjusted_hit_window_* functions return correct values")
 {
     std::vector<Note<NoteColour>> notes {{0}};
