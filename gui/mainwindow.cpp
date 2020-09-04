@@ -45,16 +45,18 @@ public:
     void run() override
     {
         try {
-            emit result_ready(Song::from_filename(m_file_name.toStdString()));
+            emit result_ready(Song::from_filename(m_file_name.toStdString()),
+                              m_file_name);
         } catch (const std::exception&) {
-            emit result_ready({});
+            emit result_ready({}, "");
         }
     }
 
     void set_file_name(const QString& file_name) { m_file_name = file_name; }
 
 signals:
-    void result_ready(const std::optional<Song>& song);
+    void result_ready(const std::optional<Song>& song,
+                      const QString& file_name);
 };
 
 class OptimiserThread : public QThread {
@@ -219,12 +221,13 @@ void MainWindow::on_findPathButton_clicked()
     worker_thread->start();
 }
 
-void MainWindow::song_read(const std::optional<Song>& song)
+void MainWindow::song_read(const std::optional<Song>& song,
+                           const QString& file_name)
 {
     m_thread = nullptr;
 
     if (!song.has_value()) {
-        write_message("Song file invalid");
+        write_message(file_name + " invalid");
         m_ui->selectFileButton->setEnabled(true);
         return;
     }
@@ -247,7 +250,7 @@ void MainWindow::song_read(const std::optional<Song>& song)
     }
     m_ui->instrumentComboBox->setCurrentIndex(0);
 
-    write_message("Song loaded");
+    write_message(file_name + " loaded");
 
     m_ui->findPathButton->setEnabled(true);
     m_ui->instrumentComboBox->setEnabled(true);
