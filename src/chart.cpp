@@ -19,9 +19,11 @@
 #include <algorithm>
 #include <charconv>
 #include <climits>
-#include <cuchar>
 #include <optional>
 #include <stdexcept>
+
+// libc++ doesn't support cuchar, despite it being in C++11.
+#include <uchar.h>
 
 #include "chart.hpp"
 
@@ -184,10 +186,10 @@ Chart parse_chart(std::string_view data)
         // UTF-16 charts so a proper solution can wait until the C++ standard
         // library gets a fix or a non-artificial chart comes up that this is a
         // problem for.
-        std::mbstate_t state {};
+        mbstate_t state {};
         char out[MB_LEN_MAX];
         for (auto c : utf16_string_view) {
-            auto rc = std::c16rtomb(out, c, &state);
+            auto rc = c16rtomb(out, c, &state);
             if (rc != static_cast<std::size_t>(-1)) {
                 for (auto i = 0u; i < rc; ++i) {
                     u8_string.push_back(out[i]);
