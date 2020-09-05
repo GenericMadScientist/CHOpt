@@ -165,3 +165,27 @@ TEST_CASE("Other events are ignored")
     REQUIRE(section.ts_events.empty());
     REQUIRE(section.events.empty());
 }
+
+// Yes, these are actually a thing. Clone Hero accepts them, so I have to.
+TEST_CASE("Charts in UTF-16le are read correctly")
+{
+    const std::string text {
+        "\xFF\xFE\x5B\x00\x53\x00\x6F\x00\x6E\x00\x67\x00\x5D\x00\x0D\x00\x0A"
+        "\x00\x7B\x00\x0D\x00\x0A\x00\x7D\x00",
+        26};
+
+    const auto chart = parse_chart(text);
+
+    REQUIRE(chart.sections.size() == 1);
+    REQUIRE(chart.sections[0].name == "Song");
+}
+
+TEST_CASE("Charts in UTF-16le must be an even number of bytes large")
+{
+    const std::string text {
+        "\xFF\xFE\x5B\x00\x53\x00\x6F\x00\x6E\x00\x67\x00\x5D\x00\x0D\x00\x0A"
+        "\x00\x7B\x00\x0D\x00\x0A\x00\x7D\x00\x00",
+        27};
+
+    REQUIRE_THROWS([&] { return parse_chart(text); }());
+}

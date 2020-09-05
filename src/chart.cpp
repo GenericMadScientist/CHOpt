@@ -18,6 +18,8 @@
 
 #include <algorithm>
 #include <charconv>
+#include <climits>
+#include <cuchar>
 #include <optional>
 #include <stdexcept>
 
@@ -162,9 +164,37 @@ Chart parse_chart(std::string_view data)
 {
     Chart chart;
 
-    // Trim off UTF-8 BOM if present
+    // We need this for the UTF-16le conversion, because the converted result
+    // must live in the larger scope.
+    std::string u8_string;
+
     if (string_starts_with(data, "\xEF\xBB\xBF")) {
+        // Trim off UTF-8 BOM if present
         data.remove_prefix(3);
+    } else if (string_starts_with(data, "\xFF\xFE")) {
+        if (data.size() % 2 != 0) {
+            throw std::invalid_argument("UTF-16le file has an odd size");
+        }
+        // Trim off UTF-16le BOM if present, then convert
+        data.remove_prefix(2);
+        std::u16string utf16_string_view {
+            reinterpret_cast<const char16_t*>(data.data()), data.size() / 2};
+        // This conversion method is from the c16rtomb page on cppreference.
+        // This does not handle surrogate pairs, but I've only come across two
+        // UTF-16 charts so a proper solution can wait until the C++ standard
+        // library gets a fix or a non-artificial chart comes up that this is a
+        // problem for.
+        std::mbstate_t state {};
+        char out[MB_LEN_MAX];
+        for (auto c : utf16_string_view) {
+            auto rc = std::c16rtomb(out, c, &state);
+            if (rc != static_cast<std::size_t>(-1)) {
+                for (auto i = 0u; i < rc; ++i) {
+                    u8_string.push_back(out[i]);
+                }
+            }
+        }
+        data = u8_string;
     }
 
     while (!data.empty()) {
