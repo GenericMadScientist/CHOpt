@@ -438,6 +438,20 @@ TEST_CASE("add_measure_values gives correct values")
         REQUIRE(builder.score_values() == expected_score_values);
     }
 
+    // This bug caused a crash in a few songs, for example Satch Boogie (Live)
+    // from Guitar Hero X.
+    SECTION("Solos ending past last note are handled correctly")
+    {
+        NoteTrack<NoteColour> track {{{0}}, {}, {{0, 1600, 50}}};
+        PointSet points {track, 192, {{}, 192}, 1.0};
+        Path path;
+        ImageBuilder builder {track, 192, {}};
+        builder.add_measure_values(points, path);
+        std::vector<int> expected_score_values {100};
+
+        REQUIRE(builder.score_values() == expected_score_values);
+    }
+
     SECTION("Activations are added")
     {
         NoteTrack<NoteColour> track {{{0}, {192}, {384}, {768}}, {}, {}};

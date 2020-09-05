@@ -264,6 +264,11 @@ void ImageBuilder::add_measure_values(const PointSet& points, const Path& path)
             ++meas_iter;
             ++score_value_iter;
         }
+        // This is needed if a solo section ends after the last drawn measure of
+        // the song.
+        if (score_value_iter == m_score_values.end()) {
+            --score_value_iter;
+        }
         *score_value_iter += std::get<1>(solo);
     }
 
