@@ -198,6 +198,18 @@ TEST_CASE("Chart reads resolution")
 
         REQUIRE(resolution == 200);
     }
+
+    SECTION("Bad values are ignored")
+    {
+        ChartSection header {
+            "Song", {{"Resolution", "\"480\""}}, {}, {}, {}, {}, {}};
+        std::vector<ChartSection> sections {header, expert_single};
+        const Chart chart {sections};
+
+        const auto resolution = Song::from_chart(chart).resolution();
+
+        REQUIRE(resolution == 192);
+    }
 }
 
 TEST_CASE("Chart reads song header correctly")

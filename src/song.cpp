@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
+
 #include <charconv>
 #include <cstdlib>
 #include <cstring>
@@ -421,8 +423,14 @@ Song Song::from_chart(const Chart& chart)
 
     for (const auto& section : chart.sections) {
         if (section.name == "Song") {
-            song.m_resolution = std::stoi(
-                get_with_default(section.key_value_pairs, "Resolution", "192"));
+            try {
+                song.m_resolution = std::stoi(get_with_default(
+                    section.key_value_pairs, "Resolution", "192"));
+            } catch (const std::invalid_argument&) {
+                // CH just ignores this kind of parsing mistake.
+                // TODO: Use from_chars instead to avoid having to use
+                // exceptions as control flow.
+            }
             song.m_song_header.name = trim_quotes(get_with_default(
                 section.key_value_pairs, "Name", "Unknown Song"));
             song.m_song_header.artist = trim_quotes(get_with_default(
