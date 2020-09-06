@@ -216,8 +216,10 @@ Chart parse_chart(std::string_view data)
         }
         // Trim off UTF-16le BOM if present, then convert
         data.remove_prefix(2);
+        // I'm pretty sure I really do need the reinterpret_cast here.
         std::u16string utf16_string_view {
-            reinterpret_cast<const char16_t*>(data.data()), data.size() / 2};
+            reinterpret_cast<const char16_t*>(data.data()), // NOLINT
+            data.size() / 2};
         u8_string = utf16_to_utf8_string(utf16_string_view);
         data = u8_string;
     }
