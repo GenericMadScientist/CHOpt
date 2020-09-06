@@ -278,7 +278,7 @@ void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
         {Difficulty::Hard, "Hard"},
         {Difficulty::Expert, "Expert"}};
     const auto inst
-        = m_ui->difficultyComboBox->currentData().value<Instrument>();
+        = m_ui->instrumentComboBox->currentData().value<Instrument>();
     for (auto diff : m_song->difficulties(inst)) {
         m_ui->difficultyComboBox->addItem(DIFF_NAMES.at(diff),
                                           QVariant::fromValue(diff));
