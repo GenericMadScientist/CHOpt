@@ -222,11 +222,10 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
             {68, DrumNoteColour::GreenCymbal}};
         (void)length;
         const auto colour_iter = COLOURS.find(fret_type);
-        if (colour_iter != COLOURS.end()) {
-            return Note<DrumNoteColour> {position, 0, colour_iter->second};
-        } else {
+        if (colour_iter == COLOURS.end()) {
             return std::nullopt;
         }
+        return Note<DrumNoteColour> {position, 0, colour_iter->second};
     }
 }
 
