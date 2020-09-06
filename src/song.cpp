@@ -78,9 +78,10 @@ SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
             throw std::invalid_argument("BPMs must be positive");
         }
     }
-    for (const auto& ts: time_sigs) {
+    for (const auto& ts : time_sigs) {
         if (ts.numerator <= 0 || ts.denominator <= 0) {
-            throw std::invalid_argument("Time signatures must be positive/positive");
+            throw std::invalid_argument(
+                "Time signatures must be positive/positive");
         }
     }
 
