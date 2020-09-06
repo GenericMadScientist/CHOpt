@@ -623,6 +623,19 @@ TEST_CASE("Drums are read correctly from .chart")
     REQUIRE(track.notes() == notes);
 }
 
+TEST_CASE("Invalid drum notes are ignored")
+{
+    ChartSection drums {
+        "ExpertDrums", {}, {}, {}, {{192, 1, 0}, {192, 6, 0}}, {}, {}};
+    std::vector<ChartSection> sections {drums};
+    const Chart chart {sections};
+
+    const auto song = Song::from_chart(chart);
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    REQUIRE(track.notes().size() == 1);
+}
+
 TEST_CASE("Midi resolution is read correctly")
 {
     SECTION("Midi's resolution is read")
