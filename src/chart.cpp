@@ -18,14 +18,51 @@
 
 #include <algorithm>
 #include <charconv>
-#include <climits>
 #include <optional>
 #include <stdexcept>
 
-// libc++ doesn't support cuchar, despite it being in C++11.
-#include <uchar.h>
+// libc++ is special and doesn't support <cuchar> yet, so we need a different
+// method for the UTF-16le -> UTF-8 conversion. The alternative method isn't
+// general because it uses a feature deprecated in C++17 and Microsoft's STL
+// will complain if we use it.
+#ifndef _LIBCPP_VERSION
+#include <climits>
+#include <cuchar>
+#else
+#include <codecvt>
+#include <locale>
+#endif
 
 #include "chart.hpp"
+
+static std::string utf16_to_utf8_string(std::u16string_view input)
+{
+#ifndef _LIBCPP_VERSION
+    std::string u8_string;
+
+    // This conversion method is from the c16rtomb page on cppreference. This
+    // does not handle surrogate pairs, but I've only come across two UTF-16
+    // charts so a proper solution can wait until the C++ standard library gets
+    // a fix or a non-artificial chart comes up that this is a problem for.
+    std::mbstate_t state {};
+    char out[MB_LEN_MAX];
+    for (auto c : input) {
+        auto rc = std::c16rtomb(out, c, &state);
+        if (rc != static_cast<std::size_t>(-1)) {
+            for (auto i = 0u; i < rc; ++i) {
+                u8_string.push_back(out[i]);
+            }
+        }
+    }
+
+    return u8_string;
+#else
+    // std::codecvt_utf8_utf16 is deprecated in C++17 and Microsoft's STL
+    // complains about it so we can't have this be a general solution.
+    return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> {}
+        .to_bytes(input);
+#endif
+}
 
 static std::string_view skip_whitespace(std::string_view input)
 {
@@ -181,21 +218,7 @@ Chart parse_chart(std::string_view data)
         data.remove_prefix(2);
         std::u16string utf16_string_view {
             reinterpret_cast<const char16_t*>(data.data()), data.size() / 2};
-        // This conversion method is from the c16rtomb page on cppreference.
-        // This does not handle surrogate pairs, but I've only come across two
-        // UTF-16 charts so a proper solution can wait until the C++ standard
-        // library gets a fix or a non-artificial chart comes up that this is a
-        // problem for.
-        mbstate_t state {};
-        char out[MB_LEN_MAX];
-        for (auto c : utf16_string_view) {
-            auto rc = c16rtomb(out, c, &state);
-            if (rc != static_cast<std::size_t>(-1)) {
-                for (auto i = 0u; i < rc; ++i) {
-                    u8_string.push_back(out[i]);
-                }
-            }
-        }
+        u8_string = utf16_to_utf8_string(utf16_string_view);
         data = u8_string;
     }
 
