@@ -60,7 +60,7 @@ static std::string utf16_to_utf8_string(std::u16string_view input)
     // std::codecvt_utf8_utf16 is deprecated in C++17 and Microsoft's STL
     // complains about it so we can't have this be a general solution.
     return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> {}
-        .to_bytes(input);
+        .to_bytes(input.cbegin(), input.cend());
 #endif
 }
 
