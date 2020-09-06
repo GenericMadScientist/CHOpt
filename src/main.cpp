@@ -52,8 +52,9 @@ int main(int argc, char** argv)
         }
         const std::atomic<bool> terminate {false};
         const auto builder = make_builder(
-            song, settings, [&](auto p) { nowide::cout << p << std::endl; },
+            song, settings, [&](auto p) { nowide::cout << p << '\n'; },
             &terminate);
+        nowide::cout << std::flush;
         const Image image {builder};
         image.save(settings.image_path.c_str());
         return EXIT_SUCCESS;

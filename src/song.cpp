@@ -73,6 +73,17 @@ SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
 {
     constexpr auto DEFAULT_BPM = 120000;
 
+    for (const auto& bpm : bpms) {
+        if (bpm.bpm <= 0) {
+            throw std::invalid_argument("BPMs must be positive");
+        }
+    }
+    for (const auto& ts: time_sigs) {
+        if (ts.numerator <= 0 || ts.denominator <= 0) {
+            throw std::invalid_argument("Time signatures must be positive/positive");
+        }
+    }
+
     std::stable_sort(
         bpms.begin(), bpms.end(),
         [](const auto& x, const auto& y) { return x.position < y.position; });

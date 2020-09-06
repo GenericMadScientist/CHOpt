@@ -152,6 +152,20 @@ TEST_CASE("SyncTrack ctor maintains invariants")
 
         REQUIRE(track.time_sigs() == expected_tses);
     }
+
+    SECTION("BPMs must not be zero or negative")
+    {
+        REQUIRE_THROWS([&] { return SyncTrack {{}, {{192, 0}}}; }());
+        REQUIRE_THROWS([&] { return SyncTrack {{}, {{192, -1}}}; }());
+    }
+
+    SECTION("Time Signatures must be positive/positive")
+    {
+        REQUIRE_THROWS([&] { return SyncTrack {{{0, 0, 4}}, {}}; }());
+        REQUIRE_THROWS([&] { return SyncTrack {{{0, -1, 4}}, {}}; }());
+        REQUIRE_THROWS([&] { return SyncTrack {{{0, 4, 0}}, {}}; }());
+        REQUIRE_THROWS([&] { return SyncTrack {{{0, 4, -1}}, {}}; }());
+    }
 }
 
 // Last checked: 24.0.1555-master
