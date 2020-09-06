@@ -2,8 +2,8 @@
 
 A program to generate optimal Star Power paths for Clone Hero.
 
-[![Build Status](https://travis-ci.com/GenericMadScientist/CHOpt.svg?branch=develop)](https://travis-ci.com/GenericMadScientist/CHOpt)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/GenericMadScientist/CHOpt?branch=develop&svg=true)](https://ci.appveyor.com/project/GenericMadScientist/CHOpt)
+[![Build Status](https://travis-ci.com/GenericMadScientist/CHOpt.svg?branch=master)](https://travis-ci.com/GenericMadScientist/CHOpt)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/GenericMadScientist/CHOpt?branch=master&svg=true)](https://ci.appveyor.com/project/GenericMadScientist/CHOpt)
 
 ## Install
 
