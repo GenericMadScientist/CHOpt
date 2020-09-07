@@ -677,7 +677,10 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
                                   std::tuple<int, int> y_range, float opacity)
 {
     auto start = std::get<0>(x_range);
-    auto end = std::get<1>(x_range);
+    // Required if a beat range ends after the end of a song (e.g., a solo
+    // section)
+    auto end = std::min(std::get<1>(x_range),
+                        std::nextafter(builder.rows().back().end, 0.0));
     auto row_iter = std::find_if(builder.rows().cbegin(), builder.rows().cend(),
                                  [=](const auto& r) { return r.end > start; });
     auto row
