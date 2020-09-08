@@ -19,7 +19,9 @@
 #include <limits>
 #include <stdexcept>
 
+#include <QDesktopServices>
 #include <QFileDialog>
+#include <QUrl>
 
 #include "image.hpp"
 #include "mainwindow.hpp"
@@ -85,6 +87,7 @@ public:
             const Image image {builder};
             image.save(m_file_name.toStdString().c_str());
             emit write_text("Image saved");
+            QDesktopServices::openUrl(QUrl::fromLocalFile(m_file_name));
         } catch (const std::runtime_error&) {
             // We ignore this exception because it's how we break out of the
             // computation on program close.
