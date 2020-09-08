@@ -16,7 +16,7 @@ CMakeCache.
 ## Usage
 
 If you are unfamiliar with the intricacies of reading paths, read
-[this guide](more-info/How-to-read-paths.md).
+[this guide](misc/How-to-read-paths.md).
 
 CHOpt has two versions, a command-line version and a graphical version. The
 graphical version has the same options as the command-line version and is
@@ -45,6 +45,16 @@ by passing -h or --help to CHOpt, or by consulting the table below.
 | --no-bpms             | Do not draw BPMs                                            |
 | --no-solos            | Do not draw solo sections                                   |
 | --no-time-sigs        | Do not draw time signatures                                 |
+
+If you would like to conveniently run CHOpt on a setlist and you happen to be
+on Windows, I made a PowerShell script that I've put [here](misc/setlist.ps1).
+Change the four variables then run the script. The simplest way to do that is
+probably to open the folder the script is in, double click the top bar and type
+in cmd then enter to open a command prompt in that folder, then run the command
+
+```
+> powershell -ExecutionPolicy Bypass -File setlist.ps1
+```
 
 ## Dependencies
 
