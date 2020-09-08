@@ -4,6 +4,9 @@ set(SRC "${PROJECT_SOURCE_DIR}/src")
 
 add_library(catch_main STATIC catch_main.cpp)
 target_include_directories(catch_main PRIVATE ${LIBS})
+set_property(
+  TARGET catch_main PROPERTY MSVC_RUNTIME_LIBRARY
+                             "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
 set_cpp_standard(catch_main)
 set_warnings(catch_main)
 
@@ -13,6 +16,9 @@ function(package_add_test testname)
   target_include_directories(${testname} PRIVATE ${INCLUDE} ${LIBS})
   target_link_libraries(${testname} PRIVATE catch_main nowide)
   add_test(NAME ${testname} COMMAND ${testname})
+  set_property(
+    TARGET ${testname} PROPERTY MSVC_RUNTIME_LIBRARY
+                                "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
   set_cpp_standard(${testname})
   set_warnings(${testname})
   enable_sanitisers(${testname})

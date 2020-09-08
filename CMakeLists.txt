@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.15.0)
 
+cmake_policy(SET CMP0091 NEW)
+
 project(
   chopt
   VERSION 1.0.1
@@ -59,6 +61,11 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Argparse)
 FetchContent_MakeAvailable(Nowide)
 
+# We do not care about building nowide's tests
+set(BUILD_TESTING OFF)
+set_property(TARGET nowide PROPERTY MSVC_RUNTIME_LIBRARY
+                                    "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
+
 cmake_policy(SET CMP0083 NEW)
 include(CheckPIESupported)
 check_pie_supported(OUTPUT_VARIABLE output LANGUAGES CXX)
@@ -90,6 +97,8 @@ target_link_libraries_system(chopt PRIVATE argparse nowide)
 target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES})
 
 set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
+set_property(TARGET chopt PROPERTY MSVC_RUNTIME_LIBRARY
+                                   "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
 set_cpp_standard(chopt)
 set_warnings(chopt)
 enable_sanitisers(chopt)
@@ -131,6 +140,9 @@ if(BUILD_GUI)
   target_link_libraries(choptgui PRIVATE ${PNG_LIBRARIES} Qt5::Widgets)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
+  set_property(
+    TARGET choptgui PROPERTY MSVC_RUNTIME_LIBRARY
+                             "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
   set_cpp_standard(choptgui)
 endif()
 
