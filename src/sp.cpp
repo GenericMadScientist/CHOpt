@@ -106,6 +106,24 @@ SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
     }
 }
 
+double SpData::propagate_sp_over_whammy_max(Position start, Position end,
+                                            double starting_sp,
+                                            Position required_whammy_end) const
+{
+    return propagate_sp_over_whammy(start, end, starting_sp,
+                                    required_whammy_end)
+        .max();
+}
+
+double SpData::propagate_sp_over_whammy_min(Position start, Position end,
+                                            double starting_sp,
+                                            Position required_whammy_end) const
+{
+    return propagate_sp_over_whammy(start, end, starting_sp,
+                                    required_whammy_end)
+        .min();
+}
+
 SpBar SpData::propagate_sp_over_whammy(Position start, Position end,
                                        double starting_sp,
                                        Position required_whammy_end) const

@@ -92,6 +92,10 @@ private:
                                 double sp_bar_amount) const;
     [[nodiscard]] Beat whammy_propagation_endpoint(Beat start, Beat end,
                                                    double sp_bar_amount) const;
+    [[nodiscard]] SpBar
+    propagate_sp_over_whammy(Position start, Position end, double starting_sp,
+                             Position required_whammy_end
+                             = {Beat {NEG_INF}, Measure {NEG_INF}}) const;
 
     static std::vector<BeatRate> form_beat_rates(int resolution,
                                                  const SyncTrack& sync_track);
@@ -121,13 +125,22 @@ public:
     {
     }
 
-    // Return how much SP is available at the end after propagating over a
-    // range, or -1 if SP runs out at any point. Only includes SP gain from
-    // whammy.
-    [[nodiscard]] SpBar
-    propagate_sp_over_whammy(Position start, Position end, double starting_sp,
-                             Position required_whammy_end
-                             = {Beat {NEG_INF}, Measure {NEG_INF}}) const;
+    // Return the maximum amount of SP available at the end after propagating
+    // over a range, or -1 if SP runs out at any point. Only includes SP gain
+    // from whammy.
+    [[nodiscard]] double
+    propagate_sp_over_whammy_max(Position start, Position end,
+                                 double starting_sp,
+                                 Position required_whammy_end
+                                 = {Beat {NEG_INF}, Measure {NEG_INF}}) const;
+    // Return the minimum amount of SP is available at the end after propagating
+    // over a range, returning 0.0 if the minimum would hypothetically be
+    // negative.
+    [[nodiscard]] double
+    propagate_sp_over_whammy_min(Position start, Position end,
+                                 double starting_sp,
+                                 Position required_whammy_end
+                                 = {Beat {NEG_INF}, Measure {NEG_INF}}) const;
     // Return if a beat is at a place that can be whammied.
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
     // Return the amount of whammy obtainable across a range.
