@@ -107,12 +107,9 @@ SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
 }
 
 double SpData::propagate_sp_over_whammy_max(Position start, Position end,
-                                            double starting_sp,
-                                            Position required_whammy_end) const
+                                            double starting_sp) const
 {
-    return propagate_sp_over_whammy(start, end, starting_sp,
-                                    required_whammy_end)
-        .max();
+    return propagate_sp_over_whammy(start, end, starting_sp).max();
 }
 
 double SpData::propagate_sp_over_whammy_min(Position start, Position end,
