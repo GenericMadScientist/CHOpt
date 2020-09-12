@@ -16,12 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
-#include <array>
 #include <cmath>
 #include <cstdio>
 #include <iterator>
-#include <limits>
 #include <set>
 #include <stdexcept>
 

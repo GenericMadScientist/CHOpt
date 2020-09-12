@@ -16,11 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cstdint>
-#include <cstdlib>
 #include <ostream>
 #include <stdexcept>
-#include <string>
 
 #include "nowide_wrapper.hpp"
 

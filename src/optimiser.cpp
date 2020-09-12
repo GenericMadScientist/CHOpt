@@ -16,11 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
 #include <cassert>
-#include <cstddef>
+#include <cstdint>
 #include <iterator>
-#include <numeric>
 #include <stdexcept>
 
 #include "optimiser.hpp"

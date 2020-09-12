@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
+#include <algorithm> 
 #include <charconv>
 #include <optional>
 #include <stdexcept>
@@ -27,6 +27,7 @@
 // will complain if we use it.
 #ifndef _LIBCPP_VERSION
 #include <climits>
+#include <cstdint>
 #include <cuchar>
 #else
 #include <codecvt>
@@ -217,7 +218,7 @@ Chart parse_chart(std::string_view data)
         // Trim off UTF-16le BOM if present, then convert
         data.remove_prefix(2);
         // I'm pretty sure I really do need the reinterpret_cast here.
-        std::u16string utf16_string_view {
+        std::u16string_view utf16_string_view {
             reinterpret_cast<const char16_t*>(data.data()), // NOLINT
             data.size() / 2};
         u8_string = utf16_to_utf8_string(utf16_string_view);

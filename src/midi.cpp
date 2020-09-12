@@ -17,8 +17,6 @@
  */
 
 #include <algorithm>
-#include <array>
-#include <climits>
 #include <cstddef>
 #include <stdexcept>
 #include <utility>

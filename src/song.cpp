@@ -16,16 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <charconv>
-#include <cstdlib>
-#include <cstring>
-#include <ios>
+#include <iterator>
 #include <optional>
 #include <set>
 #include <stdexcept>
-#include <string_view>
 #include <type_traits>
-#include <utility>
 
 #include "nowide_wrapper.hpp"
 

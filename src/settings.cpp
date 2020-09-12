@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cstdint>
 #include <stdexcept>
 
 #include "argparse_wrapper.hpp"
