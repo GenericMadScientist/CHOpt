@@ -129,20 +129,19 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation) const
         if (p->hit_window_start.beat < current_position_for_late_end.beat) {
             earliest_sp_hit_on_late = current_position_for_late_end;
         }
-        sp_for_late_end
-            = m_sp_data
-                  .propagate_sp_over_whammy(
-                      current_position_for_late_end, earliest_sp_hit_on_late,
-                      SpBar {sp_for_late_end, sp_for_late_end})
-                  .max();
+        sp_for_late_end = m_sp_data
+                              .propagate_sp_over_whammy(
+                                  current_position_for_late_end,
+                                  earliest_sp_hit_on_late, sp_for_late_end)
+                              .max();
         if (sp_for_late_end < 0.0) {
             return {null_position, ActValidity::insufficient_sp};
         }
-        sp_for_late_end = m_sp_data
-                              .propagate_sp_over_whammy(
-                                  earliest_sp_hit_on_late, p->hit_window_end,
-                                  SpBar {sp_for_late_end, sp_for_late_end})
-                              .max();
+        sp_for_late_end
+            = m_sp_data
+                  .propagate_sp_over_whammy(earliest_sp_hit_on_late,
+                                            p->hit_window_end, sp_for_late_end)
+                  .max();
         sp_for_late_end += SP_PHRASE_AMOUNT;
         sp_for_late_end = std::min(sp_for_late_end, 1.0);
         current_position_for_late_end = p->hit_window_end;
@@ -157,11 +156,11 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation) const
     }
 
     auto ending_pos = activation.act_end->hit_window_start;
-    sp_for_late_end = m_sp_data
-                          .propagate_sp_over_whammy(
-                              current_position_for_late_end, ending_pos,
-                              SpBar {sp_for_late_end, sp_for_late_end})
-                          .max();
+    sp_for_late_end
+        = m_sp_data
+              .propagate_sp_over_whammy(current_position_for_late_end,
+                                        ending_pos, sp_for_late_end)
+              .max();
     if (sp_for_late_end < 0.0) {
         return {null_position, ActValidity::insufficient_sp};
     }
@@ -253,21 +252,20 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
         if (earliest_sp_hit_on_late.beat < current_position_for_late_end.beat) {
             earliest_sp_hit_on_late = current_position_for_late_end;
         }
-        sp_for_late_end
-            = m_sp_data
-                  .propagate_sp_over_whammy(
-                      current_position_for_late_end, earliest_sp_hit_on_late,
-                      SpBar {sp_for_late_end, sp_for_late_end})
-                  .max();
+        sp_for_late_end = m_sp_data
+                              .propagate_sp_over_whammy(
+                                  current_position_for_late_end,
+                                  earliest_sp_hit_on_late, sp_for_late_end)
+                              .max();
         if (sp_for_late_end < 0.0) {
             return {null_position, ActValidity::insufficient_sp};
         }
-        sp_for_late_end = m_sp_data
-                              .propagate_sp_over_whammy(
-                                  earliest_sp_hit_on_late,
-                                  adjusted_hit_window_end(p, squeeze),
-                                  SpBar {sp_for_late_end, sp_for_late_end})
-                              .max();
+        sp_for_late_end
+            = m_sp_data
+                  .propagate_sp_over_whammy(earliest_sp_hit_on_late,
+                                            adjusted_hit_window_end(p, squeeze),
+                                            sp_for_late_end)
+                  .max();
         sp_for_late_end += SP_PHRASE_AMOUNT;
         sp_for_late_end = std::min(sp_for_late_end, 1.0);
         current_position_for_late_end = adjusted_hit_window_end(p, squeeze);
@@ -281,8 +279,7 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
                                .propagate_sp_over_whammy(
                                    current_position_for_early_end,
                                    adjusted_hit_window_start(p, squeeze),
-                                   SpBar {sp_for_early_end, sp_for_early_end},
-                                   required_whammy_end)
+                                   sp_for_early_end, required_whammy_end)
                                .min();
         sp_for_early_end += SP_PHRASE_AMOUNT;
         sp_for_early_end = std::min(sp_for_early_end, 1.0);
@@ -290,19 +287,18 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
     }
 
     auto ending_pos = adjusted_hit_window_start(activation.act_end, squeeze);
-    sp_for_late_end = m_sp_data
-                          .propagate_sp_over_whammy(
-                              current_position_for_late_end, ending_pos,
-                              SpBar {sp_for_late_end, sp_for_late_end})
-                          .max();
+    sp_for_late_end
+        = m_sp_data
+              .propagate_sp_over_whammy(current_position_for_late_end,
+                                        ending_pos, sp_for_late_end)
+              .max();
     if (sp_for_late_end < 0.0) {
         return {null_position, ActValidity::insufficient_sp};
     }
     sp_for_early_end = m_sp_data
                            .propagate_sp_over_whammy(
                                current_position_for_early_end, ending_pos,
-                               SpBar {sp_for_early_end, sp_for_early_end},
-                               required_whammy_end)
+                               sp_for_early_end, required_whammy_end)
                            .min();
     sp_for_early_end = std::max(sp_for_early_end, 0.0);
     if (activation.act_end->is_sp_granting_note) {

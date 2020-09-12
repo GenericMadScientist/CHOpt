@@ -125,7 +125,7 @@ public:
     // range, or -1 if SP runs out at any point. Only includes SP gain from
     // whammy.
     [[nodiscard]] SpBar
-    propagate_sp_over_whammy(Position start, Position end, SpBar sp_bar,
+    propagate_sp_over_whammy(Position start, Position end, double starting_sp,
                              Position required_whammy_end
                              = {Beat {NEG_INF}, Measure {NEG_INF}}) const;
     // Return if a beat is at a place that can be whammied.

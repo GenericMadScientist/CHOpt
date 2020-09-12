@@ -107,10 +107,12 @@ SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
 }
 
 SpBar SpData::propagate_sp_over_whammy(Position start, Position end,
-                                       SpBar sp_bar,
+                                       double starting_sp,
                                        Position required_whammy_end) const
 {
     constexpr double MEASURES_PER_BAR = 8.0;
+
+    SpBar sp_bar {starting_sp, starting_sp};
 
     auto p = std::lower_bound(
         m_whammy_ranges.cbegin(), m_whammy_ranges.cend(), start,
