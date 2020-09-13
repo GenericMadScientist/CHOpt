@@ -107,9 +107,34 @@ SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
 }
 
 double SpData::propagate_sp_over_whammy_max(Position start, Position end,
-                                            double starting_sp) const
+                                            double sp) const
 {
-    return propagate_sp_over_whammy(start, end, starting_sp).max();
+    constexpr double MEASURES_PER_BAR = 8.0;
+
+    auto p = std::lower_bound(
+        m_whammy_ranges.cbegin(), m_whammy_ranges.cend(), start,
+        [](const auto& x, const auto& y) { return x.end.beat <= y.beat; });
+    while ((p != m_whammy_ranges.cend()) && (p->start.beat < end.beat)) {
+        if (p->start.beat > start.beat) {
+            const auto meas_diff = p->start.measure - start.measure;
+            sp -= meas_diff.value() / MEASURES_PER_BAR;
+            if (sp < 0.0) {
+                return sp;
+            }
+            start = p->start;
+        }
+        const auto range_end = std::min(end.beat, p->end.beat);
+        sp = propagate_over_whammy_range(start.beat, range_end, sp);
+        if (sp < 0.0 || p->end.beat >= end.beat) {
+            return sp;
+        }
+        start = p->end;
+        ++p;
+    }
+
+    const auto meas_diff = end.measure - start.measure;
+    sp -= meas_diff.value() / MEASURES_PER_BAR;
+    return sp;
 }
 
 double SpData::propagate_sp_over_whammy_min(Position start, Position end,
