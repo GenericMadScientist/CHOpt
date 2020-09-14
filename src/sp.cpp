@@ -32,7 +32,6 @@ std::vector<SpData::BeatRate>
 SpData::form_beat_rates(int resolution, const SyncTrack& sync_track)
 {
     constexpr double DEFAULT_BEAT_RATE = 4.0;
-    constexpr double MEASURES_PER_BAR = 8.0;
 
     std::vector<BeatRate> beat_rates;
     beat_rates.reserve(sync_track.time_sigs().size());
@@ -109,8 +108,6 @@ SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
 double SpData::propagate_sp_over_whammy_max(Position start, Position end,
                                             double sp) const
 {
-    constexpr double MEASURES_PER_BAR = 8.0;
-
     auto p = std::lower_bound(
         m_whammy_ranges.cbegin(), m_whammy_ranges.cend(), start,
         [](const auto& x, const auto& y) { return x.end.beat <= y.beat; });
@@ -138,68 +135,24 @@ double SpData::propagate_sp_over_whammy_max(Position start, Position end,
 }
 
 double SpData::propagate_sp_over_whammy_min(Position start, Position end,
-                                            double starting_sp,
+                                            double sp,
                                             Position required_whammy_end) const
 {
-    return propagate_sp_over_whammy(start, end, starting_sp,
-                                    required_whammy_end)
-        .min();
-}
-
-SpBar SpData::propagate_sp_over_whammy(Position start, Position end,
-                                       double starting_sp,
-                                       Position required_whammy_end) const
-{
-    constexpr double MEASURES_PER_BAR = 8.0;
-
-    SpBar sp_bar {starting_sp, starting_sp};
-
-    auto p = std::lower_bound(
-        m_whammy_ranges.cbegin(), m_whammy_ranges.cend(), start,
-        [](const auto& x, const auto& y) { return x.end.beat <= y.beat; });
-    while ((p != m_whammy_ranges.cend()) && (p->start.beat < end.beat)) {
-        if (p->start.beat > start.beat) {
-            auto meas_diff = p->start.measure - start.measure;
-            sp_bar.min() -= meas_diff.value() / MEASURES_PER_BAR;
-            sp_bar.min() = std::max(sp_bar.min(), 0.0);
-            sp_bar.max() -= meas_diff.value() / MEASURES_PER_BAR;
-            if (sp_bar.max() < 0.0) {
-                return sp_bar;
-            }
-            start = p->start;
+    if (required_whammy_end.beat > start.beat) {
+        auto whammy_end = end;
+        if (required_whammy_end.beat < end.beat) {
+            whammy_end = required_whammy_end;
         }
-        auto range_end = std::min(end.beat, p->end.beat);
-        auto range_meas_end = std::min(end.measure, p->end.measure);
-        auto whammy_end = std::min(range_end, required_whammy_end.beat);
-        if (whammy_end > start.beat) {
-            auto whammy_end_meas
-                = std::min(range_meas_end, required_whammy_end.measure);
-            auto meas_diff = range_meas_end - whammy_end_meas;
-            sp_bar.min() = propagate_over_whammy_range(start.beat, whammy_end,
-                                                       sp_bar.min());
-            sp_bar.min() -= meas_diff.value() / MEASURES_PER_BAR;
-        } else {
-            auto meas_diff = range_meas_end - start.measure;
-            sp_bar.min() -= meas_diff.value() / MEASURES_PER_BAR;
-        }
-        sp_bar.max()
-            = propagate_over_whammy_range(start.beat, range_end, sp_bar.max());
-        if (sp_bar.max() < 0.0) {
-            return sp_bar;
-        }
-        sp_bar.min() = std::max(sp_bar.min(), 0.0);
-        if (p->end.beat >= end.beat) {
-            return sp_bar;
-        }
-        start = p->end;
-        ++p;
+        sp = propagate_sp_over_whammy_max(start, whammy_end, sp);
+        start = required_whammy_end;
+    }
+    if (start.beat < end.beat) {
+        const auto meas_diff = end.measure - start.measure;
+        sp -= meas_diff.value() / MEASURES_PER_BAR;
     }
 
-    auto meas_diff = end.measure - start.measure;
-    sp_bar.min() -= meas_diff.value() / MEASURES_PER_BAR;
-    sp_bar.min() = std::max(sp_bar.min(), 0.0);
-    sp_bar.max() -= meas_diff.value() / MEASURES_PER_BAR;
-    return sp_bar;
+    sp = std::max(sp, 0.0);
+    return sp;
 }
 
 double SpData::propagate_over_whammy_range(Beat start, Beat end,
@@ -267,8 +220,6 @@ double SpData::available_whammy(Beat start, Beat end) const
 Position SpData::activation_end_point(Position start, Position end,
                                       double sp_bar_amount) const
 {
-    constexpr double MEASURES_PER_BAR = 8.0;
-
     auto p = std::lower_bound(
         m_whammy_ranges.cbegin(), m_whammy_ranges.cend(), start,
         [](const auto& x, const auto& y) { return x.end.beat <= y.beat; });

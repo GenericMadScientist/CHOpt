@@ -79,6 +79,7 @@ private:
     };
 
     static constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
+    static constexpr double MEASURES_PER_BAR = 8.0;
     static constexpr double SP_GAIN_RATE = 1 / 30.0;
 
     TimeConverter m_converter;
@@ -90,9 +91,6 @@ private:
                                 double sp_bar_amount) const;
     [[nodiscard]] Beat whammy_propagation_endpoint(Beat start, Beat end,
                                                    double sp_bar_amount) const;
-    [[nodiscard]] SpBar
-    propagate_sp_over_whammy(Position start, Position end, double starting_sp,
-                             Position required_whammy_end) const;
 
     static std::vector<BeatRate> form_beat_rates(int resolution,
                                                  const SyncTrack& sync_track);
@@ -131,8 +129,7 @@ public:
     // over a range, returning 0.0 if the minimum would hypothetically be
     // negative.
     [[nodiscard]] double
-    propagate_sp_over_whammy_min(Position start, Position end,
-                                 double starting_sp,
+    propagate_sp_over_whammy_min(Position start, Position end, double sp,
                                  Position required_whammy_end) const;
     // Return if a beat is at a place that can be whammied.
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
