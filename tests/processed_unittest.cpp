@@ -20,6 +20,11 @@
 
 #include "processed.hpp"
 
+static bool operator==(const SpBar& lhs, const SpBar& rhs)
+{
+    return lhs.min() == Approx(rhs.min()) && lhs.max() == Approx(rhs.max());
+}
+
 TEST_CASE("3 arg total_available_sp counts SP correctly")
 {
     std::vector<Note<NoteColour>> notes {{0},        {192},  {384},  {576},

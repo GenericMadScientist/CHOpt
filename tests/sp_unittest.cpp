@@ -20,6 +20,11 @@
 
 #include "sp.hpp"
 
+static bool operator==(const SpBar& lhs, const SpBar& rhs)
+{
+    return lhs.min() == Approx(rhs.min()) && lhs.max() == Approx(rhs.max());
+}
+
 TEST_CASE("SpBar methods", "SpBar")
 {
     SECTION("add_phrase() works correctly")

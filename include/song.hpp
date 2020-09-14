@@ -69,58 +69,28 @@ struct TimeSignature {
     int position;
     int numerator;
     int denominator;
-
-    friend bool operator==(const TimeSignature& lhs, const TimeSignature& rhs)
-    {
-        return std::tie(lhs.position, lhs.numerator, lhs.denominator)
-            == std::tie(rhs.position, rhs.numerator, rhs.denominator);
-    }
 };
 
 struct BPM {
     int position;
     int bpm;
-
-    friend bool operator==(const BPM& lhs, const BPM& rhs)
-    {
-        return std::tie(lhs.position, lhs.bpm)
-            == std::tie(rhs.position, rhs.bpm);
-    }
 };
 
 template <typename T> struct Note {
     int position {0};
     int length {0};
     T colour = {};
-
-    friend bool operator==(const Note& lhs, const Note& rhs)
-    {
-        return std::tie(lhs.position, lhs.length, lhs.colour)
-            == std::tie(rhs.position, rhs.length, rhs.colour);
-    }
 };
 
 struct StarPower {
     int position;
     int length;
-
-    friend bool operator==(const StarPower& lhs, const StarPower& rhs)
-    {
-        return std::tie(lhs.position, lhs.length)
-            == std::tie(rhs.position, rhs.length);
-    }
 };
 
 struct Solo {
     int start;
     int end;
     int value;
-
-    friend bool operator==(const Solo& lhs, const Solo& rhs)
-    {
-        return std::tie(lhs.start, lhs.end, lhs.value)
-            == std::tie(rhs.start, rhs.end, rhs.value);
-    }
 };
 
 // Invariants:
@@ -200,12 +170,6 @@ public:
         return m_sp_phrases;
     }
     [[nodiscard]] const std::vector<Solo>& solos() const { return m_solos; }
-
-    friend bool operator==(const NoteTrack& lhs, const NoteTrack& rhs)
-    {
-        return std::tie(lhs.m_notes, lhs.m_sp_phrases, lhs.m_solos)
-            == std::tie(rhs.m_notes, rhs.m_sp_phrases, rhs.m_solos);
-    }
 };
 
 // Invariants:

@@ -20,6 +20,43 @@
 
 #include "song.hpp"
 
+static bool operator==(const BPM& lhs, const BPM& rhs)
+{
+    return std::tie(lhs.position, lhs.bpm) == std::tie(rhs.position, rhs.bpm);
+}
+
+template <typename T>
+static bool operator==(const Note<T>& lhs, const Note<T>& rhs)
+{
+    return std::tie(lhs.position, lhs.length, lhs.colour)
+        == std::tie(rhs.position, rhs.length, rhs.colour);
+}
+
+static bool operator==(const Solo& lhs, const Solo& rhs)
+{
+    return std::tie(lhs.start, lhs.end, lhs.value)
+        == std::tie(rhs.start, rhs.end, rhs.value);
+}
+
+static bool operator==(const StarPower& lhs, const StarPower& rhs)
+{
+    return std::tie(lhs.position, lhs.length)
+        == std::tie(rhs.position, rhs.length);
+}
+
+static bool operator==(const TimeSignature& lhs, const TimeSignature& rhs)
+{
+    return std::tie(lhs.position, lhs.numerator, lhs.denominator)
+        == std::tie(rhs.position, rhs.numerator, rhs.denominator);
+}
+
+template <typename T>
+static bool operator==(const NoteTrack<T>& lhs, const NoteTrack<T>& rhs)
+{
+    return std::tie(lhs.notes(), lhs.sp_phrases(), lhs.solos())
+        == std::tie(rhs.notes(), rhs.sp_phrases(), rhs.solos());
+}
+
 // Last checked: 23.2.2
 TEST_CASE("NoteTrack ctor maintains invariants")
 {
