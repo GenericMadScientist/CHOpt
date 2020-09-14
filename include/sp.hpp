@@ -20,7 +20,6 @@
 #define CHOPT_SP_HPP
 
 #include <algorithm>
-#include <limits>
 #include <tuple>
 #include <vector>
 
@@ -80,7 +79,6 @@ private:
     };
 
     static constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
-    static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
     static constexpr double SP_GAIN_RATE = 1 / 30.0;
 
     TimeConverter m_converter;
@@ -94,8 +92,7 @@ private:
                                                    double sp_bar_amount) const;
     [[nodiscard]] SpBar
     propagate_sp_over_whammy(Position start, Position end, double starting_sp,
-                             Position required_whammy_end
-                             = {Beat {NEG_INF}, Measure {NEG_INF}}) const;
+                             Position required_whammy_end) const;
 
     static std::vector<BeatRate> form_beat_rates(int resolution,
                                                  const SyncTrack& sync_track);
@@ -136,8 +133,7 @@ public:
     [[nodiscard]] double
     propagate_sp_over_whammy_min(Position start, Position end,
                                  double starting_sp,
-                                 Position required_whammy_end
-                                 = {Beat {NEG_INF}, Measure {NEG_INF}}) const;
+                                 Position required_whammy_end) const;
     // Return if a beat is at a place that can be whammied.
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
     // Return the amount of whammy obtainable across a range.

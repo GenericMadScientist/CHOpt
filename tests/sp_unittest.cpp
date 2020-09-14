@@ -156,13 +156,16 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
 
     SECTION("Check optional whammy is not used when not asked for in minimum")
     {
+        constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
+
         std::vector<Note<NoteColour>> second_notes {{0, 768}, {3072}};
         std::vector<StarPower> second_phrases {{0, 3100}};
         NoteTrack<NoteColour> second_track {second_notes, second_phrases, {}};
         SpData sp_data {second_track, 192, {}, 1.0, Second(0.0)};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_min(
-                    {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)}, 0.5)
+                    {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)}, 0.5,
+                    {Beat {NEG_INF}, Measure {NEG_INF}})
                 == Approx(0.375));
     }
 }
