@@ -101,9 +101,6 @@ std::tuple<SpBar, Position> ProcessedSong::total_available_sp_with_earliest_pos(
 ActResult
 ProcessedSong::is_candidate_valid(const ActivationCandidate& activation) const
 {
-    constexpr double MEASURES_PER_BAR = 8.0;
-    constexpr double MINIMUM_SP_AMOUNT = 0.5;
-    constexpr double SP_PHRASE_AMOUNT = 0.25;
     const Position null_position {Beat(0.0), Measure(0.0)};
 
     if (!activation.sp_bar.full_enough_to_activate()) {
@@ -215,9 +212,6 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
     const ActivationCandidate& activation, double squeeze,
     Position required_whammy_end) const
 {
-    constexpr double MEASURES_PER_BAR = 8.0;
-    constexpr double MINIMUM_SP_AMOUNT = 0.5;
-    constexpr double SP_PHRASE_AMOUNT = 0.25;
     const Position null_position {Beat(0.0), Measure(0.0)};
 
     if (!activation.sp_bar.full_enough_to_activate()) {
