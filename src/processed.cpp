@@ -184,11 +184,18 @@ public:
         if (m_sp < 0.0) {
             return;
         }
-        m_sp = sp_data.propagate_sp_over_whammy_max(sp_note_start, sp_note_end,
-                                                    m_sp);
+        // We might run out of SP between sp_note_start and sp_note_end. In this
+        // case we just hit the note as early as possible.
+        const auto new_sp = sp_data.propagate_sp_over_whammy_max(
+            sp_note_start, sp_note_end, m_sp);
+        if (new_sp >= 0.0) {
+            m_sp = new_sp;
+            m_position = sp_note_end;
+        } else {
+            m_position = sp_note_start;
+        }
         m_sp += SP_PHRASE_AMOUNT;
         m_sp = std::min(m_sp, 1.0);
-        m_position = sp_note_end;
     }
 };
 

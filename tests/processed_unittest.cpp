@@ -382,6 +382,23 @@ TEST_CASE("is_candidate_valid takes into account squeezing")
     }
 }
 
+TEST_CASE("is_candidate_valid handles very high BPM SP granting notes")
+{
+    std::vector<Note<NoteColour>> notes {{0}, {192}, {768}, {4608}, {5376}};
+    std::vector<StarPower> phrases {{4608, 50}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    SyncTrack sync_track {{}, {{3840, 4000000}}};
+    ProcessedSong track {note_track, 192, sync_track, 1.0, 1.0, Second(0.0)};
+    const auto& points = track.points();
+    ActivationCandidate candidate {points.cbegin() + 2,
+                                   points.cbegin() + 4,
+                                   {Beat(0.0), Measure(0.0)},
+                                   {0.5, 0.5}};
+
+    REQUIRE(track.is_candidate_valid(candidate).validity
+            == ActValidity::success);
+}
+
 TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
 {
     SECTION("Front end and back end are restricted")
