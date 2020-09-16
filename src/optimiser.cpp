@@ -325,7 +325,7 @@ double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
 
         ActivationCandidate candidate {act.act_start, act.act_end, start_pos,
                                        sp_bar};
-        if (m_song->is_restricted_candidate_valid(candidate, trial_sqz).validity
+        if (m_song->is_candidate_valid(candidate, trial_sqz).validity
             == ActValidity::success) {
             max_sqz = trial_sqz;
         } else {
@@ -361,8 +361,7 @@ Position Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
                                                  act.act_start, mid_beat);
         ActivationCandidate candidate {act.act_start, act.act_end, start_pos,
                                        sp_bar};
-        auto result = m_song->is_restricted_candidate_valid(candidate,
-                                                            sqz_level, mid_pos);
+        auto result = m_song->is_candidate_valid(candidate, sqz_level, mid_pos);
         if (result.validity == ActValidity::success) {
             min_whammy_force = mid_pos;
         } else {
@@ -390,9 +389,7 @@ std::tuple<Beat, Beat> Optimiser::act_duration(ProtoActivation act,
         Position trial_pos {trial_beat, trial_meas};
         ActivationCandidate candidate {act.act_start, act.act_end, trial_pos,
                                        sp_bar};
-        if (m_song
-                ->is_restricted_candidate_valid(candidate, sqz_level,
-                                                min_whammy_force)
+        if (m_song->is_candidate_valid(candidate, sqz_level, min_whammy_force)
                 .validity
             == ActValidity::success) {
             min_pos = trial_pos;
@@ -402,8 +399,8 @@ std::tuple<Beat, Beat> Optimiser::act_duration(ProtoActivation act,
     }
 
     ActivationCandidate candidate {act.act_start, act.act_end, min_pos, sp_bar};
-    auto result = m_song->is_restricted_candidate_valid(candidate, sqz_level,
-                                                        min_whammy_force);
+    auto result
+        = m_song->is_candidate_valid(candidate, sqz_level, min_whammy_force);
     assert(result.validity == ActValidity::success); // NOLINT
     return {min_pos.beat, result.ending_position.beat};
 }

@@ -112,16 +112,13 @@ public:
                                          PointPtr act_start,
                                          Position earliest_potential_pos) const;
     // Returns an ActResult which says if an activation is valid, and if so the
-    // earliest position it can end.
+    // earliest position it can end. Checks squeezes against the given amount
+    // only.
     [[nodiscard]] ActResult
-    is_candidate_valid(const ActivationCandidate& activation) const;
-    // Similar to is_candidate_valid but checks squeezes against the given
-    // amount only.
-    [[nodiscard]] ActResult
-    is_restricted_candidate_valid(const ActivationCandidate& activation,
-                                  double squeeze,
-                                  Position required_whammy_end
-                                  = {Beat {NEG_INF}, Measure {NEG_INF}}) const;
+    is_candidate_valid(const ActivationCandidate& activation,
+                       double squeeze = 1.0,
+                       Position required_whammy_end
+                       = {Beat {NEG_INF}, Measure {NEG_INF}}) const;
     // Return the summary of a path.
     [[nodiscard]] std::string path_summary(const Path& path) const;
 

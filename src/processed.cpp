@@ -98,13 +98,6 @@ std::tuple<SpBar, Position> ProcessedSong::total_available_sp_with_earliest_pos(
             Position {last_beat, m_converter.beats_to_measures(last_beat)}};
 }
 
-ActResult
-ProcessedSong::is_candidate_valid(const ActivationCandidate& activation) const
-{
-    return is_restricted_candidate_valid(activation, 1.0,
-                                         {Beat(NEG_INF), Measure(NEG_INF)});
-}
-
 Position ProcessedSong::adjusted_hit_window_start(PointPtr point,
                                                   double squeeze) const
 {
@@ -203,9 +196,10 @@ public:
     }
 };
 
-ActResult ProcessedSong::is_restricted_candidate_valid(
-    const ActivationCandidate& activation, double squeeze,
-    Position required_whammy_end) const
+ActResult
+ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
+                                  double squeeze,
+                                  Position required_whammy_end) const
 {
     static constexpr double MEASURES_PER_BAR = 8.0;
     static constexpr double MINIMUM_SP_AMOUNT = 0.5;

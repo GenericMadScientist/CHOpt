@@ -399,7 +399,7 @@ TEST_CASE("is_candidate_valid handles very high BPM SP granting notes")
             == ActValidity::success);
 }
 
-TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
+TEST_CASE("is_candidate_valid takes into account squeeze param")
 {
     SECTION("Front end and back end are restricted")
     {
@@ -412,9 +412,9 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 0.5).validity
+        REQUIRE(track.is_candidate_valid(candidate, 0.5).validity
                 == ActValidity::insufficient_sp);
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0).validity
+        REQUIRE(track.is_candidate_valid(candidate, 1.0).validity
                 == ActValidity::success);
     }
 
@@ -430,9 +430,9 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 0.5).validity
+        REQUIRE(track.is_candidate_valid(candidate, 0.5).validity
                 == ActValidity::insufficient_sp);
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0).validity
+        REQUIRE(track.is_candidate_valid(candidate, 1.0).validity
                 == ActValidity::success);
     }
 
@@ -448,9 +448,9 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
                                        {Beat(0.0), Measure(0.0)},
                                        {1.0, 1.0}};
 
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 0.5).validity
+        REQUIRE(track.is_candidate_valid(candidate, 0.5).validity
                 == ActValidity::insufficient_sp);
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0).validity
+        REQUIRE(track.is_candidate_valid(candidate, 1.0).validity
                 == ActValidity::success);
     }
 
@@ -465,9 +465,9 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
                                        {Beat(0.0), Measure(0.0)},
                                        {0.5, 0.5}};
 
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 0.5).validity
+        REQUIRE(track.is_candidate_valid(candidate, 0.5).validity
                 == ActValidity::surplus_sp);
-        REQUIRE(track.is_restricted_candidate_valid(candidate, 1.0).validity
+        REQUIRE(track.is_candidate_valid(candidate, 1.0).validity
                 == ActValidity::success);
     }
 
@@ -481,14 +481,14 @@ TEST_CASE("is_restricted_candidate_valid takes into account squeeze param")
                                        points.cbegin(),
                                        {Beat(0.0), Measure(0.0)},
                                        {1.0, 1.0}};
-        auto result = track.is_restricted_candidate_valid(candidate, 1.0);
+        auto result = track.is_candidate_valid(candidate, 1.0);
 
         REQUIRE(result.validity == ActValidity::success);
         REQUIRE(result.ending_position.beat.value() < 40.0);
     }
 }
 
-TEST_CASE("is_restricted_candidate_valid takes into account forced whammy")
+TEST_CASE("is_candidate_valid takes into account forced whammy")
 {
     std::vector<Note<NoteColour>> notes {{0, 768}, {3072}, {3264}};
     std::vector<StarPower> phrases {{0, 3300}};
@@ -500,20 +500,16 @@ TEST_CASE("is_restricted_candidate_valid takes into account forced whammy")
                                    {Beat(0.0), Measure(0.0)},
                                    {0.5, 0.5}};
 
-    REQUIRE(track
-                .is_restricted_candidate_valid(candidate, 1.0,
-                                               {Beat(0.0), Measure(0.0)})
+    REQUIRE(track.is_candidate_valid(candidate, 1.0, {Beat(0.0), Measure(0.0)})
                 .validity
             == ActValidity::success);
-    REQUIRE(track
-                .is_restricted_candidate_valid(candidate, 1.0,
-                                               {Beat(4.0), Measure(1.0)})
+    REQUIRE(track.is_candidate_valid(candidate, 1.0, {Beat(4.0), Measure(1.0)})
                 .validity
             == ActValidity::surplus_sp);
 }
 
-TEST_CASE("is_restricted_candidate_valid also takes account of whammy from end "
-          "of SP sustain before note is counted")
+TEST_CASE("is_candidate_valid also takes account of whammy from end of SP "
+          "sustain before note is counted")
 {
     std::vector<Note<NoteColour>> notes {{0, 960}, {2880}, {6144}};
     std::vector<StarPower> phrases {{0, 7000}};
@@ -525,15 +521,15 @@ TEST_CASE("is_restricted_candidate_valid also takes account of whammy from end "
                                    {Beat(1.0), Measure(0.25)},
                                    {0.5, 0.5}};
 
-    REQUIRE(track.is_restricted_candidate_valid(candidate, 0.0).validity
+    REQUIRE(track.is_candidate_valid(candidate, 0.0).validity
             == ActValidity::success);
 }
 
 // This is to stop a bug that appears in Edd Instrument Solo from CTH2: the last
 // note is an SP sustain and the last activation was shown as ending during it,
 // when it should go past the end of the song.
-TEST_CASE("is_restricted_candidate_valid takes account of overlapped phrase at "
-          "end if last note is whammy")
+TEST_CASE("is_candidate_valid takes account of overlapped phrase at end if "
+          "last note is whammy")
 {
     std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {3456, 192}};
     std::vector<StarPower> phrases {{0, 1}, {192, 1}, {3456, 1}};
@@ -545,7 +541,7 @@ TEST_CASE("is_restricted_candidate_valid takes account of overlapped phrase at "
                                    {Beat(1.0), Measure(0.25)},
                                    {0.5, 0.5}};
 
-    auto result = track.is_restricted_candidate_valid(candidate, 0.0);
+    auto result = track.is_candidate_valid(candidate, 0.0);
 
     REQUIRE(result.ending_position.beat > Beat(20.0));
 }
@@ -555,7 +551,7 @@ TEST_CASE("is_restricted_candidate_valid takes account of overlapped phrase at "
 // activate past the earliest activation point in order for the activation to
 // work, then the minimum sp after hitting the point is not clamped to 0, which
 // caused the endpoint to be too early.
-TEST_CASE("is_restricted_candidate_valid correctly clamps low SP")
+TEST_CASE("is_candidate_valid correctly clamps low SP")
 {
     std::vector<Note<NoteColour>> notes {{0, 6720}};
     std::vector<StarPower> phrases {{0, 1}};
@@ -568,7 +564,7 @@ TEST_CASE("is_restricted_candidate_valid correctly clamps low SP")
                                    {Beat(0.0), Measure(0.0)},
                                    {1.0, 1.0}};
 
-    auto result = track.is_restricted_candidate_valid(candidate, 0.0);
+    auto result = track.is_candidate_valid(candidate, 0.0);
 
     REQUIRE(result.ending_position.beat > Beat(27.3));
 }
