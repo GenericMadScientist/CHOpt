@@ -153,18 +153,29 @@ public:
     {
     }
 
-    Position& position() { return m_position; }
-    double& sp() { return m_sp; }
+    Position position() const { return m_position; }
+    double sp() const { return m_sp; }
+
+    void add_phrase()
+    {
+        constexpr double SP_PHRASE_AMOUNT = 0.25;
+
+        m_sp += SP_PHRASE_AMOUNT;
+        m_sp = std::min(m_sp, 1.0);
+    }
+
+    void advance_whammy_max(Position end_position, const SpData& sp_data)
+    {
+        m_sp = sp_data.propagate_sp_over_whammy_max(m_position, end_position,
+                                                    m_sp);
+        m_position = end_position;
+    }
 
     void update_early_end(Position sp_note_start, const SpData& sp_data,
                           Position required_whammy_end)
     {
-        constexpr double SP_PHRASE_AMOUNT = 0.25;
-
         m_sp = sp_data.propagate_sp_over_whammy_min(m_position, sp_note_start,
                                                     m_sp, required_whammy_end);
-        m_sp += SP_PHRASE_AMOUNT;
-        m_sp = std::min(m_sp, 1.0);
         if (sp_note_start.beat > m_position.beat) {
             m_position = sp_note_start;
         }
@@ -173,14 +184,11 @@ public:
     void update_late_end(Position sp_note_start, Position sp_note_end,
                          const SpData& sp_data)
     {
-        constexpr double SP_PHRASE_AMOUNT = 0.25;
-
         if (sp_note_start.beat < m_position.beat) {
             sp_note_start = m_position;
         }
 
-        m_sp = sp_data.propagate_sp_over_whammy_max(m_position, sp_note_start,
-                                                    m_sp);
+        advance_whammy_max(sp_note_start, sp_data);
         if (m_sp < 0.0) {
             return;
         }
@@ -191,11 +199,7 @@ public:
         if (new_sp >= 0.0) {
             m_sp = new_sp;
             m_position = sp_note_end;
-        } else {
-            m_position = sp_note_start;
         }
-        m_sp += SP_PHRASE_AMOUNT;
-        m_sp = std::min(m_sp, 1.0);
     }
 };
 
@@ -203,23 +207,25 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
     const ActivationCandidate& activation, double squeeze,
     Position required_whammy_end) const
 {
+    static constexpr double MEASURES_PER_BAR = 8.0;
+    static constexpr double MINIMUM_SP_AMOUNT = 0.5;
     const Position null_position {Beat(0.0), Measure(0.0)};
 
     if (!activation.sp_bar.full_enough_to_activate()) {
         return {null_position, ActValidity::insufficient_sp};
     }
 
+    const auto late_end_position
+        = adjusted_hit_window_end(activation.act_start, squeeze);
+    auto late_end_sp = activation.sp_bar.max();
+    late_end_sp += m_sp_data.available_whammy(
+        activation.earliest_activation_point.beat, late_end_position.beat);
+    late_end_sp = std::min(late_end_sp, 1.0);
+
     SpStatus status_for_early_end {
         activation.earliest_activation_point,
         std::max(activation.sp_bar.min(), MINIMUM_SP_AMOUNT)};
-    SpStatus status_for_late_end {
-        adjusted_hit_window_end(activation.act_start, squeeze),
-        activation.sp_bar.max()};
-
-    status_for_late_end.sp()
-        += m_sp_data.available_whammy(activation.earliest_activation_point.beat,
-                                      status_for_late_end.position().beat);
-    status_for_late_end.sp() = std::min(status_for_late_end.sp(), 1.0);
+    SpStatus status_for_late_end {late_end_position, late_end_sp};
 
     for (auto p = m_points.next_sp_granting_note(activation.act_start);
          p < activation.act_end;
@@ -232,23 +238,21 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
         }
         status_for_early_end.update_early_end(p_start, m_sp_data,
                                               required_whammy_end);
+        status_for_early_end.add_phrase();
+        status_for_late_end.add_phrase();
     }
 
     const auto ending_pos
         = adjusted_hit_window_start(activation.act_end, squeeze);
-    status_for_late_end.sp() = m_sp_data.propagate_sp_over_whammy_max(
-        status_for_late_end.position(), ending_pos, status_for_late_end.sp());
+    status_for_late_end.advance_whammy_max(ending_pos, m_sp_data);
     if (status_for_late_end.sp() < 0.0) {
         return {null_position, ActValidity::insufficient_sp};
     }
-    status_for_early_end.sp() = m_sp_data.propagate_sp_over_whammy_min(
-        status_for_early_end.position(), ending_pos, status_for_early_end.sp(),
-        required_whammy_end);
+    status_for_early_end.update_early_end(ending_pos, m_sp_data,
+                                          required_whammy_end);
     if (activation.act_end->is_sp_granting_note) {
-        status_for_early_end.sp() += SP_PHRASE_AMOUNT;
-        status_for_early_end.sp() = std::min(status_for_early_end.sp(), 1.0);
+        status_for_early_end.add_phrase();
     }
-    status_for_early_end.position() = ending_pos;
 
     const auto end_meas = status_for_early_end.position().measure
         + Measure(status_for_early_end.sp() * MEASURES_PER_BAR);

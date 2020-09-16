@@ -72,10 +72,7 @@ struct Path {
 // upheld by the constructors of the arguments.
 class ProcessedSong {
 private:
-    static constexpr double MEASURES_PER_BAR = 8.0;
-    static constexpr double MINIMUM_SP_AMOUNT = 0.5;
     static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
-    static constexpr double SP_PHRASE_AMOUNT = 0.25;
 
     // The order of these members is important. We must have m_converter before
     // m_points.
