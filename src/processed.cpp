@@ -153,8 +153,8 @@ public:
     {
     }
 
-    Position position() const { return m_position; }
-    double sp() const { return m_sp; }
+    [[nodiscard]] Position position() const { return m_position; }
+    [[nodiscard]] double sp() const { return m_sp; }
 
     void add_phrase()
     {
@@ -248,22 +248,18 @@ ActResult ProcessedSong::is_restricted_candidate_valid(
     if (status_for_late_end.sp() < 0.0) {
         return {null_position, ActValidity::insufficient_sp};
     }
+
     status_for_early_end.update_early_end(ending_pos, m_sp_data,
                                           required_whammy_end);
     if (activation.act_end->is_sp_granting_note) {
         status_for_early_end.add_phrase();
     }
-
     const auto end_meas = status_for_early_end.position().measure
         + Measure(status_for_early_end.sp() * MEASURES_PER_BAR);
 
     const auto next_point = std::next(activation.act_end);
-    if (next_point == m_points.cend()) {
-        const auto end_beat = m_converter.measures_to_beats(end_meas);
-        return {{end_beat, end_meas}, ActValidity::success};
-    }
-
-    if (end_meas >= adjusted_hit_window_end(next_point, squeeze).measure) {
+    if (next_point != m_points.cend()
+        && end_meas >= adjusted_hit_window_end(next_point, squeeze).measure) {
         return {null_position, ActValidity::surplus_sp};
     }
 
