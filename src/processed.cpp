@@ -110,6 +110,10 @@ Position ProcessedSong::adjusted_hit_window_start(PointPtr point,
 {
     assert((0.0 <= squeeze) && (squeeze <= 1.0)); // NOLINT
 
+    if (squeeze == 1.0) {
+        return point->hit_window_start;
+    }
+
     auto start = m_converter.beats_to_seconds(point->hit_window_start.beat);
     auto mid = m_converter.beats_to_seconds(point->position.beat);
     auto adj_start_s = start + (mid - start) * (1.0 - squeeze);
@@ -123,6 +127,10 @@ Position ProcessedSong::adjusted_hit_window_end(PointPtr point,
                                                 double squeeze) const
 {
     assert((0.0 <= squeeze) && (squeeze <= 1.0)); // NOLINT
+
+    if (squeeze == 1.0) {
+        return point->hit_window_end;
+    }
 
     auto mid = m_converter.beats_to_seconds(point->position.beat);
     auto end = m_converter.beats_to_seconds(point->hit_window_end.beat);
