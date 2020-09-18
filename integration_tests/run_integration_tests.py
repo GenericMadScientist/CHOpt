@@ -5,7 +5,7 @@ song_dir = "integration_tests/songs"
 
 songs = [
     "amen-brother.chart",
-    "cult-of-personality.mid",
+    "cult-of-personality-gh3.mid",
     "cups-and-cakes.mid",
     "lysios.chart",
     "me-and-u.chart",
