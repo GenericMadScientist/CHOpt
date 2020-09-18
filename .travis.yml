@@ -46,6 +46,20 @@ jobs:
       install:
         - which cmake || brew install cmake
 
+    # Integration tests
+    - addons:
+        apt:
+          packages:
+            - g++-10
+      script:
+        - CXX=g++-10
+        - mkdir -p build
+        - cd build
+        - cmake -DBUILD_GUI=OFF ..
+        - cmake --build . --target chopt --verbose
+        - cd ..
+        - python integration_tests/run_integration_tests.py
+
     # clang-format and clang-tidy
     - addons:
         apt:
