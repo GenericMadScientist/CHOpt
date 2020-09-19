@@ -212,8 +212,9 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
     const auto late_end_position
         = adjusted_hit_window_end(activation.act_start, squeeze);
     auto late_end_sp = activation.sp_bar.max();
-    late_end_sp += m_sp_data.available_whammy(
-        activation.earliest_activation_point.beat, late_end_position.beat);
+    late_end_sp
+        += m_sp_data.available_whammy(activation.earliest_activation_point.beat,
+                                      activation.act_start->position.beat);
     late_end_sp = std::min(late_end_sp, 1.0);
 
     SpStatus status_for_early_end {
