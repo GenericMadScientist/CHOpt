@@ -287,14 +287,20 @@ TEST_CASE("is_candidate_valid works with whammy")
     // An example is the last activatiom of Soulless.
     SECTION("Whammy around the start of an SP sustain is not doubled counted")
     {
-        std::vector<Note<NoteColour>> notes_two {{0}, {192}, {384, 192}, {5260}};
+        std::vector<Note<NoteColour>> notes_two {
+            {0}, {192}, {384, 192}, {5260}};
         std::vector<StarPower> phrases_two {{384, 1}};
         NoteTrack<NoteColour> note_track_two {notes_two, phrases_two, {}};
-        ProcessedSong track_two {note_track_two, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track_two {note_track_two, 192, {}, 1.0, 1.0,
+                                 Second(0.0)};
         const auto& points_two = track_two.points();
-        ActivationCandidate candidate_two {points_two.cbegin() + 2, points_two.cend() - 1, {Beat(1.0), Measure(0.25)}, {0.5, 0.5}};
+        ActivationCandidate candidate_two {points_two.cbegin() + 2,
+                                           points_two.cend() - 1,
+                                           {Beat(1.0), Measure(0.25)},
+                                           {0.5, 0.5}};
 
-        REQUIRE(track_two.is_candidate_valid(candidate_two).validity == ActValidity::insufficient_sp);
+        REQUIRE(track_two.is_candidate_valid(candidate_two).validity
+                == ActValidity::insufficient_sp);
     }
 
     SECTION("Check compressed activations are counted")
