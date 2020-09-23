@@ -374,4 +374,24 @@ TEST_CASE("optimal_path produces the correct path")
 
         REQUIRE(act.whammy_end > Beat {17.45});
     }
+
+    // There was a bug where an activation after an SP sustain that comes after
+    // an act with a forbidden squeeze would be shown to have ticks possible on
+    // the forbidden squeeze even if ticks were not possible. An example is
+    // given by the path for EON BREAK in CSC December 2019.
+    SECTION("Forbidden squeeze does not grant extra whammy next act")
+    {
+        std::vector<Note<NoteColour>> notes {{0},         {192},  {768},
+                                             {3840, 192}, {4224}, {19200, 192},
+                                             {38400},     {41990}};
+        std::vector<StarPower> phrases {
+            {0, 1}, {192, 1}, {3840, 576}, {19200, 1}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        Optimiser optimiser {&track, &terminate};
+
+        auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.score_boost == 200);
+    }
 }

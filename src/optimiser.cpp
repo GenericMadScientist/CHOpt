@@ -152,9 +152,10 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
     std::vector<std::tuple<ProtoActivation, CacheKey>> next_acts;
     for (const auto& act : acts) {
         auto [p, q] = std::get<0>(act);
-        auto sp_bar
-            = m_song->total_available_sp(key.position.beat, key.point, p);
-        auto starting_pos = std::prev(p)->hit_window_start;
+        const auto& [sp_bar, starting_pos]
+            = m_song->total_available_sp_with_earliest_pos(
+                key.position.beat, key.point, p,
+                std::prev(p)->hit_window_start);
         ActivationCandidate candidate {p, q, starting_pos, sp_bar};
         auto candidate_result = m_song->is_candidate_valid(candidate);
         if (candidate_result.validity == ActValidity::success
