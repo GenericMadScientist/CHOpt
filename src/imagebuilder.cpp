@@ -254,8 +254,9 @@ void ImageBuilder::add_measure_values(const PointSet& points, const Path& path)
     meas_iter = std::next(m_measure_lines.cbegin());
     score_value_iter = m_score_values.begin();
     for (const auto& solo : points.solo_boosts()) {
+        const auto [solo_end, solo_score] = solo;
         while (meas_iter != m_measure_lines.cend()
-               && *meas_iter <= std::get<0>(solo).beat.value()) {
+               && *meas_iter <= solo_end.beat.value()) {
             ++meas_iter;
             ++score_value_iter;
         }
@@ -264,7 +265,7 @@ void ImageBuilder::add_measure_values(const PointSet& points, const Path& path)
         if (score_value_iter == m_score_values.end()) {
             --score_value_iter;
         }
-        *score_value_iter += std::get<1>(solo);
+        *score_value_iter += solo_score;
     }
 
     for (const auto& act : path.activations) {
