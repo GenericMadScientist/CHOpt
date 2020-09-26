@@ -488,6 +488,7 @@ combine_note_on_off_events(const std::vector<int>& on_events,
         }
         ranges.emplace_back(*on_iter, *off_iter);
         ++on_iter;
+        ++off_iter;
     }
 
     if (on_iter != on_events.cend()) {
