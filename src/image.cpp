@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <climits>
 #include <cmath>
 #include <cstdio>
 #include <iterator>
@@ -673,8 +674,8 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
                                   std::tuple<double, double> x_range,
                                   std::tuple<int, int> y_range, float opacity)
 {
-    double start;
-    double end;
+    double start = std::numeric_limits<double>::quiet_NaN();
+    double end = std::numeric_limits<double>::quiet_NaN();
     std::tie(start, end) = x_range;
     // Required if a beat range ends after the end of a song (e.g., a solo
     // section)
