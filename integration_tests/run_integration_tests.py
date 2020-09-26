@@ -27,6 +27,8 @@ for song in songs:
     output_lines.append("")
     outputs.append("\n".join(output_lines).encode("utf-8"))
 
+conn.close()
+
 for song, output in zip(songs, outputs):
     _, file, difficulty, _, _, _ = song
     result = subprocess.run(
