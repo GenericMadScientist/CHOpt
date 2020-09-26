@@ -857,6 +857,25 @@ TEST_CASE("Notes are read correctly")
         REQUIRE_NOTHROW([&] { return Song::from_midi(midi); }());
     }
 
+    SECTION(
+        "Note On events with no intermediate Note Off events are not merged")
+    {
+        MidiTrack note_track {{{0,
+                                {MetaEvent {3,
+                                            {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                             0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                               {768, {MidiEvent {0x90, {96, 64}}}},
+                               {769, {MidiEvent {0x90, {96, 64}}}},
+                               {800, {MidiEvent {0x80, {96, 64}}}},
+                               {801, {MidiEvent {0x80, {96, 64}}}}}};
+        const Midi midi {192, {note_track}};
+
+        const auto song = Song::from_midi(midi);
+        const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
+
+        REQUIRE(notes.size() == 2);
+    }
+
     SECTION("Open notes are read correctly")
     {
         MidiTrack note_track {
