@@ -218,7 +218,7 @@ TEST_CASE("Chart reads resolution")
         std::vector<ChartSection> sections {expert_single};
         const Chart chart {sections};
 
-        const auto resolution = Song::from_chart(chart).resolution();
+        const auto resolution = Song::from_chart(chart, {}).resolution();
 
         REQUIRE(resolution == 192);
     }
@@ -231,7 +231,7 @@ TEST_CASE("Chart reads resolution")
         std::vector<ChartSection> sections {header, expert_single};
         const Chart chart {sections};
 
-        const auto resolution = Song::from_chart(chart).resolution();
+        const auto resolution = Song::from_chart(chart, {}).resolution();
 
         REQUIRE(resolution == 200);
     }
@@ -243,49 +243,55 @@ TEST_CASE("Chart reads resolution")
         std::vector<ChartSection> sections {header, expert_single};
         const Chart chart {sections};
 
-        const auto resolution = Song::from_chart(chart).resolution();
+        const auto resolution = Song::from_chart(chart, {}).resolution();
 
         REQUIRE(resolution == 192);
     }
 }
 
-TEST_CASE("Chart reads song header correctly")
+TEST_CASE("Chart header values besides resolution are discarded")
 {
     ChartSection expert_single {"ExpertSingle", {}, {}, {},
                                 {{768, 0, 0}},  {}, {}};
+    ChartSection header_section {"Song",
+                                    {{"Name", "\"TestName\""},
+                                    {"Artist", "\"GMS\""},
+                                    {"Charter", "\"NotGMS\""}},
+                                    {},
+                                    {},
+                                    {},
+                                    {},
+                                    {}};
+    std::vector<ChartSection> sections {header_section, expert_single};
+    const Chart chart {sections};
+    const auto song = Song::from_chart(chart, {});
+    const auto& header = song.song_header();
 
-    SECTION("Default values are correct")
-    {
-        std::vector<ChartSection> sections {expert_single};
-        const Chart chart {sections};
-        const auto song = Song::from_chart(chart);
-        const auto& header = song.song_header();
+    REQUIRE(header.name != "TestName");
+    REQUIRE(header.artist != "GMS");
+    REQUIRE(header.charter != "NotGMS");
+}
 
-        REQUIRE(header.name == "Unknown Song");
-        REQUIRE(header.artist == "Unknown Artist");
-        REQUIRE(header.charter == "Unknown Charter");
-    }
+TEST_CASE("Ini values are used for converting from .chart files")
+{
+    ChartSection expert_single {"ExpertSingle", {}, {}, {},
+                                {{768, 0, 0}},  {}, {}};
+    ChartSection header_section {"Song",
+                                    {},
+                                    {},
+                                    {},
+                                    {},
+                                    {},
+                                    {}};
+    std::vector<ChartSection> sections {header_section, expert_single};
+    const Chart chart {sections};
+    const IniValues ini {"TestName", "GMS", "NotGMS"};
+    const auto song = Song::from_chart(chart, ini);
+    const auto& header = song.song_header();
 
-    SECTION("Read values are correct")
-    {
-        ChartSection header_section {"Song",
-                                     {{"Name", "\"TestName\""},
-                                      {"Artist", "\"GMS\""},
-                                      {"Charter", "\"NotGMS\""}},
-                                     {},
-                                     {},
-                                     {},
-                                     {},
-                                     {}};
-        std::vector<ChartSection> sections {header_section, expert_single};
-        const Chart chart {sections};
-        const auto song = Song::from_chart(chart);
-        const auto& header = song.song_header();
-
-        REQUIRE(header.name == "TestName");
-        REQUIRE(header.artist == "GMS");
-        REQUIRE(header.charter == "NotGMS");
-    }
+    REQUIRE(header.name == "TestName");
+    REQUIRE(header.artist == "GMS");
+    REQUIRE(header.charter == "NotGMS");
 }
 
 // Last checked: 24.0.1555-master
@@ -300,7 +306,7 @@ TEST_CASE("Chart reads sync track correctly")
     std::vector<TimeSignature> time_sigs {{0, 4, 4}, {768, 4, 2}};
     std::vector<BPM> bpms {{0, 200000}};
 
-    const auto chart_sync_track = Song::from_chart(chart).sync_track();
+    const auto chart_sync_track = Song::from_chart(chart, {}).sync_track();
 
     REQUIRE(chart_sync_track.time_sigs() == time_sigs);
     REQUIRE(chart_sync_track.bpms() == bpms);
@@ -316,7 +322,7 @@ TEST_CASE("Chart reads easy note track correctly")
     NoteTrack<NoteColour> note_track {
         {{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
 
-    const auto song = Song::from_chart(chart);
+    const auto song = Song::from_chart(chart, {});
 
     REQUIRE(song.guitar_note_track(Difficulty::Easy) == note_track);
 }
@@ -330,7 +336,7 @@ TEST_CASE("SP phrases are read correctly from Chart")
     NoteTrack<NoteColour> note_track {
         {{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
 
-    const auto song = Song::from_chart(chart);
+    const auto song = Song::from_chart(chart, {});
 
     REQUIRE(song.guitar_note_track(Difficulty::Expert).sp_phrases().empty());
 }
@@ -345,7 +351,7 @@ TEST_CASE("Chart does not need sections in usual order")
         std::vector<ChartSection> sections {expert_single};
         const Chart chart {sections};
 
-        REQUIRE_NOTHROW([&] { return Song::from_chart(chart); }());
+        REQUIRE_NOTHROW([&] { return Song::from_chart(chart, {}); }());
     }
 
     SECTION("At least one non-empty note section must be present")
@@ -355,8 +361,8 @@ TEST_CASE("Chart does not need sections in usual order")
         std::vector<ChartSection> sections {expert_single};
         const Chart chart {sections};
 
-        REQUIRE_THROWS([] { return Song::from_chart({}); }());
-        REQUIRE_THROWS([&] { return Song::from_chart(chart); }());
+        REQUIRE_THROWS([] { return Song::from_chart({}, {}); }());
+        REQUIRE_THROWS([&] { return Song::from_chart(chart, {}); }());
     }
 
     SECTION("Non note sections can be in any order")
@@ -372,7 +378,7 @@ TEST_CASE("Chart does not need sections in usual order")
         std::vector<Note<NoteColour>> notes {{768}};
         std::vector<BPM> bpms {{0, 200000}};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE(song.resolution() == 200);
         REQUIRE(song.guitar_note_track(Difficulty::Expert).notes() == notes);
@@ -394,7 +400,7 @@ TEST_CASE("Only first non-empty part of note sections matter")
         const Chart chart {sections};
         std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green}};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).notes() == notes);
     }
@@ -409,7 +415,7 @@ TEST_CASE("Only first non-empty part of note sections matter")
         const Chart chart {sections};
         std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Red}};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).notes() == notes);
     }
@@ -432,7 +438,7 @@ TEST_CASE("Solos are read properly")
         const Chart chart {sections};
         std::vector<Solo> required_solos {{0, 200, 100}, {300, 400, 200}};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
@@ -451,7 +457,7 @@ TEST_CASE("Solos are read properly")
         const Chart chart {sections};
         std::vector<Solo> required_solos {{0, 200, 100}};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
@@ -465,7 +471,7 @@ TEST_CASE("Solos are read properly")
         std::vector<ChartSection> sections {expert_single};
         const Chart chart {sections};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos().empty());
     }
@@ -484,7 +490,7 @@ TEST_CASE("Solos are read properly")
         const Chart chart {sections};
         std::vector<Solo> required_solos {{0, 200, 100}};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
@@ -499,7 +505,7 @@ TEST_CASE("Solos are read properly")
         const Chart chart {sections};
         std::vector<Solo> required_solos {{0, 384, 100}};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
                 == required_solos);
@@ -512,7 +518,7 @@ TEST_CASE("Solos are read properly")
         std::vector<ChartSection> sections {expert_single};
         const Chart chart {sections};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).solos().empty());
     }
@@ -527,7 +533,7 @@ TEST_CASE("instruments returns the supported instruments")
     const Chart chart {sections};
     std::vector<Instrument> instruments {Instrument::Guitar, Instrument::Drums};
 
-    const auto song = Song::from_chart(chart);
+    const auto song = Song::from_chart(chart, {});
 
     REQUIRE(song.instruments() == instruments);
 }
@@ -543,7 +549,7 @@ TEST_CASE("difficulties returns the difficulties for an instrument")
                                                  Difficulty::Expert};
     std::vector<Difficulty> drum_difficulties {Difficulty::Expert};
 
-    const auto song = Song::from_chart(chart);
+    const auto song = Song::from_chart(chart, {});
 
     REQUIRE(song.difficulties(Instrument::Guitar) == guitar_difficulties);
     REQUIRE(song.difficulties(Instrument::Drums) == drum_difficulties);
@@ -558,7 +564,7 @@ TEST_CASE("Other 5 fret instruments are read from Chart")
         std::vector<ChartSection> sections {expert_double};
         const Chart chart {sections};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE_NOTHROW(
             [&] { return song.guitar_coop_note_track(Difficulty::Expert); }());
@@ -571,7 +577,7 @@ TEST_CASE("Other 5 fret instruments are read from Chart")
         std::vector<ChartSection> sections {expert_double};
         const Chart chart {sections};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE_NOTHROW(
             [&] { return song.bass_note_track(Difficulty::Expert); }());
@@ -584,7 +590,7 @@ TEST_CASE("Other 5 fret instruments are read from Chart")
         std::vector<ChartSection> sections {expert_double};
         const Chart chart {sections};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE_NOTHROW(
             [&] { return song.rhythm_note_track(Difficulty::Expert); }());
@@ -597,7 +603,7 @@ TEST_CASE("Other 5 fret instruments are read from Chart")
         std::vector<ChartSection> sections {expert_double};
         const Chart chart {sections};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
 
         REQUIRE_NOTHROW(
             [&] { return song.keys_note_track(Difficulty::Expert); }());
@@ -616,7 +622,7 @@ TEST_CASE("6 fret instruments are read correctly from .chart")
             {192, 0, GHLNoteColour::WhiteLow},
             {384, 0, GHLNoteColour::BlackLow}};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
         const auto& track = song.ghl_guitar_note_track(Difficulty::Expert);
 
         REQUIRE(track.notes() == notes);
@@ -632,7 +638,7 @@ TEST_CASE("6 fret instruments are read correctly from .chart")
             {192, 0, GHLNoteColour::WhiteLow},
             {384, 0, GHLNoteColour::BlackLow}};
 
-        const auto song = Song::from_chart(chart);
+        const auto song = Song::from_chart(chart, {});
         const auto& track = song.ghl_bass_note_track(Difficulty::Expert);
 
         REQUIRE(track.notes() == notes);
@@ -654,7 +660,7 @@ TEST_CASE("Drums are read correctly from .chart")
     std::vector<Note<DrumNoteColour>> notes {
         {192, 0, DrumNoteColour::Red}, {384, 0, DrumNoteColour::YellowCymbal}};
 
-    const auto song = Song::from_chart(chart);
+    const auto song = Song::from_chart(chart, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
     REQUIRE(track.notes() == notes);
@@ -667,7 +673,7 @@ TEST_CASE("Invalid drum notes are ignored")
     std::vector<ChartSection> sections {drums};
     const Chart chart {sections};
 
-    const auto song = Song::from_chart(chart);
+    const auto song = Song::from_chart(chart, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
     REQUIRE(track.notes().size() == 1);

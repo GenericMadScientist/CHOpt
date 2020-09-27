@@ -49,7 +49,7 @@ Song Song::from_filename(const std::string& filename)
         }
         std::string contents {std::istreambuf_iterator<char>(in),
                               std::istreambuf_iterator<char>()};
-        return Song::from_chart(parse_chart(contents));
+        return Song::from_chart(parse_chart(contents), {});
     }
     if (ends_with_suffix(filename, ".mid")) {
         nowide::ifstream in {filename, std::ios::binary};
@@ -103,17 +103,6 @@ SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
         prev_ts = *p;
     }
     m_time_sigs.push_back(prev_ts);
-}
-
-// Return the substring with no leading or trailing quotation marks.
-static std::string_view trim_quotes(std::string_view input)
-{
-    const auto first_non_quote = input.find_first_not_of('"');
-    if (first_non_quote == std::string_view::npos) {
-        return input.substr(0, 0);
-    }
-    const auto last_non_quote = input.find_last_not_of('"');
-    return input.substr(first_non_quote, last_non_quote - first_non_quote + 1);
 }
 
 // Takes a sequence of points where some note type/event is turned on, and a
@@ -404,9 +393,13 @@ std::vector<Difficulty> Song::difficulties(Instrument instrument) const
     return difficulties;
 }
 
-Song Song::from_chart(const Chart& chart)
+Song Song::from_chart(const Chart& chart, const IniValues& ini)
 {
     Song song;
+
+    song.m_song_header.name = ini.name;
+    song.m_song_header.artist = ini.artist;
+    song.m_song_header.charter = ini.charter;
 
     for (const auto& section : chart.sections) {
         if (section.name == "Song") {
@@ -418,12 +411,6 @@ Song Song::from_chart(const Chart& chart)
                 // TODO: Use from_chars instead to avoid having to use
                 // exceptions as control flow.
             }
-            song.m_song_header.name = trim_quotes(get_with_default(
-                section.key_value_pairs, "Name", "Unknown Song"));
-            song.m_song_header.artist = trim_quotes(get_with_default(
-                section.key_value_pairs, "Artist", "Unknown Artist"));
-            song.m_song_header.charter = trim_quotes(get_with_default(
-                section.key_value_pairs, "Charter", "Unknown Charter"));
         } else if (section.name == "SyncTrack") {
             std::vector<BPM> bpms;
             for (const auto& bpm : section.bpm_events) {
