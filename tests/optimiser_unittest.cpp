@@ -369,8 +369,8 @@ TEST_CASE("optimal_path produces the correct path")
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
 
-        auto opt_path = optimiser.optimal_path();
-        auto act = opt_path.activations[0];
+        const auto opt_path = optimiser.optimal_path();
+        const auto act = opt_path.activations[0];
 
         REQUIRE(act.whammy_end > Beat {17.45});
     }
@@ -390,8 +390,25 @@ TEST_CASE("optimal_path produces the correct path")
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
 
-        auto opt_path = optimiser.optimal_path();
+        const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 200);
+    }
+
+    // This isn't terribly well-defined. The heuristic is to still do a greedy
+    // approach but to pick the easiest activation at any point given a tie. The
+    // test is just enough to spot a difference between that and simple greedy.
+    SECTION("Easier activations are chosen where possible")
+    {
+        std::vector<Note<NoteColour>> notes {{0},    {192},  {384},
+                                             {3504}, {9600}, {12672}};
+        std::vector<StarPower> phrases {{0, 1}, {192, 1}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}};
+        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        Optimiser optimiser {&track, &terminate};
+
+        const auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.activations[0].sp_start > Beat {20.0});
     }
 }

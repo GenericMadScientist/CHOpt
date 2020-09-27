@@ -289,16 +289,24 @@ Path Optimiser::optimal_path() const
         if (acts.empty()) {
             break;
         }
-        auto [proto_act, next_key] = acts[0];
-        auto sqz_level = act_squeeze_level(proto_act, start_key);
+        auto [best_proto_act, best_next_key] = acts[0];
+        auto best_sqz_level = act_squeeze_level(best_proto_act, start_key);
+        for (auto i = 1U; i < acts.size(); ++i) {
+            auto [proto_act, next_key] = acts[i];
+            auto sqz_level = act_squeeze_level(proto_act, start_key);
+            if (sqz_level < best_sqz_level) {
+                std::tie(best_proto_act, best_next_key) = acts[i];
+                best_sqz_level = sqz_level;
+            }
+        }
         auto min_whammy_force
-            = forced_whammy_end(proto_act, start_key, sqz_level);
-        auto [start_pos, end_pos]
-            = act_duration(proto_act, start_key, sqz_level, min_whammy_force);
-        Activation act {proto_act.act_start, proto_act.act_end,
+            = forced_whammy_end(best_proto_act, start_key, best_sqz_level);
+        auto [start_pos, end_pos] = act_duration(
+            best_proto_act, start_key, best_sqz_level, min_whammy_force);
+        Activation act {best_proto_act.act_start, best_proto_act.act_end,
                         min_whammy_force.beat, start_pos, end_pos};
         path.activations.push_back(act);
-        start_key = advance_cache_key(next_key);
+        start_key = advance_cache_key(best_next_key);
     }
 
     return path;
