@@ -41,6 +41,8 @@ package_add_test(
 target_include_directories(imagebuilder_unittest PRIVATE ${PNG_INCLUDE_DIRS})
 target_link_libraries(imagebuilder_unittest PRIVATE ${PNG_LIBRARIES})
 
+package_add_test(ini_unittest ini_unittest.cpp "${SRC}/ini.cpp")
+
 package_add_test(midi_unittest midi_unittest.cpp "${SRC}/midi.cpp")
 
 package_add_test(
