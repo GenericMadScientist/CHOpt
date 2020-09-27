@@ -280,7 +280,7 @@ Path Optimiser::optimal_path() const
                         {Beat(NEG_INF), Measure(NEG_INF)}};
     start_key = advance_cache_key(start_key);
 
-    auto best_score_boost = get_partial_path(start_key, cache);
+    const auto best_score_boost = get_partial_path(start_key, cache);
     Path path {{}, best_score_boost};
 
     while (start_key.point != m_song->points().cend()) {
@@ -292,16 +292,17 @@ Path Optimiser::optimal_path() const
         auto [best_proto_act, best_next_key] = acts[0];
         auto best_sqz_level = act_squeeze_level(best_proto_act, start_key);
         for (auto i = 1U; i < acts.size(); ++i) {
-            auto [proto_act, next_key] = acts[i];
-            auto sqz_level = act_squeeze_level(proto_act, start_key);
+            const auto [proto_act, next_key] = acts[i];
+            const auto sqz_level = act_squeeze_level(proto_act, start_key);
             if (sqz_level < best_sqz_level) {
-                std::tie(best_proto_act, best_next_key) = acts[i];
+                best_proto_act = proto_act;
+                best_next_key = next_key;
                 best_sqz_level = sqz_level;
             }
         }
-        auto min_whammy_force
+        const auto min_whammy_force
             = forced_whammy_end(best_proto_act, start_key, best_sqz_level);
-        auto [start_pos, end_pos] = act_duration(
+        const auto [start_pos, end_pos] = act_duration(
             best_proto_act, start_key, best_sqz_level, min_whammy_force);
         Activation act {best_proto_act.act_start, best_proto_act.act_end,
                         min_whammy_force.beat, start_pos, end_pos};
