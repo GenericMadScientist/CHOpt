@@ -25,6 +25,8 @@
 // This struct represents the settings from the .ini file.
 struct IniValues {
     std::string name;
+    std::string artist;
+    std::string charter;
 };
 
 IniValues parse_ini(std::string_view data);

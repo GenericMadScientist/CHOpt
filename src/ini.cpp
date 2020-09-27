@@ -54,12 +54,22 @@ IniValues parse_ini(std::string_view data)
 {
     IniValues values;
     values.name = "Unknown Song";
+    values.artist = "Unknown Artist";
+    values.charter = "Unknown Charter";
     while (!data.empty()) {
         const auto line = break_off_newline(data);
         if (line.substr(0, 4) == "song") {
             auto value = skip_whitespace(line.substr(4));
             value = skip_whitespace(value.substr(1));
             values.name = value;
+        } else if (line.substr(0, 6) == "artist") {
+            auto value = skip_whitespace(line.substr(6));
+            value = skip_whitespace(value.substr(1));
+            values.artist = value;
+        } else if (line.substr(0, 7) == "charter") {
+            auto value = skip_whitespace(line.substr(7));
+            value = skip_whitespace(value.substr(1));
+            values.charter = value;
         }
     }
     return values;

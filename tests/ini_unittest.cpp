@@ -20,41 +20,37 @@
 
 #include "ini.hpp"
 
-TEST_CASE("parse_ini parses the song name correctly")
+TEST_CASE("Default ini values are correct")
 {
-    SECTION("Default value is Unknown Song")
-    {
-        const char* text = "";
+    const char* text = "";
 
-        const auto ini_values = parse_ini(text);
+    const auto ini_values = parse_ini(text);
 
-        REQUIRE(ini_values.name == "Unknown Song");
-    }
+    REQUIRE(ini_values.name == "Unknown Song");
+    REQUIRE(ini_values.artist == "Unknown Artist");
+    REQUIRE(ini_values.charter == "Unknown Charter");
+}
 
-    SECTION("song value is read with no spaces around the =")
-    {
-        const char* text = "song=Dummy Song";
+TEST_CASE("Values are read with no spaces around the =")
+{
+    const char* text
+        = "song=Dummy Song\nartist=Dummy Artist\ncharter=Dummy Charter";
 
-        const auto ini_values = parse_ini(text);
+    const auto ini_values = parse_ini(text);
 
-        REQUIRE(ini_values.name == "Dummy Song");
-    }
+    REQUIRE(ini_values.name == "Dummy Song");
+    REQUIRE(ini_values.artist == "Dummy Artist");
+    REQUIRE(ini_values.charter == "Dummy Charter");
+}
 
-    SECTION("song value is read with spaces around the =")
-    {
-        const char* text = "song = Dummy Song 2";
+TEST_CASE("Values are read with spaces around the =")
+{
+    const char* text = "song = Dummy Song 2\nartist = Dummy Artist 2\ncharter "
+                       "= Dummy Charter 2";
 
-        const auto ini_values = parse_ini(text);
+    const auto ini_values = parse_ini(text);
 
-        REQUIRE(ini_values.name == "Dummy Song 2");
-    }
-
-    SECTION("song value is read in a multi-line file")
-    {
-        const char* text = "[song]\nsong=Dummy Song 3\ndiff=6";
-
-        const auto ini_values = parse_ini(text);
-
-        REQUIRE(ini_values.name == "Dummy Song 3");
-    }
+    REQUIRE(ini_values.name == "Dummy Song 2");
+    REQUIRE(ini_values.artist == "Dummy Artist 2");
+    REQUIRE(ini_values.charter == "Dummy Charter 2");
 }
