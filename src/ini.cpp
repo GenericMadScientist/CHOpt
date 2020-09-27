@@ -52,22 +52,26 @@ static std::string_view break_off_newline(std::string_view& input)
 
 IniValues parse_ini(std::string_view data)
 {
+    constexpr auto ARTIST_SIZE = 6;
+    constexpr auto CHARTER_SIZE = 7;
+    constexpr auto SONG_SIZE = 4;
+
     IniValues values;
     values.name = "Unknown Song";
     values.artist = "Unknown Artist";
     values.charter = "Unknown Charter";
     while (!data.empty()) {
         const auto line = break_off_newline(data);
-        if (line.substr(0, 4) == "song") {
-            auto value = skip_whitespace(line.substr(4));
+        if (line.substr(0, SONG_SIZE) == "song") {
+            auto value = skip_whitespace(line.substr(SONG_SIZE));
             value = skip_whitespace(value.substr(1));
             values.name = value;
-        } else if (line.substr(0, 6) == "artist") {
-            auto value = skip_whitespace(line.substr(6));
+        } else if (line.substr(0, ARTIST_SIZE) == "artist") {
+            auto value = skip_whitespace(line.substr(ARTIST_SIZE));
             value = skip_whitespace(value.substr(1));
             values.artist = value;
-        } else if (line.substr(0, 7) == "charter") {
-            auto value = skip_whitespace(line.substr(7));
+        } else if (line.substr(0, CHARTER_SIZE) == "charter") {
+            auto value = skip_whitespace(line.substr(CHARTER_SIZE));
             value = skip_whitespace(value.substr(1));
             values.charter = value;
         }

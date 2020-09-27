@@ -254,14 +254,14 @@ TEST_CASE("Chart header values besides resolution are discarded")
     ChartSection expert_single {"ExpertSingle", {}, {}, {},
                                 {{768, 0, 0}},  {}, {}};
     ChartSection header_section {"Song",
-                                    {{"Name", "\"TestName\""},
-                                    {"Artist", "\"GMS\""},
-                                    {"Charter", "\"NotGMS\""}},
-                                    {},
-                                    {},
-                                    {},
-                                    {},
-                                    {}};
+                                 {{"Name", "\"TestName\""},
+                                  {"Artist", "\"GMS\""},
+                                  {"Charter", "\"NotGMS\""}},
+                                 {},
+                                 {},
+                                 {},
+                                 {},
+                                 {}};
     std::vector<ChartSection> sections {header_section, expert_single};
     const Chart chart {sections};
     const auto song = Song::from_chart(chart, {});
@@ -276,13 +276,7 @@ TEST_CASE("Ini values are used for converting from .chart files")
 {
     ChartSection expert_single {"ExpertSingle", {}, {}, {},
                                 {{768, 0, 0}},  {}, {}};
-    ChartSection header_section {"Song",
-                                    {},
-                                    {},
-                                    {},
-                                    {},
-                                    {},
-                                    {}};
+    ChartSection header_section {"Song", {}, {}, {}, {}, {}, {}};
     std::vector<ChartSection> sections {header_section, expert_single};
     const Chart chart {sections};
     const IniValues ini {"TestName", "GMS", "NotGMS"};
