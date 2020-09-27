@@ -679,7 +679,7 @@ TEST_CASE("Midi resolution is read correctly")
     {
         const Midi midi {200, {}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
 
         REQUIRE(song.resolution() == 200);
     }
@@ -688,7 +688,7 @@ TEST_CASE("Midi resolution is read correctly")
     {
         const Midi midi {0, {}};
 
-        REQUIRE_THROWS([&] { return Song::from_midi(midi); }());
+        REQUIRE_THROWS([&] { return Song::from_midi(midi, {}); }());
     }
 }
 
@@ -701,7 +701,7 @@ TEST_CASE("First track is read correctly")
         const Midi midi {192, {tempo_track}};
         SyncTrack tempos {{}, {{0, 150000}, {1920, 200000}}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
         const auto& sync_track = song.sync_track();
 
         REQUIRE(sync_track.bpms() == tempos.bpms());
@@ -715,33 +715,35 @@ TEST_CASE("First track is read correctly")
         const Midi midi {192, {ts_track}};
         SyncTrack tses {{{0, 6, 4}, {1920, 3, 8}}, {}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
         const auto& sync_track = song.sync_track();
 
         REQUIRE(sync_track.bpms() == tses.bpms());
         REQUIRE(sync_track.time_sigs() == tses.time_sigs());
     }
 
-    SECTION("Song name is read correctly")
+    SECTION("Song name is not read from midi")
     {
         MidiTrack name_track {{{0, {MetaEvent {1, {72, 101, 108, 108, 111}}}}}};
         const Midi midi {192, {name_track}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
 
-        REQUIRE(song.song_header().name == "Hello");
+        REQUIRE(song.song_header().name != "Hello");
     }
+}
 
-    SECTION("Default song header is correct")
-    {
-        const Midi midi {192, {{}}};
+TEST_CASE("Ini values are used when converting from .mid files")
+{
+    const Midi midi {192, {}};
+    const IniValues ini {"TestName", "GMS", "NotGMS"};
 
-        const auto song = Song::from_midi(midi);
+    const auto song = Song::from_midi(midi, ini);
+    const auto& header = song.song_header();
 
-        REQUIRE(song.song_header().name == "Unknown Song");
-        REQUIRE(song.song_header().artist == "Unknown Artist");
-        REQUIRE(song.song_header().charter == "Unknown Charter");
-    }
+    REQUIRE(header.name == "TestName");
+    REQUIRE(header.artist == "GMS");
+    REQUIRE(header.charter == "NotGMS");
 }
 
 TEST_CASE("Notes are read correctly")
@@ -764,7 +766,7 @@ TEST_CASE("Notes are read correctly")
         const std::vector<Note<NoteColour>> green_note {
             {768, 192, NoteColour::Green}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Easy).notes() == green_note);
         REQUIRE(song.guitar_note_track(Difficulty::Medium).notes()
@@ -786,7 +788,7 @@ TEST_CASE("Notes are read correctly")
                                {960, {MidiEvent {0x80, {97, 0}}}}}};
         const Midi midi {192, {other_track, note_track}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).notes()[0].colour
                 == NoteColour::Red);
@@ -802,7 +804,7 @@ TEST_CASE("Notes are read correctly")
              {960, {MidiEvent {0x80, {97, 0}}}}}};
         const Midi midi {192, {other_track, note_track}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).notes()[0].colour
                 == NoteColour::Red);
@@ -819,7 +821,7 @@ TEST_CASE("Notes are read correctly")
                                {1152, {MidiEvent {0x90, {96, 64}}}}}};
         const Midi midi {192, {note_track}};
 
-        REQUIRE_THROWS([&] { return Song::from_midi(midi); }());
+        REQUIRE_THROWS([&] { return Song::from_midi(midi, {}); }());
     }
 
     SECTION("Corresponding Note Off events are after Note On events")
@@ -837,7 +839,7 @@ TEST_CASE("Notes are read correctly")
         }};
         const Midi midi {480, {note_track}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
         const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
 
         REQUIRE(notes.size() == 2);
@@ -854,7 +856,7 @@ TEST_CASE("Notes are read correctly")
                                {960, {MidiEvent {0x90, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
 
-        REQUIRE_NOTHROW([&] { return Song::from_midi(midi); }());
+        REQUIRE_NOTHROW([&] { return Song::from_midi(midi, {}); }());
     }
 
     SECTION(
@@ -870,7 +872,7 @@ TEST_CASE("Notes are read correctly")
                                {801, {MidiEvent {0x80, {96, 64}}}}}};
         const Midi midi {192, {note_track}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
         const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
 
         REQUIRE(notes.size() == 2);
@@ -888,7 +890,7 @@ TEST_CASE("Notes are read correctly")
                                {1000, {MidiEvent {0x80, {96, 64}}}}}};
         const Midi midi {192, {note_track}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
         const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
 
         REQUIRE(notes.size() == 2);
@@ -908,7 +910,7 @@ TEST_CASE("Notes are read correctly")
              {960, {MidiEvent {0x90, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).notes()[0].colour
                 == NoteColour::Open);
@@ -928,7 +930,7 @@ TEST_CASE("Solos are read")
     const Midi midi {192, {note_track}};
     const std::vector<Solo> solos {{768, 900, 100}};
 
-    const auto song = Song::from_midi(midi);
+    const auto song = Song::from_midi(midi, {});
 
     REQUIRE(song.guitar_note_track(Difficulty::Expert).solos() == solos);
 }
@@ -948,7 +950,7 @@ TEST_CASE("Star Power is read")
         const Midi midi {192, {note_track}};
         const std::vector<StarPower> sp_phrases {{768, 132}};
 
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
 
         REQUIRE(song.guitar_note_track(Difficulty::Expert).sp_phrases()
                 == sp_phrases);
@@ -965,7 +967,7 @@ TEST_CASE("Star Power is read")
                                {960, {MidiEvent {0x80, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
 
-        REQUIRE_THROWS([&] { return Song::from_midi(midi); }());
+        REQUIRE_THROWS([&] { return Song::from_midi(midi, {}); }());
     }
 }
 
@@ -980,7 +982,7 @@ TEST_CASE("Short midi sustains are trimmed")
                            {100, {MidiEvent {0x90, {96, 64}}}},
                            {170, {MidiEvent {0x80, {96, 0}}}}}};
     const Midi midi {200, {note_track}};
-    const auto song = Song::from_midi(midi);
+    const auto song = Song::from_midi(midi, {});
     const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
 
     REQUIRE(notes[0].length == 0);
@@ -999,7 +1001,7 @@ TEST_CASE("Other 5 fret instruments are read from .mid")
              {0, {MidiEvent {0x90, {96, 64}}}},
              {65, {MidiEvent {0x80, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
 
         REQUIRE_NOTHROW(
             [&] { return song.guitar_coop_note_track(Difficulty::Expert); }());
@@ -1014,7 +1016,7 @@ TEST_CASE("Other 5 fret instruments are read from .mid")
              {0, {MidiEvent {0x90, {96, 64}}}},
              {65, {MidiEvent {0x80, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
 
         REQUIRE_NOTHROW(
             [&] { return song.bass_note_track(Difficulty::Expert); }());
@@ -1029,7 +1031,7 @@ TEST_CASE("Other 5 fret instruments are read from .mid")
                                {0, {MidiEvent {0x90, {96, 64}}}},
                                {65, {MidiEvent {0x80, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
 
         REQUIRE_NOTHROW(
             [&] { return song.rhythm_note_track(Difficulty::Expert); }());
@@ -1044,7 +1046,7 @@ TEST_CASE("Other 5 fret instruments are read from .mid")
              {0, {MidiEvent {0x90, {96, 64}}}},
              {65, {MidiEvent {0x80, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
 
         REQUIRE_NOTHROW(
             [&] { return song.keys_note_track(Difficulty::Expert); }());
@@ -1063,7 +1065,7 @@ TEST_CASE("6 fret instruments are read correctly from .mid")
              {0, {MidiEvent {0x90, {94, 64}}}},
              {65, {MidiEvent {0x80, {94, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
         const auto& track = song.ghl_guitar_note_track(Difficulty::Expert);
 
         std::vector<Note<GHLNoteColour>> notes {{0, 65, GHLNoteColour::Open}};
@@ -1081,7 +1083,7 @@ TEST_CASE("6 fret instruments are read correctly from .mid")
              {0, {MidiEvent {0x90, {94, 64}}}},
              {65, {MidiEvent {0x80, {94, 0}}}}}};
         const Midi midi {192, {note_track}};
-        const auto song = Song::from_midi(midi);
+        const auto song = Song::from_midi(midi, {});
         const auto& track = song.ghl_bass_note_track(Difficulty::Expert);
 
         std::vector<Note<GHLNoteColour>> notes {{0, 65, GHLNoteColour::Open}};
@@ -1102,7 +1104,7 @@ TEST_CASE("Drums are read correctly from .mid")
         {65, {MidiEvent {0x80, {110, 0}}}},
     }};
     const Midi midi {192, {note_track}};
-    const auto song = Song::from_midi(midi);
+    const auto song = Song::from_midi(midi, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
     std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::Yellow}};

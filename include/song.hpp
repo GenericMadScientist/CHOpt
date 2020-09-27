@@ -223,7 +223,7 @@ private:
 public:
     static Song from_filename(const std::string& filename);
     static Song from_chart(const Chart& chart, const IniValues& ini);
-    static Song from_midi(const Midi& midi);
+    static Song from_midi(const Midi& midi, const IniValues& ini);
     [[nodiscard]] int resolution() const { return m_resolution; }
     [[nodiscard]] const SongHeader& song_header() const
     {

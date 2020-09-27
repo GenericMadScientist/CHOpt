@@ -58,7 +58,7 @@ Song Song::from_filename(const std::string& filename)
         }
         std::vector<std::uint8_t> buffer {std::istreambuf_iterator<char>(in),
                                           std::istreambuf_iterator<char>()};
-        return Song::from_midi(parse_midi(buffer));
+        return Song::from_midi(parse_midi(buffer), {});
     }
     throw std::invalid_argument("file should be .chart or .mid");
 }
@@ -1002,7 +1002,7 @@ static std::optional<Instrument> midi_section_instrument(const MidiTrack& track)
     return iter->second;
 }
 
-Song Song::from_midi(const Midi& midi)
+Song Song::from_midi(const Midi& midi, const IniValues& ini)
 {
     if (midi.ticks_per_quarter_note == 0) {
         throw std::invalid_argument("Resolution must be > 0");
@@ -1010,13 +1010,15 @@ Song Song::from_midi(const Midi& midi)
 
     Song song;
     song.m_resolution = midi.ticks_per_quarter_note;
+    song.m_song_header.name = ini.name;
+    song.m_song_header.artist = ini.artist;
+    song.m_song_header.charter = ini.charter;
 
     if (midi.tracks.empty()) {
         return song;
     }
 
     const auto& [name, sync_track] = read_first_midi_track(midi.tracks[0]);
-    song.m_song_header.name = name;
     song.m_sync_track = sync_track;
 
     for (const auto& track : midi.tracks) {
