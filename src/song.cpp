@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <filesystem>
 #include <iterator>
 #include <optional>
 #include <set>
@@ -42,6 +43,17 @@ static bool ends_with_suffix(const std::string& string, std::string_view suffix)
 
 Song Song::from_filename(const std::string& filename)
 {
+    std::string ini_file;
+    const std::filesystem::path song_path {filename};
+    const auto song_directory = song_path.parent_path();
+    const auto ini_path = song_directory / "song.ini";
+    nowide::ifstream ini_in {ini_path.string()};
+    if (ini_in.is_open()) {
+        ini_file = std::string {std::istreambuf_iterator<char>(ini_in),
+                                std::istreambuf_iterator<char>()};
+    }
+    const auto ini = parse_ini(ini_file);
+
     if (ends_with_suffix(filename, ".chart")) {
         nowide::ifstream in {filename};
         if (!in.is_open()) {
@@ -49,7 +61,7 @@ Song Song::from_filename(const std::string& filename)
         }
         std::string contents {std::istreambuf_iterator<char>(in),
                               std::istreambuf_iterator<char>()};
-        return Song::from_chart(parse_chart(contents), {});
+        return Song::from_chart(parse_chart(contents), ini);
     }
     if (ends_with_suffix(filename, ".mid")) {
         nowide::ifstream in {filename, std::ios::binary};
@@ -58,7 +70,7 @@ Song Song::from_filename(const std::string& filename)
         }
         std::vector<std::uint8_t> buffer {std::istreambuf_iterator<char>(in),
                                           std::istreambuf_iterator<char>()};
-        return Song::from_midi(parse_midi(buffer), {});
+        return Song::from_midi(parse_midi(buffer), ini);
     }
     throw std::invalid_argument("file should be .chart or .mid");
 }

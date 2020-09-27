@@ -31,6 +31,7 @@ package_add_test(
   imagebuilder_unittest.cpp
   "${SRC}/chart.cpp"
   "${SRC}/imagebuilder.cpp"
+  "${SRC}/ini.cpp"
   "${SRC}/midi.cpp"
   "${SRC}/optimiser.cpp"
   "${SRC}/points.cpp"
@@ -49,6 +50,7 @@ package_add_test(
   optimiser_unittest
   optimiser_unittest.cpp
   "${SRC}/chart.cpp"
+  "${SRC}/ini.cpp"
   "${SRC}/midi.cpp"
   "${SRC}/optimiser.cpp"
   "${SRC}/points.cpp"
@@ -61,6 +63,7 @@ package_add_test(
   points_unittest
   points_unittest.cpp
   "${SRC}/chart.cpp"
+  "${SRC}/ini.cpp"
   "${SRC}/midi.cpp"
   "${SRC}/points.cpp"
   "${SRC}/song.cpp"
@@ -70,6 +73,7 @@ package_add_test(
   processed_unittest
   processed_unittest.cpp
   "${SRC}/chart.cpp"
+  "${SRC}/ini.cpp"
   "${SRC}/midi.cpp"
   "${SRC}/points.cpp"
   "${SRC}/processed.cpp"
@@ -78,16 +82,23 @@ package_add_test(
   "${SRC}/time.cpp")
 
 package_add_test(song_unittest song_unittest.cpp "${SRC}/chart.cpp"
-                 "${SRC}/midi.cpp" "${SRC}/song.cpp")
+                 "${SRC}/ini.cpp" "${SRC}/midi.cpp" "${SRC}/song.cpp")
 
 package_add_test(
   sp_unittest
   sp_unittest.cpp
   "${SRC}/chart.cpp"
+  "${SRC}/ini.cpp"
   "${SRC}/midi.cpp"
   "${SRC}/song.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/time.cpp")
 
-package_add_test(time_unittest time_unittest.cpp "${SRC}/chart.cpp"
-                 "${SRC}/midi.cpp" "${SRC}/song.cpp" "${SRC}/time.cpp")
+package_add_test(
+  time_unittest
+  time_unittest.cpp
+  "${SRC}/chart.cpp"
+  "${SRC}/ini.cpp"
+  "${SRC}/midi.cpp"
+  "${SRC}/song.cpp"
+  "${SRC}/time.cpp")

@@ -54,7 +54,7 @@ IniValues parse_ini(std::string_view data)
 {
     constexpr auto ARTIST_SIZE = 6;
     constexpr auto CHARTER_SIZE = 7;
-    constexpr auto SONG_SIZE = 4;
+    constexpr auto NAME_SIZE = 4;
 
     IniValues values;
     values.name = "Unknown Song";
@@ -62,16 +62,25 @@ IniValues parse_ini(std::string_view data)
     values.charter = "Unknown Charter";
     while (!data.empty()) {
         const auto line = break_off_newline(data);
-        if (line.substr(0, SONG_SIZE) == "song") {
-            auto value = skip_whitespace(line.substr(SONG_SIZE));
+        if (line.substr(0, NAME_SIZE) == "name") {
+            auto value = skip_whitespace(line.substr(NAME_SIZE));
+            if (value[0] != '=') {
+                continue;
+            }
             value = skip_whitespace(value.substr(1));
             values.name = value;
         } else if (line.substr(0, ARTIST_SIZE) == "artist") {
             auto value = skip_whitespace(line.substr(ARTIST_SIZE));
+            if (value[0] != '=') {
+                continue;
+            }
             value = skip_whitespace(value.substr(1));
             values.artist = value;
         } else if (line.substr(0, CHARTER_SIZE) == "charter") {
             auto value = skip_whitespace(line.substr(CHARTER_SIZE));
+            if (value[0] != '=') {
+                continue;
+            }
             value = skip_whitespace(value.substr(1));
             values.charter = value;
         }
