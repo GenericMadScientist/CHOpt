@@ -289,7 +289,8 @@ Path Optimiser::optimal_path() const
         if (acts.empty()) {
             break;
         }
-        auto [best_proto_act, best_next_key] = acts[0];
+        auto best_proto_act = std::get<0>(acts[0]);
+        auto best_next_key = std::get<1>(acts[0]);
         auto best_sqz_level = act_squeeze_level(best_proto_act, start_key);
         for (auto i = 1U; i < acts.size(); ++i) {
             const auto [proto_act, next_key] = acts[i];
