@@ -21,7 +21,6 @@
 
 #include <algorithm>
 #include <map>
-#include <set>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -179,13 +178,33 @@ public:
         constexpr auto BASE_SUSTAIN_DENSITY = 25;
 
         auto base_score = static_cast<int>(BASE_NOTE_VALUE * m_notes.size());
-        std::set<std::tuple<int, int>> sustain_ranges;
-        for (const auto& note : m_notes) {
-            sustain_ranges.emplace(note.position, note.position + note.length);
-        }
         auto total_ticks = 0;
-        for (const auto& [start, end] : sustain_ranges) {
-            total_ticks += end - start;
+        auto current_pos = -1;
+        auto first_note_length = 0;
+        auto current_total_ticks = 0;
+        auto is_disjoint_chord = false;
+        for (const auto& note : m_notes) {
+            if (note.position != current_pos) {
+                if (is_disjoint_chord) {
+                    total_ticks += current_total_ticks;
+                } else {
+                    total_ticks += first_note_length;
+                }
+                first_note_length = note.length;
+                current_total_ticks = note.length;
+                current_pos = note.position;
+                is_disjoint_chord = false;
+            } else {
+                if (note.length != first_note_length) {
+                    is_disjoint_chord = true;
+                }
+                current_total_ticks += note.length;
+            }
+        }
+        if (is_disjoint_chord) {
+            total_ticks += current_total_ticks;
+        } else {
+            total_ticks += first_note_length;
         }
 
         base_score += (total_ticks * BASE_SUSTAIN_DENSITY + m_resolution - 1)

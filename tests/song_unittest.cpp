@@ -191,6 +191,16 @@ TEST_CASE("Base score for average multiplier is correct")
 
         REQUIRE(track.base_score() == 127);
     }
+
+    SECTION("Disjoint chords are handled correctly")
+    {
+        std::vector<Note<NoteColour>> notes {
+            {0, 384}, {0, 384, NoteColour::Red}, {0, 192, NoteColour::Yellow}};
+
+        NoteTrack<NoteColour> track {notes, {}, {}, 192};
+
+        REQUIRE(track.base_score() == 275);
+    }
 }
 
 // Last checked: 24.0.1555-master
