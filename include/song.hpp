@@ -183,11 +183,13 @@ public:
         for (const auto& note : m_notes) {
             sustain_ranges.emplace(note.position, note.position + note.length);
         }
+        auto total_ticks = 0;
         for (const auto& [start, end] : sustain_ranges) {
-            base_score
-                += ((end - start) * BASE_SUSTAIN_DENSITY + m_resolution - 1)
-                / m_resolution;
+            total_ticks += end - start;
         }
+
+        base_score += (total_ticks * BASE_SUSTAIN_DENSITY + m_resolution - 1)
+            / m_resolution;
         return base_score;
     }
 };

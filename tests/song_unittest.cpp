@@ -182,6 +182,15 @@ TEST_CASE("Base score for average multiplier is correct")
 
         REQUIRE(track.base_score() == 60);
     }
+
+    SECTION("Fractional ticks from multiple holds are added together correctly")
+    {
+        std::vector<Note<NoteColour>> notes {{0, 100}, {192, 100}};
+
+        NoteTrack<NoteColour> track {notes, {}, {}, 192};
+
+        REQUIRE(track.base_score() == 127);
+    }
 }
 
 // Last checked: 24.0.1555-master

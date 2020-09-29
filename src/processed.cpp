@@ -265,6 +265,8 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
 
 std::string ProcessedSong::path_summary(const Path& path) const
 {
+    constexpr auto DEFAULT_PRECISION = 6;
+
     // We use std::stringstream instead of std::string for better formating of
     // floats (measure values).
     std::stringstream stream;
@@ -323,7 +325,7 @@ std::string ProcessedSong::path_summary(const Path& path) const
     stream << "\nAverage multiplier: " << avg_mult << 'x';
 
     stream.setf(std::ios_base::fmtflags(), std::ios_base::floatfield);
-    stream << std::setprecision(6);
+    stream << std::setprecision(DEFAULT_PRECISION);
     for (std::size_t i = 0; i < path.activations.size(); ++i) {
         stream << "\nActivation " << i + 1 << ": Measure "
                << path.activations[i].act_start->position.measure.value() + 1
