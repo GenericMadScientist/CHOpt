@@ -57,7 +57,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
 {
     std::vector<Note<NoteColour>> notes {{0, 1920}, {2112, 576}, {3000}};
     std::vector<StarPower> phrases {{0, 3000}};
-    NoteTrack<NoteColour> track {notes, phrases, {}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, 192};
 
     SECTION("Works correctly over 4/4")
     {
@@ -141,7 +141,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
 
     SECTION("Hold notes not in a phrase do not contribute SP")
     {
-        NoteTrack<NoteColour> no_sp_note_track {notes, {}, {}};
+        NoteTrack<NoteColour> no_sp_note_track {notes, {}, {}, 192};
         SpData sp_data {no_sp_note_track, 192, {}, 1.0, Second(0.0)};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_max(
@@ -165,7 +165,8 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
 
         std::vector<Note<NoteColour>> second_notes {{0, 768}, {3072}};
         std::vector<StarPower> second_phrases {{0, 3100}};
-        NoteTrack<NoteColour> second_track {second_notes, second_phrases, {}};
+        NoteTrack<NoteColour> second_track {
+            second_notes, second_phrases, {}, 192};
         SpData sp_data {second_track, 192, {}, 1.0, Second(0.0)};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_min(
@@ -179,7 +180,7 @@ TEST_CASE("is_in_whammy_ranges works correctly", "Whammy ranges")
 {
     std::vector<Note<NoteColour>> notes {{0, 1920}, {2112}};
     std::vector<StarPower> phrases {{0, 2000}, {2112, 50}};
-    NoteTrack<NoteColour> track {notes, phrases, {}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, 192};
     SpData sp_data {track, 192, {}, 1.0, Second(0.0)};
 
     REQUIRE(sp_data.is_in_whammy_ranges(Beat(1.0)));
@@ -190,7 +191,7 @@ TEST_CASE("available_whammy works correctly", "Available whammy")
 {
     std::vector<Note<NoteColour>> notes {{0, 1920}, {2112}, {2304, 768}};
     std::vector<StarPower> phrases {{0, 3000}};
-    NoteTrack<NoteColour> track {notes, phrases, {}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, 192};
 
     SECTION("100% early whammy")
     {
@@ -232,7 +233,7 @@ TEST_CASE("activation_end_point works correctly")
     SECTION("Works when SP is sufficient")
     {
         std::vector<Note<NoteColour>> notes {{0}};
-        NoteTrack<NoteColour> track {notes, {}, {}};
+        NoteTrack<NoteColour> track {notes, {}, {}, 192};
         SpData sp_data {track, 192, {}, 1.0, Second(0.0)};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
@@ -244,7 +245,7 @@ TEST_CASE("activation_end_point works correctly")
     SECTION("Works when SP is insufficient")
     {
         std::vector<Note<NoteColour>> notes {{0}};
-        NoteTrack<NoteColour> track {notes, {}, {}};
+        NoteTrack<NoteColour> track {notes, {}, {}, 192};
         SpData sp_data {track, 192, {}, 1.0, Second(0.0)};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
@@ -257,7 +258,7 @@ TEST_CASE("activation_end_point works correctly")
     {
         std::vector<Note<NoteColour>> notes {{0, 192}, {950}};
         std::vector<StarPower> phrases {{0, 1000}};
-        NoteTrack<NoteColour> track {notes, phrases, {}};
+        NoteTrack<NoteColour> track {notes, phrases, {}, 192};
         SpData sp_data {track, 192, {}, 1.0, Second(0.0)};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
@@ -270,7 +271,7 @@ TEST_CASE("activation_end_point works correctly")
     {
         std::vector<Note<NoteColour>> notes {{0, 192}, {950}};
         std::vector<StarPower> phrases {{0, 1000}};
-        NoteTrack<NoteColour> track {notes, phrases, {}};
+        NoteTrack<NoteColour> track {notes, phrases, {}, 192};
         SpData sp_data {track, 192, {}, 1.0, Second(0.0)};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(2.0), Measure(0.5)};
@@ -284,7 +285,7 @@ TEST_CASE("activation_end_point works correctly")
         std::vector<Note<NoteColour>> notes {{0, 192}, {950}};
         std::vector<StarPower> phrases {{0, 1000}};
         SyncTrack sync_track {{{0, 2, 4}}, {}};
-        NoteTrack<NoteColour> track {notes, phrases, {}};
+        NoteTrack<NoteColour> track {notes, phrases, {}, 192};
         SpData sp_data {track, 192, sync_track, 1.0, Second(0.0)};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};

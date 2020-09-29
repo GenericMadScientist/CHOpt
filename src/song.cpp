@@ -319,7 +319,8 @@ apply_cymbal_events(const std::vector<Note<DrumNoteColour>>& notes)
 }
 
 template <typename T>
-static NoteTrack<T> note_track_from_section(const ChartSection& section)
+static NoteTrack<T> note_track_from_section(const ChartSection& section,
+                                            int resolution)
 {
     std::vector<Note<T>> notes;
     for (const auto& note_event : section.note_events) {
@@ -353,7 +354,8 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section)
     std::sort(solo_off_events.begin(), solo_off_events.end());
     auto solos = form_solo_vector(solo_on_events, solo_off_events, notes);
 
-    return NoteTrack<T> {std::move(notes), std::move(sp), std::move(solos)};
+    return NoteTrack<T> {std::move(notes), std::move(sp), std::move(solos),
+                         resolution};
 }
 
 std::vector<Instrument> Song::instruments() const
@@ -441,19 +443,20 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
             }
             auto [diff, inst] = *pair;
             if (is_six_fret_instrument(inst)) {
-                auto note_track
-                    = note_track_from_section<GHLNoteColour>(section);
+                auto note_track = note_track_from_section<GHLNoteColour>(
+                    section, song.m_resolution);
                 if (!note_track.notes().empty()) {
                     song.m_six_fret_tracks.insert({{inst, diff}, note_track});
                 }
             } else if (inst == Instrument::Drums) {
-                auto note_track
-                    = note_track_from_section<DrumNoteColour>(section);
+                auto note_track = note_track_from_section<DrumNoteColour>(
+                    section, song.m_resolution);
                 if (!note_track.notes().empty()) {
                     song.m_drum_note_tracks.insert({diff, note_track});
                 }
             } else {
-                auto note_track = note_track_from_section<NoteColour>(section);
+                auto note_track = note_track_from_section<NoteColour>(
+                    section, song.m_resolution);
                 if (!note_track.notes().empty()) {
                     song.m_five_fret_tracks.insert({{inst, diff}, note_track});
                 }
@@ -876,7 +879,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     for (const auto& [diff, note_set] : notes) {
         auto solos = form_solo_vector(event_track.solo_on_events,
                                       event_track.solo_off_events, note_set);
-        note_tracks[diff] = {note_set, sp_phrases, solos};
+        note_tracks[diff] = {note_set, sp_phrases, solos, resolution};
     }
 
     return note_tracks;
@@ -916,14 +919,14 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     for (const auto& [diff, note_set] : notes) {
         auto solos = form_solo_vector(event_track.solo_on_events,
                                       event_track.solo_off_events, note_set);
-        note_tracks[diff] = {note_set, sp_phrases, solos};
+        note_tracks[diff] = {note_set, sp_phrases, solos, resolution};
     }
 
     return note_tracks;
 }
 
 static std::map<Difficulty, NoteTrack<DrumNoteColour>>
-drum_note_tracks_from_midi(const MidiTrack& midi_track)
+drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
     const auto event_track
         = read_instrument_midi_track<DrumNoteColour>(midi_track);
@@ -975,7 +978,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track)
     for (const auto& [diff, note_set] : notes) {
         auto solos = form_solo_vector(event_track.solo_on_events,
                                       event_track.solo_off_events, note_set);
-        note_tracks[diff] = {note_set, sp_phrases, solos};
+        note_tracks[diff] = {note_set, sp_phrases, solos, resolution};
     }
 
     return note_tracks;
@@ -1044,7 +1047,8 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
                 song.m_six_fret_tracks[{*inst, diff}] = std::move(note_track);
             }
         } else if (*inst == Instrument::Drums) {
-            song.m_drum_note_tracks = drum_note_tracks_from_midi(track);
+            song.m_drum_note_tracks
+                = drum_note_tracks_from_midi(track, song.m_resolution);
         } else {
             auto tracks = note_tracks_from_midi(track, song.m_resolution);
             for (auto& [diff, note_track] : tracks) {

@@ -63,7 +63,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     SECTION("Notes are sorted")
     {
         std::vector<Note<NoteColour>> notes {{768}, {384}};
-        NoteTrack<NoteColour> track {notes, {}, {}};
+        NoteTrack<NoteColour> track {notes, {}, {}, 192};
         std::vector<Note<NoteColour>> sorted_notes {{384}, {768}};
 
         REQUIRE(track.notes() == sorted_notes);
@@ -72,13 +72,13 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     SECTION("Notes of the same colour and position are merged")
     {
         std::vector<Note<NoteColour>> notes {{768, 0}, {768, 768}};
-        NoteTrack<NoteColour> track {notes, {}, {}};
+        NoteTrack<NoteColour> track {notes, {}, {}, 192};
         std::vector<Note<NoteColour>> required_notes {{768, 768}};
 
         REQUIRE(track.notes() == required_notes);
 
         std::vector<Note<NoteColour>> second_notes {{768, 768}, {768, 0}};
-        NoteTrack<NoteColour> second_track {second_notes, {}, {}};
+        NoteTrack<NoteColour> second_track {second_notes, {}, {}, 192};
         std::vector<Note<NoteColour>> second_required_notes {{768, 0}};
 
         REQUIRE(second_track.notes() == second_required_notes);
@@ -89,7 +89,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
         std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green},
                                              {768, 0, NoteColour::Red},
                                              {768, 768, NoteColour::Green}};
-        NoteTrack<NoteColour> track {notes, {}, {}};
+        NoteTrack<NoteColour> track {notes, {}, {}, 192};
         std::vector<Note<NoteColour>> required_notes {
             {768, 768, NoteColour::Green}, {768, 0, NoteColour::Red}};
 
@@ -100,7 +100,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     {
         std::vector<Note<NoteColour>> notes {{768}};
         std::vector<StarPower> phrases {{0, 100}, {700, 100}, {1000, 100}};
-        NoteTrack<NoteColour> track {notes, phrases, {}};
+        NoteTrack<NoteColour> track {notes, phrases, {}, 192};
         std::vector<StarPower> required_phrases {{700, 100}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
@@ -110,7 +110,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     {
         std::vector<Note<NoteColour>> notes {{768}, {1000}};
         std::vector<StarPower> phrases {{1000, 1}, {768, 1}};
-        NoteTrack<NoteColour> track {notes, phrases, {}};
+        NoteTrack<NoteColour> track {notes, phrases, {}, 192};
         std::vector<StarPower> required_phrases {{768, 1}, {1000, 1}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
@@ -120,7 +120,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     {
         std::vector<Note<NoteColour>> notes {{768}, {1000}};
         std::vector<StarPower> phrases {{768, 1000}, {900, 150}};
-        NoteTrack<NoteColour> track {notes, phrases, {}};
+        NoteTrack<NoteColour> track {notes, phrases, {}, 192};
         std::vector<StarPower> required_phrases {{768, 132}, {900, 150}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
@@ -130,10 +130,57 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     {
         std::vector<Note<NoteColour>> notes {{0}, {768}};
         std::vector<Solo> solos {{768, 868, 100}, {0, 100, 100}};
-        NoteTrack<NoteColour> track {notes, {}, solos};
+        NoteTrack<NoteColour> track {notes, {}, solos, 192};
         std::vector<Solo> required_solos {{0, 100, 100}, {768, 868, 100}};
 
         REQUIRE(track.solos() == required_solos);
+    }
+}
+
+TEST_CASE("Base score for average multiplier is correct")
+{
+    SECTION("Base score is correct for songs without sustains")
+    {
+        std::vector<Note<NoteColour>> notes {
+            {192}, {384}, {384, 0, NoteColour::Red}};
+
+        NoteTrack<NoteColour> track {notes, {}, {}, 192};
+
+        REQUIRE(track.base_score() == 150);
+    }
+
+    SECTION("Base score is correct for songs with sustains")
+    {
+        std::vector<Note<NoteColour>> notes_one {{192, 192}};
+        std::vector<Note<NoteColour>> notes_two {{192, 92}};
+        std::vector<Note<NoteColour>> notes_three {{192, 93}};
+
+        NoteTrack<NoteColour> track_one {notes_one, {}, {}, 192};
+        NoteTrack<NoteColour> track_two {notes_two, {}, {}, 192};
+        NoteTrack<NoteColour> track_three {notes_three, {}, {}, 192};
+
+        REQUIRE(track_one.base_score() == 75);
+        REQUIRE(track_two.base_score() == 62);
+        REQUIRE(track_three.base_score() == 63);
+    }
+
+    SECTION("Base score is correct for songs with chord sustains")
+    {
+        std::vector<Note<NoteColour>> notes {{192, 192},
+                                             {192, 192, NoteColour::Red}};
+
+        NoteTrack<NoteColour> track {notes, {}, {}, 192};
+
+        REQUIRE(track.base_score() == 125);
+    }
+
+    SECTION("Base score is correct for other resolutions")
+    {
+        std::vector<Note<NoteColour>> notes {{192, 192}};
+
+        NoteTrack<NoteColour> track {notes, {}, {}, 480};
+
+        REQUIRE(track.base_score() == 60);
     }
 }
 
@@ -314,7 +361,7 @@ TEST_CASE("Chart reads easy note track correctly")
     std::vector<ChartSection> sections {easy_single};
     const Chart chart {sections};
     NoteTrack<NoteColour> note_track {
-        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
+        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}, 192};
 
     const auto song = Song::from_chart(chart, {});
 
@@ -328,7 +375,7 @@ TEST_CASE("SP phrases are read correctly from Chart")
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
     NoteTrack<NoteColour> note_track {
-        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}};
+        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}, 192};
 
     const auto song = Song::from_chart(chart, {});
 

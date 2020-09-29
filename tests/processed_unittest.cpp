@@ -30,7 +30,7 @@ TEST_CASE("3 arg total_available_sp counts SP correctly")
     std::vector<Note<NoteColour>> notes {{0},        {192},  {384},  {576},
                                          {768, 192}, {1152}, {1344}, {1536}};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
     ProcessedSong song {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
     const auto& points = song.points();
 
@@ -98,7 +98,7 @@ TEST_CASE("total_available_sp_with_earliest_pos counts SP correctly and gives "
 {
     std::vector<Note<NoteColour>> notes {{0, 1459}, {1459}};
     std::vector<StarPower> phrases {{0, 100}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
     ProcessedSong song {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
     const auto& points = song.points();
 
@@ -113,7 +113,7 @@ TEST_CASE("total_available_sp_with_earliest_pos counts SP correctly and gives "
 TEST_CASE("is_candidate_valid works with no whammy")
 {
     std::vector<Note<NoteColour>> notes {{0}, {1536}, {3072}, {6144}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}};
+    NoteTrack<NoteColour> note_track {notes, {}, {}, 192};
     ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
@@ -170,7 +170,7 @@ TEST_CASE("is_candidate_valid works with no whammy")
     SECTION("Check intermediate SP is accounted for")
     {
         std::vector<StarPower> phrases {{3000, 100}};
-        NoteTrack<NoteColour> overlap_notes {notes, phrases, {}};
+        NoteTrack<NoteColour> overlap_notes {notes, phrases, {}, 192};
         ProcessedSong overlap_track {overlap_notes, 192, {},
                                      1.0,           1.0, Second(0.0)};
         const auto& overlap_points = overlap_track.points();
@@ -187,7 +187,7 @@ TEST_CASE("is_candidate_valid works with no whammy")
     {
         notes[2].position = 6000;
         std::vector<StarPower> phrases {{6000, 100}};
-        NoteTrack<NoteColour> overlap_notes {notes, phrases, {}};
+        NoteTrack<NoteColour> overlap_notes {notes, phrases, {}, 192};
         ProcessedSong overlap_track {overlap_notes, 192, {},
                                      1.0,           1.0, Second(0.0)};
         const auto& overlap_points = overlap_track.points();
@@ -204,7 +204,7 @@ TEST_CASE("is_candidate_valid works with no whammy")
     {
         notes[3].position = 4000;
         std::vector<StarPower> phrases {{3072, 100}};
-        NoteTrack<NoteColour> overlap_notes {notes, phrases, {}};
+        NoteTrack<NoteColour> overlap_notes {notes, phrases, {}, 192};
         ProcessedSong overlap_track {overlap_notes, 192, {},
                                      1.0,           1.0, Second(0.0)};
         const auto& overlap_points = overlap_track.points();
@@ -221,7 +221,8 @@ TEST_CASE("is_candidate_valid works with no whammy")
     {
         std::vector<Note<NoteColour>> overlap_notes {{0}, {2}, {7000}};
         std::vector<StarPower> phrases {{0, 1}, {2, 1}};
-        NoteTrack<NoteColour> overlap_note_track {overlap_notes, phrases, {}};
+        NoteTrack<NoteColour> overlap_note_track {
+            overlap_notes, phrases, {}, 192};
         ProcessedSong overlap_track {overlap_note_track, 192, {}, 1.0, 1.0,
                                      Second(0.0)};
         const auto& overlap_points = overlap_track.points();
@@ -249,7 +250,7 @@ TEST_CASE("is_candidate_valid works with whammy")
 {
     std::vector<Note<NoteColour>> notes {{0, 960}, {3840}, {6144}};
     std::vector<StarPower> phrases {{0, 7000}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
     ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
@@ -269,7 +270,7 @@ TEST_CASE("is_candidate_valid works with whammy")
     {
         auto notes_copy = notes;
         notes_copy[1].position = 2880;
-        NoteTrack<NoteColour> note_track_two {notes_copy, phrases, {}};
+        NoteTrack<NoteColour> note_track_two {notes_copy, phrases, {}, 192};
         ProcessedSong track_two {note_track_two, 192, {}, 1.0, 1.0,
                                  Second(0.0)};
         const auto& points_two = track_two.points();
@@ -290,7 +291,7 @@ TEST_CASE("is_candidate_valid works with whammy")
         std::vector<Note<NoteColour>> notes_two {
             {0}, {192}, {384, 192}, {5260}};
         std::vector<StarPower> phrases_two {{384, 1}};
-        NoteTrack<NoteColour> note_track_two {notes_two, phrases_two, {}};
+        NoteTrack<NoteColour> note_track_two {notes_two, phrases_two, {}, 192};
         ProcessedSong track_two {note_track_two, 192, {}, 1.0, 1.0,
                                  Second(0.0)};
         const auto& points_two = track_two.points();
@@ -314,7 +315,7 @@ TEST_CASE("is_candidate_valid works with whammy")
 TEST_CASE("is_candidate_valid takes into account minimum SP")
 {
     std::vector<Note<NoteColour>> notes {{0}, {1536}, {2304}, {3072}, {4608}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}};
+    NoteTrack<NoteColour> note_track {notes, {}, {}, 192};
     ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
@@ -343,7 +344,7 @@ TEST_CASE("is_candidate_valid takes into account squeezing")
     SECTION("Front end and back end of the activation endpoints are considered")
     {
         std::vector<Note<NoteColour>> notes {{0}, {3110}};
-        NoteTrack<NoteColour> note_track {notes, {}, {}};
+        NoteTrack<NoteColour> note_track {notes, {}, {}, 192};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
@@ -358,7 +359,7 @@ TEST_CASE("is_candidate_valid takes into account squeezing")
     SECTION("Next note can be squeezed late to avoid going too far")
     {
         std::vector<Note<NoteColour>> notes {{0}, {3034}, {3053}};
-        NoteTrack<NoteColour> note_track {notes, {}, {}};
+        NoteTrack<NoteColour> note_track {notes, {}, {}, 192};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
@@ -374,7 +375,7 @@ TEST_CASE("is_candidate_valid takes into account squeezing")
     {
         std::vector<Note<NoteColour>> notes {{0}, {3102}, {4608}};
         std::vector<StarPower> phrases {{3100, 100}};
-        NoteTrack<NoteColour> note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
@@ -390,7 +391,7 @@ TEST_CASE("is_candidate_valid takes into account squeezing")
     {
         std::vector<Note<NoteColour>> notes {{0}, {768}, {6942}};
         std::vector<StarPower> phrases {{768, 100}};
-        NoteTrack<NoteColour> note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
@@ -407,7 +408,7 @@ TEST_CASE("is_candidate_valid handles very high BPM SP granting notes")
 {
     std::vector<Note<NoteColour>> notes {{0}, {192}, {768}, {4608}, {5376}};
     std::vector<StarPower> phrases {{4608, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
     SyncTrack sync_track {{}, {{3840, 4000000}}};
     ProcessedSong track {note_track, 192, sync_track, 1.0, 1.0, Second(0.0)};
     const auto& points = track.points();
@@ -425,7 +426,7 @@ TEST_CASE("is_candidate_valid takes into account squeeze param")
     SECTION("Front end and back end are restricted")
     {
         std::vector<Note<NoteColour>> notes {{0}, {3110}};
-        NoteTrack<NoteColour> note_track {notes, {}, {}};
+        NoteTrack<NoteColour> note_track {notes, {}, {}, 192};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
@@ -443,7 +444,7 @@ TEST_CASE("is_candidate_valid takes into account squeeze param")
     {
         std::vector<Note<NoteColour>> notes {{0}, {3102}, {4608}};
         std::vector<StarPower> phrases {{3100, 100}};
-        NoteTrack<NoteColour> note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
@@ -461,7 +462,7 @@ TEST_CASE("is_candidate_valid takes into account squeeze param")
     {
         std::vector<Note<NoteColour>> notes {{0}, {768}, {6942}};
         std::vector<StarPower> phrases {{768, 100}};
-        NoteTrack<NoteColour> note_track {notes, phrases, {}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
@@ -478,7 +479,7 @@ TEST_CASE("is_candidate_valid takes into account squeeze param")
     SECTION("Next note back end is restricted")
     {
         std::vector<Note<NoteColour>> notes {{0}, {3034}, {3053}};
-        NoteTrack<NoteColour> note_track {notes, {}, {}};
+        NoteTrack<NoteColour> note_track {notes, {}, {}, 192};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
@@ -495,7 +496,7 @@ TEST_CASE("is_candidate_valid takes into account squeeze param")
     SECTION("End position is finite if activation goes past last note")
     {
         std::vector<Note<NoteColour>> notes {{0}};
-        NoteTrack<NoteColour> note_track {notes, {}, {}};
+        NoteTrack<NoteColour> note_track {notes, {}, {}, 192};
         ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
@@ -513,7 +514,7 @@ TEST_CASE("is_candidate_valid takes into account forced whammy")
 {
     std::vector<Note<NoteColour>> notes {{0, 768}, {3072}, {3264}};
     std::vector<StarPower> phrases {{0, 3300}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
     ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
@@ -534,7 +535,7 @@ TEST_CASE("is_candidate_valid also takes account of whammy from end of SP "
 {
     std::vector<Note<NoteColour>> notes {{0, 960}, {2880}, {6144}};
     std::vector<StarPower> phrases {{0, 7000}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
     ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cend() - 2,
@@ -554,7 +555,7 @@ TEST_CASE("is_candidate_valid takes account of overlapped phrase at end if "
 {
     std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {3456, 192}};
     std::vector<StarPower> phrases {{0, 1}, {192, 1}, {3456, 1}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
     ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 2,
@@ -576,7 +577,7 @@ TEST_CASE("is_candidate_valid correctly clamps low SP")
 {
     std::vector<Note<NoteColour>> notes {{0, 6720}};
     std::vector<StarPower> phrases {{0, 1}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
     SyncTrack sync_track {{{0, 1, 4}}, {}};
     ProcessedSong track {note_track, 192, sync_track, 0.0, 0.0, Second(0.0)};
     const auto& points = track.points();
@@ -593,7 +594,7 @@ TEST_CASE("is_candidate_valid correctly clamps low SP")
 TEST_CASE("adjusted_hit_window_* functions return correct values")
 {
     std::vector<Note<NoteColour>> notes {{0}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}};
+    NoteTrack<NoteColour> note_track {notes, {}, {}, 192};
     ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
     const auto& points = track.points();
 

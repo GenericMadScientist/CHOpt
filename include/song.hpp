@@ -21,6 +21,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -107,12 +108,16 @@ private:
     std::vector<Note<T>> m_notes;
     std::vector<StarPower> m_sp_phrases;
     std::vector<Solo> m_solos;
+    int m_base_score {0};
 
 public:
     NoteTrack() = default;
     NoteTrack(std::vector<Note<T>> notes, std::vector<StarPower> sp_phrases,
-              std::vector<Solo> solos)
+              std::vector<Solo> solos, int resolution)
     {
+        constexpr auto BASE_NOTE_VALUE = 50;
+        constexpr auto BASE_SUSTAIN_DENSITY = 25;
+
         std::stable_sort(notes.begin(), notes.end(),
                          [](const auto& lhs, const auto& rhs) {
                              return std::tie(lhs.position, lhs.colour)
@@ -129,6 +134,17 @@ public:
                 prev_note = p;
             }
             m_notes.push_back(*prev_note);
+        }
+
+        m_base_score = static_cast<int>(BASE_NOTE_VALUE * notes.size());
+        std::set<std::tuple<int, int>> sustain_ranges;
+        for (const auto& note : notes) {
+            sustain_ranges.emplace(note.position, note.position + note.length);
+        }
+        for (const auto& [start, end] : sustain_ranges) {
+            m_base_score
+                += ((end - start) * BASE_SUSTAIN_DENSITY + resolution - 1)
+                / resolution;
         }
 
         std::stable_sort(sp_phrases.begin(), sp_phrases.end(),
@@ -171,6 +187,7 @@ public:
         return m_sp_phrases;
     }
     [[nodiscard]] const std::vector<Solo>& solos() const { return m_solos; }
+    [[nodiscard]] int base_score() const { return m_base_score; }
 };
 
 // Invariants:
