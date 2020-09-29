@@ -505,8 +505,8 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         write("Optimising, please wait...");
         const Optimiser optimiser {&processed_track, terminate};
         path = optimiser.optimal_path();
-        builder.add_sp_acts(processed_track.points(), path);
         write(processed_track.path_summary(path).c_str());
+        builder.add_sp_acts(processed_track.points(), path);
     }
 
     builder.add_measure_values(processed_track.points(), path);

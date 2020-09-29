@@ -17,6 +17,7 @@
  */
 
 #include <cassert>
+#include <iomanip>
 #include <iterator>
 #include <sstream>
 
@@ -272,11 +273,11 @@ std::string ProcessedSong::path_summary(const Path& path) const
     std::vector<std::string> activation_summaries;
     auto start_point = m_points.cbegin();
     for (const auto& act : path.activations) {
-        auto sp_before
+        const auto sp_before
             = std::count_if(start_point, act.act_start, [](const auto& p) {
                   return p.is_sp_granting_note;
               });
-        auto sp_during = std::count_if(
+        const auto sp_during = std::count_if(
             act.act_start, std::next(act.act_end),
             [](const auto& p) { return p.is_sp_granting_note; });
         auto summary = std::to_string(sp_before);
@@ -289,7 +290,7 @@ std::string ProcessedSong::path_summary(const Path& path) const
         start_point = std::next(act.act_end);
     }
 
-    auto spare_sp
+    const auto spare_sp
         = std::count_if(start_point, m_points.cend(),
                         [](const auto& p) { return p.is_sp_granting_note; });
     if (spare_sp != 0) {
@@ -312,9 +313,17 @@ std::string ProcessedSong::path_summary(const Path& path) const
     no_sp_score += m_total_solo_boost;
     stream << "\nNo SP score: " << no_sp_score;
 
-    auto total_score = no_sp_score + path.score_boost;
+    const auto total_score = no_sp_score + path.score_boost;
     stream << "\nTotal score: " << total_score;
 
+    const auto avg_mult
+        = static_cast<double>(total_score - m_total_solo_boost) / m_base_score;
+    stream.setf(std::ios_base::fixed, std::ios_base::floatfield);
+    stream << std::setprecision(3);
+    stream << "\nAverage multiplier: " << avg_mult << 'x';
+
+    stream.setf(std::ios_base::fmtflags(), std::ios_base::floatfield);
+    stream << std::setprecision(6);
     for (std::size_t i = 0; i < path.activations.size(); ++i) {
         stream << "\nActivation " << i + 1 << ": Measure "
                << path.activations[i].act_start->position.measure.value() + 1

@@ -80,6 +80,7 @@ private:
     PointSet m_points;
     SpData m_sp_data;
     int m_total_solo_boost;
+    int m_base_score;
 
 public:
     template <typename T>
@@ -89,6 +90,7 @@ public:
         : m_converter {sync_track, resolution}
         , m_points {track, resolution, m_converter, squeeze}
         , m_sp_data {track, resolution, sync_track, early_whammy, lazy_whammy}
+        , m_base_score {track.base_score()}
     {
         m_total_solo_boost = std::accumulate(
             track.solos().cbegin(), track.solos().cend(), 0,

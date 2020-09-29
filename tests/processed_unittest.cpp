@@ -616,3 +616,76 @@ TEST_CASE("adjusted_hit_window_* functions return correct values")
                 == Approx(0.14));
     }
 }
+
+TEST_CASE("path_summary produces the correct output", "Path summary")
+{
+    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};
+    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
+    std::vector<Solo> solos {{0, 50, 100}};
+    NoteTrack<NoteColour> note_track {notes, phrases, solos, 192};
+    ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+    const auto& points = track.points();
+
+    SECTION("Overlap and ES are denoted correctly")
+    {
+        Path path {{{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0},
+                     Beat {0.0}}},
+                   100};
+
+        const char* desired_path_output
+            = "Path: 2(+1)-ES1\n"
+              "No SP score: 350\n"
+              "Total score: 450\n"
+              "Average multiplier: 1.400x\n"
+              "Activation 1: Measure 1.5 to Measure 1.75";
+
+        REQUIRE(track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("No overlap is denoted correctly")
+    {
+        Path path {{{points.cbegin() + 3, points.cbegin() + 3, Beat {0.0},
+                     Beat {0.0}}},
+                   50};
+
+        const char* desired_path_output
+            = "Path: 3-ES1\n"
+              "No SP score: 350\n"
+              "Total score: 400\n"
+              "Average multiplier: 1.200x\n"
+              "Activation 1: Measure 1.75 to Measure 1.75";
+
+        REQUIRE(track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("No ES is denoted correctly")
+    {
+        Path path {{{points.cbegin() + 4, points.cbegin() + 4, Beat {0.0},
+                     Beat {0.0}}},
+                   50};
+
+        const char* desired_path_output
+            = "Path: 3(+1)\n"
+              "No SP score: 350\n"
+              "Total score: 400\n"
+              "Average multiplier: 1.200x\n"
+              "Activation 1: Measure 9 to Measure 9";
+
+        REQUIRE(track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("No SP is denoted correctly")
+    {
+        Path path {{}, 0};
+        NoteTrack<NoteColour> second_note_track {notes, {}, solos, 192};
+        ProcessedSong second_track {second_note_track, 192, {}, 1.0, 1.0,
+                                    Second(0.0)};
+
+        const char* desired_path_output = "Path: None\n"
+                                          "No SP score: 350\n"
+                                          "Total score: 350\n"
+                                          "Average multiplier: 1.000x";
+
+        REQUIRE(second_track.path_summary(path) == desired_path_output);
+    }
+}

@@ -7,16 +7,19 @@ song_dir = "integration_tests/songs"
 conn = sqlite3.connect("integration_tests/tests.db")
 c = conn.cursor()
 
-c.execute("select ID, File, Difficulty, Path, BaseScore, TotalScore from Songs")
+c.execute(
+    "select ID, File, Difficulty, Path, BaseScore, TotalScore, AvgMultiplier from Songs"
+)
 songs = list(c.fetchall())
 
 outputs = []
 for song in songs:
-    song_id, _, _, path, base_score, total_score = song
+    song_id, _, _, path, base_score, total_score, avg_mult = song
     output_lines = ["Optimising, please wait..."]
     output_lines.append(f"Path: {path}")
     output_lines.append(f"No SP score: {base_score}")
     output_lines.append(f"Total score: {total_score}")
+    output_lines.append(f"Average multiplier: {avg_mult}x")
     c.execute(
         "select ActivationNumber, Start, End from Activations where SongID = ? order by ActivationNumber",
         (song_id,),
@@ -30,7 +33,7 @@ for song in songs:
 conn.close()
 
 for song, output in zip(songs, outputs):
-    _, file, difficulty, _, _, _ = song
+    _, file, difficulty, _, _, _, _ = song
     result = subprocess.run(
         [program, "-f", f"{song_dir}/{file}", "-d", difficulty], capture_output=True
     )
