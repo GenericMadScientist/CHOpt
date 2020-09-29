@@ -36,7 +36,7 @@ TEST_CASE("Track type is stored correctly")
 {
     SECTION("Five fret gets the right track type")
     {
-        NoteTrack<NoteColour> track;
+        NoteTrack<NoteColour> track {{}, {}, {}, 192};
         ImageBuilder builder {track, 192, {}};
 
         REQUIRE(builder.track_type() == TrackType::FiveFret);
@@ -44,7 +44,7 @@ TEST_CASE("Track type is stored correctly")
 
     SECTION("Six fret gets the right track type")
     {
-        NoteTrack<GHLNoteColour> track;
+        NoteTrack<GHLNoteColour> track {{}, {}, {}, 192};
         ImageBuilder builder {track, 192, {}};
 
         REQUIRE(builder.track_type() == TrackType::SixFret);
@@ -52,7 +52,7 @@ TEST_CASE("Track type is stored correctly")
 
     SECTION("Drums gets the right track type")
     {
-        NoteTrack<DrumNoteColour> track;
+        NoteTrack<DrumNoteColour> track {{}, {}, {}, 192};
         ImageBuilder builder {track, 192, {}};
 
         REQUIRE(builder.track_type() == TrackType::Drums);

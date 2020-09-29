@@ -879,7 +879,9 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     for (const auto& [diff, note_set] : notes) {
         auto solos = form_solo_vector(event_track.solo_on_events,
                                       event_track.solo_off_events, note_set);
-        note_tracks[diff] = {note_set, sp_phrases, solos, resolution};
+        note_tracks.emplace(
+            diff,
+            NoteTrack<NoteColour> {note_set, sp_phrases, solos, resolution});
     }
 
     return note_tracks;
@@ -919,7 +921,9 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     for (const auto& [diff, note_set] : notes) {
         auto solos = form_solo_vector(event_track.solo_on_events,
                                       event_track.solo_off_events, note_set);
-        note_tracks[diff] = {note_set, sp_phrases, solos, resolution};
+        note_tracks.emplace(
+            diff,
+            NoteTrack<GHLNoteColour> {note_set, sp_phrases, solos, resolution});
     }
 
     return note_tracks;
@@ -978,7 +982,9 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     for (const auto& [diff, note_set] : notes) {
         auto solos = form_solo_vector(event_track.solo_on_events,
                                       event_track.solo_off_events, note_set);
-        note_tracks[diff] = {note_set, sp_phrases, solos, resolution};
+        note_tracks.emplace(diff,
+                            NoteTrack<DrumNoteColour> {note_set, sp_phrases,
+                                                       solos, resolution});
     }
 
     return note_tracks;
@@ -1044,7 +1050,8 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
         if (is_six_fret_instrument(*inst)) {
             auto tracks = ghl_note_tracks_from_midi(track, song.m_resolution);
             for (auto& [diff, note_track] : tracks) {
-                song.m_six_fret_tracks[{*inst, diff}] = std::move(note_track);
+                song.m_six_fret_tracks.emplace(std::tuple {*inst, diff},
+                                               std::move(note_track));
             }
         } else if (*inst == Instrument::Drums) {
             song.m_drum_note_tracks
@@ -1052,7 +1059,8 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
         } else {
             auto tracks = note_tracks_from_midi(track, song.m_resolution);
             for (auto& [diff, note_track] : tracks) {
-                song.m_five_fret_tracks[{*inst, diff}] = std::move(note_track);
+                song.m_five_fret_tracks.emplace(std::tuple {*inst, diff},
+                                                std::move(note_track));
             }
         }
     }
