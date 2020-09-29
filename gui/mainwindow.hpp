@@ -41,6 +41,11 @@ private:
     std::optional<Song> m_song;
     QThread* m_thread = nullptr;
     Settings get_settings() const;
+    void load_file(const QString& file_name);
+
+protected:
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
 public:
     MainWindow(QWidget* parent = nullptr);

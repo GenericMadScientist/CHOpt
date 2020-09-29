@@ -20,7 +20,9 @@
 #include <stdexcept>
 
 #include <QDesktopServices>
+#include <QDragEnterEvent>
 #include <QFileDialog>
+#include <QMimeData>
 #include <QUrl>
 
 #include "image.hpp"
@@ -124,6 +126,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_ui->squeezeLabel->setMinimumWidth(30);
     m_ui->earlyWhammyLabel->setMinimumWidth(30);
+
+    setAcceptDrops(true);
 }
 
 MainWindow::~MainWindow()
@@ -142,6 +146,24 @@ MainWindow::~MainWindow()
             m_thread->wait();
         }
     }
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasUrls()) {
+        event->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent* event)
+{
+    const auto urls = event->mimeData()->urls();
+    if (urls.size() != 1) {
+        write_message("Only one file may be dragged and dropped");
+        return;
+    }
+
+    load_file(urls[0].toLocalFile());
 }
 
 void MainWindow::write_message(const QString& message)
@@ -184,7 +206,18 @@ void MainWindow::on_selectFileButton_clicked()
         return;
     }
 
+    load_file(file_name);
+}
+
+void MainWindow::load_file(const QString& file_name)
+{
+    if (!file_name.endsWith(".chart") && !file_name.endsWith(".mid")) {
+        write_message("File must be .chart or .mid");
+        return;
+    }
+
     m_ui->selectFileButton->setEnabled(false);
+    setAcceptDrops(false);
 
     auto* worker_thread = new ParserThread(this);
     worker_thread->set_file_name(file_name);
@@ -259,6 +292,7 @@ void MainWindow::song_read(const std::optional<Song>& song,
     m_ui->instrumentComboBox->setEnabled(true);
     m_ui->difficultyComboBox->setEnabled(true);
     m_ui->selectFileButton->setEnabled(true);
+    setAcceptDrops(true);
 }
 
 void MainWindow::path_found()
