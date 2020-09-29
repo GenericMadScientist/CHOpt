@@ -82,8 +82,8 @@ details).
 getting an initial idea of Clone Hero's parsing behaviour.
 * Dinoguy1000 and shadoweh helped me make sure chopt runs on other peoples'
 machines.
-* Various users for feedback, including CyclopsDragon, LightlessWalk, Lucretio,
-RileyTheFox, and Taka.
+* Various users for feedback, including CyclopsDragon, GHNerd, LightlessWalk,
+Lucretio, RileyTheFox, Taka, and Zantor.
 
 ## Contact
 
