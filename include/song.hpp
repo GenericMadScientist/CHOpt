@@ -236,6 +236,8 @@ public:
         return m_time_sigs;
     }
     [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
+    // Return the SyncTrack for a speedup of speed% (normal speed is 100).
+    [[nodiscard]] SyncTrack speedup(int speed) const;
 };
 
 struct SongHeader {

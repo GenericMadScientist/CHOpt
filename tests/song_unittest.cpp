@@ -271,6 +271,18 @@ TEST_CASE("SyncTrack ctor maintains invariants")
     }
 }
 
+TEST_CASE("Speedup returns the correct SyncTrack")
+{
+    const SyncTrack sync_track {{{0, 4, 4}}, {{0, 120000}, {192, 240000}}};
+    const std::vector<BPM> expected_bpms {{0, 180000}, {192, 360000}};
+    const std::vector<TimeSignature> expected_tses {{0, 4, 4}};
+
+    const auto speedup = sync_track.speedup(150);
+
+    REQUIRE(speedup.bpms() == expected_bpms);
+    REQUIRE(speedup.time_sigs() == expected_tses);
+}
+
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart reads resolution")
 {

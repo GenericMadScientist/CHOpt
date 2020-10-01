@@ -117,6 +117,15 @@ SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
     m_time_sigs.push_back(prev_ts);
 }
 
+SyncTrack SyncTrack::speedup(int speed) const
+{
+    SyncTrack speedup {m_time_sigs, m_bpms};
+    for (auto& bpm : speedup.m_bpms) {
+        bpm.bpm = (bpm.bpm * speed) / 100;
+    }
+    return speedup;
+}
+
 // Takes a sequence of points where some note type/event is turned on, and a
 // sequence where said type is turned off, and returns a tuple of intervals
 // where the event is on.
