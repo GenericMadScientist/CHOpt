@@ -64,12 +64,12 @@ in cmd then enter to open a command prompt in that folder, then run the command
 * [libpng](http://libpng.org/pub/png/libpng.html) 1.6.37 to save pngs
 * [nowide](https://github.com/boostorg/nowide) 11.0.0 to handle UTF-8 filenames
   on Windows
-* [Qt](https://www.qt.io) 5.15.0 for the GUI
+* [Qt](https://www.qt.io) 5.15.1 for the GUI
 * [zlib](https://zlib.net) 1.2.11 is a dependency of libpng
 
 Catch2 and CImg are vendored in the repo. argparse and nowide (standalone
 version) are pulled in automatically by CMake. libpng, Qt, and zlib will need to
-be provided by anyone compiling chopt for themselves, although Qt is only
+be provided by anyone compiling CHOpt for themselves, although Qt is only
 required if the GUI version is being compiled. libpng and zlib need to be set up
 so that [FindPNG](https://cmake.org/cmake/help/latest/module/FindPNG.html) can
 find them, and the same is true for Qt (see
@@ -80,7 +80,7 @@ details).
 
 * FireFox2000000's Moonscraper .chart and .mid parsers were very helpful for
 getting an initial idea of Clone Hero's parsing behaviour.
-* Dinoguy1000 and shadoweh helped me make sure chopt runs on other peoples'
+* Dinoguy1000 and shadoweh helped me make sure CHOpt runs on other peoples'
 machines.
 * Various users for feedback, including CyclopsDragon, GHNerd, Jrh,
 LightlessWalk, Lucretio, RileyTheFox, Taka, and Zantor.
