@@ -119,9 +119,11 @@ SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
 
 SyncTrack SyncTrack::speedup(int speed) const
 {
+    constexpr auto DEFAULT_SPEED = 100;
+
     SyncTrack speedup {m_time_sigs, m_bpms};
     for (auto& bpm : speedup.m_bpms) {
-        bpm.bpm = (bpm.bpm * speed) / 100;
+        bpm.bpm = (bpm.bpm * speed) / DEFAULT_SPEED;
     }
     return speedup;
 }
