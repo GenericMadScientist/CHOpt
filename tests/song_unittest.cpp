@@ -283,6 +283,18 @@ TEST_CASE("Speedup returns the correct SyncTrack")
     REQUIRE(speedup.time_sigs() == expected_tses);
 }
 
+TEST_CASE("Chart -> Song has correct value for is_from_midi")
+{
+    ChartSection expert_single {"ExpertSingle", {}, {}, {},
+                                {{768, 0, 0}},  {}, {}};
+    std::vector<ChartSection> sections {expert_single};
+    const Chart chart {sections};
+
+    const auto song = Song::from_chart(chart, {});
+
+    REQUIRE(!song.is_from_midi());
+}
+
 // Last checked: 24.0.1555-master
 TEST_CASE("Chart reads resolution")
 {
@@ -749,6 +761,15 @@ TEST_CASE("Invalid drum notes are ignored")
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
     REQUIRE(track.notes().size() == 1);
+}
+
+TEST_CASE("Midi -> Song has correct value for is_from_midi")
+{
+    const Midi midi {192, {}};
+
+    const auto song = Song::from_midi(midi, {});
+
+    REQUIRE(song.is_from_midi());
 }
 
 TEST_CASE("Midi resolution is read correctly")

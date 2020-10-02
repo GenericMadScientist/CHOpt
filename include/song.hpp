@@ -252,6 +252,7 @@ class Song {
 private:
     static constexpr int DEFAULT_RESOLUTION = 192;
 
+    bool m_is_from_midi = false;
     int m_resolution = DEFAULT_RESOLUTION;
     SongHeader m_song_header;
     SyncTrack m_sync_track;
@@ -266,6 +267,7 @@ public:
     static Song from_filename(const std::string& filename);
     static Song from_chart(const Chart& chart, const IniValues& ini);
     static Song from_midi(const Midi& midi, const IniValues& ini);
+    [[nodiscard]] bool is_from_midi() const { return m_is_from_midi; }
     [[nodiscard]] int resolution() const { return m_resolution; }
     [[nodiscard]] const SongHeader& song_header() const
     {

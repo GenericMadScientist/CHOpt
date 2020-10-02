@@ -1041,6 +1041,7 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
     }
 
     Song song;
+    song.m_is_from_midi = true;
     song.m_resolution = midi.ticks_per_quarter_note;
     song.m_song_header.name = ini.name;
     song.m_song_header.artist = ini.artist;
