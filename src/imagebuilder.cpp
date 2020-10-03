@@ -477,18 +477,18 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                         const std::function<void(const char*)>& write,
                         const std::atomic<bool>* terminate)
 {
-    constexpr int DEFAULT_SPEED = 100;
     auto new_track = track;
     if (song.is_from_midi()) {
-        new_track = track.trim_sustains(DEFAULT_SPEED);
+        new_track = track.trim_sustains(settings.speed);
     }
+    const auto sync_track = song.sync_track.speedup(settings.speed);
 
-    ImageBuilder builder {new_track, song.resolution(), song.sync_track()};
+    ImageBuilder builder {new_track, song.resolution(), sync_track};
     builder.add_song_header(song.song_header());
     builder.add_sp_phrases(new_track, song.resolution());
 
     if (settings.draw_bpms) {
-        builder.add_bpms(song.sync_track(), song.resolution());
+        builder.add_bpms(sync_track, song.resolution());
     }
 
     if (settings.draw_solos) {
@@ -496,13 +496,13 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     }
 
     if (settings.draw_time_sigs) {
-        builder.add_time_sigs(song.sync_track(), song.resolution());
+        builder.add_time_sigs(sync_track, song.resolution());
     }
 
     const ProcessedSong processed_track {
-        new_track,         song.resolution(),
-        song.sync_track(), settings.early_whammy,
-        settings.squeeze,  Second {settings.lazy_whammy}};
+        new_track,        song.resolution(),
+        sync_track,       settings.early_whammy,
+        settings.squeeze, Second {settings.lazy_whammy}};
     Path path;
 
     if (!settings.blank) {

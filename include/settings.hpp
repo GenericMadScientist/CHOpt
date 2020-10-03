@@ -36,6 +36,7 @@ struct Settings {
     double squeeze;
     double early_whammy;
     double lazy_whammy;
+    int speed;
 };
 
 // Parses the command line options. If something is wrong with the options

@@ -26,7 +26,7 @@
 static int str_to_int(const std::string& value)
 {
     std::size_t pos = 0;
-    auto converted_value = std::stoi(value, &pos);
+    const auto converted_value = std::stoi(value, &pos);
     if (pos != value.size()) {
         throw std::invalid_argument("Could not convert string to int");
     }
@@ -38,7 +38,7 @@ static bool is_valid_image_path(const std::string& path)
     if (path.size() < 4) {
         return false;
     }
-    auto file_type = path.substr(path.size() - 4, 4);
+    const auto file_type = path.substr(path.size() - 4, 4);
     if (file_type == ".bmp") {
         return true;
     }
@@ -82,6 +82,10 @@ Settings from_args(int argc, char** argv)
         .help("time before whammying starts on sustains in milliseconds, "
               "defaults to 0")
         .action([](const std::string& value) { return str_to_int(value); });
+    program.add_argument("-s", "--speed")
+        .default_value(100)
+        .help("speed in %, defaults to 100")
+        .action([](const std::string& value) { return str_to_int(value); });
     program.add_argument("-b", "--blank")
         .help("give a blank chart image")
         .default_value(false)
@@ -109,7 +113,7 @@ Settings from_args(int argc, char** argv)
         throw std::invalid_argument("No file was specified");
     }
 
-    auto diff_string = program.get<std::string>("--diff");
+    const auto diff_string = program.get<std::string>("--diff");
     if (diff_string == "expert") {
         settings.difficulty = Difficulty::Expert;
     } else if (diff_string == "hard") {
@@ -122,7 +126,7 @@ Settings from_args(int argc, char** argv)
         throw std::invalid_argument("Unrecognised difficulty");
     }
 
-    auto inst_string = program.get<std::string>("--instrument");
+    const auto inst_string = program.get<std::string>("--instrument");
     if (inst_string == "guitar") {
         settings.instrument = Instrument::Guitar;
     } else if (inst_string == "coop") {
@@ -143,7 +147,7 @@ Settings from_args(int argc, char** argv)
         throw std::invalid_argument("Unrecognised instrument");
     }
 
-    auto image_path = program.get<std::string>("--output");
+    const auto image_path = program.get<std::string>("--output");
     if (!is_valid_image_path(image_path)) {
         throw std::invalid_argument(
             "Image output must be a bitmap or png (.bmp / .png)");
@@ -154,12 +158,12 @@ Settings from_args(int argc, char** argv)
     settings.draw_solos = !program.get<bool>("--no-solos");
     settings.draw_time_sigs = !program.get<bool>("--no-time-sigs");
 
-    auto squeeze = program.get<int>("--squeeze");
+    const auto squeeze = program.get<int>("--squeeze");
     auto early_whammy = squeeze;
     if (program.get<std::string>("--early-whammy") != "match") {
         early_whammy = str_to_int(program.get<std::string>("--early-whammy"));
     }
-    auto lazy_whammy = program.get<int>("--lazy-whammy");
+    const auto lazy_whammy = program.get<int>("--lazy-whammy");
 
     if (squeeze < 0 || squeeze > MAX_PERCENT) {
         throw std::invalid_argument("Squeeze must lie between 0 and 100");
@@ -179,6 +183,13 @@ Settings from_args(int argc, char** argv)
     settings.squeeze = squeeze / 100.0;
     settings.early_whammy = early_whammy / 100.0;
     settings.lazy_whammy = lazy_whammy / MS_PER_SECOND;
+
+    const auto speed = program.get<int>("--speed");
+    if (speed < 5 || speed > 5000 || speed % 5 != 0) {
+        throw std::invalid_argument("Speed unsupported by Clone Hero");
+    }
+
+    settings.speed = speed;
 
     return settings;
 }
