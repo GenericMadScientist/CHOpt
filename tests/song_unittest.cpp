@@ -216,6 +216,7 @@ TEST_CASE("trim_sustains is correct")
         REQUIRE(new_notes[0].length == 0);
         REQUIRE(new_notes[1].length == 70);
         REQUIRE(new_notes[2].length == 140);
+        REQUIRE(new_track.base_score() == 177);
     }
 
     SECTION("50% speed")
@@ -223,9 +224,10 @@ TEST_CASE("trim_sustains is correct")
         auto new_track = track.trim_sustains(50);
         const auto& new_notes = new_track.notes();
 
-        REQUIRE(new_notes[0].length == 65);
+        REQUIRE(new_notes[0].length == 0);
         REQUIRE(new_notes[1].length == 70);
         REQUIRE(new_notes[2].length == 140);
+        REQUIRE(new_track.base_score() == 185);
     }
 
     SECTION("200% speed")
@@ -236,6 +238,7 @@ TEST_CASE("trim_sustains is correct")
         REQUIRE(new_notes[0].length == 0);
         REQUIRE(new_notes[1].length == 0);
         REQUIRE(new_notes[2].length == 140);
+        REQUIRE(new_track.base_score() == 168);
     }
 }
 

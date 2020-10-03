@@ -108,6 +108,46 @@ private:
     std::vector<StarPower> m_sp_phrases;
     std::vector<Solo> m_solos;
     int m_resolution;
+    int m_base_score;
+
+    void compute_base_score()
+    {
+        constexpr auto BASE_NOTE_VALUE = 50;
+        constexpr auto BASE_SUSTAIN_DENSITY = 25;
+
+        m_base_score = static_cast<int>(BASE_NOTE_VALUE * m_notes.size());
+        auto total_ticks = 0;
+        auto current_pos = -1;
+        auto first_note_length = 0;
+        auto current_total_ticks = 0;
+        auto is_disjoint_chord = false;
+        for (const auto& note : m_notes) {
+            if (note.position != current_pos) {
+                if (is_disjoint_chord) {
+                    total_ticks += current_total_ticks;
+                } else {
+                    total_ticks += first_note_length;
+                }
+                first_note_length = note.length;
+                current_total_ticks = note.length;
+                current_pos = note.position;
+                is_disjoint_chord = false;
+            } else {
+                if (note.length != first_note_length) {
+                    is_disjoint_chord = true;
+                }
+                current_total_ticks += note.length;
+            }
+        }
+        if (is_disjoint_chord) {
+            total_ticks += current_total_ticks;
+        } else {
+            total_ticks += first_note_length;
+        }
+
+        m_base_score += (total_ticks * BASE_SUSTAIN_DENSITY + m_resolution - 1)
+            / m_resolution;
+    }
 
 public:
     NoteTrack(std::vector<Note<T>> notes, std::vector<StarPower> sp_phrases,
@@ -162,8 +202,9 @@ public:
                          [](const auto& lhs, const auto& rhs) {
                              return lhs.start < rhs.start;
                          });
-
         m_solos = std::move(solos);
+
+        compute_base_score();
     }
 
     [[nodiscard]] const std::vector<Note<T>>& notes() const { return m_notes; }
@@ -172,45 +213,7 @@ public:
         return m_sp_phrases;
     }
     [[nodiscard]] const std::vector<Solo>& solos() const { return m_solos; }
-    [[nodiscard]] int base_score() const
-    {
-        constexpr auto BASE_NOTE_VALUE = 50;
-        constexpr auto BASE_SUSTAIN_DENSITY = 25;
-
-        auto base_score = static_cast<int>(BASE_NOTE_VALUE * m_notes.size());
-        auto total_ticks = 0;
-        auto current_pos = -1;
-        auto first_note_length = 0;
-        auto current_total_ticks = 0;
-        auto is_disjoint_chord = false;
-        for (const auto& note : m_notes) {
-            if (note.position != current_pos) {
-                if (is_disjoint_chord) {
-                    total_ticks += current_total_ticks;
-                } else {
-                    total_ticks += first_note_length;
-                }
-                first_note_length = note.length;
-                current_total_ticks = note.length;
-                current_pos = note.position;
-                is_disjoint_chord = false;
-            } else {
-                if (note.length != first_note_length) {
-                    is_disjoint_chord = true;
-                }
-                current_total_ticks += note.length;
-            }
-        }
-        if (is_disjoint_chord) {
-            total_ticks += current_total_ticks;
-        } else {
-            total_ticks += first_note_length;
-        }
-
-        base_score += (total_ticks * BASE_SUSTAIN_DENSITY + m_resolution - 1)
-            / m_resolution;
-        return base_score;
-    }
+    [[nodiscard]] int base_score() const { return m_base_score; }
     [[nodiscard]] NoteTrack<T> trim_sustains(int speed) const
     {
         constexpr int DEFAULT_RESOLUTION = 192;
@@ -218,12 +221,27 @@ public:
         constexpr int DEFAULT_SUST_CUTOFF = 64;
 
         auto trimmed_track = *this;
-        const auto sust_cutoff = (DEFAULT_SUST_CUTOFF * m_resolution * speed)
+        auto sust_cutoff = (DEFAULT_SUST_CUTOFF * m_resolution * speed)
             / (DEFAULT_SPEED * DEFAULT_RESOLUTION);
 
         for (auto& note : trimmed_track.m_notes) {
             if (note.length <= sust_cutoff) {
                 note.length = 0;
+            }
+        }
+
+        trimmed_track.compute_base_score();
+
+        // We need to do this because for speeds below 100%, the sustains are
+        // trimmed the same as 100% speed but the base score can be higher.
+        if (speed < 100) {
+            sust_cutoff
+                = (DEFAULT_SUST_CUTOFF * m_resolution) / DEFAULT_RESOLUTION;
+
+            for (auto& note : trimmed_track.m_notes) {
+                if (note.length <= sust_cutoff) {
+                    note.length = 0;
+                }
             }
         }
 
