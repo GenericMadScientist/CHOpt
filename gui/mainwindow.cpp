@@ -123,6 +123,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_ui->lazyWhammyLineEdit->setValidator(new QIntValidator(
         0, std::numeric_limits<int>::max(), m_ui->lazyWhammyLineEdit));
+    m_ui->speedLineEdit->setValidator(
+        new QIntValidator(5, 5000, m_ui->speedLineEdit));
 
     m_ui->squeezeLabel->setMinimumWidth(30);
     m_ui->earlyWhammyLabel->setMinimumWidth(30);
@@ -195,6 +197,14 @@ Settings MainWindow::get_settings() const
         settings.lazy_whammy = 0.0;
     }
 
+    const auto speed_text = m_ui->speedLineEdit->text();
+    auto speed = speed_text.toInt(&ok, 10);
+    if (ok) {
+        settings.speed = speed;
+    } else {
+        settings.speed = 100;
+    }
+
     return settings;
 }
 
@@ -231,6 +241,14 @@ void MainWindow::load_file(const QString& file_name)
 
 void MainWindow::on_findPathButton_clicked()
 {
+    const auto speed_text = m_ui->speedLineEdit->text();
+    bool ok;
+    const auto speed = speed_text.toInt(&ok, 10);
+    if (!ok || speed < 5 || speed > 5000 || speed % 5 != 0) {
+        write_message("Speed not supported by Clone Hero");
+        return;
+    }
+
     const auto file_name = QFileDialog::getSaveFileName(this, "Save image", ".",
                                                         "Images (*.png *.bmp)");
     if (file_name.isEmpty()) {
