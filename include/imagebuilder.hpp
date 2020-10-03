@@ -79,7 +79,7 @@ public:
     void add_bpms(const SyncTrack& sync_track, int resolution);
     void add_measure_values(const PointSet& points, const Path& path);
     void add_solo_sections(const std::vector<Solo>& solos, int resolution);
-    void add_song_header(const SongHeader& header);
+    void add_song_header(const SongHeader& header, int speed);
     void add_sp_acts(const PointSet& points, const Path& path);
     void add_sp_phrases(const NoteTrack<NoteColour>& track, int resolution);
     void add_sp_phrases(const NoteTrack<GHLNoteColour>& track, int resolution);

@@ -298,9 +298,14 @@ void ImageBuilder::add_solo_sections(const std::vector<Solo>& solos,
     }
 }
 
-void ImageBuilder::add_song_header(const SongHeader& header)
+void ImageBuilder::add_song_header(const SongHeader& header, int speed)
 {
+    constexpr int DEFAULT_SPEED = 100;
     m_song_name = header.name;
+    if (speed != DEFAULT_SPEED) {
+        const auto speedup_string = " (" + std::to_string(speed) + "%)";
+        m_song_name += speedup_string;
+    }
     m_artist = header.artist;
     m_charter = header.charter;
 }
@@ -484,7 +489,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     const auto sync_track = song.sync_track().speedup(settings.speed);
 
     ImageBuilder builder {new_track, song.resolution(), sync_track};
-    builder.add_song_header(song.song_header());
+    builder.add_song_header(song.song_header(), settings.speed);
     builder.add_sp_phrases(new_track, song.resolution());
 
     if (settings.draw_bpms) {

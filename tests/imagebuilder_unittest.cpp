@@ -268,14 +268,29 @@ TEST_CASE("Tempos are handled correctly")
 
 TEST_CASE("SongHeader information is added")
 {
-    NoteTrack<NoteColour> track {{{0}}, {}, {}, 192};
-    ImageBuilder builder {track, 192, {}};
-    SongHeader header {"TestName", "GMS", "NotGMS"};
-    builder.add_song_header(header);
+    SECTION("100% speed")
+    {
+        NoteTrack<NoteColour> track {{{0}}, {}, {}, 192};
+        ImageBuilder builder {track, 192, {}};
+        SongHeader header {"TestName", "GMS", "NotGMS"};
+        builder.add_song_header(header, 100);
 
-    REQUIRE(builder.song_name() == "TestName");
-    REQUIRE(builder.artist() == "GMS");
-    REQUIRE(builder.charter() == "NotGMS");
+        REQUIRE(builder.song_name() == "TestName");
+        REQUIRE(builder.artist() == "GMS");
+        REQUIRE(builder.charter() == "NotGMS");
+    }
+
+    SECTION("200% speed")
+    {
+        NoteTrack<NoteColour> track {{{0}}, {}, {}, 192};
+        ImageBuilder builder {track, 192, {}};
+        SongHeader header {"TestName", "GMS", "NotGMS"};
+        builder.add_song_header(header, 200);
+
+        REQUIRE(builder.song_name() == "TestName (200%)");
+        REQUIRE(builder.artist() == "GMS");
+        REQUIRE(builder.charter() == "NotGMS");
+    }
 }
 
 TEST_CASE("Green ranges for SP phrases are added correctly")
