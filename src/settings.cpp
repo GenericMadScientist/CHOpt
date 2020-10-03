@@ -50,7 +50,10 @@ static bool is_valid_image_path(const std::string& path)
 
 Settings from_args(int argc, char** argv)
 {
+    constexpr int DEFAULT_SPEED = 100;
     constexpr int MAX_PERCENT = 100;
+    constexpr int MAX_SPEED = 5000;
+    constexpr int MIN_SPEED = 5;
     constexpr double MS_PER_SECOND = 1000.0;
 
     argparse::ArgumentParser program {"CHOpt"};
@@ -83,7 +86,7 @@ Settings from_args(int argc, char** argv)
               "defaults to 0")
         .action([](const std::string& value) { return str_to_int(value); });
     program.add_argument("-s", "--speed")
-        .default_value(100)
+        .default_value(DEFAULT_SPEED)
         .help("speed in %, defaults to 100")
         .action([](const std::string& value) { return str_to_int(value); });
     program.add_argument("-b", "--blank")
@@ -185,7 +188,7 @@ Settings from_args(int argc, char** argv)
     settings.lazy_whammy = lazy_whammy / MS_PER_SECOND;
 
     const auto speed = program.get<int>("--speed");
-    if (speed < 5 || speed > 5000 || speed % 5 != 0) {
+    if (speed < MIN_SPEED || speed > MAX_SPEED || speed % MIN_SPEED != 0) {
         throw std::invalid_argument("Speed unsupported by Clone Hero");
     }
 
