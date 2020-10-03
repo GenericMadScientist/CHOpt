@@ -41,6 +41,7 @@ by passing -h or --help to CHOpt, or by consulting the table below.
 | --sqz, --squeeze      | Set squeeze %                                               |
 | --ew, --early-whammy  | Set early whammy %                                          |
 | --lazy, --lazy-whammy | Set number of ms of whammy lost per sustain                 |
+| -s, --speed           | Set speed the song is played at                             |
 | -b, --blank           | Output a blank image without pathing                        |
 | --no-bpms             | Do not draw BPMs                                            |
 | --no-solos            | Do not draw solo sections                                   |
@@ -82,7 +83,7 @@ details).
 getting an initial idea of Clone Hero's parsing behaviour.
 * Dinoguy1000 and shadoweh helped me make sure CHOpt runs on other peoples'
 machines.
-* Various users for feedback, including CyclopsDragon, GHNerd, Jrh,
+* Various users for feedback, including CyclopsDragon, DNelson, GHNerd, Jrh,
 LightlessWalk, Lucretio, RileyTheFox, Taka, and Zantor.
 
 ## Contact
