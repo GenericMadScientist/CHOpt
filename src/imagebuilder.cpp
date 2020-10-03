@@ -478,7 +478,10 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                         const std::atomic<bool>* terminate)
 {
     constexpr int DEFAULT_SPEED = 100;
-    const auto new_track = track.trim_sustains(DEFAULT_SPEED);
+    auto new_track = track;
+    if (song.is_from_midi()) {
+        new_track = track.trim_sustains(DEFAULT_SPEED);
+    }
 
     ImageBuilder builder {new_track, song.resolution(), song.sync_track()};
     builder.add_song_header(song.song_header());
