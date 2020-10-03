@@ -110,12 +110,12 @@ private:
     int m_resolution;
     int m_base_score;
 
-    void compute_base_score()
+    int compute_base_score()
     {
         constexpr auto BASE_NOTE_VALUE = 50;
         constexpr auto BASE_SUSTAIN_DENSITY = 25;
 
-        m_base_score = static_cast<int>(BASE_NOTE_VALUE * m_notes.size());
+        auto base_score = static_cast<int>(BASE_NOTE_VALUE * m_notes.size());
         auto total_ticks = 0;
         auto current_pos = -1;
         auto first_note_length = 0;
@@ -145,8 +145,9 @@ private:
             total_ticks += first_note_length;
         }
 
-        m_base_score += (total_ticks * BASE_SUSTAIN_DENSITY + m_resolution - 1)
+        base_score += (total_ticks * BASE_SUSTAIN_DENSITY + m_resolution - 1)
             / m_resolution;
+        return base_score;
     }
 
 public:
@@ -204,7 +205,7 @@ public:
                          });
         m_solos = std::move(solos);
 
-        compute_base_score();
+        m_base_score = compute_base_score();
     }
 
     [[nodiscard]] const std::vector<Note<T>>& notes() const { return m_notes; }
@@ -230,11 +231,11 @@ public:
             }
         }
 
-        trimmed_track.compute_base_score();
+        trimmed_track.m_base_score = trimmed_track.compute_base_score();
 
         // We need to do this because for speeds below 100%, the sustains are
         // trimmed the same as 100% speed but the base score can be higher.
-        if (speed < 100) {
+        if (speed < DEFAULT_SPEED) {
             sust_cutoff
                 = (DEFAULT_SUST_CUTOFF * m_resolution) / DEFAULT_RESOLUTION;
 
