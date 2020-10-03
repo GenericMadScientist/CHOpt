@@ -481,7 +481,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     if (song.is_from_midi()) {
         new_track = track.trim_sustains(settings.speed);
     }
-    const auto sync_track = song.sync_track.speedup(settings.speed);
+    const auto sync_track = song.sync_track().speedup(settings.speed);
 
     ImageBuilder builder {new_track, song.resolution(), sync_track};
     builder.add_song_header(song.song_header());
