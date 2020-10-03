@@ -104,9 +104,9 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
 }
 
 template <typename T>
-static std::vector<Point>
-points_from_track(const NoteTrack<T>& track, int resolution,
-                  const TimeConverter& converter, double squeeze)
+static std::vector<Point> points_from_track(const NoteTrack<T>& track,
+                                            const TimeConverter& converter,
+                                            double squeeze)
 {
     const auto& notes = track.notes();
     std::vector<Point> points;
@@ -127,7 +127,7 @@ points_from_track(const NoteTrack<T>& track, int resolution,
             is_note_sp_ender = true;
             ++current_phrase;
         }
-        append_note_points(p, q, std::back_inserter(points), resolution,
+        append_note_points(p, q, std::back_inserter(points), track.resolution(),
                            is_note_sp_ender, converter, squeeze);
         p = q;
     }
@@ -187,30 +187,30 @@ solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
     return solo_boosts;
 }
 
-PointSet::PointSet(const NoteTrack<NoteColour>& track, int resolution,
+PointSet::PointSet(const NoteTrack<NoteColour>& track,
                    const TimeConverter& converter, double squeeze)
-    : m_points {points_from_track(track, resolution, converter, squeeze)}
+    : m_points {points_from_track(track, converter, squeeze)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {
-          solo_boosts_from_solos(track.solos(), resolution, converter)}
+          solo_boosts_from_solos(track.solos(), track.resolution(), converter)}
 {
 }
 
-PointSet::PointSet(const NoteTrack<GHLNoteColour>& track, int resolution,
+PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
                    const TimeConverter& converter, double squeeze)
-    : m_points {points_from_track(track, resolution, converter, squeeze)}
+    : m_points {points_from_track(track, converter, squeeze)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {
-          solo_boosts_from_solos(track.solos(), resolution, converter)}
+          solo_boosts_from_solos(track.solos(), track.resolution(), converter)}
 {
 }
 
-PointSet::PointSet(const NoteTrack<DrumNoteColour>& track, int resolution,
+PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
                    const TimeConverter& converter, double squeeze)
-    : m_points {points_from_track(track, resolution, converter, squeeze)}
+    : m_points {points_from_track(track, converter, squeeze)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {
-          solo_boosts_from_solos(track.solos(), resolution, converter)}
+          solo_boosts_from_solos(track.solos(), track.resolution(), converter)}
 {
 }
 

@@ -214,6 +214,7 @@ public:
         return m_sp_phrases;
     }
     [[nodiscard]] const std::vector<Solo>& solos() const { return m_solos; }
+    [[nodiscard]] int resolution() const { return m_resolution; }
     [[nodiscard]] int base_score() const { return m_base_score; }
     [[nodiscard]] NoteTrack<T> trim_sustains(int speed) const
     {

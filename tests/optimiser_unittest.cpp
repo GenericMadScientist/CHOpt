@@ -43,7 +43,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<Note<NoteColour>> notes {{0}, {192}, {384}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
@@ -70,7 +70,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<StarPower> phrases {
             {0, 50}, {192, 50}, {3840, 50}, {4032, 50}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
@@ -89,7 +89,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
@@ -106,7 +106,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {3360}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
@@ -124,7 +124,7 @@ TEST_CASE("optimal_path produces the correct path")
             {0}, {192}, {384}, {3840}, {3840, 0, NoteColour::Red}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 3,
@@ -143,7 +143,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<StarPower> phrases {
             {0, 50}, {192, 50}, {3224, 50}, {9378, 50}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
@@ -167,7 +167,7 @@ TEST_CASE("optimal_path produces the correct path")
             {10947}, {10948}, {10949}, {10950},      {10951}, {10952}, {10953}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}, {3234, 50}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
         auto opt_path = optimiser.optimal_path();
 
@@ -184,7 +184,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<Note<NoteColour>> notes {{0, 1420}, {1500}, {1600}};
         std::vector<StarPower> phrases {{0, 1550}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
         auto opt_path = optimiser.optimal_path();
 
@@ -202,7 +202,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<Note<NoteColour>> notes {{192, 1440}, {1632}, {6336}};
         std::vector<StarPower> phrases {{192, 1}, {1632, 1}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
         auto opt_path = optimiser.optimal_path();
 
@@ -218,7 +218,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<Note<NoteColour>> notes {{0, 1488}, {2880, 3264}};
         std::vector<StarPower> phrases {{0, 1}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
         auto opt_path = optimiser.optimal_path();
 
@@ -231,7 +231,7 @@ TEST_CASE("optimal_path produces the correct path")
                                              {768}, {4032}, {4224}};
         std::vector<StarPower> phrases {{0, 50}, {192, 50}, {4032, 50}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
         auto opt_path = optimiser.optimal_path();
 
@@ -254,7 +254,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<StarPower> phrases {
             {192, 50}, {672, 50}, {3840, 50}, {9984, 50}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
 
         auto opt_path = optimiser.optimal_path();
@@ -272,7 +272,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<Note<NoteColour>> notes {{0, 1536}, {1728}};
         std::vector<StarPower> phrases {{0, 50}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
 
         auto opt_path = optimiser.optimal_path();
@@ -297,7 +297,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<StarPower> phrases {
             {0, 50}, {192, 50}, {3350, 50}, {9504, 50}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
 
         const auto opt_path = optimiser.optimal_path();
@@ -318,7 +318,7 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<StarPower> phrases {
             {0, 1}, {192, 1}, {3840, 576}, {19200, 1}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
 
         const auto opt_path = optimiser.optimal_path();
@@ -335,7 +335,7 @@ TEST_CASE("optimal_path produces the correct path")
                                              {3504}, {9600}, {12672}};
         std::vector<StarPower> phrases {{0, 1}, {192, 1}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
-        ProcessedSong track {note_track, 192, {}, 1.0, 1.0, Second(0.0)};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
         Optimiser optimiser {&track, &terminate};
 
         const auto opt_path = optimiser.optimal_path();

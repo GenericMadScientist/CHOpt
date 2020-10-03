@@ -108,10 +108,10 @@ private:
 
 public:
     template <typename T>
-    SpData(const NoteTrack<T>& track, int resolution,
-           const SyncTrack& sync_track, double early_whammy, Second lazy_whammy)
-        : SpData(note_spans(track), track.sp_phrases(), resolution, sync_track,
-                 early_whammy, lazy_whammy)
+    SpData(const NoteTrack<T>& track, const SyncTrack& sync_track,
+           double early_whammy, Second lazy_whammy)
+        : SpData(note_spans(track), track.sp_phrases(), track.resolution(),
+                 sync_track, early_whammy, lazy_whammy)
     {
     }
 

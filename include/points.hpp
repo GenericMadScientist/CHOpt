@@ -44,11 +44,11 @@ private:
     const std::vector<std::tuple<Position, int>> m_solo_boosts;
 
 public:
-    PointSet(const NoteTrack<NoteColour>& track, int resolution,
+    PointSet(const NoteTrack<NoteColour>& track, const TimeConverter& converter,
+             double squeeze);
+    PointSet(const NoteTrack<GHLNoteColour>& track,
              const TimeConverter& converter, double squeeze);
-    PointSet(const NoteTrack<GHLNoteColour>& track, int resolution,
-             const TimeConverter& converter, double squeeze);
-    PointSet(const NoteTrack<DrumNoteColour>& track, int resolution,
+    PointSet(const NoteTrack<DrumNoteColour>& track,
              const TimeConverter& converter, double squeeze);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }

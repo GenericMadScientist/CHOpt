@@ -69,14 +69,13 @@ static double get_denom(const SyncTrack& sync_track, int resolution,
 }
 
 template <typename T>
-static std::vector<DrawnNote<T>> drawn_notes(const NoteTrack<T>& track,
-                                             int resolution)
+static std::vector<DrawnNote<T>> drawn_notes(const NoteTrack<T>& track)
 {
     std::vector<DrawnNote<T>> notes;
 
     for (const auto& note : track.notes()) {
-        auto beat = note.position / static_cast<double>(resolution);
-        auto length = note.length / static_cast<double>(resolution);
+        auto beat = note.position / static_cast<double>(track.resolution());
+        auto length = note.length / static_cast<double>(track.resolution());
         auto is_sp_note = false;
         for (const auto& phrase : track.sp_phrases()) {
             if (note.position >= phrase.position
@@ -92,7 +91,6 @@ static std::vector<DrawnNote<T>> drawn_notes(const NoteTrack<T>& track,
 
 template <typename T>
 static std::vector<DrawnRow> drawn_rows(const NoteTrack<T>& track,
-                                        int resolution,
                                         const SyncTrack& sync_track)
 {
     int max_pos = 0;
@@ -103,14 +101,14 @@ static std::vector<DrawnRow> drawn_rows(const NoteTrack<T>& track,
         }
     }
 
-    const auto max_beat = max_pos / static_cast<double>(resolution);
+    const auto max_beat = max_pos / static_cast<double>(track.resolution());
     auto current_beat = 0.0;
     std::vector<DrawnRow> rows;
 
     while (current_beat <= max_beat) {
         auto row_length = 0.0;
         while (true) {
-            auto contribution = get_beat_rate(sync_track, resolution,
+            auto contribution = get_beat_rate(sync_track, track.resolution(),
                                               current_beat + row_length);
             if (contribution > MAX_BEATS_PER_LINE && row_length == 0.0) {
                 // Break up a measure that spans more than a full row.
@@ -136,20 +134,21 @@ static std::vector<DrawnRow> drawn_rows(const NoteTrack<T>& track,
     return rows;
 }
 
-ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track, int resolution,
+ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
                            const SyncTrack& sync_track)
     : m_track_type {TrackType::FiveFret}
-    , m_rows {drawn_rows(track, resolution, sync_track)}
-    , m_notes {drawn_notes(track, resolution)}
+    , m_rows {drawn_rows(track, sync_track)}
+    , m_notes {drawn_notes(track)}
 {
     constexpr double HALF_BEAT = 0.5;
 
     for (const auto& row : m_rows) {
         auto start = row.start;
         while (start < row.end) {
-            auto meas_length = get_beat_rate(sync_track, resolution, start);
-            auto numer = get_numer(sync_track, resolution, start);
-            auto denom = get_denom(sync_track, resolution, start);
+            auto meas_length
+                = get_beat_rate(sync_track, track.resolution(), start);
+            auto numer = get_numer(sync_track, track.resolution(), start);
+            auto denom = get_denom(sync_track, track.resolution(), start);
             m_measure_lines.push_back(start);
             m_half_beat_lines.push_back(start + HALF_BEAT * denom);
             for (int i = 1; i < numer; ++i) {
@@ -163,19 +162,20 @@ ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track, int resolution,
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
-                           int resolution, const SyncTrack& sync_track)
+                           const SyncTrack& sync_track)
     : m_track_type {TrackType::SixFret}
-    , m_rows {drawn_rows(track, resolution, sync_track)}
-    , m_ghl_notes {drawn_notes(track, resolution)}
+    , m_rows {drawn_rows(track, sync_track)}
+    , m_ghl_notes {drawn_notes(track)}
 {
     constexpr double HALF_BEAT = 0.5;
 
     for (const auto& row : m_rows) {
         auto start = row.start;
         while (start < row.end) {
-            auto meas_length = get_beat_rate(sync_track, resolution, start);
-            auto numer = get_numer(sync_track, resolution, start);
-            auto denom = get_denom(sync_track, resolution, start);
+            auto meas_length
+                = get_beat_rate(sync_track, track.resolution(), start);
+            auto numer = get_numer(sync_track, track.resolution(), start);
+            auto denom = get_denom(sync_track, track.resolution(), start);
             m_measure_lines.push_back(start);
             m_half_beat_lines.push_back(start + HALF_BEAT * denom);
             for (int i = 1; i < numer; ++i) {
@@ -189,19 +189,20 @@ ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<DrumNoteColour>& track,
-                           int resolution, const SyncTrack& sync_track)
+                           const SyncTrack& sync_track)
     : m_track_type {TrackType::Drums}
-    , m_rows {drawn_rows(track, resolution, sync_track)}
-    , m_drum_notes {drawn_notes(track, resolution)}
+    , m_rows {drawn_rows(track, sync_track)}
+    , m_drum_notes {drawn_notes(track)}
 {
     constexpr double HALF_BEAT = 0.5;
 
     for (const auto& row : m_rows) {
         auto start = row.start;
         while (start < row.end) {
-            auto meas_length = get_beat_rate(sync_track, resolution, start);
-            auto numer = get_numer(sync_track, resolution, start);
-            auto denom = get_denom(sync_track, resolution, start);
+            auto meas_length
+                = get_beat_rate(sync_track, track.resolution(), start);
+            auto numer = get_numer(sync_track, track.resolution(), start);
+            auto denom = get_denom(sync_track, track.resolution(), start);
             m_measure_lines.push_back(start);
             m_half_beat_lines.push_back(start + HALF_BEAT * denom);
             for (int i = 1; i < numer; ++i) {
@@ -355,8 +356,7 @@ void ImageBuilder::add_sp_acts(const PointSet& points, const Path& path)
     }
 }
 
-void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
-                                  int resolution)
+void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track)
 {
     constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
 
@@ -365,12 +365,12 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
         while (p->position < phrase.position) {
             ++p;
         }
-        auto start = p->position / static_cast<double>(resolution);
+        auto start = p->position / static_cast<double>(track.resolution());
         auto phrase_end = phrase.position + phrase.length;
         auto end = start;
         while (p < track.notes().cend() && p->position < phrase_end) {
-            auto current_end
-                = (p->position + p->length) / static_cast<double>(resolution);
+            auto current_end = (p->position + p->length)
+                / static_cast<double>(track.resolution());
             end = std::max(end, current_end);
             ++p;
         }
@@ -379,20 +379,19 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
     }
 }
 
-void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
-                                  int resolution)
+void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track)
 {
     for (const auto& phrase : track.sp_phrases()) {
         auto p = track.notes().cbegin();
         while (p->position < phrase.position) {
             ++p;
         }
-        auto start = p->position / static_cast<double>(resolution);
+        auto start = p->position / static_cast<double>(track.resolution());
         auto phrase_end = phrase.position + phrase.length;
         auto end = start;
         while (p < track.notes().cend() && p->position < phrase_end) {
-            auto current_end
-                = (p->position + p->length) / static_cast<double>(resolution);
+            auto current_end = (p->position + p->length)
+                / static_cast<double>(track.resolution());
             end = std::max(end, current_end);
             ++p;
         }
@@ -400,20 +399,19 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
     }
 }
 
-void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
-                                  int resolution)
+void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track)
 {
     for (const auto& phrase : track.sp_phrases()) {
         auto p = track.notes().cbegin();
         while (p->position < phrase.position) {
             ++p;
         }
-        auto start = p->position / static_cast<double>(resolution);
+        auto start = p->position / static_cast<double>(track.resolution());
         auto phrase_end = phrase.position + phrase.length;
         auto end = start;
         while (p < track.notes().cend() && p->position < phrase_end) {
-            auto current_end
-                = (p->position + p->length) / static_cast<double>(resolution);
+            auto current_end = (p->position + p->length)
+                / static_cast<double>(track.resolution());
             end = std::max(end, current_end);
             ++p;
         }
@@ -488,26 +486,25 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     }
     const auto sync_track = song.sync_track().speedup(settings.speed);
 
-    ImageBuilder builder {new_track, song.resolution(), sync_track};
+    ImageBuilder builder {new_track, sync_track};
     builder.add_song_header(song.song_header(), settings.speed);
-    builder.add_sp_phrases(new_track, song.resolution());
+    builder.add_sp_phrases(new_track);
 
     if (settings.draw_bpms) {
-        builder.add_bpms(sync_track, song.resolution());
+        builder.add_bpms(sync_track, new_track.resolution());
     }
 
     if (settings.draw_solos) {
-        builder.add_solo_sections(new_track.solos(), song.resolution());
+        builder.add_solo_sections(new_track.solos(), new_track.resolution());
     }
 
     if (settings.draw_time_sigs) {
-        builder.add_time_sigs(sync_track, song.resolution());
+        builder.add_time_sigs(sync_track, new_track.resolution());
     }
 
     const ProcessedSong processed_track {
-        new_track,        song.resolution(),
-        sync_track,       settings.early_whammy,
-        settings.squeeze, Second {settings.lazy_whammy}};
+        new_track, sync_track, settings.early_whammy, settings.squeeze,
+        Second {settings.lazy_whammy}};
     Path path;
 
     if (!settings.blank) {
