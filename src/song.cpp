@@ -848,9 +848,6 @@ read_instrument_midi_track(const MidiTrack& midi_track)
 static std::map<Difficulty, NoteTrack<NoteColour>>
 note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
-    constexpr int DEFAULT_RESOLUTION = 192;
-    constexpr int DEFAULT_SUST_CUTOFF = 64;
-
     const auto event_track = read_instrument_midi_track<NoteColour>(midi_track);
 
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
@@ -865,11 +862,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         const auto& note_offs = event_track.note_off_events.at(key);
         for (const auto& [pos, end] :
              combine_note_on_off_events(note_ons, note_offs)) {
-            auto note_length = end - pos;
-            if (note_length
-                <= (DEFAULT_SUST_CUTOFF * resolution) / DEFAULT_RESOLUTION) {
-                note_length = 0;
-            }
+            const auto note_length = end - pos;
             auto note_colour = colour;
             for (const auto& [open_start, open_end] : open_events[diff]) {
                 if (pos >= open_start && pos < open_end) {
@@ -901,9 +894,6 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 static std::map<Difficulty, NoteTrack<GHLNoteColour>>
 ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
-    constexpr int DEFAULT_RESOLUTION = 192;
-    constexpr int DEFAULT_SUST_CUTOFF = 64;
-
     const auto event_track
         = read_instrument_midi_track<GHLNoteColour>(midi_track);
 
@@ -913,11 +903,7 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         const auto& note_offs = event_track.note_off_events.at(key);
         for (const auto& [pos, end] :
              combine_note_on_off_events(note_ons, note_offs)) {
-            auto note_length = end - pos;
-            if (note_length
-                <= (DEFAULT_SUST_CUTOFF * resolution) / DEFAULT_RESOLUTION) {
-                note_length = 0;
-            }
+            const auto note_length = end - pos;
             notes[diff].push_back({pos, note_length, colour});
         }
     }

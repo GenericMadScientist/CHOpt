@@ -477,28 +477,29 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                         const std::function<void(const char*)>& write,
                         const std::atomic<bool>* terminate)
 {
-    ImageBuilder builder {track, song.resolution(), song.sync_track()};
+    constexpr int DEFAULT_SPEED = 100;
+    const auto new_track = track.trim_sustains(DEFAULT_SPEED);
+
+    ImageBuilder builder {new_track, song.resolution(), song.sync_track()};
     builder.add_song_header(song.song_header());
-    builder.add_sp_phrases(track, song.resolution());
+    builder.add_sp_phrases(new_track, song.resolution());
 
     if (settings.draw_bpms) {
         builder.add_bpms(song.sync_track(), song.resolution());
     }
 
     if (settings.draw_solos) {
-        builder.add_solo_sections(track.solos(), song.resolution());
+        builder.add_solo_sections(new_track.solos(), song.resolution());
     }
 
     if (settings.draw_time_sigs) {
         builder.add_time_sigs(song.sync_track(), song.resolution());
     }
 
-    const ProcessedSong processed_track {track,
-                                         song.resolution(),
-                                         song.sync_track(),
-                                         settings.early_whammy,
-                                         settings.squeeze,
-                                         Second {settings.lazy_whammy}};
+    const ProcessedSong processed_track {
+        new_track,         song.resolution(),
+        song.sync_track(), settings.early_whammy,
+        settings.squeeze,  Second {settings.lazy_whammy}};
     Path path;
 
     if (!settings.blank) {

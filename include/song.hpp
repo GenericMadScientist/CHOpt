@@ -211,6 +211,24 @@ public:
             / m_resolution;
         return base_score;
     }
+    [[nodiscard]] NoteTrack<T> trim_sustains(int speed) const
+    {
+        constexpr int DEFAULT_RESOLUTION = 192;
+        constexpr int DEFAULT_SPEED = 100;
+        constexpr int DEFAULT_SUST_CUTOFF = 64;
+
+        auto trimmed_track = *this;
+        const auto sust_cutoff = (DEFAULT_SUST_CUTOFF * m_resolution * speed)
+            / (DEFAULT_SPEED * DEFAULT_RESOLUTION);
+
+        for (auto& note : trimmed_track.m_notes) {
+            if (note.length <= sust_cutoff) {
+                note.length = 0;
+            }
+        }
+
+        return trimmed_track;
+    }
 };
 
 // Invariants:
