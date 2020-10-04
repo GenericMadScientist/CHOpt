@@ -149,27 +149,42 @@ static std::vector<Point> points_from_track(const NoteTrack<T>& track,
     return points;
 }
 
+template <typename P>
 static std::vector<PointPtr>
-next_sp_note_vector(const std::vector<Point>& points)
+next_matching_vector(const std::vector<Point>& points, P predicate)
 {
     if (points.empty()) {
         return {};
     }
-    std::vector<PointPtr> next_sp_notes;
-    auto next_sp_note = points.cend();
+    std::vector<PointPtr> next_matching_points;
+    auto next_matching_point = points.cend();
     for (auto p = std::prev(points.cend());; --p) {
-        if (p->is_sp_granting_note) {
-            next_sp_note = p;
+        if (predicate(*p)) {
+            next_matching_point = p;
         }
-        next_sp_notes.push_back(next_sp_note);
+        next_matching_points.push_back(next_matching_point);
         // We can't have the loop condition be p >= points.cbegin() because
         // decrementing past .begin() is undefined behaviour.
         if (p == points.cbegin()) {
             break;
         }
     }
-    std::reverse(next_sp_notes.begin(), next_sp_notes.end());
-    return next_sp_notes;
+    std::reverse(next_matching_points.begin(), next_matching_points.end());
+    return next_matching_points;
+}
+
+static std::vector<PointPtr>
+next_non_hold_vector(const std::vector<Point>& points)
+{
+    return next_matching_vector(points,
+                                [](const auto& p) { return !p.is_hold_point; });
+}
+
+static std::vector<PointPtr>
+next_sp_note_vector(const std::vector<Point>& points)
+{
+    return next_matching_vector(
+        points, [](const auto& p) { return p.is_sp_granting_note; });
 }
 
 static std::vector<std::tuple<Position, int>>
@@ -203,6 +218,7 @@ static std::vector<int> score_totals(const std::vector<Point>& points)
 PointSet::PointSet(const NoteTrack<NoteColour>& track,
                    const TimeConverter& converter, double squeeze)
     : m_points {points_from_track(track, converter, squeeze)}
+    , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
                                             converter)}
@@ -213,6 +229,7 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track,
 PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
                    const TimeConverter& converter, double squeeze)
     : m_points {points_from_track(track, converter, squeeze)}
+    , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
                                             converter)}
@@ -223,11 +240,19 @@ PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
 PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
                    const TimeConverter& converter, double squeeze)
     : m_points {points_from_track(track, converter, squeeze)}
+    , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
                                             converter)}
     , m_cumulative_score_totals {score_totals(m_points)}
 {
+}
+
+PointPtr PointSet::next_non_hold_point(PointPtr point) const
+{
+    const auto index
+        = static_cast<std::size_t>(std::distance(m_points.cbegin(), point));
+    return m_next_non_hold_point[index];
 }
 
 PointPtr PointSet::next_sp_granting_note(PointPtr point) const

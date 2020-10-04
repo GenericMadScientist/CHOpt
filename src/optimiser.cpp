@@ -239,9 +239,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             } else {
                 // We cannot hit any subsequent hold point, so go straight to
                 // the next non-hold point.
-                q = std::find_if(
-                    q, m_song->points().cend(),
-                    [](const auto& pt) { return !pt.is_hold_point; });
+                q = m_song->points().next_non_hold_point(q);
                 continue;
             }
 

@@ -316,6 +316,18 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     }
 }
 
+TEST_CASE("next_non_hold_point is correct")
+{
+    std::vector<Note<NoteColour>> notes {{0}, {192, 192}};
+    NoteTrack<NoteColour> track {notes, {}, {}, 192};
+
+    PointSet points {track, {{}, 192}, 1.0};
+
+    REQUIRE(points.next_non_hold_point(points.cbegin()) == points.cbegin());
+    REQUIRE(points.next_non_hold_point(std::next(points.cbegin(), 2))
+            == points.cend());
+}
+
 TEST_CASE("next_sp_granting_note is correct")
 {
     std::vector<Note<NoteColour>> notes {{100, 0}, {200, 100}, {400, 0}};
