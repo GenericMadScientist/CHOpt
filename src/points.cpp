@@ -187,12 +187,26 @@ solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
     return solo_boosts;
 }
 
+static std::vector<int> score_totals(const std::vector<Point>& points)
+{
+    std::vector<int> scores;
+    scores.reserve(points.size() + 1);
+    scores.push_back(0);
+    auto sum = 0;
+    for (const auto& p : points) {
+        sum += p.value;
+        scores.push_back(sum);
+    }
+    return scores;
+}
+
 PointSet::PointSet(const NoteTrack<NoteColour>& track,
                    const TimeConverter& converter, double squeeze)
     : m_points {points_from_track(track, converter, squeeze)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
-    , m_solo_boosts {
-          solo_boosts_from_solos(track.solos(), track.resolution(), converter)}
+    , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
+                                            converter)}
+    , m_cumulative_score_totals {score_totals(m_points)}
 {
 }
 
@@ -200,8 +214,9 @@ PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
                    const TimeConverter& converter, double squeeze)
     : m_points {points_from_track(track, converter, squeeze)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
-    , m_solo_boosts {
-          solo_boosts_from_solos(track.solos(), track.resolution(), converter)}
+    , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
+                                            converter)}
+    , m_cumulative_score_totals {score_totals(m_points)}
 {
 }
 
@@ -209,8 +224,9 @@ PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
                    const TimeConverter& converter, double squeeze)
     : m_points {points_from_track(track, converter, squeeze)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
-    , m_solo_boosts {
-          solo_boosts_from_solos(track.solos(), track.resolution(), converter)}
+    , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
+                                            converter)}
+    , m_cumulative_score_totals {score_totals(m_points)}
 {
 }
 
@@ -219,4 +235,12 @@ PointPtr PointSet::next_sp_granting_note(PointPtr point) const
     const auto index
         = static_cast<std::size_t>(std::distance(m_points.cbegin(), point));
     return m_next_sp_granting_note[index];
+}
+
+int PointSet::range_score(PointPtr start, PointPtr end) const
+{
+    const auto start_index = std::distance(m_points.cbegin(), start);
+    const auto end_index = std::distance(m_points.cbegin(), end);
+    return m_cumulative_score_totals[end_index]
+        - m_cumulative_score_totals[start_index];
 }

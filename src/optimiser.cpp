@@ -168,7 +168,7 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
         return std::nullopt;
     }
 
-    auto score_boost = prev_key_iter->second.score_boost;
+    const auto score_boost = prev_key_iter->second.score_boost;
     return {{next_acts, score_boost}};
 }
 
@@ -177,7 +177,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
 {
     constexpr double MINIMUM_SP_AMOUNT = 0.5;
 
-    auto subpath_from_prev
+    const auto subpath_from_prev
         = try_previous_best_subpaths(key, cache, has_full_sp);
     if (subpath_from_prev) {
         return *subpath_from_prev;
@@ -187,8 +187,6 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
     std::vector<std::uint8_t> attained_act_ends;
     attained_act_ends.resize(static_cast<std::size_t>(
         std::distance(m_song->points().cbegin(), m_song->points().cend())));
-    std::fill(attained_act_ends.begin(), attained_act_ends.end(),
-              static_cast<std::uint8_t>(0));
     auto best_score_boost = 0;
 
     for (auto p = key.point; p < m_song->points().cend(); ++p) {
@@ -210,7 +208,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         if (p != key.point && sp_bar.max() == 1.0
             && std::prev(p)->is_sp_granting_note) {
             get_partial_full_sp_path(p, cache);
-            auto cache_value = cache.full_sp_paths.at(p);
+            const auto cache_value = cache.full_sp_paths.at(p);
             if (cache_value.score_boost > best_score_boost) {
                 return cache_value;
             }
@@ -220,10 +218,10 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             }
             break;
         }
-        auto q_min = act_end_lower_bound(
+        const auto q_min = act_end_lower_bound(
             p, starting_pos.measure, std::max(MINIMUM_SP_AMOUNT, sp_bar.min()));
         for (auto q = q_min; q < m_song->points().cend();) {
-            auto q_index = static_cast<std::size_t>(
+            const auto q_index = static_cast<std::size_t>(
                 std::distance(m_song->points().cbegin(), q));
             if (attained_act_ends[q_index] != 0) {
                 ++q;
@@ -231,7 +229,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             }
 
             ActivationCandidate candidate {p, q, starting_pos, sp_bar};
-            auto candidate_result = m_song->is_candidate_valid(candidate);
+            const auto candidate_result = m_song->is_candidate_valid(candidate);
             if (candidate_result.validity != ActValidity::insufficient_sp) {
                 attained_act_ends[q_index] = 1;
             } else if (!q->is_hold_point) {
@@ -252,13 +250,13 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                 continue;
             }
 
-            auto act_score = std::accumulate(
-                p, std::next(q), 0,
-                [](const auto& sum, const auto& x) { return sum + x.value; });
+            const auto act_score
+                = m_song->points().range_score(p, std::next(q));
             CacheKey next_key {std::next(q), candidate_result.ending_position};
             next_key = advance_cache_key(next_key);
-            auto rest_of_path_score_boost = get_partial_path(next_key, cache);
-            auto score = act_score + rest_of_path_score_boost;
+            const auto rest_of_path_score_boost
+                = get_partial_path(next_key, cache);
+            const auto score = act_score + rest_of_path_score_boost;
             if (score > best_score_boost) {
                 best_score_boost = score;
                 acts.clear();

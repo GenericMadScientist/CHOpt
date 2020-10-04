@@ -42,6 +42,7 @@ private:
     const std::vector<Point> m_points;
     const std::vector<PointPtr> m_next_sp_granting_note;
     const std::vector<std::tuple<Position, int>> m_solo_boosts;
+    const std::vector<int> m_cumulative_score_totals;
 
 public:
     PointSet(const NoteTrack<NoteColour>& track, const TimeConverter& converter,
@@ -53,6 +54,8 @@ public:
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
     [[nodiscard]] PointPtr next_sp_granting_note(PointPtr point) const;
+    // Get the combined score of all points that are >= start and < end.
+    [[nodiscard]] int range_score(PointPtr start, PointPtr end) const;
     [[nodiscard]] const std::vector<std::tuple<Position, int>>&
     solo_boosts() const
     {

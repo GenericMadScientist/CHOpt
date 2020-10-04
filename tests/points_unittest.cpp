@@ -343,3 +343,15 @@ TEST_CASE("Solo sections are added")
 
     REQUIRE(points.solo_boosts() == expected_solo_boosts);
 }
+
+TEST_CASE("range_score is correct")
+{
+    NoteTrack<NoteColour> track {{{0, 192}, {386}}, {}, {}, 192};
+    PointSet points {track, {{}, 192}, 1.0};
+    auto begin = points.cbegin();
+    auto end = points.cend();
+
+    REQUIRE(points.range_score(begin, begin) == 0);
+    REQUIRE(points.range_score(begin, end) == 128);
+    REQUIRE(points.range_score(begin + 1, end - 1) == 28);
+}
