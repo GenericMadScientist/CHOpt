@@ -70,8 +70,6 @@ private:
 
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
     [[nodiscard]] CacheKey advance_cache_key(CacheKey key) const;
-    [[nodiscard]] PointPtr act_end_lower_bound(PointPtr point, Measure pos,
-                                               double sp_bar_amount) const;
     [[nodiscard]] std::optional<CacheValue>
     try_previous_best_subpaths(CacheKey key, const Cache& cache,
                                bool has_full_sp) const;

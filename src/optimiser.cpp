@@ -78,22 +78,6 @@ Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
     return key;
 }
 
-// This function merely returns a point such that all activations starting at
-// pos, with earliest point point, with the given SP must end at the returned
-// point or later. This is merely a bound to help the core algorithm, it need
-// not be optimal.
-PointPtr Optimiser::act_end_lower_bound(PointPtr point, Measure pos,
-                                        double sp_bar_amount) const
-{
-    constexpr double MEASURES_PER_BAR = 8.0;
-
-    auto end_pos = pos + Measure(MEASURES_PER_BAR * sp_bar_amount);
-    auto q = std::find_if(point, m_song->points().cend(), [=](const auto& pt) {
-        return pt.hit_window_end.measure > end_pos;
-    });
-    return std::prev(q);
-}
-
 int Optimiser::get_partial_path(CacheKey key, Cache& cache) const
 {
     if (key.point == m_song->points().cend()) {
@@ -175,8 +159,6 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
 Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                                                     bool has_full_sp) const
 {
-    constexpr double MINIMUM_SP_AMOUNT = 0.5;
-
     const auto subpath_from_prev
         = try_previous_best_subpaths(key, cache, has_full_sp);
     if (subpath_from_prev) {
@@ -187,6 +169,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
     std::vector<std::uint8_t> attained_act_ends;
     attained_act_ends.resize(static_cast<std::size_t>(
         std::distance(m_song->points().cbegin(), m_song->points().cend())));
+    auto q_min = key.point;
     auto best_score_boost = 0;
 
     for (auto p = key.point; p < m_song->points().cend(); ++p) {
@@ -218,8 +201,12 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             }
             break;
         }
-        const auto q_min = act_end_lower_bound(
-            p, starting_pos.measure, std::max(MINIMUM_SP_AMOUNT, sp_bar.min()));
+        while (q_min != m_song->points().cend()
+               && attained_act_ends[std::distance(m_song->points().cbegin(),
+                                                  q_min)]
+                   != 0) {
+            ++q_min;
+        }
         for (auto q = q_min; q < m_song->points().cend();) {
             const auto q_index = static_cast<std::size_t>(
                 std::distance(m_song->points().cbegin(), q));
