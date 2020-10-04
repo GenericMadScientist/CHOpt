@@ -202,8 +202,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             break;
         }
         while (q_min != m_song->points().cend()
-               && attained_act_ends[std::distance(m_song->points().cbegin(),
-                                                  q_min)]
+               && attained_act_ends[static_cast<std::size_t>(
+                      std::distance(m_song->points().cbegin(), q_min))]
                    != 0) {
             ++q_min;
         }

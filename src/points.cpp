@@ -264,8 +264,10 @@ PointPtr PointSet::next_sp_granting_note(PointPtr point) const
 
 int PointSet::range_score(PointPtr start, PointPtr end) const
 {
-    const auto start_index = std::distance(m_points.cbegin(), start);
-    const auto end_index = std::distance(m_points.cbegin(), end);
+    const auto start_index
+        = static_cast<std::size_t>(std::distance(m_points.cbegin(), start));
+    const auto end_index
+        = static_cast<std::size_t>(std::distance(m_points.cbegin(), end));
     return m_cumulative_score_totals[end_index]
         - m_cumulative_score_totals[start_index];
 }
