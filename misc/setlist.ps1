@@ -1,4 +1,6 @@
-# The location of CHOpt.exe (specifically, the CLI version)
+# The location of CHOpt.exe (specifically, the CLI version). This path must
+# include the CHOpt.exe at the end (or whatever is appropriate, if the exe has
+# been renamed).
 $CHOPT_PATH = 'path\to\CHOpt\here'
 # The location of the setlist you want to optimise
 $SETLIST_PATH = 'path\to\setlist\here'
