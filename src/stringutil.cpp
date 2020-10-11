@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <stdexcept>
 
 // libc++ is special and doesn't support <cuchar> yet, so we need a different
