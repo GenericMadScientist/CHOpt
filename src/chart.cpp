@@ -21,91 +21,12 @@
 #include <optional>
 #include <stdexcept>
 
-// libc++ is special and doesn't support <cuchar> yet, so we need a different
-// method for the UTF-16le -> UTF-8 conversion. The alternative method isn't
-// general because it uses a feature deprecated in C++17 and Microsoft's STL
-// will complain if we use it.
-#ifndef _LIBCPP_VERSION
-#include <climits>
-#include <cstdint>
-#include <cuchar>
-#else
-#include <codecvt>
-#include <locale>
-#endif
-
 #include "chart.hpp"
-
-static std::string utf16_to_utf8_string(std::u16string_view input)
-{
-#ifndef _LIBCPP_VERSION
-    std::string u8_string;
-
-    // This conversion method is from the c16rtomb page on cppreference. This
-    // does not handle surrogate pairs, but I've only come across two UTF-16
-    // charts so a proper solution can wait until the C++ standard library gets
-    // a fix or a non-artificial chart comes up that this is a problem for.
-    std::mbstate_t state {};
-    char out[MB_LEN_MAX];
-    for (auto c : input) {
-        auto rc = std::c16rtomb(out, c, &state);
-        if (rc != static_cast<std::size_t>(-1)) {
-            for (auto i = 0u; i < rc; ++i) {
-                u8_string.push_back(out[i]);
-            }
-        }
-    }
-
-    return u8_string;
-#else
-    // std::codecvt_utf8_utf16 is deprecated in C++17 and Microsoft's STL
-    // complains about it so we can't have this be a general solution.
-    return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> {}
-        .to_bytes(input.cbegin(), input.cend());
-#endif
-}
-
-static std::string_view skip_whitespace(std::string_view input)
-{
-    const auto first_non_ws_location = input.find_first_not_of(" \f\n\r\t\v");
-    input.remove_prefix(std::min(first_non_ws_location, input.size()));
-    return input;
-}
-
-// This returns a string_view from the start of input until a carriage return
-// or newline. input is changed to point to the first character past the
-// detected newline character that is not a whitespace character.
-static std::string_view break_off_newline(std::string_view& input)
-{
-    if (input.empty()) {
-        throw std::invalid_argument("No lines left");
-    }
-
-    const auto newline_location = input.find_first_of("\r\n");
-    if (newline_location == std::string_view::npos) {
-        const auto line = input;
-        input.remove_prefix(input.size());
-        return line;
-    }
-
-    const auto line = input.substr(0, newline_location);
-    input.remove_prefix(newline_location);
-    input = skip_whitespace(input);
-    return line;
-}
+#include "stringutil.hpp"
 
 static std::string_view strip_square_brackets(std::string_view input)
 {
     return input.substr(1, input.size() - 2);
-}
-
-static bool string_starts_with(std::string_view input, std::string_view pattern)
-{
-    if (input.size() < pattern.size()) {
-        return false;
-    }
-
-    return input.substr(0, pattern.size()) == pattern;
 }
 
 // Convert a string_view to an int. If there are any problems with the input,
@@ -204,26 +125,8 @@ Chart parse_chart(std::string_view data)
 {
     Chart chart;
 
-    // We need this for the UTF-16le conversion, because the converted result
-    // must live in the larger scope.
-    std::string u8_string;
-
-    if (string_starts_with(data, "\xEF\xBB\xBF")) {
-        // Trim off UTF-8 BOM if present
-        data.remove_prefix(3);
-    } else if (string_starts_with(data, "\xFF\xFE")) {
-        if (data.size() % 2 != 0) {
-            throw std::invalid_argument("UTF-16le file has an odd size");
-        }
-        // Trim off UTF-16le BOM if present, then convert
-        data.remove_prefix(2);
-        // I'm pretty sure I really do need the reinterpret_cast here.
-        std::u16string_view utf16_string_view {
-            reinterpret_cast<const char16_t*>(data.data()), // NOLINT
-            data.size() / 2};
-        u8_string = utf16_to_utf8_string(utf16_string_view);
-        data = u8_string;
-    }
+    std::string u8_string = to_utf8_string(data);
+    data = u8_string;
 
     while (!data.empty()) {
         chart.sections.push_back(read_section(data));

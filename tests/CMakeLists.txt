@@ -24,7 +24,8 @@ function(package_add_test testname)
   enable_sanitisers(${testname})
 endfunction()
 
-package_add_test(chart_unittest chart_unittest.cpp "${SRC}/chart.cpp")
+package_add_test(chart_unittest chart_unittest.cpp "${SRC}/chart.cpp"
+                 "${SRC}/stringutil.cpp")
 
 package_add_test(
   imagebuilder_unittest
@@ -38,11 +39,13 @@ package_add_test(
   "${SRC}/processed.cpp"
   "${SRC}/song.cpp"
   "${SRC}/sp.cpp"
+  "${SRC}/stringutil.cpp"
   "${SRC}/time.cpp")
 target_include_directories(imagebuilder_unittest PRIVATE ${PNG_INCLUDE_DIRS})
 target_link_libraries(imagebuilder_unittest PRIVATE ${PNG_LIBRARIES})
 
-package_add_test(ini_unittest ini_unittest.cpp "${SRC}/ini.cpp")
+package_add_test(ini_unittest ini_unittest.cpp "${SRC}/ini.cpp"
+                 "${SRC}/stringutil.cpp")
 
 package_add_test(midi_unittest midi_unittest.cpp "${SRC}/midi.cpp")
 
@@ -57,6 +60,7 @@ package_add_test(
   "${SRC}/processed.cpp"
   "${SRC}/song.cpp"
   "${SRC}/sp.cpp"
+  "${SRC}/stringutil.cpp"
   "${SRC}/time.cpp")
 
 package_add_test(
@@ -67,6 +71,7 @@ package_add_test(
   "${SRC}/midi.cpp"
   "${SRC}/points.cpp"
   "${SRC}/song.cpp"
+  "${SRC}/stringutil.cpp"
   "${SRC}/time.cpp")
 
 package_add_test(
@@ -79,10 +84,17 @@ package_add_test(
   "${SRC}/processed.cpp"
   "${SRC}/song.cpp"
   "${SRC}/sp.cpp"
+  "${SRC}/stringutil.cpp"
   "${SRC}/time.cpp")
 
-package_add_test(song_unittest song_unittest.cpp "${SRC}/chart.cpp"
-                 "${SRC}/ini.cpp" "${SRC}/midi.cpp" "${SRC}/song.cpp")
+package_add_test(
+  song_unittest
+  song_unittest.cpp
+  "${SRC}/chart.cpp"
+  "${SRC}/ini.cpp"
+  "${SRC}/midi.cpp"
+  "${SRC}/song.cpp"
+  "${SRC}/stringutil.cpp")
 
 package_add_test(
   sp_unittest
@@ -92,7 +104,11 @@ package_add_test(
   "${SRC}/midi.cpp"
   "${SRC}/song.cpp"
   "${SRC}/sp.cpp"
+  "${SRC}/stringutil.cpp"
   "${SRC}/time.cpp")
+
+package_add_test(stringutil_unittest stringutil_unittest.cpp
+                 "${SRC}/stringutil.cpp")
 
 package_add_test(
   time_unittest
@@ -101,4 +117,5 @@ package_add_test(
   "${SRC}/ini.cpp"
   "${SRC}/midi.cpp"
   "${SRC}/song.cpp"
+  "${SRC}/stringutil.cpp"
   "${SRC}/time.cpp")

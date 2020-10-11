@@ -88,6 +88,7 @@ add_executable(
   src/settings.cpp
   src/song.cpp
   src/sp.cpp
+  src/stringutil.cpp
   src/time.cpp
   resources/chopt.exe.manifest
   resources/resources.rc)
@@ -131,6 +132,7 @@ if(BUILD_GUI)
     src/processed.cpp
     src/song.cpp
     src/sp.cpp
+    src/stringutil.cpp
     src/time.cpp
     resources/choptgui.exe.manifest
     resources/resources.qrc
