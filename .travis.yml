@@ -4,10 +4,6 @@ dist: focal
 
 jobs:
   include:
-    # GCC 9
-    - env:
-        - MATRIX_EVAL="CXX=g++-9"
-
     # GCC 10
     - addons:
         apt:
@@ -15,17 +11,6 @@ jobs:
             - g++-10
       env:
         - MATRIX_EVAL="CXX=g++-10"
-
-    # Clang 9
-    - addons:
-        apt:
-          packages:
-            - clang-9
-            - libc++-9-dev
-            - libc++abi-9-dev
-      env:
-        - CXX_FLAGS="-stdlib=libc++"
-        - MATRIX_EVAL="CXX=clang++-9"
 
     # Clang 10
     - addons:
@@ -99,10 +84,11 @@ jobs:
     - addons:
         apt:
           packages:
+            - g++-10
             - valgrind
       script:
-        - CXX=g++-9
-        - g++-9 --version
+        - CXX=g++-10
+        - g++-10 --version
         - mkdir -p build
         - cd build
         - cmake -DCMAKE_CXX_FLAGS=-g -DBUILD_GUI=OFF ..

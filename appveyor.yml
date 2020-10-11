@@ -1,4 +1,5 @@
 version: 1.1.0.{build}-{branch}
+image: Visual Studio 2019
 
 configuration:
   - Debug
@@ -8,12 +9,8 @@ platform:
 
 environment:
   matrix:
-    - job_name: VS 2017 build
-      appveyor_build_worker_image: Visual Studio 2017
     - job_name: VS 2019 build
-      appveyor_build_worker_image: Visual Studio 2019
     - job_name: Clang 10 build
-      appveyor_build_worker_image: Visual Studio 2019
 
 matrix:
   fast_finish: true
@@ -26,15 +23,6 @@ before_build:
   - cd build
 
 for:
-  -
-    matrix:
-      only:
-        - job_name: VS 2017 build
-
-    build_script:
-    - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_GUI=OFF -G "Visual Studio 15 2017 Win64" ..
-    - cmd: cmake --build . --verbose --config %CONFIGURATION%
-
   -
     matrix:
       only:
