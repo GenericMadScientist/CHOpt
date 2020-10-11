@@ -65,3 +65,15 @@ TEST_CASE("= must be the character after the key")
     REQUIRE(ini_values.artist == "Unknown Artist");
     REQUIRE(ini_values.charter == "Unknown Charter");
 }
+
+TEST_CASE("UTF-16le strings are read correctly")
+{
+    const std::string text {
+        "\xFF\xFE\x6E\x00\x61\x00\x6D\x00\x65\x00\x3D\x00\x54\x00\x65\x00\x73"
+        "\x00\x74\x00",
+        20};
+
+    const auto ini_values = parse_ini(text);
+
+    REQUIRE(ini_values.name == "Test");
+}
