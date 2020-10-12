@@ -66,6 +66,15 @@ TEST_CASE("= must be the character after the key")
     REQUIRE(ini_values.charter == "Unknown Charter");
 }
 
+TEST_CASE("frets is a synonym for charter")
+{
+    const char* text = "frets=GMS";
+
+    const auto ini_values = parse_ini(text);
+
+    REQUIRE(ini_values.charter == "GMS");
+}
+
 TEST_CASE("UTF-16le strings are read correctly")
 {
     const std::string text {

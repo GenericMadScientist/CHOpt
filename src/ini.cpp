@@ -26,6 +26,7 @@ IniValues parse_ini(std::string_view data)
 {
     constexpr auto ARTIST_SIZE = 6;
     constexpr auto CHARTER_SIZE = 7;
+    constexpr auto FRETS_SIZE = 5;
     constexpr auto NAME_SIZE = 4;
 
     std::string u8_string = to_utf8_string(data);
@@ -53,6 +54,13 @@ IniValues parse_ini(std::string_view data)
             values.artist = value;
         } else if (line.substr(0, CHARTER_SIZE) == "charter") {
             auto value = skip_whitespace(line.substr(CHARTER_SIZE));
+            if (value[0] != '=') {
+                continue;
+            }
+            value = skip_whitespace(value.substr(1));
+            values.charter = value;
+        } else if (line.substr(0, FRETS_SIZE) == "frets") {
+            auto value = skip_whitespace(line.substr(FRETS_SIZE));
             if (value[0] != '=') {
                 continue;
             }
