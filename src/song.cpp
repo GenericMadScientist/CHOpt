@@ -664,17 +664,17 @@ static bool is_open_event_sysex(const SysexEvent& event)
     if (event.data.size() != SYSEX_DATA_SIZE) {
         return false;
     }
-    for (const auto& pair : REQUIRED_BYTES) {
-        if (event.data[std::get<0>(pair)] != std::get<1>(pair)) {
-            return false;
-        }
+    if (std::any_of(REQUIRED_BYTES.cbegin(), REQUIRED_BYTES.cend(),
+                    [&](const auto& pair) {
+                        return event.data[std::get<0>(pair)]
+                            != std::get<1>(pair);
+                    })) {
+        return false;
     }
-    for (const auto& pair : UPPER_BOUNDS) {
-        if (event.data[std::get<0>(pair)] > std::get<1>(pair)) {
-            return false;
-        }
-    }
-    return true;
+    return std::all_of(
+        UPPER_BOUNDS.cbegin(), UPPER_BOUNDS.cend(), [&](const auto& pair) {
+            return event.data[std::get<0>(pair)] <= std::get<1>(pair);
+        });
 }
 
 static std::tuple<std::string, SyncTrack>

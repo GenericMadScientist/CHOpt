@@ -1,4 +1,4 @@
-Checks: 'bugprone-*,cppcoreguidelines-*,-cppcoreguidelines-pro-type-vararg,misc-*,modernize-*,-modernize-use-trailing-return-type,performance-*,readability-*'
+Checks: 'bugprone-*,cppcoreguidelines-*,-cppcoreguidelines-pro-type-vararg,misc-*,-misc-no-recursion,modernize-*,-modernize-use-trailing-return-type,performance-*,readability-*'
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle: none
