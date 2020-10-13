@@ -16,7 +16,7 @@ jobs:
     - addons:
         apt:
           sources:
-            - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11-main'
+            - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main'
               key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
             - clang-11
@@ -52,7 +52,7 @@ jobs:
     - addons:
         apt:
           sources:
-            - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11-main'
+            - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main'
               key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
             - clang-format-11
@@ -74,7 +74,7 @@ jobs:
     - addons:
         apt:
           sources:
-            - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11-main'
+            - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main'
               key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
           packages:
             - clang-11
