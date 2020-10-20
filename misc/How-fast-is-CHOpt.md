@@ -7,7 +7,7 @@ for one I only ran this on all these songs once. I did this with CHOpt 1.1.1.
 ## The songs
 
 I ran CHOpt on every song from the following setlists and packs with Expert
-Lead Guitar, except for Classical Thump and Space Cowboy for which I did Expert
+Lead Guitar, except Classical Thump and Space Cowboy for which I did Expert
 Bass.
 
 * Angevil Hero II
