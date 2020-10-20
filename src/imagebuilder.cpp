@@ -507,7 +507,9 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         Second {settings.lazy_whammy}};
     Path path;
 
-    if (!settings.blank) {
+    if (std::is_same_v<T, DrumNoteColour> && !settings.blank) {
+        write("Optimisation disabled for drums");
+    } else if (!settings.blank) {
         write("Optimising, please wait...");
         const Optimiser optimiser {&processed_track, terminate};
         path = optimiser.optimal_path();
