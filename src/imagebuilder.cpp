@@ -507,8 +507,11 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         Second {settings.lazy_whammy}};
     Path path;
 
-    if (std::is_same_v<T, DrumNoteColour> && !settings.blank) {
-        write("Optimisation disabled for drums");
+    // Nesting with if constexpr is purely to keep MSVC warnings happy.
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        if (!settings.blank) {
+            write("Optimisation disabled for drums");
+        }
     } else if (!settings.blank) {
         write("Optimising, please wait...");
         const Optimiser optimiser {&processed_track, terminate};
