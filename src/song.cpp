@@ -1011,16 +1011,19 @@ static std::optional<Instrument> midi_section_instrument(const MidiTrack& track)
     if (track.events.empty()) {
         return std::nullopt;
     }
-    const auto* meta_event = std::get_if<MetaEvent>(&track.events[0].event);
-    if (meta_event == nullptr) {
-        return std::nullopt;
+    std::string track_name = "";
+    for (const auto& event : track.events) {
+        const auto* meta_event = std::get_if<MetaEvent>(&event.event);
+        if (meta_event == nullptr) {
+            continue;
+        }
+        if (meta_event->type != 3) {
+            continue;
+        }
+        track_name
+            = std::string {meta_event->data.cbegin(), meta_event->data.cend()};
+        break;
     }
-    if (meta_event->type != 3) {
-        return std::nullopt;
-    }
-    const std::string track_name {meta_event->data.cbegin(),
-                                  meta_event->data.cend()};
-
     const auto iter = INSTRUMENTS.find(track_name);
     if (iter == INSTRUMENTS.end()) {
         return std::nullopt;
