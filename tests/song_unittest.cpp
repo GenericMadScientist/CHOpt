@@ -968,8 +968,8 @@ TEST_CASE("Notes are read correctly")
              {MetaEvent {3,
                          {0x50, 0x41, 0x52, 0x54, 0x20, 0x47, 0x55, 0x49, 0x54,
                           0x41, 0x52}}}},
-            {480, {MidiEvent {0x90, {96, 64}}}},
             {480, {MidiEvent {0x80, {96, 64}}}},
+            {480, {MidiEvent {0x90, {96, 64}}}},
             {960, {MidiEvent {0x80, {96, 64}}}},
             {960, {MidiEvent {0x90, {96, 64}}}},
             {1440, {MidiEvent {0x80, {96, 64}}}},
@@ -1032,6 +1032,22 @@ TEST_CASE("Notes are read correctly")
 
         REQUIRE(notes.size() == 2);
         REQUIRE(notes[1].length > 0);
+    }
+
+    SECTION("Note Off events can be 0 ticks after the Note On events")
+    {
+        MidiTrack note_track {{{0,
+                                {MetaEvent {3,
+                                            {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                             0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                               {768, {MidiEvent {0x90, {96, 64}}}},
+                               {768, {MidiEvent {0x80, {96, 64}}}}}};
+        const Midi midi {192, {note_track}};
+
+        const auto song = Song::from_midi(midi, {});
+        const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
+
+        REQUIRE(notes.size() == 1);
     }
 
     SECTION("Open notes are read correctly")

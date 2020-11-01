@@ -485,9 +485,12 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
 
 // Like combine_solo_events, but never skips on events to suit Midi parsing and
 // checks if there is an unmatched on event.
+// The tuples are a pair of the form (position, rank), where events later in the
+// file have a higher rank. This is in case of the Note Off event being right
+// after the corresponding Note On event in the file, but at the same tick.
 static std::vector<std::tuple<int, int>>
-combine_note_on_off_events(const std::vector<int>& on_events,
-                           const std::vector<int>& off_events)
+combine_note_on_off_events(const std::vector<std::tuple<int, int>>& on_events,
+                           const std::vector<std::tuple<int, int>>& off_events)
 {
     std::vector<std::tuple<int, int>> ranges;
 
@@ -499,7 +502,7 @@ combine_note_on_off_events(const std::vector<int>& on_events,
             ++off_iter;
             continue;
         }
-        ranges.emplace_back(*on_iter, *off_iter);
+        ranges.emplace_back(std::get<0>(*on_iter), std::get<0>(*off_iter));
         ++on_iter;
         ++off_iter;
     }
@@ -716,25 +719,27 @@ read_first_midi_track(const MidiTrack& track)
 }
 
 template <typename T> struct InstrumentMidiTrack {
-    std::map<std::tuple<Difficulty, T>, std::vector<int>> note_on_events;
-    std::map<std::tuple<Difficulty, T>, std::vector<int>> note_off_events;
-    std::map<Difficulty, std::vector<int>> open_on_events;
-    std::map<Difficulty, std::vector<int>> open_off_events;
-    std::vector<int> yellow_tom_on_events;
-    std::vector<int> yellow_tom_off_events;
-    std::vector<int> blue_tom_on_events;
-    std::vector<int> blue_tom_off_events;
-    std::vector<int> green_tom_on_events;
-    std::vector<int> green_tom_off_events;
+    std::map<std::tuple<Difficulty, T>, std::vector<std::tuple<int, int>>>
+        note_on_events;
+    std::map<std::tuple<Difficulty, T>, std::vector<std::tuple<int, int>>>
+        note_off_events;
+    std::map<Difficulty, std::vector<std::tuple<int, int>>> open_on_events;
+    std::map<Difficulty, std::vector<std::tuple<int, int>>> open_off_events;
+    std::vector<std::tuple<int, int>> yellow_tom_on_events;
+    std::vector<std::tuple<int, int>> yellow_tom_off_events;
+    std::vector<std::tuple<int, int>> blue_tom_on_events;
+    std::vector<std::tuple<int, int>> blue_tom_off_events;
+    std::vector<std::tuple<int, int>> green_tom_on_events;
+    std::vector<std::tuple<int, int>> green_tom_off_events;
     std::vector<int> solo_on_events;
     std::vector<int> solo_off_events;
-    std::vector<int> sp_on_events;
-    std::vector<int> sp_off_events;
+    std::vector<std::tuple<int, int>> sp_on_events;
+    std::vector<std::tuple<int, int>> sp_off_events;
 };
 
 template <typename T>
 static void add_sysex_event(InstrumentMidiTrack<T>& track,
-                            const SysexEvent& event, int time)
+                            const SysexEvent& event, int time, int rank)
 {
     constexpr std::array<Difficulty, 4> OPEN_EVENT_DIFFS {
         Difficulty::Easy, Difficulty::Medium, Difficulty::Hard,
@@ -746,16 +751,16 @@ static void add_sysex_event(InstrumentMidiTrack<T>& track,
     }
     Difficulty diff = OPEN_EVENT_DIFFS.at(event.data[4]);
     if (event.data[SYSEX_ON_INDEX] == 0) {
-        track.open_off_events[diff].push_back(time);
+        track.open_off_events[diff].push_back({time, rank});
     } else {
-        track.open_on_events[diff].push_back(time);
+        track.open_on_events[diff].push_back({time, rank});
     }
 }
 
 template <typename T>
 static void add_note_off_event(InstrumentMidiTrack<T>& track,
                                const std::array<std::uint8_t, 2>& data,
-                               int time)
+                               int time, int rank)
 {
     constexpr int YELLOW_TOM_ID = 110;
     constexpr int BLUE_TOM_ID = 111;
@@ -766,23 +771,24 @@ static void add_note_off_event(InstrumentMidiTrack<T>& track,
     const auto diff = difficulty_from_key<T>(data[0]);
     if (diff.has_value()) {
         const auto colour = colour_from_key<T>(data[0]);
-        track.note_off_events[{*diff, colour}].push_back(time);
+        track.note_off_events[{*diff, colour}].push_back({time, rank});
     } else if (data[0] == YELLOW_TOM_ID) {
-        track.yellow_tom_off_events.push_back(time);
+        track.yellow_tom_off_events.push_back({time, rank});
     } else if (data[0] == BLUE_TOM_ID) {
-        track.blue_tom_off_events.push_back(time);
+        track.blue_tom_off_events.push_back({time, rank});
     } else if (data[0] == GREEN_TOM_ID) {
-        track.green_tom_off_events.push_back(time);
+        track.green_tom_off_events.push_back({time, rank});
     } else if (data[0] == SOLO_NOTE_ID) {
         track.solo_off_events.push_back(time);
     } else if (data[0] == SP_NOTE_ID) {
-        track.sp_off_events.push_back(time);
+        track.sp_off_events.push_back({time, rank});
     }
 }
 
 template <typename T>
 static void add_note_on_event(InstrumentMidiTrack<T>& track,
-                              const std::array<std::uint8_t, 2>& data, int time)
+                              const std::array<std::uint8_t, 2>& data, int time,
+                              int rank)
 {
     constexpr int YELLOW_TOM_ID = 110;
     constexpr int BLUE_TOM_ID = 111;
@@ -792,24 +798,24 @@ static void add_note_on_event(InstrumentMidiTrack<T>& track,
 
     // Velocity 0 Note On events are counted as Note Off events.
     if (data[1] == 0) {
-        add_note_off_event(track, data, time);
+        add_note_off_event(track, data, time, rank);
         return;
     }
 
     const auto diff = difficulty_from_key<T>(data[0]);
     if (diff.has_value()) {
         const auto colour = colour_from_key<T>(data[0]);
-        track.note_on_events[{*diff, colour}].push_back(time);
+        track.note_on_events[{*diff, colour}].push_back({time, rank});
     } else if (data[0] == YELLOW_TOM_ID) {
-        track.yellow_tom_on_events.push_back(time);
+        track.yellow_tom_on_events.push_back({time, rank});
     } else if (data[0] == BLUE_TOM_ID) {
-        track.blue_tom_on_events.push_back(time);
+        track.blue_tom_on_events.push_back({time, rank});
     } else if (data[0] == GREEN_TOM_ID) {
-        track.green_tom_on_events.push_back(time);
+        track.green_tom_on_events.push_back({time, rank});
     } else if (data[0] == SOLO_NOTE_ID) {
         track.solo_on_events.push_back(time);
     } else if (data[0] == SP_NOTE_ID) {
-        track.sp_on_events.push_back(time);
+        track.sp_on_events.push_back({time, rank});
     }
 }
 
@@ -823,21 +829,23 @@ read_instrument_midi_track(const MidiTrack& midi_track)
 
     InstrumentMidiTrack<T> event_track;
 
+    int rank = 0;
     for (const auto& event : midi_track.events) {
+        ++rank;
         const auto* midi_event = std::get_if<MidiEvent>(&event.event);
         if (midi_event == nullptr) {
             const auto* sysex_event = std::get_if<SysexEvent>(&event.event);
             if (sysex_event != nullptr) {
-                add_sysex_event(event_track, *sysex_event, event.time);
+                add_sysex_event(event_track, *sysex_event, event.time, rank);
             }
             continue;
         }
         switch (midi_event->status & UPPER_NIBBLE_MASK) {
         case NOTE_OFF_ID:
-            add_note_off_event(event_track, midi_event->data, event.time);
+            add_note_off_event(event_track, midi_event->data, event.time, rank);
             break;
         case NOTE_ON_ID:
-            add_note_on_event(event_track, midi_event->data, event.time);
+            add_note_on_event(event_track, midi_event->data, event.time, rank);
             break;
         }
     }
