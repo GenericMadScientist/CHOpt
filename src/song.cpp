@@ -1011,7 +1011,7 @@ static std::optional<Instrument> midi_section_instrument(const MidiTrack& track)
     if (track.events.empty()) {
         return std::nullopt;
     }
-    std::string track_name = "";
+    std::string track_name;
     for (const auto& event : track.events) {
         const auto* meta_event = std::get_if<MetaEvent>(&event.event);
         if (meta_event == nullptr) {
