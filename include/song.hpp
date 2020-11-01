@@ -151,8 +151,9 @@ private:
     }
 
 public:
-    NoteTrack(std::vector<Note<T>> notes, std::vector<StarPower> sp_phrases,
-              std::vector<Solo> solos, int resolution)
+    NoteTrack(std::vector<Note<T>> notes,
+              const std::vector<StarPower>& sp_phrases, std::vector<Solo> solos,
+              int resolution)
         : m_resolution {resolution}
     {
         std::stable_sort(notes.begin(), notes.end(),
@@ -173,21 +174,31 @@ public:
             m_notes.push_back(*prev_note);
         }
 
-        std::stable_sort(sp_phrases.begin(), sp_phrases.end(),
-                         [](const auto& lhs, const auto& rhs) {
-                             return lhs.position < rhs.position;
-                         });
-
-        for (auto p = sp_phrases.begin(); p < sp_phrases.end(); ++p) {
-            const auto next_phrase = p + 1;
-            if (next_phrase == sp_phrases.end()) {
-                continue;
-            }
-            p->length
-                = std::min(p->length, next_phrase->position - p->position);
-        }
+        std::vector<int> sp_starts;
+        std::vector<int> sp_ends;
+        sp_starts.reserve(sp_phrases.size());
+        sp_ends.reserve(sp_phrases.size());
 
         for (const auto& phrase : sp_phrases) {
+            sp_starts.push_back(phrase.position);
+            sp_ends.push_back(phrase.position + phrase.length);
+        }
+
+        std::sort(sp_starts.begin(), sp_starts.end());
+        std::sort(sp_ends.begin(), sp_ends.end());
+
+        std::vector<StarPower> new_sp_phrases;
+        new_sp_phrases.reserve(sp_phrases.size());
+        for (auto i = 0U; i < sp_phrases.size(); ++i) {
+            auto start = sp_starts[i];
+            if (i > 0) {
+                start = std::max(sp_starts[i], sp_ends[i - 1]);
+            }
+            const auto length = sp_ends[i] - start;
+            new_sp_phrases.push_back({start, length});
+        }
+
+        for (const auto& phrase : new_sp_phrases) {
             const auto first_note = std::lower_bound(
                 m_notes.cbegin(), m_notes.cend(), phrase.position,
                 [](const auto& lhs, const auto& rhs) {

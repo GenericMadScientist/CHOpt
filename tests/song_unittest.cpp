@@ -57,7 +57,6 @@ static bool operator==(const NoteTrack<T>& lhs, const NoteTrack<T>& rhs)
         == std::tie(rhs.notes(), rhs.sp_phrases(), rhs.solos());
 }
 
-// Last checked: 23.2.2
 TEST_CASE("NoteTrack ctor maintains invariants")
 {
     SECTION("Notes are sorted")
@@ -118,10 +117,10 @@ TEST_CASE("NoteTrack ctor maintains invariants")
 
     SECTION("SP phrases do not overlap")
     {
-        std::vector<Note<NoteColour>> notes {{768}, {1000}};
+        std::vector<Note<NoteColour>> notes {{768}, {1000}, {1500}};
         std::vector<StarPower> phrases {{768, 1000}, {900, 150}};
         NoteTrack<NoteColour> track {notes, phrases, {}, 192};
-        std::vector<StarPower> required_phrases {{768, 132}, {900, 150}};
+        std::vector<StarPower> required_phrases {{768, 282}, {1050, 718}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
     }
