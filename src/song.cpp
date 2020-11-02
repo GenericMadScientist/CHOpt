@@ -682,26 +682,19 @@ static bool is_open_event_sysex(const SysexEvent& event)
         });
 }
 
-static std::tuple<std::string, SyncTrack>
-read_first_midi_track(const MidiTrack& track)
+static SyncTrack read_first_midi_track(const MidiTrack& track)
 {
     constexpr int SET_TEMPO_ID = 0x51;
-    constexpr int TEXT_EVENT_ID = 1;
     constexpr int TIME_SIG_ID = 0x58;
 
     std::vector<BPM> tempos;
     std::vector<TimeSignature> time_sigs;
-    std::string name {"Unknown Song"};
     for (const auto& event : track.events) {
         const auto* meta_event = std::get_if<MetaEvent>(&event.event);
         if (meta_event == nullptr) {
             continue;
         }
         switch (meta_event->type) {
-        case TEXT_EVENT_ID:
-            name = std::string {meta_event->data.cbegin(),
-                                meta_event->data.cend()};
-            break;
         case SET_TEMPO_ID: {
             const auto us_per_quarter = meta_event->data[0] << 16
                 | meta_event->data[1] << 8 | meta_event->data[2];
@@ -716,8 +709,7 @@ read_first_midi_track(const MidiTrack& track)
         }
     }
 
-    SyncTrack sync_track {std::move(time_sigs), std::move(tempos)};
-    return {name, sync_track};
+    return {std::move(time_sigs), std::move(tempos)};
 }
 
 template <typename T> struct InstrumentMidiTrack {
@@ -1083,8 +1075,7 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
         return song;
     }
 
-    const auto& [name, sync_track] = read_first_midi_track(midi.tracks[0]);
-    song.m_sync_track = sync_track;
+    song.m_sync_track = read_first_midi_track(midi.tracks[0]);
 
     for (const auto& track : midi.tracks) {
         const auto inst = midi_section_instrument(track);
