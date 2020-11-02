@@ -158,7 +158,7 @@ template <typename T>
 static std::vector<Solo>
 form_solo_vector(const std::vector<int>& solo_on_events,
                  const std::vector<int>& solo_off_events,
-                 const std::vector<Note<T>>& notes)
+                 const std::vector<Note<T>>& notes, bool is_midi)
 {
     constexpr int SOLO_NOTE_VALUE = 100;
 
@@ -168,7 +168,8 @@ form_solo_vector(const std::vector<int>& solo_on_events,
          combine_solo_events(solo_on_events, solo_off_events)) {
         std::set<int> positions_in_solo;
         for (const auto& note : notes) {
-            if (note.position >= start && note.position <= end) {
+            if ((note.position >= start && note.position < end)
+                || (note.position == end && !is_midi)) {
                 positions_in_solo.insert(note.position);
             }
         }
@@ -363,7 +364,8 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
     }
     std::sort(solo_on_events.begin(), solo_on_events.end());
     std::sort(solo_off_events.begin(), solo_off_events.end());
-    auto solos = form_solo_vector(solo_on_events, solo_off_events, notes);
+    auto solos
+        = form_solo_vector(solo_on_events, solo_off_events, notes, false);
 
     return NoteTrack<T> {std::move(notes), std::move(sp), std::move(solos),
                          resolution};
@@ -889,8 +891,9 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 
     std::map<Difficulty, NoteTrack<NoteColour>> note_tracks;
     for (const auto& [diff, note_set] : notes) {
-        auto solos = form_solo_vector(event_track.solo_on_events,
-                                      event_track.solo_off_events, note_set);
+        auto solos
+            = form_solo_vector(event_track.solo_on_events,
+                               event_track.solo_off_events, note_set, true);
         note_tracks.emplace(
             diff,
             NoteTrack<NoteColour> {note_set, sp_phrases, solos, resolution});
@@ -924,8 +927,9 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 
     std::map<Difficulty, NoteTrack<GHLNoteColour>> note_tracks;
     for (const auto& [diff, note_set] : notes) {
-        auto solos = form_solo_vector(event_track.solo_on_events,
-                                      event_track.solo_off_events, note_set);
+        auto solos
+            = form_solo_vector(event_track.solo_on_events,
+                               event_track.solo_off_events, note_set, true);
         note_tracks.emplace(
             diff,
             NoteTrack<GHLNoteColour> {note_set, sp_phrases, solos, resolution});
@@ -985,8 +989,9 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 
     std::map<Difficulty, NoteTrack<DrumNoteColour>> note_tracks;
     for (const auto& [diff, note_set] : notes) {
-        auto solos = form_solo_vector(event_track.solo_on_events,
-                                      event_track.solo_off_events, note_set);
+        auto solos
+            = form_solo_vector(event_track.solo_on_events,
+                               event_track.solo_off_events, note_set, true);
         note_tracks.emplace(diff,
                             NoteTrack<DrumNoteColour> {note_set, sp_phrases,
                                                        solos, resolution});

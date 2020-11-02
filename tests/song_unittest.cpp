@@ -543,7 +543,6 @@ TEST_CASE("Only first non-empty part of note sections matter")
     }
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("Solos are read properly")
 {
     SECTION("Expected solos are read properly")
@@ -1088,7 +1087,9 @@ TEST_CASE("Notes are read correctly")
     }
 }
 
-TEST_CASE("Solos are read")
+// Note that a note at the very end of a solo event is not considered part of
+// the solo for a .mid, but it is for a .chart.
+TEST_CASE("Solos are read from .mid correctly")
 {
     MidiTrack note_track {{{0,
                             {MetaEvent {3,
@@ -1096,8 +1097,10 @@ TEST_CASE("Solos are read")
                                          0x55, 0x49, 0x54, 0x41, 0x52}}}},
                            {768, {MidiEvent {0x90, {103, 64}}}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
+                           {900, {MidiEvent {0x90, {97, 64}}}},
                            {900, {MidiEvent {0x80, {103, 64}}}},
-                           {960, {MidiEvent {0x80, {96, 0}}}}}};
+                           {960, {MidiEvent {0x80, {96, 0}}}},
+                           {960, {MidiEvent {0x80, {97, 64}}}}}};
     const Midi midi {192, {note_track}};
     const std::vector<Solo> solos {{768, 900, 100}};
 
