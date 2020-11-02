@@ -175,7 +175,7 @@ public:
             static_cast<std::size_t>(std::distance(start, end)));
     }
 
-    bool contains(PointPtr element) const
+    [[nodiscard]] bool contains(PointPtr element) const
     {
         if (m_start > element || m_end <= element) {
             return false;
