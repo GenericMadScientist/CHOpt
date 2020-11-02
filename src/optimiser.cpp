@@ -163,16 +163,16 @@ class PointPtrRangeSet {
 private:
     const PointPtr m_start;
     const PointPtr m_end;
-    std::vector<std::uint8_t> m_added_elements;
+    PointPtr m_min_absent_ptr;
+    std::vector<PointPtr> m_abnormal_elements;
 
 public:
     PointPtrRangeSet(PointPtr start, PointPtr end)
         : m_start {start}
         , m_end {end}
+        , m_min_absent_ptr {start}
     {
         assert(start < end); // NOLINT
-        m_added_elements.resize(
-            static_cast<std::size_t>(std::distance(start, end)));
     }
 
     [[nodiscard]] bool contains(PointPtr element) const
@@ -180,18 +180,39 @@ public:
         if (m_start > element || m_end <= element) {
             return false;
         }
-        return m_added_elements[static_cast<std::size_t>(
-                   std::distance(m_start, element))]
-            != 0;
+        if (element < m_min_absent_ptr) {
+            return true;
+        }
+        return std::find(m_abnormal_elements.cbegin(),
+                         m_abnormal_elements.cend(), element)
+            != m_abnormal_elements.cend();
+    }
+
+    [[nodiscard]] PointPtr lowest_absent_element() const
+    {
+        return m_min_absent_ptr;
     }
 
     void add(PointPtr element)
     {
         assert(m_start <= element); // NOLINT
         assert(element < m_end); // NOLINT
-        m_added_elements[static_cast<std::size_t>(
-            std::distance(m_start, element))]
-            = 1;
+        if (m_min_absent_ptr == element) {
+            ++m_min_absent_ptr;
+            while (true) {
+                auto next_elem_iter
+                    = std::find(m_abnormal_elements.begin(),
+                                m_abnormal_elements.end(), m_min_absent_ptr);
+                if (next_elem_iter == m_abnormal_elements.end()) {
+                    return;
+                }
+                std::swap(*next_elem_iter, m_abnormal_elements.back());
+                m_abnormal_elements.pop_back();
+                ++m_min_absent_ptr;
+            }
+        } else {
+            m_abnormal_elements.push_back(element);
+        }
     }
 };
 
@@ -206,7 +227,6 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
 
     std::vector<std::tuple<ProtoActivation, CacheKey>> acts;
     PointPtrRangeSet attained_act_ends {key.point, m_song->points().cend()};
-    auto q_min = key.point;
     auto best_score_boost = 0;
 
     for (auto p = key.point; p < m_song->points().cend(); ++p) {
@@ -238,11 +258,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             }
             break;
         }
-        while (q_min != m_song->points().cend()
-               && attained_act_ends.contains(q_min)) {
-            ++q_min;
-        }
-        for (auto q = q_min; q < m_song->points().cend();) {
+        for (auto q = attained_act_ends.lowest_absent_element();
+             q < m_song->points().cend();) {
             if (attained_act_ends.contains(q)) {
                 ++q;
                 continue;
