@@ -156,6 +156,45 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
     return {{next_acts, score_boost}};
 }
 
+// The idea is this is like a std::set<PointPtr>, but is add-only and takes
+// advantage of the fact that we often tend to add all elements before a certain
+// point.
+class PointPtrRangeSet {
+private:
+    const PointPtr m_start;
+    const PointPtr m_end;
+    std::vector<std::uint8_t> m_added_elements;
+
+public:
+    PointPtrRangeSet(PointPtr start, PointPtr end)
+        : m_start {start}
+        , m_end {end}
+    {
+        assert(start < end); // NOLINT
+        m_added_elements.resize(
+            static_cast<std::size_t>(std::distance(start, end)));
+    }
+
+    bool contains(PointPtr element) const
+    {
+        if (m_start > element || m_end <= element) {
+            return false;
+        }
+        return m_added_elements[static_cast<std::size_t>(
+                   std::distance(m_start, element))]
+            != 0;
+    }
+
+    void add(PointPtr element)
+    {
+        assert(m_start <= element); // NOLINT
+        assert(element < m_end); // NOLINT
+        m_added_elements[static_cast<std::size_t>(
+            std::distance(m_start, element))]
+            = 1;
+    }
+};
+
 Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                                                     bool has_full_sp) const
 {
@@ -166,9 +205,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
     }
 
     std::vector<std::tuple<ProtoActivation, CacheKey>> acts;
-    std::vector<std::uint8_t> attained_act_ends;
-    attained_act_ends.resize(static_cast<std::size_t>(
-        std::distance(m_song->points().cbegin(), m_song->points().cend())));
+    PointPtrRangeSet attained_act_ends {key.point, m_song->points().cend()};
     auto q_min = key.point;
     auto best_score_boost = 0;
 
@@ -202,15 +239,11 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             break;
         }
         while (q_min != m_song->points().cend()
-               && attained_act_ends[static_cast<std::size_t>(
-                      std::distance(m_song->points().cbegin(), q_min))]
-                   != 0) {
+               && attained_act_ends.contains(q_min)) {
             ++q_min;
         }
         for (auto q = q_min; q < m_song->points().cend();) {
-            const auto q_index = static_cast<std::size_t>(
-                std::distance(m_song->points().cbegin(), q));
-            if (attained_act_ends[q_index] != 0) {
+            if (attained_act_ends.contains(q)) {
                 ++q;
                 continue;
             }
@@ -218,7 +251,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             ActivationCandidate candidate {p, q, starting_pos, sp_bar};
             const auto candidate_result = m_song->is_candidate_valid(candidate);
             if (candidate_result.validity != ActValidity::insufficient_sp) {
-                attained_act_ends[q_index] = 1;
+                attained_act_ends.add(q);
             } else if (!q->is_hold_point) {
                 // We cannot hit any later points if q is not a hold point, so
                 // we are done.
