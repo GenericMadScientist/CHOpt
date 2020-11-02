@@ -733,8 +733,8 @@ template <typename T> struct InstrumentMidiTrack {
     std::vector<std::tuple<int, int>> blue_tom_off_events;
     std::vector<std::tuple<int, int>> green_tom_on_events;
     std::vector<std::tuple<int, int>> green_tom_off_events;
-    std::vector<int> solo_on_events;
-    std::vector<int> solo_off_events;
+    std::vector<std::tuple<int, int>> solo_on_events;
+    std::vector<std::tuple<int, int>> solo_off_events;
     std::vector<std::tuple<int, int>> sp_on_events;
     std::vector<std::tuple<int, int>> sp_off_events;
 };
@@ -781,7 +781,7 @@ static void add_note_off_event(InstrumentMidiTrack<T>& track,
     } else if (data[0] == GREEN_TOM_ID) {
         track.green_tom_off_events.push_back({time, rank});
     } else if (data[0] == SOLO_NOTE_ID) {
-        track.solo_off_events.push_back(time);
+        track.solo_off_events.push_back({time, rank});
     } else if (data[0] == SP_NOTE_ID) {
         track.sp_off_events.push_back({time, rank});
     }
@@ -815,7 +815,7 @@ static void add_note_on_event(InstrumentMidiTrack<T>& track,
     } else if (data[0] == GREEN_TOM_ID) {
         track.green_tom_on_events.push_back({time, rank});
     } else if (data[0] == SOLO_NOTE_ID) {
-        track.solo_on_events.push_back(time);
+        track.solo_on_events.push_back({time, rank});
     } else if (data[0] == SP_NOTE_ID) {
         track.sp_on_events.push_back({time, rank});
     }
@@ -850,6 +850,12 @@ read_instrument_midi_track(const MidiTrack& midi_track)
             add_note_on_event(event_track, midi_event->data, event.time, rank);
             break;
         }
+    }
+
+    if (event_track.sp_on_events.empty()
+        && event_track.solo_on_events.size() > 1) {
+        std::swap(event_track.sp_off_events, event_track.solo_off_events);
+        std::swap(event_track.sp_on_events, event_track.solo_on_events);
     }
 
     return event_track;
@@ -891,9 +897,17 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 
     std::map<Difficulty, NoteTrack<NoteColour>> note_tracks;
     for (const auto& [diff, note_set] : notes) {
-        auto solos
-            = form_solo_vector(event_track.solo_on_events,
-                               event_track.solo_off_events, note_set, true);
+        std::vector<int> solo_ons;
+        std::vector<int> solo_offs;
+        solo_ons.reserve(event_track.solo_on_events.size());
+        for (const auto& [pos, rank] : event_track.solo_on_events) {
+            solo_ons.push_back(pos);
+        }
+        solo_offs.reserve(event_track.solo_off_events.size());
+        for (const auto& [pos, rank] : event_track.solo_off_events) {
+            solo_offs.push_back(pos);
+        }
+        auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
         note_tracks.emplace(
             diff,
             NoteTrack<NoteColour> {note_set, sp_phrases, solos, resolution});
@@ -927,9 +941,17 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 
     std::map<Difficulty, NoteTrack<GHLNoteColour>> note_tracks;
     for (const auto& [diff, note_set] : notes) {
-        auto solos
-            = form_solo_vector(event_track.solo_on_events,
-                               event_track.solo_off_events, note_set, true);
+        std::vector<int> solo_ons;
+        std::vector<int> solo_offs;
+        solo_ons.reserve(event_track.solo_on_events.size());
+        for (const auto& [pos, rank] : event_track.solo_on_events) {
+            solo_ons.push_back(pos);
+        }
+        solo_offs.reserve(event_track.solo_off_events.size());
+        for (const auto& [pos, rank] : event_track.solo_off_events) {
+            solo_offs.push_back(pos);
+        }
+        auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
         note_tracks.emplace(
             diff,
             NoteTrack<GHLNoteColour> {note_set, sp_phrases, solos, resolution});
@@ -989,9 +1011,17 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 
     std::map<Difficulty, NoteTrack<DrumNoteColour>> note_tracks;
     for (const auto& [diff, note_set] : notes) {
-        auto solos
-            = form_solo_vector(event_track.solo_on_events,
-                               event_track.solo_off_events, note_set, true);
+        std::vector<int> solo_ons;
+        std::vector<int> solo_offs;
+        solo_ons.reserve(event_track.solo_on_events.size());
+        for (const auto& [pos, rank] : event_track.solo_on_events) {
+            solo_ons.push_back(pos);
+        }
+        solo_offs.reserve(event_track.solo_off_events.size());
+        for (const auto& [pos, rank] : event_track.solo_off_events) {
+            solo_offs.push_back(pos);
+        }
+        auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
         note_tracks.emplace(diff,
                             NoteTrack<DrumNoteColour> {note_set, sp_phrases,
                                                        solos, resolution});

@@ -1145,6 +1145,29 @@ TEST_CASE("Star Power is read")
     }
 }
 
+TEST_CASE(".mids with multiple solos and no Star Power have solos read as SP")
+{
+    MidiTrack note_track {{{0,
+                            {MetaEvent {3,
+                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                         0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                           {768, {MidiEvent {0x90, {103, 64}}}},
+                           {768, {MidiEvent {0x90, {96, 64}}}},
+                           {800, {MidiEvent {0x80, {96, 64}}}},
+                           {900, {MidiEvent {0x80, {103, 64}}}},
+                           {950, {MidiEvent {0x90, {103, 64}}}},
+                           {960, {MidiEvent {0x90, {97, 64}}}},
+                           {1000, {MidiEvent {0x80, {97, 64}}}},
+                           {1000, {MidiEvent {0x80, {103, 64}}}}}};
+    const Midi midi {192, {note_track}};
+
+    const auto song = Song::from_midi(midi, {});
+    const auto& track = song.guitar_note_track(Difficulty::Expert);
+
+    REQUIRE(track.solos().empty());
+    REQUIRE(track.sp_phrases().size() == 2);
+}
+
 // This should be done by NoteTrack's trim_sustains method, because we may want
 // to trim sustains for slowdowns.
 TEST_CASE("Short midi sustains are not trimmed")
