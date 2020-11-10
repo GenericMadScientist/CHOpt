@@ -900,9 +900,10 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
             solo_offs.push_back(pos);
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
-        note_tracks.emplace(
-            diff,
-            NoteTrack<NoteColour> {note_set, sp_phrases, solos, resolution});
+        note_tracks.emplace(diff,
+                            NoteTrack<NoteColour> {note_set, sp_phrases,
+                                                   std::move(solos),
+                                                   resolution});
     }
 
     return note_tracks;
@@ -944,9 +945,10 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
             solo_offs.push_back(pos);
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
-        note_tracks.emplace(
-            diff,
-            NoteTrack<GHLNoteColour> {note_set, sp_phrases, solos, resolution});
+        note_tracks.emplace(diff,
+                            NoteTrack<GHLNoteColour> {note_set, sp_phrases,
+                                                      std::move(solos),
+                                                      resolution});
     }
 
     return note_tracks;
@@ -1016,7 +1018,8 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
         note_tracks.emplace(diff,
                             NoteTrack<DrumNoteColour> {note_set, sp_phrases,
-                                                       solos, resolution});
+                                                       std::move(solos),
+                                                       resolution});
     }
 
     return note_tracks;
