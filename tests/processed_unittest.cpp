@@ -241,6 +241,33 @@ TEST_CASE("is_candidate_valid works with no whammy")
         REQUIRE(track.is_candidate_valid(candidate).validity
                 == ActValidity::success);
     }
+
+    // There was a bug where if an optimal activation starts on an SP granting
+    // note, and the note must be squeezed late, then the activation could be
+    // drawn too far. This happened in the path for Das Neue bleibt beim Alten
+    // from CSC November 2020.
+    SECTION("Activations starting on an sp granting note have the correct end")
+    {
+        std::vector<Note<NoteColour>> overlap_notes {
+            {384}, {384, 0, NoteColour::Red}, {5088}, {5136}};
+        std::vector<StarPower> phrases {{384, 1}};
+        NoteTrack<NoteColour> overlap_note_track {
+            overlap_notes, phrases, {}, 192};
+        SyncTrack sync_track {{{0, 4, 4}}, {{0, 300000}}};
+        ProcessedSong overlap_track {overlap_note_track, sync_track, 1.0, 1.0,
+                                     Second(0.0)};
+        const auto& overlap_points = overlap_track.points();
+        ActivationCandidate overlap_candidate {overlap_points.cbegin(),
+                                               overlap_points.cbegin() + 1,
+                                               {Beat(2.24), Measure(0.56)},
+                                               {0.5, 0.5}};
+
+        const auto result = overlap_track.is_candidate_valid(
+            overlap_candidate, 1.0, {Beat {27}, Measure {6.75}});
+
+        REQUIRE(result.validity == ActValidity::success);
+        REQUIRE(result.ending_position.beat.value() < 26.5);
+    }
 }
 
 TEST_CASE("is_candidate_valid works with whammy")

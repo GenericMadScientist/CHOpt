@@ -226,7 +226,10 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
     for (auto p = m_points.next_sp_granting_note(activation.act_start);
          p < activation.act_end;
          p = m_points.next_sp_granting_note(std::next(p))) {
-        const auto p_start = adjusted_hit_window_start(p, squeeze);
+        auto p_start = adjusted_hit_window_start(p, squeeze);
+        if (p_start.beat < activation.earliest_activation_point.beat) {
+            p_start = activation.earliest_activation_point;
+        }
         const auto p_end = adjusted_hit_window_end(p, squeeze);
         status_for_late_end.update_late_end(p_start, p_end, m_sp_data);
         if (status_for_late_end.sp() < 0.0) {
