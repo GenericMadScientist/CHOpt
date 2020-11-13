@@ -210,8 +210,18 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
         return {null_position, ActValidity::insufficient_sp};
     }
 
-    const auto late_end_position
+    auto ending_pos = adjusted_hit_window_start(activation.act_end, squeeze);
+    if (ending_pos.beat < activation.earliest_activation_point.beat) {
+        ending_pos = activation.earliest_activation_point;
+    }
+
+    auto late_end_position
         = adjusted_hit_window_end(activation.act_start, squeeze);
+    // This conditional can be taken if, for example, the first and last point
+    // are the same.
+    if (late_end_position.beat > ending_pos.beat) {
+        late_end_position = ending_pos;
+    }
     auto late_end_sp = activation.sp_bar.max();
     late_end_sp
         += m_sp_data.available_whammy(activation.earliest_activation_point.beat,
@@ -230,7 +240,10 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
         if (p_start.beat < activation.earliest_activation_point.beat) {
             p_start = activation.earliest_activation_point;
         }
-        const auto p_end = adjusted_hit_window_end(p, squeeze);
+        auto p_end = adjusted_hit_window_end(p, squeeze);
+        if (p_end.beat > ending_pos.beat) {
+            p_end = ending_pos;
+        }
         status_for_late_end.update_late_end(p_start, p_end, m_sp_data);
         if (status_for_late_end.sp() < 0.0) {
             return {null_position, ActValidity::insufficient_sp};
@@ -241,8 +254,6 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
         status_for_late_end.add_phrase();
     }
 
-    const auto ending_pos
-        = adjusted_hit_window_start(activation.act_end, squeeze);
     status_for_late_end.advance_whammy_max(ending_pos, m_sp_data);
     if (status_for_late_end.sp() < 0.0) {
         return {null_position, ActValidity::insufficient_sp};

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cassert>
 #include <iterator>
 
 #include "sp.hpp"
@@ -108,6 +109,7 @@ SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
 double SpData::propagate_sp_over_whammy_max(Position start, Position end,
                                             double sp) const
 {
+    assert(start.beat <= end.beat); // NOLINT
     auto p = std::lower_bound(
         m_whammy_ranges.cbegin(), m_whammy_ranges.cend(), start,
         [](const auto& x, const auto& y) { return x.end.beat <= y.beat; });
@@ -138,6 +140,7 @@ double SpData::propagate_sp_over_whammy_min(Position start, Position end,
                                             double sp,
                                             Position required_whammy_end) const
 {
+    assert(start.beat <= end.beat); // NOLINT
     if (required_whammy_end.beat > start.beat) {
         auto whammy_end = end;
         if (required_whammy_end.beat < end.beat) {
