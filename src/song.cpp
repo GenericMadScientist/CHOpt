@@ -371,9 +371,9 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
 {
     Song song;
 
-    song.m_song_header.name = ini.name;
-    song.m_song_header.artist = ini.artist;
-    song.m_song_header.charter = ini.charter;
+    song.m_name = ini.name;
+    song.m_artist = ini.artist;
+    song.m_charter = ini.charter;
 
     for (const auto& section : chart.sections) {
         if (section.name == "Song") {
@@ -1017,9 +1017,9 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
     Song song;
     song.m_is_from_midi = true;
     song.m_resolution = midi.ticks_per_quarter_note;
-    song.m_song_header.name = ini.name;
-    song.m_song_header.artist = ini.artist;
-    song.m_song_header.charter = ini.charter;
+    song.m_name = ini.name;
+    song.m_artist = ini.artist;
+    song.m_charter = ini.charter;
 
     if (midi.tracks.empty()) {
         return song;

@@ -272,8 +272,7 @@ TEST_CASE("SongHeader information is added")
     {
         NoteTrack<NoteColour> track {{{0}}, {}, {}, 192};
         ImageBuilder builder {track, {}};
-        SongHeader header {"TestName", "GMS", "NotGMS"};
-        builder.add_song_header(header, 100);
+        builder.add_song_header("TestName", "GMS", "NotGMS", 100);
 
         REQUIRE(builder.song_name() == "TestName");
         REQUIRE(builder.artist() == "GMS");
@@ -284,8 +283,7 @@ TEST_CASE("SongHeader information is added")
     {
         NoteTrack<NoteColour> track {{{0}}, {}, {}, 192};
         ImageBuilder builder {track, {}};
-        SongHeader header {"TestName", "GMS", "NotGMS"};
-        builder.add_song_header(header, 200);
+        builder.add_song_header("TestName", "GMS", "NotGMS", 200);
 
         REQUIRE(builder.song_name() == "TestName (200%)");
         REQUIRE(builder.artist() == "GMS");

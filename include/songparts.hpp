@@ -282,10 +282,4 @@ public:
     [[nodiscard]] SyncTrack speedup(int speed) const;
 };
 
-struct SongHeader {
-    std::string name {"Unknown Song"};
-    std::string artist {"Unknown Artist"};
-    std::string charter {"Unknown Charter"};
-};
-
 #endif

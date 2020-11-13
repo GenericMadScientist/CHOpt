@@ -129,11 +129,10 @@ TEST_CASE("Chart header values besides resolution are discarded")
     std::vector<ChartSection> sections {header_section, expert_single};
     const Chart chart {sections};
     const auto song = Song::from_chart(chart, {});
-    const auto& header = song.song_header();
 
-    REQUIRE(header.name != "TestName");
-    REQUIRE(header.artist != "GMS");
-    REQUIRE(header.charter != "NotGMS");
+    REQUIRE(song.name() != "TestName");
+    REQUIRE(song.artist() != "GMS");
+    REQUIRE(song.charter() != "NotGMS");
 }
 
 TEST_CASE("Ini values are used for converting from .chart files")
@@ -145,11 +144,10 @@ TEST_CASE("Ini values are used for converting from .chart files")
     const Chart chart {sections};
     const IniValues ini {"TestName", "GMS", "NotGMS"};
     const auto song = Song::from_chart(chart, ini);
-    const auto& header = song.song_header();
 
-    REQUIRE(header.name == "TestName");
-    REQUIRE(header.artist == "GMS");
-    REQUIRE(header.charter == "NotGMS");
+    REQUIRE(song.name() == "TestName");
+    REQUIRE(song.artist() == "GMS");
+    REQUIRE(song.charter() == "NotGMS");
 }
 
 // Last checked: 24.0.1555-master
@@ -601,7 +599,7 @@ TEST_CASE("First track is read correctly")
 
         const auto song = Song::from_midi(midi, {});
 
-        REQUIRE(song.song_header().name != "Hello");
+        REQUIRE(song.name() != "Hello");
     }
 }
 
@@ -611,11 +609,10 @@ TEST_CASE("Ini values are used when converting from .mid files")
     const IniValues ini {"TestName", "GMS", "NotGMS"};
 
     const auto song = Song::from_midi(midi, ini);
-    const auto& header = song.song_header();
 
-    REQUIRE(header.name == "TestName");
-    REQUIRE(header.artist == "GMS");
-    REQUIRE(header.charter == "NotGMS");
+    REQUIRE(song.name() == "TestName");
+    REQUIRE(song.artist() == "GMS");
+    REQUIRE(song.charter() == "NotGMS");
 }
 
 TEST_CASE("Notes are read correctly")

@@ -39,7 +39,9 @@ private:
 
     bool m_is_from_midi = false;
     int m_resolution = DEFAULT_RESOLUTION;
-    SongHeader m_song_header;
+    std::string m_name;
+    std::string m_artist;
+    std::string m_charter;
     SyncTrack m_sync_track;
     std::map<std::tuple<Instrument, Difficulty>, NoteTrack<NoteColour>>
         m_five_fret_tracks;
@@ -54,10 +56,9 @@ public:
     static Song from_midi(const Midi& midi, const IniValues& ini);
     [[nodiscard]] bool is_from_midi() const { return m_is_from_midi; }
     [[nodiscard]] int resolution() const { return m_resolution; }
-    [[nodiscard]] const SongHeader& song_header() const
-    {
-        return m_song_header;
-    }
+    [[nodiscard]] const std::string& name() const { return m_name; }
+    [[nodiscard]] const std::string& artist() const { return m_artist; }
+    [[nodiscard]] const std::string& charter() const { return m_charter; }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
     [[nodiscard]] std::vector<Instrument> instruments() const;
     [[nodiscard]] std::vector<Difficulty>
