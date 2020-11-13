@@ -30,14 +30,11 @@ package_add_test(chart_unittest chart_unittest.cpp "${SRC}/chart.cpp"
 package_add_test(
   imagebuilder_unittest
   imagebuilder_unittest.cpp
-  "${SRC}/chart.cpp"
   "${SRC}/imagebuilder.cpp"
-  "${SRC}/ini.cpp"
-  "${SRC}/midi.cpp"
   "${SRC}/optimiser.cpp"
   "${SRC}/points.cpp"
   "${SRC}/processed.cpp"
-  "${SRC}/song.cpp"
+  "${SRC}/songparts.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/stringutil.cpp"
   "${SRC}/time.cpp")
@@ -52,37 +49,24 @@ package_add_test(midi_unittest midi_unittest.cpp "${SRC}/midi.cpp")
 package_add_test(
   optimiser_unittest
   optimiser_unittest.cpp
-  "${SRC}/chart.cpp"
-  "${SRC}/ini.cpp"
-  "${SRC}/midi.cpp"
   "${SRC}/optimiser.cpp"
   "${SRC}/points.cpp"
   "${SRC}/processed.cpp"
-  "${SRC}/song.cpp"
+  "${SRC}/songparts.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/stringutil.cpp"
   "${SRC}/time.cpp")
 
 package_add_test(
-  points_unittest
-  points_unittest.cpp
-  "${SRC}/chart.cpp"
-  "${SRC}/ini.cpp"
-  "${SRC}/midi.cpp"
-  "${SRC}/points.cpp"
-  "${SRC}/song.cpp"
-  "${SRC}/stringutil.cpp"
-  "${SRC}/time.cpp")
+  points_unittest points_unittest.cpp "${SRC}/points.cpp"
+  "${SRC}/songparts.cpp" "${SRC}/stringutil.cpp" "${SRC}/time.cpp")
 
 package_add_test(
   processed_unittest
   processed_unittest.cpp
-  "${SRC}/chart.cpp"
-  "${SRC}/ini.cpp"
-  "${SRC}/midi.cpp"
   "${SRC}/points.cpp"
   "${SRC}/processed.cpp"
-  "${SRC}/song.cpp"
+  "${SRC}/songparts.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/stringutil.cpp"
   "${SRC}/time.cpp")
@@ -94,28 +78,17 @@ package_add_test(
   "${SRC}/ini.cpp"
   "${SRC}/midi.cpp"
   "${SRC}/song.cpp"
+  "${SRC}/songparts.cpp"
   "${SRC}/stringutil.cpp")
 
-package_add_test(
-  sp_unittest
-  sp_unittest.cpp
-  "${SRC}/chart.cpp"
-  "${SRC}/ini.cpp"
-  "${SRC}/midi.cpp"
-  "${SRC}/song.cpp"
-  "${SRC}/sp.cpp"
-  "${SRC}/stringutil.cpp"
-  "${SRC}/time.cpp")
+package_add_test(songparts_unittest songparts_unittest.cpp
+                 "${SRC}/songparts.cpp")
+
+package_add_test(sp_unittest sp_unittest.cpp "${SRC}/songparts.cpp"
+                 "${SRC}/sp.cpp" "${SRC}/stringutil.cpp" "${SRC}/time.cpp")
 
 package_add_test(stringutil_unittest stringutil_unittest.cpp
                  "${SRC}/stringutil.cpp")
 
-package_add_test(
-  time_unittest
-  time_unittest.cpp
-  "${SRC}/chart.cpp"
-  "${SRC}/ini.cpp"
-  "${SRC}/midi.cpp"
-  "${SRC}/song.cpp"
-  "${SRC}/stringutil.cpp"
-  "${SRC}/time.cpp")
+package_add_test(time_unittest time_unittest.cpp "${SRC}/songparts.cpp"
+                 "${SRC}/stringutil.cpp" "${SRC}/time.cpp")

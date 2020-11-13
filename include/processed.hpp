@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "points.hpp"
-#include "song.hpp"
+#include "songparts.hpp"
 #include "sp.hpp"
 #include "time.hpp"
 

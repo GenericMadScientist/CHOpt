@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include "song.hpp"
+#include "songparts.hpp"
 
 // This struct represents the options chosen on the command line by the user.
 struct Settings {

@@ -21,7 +21,7 @@
 
 #include <vector>
 
-#include "song.hpp"
+#include "songparts.hpp"
 
 class Measure;
 class Second;

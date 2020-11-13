@@ -20,7 +20,7 @@
 
 #include "catch.hpp"
 
-#include "song.hpp"
+#include "songparts.hpp"
 #include "time.hpp"
 
 TEST_CASE("Beat operations", "Beat")

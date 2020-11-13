@@ -75,59 +75,6 @@ Song Song::from_filename(const std::string& filename)
     throw std::invalid_argument("file should be .chart or .mid");
 }
 
-SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
-                     std::vector<BPM> bpms)
-{
-    constexpr auto DEFAULT_BPM = 120000;
-
-    for (const auto& bpm : bpms) {
-        if (bpm.bpm <= 0) {
-            throw std::invalid_argument("BPMs must be positive");
-        }
-    }
-    for (const auto& ts : time_sigs) {
-        if (ts.numerator <= 0 || ts.denominator <= 0) {
-            throw std::invalid_argument(
-                "Time signatures must be positive/positive");
-        }
-    }
-
-    std::stable_sort(
-        bpms.begin(), bpms.end(),
-        [](const auto& x, const auto& y) { return x.position < y.position; });
-    BPM prev_bpm {0, DEFAULT_BPM};
-    for (auto p = bpms.cbegin(); p < bpms.cend(); ++p) {
-        if (p->position != prev_bpm.position) {
-            m_bpms.push_back(prev_bpm);
-        }
-        prev_bpm = *p;
-    }
-    m_bpms.push_back(prev_bpm);
-
-    std::stable_sort(
-        time_sigs.begin(), time_sigs.end(),
-        [](const auto& x, const auto& y) { return x.position < y.position; });
-    TimeSignature prev_ts {0, 4, 4};
-    for (auto p = time_sigs.cbegin(); p < time_sigs.cend(); ++p) {
-        if (p->position != prev_ts.position) {
-            m_time_sigs.push_back(prev_ts);
-        }
-        prev_ts = *p;
-    }
-    m_time_sigs.push_back(prev_ts);
-}
-
-SyncTrack SyncTrack::speedup(int speed) const
-{
-    constexpr auto DEFAULT_SPEED = 100;
-
-    SyncTrack speedup {m_time_sigs, m_bpms};
-    for (auto& bpm : speedup.m_bpms) {
-        bpm.bpm = (bpm.bpm * speed) / DEFAULT_SPEED;
-    }
-    return speedup;
-}
-
 // Takes a sequence of points where some note type/event is turned on, and a
 // sequence where said type is turned off, and returns a tuple of intervals
 // where the event is on.

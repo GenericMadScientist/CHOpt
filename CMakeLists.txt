@@ -87,6 +87,7 @@ add_executable(
   src/processed.cpp
   src/settings.cpp
   src/song.cpp
+  src/songparts.cpp
   src/sp.cpp
   src/stringutil.cpp
   src/time.cpp
@@ -131,6 +132,7 @@ if(BUILD_GUI)
     src/points.cpp
     src/processed.cpp
     src/song.cpp
+    src/songparts.cpp
     src/sp.cpp
     src/stringutil.cpp
     src/time.cpp
