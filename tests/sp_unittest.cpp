@@ -25,7 +25,7 @@ static bool operator==(const SpBar& lhs, const SpBar& rhs)
     return lhs.min() == Approx(rhs.min()) && lhs.max() == Approx(rhs.max());
 }
 
-TEST_CASE("SpBar methods", "SpBar")
+TEST_CASE("SpBar methods")
 {
     SECTION("add_phrase() works correctly")
     {
@@ -176,7 +176,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
     }
 }
 
-TEST_CASE("is_in_whammy_ranges works correctly", "Whammy ranges")
+TEST_CASE("is_in_whammy_ranges works correctly")
 {
     std::vector<Note<NoteColour>> notes {{0, 1920}, {2112}};
     std::vector<StarPower> phrases {{0, 2000}, {2112, 50}};
@@ -187,7 +187,7 @@ TEST_CASE("is_in_whammy_ranges works correctly", "Whammy ranges")
     REQUIRE(!sp_data.is_in_whammy_ranges(Beat(11.0)));
 }
 
-TEST_CASE("available_whammy works correctly", "Available whammy")
+TEST_CASE("available_whammy works correctly")
 {
     std::vector<Note<NoteColour>> notes {{0, 1920}, {2112}, {2304, 768}};
     std::vector<StarPower> phrases {{0, 3000}};
@@ -225,6 +225,14 @@ TEST_CASE("available_whammy works correctly", "Available whammy")
                 == Approx(0.166667));
         REQUIRE(sp_data.available_whammy(Beat(12.0), Beat(16.0))
                 == Approx(0.0));
+    }
+
+    SECTION("Three argument version works correctly")
+    {
+        SpData sp_data {track, {}, 1.0, Second(0.0)};
+
+        REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(12.0), Beat(12.0))
+                == Approx(0.333333));
     }
 }
 

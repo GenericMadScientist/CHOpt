@@ -342,4 +342,21 @@ TEST_CASE("optimal_path produces the correct path")
 
         REQUIRE(opt_path.activations[0].sp_start > Beat {20.0});
     }
+
+    // There was a bug where EW could be obtained from a note before the note
+    // was hit. This came up in xOn Our Kneesx from CSC November 2020, where
+    // this makes CHOpt believe you can activate before the GY note and get an
+    // extra 300 points.
+    SECTION("Early whammy from a note cannot be obtained until the note is hit")
+    {
+        std::vector<Note<NoteColour>> notes {{0, 1392}, {1536, 192}};
+        std::vector<StarPower> phrases {{0, 1}, {1536, 1}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
+        ProcessedSong track {note_track, {}, 1.0, 1.0, Second(0.0)};
+        Optimiser optimiser {&track, &terminate};
+
+        const auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.score_boost == 28);
+    }
 }

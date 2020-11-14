@@ -58,7 +58,8 @@ SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
 {
     const Second early_timing_window {0.07 * early_whammy};
 
-    std::vector<std::tuple<Beat, Beat>> ranges;
+    // Elements are (whammy start, whammy end, note).
+    std::vector<std::tuple<Beat, Beat, Beat>> ranges;
     for (const auto& [position, length] : note_spans) {
         if (length == 0) {
             continue;
@@ -71,38 +72,39 @@ SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
             continue;
         }
 
-        Beat beat_start {static_cast<double>(position) / resolution};
-        auto second_start = m_converter.beats_to_seconds(beat_start);
+        const Beat note {static_cast<double>(position) / resolution};
+        auto second_start = m_converter.beats_to_seconds(note);
         second_start -= early_timing_window;
         second_start += lazy_whammy;
-        beat_start = m_converter.seconds_to_beats(second_start);
+        const auto beat_start = m_converter.seconds_to_beats(second_start);
         Beat beat_end {static_cast<double>(position + length) / resolution};
         if (beat_start < beat_end) {
-            ranges.emplace_back(beat_start, beat_end);
+            ranges.emplace_back(beat_start, beat_end, note);
         }
+    }
+
+    if (ranges.empty()) {
+        return;
     }
 
     std::sort(ranges.begin(), ranges.end());
 
-    if (!ranges.empty()) {
-        std::vector<std::tuple<Beat, Beat>> merged_ranges;
-        auto pair = ranges[0];
-        for (auto p = std::next(ranges.cbegin()); p < ranges.cend(); ++p) {
-            if (std::get<0>(*p) <= std::get<1>(pair)) {
-                std::get<1>(pair)
-                    = std::max(std::get<1>(pair), std::get<1>(*p));
-            } else {
-                merged_ranges.push_back(pair);
-                pair = *p;
-            }
+    std::vector<std::tuple<Beat, Beat, Beat>> merged_ranges;
+    auto pair = ranges[0];
+    for (auto p = std::next(ranges.cbegin()); p < ranges.cend(); ++p) {
+        if (std::get<0>(*p) <= std::get<1>(pair)) {
+            std::get<1>(pair) = std::max(std::get<1>(pair), std::get<1>(*p));
+        } else {
+            merged_ranges.push_back(pair);
+            pair = *p;
         }
-        merged_ranges.push_back(pair);
+    }
+    merged_ranges.push_back(pair);
 
-        for (auto [start, end] : merged_ranges) {
-            auto start_meas = m_converter.beats_to_measures(start);
-            auto end_meas = m_converter.beats_to_measures(end);
-            m_whammy_ranges.push_back({{start, start_meas}, {end, end_meas}});
-        }
+    for (auto [start, end, note] : merged_ranges) {
+        const auto start_meas = m_converter.beats_to_measures(start);
+        const auto end_meas = m_converter.beats_to_measures(end);
+        m_whammy_ranges.push_back({{start, start_meas}, {end, end_meas}, note});
     }
 }
 
@@ -210,6 +212,25 @@ double SpData::available_whammy(Beat start, Beat end) const
         [](const auto& x, const auto& y) { return x.end.beat <= y; });
     for (; p < m_whammy_ranges.cend(); ++p) {
         if (p->start.beat >= end) {
+            break;
+        }
+        auto whammy_start = std::max(p->start.beat, start);
+        auto whammy_end = std::min(p->end.beat, end);
+        total_whammy += (whammy_end - whammy_start).value() * SP_GAIN_RATE;
+    }
+
+    return total_whammy;
+}
+
+double SpData::available_whammy(Beat start, Beat end, Beat note_pos) const
+{
+    double total_whammy {0.0};
+
+    auto p = std::lower_bound(
+        m_whammy_ranges.cbegin(), m_whammy_ranges.cend(), start,
+        [](const auto& x, const auto& y) { return x.end.beat <= y; });
+    for (; p < m_whammy_ranges.cend(); ++p) {
+        if (p->start.beat >= end || p->note >= note_pos) {
             break;
         }
         auto whammy_start = std::max(p->start.beat, start);

@@ -71,6 +71,7 @@ private:
     struct WhammyRange {
         Position start;
         Position end;
+        Beat note;
     };
 
     static constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
@@ -130,6 +131,10 @@ public:
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
     // Return the amount of whammy obtainable across a range.
     [[nodiscard]] double available_whammy(Beat start, Beat end) const;
+    // Return the amount of whammy obtainable across a range, from notes before
+    // note_pos.
+    [[nodiscard]] double available_whammy(Beat start, Beat end,
+                                          Beat note_pos) const;
     // Return how far an activation can propagate based on whammy, returning the
     // end of the range if it can be reached.
     [[nodiscard]] Position activation_end_point(Position start, Position end,
