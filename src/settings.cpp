@@ -178,10 +178,6 @@ Settings from_args(int argc, char** argv)
         throw std::invalid_argument(
             "Lazy whammy must be greater than or equal to 0");
     }
-    if (early_whammy > squeeze) {
-        throw std::invalid_argument(
-            "Early whammy cannot be higher than squeeze");
-    }
 
     settings.squeeze = squeeze / 100.0;
     settings.early_whammy = early_whammy / 100.0;

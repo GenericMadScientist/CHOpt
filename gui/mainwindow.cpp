@@ -344,21 +344,12 @@ void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
 
 void MainWindow::on_squeezeSlider_valueChanged(int value)
 {
-    const auto ew_value = m_ui->earlyWhammySlider->value();
-    if (ew_value > value) {
-        m_ui->earlyWhammySlider->setValue(value);
-    }
     m_ui->squeezeLabel->setText(QString::number(value));
 }
 
 void MainWindow::on_earlyWhammySlider_valueChanged(int value)
 {
-    const auto sqz_value = m_ui->squeezeSlider->value();
-    if (sqz_value < value) {
-        m_ui->earlyWhammySlider->setValue(sqz_value);
-    }
-    m_ui->earlyWhammyLabel->setText(
-        QString::number(std::min(value, sqz_value)));
+    m_ui->earlyWhammyLabel->setText(QString::number(value));
 }
 
 #include "mainwindow.moc"
