@@ -198,8 +198,8 @@ public:
 
     void colour_beat_range(const ImageBuilder& builder,
                            std::array<unsigned char, 3> colour,
-                           std::tuple<double, double> x_range,
-                           std::tuple<int, int> y_range, float opacity);
+                           const std::tuple<double, double>& x_range,
+                           const std::tuple<int, int>& y_range, float opacity);
     void draw_header(const ImageBuilder& builder);
     void draw_measures(const ImageBuilder& builder);
     void draw_notes(const ImageBuilder& builder);
@@ -671,8 +671,9 @@ void ImageImpl::draw_ghl_note_sustain(const ImageBuilder& builder,
 
 void ImageImpl::colour_beat_range(const ImageBuilder& builder,
                                   std::array<unsigned char, 3> colour,
-                                  std::tuple<double, double> x_range,
-                                  std::tuple<int, int> y_range, float opacity)
+                                  const std::tuple<double, double>& x_range,
+                                  const std::tuple<int, int>& y_range,
+                                  float opacity)
 {
     double start = std::numeric_limits<double>::quiet_NaN();
     double end = std::numeric_limits<double>::quiet_NaN();
@@ -685,7 +686,7 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
     auto row
         = static_cast<int>(std::distance(builder.rows().cbegin(), row_iter));
 
-    const auto [y_min, y_max] = y_range;
+    const auto& [y_min, y_max] = y_range;
 
     while (start < end) {
         auto block_end = std::min(row_iter->end, end);

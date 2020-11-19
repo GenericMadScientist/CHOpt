@@ -24,6 +24,7 @@
 // general because it uses a feature deprecated in C++17 and Microsoft's STL
 // will complain if we use it.
 #ifndef _LIBCPP_VERSION
+#include <array>
 #include <climits>
 #include <cstdint>
 #include <cuchar>
@@ -79,12 +80,12 @@ static std::string utf16_to_utf8_string(std::string_view input)
     // charts so a proper solution can wait until the C++ standard library gets
     // a fix or a non-artificial chart comes up that this is a problem for.
     std::mbstate_t state {};
-    char out[MB_LEN_MAX];
+    std::array<char, MB_LEN_MAX> out {};
     for (auto c : utf16_string_view) {
-        auto rc = std::c16rtomb(out, c, &state);
+        auto rc = std::c16rtomb(out.data(), c, &state);
         if (rc != static_cast<std::size_t>(-1)) {
-            for (auto i = 0u; i < rc; ++i) {
-                u8_string.push_back(out[i]);
+            for (auto i = 0U; i < rc; ++i) {
+                u8_string.push_back(out.at(i));
             }
         }
     }
