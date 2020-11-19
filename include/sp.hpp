@@ -104,15 +104,15 @@ private:
 
     SpData(const std::vector<std::tuple<int, int>>& note_spans,
            const std::vector<StarPower>& phrases, int resolution,
-           const SyncTrack& sync_track, double early_whammy,
-           Second lazy_whammy);
+           const SyncTrack& sync_track, double early_whammy, Second lazy_whammy,
+           Second video_lag);
 
 public:
     template <typename T>
     SpData(const NoteTrack<T>& track, const SyncTrack& sync_track,
-           double early_whammy, Second lazy_whammy)
+           double early_whammy, Second lazy_whammy, Second video_lag)
         : SpData(note_spans(track), track.sp_phrases(), track.resolution(),
-                 sync_track, early_whammy, lazy_whammy)
+                 sync_track, early_whammy, lazy_whammy, video_lag)
     {
     }
 

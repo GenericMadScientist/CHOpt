@@ -52,10 +52,11 @@ SpData::form_beat_rates(int resolution, const SyncTrack& sync_track)
 SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
                const std::vector<StarPower>& phrases, int resolution,
                const SyncTrack& sync_track, double early_whammy,
-               Second lazy_whammy)
+               Second lazy_whammy, Second video_lag)
     : m_converter {sync_track, resolution}
     , m_beat_rates {form_beat_rates(resolution, sync_track)}
 {
+    (void)video_lag;
     const Second early_timing_window {0.07 * early_whammy};
 
     // Elements are (whammy start, whammy end, note).
@@ -76,6 +77,7 @@ SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
         auto second_start = m_converter.beats_to_seconds(note);
         second_start -= early_timing_window;
         second_start += lazy_whammy;
+        second_start += video_lag;
         const auto beat_start = m_converter.seconds_to_beats(second_start);
         Beat beat_end {static_cast<double>(position + length) / resolution};
         if (beat_start < beat_end) {

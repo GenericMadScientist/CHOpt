@@ -88,7 +88,7 @@ public:
                   double early_whammy, double squeeze, Second lazy_whammy)
         : m_converter {sync_track, track.resolution()}
         , m_points {track, m_converter, squeeze, Second(0.0)}
-        , m_sp_data {track, sync_track, early_whammy, lazy_whammy}
+        , m_sp_data {track, sync_track, early_whammy, lazy_whammy, Second(0.0)}
         , m_base_score {track.base_score()}
     {
         m_total_solo_boost = std::accumulate(
