@@ -87,7 +87,7 @@ public:
     ProcessedSong(const NoteTrack<T>& track, const SyncTrack& sync_track,
                   double early_whammy, double squeeze, Second lazy_whammy)
         : m_converter {sync_track, track.resolution()}
-        , m_points {track, m_converter, squeeze}
+        , m_points {track, m_converter, squeeze, Second(0.0)}
         , m_sp_data {track, sync_track, early_whammy, lazy_whammy}
         , m_base_score {track.base_score()}
     {

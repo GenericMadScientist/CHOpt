@@ -47,11 +47,11 @@ private:
 
 public:
     PointSet(const NoteTrack<NoteColour>& track, const TimeConverter& converter,
-             double squeeze);
+             double squeeze, Second video_lag);
     PointSet(const NoteTrack<GHLNoteColour>& track,
-             const TimeConverter& converter, double squeeze);
+             const TimeConverter& converter, double squeeze, Second video_lag);
     PointSet(const NoteTrack<DrumNoteColour>& track,
-             const TimeConverter& converter, double squeeze);
+             const TimeConverter& converter, double squeeze, Second video_lag);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
     [[nodiscard]] PointPtr next_non_hold_point(PointPtr point) const;

@@ -35,7 +35,8 @@ static bool phrase_contains_pos(const StarPower& phrase, int position)
 template <typename OutputIt>
 static void append_sustain_points(OutputIt points, int position,
                                   int sust_length, int resolution,
-                                  const TimeConverter& converter)
+                                  const TimeConverter& converter,
+                                  Beat note_timing_window_start)
 {
     constexpr double HALF_RES_OFFSET = 0.5;
 
@@ -47,6 +48,7 @@ static void append_sustain_points(OutputIt points, int position,
         position += tick_gap;
         sust_length -= tick_gap;
         Beat beat {(position - HALF_RES_OFFSET) / float_res};
+        beat = std::max(beat, note_timing_window_start);
         auto meas = converter.beats_to_measures(beat);
         --sust_ticks;
         *points++
@@ -54,6 +56,7 @@ static void append_sustain_points(OutputIt points, int position,
     }
     if (sust_ticks > 0) {
         Beat beat {(position + HALF_RES_OFFSET) / float_res};
+        beat = std::max(beat, note_timing_window_start);
         auto meas = converter.beats_to_measures(beat);
         *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, sust_ticks,
                      sust_ticks,   true,         false};
@@ -63,7 +66,8 @@ static void append_sustain_points(OutputIt points, int position,
 template <typename InputIt, typename OutputIt>
 static void append_note_points(InputIt first, InputIt last, OutputIt points,
                                int resolution, bool is_note_sp_ender,
-                               const TimeConverter& converter, double squeeze)
+                               const TimeConverter& converter, double squeeze,
+                               Second video_lag)
 {
     assert(first != last); // NOLINT
 
@@ -74,8 +78,9 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
     const auto chord_size = static_cast<int>(std::distance(first, last));
     auto pos = first->position;
     Beat beat {pos / static_cast<double>(resolution)};
+    auto note_seconds = converter.beats_to_seconds(beat) + video_lag;
+    beat = converter.seconds_to_beats(note_seconds);
     auto meas = converter.beats_to_measures(beat);
-    auto note_seconds = converter.beats_to_seconds(beat);
     auto early_beat = converter.seconds_to_beats(note_seconds - EARLY_WINDOW);
     auto early_meas = converter.beats_to_measures(early_beat);
     auto late_beat = converter.seconds_to_beats(note_seconds + LATE_WINDOW);
@@ -94,11 +99,11 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
           });
     if (min_iter->length == max_iter->length) {
         append_sustain_points(points, pos, max_iter->length, resolution,
-                              converter);
+                              converter, early_beat);
     } else {
         for (auto p = first; p < last; ++p) {
-            append_sustain_points(points, pos, p->length, resolution,
-                                  converter);
+            append_sustain_points(points, pos, p->length, resolution, converter,
+                                  early_beat);
         }
     }
 }
@@ -106,7 +111,7 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
 template <typename T>
 static std::vector<Point> points_from_track(const NoteTrack<T>& track,
                                             const TimeConverter& converter,
-                                            double squeeze)
+                                            double squeeze, Second video_lag)
 {
     const auto& notes = track.notes();
     std::vector<Point> points;
@@ -128,7 +133,7 @@ static std::vector<Point> points_from_track(const NoteTrack<T>& track,
             ++current_phrase;
         }
         append_note_points(p, q, std::back_inserter(points), track.resolution(),
-                           is_note_sp_ender, converter, squeeze);
+                           is_note_sp_ender, converter, squeeze, video_lag);
         p = q;
     }
 
@@ -216,8 +221,9 @@ static std::vector<int> score_totals(const std::vector<Point>& points)
 }
 
 PointSet::PointSet(const NoteTrack<NoteColour>& track,
-                   const TimeConverter& converter, double squeeze)
-    : m_points {points_from_track(track, converter, squeeze)}
+                   const TimeConverter& converter, double squeeze,
+                   Second video_lag)
+    : m_points {points_from_track(track, converter, squeeze, video_lag)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
@@ -227,8 +233,9 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track,
 }
 
 PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
-                   const TimeConverter& converter, double squeeze)
-    : m_points {points_from_track(track, converter, squeeze)}
+                   const TimeConverter& converter, double squeeze,
+                   Second video_lag)
+    : m_points {points_from_track(track, converter, squeeze, video_lag)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
@@ -238,8 +245,9 @@ PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
 }
 
 PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
-                   const TimeConverter& converter, double squeeze)
-    : m_points {points_from_track(track, converter, squeeze)}
+                   const TimeConverter& converter, double squeeze,
+                   Second video_lag)
+    : m_points {points_from_track(track, converter, squeeze, video_lag)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),

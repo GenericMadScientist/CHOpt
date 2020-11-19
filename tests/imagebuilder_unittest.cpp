@@ -343,7 +343,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
     {
         NoteTrack<NoteColour> track {{{0, 96}, {192}}, {{0, 50}}, {}, 192};
         TimeConverter converter {{}, 192};
-        PointSet points {track, converter, 1.0};
+        PointSet points {track, converter, 1.0, Second(0.0)};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25},
                      Beat {0.1}, Beat {0.9}}},
@@ -366,7 +366,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
     {
         NoteTrack<NoteColour> track {{{0}, {192}, {384}, {576}}, {}, {}, 192};
         TimeConverter converter {{}, 192};
-        PointSet points {track, converter, 1.0};
+        PointSet points {track, converter, 1.0, Second(0.0)};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
                      Beat {0.1}, Beat {1.1}},
@@ -384,7 +384,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
     {
         NoteTrack<NoteColour> track {{{192}, {384}, {576}, {768}}, {}, {}, 192};
         TimeConverter converter {{}, 192};
-        PointSet points {track, converter, 1.0};
+        PointSet points {track, converter, 1.0, Second(0.0)};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                      Beat {0.0}, Beat {5.0}}},
@@ -400,7 +400,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
     {
         NoteTrack<NoteColour> track {{{192}}, {}, {}, 192};
         TimeConverter converter {{}, 192};
-        PointSet points {track, converter, 1.0};
+        PointSet points {track, converter, 1.0, Second(0.0)};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                      Beat {16.0}}},
@@ -428,7 +428,7 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Notes with no activations or solos")
     {
         NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, 192};
-        PointSet points {track, {{}, 192}, 1.0};
+        PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, path);
@@ -443,7 +443,7 @@ TEST_CASE("add_measure_values gives correct values")
     {
         NoteTrack<NoteColour> track {
             {{768}}, {}, {{0, 100, 100}, {200, 800, 100}}, 192};
-        PointSet points {track, {{}, 192}, 1.0};
+        PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, path);
@@ -457,7 +457,7 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Solos ending past last note are handled correctly")
     {
         NoteTrack<NoteColour> track {{{0}}, {}, {{0, 1600, 50}}, 192};
-        PointSet points {track, {{}, 192}, 1.0};
+        PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, path);
@@ -469,7 +469,7 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Activations are added")
     {
         NoteTrack<NoteColour> track {{{0}, {192}, {384}, {768}}, {}, {}, 192};
-        PointSet points {track, {{}, 192}, 1.0};
+        PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
         Path path {{{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0},
                      Beat {0.0}}},
                    100};
