@@ -1,14 +1,15 @@
 import sqlite3
 import subprocess
 
-program = "./build/chopt"
+program = "./build/Debug/chopt.exe"
 song_dir = "integration_tests/songs"
 
 conn = sqlite3.connect("integration_tests/tests.db")
 c = conn.cursor()
 
 c.execute(
-    "select ID, File, Difficulty, Path, BaseScore, TotalScore, AvgMultiplier from Songs"
+    ("select ID, File, Difficulty, Path, BaseScore, TotalScore, AvgMultiplier "
+     "from Songs")
 )
 songs = list(c.fetchall())
 
@@ -21,22 +22,26 @@ for song in songs:
     output_lines.append(f"Total score: {total_score}")
     output_lines.append(f"Average multiplier: {avg_mult}x")
     c.execute(
-        "select ActivationNumber, Start, End from Activations where SongID = ? order by ActivationNumber",
+        ("select ActivationNumber, Start, End from Activations "
+         "where SongID = ? order by ActivationNumber"),
         (song_id,),
     )
     for act_num, start, end in c.fetchall():
         act_range = f"Measure {start} to Measure {end}"
         output_lines.append(f"Activation {act_num}: {act_range}")
     output_lines.append("")
-    outputs.append("\n".join(output_lines).encode("utf-8"))
+    outputs.append("\r\n".join(output_lines).encode("utf-8"))
 
 conn.close()
 
 for song, output in zip(songs, outputs):
     _, file, difficulty, _, _, _, _ = song
     result = subprocess.run(
-        [program, "-f", f"{song_dir}/{file}", "-d", difficulty], capture_output=True
+        [program, "-f", f"{song_dir}/{file}", "-d", difficulty],
+        capture_output=True
     )
     result.check_returncode()
     if result.stdout != output:
+        print(f"Expected output: {output}")
+        print(f"Actual output: {result.stdout}")
         raise RuntimeError(f"Song {file} has incorrect output")
