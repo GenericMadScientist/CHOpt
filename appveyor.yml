@@ -1,45 +1,65 @@
 version: 1.1.3.{build}-{branch}
 image: Visual Studio 2019
 
-configuration:
-  - Debug
-
-platform:
-  - x64
+configuration: Debug
+platform: x64
 
 environment:
   matrix:
-    - job_name: VS 2019 build
-    - job_name: Clang 11 build
+    - job_name: MSVC and tests
+    - job_name: Clang and static analysis
+    - job_name: GCC
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
 
 matrix:
   fast_finish: true
 
-cache: C:/Tools/vcpkg/installed/
-
 before_build:
-  - vcpkg install libpng:x64-windows
-  - mkdir build
-  - cd build
+  - cmd: vcpkg install libpng:x64-windows
+  - ps: mkdir build
+  - ps: cd build
 
 for:
   -
     matrix:
       only:
-        - job_name: VS 2019 build
+        - job_name: MSVC and tests
+
+    cache: C:/Tools/vcpkg/installed/
 
     build_script:
     - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DQt5_DIR=C:/Qt/5.15.1/msvc2019_64/lib/cmake/Qt5 -G "Visual Studio 16 2019" ..
     - cmd: cmake --build . --verbose --config %CONFIGURATION%
 
+    test_script:
+    - cmd: ctest --verbose -C %CONFIGURATION%
+    - cmd: cd ..
+    - cmd: set PATH=C:/Python39-x64;C:/Python39-x64/Scripts;%PATH%
+    - cmd: python integration_tests/run_integration_tests.py
+
   -
     matrix:
       only:
-        - job_name: Clang 11 build
+        - job_name: Clang and static analysis
+
+    cache: C:/Tools/vcpkg/installed/
 
     build_script:
     - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_CXX_COMPILER=Clang -DQt5_DIR=C:/Qt/5.15.1/msvc2019_64/lib/cmake/Qt5 -G "Visual Studio 16 2019" ..
     - cmd: cmake --build . --verbose --config %CONFIGURATION%
 
-test_script:
-- cmd: ctest --verbose -C %CONFIGURATION%
+    test_script:
+    - cmd: cd ..
+    - cmd: clang-format -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp
+    - cmd: git diff --color --exit-code
+    - cmd: clang-tidy src/*.cpp -- -Iinclude -Ilibs -Ibuild/_deps/argparse-src/include -Ibuild/_deps/nowide-src/include -IC:/Tools/vcpkg/installed/x64-windows/include -std=c++17
+    - cmd: clang-tidy tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Iinclude -Ilibs -Ibuild/_deps/nowide-src/include -IC:/Tools/vcpkg/installed/x64-windows/include -std=c++17
+
+  -
+    matrix:
+      only:
+        - job_name: GCC
+
+    build_script:
+    - sh: cmake -DCMAKE_CXX_COMPILER=g++-9 -DBUILD_GUI=OFF ..
+    - sh: cmake --build . --verbose --config ${CONFIGURATION}
