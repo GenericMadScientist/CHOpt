@@ -85,10 +85,11 @@ private:
 public:
     template <typename T>
     ProcessedSong(const NoteTrack<T>& track, const SyncTrack& sync_track,
-                  double early_whammy, double squeeze, Second lazy_whammy)
+                  double early_whammy, double squeeze, Second lazy_whammy,
+                  Second video_lag)
         : m_converter {sync_track, track.resolution()}
-        , m_points {track, m_converter, squeeze, Second(0.0)}
-        , m_sp_data {track, sync_track, early_whammy, lazy_whammy, Second(0.0)}
+        , m_points {track, m_converter, squeeze, video_lag}
+        , m_sp_data {track, sync_track, early_whammy, lazy_whammy, video_lag}
         , m_base_score {track.base_score()}
     {
         m_total_solo_boost = std::accumulate(

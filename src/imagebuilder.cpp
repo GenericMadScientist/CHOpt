@@ -504,9 +504,12 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         builder.add_time_sigs(sync_track, new_track.resolution());
     }
 
-    const ProcessedSong processed_track {
-        new_track, sync_track, settings.early_whammy, settings.squeeze,
-        Second {settings.lazy_whammy}};
+    const ProcessedSong processed_track {new_track,
+                                         sync_track,
+                                         settings.early_whammy,
+                                         settings.squeeze,
+                                         Second {settings.lazy_whammy},
+                                         Second(0.0)};
     Path path;
 
     // Nesting with if constexpr is purely to keep MSVC warnings happy.
