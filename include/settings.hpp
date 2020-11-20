@@ -36,6 +36,7 @@ struct Settings {
     double squeeze;
     double early_whammy;
     double lazy_whammy;
+    double video_lag;
     int speed;
 };
 

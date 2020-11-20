@@ -53,6 +53,7 @@ Settings from_args(int argc, char** argv)
     constexpr int DEFAULT_SPEED = 100;
     constexpr int MAX_PERCENT = 100;
     constexpr int MAX_SPEED = 5000;
+    constexpr int MAX_VIDEO_LAG = 200;
     constexpr int MIN_SPEED = 5;
     constexpr double MS_PER_SECOND = 1000.0;
 
@@ -84,6 +85,10 @@ Settings from_args(int argc, char** argv)
         .default_value(0)
         .help("time before whammying starts on sustains in milliseconds, "
               "defaults to 0")
+        .action([](const std::string& value) { return str_to_int(value); });
+    program.add_argument("--lag", "--video-lag")
+        .default_value(0)
+        .help("video lag calibration setting in milliseconds, defaults to 0")
         .action([](const std::string& value) { return str_to_int(value); });
     program.add_argument("-s", "--speed")
         .default_value(DEFAULT_SPEED)
@@ -182,6 +187,14 @@ Settings from_args(int argc, char** argv)
     settings.squeeze = squeeze / 100.0;
     settings.early_whammy = early_whammy / 100.0;
     settings.lazy_whammy = lazy_whammy / MS_PER_SECOND;
+
+    const auto video_lag = program.get<int>("--video-lag");
+    if (video_lag < -MAX_VIDEO_LAG || video_lag > MAX_VIDEO_LAG) {
+        throw std::invalid_argument(
+            "Video lag setting unsupported by Clone Hero");
+    }
+
+    settings.video_lag = video_lag / MS_PER_SECOND;
 
     const auto speed = program.get<int>("--speed");
     if (speed < MIN_SPEED || speed > MAX_SPEED || speed % MIN_SPEED != 0) {
