@@ -144,14 +144,14 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="8" column="0">
        <widget class="QLabel" name="label_7">
         <property name="text">
          <string>Blank chart?</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="8" column="1">
        <widget class="QCheckBox" name="blankPathCheckBox">
         <property name="layoutDirection">
          <enum>Qt::LeftToRight</enum>
@@ -161,14 +161,14 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
+      <item row="9" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>Draw BPMs?</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="9" column="1">
        <widget class="QCheckBox" name="drawBpmsCheckBox">
         <property name="text">
          <string/>
@@ -178,14 +178,14 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="0">
+      <item row="10" column="0">
        <widget class="QLabel" name="label_8">
         <property name="text">
          <string>Draw Time Signatures?</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="1">
+      <item row="10" column="1">
        <widget class="QCheckBox" name="drawTsesCheckBox">
         <property name="text">
          <string/>
@@ -195,14 +195,14 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="0">
+      <item row="11" column="0">
        <widget class="QLabel" name="label_9">
         <property name="text">
          <string>Draw solo sections?</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="1">
+      <item row="11" column="1">
        <widget class="QCheckBox" name="drawSolosCheckBox">
         <property name="text">
          <string/>
@@ -212,33 +212,67 @@
         </property>
        </widget>
       </item>
-      <item row="11" column="0" colspan="2">
+      <item row="12" column="0" colspan="2">
        <widget class="QPushButton" name="findPathButton">
         <property name="text">
          <string>Draw image</string>
         </property>
        </widget>
       </item>
-      <item row="12" column="0" colspan="2">
+      <item row="13" column="0" colspan="2">
        <widget class="QTextEdit" name="messageBox">
         <property name="readOnly">
          <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="7" column="0">
        <widget class="QLabel" name="label_10">
         <property name="text">
          <string>Speed (%)</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="7" column="1">
        <widget class="QLineEdit" name="speedLineEdit">
         <property name="text">
          <string>100</string>
         </property>
        </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>Video Lag</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QSlider" name="videoLagSlider">
+          <property name="minimum">
+           <number>-200</number>
+          </property>
+          <property name="maximum">
+           <number>200</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="videoLagLabel">
+          <property name="text">
+           <string>0</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>

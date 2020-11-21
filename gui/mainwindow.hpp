@@ -57,6 +57,7 @@ private slots:
     void on_instrumentComboBox_currentIndexChanged(int value);
     void on_selectFileButton_clicked();
     void on_squeezeSlider_valueChanged(int value);
+    void on_videoLagSlider_valueChanged(int value);
     void path_found();
     void song_read(const std::optional<Song>& song, const QString& file_name);
     void write_message(const QString& message);

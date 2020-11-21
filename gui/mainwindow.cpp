@@ -128,6 +128,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_ui->squeezeLabel->setMinimumWidth(30);
     m_ui->earlyWhammyLabel->setMinimumWidth(30);
+    m_ui->videoLagLabel->setMinimumWidth(30);
 
     setAcceptDrops(true);
 }
@@ -187,6 +188,7 @@ Settings MainWindow::get_settings() const
         = m_ui->instrumentComboBox->currentData().value<Instrument>();
     settings.squeeze = m_ui->squeezeSlider->value() / 100.0;
     settings.early_whammy = m_ui->earlyWhammySlider->value() / 100.0;
+    settings.video_lag = m_ui->videoLagSlider->value() / 1000.0;
 
     const auto lazy_whammy_text = m_ui->lazyWhammyLineEdit->text();
     bool ok;
@@ -350,6 +352,11 @@ void MainWindow::on_squeezeSlider_valueChanged(int value)
 void MainWindow::on_earlyWhammySlider_valueChanged(int value)
 {
     m_ui->earlyWhammyLabel->setText(QString::number(value));
+}
+
+void MainWindow::on_videoLagSlider_valueChanged(int value)
+{
+    m_ui->videoLagLabel->setText(QString::number(value));
 }
 
 #include "mainwindow.moc"
