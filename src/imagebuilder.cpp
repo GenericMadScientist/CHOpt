@@ -312,9 +312,17 @@ void ImageBuilder::add_song_header(std::string song_name, std::string artist,
     m_charter = std::move(charter);
 }
 
-void ImageBuilder::add_sp_acts(const PointSet& points, const Path& path)
+void ImageBuilder::add_sp_acts(const PointSet& points,
+                               const TimeConverter& converter, const Path& path,
+                               Second video_lag)
 {
     std::vector<std::tuple<double, double>> no_whammy_ranges;
+
+    const auto subtract_video_lag = [&](auto beat) {
+        const auto seconds = converter.beats_to_seconds(beat) - video_lag;
+        return (seconds.value() < 0.0) ? Beat(0.0)
+                                       : converter.seconds_to_beats(seconds);
+    };
 
     for (const auto& act : path.activations) {
         auto blue_start = act.sp_start;
@@ -328,14 +336,17 @@ void ImageBuilder::add_sp_acts(const PointSet& points, const Path& path)
                 = std::min(blue_end, std::next(act.act_end)->position.beat);
         }
         blue_end = std::min(blue_end, Beat {m_rows.back().end});
-        m_blue_ranges.emplace_back(blue_start.value(), blue_end.value());
+        m_blue_ranges.emplace_back(subtract_video_lag(blue_start).value(),
+                                   subtract_video_lag(blue_end).value());
         if (act.sp_start > act.act_start->position.beat) {
-            m_red_ranges.emplace_back(act.act_start->position.beat.value(),
-                                      act.sp_start.value());
+            m_red_ranges.emplace_back(
+                subtract_video_lag(act.act_start->position.beat).value(),
+                subtract_video_lag(act.sp_start).value());
         }
         if (act.sp_end < act.act_end->position.beat) {
-            m_red_ranges.emplace_back(act.sp_end.value(),
-                                      act.act_end->position.beat.value());
+            m_red_ranges.emplace_back(
+                subtract_video_lag(act.sp_end).value(),
+                subtract_video_lag(act.act_end->position.beat).value());
         }
         no_whammy_ranges.emplace_back(act.whammy_end.value(),
                                       act.sp_end.value());
@@ -525,7 +536,9 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         const Optimiser optimiser {&processed_track, terminate};
         path = optimiser.optimal_path();
         write(processed_track.path_summary(path).c_str());
-        builder.add_sp_acts(processed_track.points(), path);
+        builder.add_sp_acts(processed_track.points(),
+                            processed_track.converter(), path,
+                            Second {settings.video_lag});
     }
 
     builder.add_measure_values(processed_track.points(), path);

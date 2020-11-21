@@ -349,7 +349,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
                      Beat {0.1}, Beat {0.9}}},
                    0};
         builder.add_sp_phrases(track);
-        builder.add_sp_acts(points, path);
+        builder.add_sp_acts(points, converter, path, Second(0.0));
         std::vector<std::tuple<double, double>> expected_blue_ranges {
             {0.1, 0.9}};
         std::vector<std::tuple<double, double>> expected_red_ranges {
@@ -373,7 +373,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
                     {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
                      Beat {2.0}, Beat {2.9}}},
                    0};
-        builder.add_sp_acts(points, path);
+        builder.add_sp_acts(points, converter, path, Second(0.0));
         std::vector<std::tuple<double, double>> expected_red_ranges {
             {0.0, 0.1}, {2.9, 3.0}};
 
@@ -389,7 +389,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
         Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                      Beat {0.0}, Beat {5.0}}},
                    0};
-        builder.add_sp_acts(points, path);
+        builder.add_sp_acts(points, converter, path, Second(0.0));
         std::vector<std::tuple<double, double>> expected_blue_ranges {
             {1.0, 4.0}};
 
@@ -405,11 +405,33 @@ TEST_CASE("add_sp_acts adds correct ranges")
         Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                      Beat {16.0}}},
                    0};
-        builder.add_sp_acts(points, path);
+        builder.add_sp_acts(points, converter, path, Second(0.0));
         std::vector<std::tuple<double, double>> expected_blue_ranges {
             {0.0, 4.0}};
 
         REQUIRE(builder.blue_ranges() == expected_blue_ranges);
+    }
+
+    SECTION("Blue and red ranges are shifted by video lag")
+    {
+        NoteTrack<NoteColour> track {{{0}, {192}, {384}, {576}}, {}, {}, 192};
+        TimeConverter converter {{}, 192};
+        PointSet points {track, converter, 1.0, Second(0.05)};
+        ImageBuilder builder {track, {}};
+        Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
+                     Beat {0.1}, Beat {1.1}},
+                    {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
+                     Beat {2.0}, Beat {2.9}}},
+                   0};
+        std::vector<std::tuple<double, double>> expected_blue_ranges {
+            {0.0, 1.0}, {1.9, 2.8}};
+        std::vector<std::tuple<double, double>> expected_red_ranges {
+            {2.8, 3.0}};
+
+        builder.add_sp_acts(points, converter, path, Second(0.05));
+
+        REQUIRE(builder.blue_ranges() == expected_blue_ranges);
+        REQUIRE(builder.red_ranges() == expected_red_ranges);
     }
 }
 
