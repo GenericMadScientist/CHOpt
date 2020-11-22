@@ -2,7 +2,6 @@
 
 A program to generate optimal Star Power paths for Clone Hero.
 
-[![Build Status](https://travis-ci.com/GenericMadScientist/CHOpt.svg?branch=master)](https://travis-ci.com/GenericMadScientist/CHOpt)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/GenericMadScientist/CHOpt?branch=master&svg=true)](https://ci.appveyor.com/project/GenericMadScientist/CHOpt)
 
 ## Install
@@ -61,11 +60,11 @@ in cmd then enter to open a command prompt in that folder, then run the command
 
 * [argparse](https://github.com/p-ranav/argparse) 2.1 for argument parsing
 * [Catch2](https://github.com/catchorg/Catch2) 2.13.3 for tests
-* [CImg](https://cimg.eu) 2.9.2 to produce images
+* [CImg](https://cimg.eu) 2.9.3 to produce images
 * [libpng](http://libpng.org/pub/png/libpng.html) 1.6.37 to save pngs
 * [nowide](https://github.com/boostorg/nowide) 11.0.0 to handle UTF-8 filenames
   on Windows
-* [Qt](https://www.qt.io) 5.15.1 for the GUI
+* [Qt](https://www.qt.io) 5.15.2 for the GUI
 * [zlib](https://zlib.net) 1.2.11 is a dependency of libpng
 
 Catch2 and CImg are vendored in the repo. argparse and nowide (standalone
