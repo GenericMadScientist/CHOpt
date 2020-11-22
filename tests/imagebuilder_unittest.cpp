@@ -414,17 +414,20 @@ TEST_CASE("add_sp_acts adds correct ranges")
 
     SECTION("Blue and red ranges are shifted by video lag")
     {
-        NoteTrack<NoteColour> track {{{0}, {192}, {384}, {576}}, {}, {}, 192};
+        NoteTrack<NoteColour> track {
+            {{0}, {192}, {384}, {576}, {768}, {1530}}, {}, {}, 192};
         TimeConverter converter {{}, 192};
         PointSet points {track, converter, 1.0, Second(0.05)};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
                      Beat {0.1}, Beat {1.1}},
                     {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
-                     Beat {2.0}, Beat {2.9}}},
+                     Beat {2.0}, Beat {2.9}},
+                    {points.cbegin() + 5, points.cbegin() + 5, Beat {0.25},
+                     Beat {7.0}, Beat {23.0}}},
                    0};
         std::vector<std::tuple<double, double>> expected_blue_ranges {
-            {0.0, 1.0}, {1.9, 2.8}};
+            {0.0, 1.0}, {1.9, 2.8}, {6.9, 8.0}};
         std::vector<std::tuple<double, double>> expected_red_ranges {
             {2.8, 3.0}};
 
