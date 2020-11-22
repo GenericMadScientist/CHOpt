@@ -230,20 +230,31 @@ void ImageBuilder::add_bpms(const SyncTrack& sync_track, int resolution)
     }
 }
 
-void ImageBuilder::add_measure_values(const PointSet& points, const Path& path)
+void ImageBuilder::add_measure_values(const PointSet& points,
+                                      const TimeConverter& converter,
+                                      const Path& path, Second video_lag)
 {
+    (void)converter;
+    (void)video_lag;
+
     m_base_values.clear();
     m_base_values.resize(m_measure_lines.size() - 1);
 
     m_score_values.clear();
     m_score_values.resize(m_measure_lines.size() - 1);
 
+    const auto subtract_video_lag = [&](auto beat) {
+        const auto seconds = converter.beats_to_seconds(beat) - video_lag;
+        return (seconds.value() < 0.0) ? Beat(0.0)
+                                       : converter.seconds_to_beats(seconds);
+    };
+
     auto base_value_iter = m_base_values.begin();
     auto meas_iter = std::next(m_measure_lines.cbegin());
     auto score_value_iter = m_score_values.begin();
     for (auto p = points.cbegin(); p < points.cend(); ++p) {
         while (meas_iter != m_measure_lines.cend()
-               && *meas_iter <= p->position.beat.value()) {
+               && *meas_iter <= subtract_video_lag(p->position.beat).value()) {
             ++meas_iter;
             ++base_value_iter;
             ++score_value_iter;
@@ -274,7 +285,8 @@ void ImageBuilder::add_measure_values(const PointSet& points, const Path& path)
         score_value_iter = m_score_values.begin();
         for (auto p = act.act_start; p <= act.act_end; ++p) {
             while (meas_iter != m_measure_lines.cend()
-                   && *meas_iter <= p->position.beat.value()) {
+                   && *meas_iter
+                       <= subtract_video_lag(p->position.beat).value()) {
                 ++meas_iter;
                 ++score_value_iter;
             }
@@ -541,7 +553,9 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                             Second {settings.video_lag});
     }
 
-    builder.add_measure_values(processed_track.points(), path);
+    builder.add_measure_values(processed_track.points(),
+                               processed_track.converter(), path,
+                               Second {settings.video_lag});
     builder.add_sp_values(processed_track.sp_data());
 
     return builder;

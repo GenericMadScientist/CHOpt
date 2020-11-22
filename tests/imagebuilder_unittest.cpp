@@ -453,7 +453,7 @@ TEST_CASE("add_measure_values gives correct values")
         PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
         Path path;
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, path);
+        builder.add_measure_values(points, {{}, 192}, path, Second(0.0));
         std::vector<int> expected_base_values {50, 50};
         std::vector<int> expected_score_values {50, 100};
 
@@ -468,7 +468,7 @@ TEST_CASE("add_measure_values gives correct values")
         PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
         Path path;
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, path);
+        builder.add_measure_values(points, {{}, 192}, path, Second(0.0));
         std::vector<int> expected_score_values {100, 250};
 
         REQUIRE(builder.score_values() == expected_score_values);
@@ -482,7 +482,7 @@ TEST_CASE("add_measure_values gives correct values")
         PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
         Path path;
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, path);
+        builder.add_measure_values(points, {{}, 192}, path, Second(0.0));
         std::vector<int> expected_score_values {100};
 
         REQUIRE(builder.score_values() == expected_score_values);
@@ -496,9 +496,25 @@ TEST_CASE("add_measure_values gives correct values")
                      Beat {0.0}}},
                    100};
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, path);
+        builder.add_measure_values(points, {{}, 192}, path, Second(0.0));
         std::vector<int> expected_score_values {200, 300};
 
+        REQUIRE(builder.score_values() == expected_score_values);
+    }
+
+    SECTION("Video lag is accounted for")
+    {
+        NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, 192};
+        PointSet points {track, {{}, 192}, 1.0, Second(-0.1)};
+        Path path {{{points.cbegin() + 1, points.cbegin() + 1, Beat {0.0},
+                     Beat {0.0}}},
+                   50};
+        ImageBuilder builder {track, {}};
+        builder.add_measure_values(points, {{}, 192}, path, Second(-0.1));
+        std::vector<int> expected_base_values {50, 50};
+        std::vector<int> expected_score_values {50, 150};
+
+        REQUIRE(builder.base_values() == expected_base_values);
         REQUIRE(builder.score_values() == expected_score_values);
     }
 }
