@@ -232,11 +232,8 @@ void ImageBuilder::add_bpms(const SyncTrack& sync_track, int resolution)
 
 void ImageBuilder::add_measure_values(const PointSet& points,
                                       const TimeConverter& converter,
-                                      const Path& path, Second video_lag)
+                                      const Path& path)
 {
-    (void)converter;
-    (void)video_lag;
-
     m_base_values.clear();
     m_base_values.resize(m_measure_lines.size() - 1);
 
@@ -244,7 +241,8 @@ void ImageBuilder::add_measure_values(const PointSet& points,
     m_score_values.resize(m_measure_lines.size() - 1);
 
     const auto subtract_video_lag = [&](auto beat) {
-        const auto seconds = converter.beats_to_seconds(beat) - video_lag;
+        const auto seconds
+            = converter.beats_to_seconds(beat) - points.video_lag();
         return (seconds.value() < 0.0) ? Beat(0.0)
                                        : converter.seconds_to_beats(seconds);
     };
@@ -325,13 +323,13 @@ void ImageBuilder::add_song_header(std::string song_name, std::string artist,
 }
 
 void ImageBuilder::add_sp_acts(const PointSet& points,
-                               const TimeConverter& converter, const Path& path,
-                               Second video_lag)
+                               const TimeConverter& converter, const Path& path)
 {
     std::vector<std::tuple<double, double>> no_whammy_ranges;
 
     const auto subtract_video_lag = [&](auto beat) {
-        const auto seconds = converter.beats_to_seconds(beat) - video_lag;
+        const auto seconds
+            = converter.beats_to_seconds(beat) - points.video_lag();
         return (seconds.value() < 0.0) ? Beat(0.0)
                                        : converter.seconds_to_beats(seconds);
     };
@@ -549,13 +547,11 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         path = optimiser.optimal_path();
         write(processed_track.path_summary(path).c_str());
         builder.add_sp_acts(processed_track.points(),
-                            processed_track.converter(), path,
-                            Second {settings.video_lag});
+                            processed_track.converter(), path);
     }
 
     builder.add_measure_values(processed_track.points(),
-                               processed_track.converter(), path,
-                               Second {settings.video_lag});
+                               processed_track.converter(), path);
     builder.add_sp_values(processed_track.sp_data());
 
     return builder;

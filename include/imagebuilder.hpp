@@ -78,13 +78,12 @@ public:
                  const SyncTrack& sync_track);
     void add_bpms(const SyncTrack& sync_track, int resolution);
     void add_measure_values(const PointSet& points,
-                            const TimeConverter& converter, const Path& path,
-                            Second video_lag);
+                            const TimeConverter& converter, const Path& path);
     void add_solo_sections(const std::vector<Solo>& solos, int resolution);
     void add_song_header(std::string song_name, std::string artist,
                          std::string charter, int speed);
     void add_sp_acts(const PointSet& points, const TimeConverter& converter,
-                     const Path& path, Second video_lag);
+                     const Path& path);
     void add_sp_phrases(const NoteTrack<NoteColour>& track);
     void add_sp_phrases(const NoteTrack<GHLNoteColour>& track);
     void add_sp_phrases(const NoteTrack<DrumNoteColour>& track);

@@ -44,6 +44,7 @@ private:
     const std::vector<PointPtr> m_next_sp_granting_note;
     const std::vector<std::tuple<Position, int>> m_solo_boosts;
     const std::vector<int> m_cumulative_score_totals;
+    const Second m_video_lag;
 
 public:
     PointSet(const NoteTrack<NoteColour>& track, const TimeConverter& converter,
@@ -63,6 +64,7 @@ public:
     {
         return m_solo_boosts;
     }
+    [[nodiscard]] Second video_lag() const { return m_video_lag; }
 };
 
 #endif

@@ -229,6 +229,7 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track,
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
                                             converter)}
     , m_cumulative_score_totals {score_totals(m_points)}
+    , m_video_lag {video_lag}
 {
 }
 
@@ -241,6 +242,7 @@ PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
                                             converter)}
     , m_cumulative_score_totals {score_totals(m_points)}
+    , m_video_lag {video_lag}
 {
 }
 
@@ -253,6 +255,7 @@ PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
                                             converter)}
     , m_cumulative_score_totals {score_totals(m_points)}
+    , m_video_lag {video_lag}
 {
 }
 

@@ -349,7 +349,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
                      Beat {0.1}, Beat {0.9}}},
                    0};
         builder.add_sp_phrases(track);
-        builder.add_sp_acts(points, converter, path, Second(0.0));
+        builder.add_sp_acts(points, converter, path);
         std::vector<std::tuple<double, double>> expected_blue_ranges {
             {0.1, 0.9}};
         std::vector<std::tuple<double, double>> expected_red_ranges {
@@ -373,7 +373,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
                     {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
                      Beat {2.0}, Beat {2.9}}},
                    0};
-        builder.add_sp_acts(points, converter, path, Second(0.0));
+        builder.add_sp_acts(points, converter, path);
         std::vector<std::tuple<double, double>> expected_red_ranges {
             {0.0, 0.1}, {2.9, 3.0}};
 
@@ -389,7 +389,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
         Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                      Beat {0.0}, Beat {5.0}}},
                    0};
-        builder.add_sp_acts(points, converter, path, Second(0.0));
+        builder.add_sp_acts(points, converter, path);
         std::vector<std::tuple<double, double>> expected_blue_ranges {
             {1.0, 4.0}};
 
@@ -405,7 +405,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
         Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                      Beat {16.0}}},
                    0};
-        builder.add_sp_acts(points, converter, path, Second(0.0));
+        builder.add_sp_acts(points, converter, path);
         std::vector<std::tuple<double, double>> expected_blue_ranges {
             {0.0, 4.0}};
 
@@ -428,7 +428,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
         std::vector<std::tuple<double, double>> expected_red_ranges {
             {2.8, 3.0}};
 
-        builder.add_sp_acts(points, converter, path, Second(0.05));
+        builder.add_sp_acts(points, converter, path);
 
         REQUIRE(builder.blue_ranges() == expected_blue_ranges);
         REQUIRE(builder.red_ranges() == expected_red_ranges);
@@ -453,7 +453,7 @@ TEST_CASE("add_measure_values gives correct values")
         PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
         Path path;
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, {{}, 192}, path, Second(0.0));
+        builder.add_measure_values(points, {{}, 192}, path);
         std::vector<int> expected_base_values {50, 50};
         std::vector<int> expected_score_values {50, 100};
 
@@ -468,7 +468,7 @@ TEST_CASE("add_measure_values gives correct values")
         PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
         Path path;
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, {{}, 192}, path, Second(0.0));
+        builder.add_measure_values(points, {{}, 192}, path);
         std::vector<int> expected_score_values {100, 250};
 
         REQUIRE(builder.score_values() == expected_score_values);
@@ -482,7 +482,7 @@ TEST_CASE("add_measure_values gives correct values")
         PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
         Path path;
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, {{}, 192}, path, Second(0.0));
+        builder.add_measure_values(points, {{}, 192}, path);
         std::vector<int> expected_score_values {100};
 
         REQUIRE(builder.score_values() == expected_score_values);
@@ -496,7 +496,7 @@ TEST_CASE("add_measure_values gives correct values")
                      Beat {0.0}}},
                    100};
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, {{}, 192}, path, Second(0.0));
+        builder.add_measure_values(points, {{}, 192}, path);
         std::vector<int> expected_score_values {200, 300};
 
         REQUIRE(builder.score_values() == expected_score_values);
@@ -510,7 +510,7 @@ TEST_CASE("add_measure_values gives correct values")
                      Beat {0.0}}},
                    50};
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, {{}, 192}, path, Second(-0.1));
+        builder.add_measure_values(points, {{}, 192}, path);
         std::vector<int> expected_base_values {50, 50};
         std::vector<int> expected_score_values {50, 150};
 
