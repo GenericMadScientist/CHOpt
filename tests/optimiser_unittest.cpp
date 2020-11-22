@@ -376,4 +376,21 @@ TEST_CASE("optimal_path produces the correct path")
 
         REQUIRE(opt_path.score_boost == 28);
     }
+
+    // Video lag can cause a hold point to be the first point in a song. If this
+    // happens then we cannot use std::prev on the iterator for the first point,
+    // so we must check this before calling std::prev.
+    SECTION("Does not crash with positive video lag")
+    {
+        std::vector<Note<NoteColour>> notes {{192, 192}};
+        std::vector<StarPower> phrases {{192, 1}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}, 192};
+        ProcessedSong track {note_track, {},          1.0,
+                             1.0,        Second(0.0), Second(0.1)};
+        Optimiser optimiser {&track, &terminate};
+
+        const auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.score_boost == 0);
+    }
 }

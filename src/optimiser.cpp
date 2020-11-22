@@ -117,8 +117,11 @@ std::optional<Optimiser::CacheValue>
 Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
                                       bool has_full_sp) const
 {
-    if (has_full_sp || !key.point->is_hold_point
-        || !std::prev(key.point)->is_hold_point) {
+    if (has_full_sp || !key.point->is_hold_point) {
+        return std::nullopt;
+    }
+    if (key.point != m_song->points().cbegin()
+        && !std::prev(key.point)->is_hold_point) {
         return std::nullopt;
     }
 
