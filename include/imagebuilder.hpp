@@ -68,6 +68,7 @@ private:
     std::vector<std::tuple<double, double>> m_red_ranges;
     std::vector<std::tuple<double, double>> m_yellow_ranges;
     std::vector<std::tuple<double, double>> m_solo_ranges;
+    float m_activation_opacity {0.33F};
 
 public:
     ImageBuilder(const NoteTrack<NoteColour>& track,
@@ -166,6 +167,11 @@ public:
     {
         return m_yellow_ranges;
     }
+    [[nodiscard]] float activation_opacity() const
+    {
+        return m_activation_opacity;
+    }
+    float& activation_opacity() { return m_activation_opacity; }
 };
 
 ImageBuilder make_builder(const Song& song, const Settings& settings,

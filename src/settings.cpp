@@ -33,6 +33,16 @@ static int str_to_int(const std::string& value)
     return converted_value;
 }
 
+static float str_to_float(const std::string& value)
+{
+    std::size_t pos = 0;
+    const auto converted_value = std::stof(value, &pos);
+    if (pos != value.size()) {
+        throw std::invalid_argument("Could not convert string to float");
+    }
+    return converted_value;
+}
+
 static bool is_valid_image_path(const std::string& path)
 {
     if (path.size() < 4) {
@@ -50,6 +60,7 @@ static bool is_valid_image_path(const std::string& path)
 
 Settings from_args(int argc, char** argv)
 {
+    constexpr float DEFAULT_OPACITY = 0.33F;
     constexpr int DEFAULT_SPEED = 100;
     constexpr int MAX_PERCENT = 100;
     constexpr int MAX_SPEED = 5000;
@@ -110,6 +121,10 @@ Settings from_args(int argc, char** argv)
         .help("do not draw time signatures")
         .default_value(false)
         .implicit_value(true);
+    program.add_argument("--act-opacity")
+        .help("opacity of drawn activations (0.0 to 1.0), defaults to 0.33")
+        .default_value(DEFAULT_OPACITY)
+        .action([](const std::string& value) { return str_to_float(value); });
 
     program.parse_args(argc, argv);
 
@@ -202,6 +217,14 @@ Settings from_args(int argc, char** argv)
     }
 
     settings.speed = speed;
+
+    const auto opacity = program.get<float>("--act-opacity");
+    if (opacity < 0.0F || opacity > 1.0F) {
+        throw std::invalid_argument(
+            "Activation opacity should lie between 0.0 and 1.0");
+    }
+
+    settings.opacity = opacity;
 
     return settings;
 }

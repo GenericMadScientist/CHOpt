@@ -212,14 +212,14 @@
         </property>
        </widget>
       </item>
-      <item row="12" column="0" colspan="2">
+      <item row="13" column="0" colspan="2">
        <widget class="QPushButton" name="findPathButton">
         <property name="text">
          <string>Draw image</string>
         </property>
        </widget>
       </item>
-      <item row="13" column="0" colspan="2">
+      <item row="14" column="0" colspan="2">
        <widget class="QTextEdit" name="messageBox">
         <property name="readOnly">
          <bool>true</bool>
@@ -266,6 +266,40 @@
          <widget class="QLabel" name="videoLagLabel">
           <property name="text">
            <string>0</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="12" column="0">
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>Activation Opacity</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QSlider" name="opacitySlider">
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>33</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="opacityLabel">
+          <property name="text">
+           <string>0.33</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

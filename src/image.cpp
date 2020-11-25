@@ -716,7 +716,7 @@ Image::Image(const ImageBuilder& builder)
     constexpr std::array<unsigned char, 3> solo_blue {0, 51, 128};
 
     constexpr unsigned int IMAGE_WIDTH = 1024;
-    constexpr float RANGE_OPACITY = 0.25F;
+    constexpr float RANGE_OPACITY = 0.33333F;
     constexpr int SOLO_HEIGHT = 10;
     constexpr unsigned char WHITE = 255;
 
@@ -759,11 +759,11 @@ Image::Image(const ImageBuilder& builder)
     }
     for (const auto& range : builder.red_ranges()) {
         m_impl->colour_beat_range(builder, red, range, {0, MEASURE_HEIGHT},
-                                  RANGE_OPACITY);
+                                  builder.activation_opacity());
     }
     for (const auto& range : builder.blue_ranges()) {
         m_impl->colour_beat_range(builder, blue, range, {0, MEASURE_HEIGHT},
-                                  RANGE_OPACITY);
+                                  builder.activation_opacity());
     }
 }
 

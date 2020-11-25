@@ -549,6 +549,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         write(processed_track.path_summary(path).c_str());
         builder.add_sp_acts(processed_track.points(),
                             processed_track.converter(), path);
+        builder.activation_opacity() = settings.opacity;
     }
 
     builder.add_measure_values(processed_track.points(),

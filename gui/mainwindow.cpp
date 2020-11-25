@@ -129,6 +129,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->squeezeLabel->setMinimumWidth(30);
     m_ui->earlyWhammyLabel->setMinimumWidth(30);
     m_ui->videoLagLabel->setMinimumWidth(30);
+    m_ui->opacityLabel->setMinimumWidth(30);
 
     setAcceptDrops(true);
 }
@@ -189,6 +190,7 @@ Settings MainWindow::get_settings() const
     settings.squeeze = m_ui->squeezeSlider->value() / 100.0;
     settings.early_whammy = m_ui->earlyWhammySlider->value() / 100.0;
     settings.video_lag = m_ui->videoLagSlider->value() / 1000.0;
+    settings.opacity = m_ui->opacitySlider->value() / 100.0F;
 
     const auto lazy_whammy_text = m_ui->lazyWhammyLineEdit->text();
     bool ok;
@@ -357,6 +359,15 @@ void MainWindow::on_earlyWhammySlider_valueChanged(int value)
 void MainWindow::on_videoLagSlider_valueChanged(int value)
 {
     m_ui->videoLagLabel->setText(QString::number(value));
+}
+
+void MainWindow::on_opacitySlider_valueChanged(int value)
+{
+    auto text = QString::number(value / 100);
+    text += '.';
+    text += QString::number((value % 100) / 10);
+    text += QString::number(value % 10);
+    m_ui->opacityLabel->setText(text);
 }
 
 #include "mainwindow.moc"

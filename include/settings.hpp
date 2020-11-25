@@ -38,6 +38,7 @@ struct Settings {
     double lazy_whammy;
     double video_lag;
     int speed;
+    float opacity;
 };
 
 // Parses the command line options. If something is wrong with the options
