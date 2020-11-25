@@ -40,11 +40,13 @@ by passing -h or --help to CHOpt, or by consulting the table below.
 | --sqz, --squeeze      | Set squeeze %                                               |
 | --ew, --early-whammy  | Set early whammy %                                          |
 | --lazy, --lazy-whammy | Set number of ms of whammy lost per sustain                 |
+| --lag, --video-lag    | Video calibration, in ms                                    |
 | -s, --speed           | Set speed the song is played at                             |
 | -b, --blank           | Output a blank image without pathing                        |
 | --no-bpms             | Do not draw BPMs                                            |
 | --no-solos            | Do not draw solo sections                                   |
 | --no-time-sigs        | Do not draw time signatures                                 |
+| --act-opacity         | Set opacity of activations in images                        |
 
 If you would like to conveniently run CHOpt on a setlist and you happen to be
 on Windows, I made a PowerShell script that I've put [here](misc/setlist.ps1).
