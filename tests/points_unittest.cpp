@@ -291,7 +291,19 @@ TEST_CASE("Video lag is taken into account")
         REQUIRE(points.cbegin()->position.beat == Beat(1.4));
         REQUIRE(points.cbegin()->hit_window_start.beat == Beat(1.26));
         REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.54));
-        REQUIRE(std::next(points.cbegin(), 2)->position.beat == Beat(2.26));
+        REQUIRE(std::next(points.cbegin(), 2)->position.beat == Beat(2.03385));
+    }
+
+    SECTION("Tick points are not multiplied prematurely")
+    {
+        std::vector<Note<NoteColour>> other_notes {
+            {192}, {193}, {194}, {195},      {196},
+            {197}, {198}, {199}, {200, 200}, {400}};
+        NoteTrack<NoteColour> other_track {other_notes, {}, {}, 192};
+        PointSet points {other_track, converter, 1.0, Second(-0.40)};
+
+        REQUIRE(std::prev(points.cend())->value == 100);
+        REQUIRE(std::prev(points.cend(), 2)->value == 7);
     }
 }
 

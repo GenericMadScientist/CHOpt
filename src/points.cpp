@@ -35,8 +35,7 @@ static bool phrase_contains_pos(const StarPower& phrase, int position)
 template <typename OutputIt>
 static void append_sustain_points(OutputIt points, int position,
                                   int sust_length, int resolution,
-                                  const TimeConverter& converter,
-                                  Beat note_timing_window_start)
+                                  const TimeConverter& converter)
 {
     constexpr double HALF_RES_OFFSET = 0.5;
 
@@ -47,17 +46,15 @@ static void append_sustain_points(OutputIt points, int position,
     while (sust_length > (resolution / 4)) {
         position += tick_gap;
         sust_length -= tick_gap;
-        Beat beat {(position - HALF_RES_OFFSET) / float_res};
-        beat = std::max(beat, note_timing_window_start);
-        auto meas = converter.beats_to_measures(beat);
+        const Beat beat {(position - HALF_RES_OFFSET) / float_res};
+        const auto meas = converter.beats_to_measures(beat);
         --sust_ticks;
         *points++
             = {{beat, meas}, {beat, meas}, {beat, meas}, 1, 1, true, false};
     }
     if (sust_ticks > 0) {
-        Beat beat {(position + HALF_RES_OFFSET) / float_res};
-        beat = std::max(beat, note_timing_window_start);
-        auto meas = converter.beats_to_measures(beat);
+        const Beat beat {(position + HALF_RES_OFFSET) / float_res};
+        const auto meas = converter.beats_to_measures(beat);
         *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, sust_ticks,
                      sust_ticks,   true,         false};
     }
@@ -66,8 +63,7 @@ static void append_sustain_points(OutputIt points, int position,
 template <typename InputIt, typename OutputIt>
 static void append_note_points(InputIt first, InputIt last, OutputIt points,
                                int resolution, bool is_note_sp_ender,
-                               const TimeConverter& converter, double squeeze,
-                               Second video_lag)
+                               const TimeConverter& converter, double squeeze)
 {
     assert(first != last); // NOLINT
 
@@ -77,14 +73,15 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
 
     const auto chord_size = static_cast<int>(std::distance(first, last));
     auto pos = first->position;
-    Beat beat {pos / static_cast<double>(resolution)};
-    auto note_seconds = converter.beats_to_seconds(beat) + video_lag;
-    beat = converter.seconds_to_beats(note_seconds);
-    auto meas = converter.beats_to_measures(beat);
-    auto early_beat = converter.seconds_to_beats(note_seconds - EARLY_WINDOW);
-    auto early_meas = converter.beats_to_measures(early_beat);
-    auto late_beat = converter.seconds_to_beats(note_seconds + LATE_WINDOW);
-    auto late_meas = converter.beats_to_measures(late_beat);
+    const Beat beat {pos / static_cast<double>(resolution)};
+    const auto meas = converter.beats_to_measures(beat);
+    const auto note_seconds = converter.beats_to_seconds(beat);
+    const auto early_beat
+        = converter.seconds_to_beats(note_seconds - EARLY_WINDOW);
+    const auto early_meas = converter.beats_to_measures(early_beat);
+    const auto late_beat
+        = converter.seconds_to_beats(note_seconds + LATE_WINDOW);
+    const auto late_meas = converter.beats_to_measures(late_beat);
     *points++ = {{beat, meas},
                  {early_beat, early_meas},
                  {late_beat, late_meas},
@@ -99,11 +96,11 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
           });
     if (min_iter->length == max_iter->length) {
         append_sustain_points(points, pos, max_iter->length, resolution,
-                              converter, early_beat);
+                              converter);
     } else {
         for (auto p = first; p < last; ++p) {
-            append_sustain_points(points, pos, p->length, resolution, converter,
-                                  early_beat);
+            append_sustain_points(points, pos, p->length, resolution,
+                                  converter);
         }
     }
 }
@@ -133,7 +130,7 @@ static std::vector<Point> points_from_track(const NoteTrack<T>& track,
             ++current_phrase;
         }
         append_note_points(p, q, std::back_inserter(points), track.resolution(),
-                           is_note_sp_ender, converter, squeeze, video_lag);
+                           is_note_sp_ender, converter, squeeze);
         p = q;
     }
 
@@ -149,6 +146,22 @@ static std::vector<Point> points_from_track(const NoteTrack<T>& track,
         }
         const auto multiplier = 1 + std::min(combo / 10, 3U);
         point.value *= multiplier;
+    }
+
+    const auto add_video_lag = [&](auto& position) {
+        auto seconds = converter.beats_to_seconds(position.beat);
+        seconds += video_lag;
+        position.beat = converter.seconds_to_beats(seconds);
+        position.measure = converter.beats_to_measures(position.beat);
+    };
+
+    for (auto& point : points) {
+        if (point.is_hold_point) {
+            continue;
+        }
+        add_video_lag(point.position);
+        add_video_lag(point.hit_window_start);
+        add_video_lag(point.hit_window_end);
     }
 
     return points;
