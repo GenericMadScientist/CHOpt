@@ -220,9 +220,7 @@ double SpData::propagate_over_whammy_range(Beat start, Beat end,
 
 bool SpData::is_in_whammy_ranges(Beat beat) const
 {
-    auto p = std::lower_bound(
-        m_whammy_ranges.cbegin(), m_whammy_ranges.cend(), beat,
-        [](const auto& x, const auto& y) { return x.end.beat < y; });
+    const auto p = first_whammy_range_after(beat);
     if (p == m_whammy_ranges.cend()) {
         return false;
     }
@@ -238,8 +236,8 @@ double SpData::available_whammy(Beat start, Beat end) const
         if (p->start.beat >= end) {
             break;
         }
-        auto whammy_start = std::max(p->start.beat, start);
-        auto whammy_end = std::min(p->end.beat, end);
+        const auto whammy_start = std::max(p->start.beat, start);
+        const auto whammy_end = std::min(p->end.beat, end);
         total_whammy += (whammy_end - whammy_start).value() * SP_GAIN_RATE;
     }
 
