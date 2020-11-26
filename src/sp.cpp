@@ -107,14 +107,33 @@ SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
         const auto end_meas = m_converter.beats_to_measures(end);
         m_whammy_ranges.push_back({{start, start_meas}, {end, end_meas}, note});
     }
+
+    if (m_whammy_ranges.empty()) {
+        return;
+    }
+
+    m_last_whammy_point = m_whammy_ranges.back().end.beat;
+    auto p = m_whammy_ranges.cbegin();
+    for (auto pos = 0; pos < m_last_whammy_point.value(); ++pos) {
+        p = std::find_if_not(p, m_whammy_ranges.cend(), [=](const auto& x) {
+            return x.end.beat.value() <= pos;
+        });
+        m_initial_guesses.push_back(p);
+    }
 }
 
 std::vector<SpData::WhammyRange>::const_iterator
 SpData::first_whammy_range_after(Beat pos) const
 {
-    return std::lower_bound(
-        m_whammy_ranges.cbegin(), m_whammy_ranges.cend(), pos,
-        [](const auto& x, const auto& y) { return x.end.beat <= y; });
+    if (m_last_whammy_point <= pos) {
+        return m_whammy_ranges.cend();
+    }
+    const std::size_t index = static_cast<std::size_t>(pos.value());
+    const auto begin = (pos < Beat(0.0)) ? m_whammy_ranges.cbegin()
+                                         : m_initial_guesses[index];
+
+    return std::find_if_not(begin, m_whammy_ranges.cend(),
+                            [=](const auto& x) { return x.end.beat <= pos; });
 }
 
 double SpData::propagate_sp_over_whammy_max(Position start, Position end,
@@ -214,10 +233,8 @@ double SpData::available_whammy(Beat start, Beat end) const
 {
     double total_whammy {0.0};
 
-    auto p = std::lower_bound(
-        m_whammy_ranges.cbegin(), m_whammy_ranges.cend(), start,
-        [](const auto& x, const auto& y) { return x.end.beat <= y; });
-    for (; p < m_whammy_ranges.cend(); ++p) {
+    for (auto p = first_whammy_range_after(start); p < m_whammy_ranges.cend();
+         ++p) {
         if (p->start.beat >= end) {
             break;
         }

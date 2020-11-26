@@ -20,6 +20,7 @@
 #define CHOPT_SP_HPP
 
 #include <algorithm>
+#include <climits>
 #include <tuple>
 #include <vector>
 
@@ -81,6 +82,8 @@ private:
     TimeConverter m_converter;
     std::vector<BeatRate> m_beat_rates;
     std::vector<WhammyRange> m_whammy_ranges;
+    Beat m_last_whammy_point {-std::numeric_limits<double>::infinity()};
+    std::vector<std::vector<WhammyRange>::const_iterator> m_initial_guesses;
 
     [[nodiscard]] double
     propagate_over_whammy_range(Beat start, Beat end,
