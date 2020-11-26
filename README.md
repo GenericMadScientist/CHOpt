@@ -62,7 +62,7 @@ in cmd then enter to open a command prompt in that folder, then run the command
 
 * [argparse](https://github.com/p-ranav/argparse) 2.1 for argument parsing
 * [Catch2](https://github.com/catchorg/Catch2) 2.13.3 for tests
-* [CImg](https://cimg.eu) 2.9.3 to produce images
+* [CImg](https://cimg.eu) 2.9.4 to produce images
 * [libpng](http://libpng.org/pub/png/libpng.html) 1.6.37 to save pngs
 * [nowide](https://github.com/boostorg/nowide) 11.0.0 to handle UTF-8 filenames
   on Windows
