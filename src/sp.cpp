@@ -128,7 +128,7 @@ SpData::first_whammy_range_after(Beat pos) const
     if (m_last_whammy_point <= pos) {
         return m_whammy_ranges.cend();
     }
-    const std::size_t index = static_cast<std::size_t>(pos.value());
+    const std::size_t index = pos.value();
     const auto begin = (pos < Beat(0.0)) ? m_whammy_ranges.cbegin()
                                          : m_initial_guesses[index];
 
