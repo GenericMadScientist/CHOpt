@@ -2,7 +2,7 @@
 
 CHOpt is now fast enough that I can throw multiple setlists at it, so for fun I
 decided to do so and see what results come up. Don't take this too seriously:
-for one I only ran this on all these songs once. I did this with CHOpt 1.1.3.
+for one I only ran this on all these songs once. I did this with CHOpt 1.2.0.
 
 ## The songs
 
@@ -75,6 +75,7 @@ Expert Bass.
 * The Beatles Rock Band
 * The Fall of Troy Hero
 * Trunks252JM's Classic Charts
+* Verified Unverified
 * Vortex Hero
 * Zero Gravity
 
@@ -84,7 +85,7 @@ If there's a setlist or pack you'd like to see on here, let me know.
 
 ### Overall
 
-The combined runtime was 58m40s. Below is a histogram of the runtime for each
+The combined runtime was 56m35s. Below is a histogram of the runtime for each
 song, with the top 1% combined as outliers.
 
 ![Runtime histogram](runtime-histogram.svg)
@@ -93,103 +94,104 @@ The 25 slowest songs are as follows:
 
 | Song                                             | Setlist                      | Time (s) |
 | ------------------------------------------------ | ---------------------------- | -------- |
-| CHARTS 2: Endless Setlist                        | CHARTS 2                     | 49.193   |
-| CHARTS: The (almost) Endless Setlist             | CHARTS                       | 30.178   |
-| Endless Setlist: The Fall of Troy Hero           | The Fall of Troy Hero        | 18.117   |
-| Chezy's Ultimate Solo Experience                 | CHARTS 2                     | 12.427   |
-| Uranoid                                          | CHARTS                       | 11.534   |
-| The Human Equation                               | Marathon Hero                | 9.093    |
-| Catch Thirtythree                                | Djent Hero Collection        | 8.478    |
-| Eskapist                                         | Marathon Hero                | 6.414    |
-| Automata                                         | Marathon Hero                | 6.304    |
-| Eskapist                                         | CHARTS                       | 6.246    |
-| Periphery IV: Hail Stan (Full Album)             | CHARTS 2                     | 5.818    |
-| Coma Witch (Full Album Chart)                    | CHARTS                       | 5.801    |
-| Volition (Full Album Chart)                      | CHARTS                       | 5.638    |
-| Extreme Power Metal (Full Album)                 | Guitar Hero: Guitar Zero DLC | 5.119    |
-| Nothing More [FULL ALBUM]                        | CSC Monthly Packs            | 5.047    |
-| The Future in Whose Eyes? (Full Album)           | CHARTS 2                     | 4.852    |
-| Live at Dynamo Open Air 1998 [FULL ALBUM]        | CSC Monthly Packs            | 4.651    |
-| That's The Spirit (Full Album Chart)             | CHARTS                       | 4.291    |
-| Jane Doe (Full Album)                            | Dissonance Hero              | 4.248    |
-| Bloodwork (Full Album Chart)                     | CHARTS                       | 4.146    |
-| Time Will Die And Love Will Bury It (Full Album) | Dissonance Hero              | 4.127    |
-| Low Teens (Full Album Chart)                     | CHARTS                       | 4.112    |
-| Passion of the Heist II                          | CHARTS 2 DLC                 | 3.898    |
-| GaMetal Solo Medley                              | GaMetal Power Pack           | 3.878    |
-| In the Unlikely Event                            | The Fall of Troy Hero        | 3.842    |
+| CHARTS 2: Endless Setlist                        | CHARTS 2                     | 46.219   |
+| CHARTS: The (almost) Endless Setlist             | CHARTS                       | 33.765   |
+| Endless Setlist: The Fall of Troy Hero           | The Fall of Troy Hero        | 18.210   |
+| Chezy's Ultimate Solo Experience                 | CHARTS 2                     | 11.750   |
+| Uranoid                                          | CHARTS                       | 11.500   |
+| The Human Equation                               | Marathon Hero                | 8.454    |
+| Catch Thirtythree                                | Djent Hero Collection        | 6.912    |
+| Periphery IV: Hail Stan (Full Album)             | CHARTS 2                     | 6.375    |
+| Eskapist                                         | Marathon Hero                | 6.042    |
+| Automata                                         | Marathon Hero                | 5.967    |
+| Eskapist                                         | CHARTS                       | 5.962    |
+| Extreme Power Metal (Full Album)                 | Guitar Hero: Guitar Zero DLC | 5.954    |
+| Live at Dynamo Open Air 1998 [FULL ALBUM]        | CSC Monthly Packs            | 5.604    |
+| Coma Witch (Full Album Chart)                    | CHARTS                       | 5.198    |
+| Volition (Full Album Chart)                      | CHARTS                       | 5.195    |
+| Nothing More [FULL ALBUM]                        | CSC Monthly Packs            | 4.788    |
+| The Future in Whose Eyes? (Full Album)           | CHARTS 2                     | 4.549    |
+| That's The Spirit (Full Album Chart)             | CHARTS                       | 4.268    |
+| Jane Doe (Full Album)                            | Dissonance Hero              | 4.114    |
+| Time Will Die And Love Will Bury It (Full Album) | Dissonance Hero              | 3.995    |
+| Bloodwork (Full Album Chart)                     | CHARTS                       | 3.986    |
+| Low Teens (Full Album Chart)                     | CHARTS                       | 3.972    |
+| Passion of the Heist II                          | CHARTS 2 DLC                 | 3.820    |
+| Culture Scares (Full Album Chart)                | CHARTS                       | 3.820    |
+| In the Unlikely Event                            | The Fall of Troy Hero        | 3.738    |
 
 ### By Setlist
 
 | Setlist                                    | Number of songs | Total time (s) | Average time (s) |
 | ------------------------------------------ | --------------- | -------------- | ---------------- |
-| Angevil Hero II                            | 67              | 31.549         | 0.471            |
-| Anti Hero                                  | 402             | 208.210        | 0.518            |
-| Anti Hero: Beach Episode                   | 127             | 65.359         | 0.515            |
-| Anti Hero: Beach Episode - The Beach Sides | 25              | 10.642         | 0.426            |
-| Anti Hero 2                                | 365             | 169.924        | 0.466            |
-| Band Hero                                  | 65              | 23.527         | 0.362            |
-| Blanket Statement                          | 115             | 45.985         | 0.400            |
-| Brand New Hero                             | 83              | 30.718         | 0.370            |
-| Carpal Tunnel Hero: Remastered             | 104             | 63.804         | 0.614            |
-| Carpal Tunnel Hero 2                       | 309             | 173.973        | 0.563            |
-| CHARTS                                     | 646             | 339.326        | 0.525            |
-| CHARTS 2                                   | 139             | 127.727        | 0.919            | 
-| CHARTS 2 DLC                               | 43              | 21.781         | 0.507            |        
-| Circuit Breaker                            | 116             | 48.566         | 0.419            |
-| Cow Hero                                   | 71              | 28.969         | 0.408            |
-| CSC Monthly Packs                          | 862             | 338.361        | 0.393            |
-| DF Discography CH                          | 80              | 50.517         | 0.631            |
-| Digitizer                                  | 82              | 32.767         | 0.400            |
-| Dissonance Hero                            | 106             | 54.627         | 0.515            |
-| DJ Hero                                    | 10              | 2.686          | 0.269            |
-| Djent Hero Collection                      | 161             | 86.575         | 0.538            |
-| DJMax Packs                                | 58              | 17.981         | 0.310            |
-| Facelift                                   | 35              | 14.259         | 0.407            |
-| Focal Point                                | 170             | 86.817         | 0.511            |
-| Focal Point 2                              | 186             | 91.772         | 0.493            |
-| GaMetal Power Pack                         | 54              | 27.820         | 0.515            |
-| Green Day Rock Band                        | 43              | 15.119         | 0.352            |
-| Guitar Hero                                | 49              | 16.186         | 0.330            |
-| Guitar Hero II                             | 74              | 26.391         | 0.357            |
-| Guitar Hero II DLC                         | 24              | 8.346          | 0.348            |
-| Guitar Hero Encore: Rocks the 80s          | 30              | 10.639         | 0.355            |
-| Guitar Hero III: Legends of Rock           | 70              | 26.337         | 0.376            |
-| Guitar Hero III: Legends of Rock DLC       | 68              | 29.925         | 0.440            |
-| Guitar Hero: Aerosmith                     | 41              | 14.488         | 0.353            |
-| Guitar Hero World Tour                     | 84              | 32.883         | 0.391            |
-| Guitar Hero World Tour DLC                 | 147             | 62.617         | 0.426            |
-| Guitar Hero: Metallica                     | 49              | 29.157         | 0.595            |
-| Guitar Hero: Metallica DLC                 | 10              | 7.077          | 0.708            |
-| Guitar Hero Smash Hits                     | 48              | 19.000         | 0.396            |
-| Guitar Hero: Van Halen                     | 47              | 19.915         | 0.424            |
-| Guitar Hero 5                              | 84              | 36.060         | 0.429            |
-| Guitar Hero 5 DLC                          | 158             | 58.973         | 0.373            |
-| Guitar Hero: Warriors of Rock              | 93              | 35.807         | 0.385            |
-| Guitar Hero: Warriors of Rock DLC          | 84              | 35.361         | 0.421            |
-| Guitar Hero On Tour                        | 31              | 10.592         | 0.342            |
-| Guitar Hero On Tour: Decades               | 36              | 11.444         | 0.318            |
-| Guitar Hero On Tour: Modern Hits           | 44              | 13.938         | 0.317            |
-| Guitar Hero: Guitar Zero                   | 64              | 23.076         | 0.361            |
-| Guitar Hero: Guitar Zero DLC               | 38              | 20.651         | 0.543            |
-| Guitar Hero X                              | 127             | 72.274         | 0.569            |
-| Koreaboo Hero                              | 51              | 15.858         | 0.311            |
-| Koreaboo Hero 2                            | 101             | 31.090         | 0.308            |
-| Lego Rock Band                             | 45              | 13.521         | 0.300            |
-| Marathon Hero                              | 49              | 95.094         | 1.941            |
-| Paradigm                                   | 101             | 48.316         | 0.478            |
-| Phase Shift Guitar Project 4               | 162             | 74.112         | 0.457            |
-| Redemption Arc                             | 100             | 44.451         | 0.445            |
-| Rock Band                                  | 58              | 21.711         | 0.374            |
-| Rock Band 2                                | 84              | 29.980         | 0.357            |
-| Rock Band 3                                | 83              | 29.253         | 0.352            |
-| Rock Band ACDC Live Track Pack             | 18              | 8.400          | 0.467            |
-| Rock Band Blitz                            | 25              | 8.795          | 0.352            |
-| The Beatles Rock Band                      | 45              | 12.127         | 0.269            |
-| The Fall of Troy Hero                      | 70              | 60.163         | 0.859            |
-| Trunks252JM's Classic Charts               | 56              | 24.224         | 0.533            |
-| Vortex Hero                                | 222             | 97.871         | 0.441            |
-| Zero Gravity                               | 179             | 74.111         | 0.414            |
+| Angevil Hero II                            | 67              | 28.220         | 0.421            |
+| Anti Hero                                  | 402             | 172.086        | 0.428            |
+| Anti Hero: Beach Episode                   | 127             | 62.455         | 0.492            |
+| Anti Hero: Beach Episode - The Beach Sides | 25              | 10.324         | 0.413            |
+| Anti Hero 2                                | 365             | 163.489        | 0.448            |
+| Band Hero                                  | 65              | 22.704         | 0.349            |
+| Blanket Statement                          | 115             | 45.054         | 0.392            |
+| Brand New Hero                             | 83              | 29.247         | 0.352            |
+| Carpal Tunnel Hero: Remastered             | 104             | 63.591         | 0.611            |
+| Carpal Tunnel Hero 2                       | 309             | 169.476        | 0.548            |
+| CHARTS                                     | 646             | 334.850        | 0.518            |
+| CHARTS 2                                   | 139             | 122.900        | 0.884            | 
+| CHARTS 2 DLC                               | 43              | 20.925         | 0.487            |        
+| Circuit Breaker                            | 116             | 48.968         | 0.422            |
+| Cow Hero                                   | 71              | 28.209         | 0.397            |
+| CSC Monthly Packs                          | 862             | 334.674        | 0.388            |
+| DF Discography CH                          | 80              | 48.085         | 0.601            |
+| Digitizer                                  | 82              | 32.809         | 0.400            |
+| Dissonance Hero                            | 106             | 53.608         | 0.506            |
+| DJ Hero                                    | 10              | 2.360          | 0.236            |
+| Djent Hero Collection                      | 161             | 82.409         | 0.512            |
+| DJMax Packs                                | 58              | 12.858         | 0.222            |
+| Facelift                                   | 35              | 13.828         | 0.395            |
+| Focal Point                                | 170             | 84.389         | 0.496            |
+| Focal Point 2                              | 186             | 90.049         | 0.484            |
+| GaMetal Power Pack                         | 54              | 26.936         | 0.499            |
+| Green Day Rock Band                        | 43              | 13.950         | 0.324            |
+| Guitar Hero                                | 49              | 15.514         | 0.317            |
+| Guitar Hero II                             | 74              | 25.254         | 0.341            |
+| Guitar Hero II DLC                         | 24              | 8.098          | 0.337            |
+| Guitar Hero Encore: Rocks the 80s          | 30              | 10.438         | 0.348            |
+| Guitar Hero III: Legends of Rock           | 70              | 25.296         | 0.361            |
+| Guitar Hero III: Legends of Rock DLC       | 68              | 29.517         | 0.434            |
+| Guitar Hero: Aerosmith                     | 41              | 13.963         | 0.341            |
+| Guitar Hero World Tour                     | 84              | 31.814         | 0.379            |
+| Guitar Hero World Tour DLC                 | 147             | 58.805         | 0.400            |
+| Guitar Hero: Metallica                     | 49              | 26.070         | 0.532            |
+| Guitar Hero: Metallica DLC                 | 10              | 6.832          | 0.683            |
+| Guitar Hero Smash Hits                     | 48              | 18.456         | 0.385            |
+| Guitar Hero: Van Halen                     | 47              | 19.096         | 0.406            |
+| Guitar Hero 5                              | 84              | 34.541         | 0.411            |
+| Guitar Hero 5 DLC                          | 158             | 56.151         | 0.355            |
+| Guitar Hero: Warriors of Rock              | 93              | 34.453         | 0.370            |
+| Guitar Hero: Warriors of Rock DLC          | 84              | 34.481         | 0.410            |
+| Guitar Hero On Tour                        | 31              | 10.268         | 0.331            |
+| Guitar Hero On Tour: Decades               | 36              | 11.186         | 0.311            |
+| Guitar Hero On Tour: Modern Hits           | 44              | 13.622         | 0.310            |
+| Guitar Hero: Guitar Zero                   | 64              | 23.032         | 0.360            |
+| Guitar Hero: Guitar Zero DLC               | 38              | 20.957         | 0.551            |
+| Guitar Hero X                              | 127             | 70.060         | 0.552            |
+| Koreaboo Hero                              | 51              | 15.569         | 0.305            |
+| Koreaboo Hero 2                            | 101             | 30.322         | 0.300            |
+| Lego Rock Band                             | 45              | 12.040         | 0.268            |
+| Marathon Hero                              | 49              | 89.696         | 1.831            |
+| Paradigm                                   | 101             | 51.915         | 0.514            |
+| Phase Shift Guitar Project 4               | 162             | 71.817         | 0.443            |
+| Redemption Arc                             | 100             | 43.632         | 0.436            |
+| Rock Band                                  | 58              | 19.835         | 0.342            |
+| Rock Band 2                                | 84              | 30.007         | 0.357            |
+| Rock Band 3                                | 83              | 26.943         | 0.325            |
+| Rock Band ACDC Live Track Pack             | 18              | 7.775          | 0.432            |
+| Rock Band Blitz                            | 25              | 8.095          | 0.324            |
+| The Beatles Rock Band                      | 45              | 10.680         | 0.237            |
+| The Fall of Troy Hero                      | 70              | 59.884         | 0.855            |
+| Trunks252JM's Classic Charts               | 56              | 23.618         | 0.422            |
+| Verified Unverified                        | 21              | 9.001          | 0.429            |
+| Vortex Hero                                | 222             | 96.101         | 0.433            |
+| Zero Gravity                               | 179             | 72.123         | 0.403            |
 
 ## Average Multiplier Outliers
 
