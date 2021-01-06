@@ -344,10 +344,18 @@ std::string ProcessedSong::path_summary(const Path& path) const
     stream.setf(std::ios_base::fmtflags(), std::ios_base::floatfield);
     stream << std::setprecision(DEFAULT_PRECISION);
     for (std::size_t i = 0; i < path.activations.size(); ++i) {
-        stream << "\nActivation " << i + 1 << ": Measure "
-               << path.activations[i].act_start->position.measure.value() + 1
-               << " to Measure "
-               << path.activations[i].act_end->position.measure.value() + 1;
+        stream << '\n' << activation_summaries[i] << ": ";
+        std::string note_position = "NN";
+        const auto act_start = path.activations[i].act_start;
+        auto previous_sp_note = std::prev(act_start);
+        while (!previous_sp_note->is_sp_granting_note) {
+            --previous_sp_note;
+        }
+        const auto count = std::distance(previous_sp_note, act_start);
+        if (count > 1) {
+            note_position = std::to_string(count) + "G";
+        }
+        stream << note_position;
     }
 
     return stream.str();
