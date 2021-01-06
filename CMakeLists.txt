@@ -109,7 +109,7 @@ enable_sanitisers(chopt)
 option(BUILD_GUI "Build the GUI version" ON)
 if(BUILD_GUI)
   find_package(
-    Qt5
+    Qt6
     COMPONENTS Widgets
     REQUIRED)
 
@@ -143,7 +143,7 @@ if(BUILD_GUI)
     choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include"
                      "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
   target_link_libraries_system(choptgui PRIVATE argparse nowide)
-  target_link_libraries(choptgui PRIVATE ${PNG_LIBRARIES} Qt5::Widgets)
+  target_link_libraries(choptgui PRIVATE ${PNG_LIBRARIES} Qt6::Widgets)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
   set_property(
