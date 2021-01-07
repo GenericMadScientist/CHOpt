@@ -110,16 +110,25 @@ static bool string_starts_with(std::string_view input, std::string_view pattern)
 
 std::string to_ordinal(int ordinal)
 {
+    constexpr int TENS_MODULUS = 10;
+    constexpr int HUNDREDS_MODULUS = 100;
+    constexpr std::array<int, 3> EXCEPTIONAL_TEENS {11, 12, 13};
+
     if (ordinal < 0) {
         throw std::runtime_error("ordinal was negative");
     }
-    if ((ordinal % 10 == 1) && (ordinal % 100 != 11)) {
+    if (std::find(EXCEPTIONAL_TEENS.cbegin(), EXCEPTIONAL_TEENS.cend(),
+                  ordinal % HUNDREDS_MODULUS)
+        != EXCEPTIONAL_TEENS.cend()) {
+        return std::to_string(ordinal) + "th";
+    }
+    if (ordinal % TENS_MODULUS == 1) {
         return std::to_string(ordinal) + "st";
     }
-    if ((ordinal % 10 == 2) && (ordinal % 100 != 12)) {
+    if (ordinal % TENS_MODULUS == 2) {
         return std::to_string(ordinal) + "nd";
     }
-    if ((ordinal % 10 == 3) && (ordinal % 100 != 13)) {
+    if (ordinal % TENS_MODULUS == 3) {
         return std::to_string(ordinal) + "rd";
     }
     return std::to_string(ordinal) + "th";

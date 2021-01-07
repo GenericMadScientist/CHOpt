@@ -279,7 +279,7 @@ static std::vector<std::string> note_colours(const std::vector<Note<T>>& notes,
     auto note_ptr = notes.cbegin();
     for (const auto& p : points) {
         if (p.is_hold_point) {
-            colours.push_back("");
+            colours.emplace_back("");
             continue;
         }
         std::vector<T> current_colours;
