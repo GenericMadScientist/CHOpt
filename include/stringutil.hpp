@@ -29,6 +29,8 @@ std::string_view break_off_newline(std::string_view& input);
 
 std::string_view skip_whitespace(std::string_view input);
 
+std::string to_ordinal(int ordinal);
+
 // Convert a UTF-8 or UTF-16le string to a UTF-8 string.
 std::string to_utf8_string(std::string_view input);
 

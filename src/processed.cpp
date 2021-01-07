@@ -22,6 +22,7 @@
 #include <sstream>
 
 #include "processed.hpp"
+#include "stringutil.hpp"
 
 SpBar ProcessedSong::total_available_sp(Beat start, PointPtr first_point,
                                         PointPtr act_start,
@@ -352,7 +353,22 @@ std::string ProcessedSong::path_summary(const Path& path) const
             = std::count_if(std::next(previous_sp_note), std::next(act_start),
                             [](const auto& p) { return !p.is_hold_point; });
         if (count > 1) {
-            note_position = std::to_string(count) + "G";
+            auto previous_note = act_start;
+            while (previous_note->is_hold_point) {
+                --previous_note;
+            }
+            const auto colour = m_points.colour_set(previous_note);
+            auto same_colour_count = 1;
+            for (auto p = std::next(previous_sp_note); p < previous_note; ++p) {
+                if (p->is_hold_point) {
+                    continue;
+                }
+                if (m_points.colour_set(p) == colour) {
+                    ++same_colour_count;
+                }
+            }
+            note_position = to_ordinal(static_cast<int>(same_colour_count))
+                + ' ' + colour;
         }
         if (act_start->is_hold_point) {
             auto starting_note = act_start;

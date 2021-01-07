@@ -108,6 +108,23 @@ static bool string_starts_with(std::string_view input, std::string_view pattern)
     return input.substr(0, pattern.size()) == pattern;
 }
 
+std::string to_ordinal(int ordinal)
+{
+    if (ordinal < 0) {
+        throw std::runtime_error("ordinal was negative");
+    }
+    if ((ordinal % 10 == 1) && (ordinal % 100 != 11)) {
+        return std::to_string(ordinal) + "st";
+    }
+    if ((ordinal % 10 == 2) && (ordinal % 100 != 12)) {
+        return std::to_string(ordinal) + "nd";
+    }
+    if ((ordinal % 10 == 3) && (ordinal % 100 != 13)) {
+        return std::to_string(ordinal) + "rd";
+    }
+    return std::to_string(ordinal) + "th";
+}
+
 std::string to_utf8_string(std::string_view input)
 {
     if (string_starts_with(input, "\xEF\xBB\xBF")) {

@@ -407,3 +407,36 @@ TEST_CASE("range_score is correct")
     REQUIRE(points.range_score(begin, end) == 128);
     REQUIRE(points.range_score(begin + 1, end - 1) == 28);
 }
+
+TEST_CASE("colour_set is correct for 5 fret")
+{
+    std::vector<Note<NoteColour>> notes {{0},
+                                         {0, 0, NoteColour::Red},
+                                         {176, 100, NoteColour::Yellow},
+                                         {500, 0, NoteColour::Blue}};
+    NoteTrack<NoteColour> track {notes, {}, {}, 192};
+    PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
+    auto begin = points.cbegin();
+    auto end = points.cend();
+
+    REQUIRE(points.colour_set(begin) == "GR");
+    REQUIRE(points.colour_set(begin + 1) == "Y");
+    REQUIRE(points.colour_set(end - 1) == "B");
+}
+
+TEST_CASE("colour_set is correct for 6 fret")
+{
+    std::vector<Note<GHLNoteColour>> notes {
+        {0},
+        {0, 0, GHLNoteColour::WhiteMid},
+        {176, 100, GHLNoteColour::BlackHigh},
+        {500, 0, GHLNoteColour::Open}};
+    NoteTrack<GHLNoteColour> track {notes, {}, {}, 192};
+    PointSet points {track, {{}, 192}, 1.0, Second(0.0)};
+    auto begin = points.cbegin();
+    auto end = points.cend();
+
+    REQUIRE(points.colour_set(begin) == "W1W2");
+    REQUIRE(points.colour_set(begin + 1) == "B3");
+    REQUIRE(points.colour_set(end - 1) == "open");
+}

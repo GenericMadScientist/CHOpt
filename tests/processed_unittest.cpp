@@ -740,7 +740,7 @@ TEST_CASE("path_summary produces the correct output")
                                           "No SP score: 350\n"
                                           "Total score: 400\n"
                                           "Average multiplier: 1.200x\n"
-                                          "3(+1): 2G";
+                                          "3(+1): 2nd G";
 
         REQUIRE(track.path_summary(path) == desired_path_output);
     }
@@ -800,6 +800,29 @@ TEST_CASE("path_summary produces the correct output")
                                           "Total score: 206\n"
                                           "Average multiplier: 1.177x\n"
                                           "2: 0.03 beats after NN";
+
+        REQUIRE(second_track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("Notes of different colours are counted correctly")
+    {
+        std::vector<Note<NoteColour>> second_notes {
+            {0}, {192}, {768}, {960, 0, NoteColour::Red}};
+        std::vector<StarPower> second_phrases {{0, 50}, {192, 50}};
+        NoteTrack<NoteColour> second_note_track {
+            second_notes, second_phrases, {}, 192};
+        ProcessedSong second_track {second_note_track, {},         1.0, 1.0,
+                                    Second(0.0),       Second(0.0)};
+        const auto& second_points = second_track.points();
+        Path path {{{second_points.cend() - 1, second_points.cend() - 1,
+                     Beat {0.0}, Beat {0.0}}},
+                   50};
+
+        const char* desired_path_output = "Path: 2\n"
+                                          "No SP score: 200\n"
+                                          "Total score: 250\n"
+                                          "Average multiplier: 1.250x\n"
+                                          "2: 1st R";
 
         REQUIRE(second_track.path_summary(path) == desired_path_output);
     }
