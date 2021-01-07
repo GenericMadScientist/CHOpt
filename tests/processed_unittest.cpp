@@ -848,4 +848,26 @@ TEST_CASE("path_summary produces the correct output")
 
         REQUIRE(second_track.path_summary(path) == desired_path_output);
     }
+
+    SECTION("0 phrase acts are handled")
+    {
+        std::vector<Note<NoteColour>> second_notes {{0, 3072}, {3264}};
+        std::vector<StarPower> second_phrases {{0, 3300}};
+        NoteTrack<NoteColour> second_note_track {
+            second_notes, second_phrases, {}, 192};
+        ProcessedSong second_track {second_note_track, {},         1.0, 1.0,
+                                    Second(0.0),       Second(0.0)};
+        const auto& second_points = second_track.points();
+        Path path {{{second_points.cend() - 3, second_points.cend() - 3,
+                     Beat {0.0}, Beat {0.0}}},
+                   1};
+
+        const char* desired_path_output = "Path: 0-ES1\n"
+                                          "No SP score: 539\n"
+                                          "Total score: 540\n"
+                                          "Average multiplier: 1.080x\n"
+                                          "0: See image";
+
+        REQUIRE(second_track.path_summary(path) == desired_path_output);
+    }
 }

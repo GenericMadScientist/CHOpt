@@ -343,6 +343,10 @@ std::string ProcessedSong::path_summary(const Path& path) const
     stream << std::setprecision(2);
     for (std::size_t i = 0; i < path.activations.size(); ++i) {
         stream << '\n' << activation_summaries[i] << ": ";
+        if (activation_summaries[i][0] == '0') {
+            stream << "See image";
+            continue;
+        }
         const auto act_start = path.activations[i].act_start;
         auto previous_sp_note = std::prev(act_start);
         while (!previous_sp_note->is_sp_granting_note) {
