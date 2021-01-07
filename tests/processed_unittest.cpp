@@ -826,4 +826,26 @@ TEST_CASE("path_summary produces the correct output")
 
         REQUIRE(second_track.path_summary(path) == desired_path_output);
     }
+
+    SECTION("Mid sustain act before notes are written correctly")
+    {
+        std::vector<Note<NoteColour>> second_notes {{0}, {192, 192}};
+        std::vector<StarPower> second_phrases {{0, 50}, {192, 50}};
+        NoteTrack<NoteColour> second_note_track {
+            second_notes, second_phrases, {}, 192};
+        ProcessedSong second_track {second_note_track, {},         1.0, 1.0,
+                                    Second(0.0),       Second(0.0)};
+        const auto& second_points = second_track.points();
+        Path path {{{second_points.cbegin() + 2, second_points.cbegin() + 2,
+                     Beat {0.0}, Beat {0.0}}},
+                   28};
+
+        const char* desired_path_output = "Path: 2\n"
+                                          "No SP score: 128\n"
+                                          "Total score: 156\n"
+                                          "Average multiplier: 1.248x\n"
+                                          "2: After 0.03 beats";
+
+        REQUIRE(second_track.path_summary(path) == desired_path_output);
+    }
 }

@@ -343,7 +343,6 @@ std::string ProcessedSong::path_summary(const Path& path) const
     stream << std::setprecision(2);
     for (std::size_t i = 0; i < path.activations.size(); ++i) {
         stream << '\n' << activation_summaries[i] << ": ";
-        std::string note_position = "NN";
         const auto act_start = path.activations[i].act_start;
         auto previous_sp_note = std::prev(act_start);
         while (!previous_sp_note->is_sp_granting_note) {
@@ -352,6 +351,19 @@ std::string ProcessedSong::path_summary(const Path& path) const
         const auto count
             = std::count_if(std::next(previous_sp_note), std::next(act_start),
                             [](const auto& p) { return !p.is_hold_point; });
+        if (act_start->is_hold_point) {
+            auto starting_note = act_start;
+            while (starting_note->is_hold_point) {
+                --starting_note;
+            }
+            const auto beat_gap
+                = act_start->position.beat - starting_note->position.beat;
+            if (count > 0) {
+                stream << beat_gap.value() << " beats after ";
+            } else {
+                stream << "After " << beat_gap.value() << " beats";
+            }
+        }
         if (count > 1) {
             auto previous_note = act_start;
             while (previous_note->is_hold_point) {
@@ -367,19 +379,11 @@ std::string ProcessedSong::path_summary(const Path& path) const
                     ++same_colour_count;
                 }
             }
-            note_position = to_ordinal(static_cast<int>(same_colour_count))
-                + ' ' + colour;
+            stream << to_ordinal(static_cast<int>(same_colour_count)) << ' '
+                   << colour;
+        } else if (count == 1) {
+            stream << "NN";
         }
-        if (act_start->is_hold_point) {
-            auto starting_note = act_start;
-            while (starting_note->is_hold_point) {
-                --starting_note;
-            }
-            const auto beat_gap
-                = act_start->position.beat - starting_note->position.beat;
-            stream << beat_gap.value() << " beats after ";
-        }
-        stream << note_position;
     }
 
     return stream.str();
