@@ -27,7 +27,7 @@ for song in songs:
         (song_id,),
     )
     for description, activation in zip(c.fetchall(), path.split("-")):
-        output_lines.append(f"{activation}: {description}")
+        output_lines.append(f"{activation}: {description[0]}")
     output_lines.append("")
     outputs.append("\r\n".join(output_lines).encode("utf-8"))
 
