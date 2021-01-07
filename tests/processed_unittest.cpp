@@ -691,7 +691,7 @@ TEST_CASE("Video lag is taken account of")
     }
 }
 
-TEST_CASE("path_summary produces the correct output", "Path summary")
+TEST_CASE("path_summary produces the correct output")
 {
     std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
@@ -756,6 +756,50 @@ TEST_CASE("path_summary produces the correct output", "Path summary")
                                           "No SP score: 350\n"
                                           "Total score: 350\n"
                                           "Average multiplier: 1.000x";
+
+        REQUIRE(second_track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("Sustains handled correctly for NN")
+    {
+        std::vector<Note<NoteColour>> second_notes {{0}, {192, 192}, {768}};
+        std::vector<StarPower> second_phrases {{0, 50}, {192, 50}};
+        NoteTrack<NoteColour> second_note_track {
+            second_notes, second_phrases, {}, 192};
+        ProcessedSong second_track {second_note_track, {},         1.0, 1.0,
+                                    Second(0.0),       Second(0.0)};
+        const auto& second_points = second_track.points();
+        Path path {{{second_points.cend() - 1, second_points.cend() - 1,
+                     Beat {0.0}, Beat {0.0}}},
+                   50};
+
+        const char* desired_path_output = "Path: 2\n"
+                                          "No SP score: 178\n"
+                                          "Total score: 228\n"
+                                          "Average multiplier: 1.303x\n"
+                                          "2: NN";
+
+        REQUIRE(second_track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("Mid sustain activations noted correctly")
+    {
+        std::vector<Note<NoteColour>> second_notes {{0}, {192}, {768, 192}};
+        std::vector<StarPower> second_phrases {{0, 50}, {192, 50}};
+        NoteTrack<NoteColour> second_note_track {
+            second_notes, second_phrases, {}, 192};
+        ProcessedSong second_track {second_note_track, {},         1.0, 1.0,
+                                    Second(0.0),       Second(0.0)};
+        const auto& second_points = second_track.points();
+        Path path {{{second_points.cbegin() + 3, second_points.cend() - 1,
+                     Beat {0.0}, Beat {0.0}}},
+                   28};
+
+        const char* desired_path_output = "Path: 2\n"
+                                          "No SP score: 178\n"
+                                          "Total score: 206\n"
+                                          "Average multiplier: 1.177x\n"
+                                          "2: 0.03 beats after NN";
 
         REQUIRE(second_track.path_summary(path) == desired_path_output);
     }
