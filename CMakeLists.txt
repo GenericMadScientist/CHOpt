@@ -160,6 +160,11 @@ if(PACKAGE_TESTS)
   add_subdirectory(tests)
 endif()
 
+option(BUILD_FUZZERS "Build the fuzzing targets" OFF)
+if(BUILD_FUZZERS)
+  add_subdirectory(fuzzing_targets)
+endif()
+
 option(ENABLE_LTO "Enable Link Time Optimisation" OFF)
 if(ENABLE_LTO)
   cmake_policy(SET CMP0069 NEW)

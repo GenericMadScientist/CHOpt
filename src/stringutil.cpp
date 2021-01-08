@@ -33,12 +33,13 @@
 #include <locale>
 #endif
 
+#include "songparts.hpp"
 #include "stringutil.hpp"
 
 std::string_view break_off_newline(std::string_view& input)
 {
     if (input.empty()) {
-        throw std::invalid_argument("No lines left");
+        throw ParseError("No lines left");
     }
 
     const auto newline_location = input.find_first_of("\r\n");
