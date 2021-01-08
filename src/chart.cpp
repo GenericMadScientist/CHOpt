@@ -68,7 +68,7 @@ static std::vector<std::string_view> split_by_space(std::string_view input)
 
 static ChartSection read_section(std::string_view& input)
 {
-    constexpr int FULL_TS_EVENT_SIZE = 5;
+    constexpr int MAX_NORMAL_EVENT_SIZE = 5;
 
     ChartSection section;
     section.name = strip_square_brackets(break_off_newline(input));
@@ -91,7 +91,7 @@ static ChartSection read_section(std::string_view& input)
         if (key_val.has_value()) {
             const auto pos = *key_val;
             if (separated_line[2] == "N") {
-                if (separated_line.size() < 5) {
+                if (separated_line.size() < MAX_NORMAL_EVENT_SIZE) {
                     throw ParseError("Line incomplete");
                 }
                 const auto fret = string_view_to_int(separated_line[3]);
@@ -101,7 +101,7 @@ static ChartSection read_section(std::string_view& input)
                 }
                 section.note_events.push_back(NoteEvent {pos, *fret, *length});
             } else if (separated_line[2] == "S") {
-                if (separated_line.size() < 5) {
+                if (separated_line.size() < MAX_NORMAL_EVENT_SIZE) {
                     throw ParseError("Line incomplete");
                 }
                 const auto sp_key = string_view_to_int(separated_line[3]);
@@ -125,7 +125,7 @@ static ChartSection read_section(std::string_view& input)
                 }
                 const auto numer = string_view_to_int(separated_line[3]);
                 std::optional<int> denom = 2;
-                if (separated_line.size() >= FULL_TS_EVENT_SIZE) {
+                if (separated_line.size() >= MAX_NORMAL_EVENT_SIZE) {
                     denom = string_view_to_int(separated_line[4]);
                 }
                 if (!numer.has_value() || !denom.has_value()) {
