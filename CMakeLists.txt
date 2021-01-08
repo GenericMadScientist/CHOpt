@@ -160,8 +160,8 @@ if(PACKAGE_TESTS)
   add_subdirectory(tests)
 endif()
 
-option(BUILD_FUZZERS "Build the fuzzing targets" OFF)
-if(BUILD_FUZZERS)
+option(BUILD_FUZZ_TARGETS "Build the fuzzing targets" OFF)
+if(BUILD_FUZZ_TARGETS)
   add_subdirectory(fuzzing_targets)
 endif()
 

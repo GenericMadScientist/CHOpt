@@ -139,6 +139,9 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
             NoteColour::Green, NoteColour::Red,    NoteColour::Yellow,
             NoteColour::Blue,  NoteColour::Orange, std::nullopt,
             std::nullopt,      NoteColour::Open};
+        if (static_cast<std::size_t>(fret_type) >= COLOURS.size()) {
+            return std::nullopt;
+        }
         const auto colour = COLOURS.at(static_cast<std::size_t>(fret_type));
         if (!colour.has_value()) {
             return std::nullopt;
@@ -155,6 +158,9 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
             std::nullopt,
             GHLNoteColour::Open,
             GHLNoteColour::BlackHigh};
+        if (static_cast<std::size_t>(fret_type) >= COLOURS.size()) {
+            return std::nullopt;
+        }
         const auto colour = COLOURS.at(static_cast<std::size_t>(fret_type));
         if (!colour.has_value()) {
             return std::nullopt;

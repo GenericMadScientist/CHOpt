@@ -183,6 +183,20 @@ TEST_CASE("Chart reads easy note track correctly")
     REQUIRE(song.guitar_note_track(Difficulty::Easy) == note_track);
 }
 
+TEST_CASE("Invalid note values are ignored")
+{
+    ChartSection expert_single {
+        "ExpertSingle", {}, {}, {}, {{768, 0, 0}, {768, 13, 0}}, {}, {}};
+    std::vector<ChartSection> sections {expert_single};
+    const Chart chart {sections};
+    NoteTrack<NoteColour> note_track {
+        {{768, 0, NoteColour::Green}}, {}, {}, 192};
+
+    const auto song = Song::from_chart(chart, {});
+
+    REQUIRE(song.guitar_note_track(Difficulty::Expert) == note_track);
+}
+
 TEST_CASE("SP phrases are read correctly from Chart")
 {
     ChartSection expert_single {"ExpertSingle",  {}, {}, {}, {{768, 0, 0}},
