@@ -20,6 +20,7 @@
 #define CHOPT_SONGPARTS_HPP
 
 #include <algorithm>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -280,6 +281,14 @@ public:
     [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
     // Return the SyncTrack for a speedup of speed% (normal speed is 100).
     [[nodiscard]] SyncTrack speedup(int speed) const;
+};
+
+class ParseError : public std::runtime_error {
+public:
+    ParseError(const char* what)
+        : std::runtime_error {what}
+    {
+    }
 };
 
 #endif

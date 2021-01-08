@@ -16,13 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
 #include <climits>
 #include <cstddef>
-#include <stdexcept>
 #include <utility>
 
 #include "midi.hpp"
+#include "songparts.hpp"
 
 // This is a version of string_view for uint8_t. Once C++20 is ratified we can
 // replace this with span<uint8_t>.
@@ -117,12 +116,12 @@ static ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
     const auto first_ten_bytes = span.subspan(0, MAGIC_NUMBER.size());
     if (!std::equal(first_ten_bytes.begin(), first_ten_bytes.end(),
                     MAGIC_NUMBER.cbegin())) {
-        throw std::invalid_argument("Invalid MIDI file");
+        throw ParseError("Invalid MIDI file");
     }
     header.num_of_tracks = read_two_byte_be(span, TRACK_COUNT_OFFSET);
     auto division = read_two_byte_be(span, TICKS_OFFSET);
     if ((division & DIVISION_NEGATIVE_SMPTE_MASK) != 0) {
-        throw std::invalid_argument("Only ticks per quarter-note is supported");
+        throw ParseError("Only ticks per quarter-note is supported");
     }
     header.ticks_per_quarter_note = division;
     return span.subspan(FIRST_TRACK_OFFSET);
@@ -171,13 +170,12 @@ static ByteSpan read_midi_event(ByteSpan span, MidiEvent& event,
     } else if (prev_status_byte != -1) {
         event_type = static_cast<std::uint8_t>(prev_status_byte);
     } else {
-        throw std::invalid_argument("MIDI Event has no status byte and "
-                                    "there is no running status");
+        throw ParseError(
+            "MIDI Event has no status byte and there is no running status");
     }
 
     if ((event_type & UPPER_NIBBLE_MASK) == SYSTEM_COMMON_MSG_ID) {
-        throw std::invalid_argument(
-            "MIDI Events with high nibble 0xF are not supported");
+        throw ParseError("MIDI Events with high nibble 0xF are not supported");
     }
     if ((event_type & UPPER_NIBBLE_MASK) == PROGRAM_CHANGE_ID
         || (event_type & UPPER_NIBBLE_MASK) == CHANNEL_PRESSURE_ID) {

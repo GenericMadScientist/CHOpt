@@ -16,12 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
 #include <charconv>
 #include <optional>
-#include <stdexcept>
 
 #include "chart.hpp"
+#include "songparts.hpp"
 #include "stringutil.hpp"
 
 static std::string_view strip_square_brackets(std::string_view input)
@@ -30,7 +29,7 @@ static std::string_view strip_square_brackets(std::string_view input)
 }
 
 // Convert a string_view to an int. If there are any problems with the input,
-// this function throws.
+// this function returns std::nullopt.
 static std::optional<int> string_view_to_int(std::string_view input)
 {
     int result = 0;
@@ -70,7 +69,7 @@ static ChartSection read_section(std::string_view& input)
     section.name = strip_square_brackets(break_off_newline(input));
 
     if (break_off_newline(input) != "{") {
-        throw std::runtime_error("Section does not open with {");
+        throw ParseError("Section does not open with {");
     }
 
     while (true) {

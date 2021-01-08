@@ -426,7 +426,7 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
 
     if (song.m_five_fret_tracks.empty() && song.m_six_fret_tracks.empty()
         && song.m_drum_note_tracks.empty()) {
-        throw std::invalid_argument("Chart has no notes");
+        throw ParseError("Chart has no notes");
     }
 
     return song;
@@ -457,7 +457,7 @@ combine_note_on_off_events(const std::vector<std::tuple<int, int>>& on_events,
     }
 
     if (on_iter != on_events.cend()) {
-        throw std::invalid_argument("on event has no corresponding off event");
+        throw ParseError("on event has no corresponding off event");
     }
 
     return ranges;
@@ -541,7 +541,7 @@ template <typename T> static T colour_from_key(std::uint8_t key)
         } else if (key >= EASY_GREEN && key <= EASY_ORANGE) {
             key -= EASY_GREEN;
         } else {
-            throw std::invalid_argument("Invalid key for note");
+            throw ParseError("Invalid key for note");
         }
 
         return NOTE_COLOURS.at(key);
@@ -570,7 +570,7 @@ template <typename T> static T colour_from_key(std::uint8_t key)
         } else if (key >= EASY_OPEN && key <= EASY_BLACK_HIGH) {
             key -= EASY_OPEN;
         } else {
-            throw std::invalid_argument("Invalid key for note");
+            throw ParseError("Invalid key for note");
         }
 
         return GHL_NOTE_COLOURS.at(key);
@@ -598,7 +598,7 @@ template <typename T> static T colour_from_key(std::uint8_t key)
         } else if (key >= EASY_KICK && key <= EASY_GREEN) {
             key -= EASY_KICK;
         } else {
-            throw std::invalid_argument("Invalid key for note");
+            throw ParseError("Invalid key for note");
         }
 
         return DRUM_NOTE_COLOURS.at(key);
@@ -1011,7 +1011,7 @@ static std::optional<Instrument> midi_section_instrument(const MidiTrack& track)
 Song Song::from_midi(const Midi& midi, const IniValues& ini)
 {
     if (midi.ticks_per_quarter_note == 0) {
-        throw std::invalid_argument("Resolution must be > 0");
+        throw ParseError("Resolution must be > 0");
     }
 
     Song song;
