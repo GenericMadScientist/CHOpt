@@ -17,3 +17,25 @@ add_fuzz_target(chart_fuzzer chart_fuzzer.cpp "${SRC}/chart.cpp"
                 "${SRC}/stringutil.cpp")
 
 add_fuzz_target(midi_fuzzer midi_fuzzer.cpp "${SRC}/midi.cpp")
+
+add_fuzz_target(
+  chart_song_fuzzer
+  chart_song_fuzzer.cpp
+  "${SRC}/chart.cpp"
+  "${SRC}/ini.cpp"
+  "${SRC}/midi.cpp"
+  "${SRC}/song.cpp"
+  "${SRC}/songparts.cpp"
+  "${SRC}/stringutil.cpp")
+target_link_libraries(chart_song_fuzzer PRIVATE nowide)
+
+add_fuzz_target(
+  midi_song_fuzzer
+  midi_song_fuzzer.cpp
+  "${SRC}/chart.cpp"
+  "${SRC}/ini.cpp"
+  "${SRC}/midi.cpp"
+  "${SRC}/song.cpp"
+  "${SRC}/songparts.cpp"
+  "${SRC}/stringutil.cpp")
+target_link_libraries(midi_song_fuzzer PRIVATE nowide)
