@@ -3,4 +3,5 @@
 build/
 out/
 fuzzing_targets/CHART_CORPUS_DIR/
+fuzzing_targets/MIDI_CORPUS_DIR/
 CMakeSettings.json
