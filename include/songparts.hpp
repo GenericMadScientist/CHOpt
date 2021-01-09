@@ -88,10 +88,19 @@ struct Solo {
     int value;
 };
 
+class ParseError : public std::runtime_error {
+public:
+    ParseError(const char* what)
+        : std::runtime_error {what}
+    {
+    }
+};
+
 // Invariants:
 // notes() will always return a vector of sorted notes.
 // notes() will not return a vector with two notes of the same colour with the
 // same position.
+// resolution() will be greater than zero.
 // sp_phrases() will always return a vector of sorted SP phrases.
 // sp_phrases() will only return phrases with a note in their range.
 // sp_phrases() will return non-overlapping phrases.
@@ -150,6 +159,10 @@ public:
               int resolution)
         : m_resolution {resolution}
     {
+        if (m_resolution <= 0) {
+            throw ParseError("Resolution non-positive");
+        }
+
         std::stable_sort(notes.begin(), notes.end(),
                          [](const auto& lhs, const auto& rhs) {
                              return std::tie(lhs.position, lhs.colour)
@@ -281,14 +294,6 @@ public:
     [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
     // Return the SyncTrack for a speedup of speed% (normal speed is 100).
     [[nodiscard]] SyncTrack speedup(int speed) const;
-};
-
-class ParseError : public std::runtime_error {
-public:
-    ParseError(const char* what)
-        : std::runtime_error {what}
-    {
-    }
 };
 
 #endif

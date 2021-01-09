@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <climits>
 #include <filesystem>
 #include <iterator>
 #include <optional>
@@ -398,6 +399,10 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
             }
             std::vector<TimeSignature> tses;
             for (const auto& ts : section.ts_events) {
+                if (static_cast<std::size_t>(ts.denominator)
+                    >= (CHAR_BIT * sizeof(int))) {
+                    throw ParseError("Invalid Time Signature denominator");
+                }
                 tses.push_back(
                     {ts.position, ts.numerator, 1 << ts.denominator});
             }

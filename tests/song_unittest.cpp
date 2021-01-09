@@ -69,7 +69,6 @@ TEST_CASE("Chart -> Song has correct value for is_from_midi")
     REQUIRE(!song.is_from_midi());
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("Chart reads resolution")
 {
     ChartSection sync_track {"SyncTrack", {}, {}, {}, {}, {}, {}};
@@ -150,7 +149,6 @@ TEST_CASE("Ini values are used for converting from .chart files")
     REQUIRE(song.charter() == "NotGMS");
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("Chart reads sync track correctly")
 {
     ChartSection sync_track {"SyncTrack", {}, {{0, 200000}},           {},
@@ -168,7 +166,18 @@ TEST_CASE("Chart reads sync track correctly")
     REQUIRE(chart_sync_track.bpms() == bpms);
 }
 
-// Last checked: 24.0.1555-master
+TEST_CASE("Large time sig denominators cause an exception")
+{
+    ChartSection sync_track {"SyncTrack", {}, {}, {}, {}, {}, {{0, 4, 32}}};
+    ChartSection expert_single {"ExpertSingle", {}, {}, {},
+                                {{768, 0, 0}},  {}, {}};
+    std::vector<ChartSection> sections {sync_track, expert_single};
+    const Chart chart {sections};
+
+    REQUIRE_THROWS_AS([&] { return Song::from_chart(chart, {}); }(),
+                      ParseError);
+}
+
 TEST_CASE("Chart reads easy note track correctly")
 {
     ChartSection easy_single {"EasySingle",    {}, {}, {}, {{768, 0, 0}},
