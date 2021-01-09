@@ -883,6 +883,22 @@ TEST_CASE("Notes are read correctly")
         REQUIRE(song.guitar_note_track(Difficulty::Expert).notes()[0].colour
                 == NoteColour::Open);
     }
+
+    SECTION("ParseError thrown if open Note Ons have no Note Offs")
+    {
+        MidiTrack note_track {
+            {{0,
+              {MetaEvent {3,
+                          {0x50, 0x41, 0x52, 0x54, 0x20, 0x47, 0x55, 0x49, 0x54,
+                           0x41, 0x52}}}},
+             {768, {MidiEvent {0x90, {96, 64}}}},
+             {768, {SysexEvent {{0x50, 0x53, 0, 0, 3, 1, 1, 0xF7}}}},
+             {960, {MidiEvent {0x90, {96, 0}}}}}};
+        const Midi midi {192, {note_track}};
+
+        REQUIRE_THROWS_AS([&] { return Song::from_midi(midi, {}); }(),
+                          ParseError);
+    }
 }
 
 // Note that a note at the very end of a solo event is not considered part of

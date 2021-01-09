@@ -827,6 +827,9 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
     for (const auto& [diff, open_ons] : event_track.open_on_events) {
+        if (event_track.open_off_events.count(diff) == 0) {
+            throw ParseError("No open Note Off events");
+        }
         const auto& open_offs = event_track.open_off_events.at(diff);
         open_events[diff] = combine_note_on_off_events(open_ons, open_offs);
     }
