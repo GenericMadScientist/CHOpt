@@ -667,6 +667,9 @@ static SyncTrack read_first_midi_track(const MidiTrack& track)
             if (meta_event->data.size() < 2) {
                 throw ParseError("Tempo meta event too short");
             }
+            if (meta_event->data[1] >= (CHAR_BIT * sizeof(int))) {
+                throw ParseError("Time sig denominator too large");
+            }
             time_sigs.push_back(
                 {event.time, meta_event->data[0], 1 << meta_event->data[1]});
             break;

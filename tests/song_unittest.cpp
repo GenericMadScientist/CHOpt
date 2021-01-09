@@ -625,6 +625,15 @@ TEST_CASE("First track is read correctly")
         REQUIRE(sync_track.time_sigs() == tses.time_sigs());
     }
 
+    SECTION("Time signatures with large denominators cause an exception")
+    {
+        MidiTrack ts_track {{{0, {MetaEvent {0x58, {6, 32, 24, 8}}}}}};
+        const Midi midi {192, {ts_track}};
+
+        REQUIRE_THROWS_AS([&] { return Song::from_midi(midi, {}); }(),
+                          ParseError);
+    }
+
     SECTION("Too short time sig events cause an exception")
     {
         MidiTrack ts_track {{{0, {MetaEvent {0x58, {6}}}}}};
