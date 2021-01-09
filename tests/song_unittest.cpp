@@ -220,7 +220,6 @@ TEST_CASE("SP phrases are read correctly from Chart")
     REQUIRE(song.guitar_note_track(Difficulty::Expert).sp_phrases().empty());
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("Chart does not need sections in usual order")
 {
     SECTION("Non note sections need not be present")
@@ -240,8 +239,10 @@ TEST_CASE("Chart does not need sections in usual order")
         std::vector<ChartSection> sections {expert_single};
         const Chart chart {sections};
 
-        REQUIRE_THROWS([] { return Song::from_chart({}, {}); }());
-        REQUIRE_THROWS([&] { return Song::from_chart(chart, {}); }());
+        REQUIRE_THROWS_AS([] { return Song::from_chart({}, {}); }(),
+                          ParseError);
+        REQUIRE_THROWS_AS([&] { return Song::from_chart(chart, {}); }(),
+                          ParseError);
     }
 
     SECTION("Non note sections can be in any order")
@@ -265,7 +266,6 @@ TEST_CASE("Chart does not need sections in usual order")
     }
 }
 
-// Last checked: 24.0.1555-master
 TEST_CASE("Only first non-empty part of note sections matter")
 {
     SECTION("Later non-empty sections are ignored")
@@ -581,7 +581,8 @@ TEST_CASE("Midi resolution is read correctly")
     {
         const Midi midi {0, {}};
 
-        REQUIRE_THROWS([&] { return Song::from_midi(midi, {}); }());
+        REQUIRE_THROWS_AS([&] { return Song::from_midi(midi, {}); }(),
+                          ParseError);
     }
 }
 
@@ -601,6 +602,15 @@ TEST_CASE("First track is read correctly")
         REQUIRE(sync_track.time_sigs() == tempos.time_sigs());
     }
 
+    SECTION("Too short tempo events cause an exception")
+    {
+        MidiTrack tempo_track {{{0, {MetaEvent {0x51, {6, 0x1A}}}}}};
+        const Midi midi {192, {tempo_track}};
+
+        REQUIRE_THROWS_AS([&] { return Song::from_midi(midi, {}); }(),
+                          ParseError);
+    }
+
     SECTION("Time signatures are read correctly")
     {
         MidiTrack ts_track {{{0, {MetaEvent {0x58, {6, 2, 24, 8}}}},
@@ -613,6 +623,15 @@ TEST_CASE("First track is read correctly")
 
         REQUIRE(sync_track.bpms() == tses.bpms());
         REQUIRE(sync_track.time_sigs() == tses.time_sigs());
+    }
+
+    SECTION("Too short time sig events cause an exception")
+    {
+        MidiTrack ts_track {{{0, {MetaEvent {0x58, {6}}}}}};
+        const Midi midi {192, {ts_track}};
+
+        REQUIRE_THROWS_AS([&] { return Song::from_midi(midi, {}); }(),
+                          ParseError);
     }
 
     SECTION("Song name is not read from midi")
@@ -731,7 +750,8 @@ TEST_CASE("Notes are read correctly")
                                {1152, {MidiEvent {0x90, {96, 64}}}}}};
         const Midi midi {192, {note_track}};
 
-        REQUIRE_THROWS([&] { return Song::from_midi(midi, {}); }());
+        REQUIRE_THROWS_AS([&] { return Song::from_midi(midi, {}); }(),
+                          ParseError);
     }
 
     SECTION("Corresponding Note Off events are after Note On events")
@@ -823,6 +843,19 @@ TEST_CASE("Notes are read correctly")
         REQUIRE(notes.size() == 1);
     }
 
+    SECTION("ParseError thrown if NoteOn has no corresponding NoteOff track")
+    {
+        MidiTrack note_track {{{0,
+                                {MetaEvent {3,
+                                            {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                             0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                               {768, {MidiEvent {0x90, {96, 64}}}}}};
+        const Midi midi {192, {note_track}};
+
+        REQUIRE_THROWS_AS([&] { return Song::from_midi(midi, {}); }(),
+                          ParseError);
+    }
+
     SECTION("Open notes are read correctly")
     {
         MidiTrack note_track {
@@ -897,7 +930,8 @@ TEST_CASE("Star Power is read")
                                {960, {MidiEvent {0x80, {96, 0}}}}}};
         const Midi midi {192, {note_track}};
 
-        REQUIRE_THROWS([&] { return Song::from_midi(midi, {}); }());
+        REQUIRE_THROWS_AS([&] { return Song::from_midi(midi, {}); }(),
+                          ParseError);
     }
 }
 

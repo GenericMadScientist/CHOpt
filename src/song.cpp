@@ -654,6 +654,9 @@ static SyncTrack read_first_midi_track(const MidiTrack& track)
         }
         switch (meta_event->type) {
         case SET_TEMPO_ID: {
+            if (meta_event->data.size() < 3) {
+                throw ParseError("Tempo meta event too short");
+            }
             const auto us_per_quarter = meta_event->data[0] << 16
                 | meta_event->data[1] << 8 | meta_event->data[2];
             const auto bpm = 60000000000 / us_per_quarter;
@@ -661,6 +664,9 @@ static SyncTrack read_first_midi_track(const MidiTrack& track)
             break;
         }
         case TIME_SIG_ID:
+            if (meta_event->data.size() < 2) {
+                throw ParseError("Tempo meta event too short");
+            }
             time_sigs.push_back(
                 {event.time, meta_event->data[0], 1 << meta_event->data[1]});
             break;
@@ -825,6 +831,9 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     std::map<Difficulty, std::vector<Note<NoteColour>>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour] = key;
+        if (event_track.note_off_events.count(key) == 0) {
+            throw ParseError("No corresponding Note Off events");
+        }
         const auto& note_offs = event_track.note_off_events.at(key);
         for (const auto& [pos, end] :
              combine_note_on_off_events(note_ons, note_offs)) {
@@ -876,6 +885,9 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     std::map<Difficulty, std::vector<Note<GHLNoteColour>>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour] = key;
+        if (event_track.note_off_events.count(key) == 0) {
+            throw ParseError("No corresponding Note Off events");
+        }
         const auto& note_offs = event_track.note_off_events.at(key);
         for (const auto& [pos, end] :
              combine_note_on_off_events(note_ons, note_offs)) {
@@ -928,6 +940,9 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     std::map<Difficulty, std::vector<Note<DrumNoteColour>>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour] = key;
+        if (event_track.note_off_events.count(key) == 0) {
+            throw ParseError("No corresponding Note Off events");
+        }
         const auto& note_offs = event_track.note_off_events.at(key);
         for (const auto& [pos, end] :
              combine_note_on_off_events(note_ons, note_offs)) {
