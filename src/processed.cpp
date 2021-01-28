@@ -329,6 +329,7 @@ std::string ProcessedSong::path_summary(const Path& path) const
         m_points.cbegin(), m_points.cend(), 0,
         [](const auto x, const auto& y) { return x + y.value; });
     no_sp_score += m_total_solo_boost;
+    no_sp_score += m_total_bre_boost;
     stream << "\nNo SP score: " << no_sp_score;
 
     const auto total_score = no_sp_score + path.score_boost;

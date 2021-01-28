@@ -120,8 +120,12 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
     const auto& notes = track.notes();
     std::vector<Point> points;
 
+    const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
     auto current_phrase = track.sp_phrases().cbegin();
     for (auto p = notes.cbegin(); p != notes.cend();) {
+        if (has_relevant_bre && p->position >= track.bre()->start) {
+            break;
+        }
         auto q = std::next(p);
         if constexpr (!std::is_same_v<T, DrumNoteColour>) {
             q = std::find_if_not(p, notes.cend(), [=](const auto& x) {

@@ -185,7 +185,7 @@ TEST_CASE("Chart reads easy note track correctly")
     std::vector<ChartSection> sections {easy_single};
     const Chart chart {sections};
     NoteTrack<NoteColour> note_track {
-        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}, 192};
+        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}, {}, 192};
 
     const auto song = Song::from_chart(chart, {});
 
@@ -199,7 +199,7 @@ TEST_CASE("Invalid note values are ignored")
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
     NoteTrack<NoteColour> note_track {
-        {{768, 0, NoteColour::Green}}, {}, {}, 192};
+        {{768, 0, NoteColour::Green}}, {}, {}, {}, 192};
 
     const auto song = Song::from_chart(chart, {});
 
@@ -213,7 +213,7 @@ TEST_CASE("SP phrases are read correctly from Chart")
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
     NoteTrack<NoteColour> note_track {
-        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}, 192};
+        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}, {}, 192};
 
     const auto song = Song::from_chart(chart, {});
 

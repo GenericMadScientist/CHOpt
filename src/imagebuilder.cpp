@@ -230,6 +230,23 @@ void ImageBuilder::add_bpms(const SyncTrack& sync_track, int resolution)
     }
 }
 
+void ImageBuilder::add_bre(const BigRockEnding& bre, int resolution,
+                           const TimeConverter& converter)
+{
+    const auto seconds_start = converter.beats_to_seconds(
+        Beat {bre.start / static_cast<double>(resolution)});
+    const auto seconds_end = converter.beats_to_seconds(
+        Beat {bre.end / static_cast<double>(resolution)});
+    const auto seconds_gap = seconds_end - seconds_start;
+    const auto bre_value = static_cast<int>(750 + 500 * seconds_gap.value());
+
+    m_total_score += bre_value;
+    m_score_values.back() += bre_value;
+
+    m_bre_ranges.emplace_back(bre.start / static_cast<double>(resolution),
+                              bre.end / static_cast<double>(resolution));
+}
+
 void ImageBuilder::add_measure_values(const PointSet& points,
                                       const TimeConverter& converter,
                                       const Path& path)
@@ -576,6 +593,10 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                                processed_track.converter(), path);
     builder.add_sp_values(processed_track.sp_data());
     builder.set_total_score(processed_track.points(), new_track.solos(), path);
+    if (settings.engine->has_bres() && new_track.bre().has_value()) {
+        builder.add_bre(*(new_track.bre()), new_track.resolution(),
+                        processed_track.converter());
+    }
 
     return builder;
 }

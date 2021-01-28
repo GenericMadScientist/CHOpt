@@ -79,8 +79,24 @@ private:
     TimeConverter m_converter;
     PointSet m_points;
     SpData m_sp_data;
+    int m_total_bre_boost;
     int m_total_solo_boost;
     int m_base_score;
+
+    template <typename T>
+    static int bre_boost(const NoteTrack<T>& track, const Engine& engine,
+                         const TimeConverter& converter)
+    {
+        if (!engine.has_bres() || !track.bre().has_value()) {
+            return 0;
+        }
+        const auto seconds_start = converter.beats_to_seconds(Beat {
+            track.bre()->start / static_cast<double>(track.resolution())});
+        const auto seconds_end = converter.beats_to_seconds(
+            Beat {track.bre()->end / static_cast<double>(track.resolution())});
+        const auto seconds_gap = seconds_end - seconds_start;
+        return static_cast<int>(750 + 500 * seconds_gap.value());
+    }
 
 public:
     template <typename T>
@@ -90,6 +106,7 @@ public:
         : m_converter {sync_track, track.resolution()}
         , m_points {track, m_converter, squeeze, video_lag, engine}
         , m_sp_data {track, sync_track, early_whammy, lazy_whammy, video_lag}
+        , m_total_bre_boost {bre_boost(track, engine, m_converter)}
         , m_base_score {track.base_score()}
     {
         m_total_solo_boost = std::accumulate(

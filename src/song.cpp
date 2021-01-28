@@ -321,8 +321,8 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
     auto solos
         = form_solo_vector(solo_on_events, solo_off_events, notes, false);
 
-    return NoteTrack<T> {std::move(notes), std::move(sp), std::move(solos),
-                         resolution};
+    return NoteTrack<T> {
+        std::move(notes), std::move(sp), std::move(solos), {}, resolution};
 }
 
 std::vector<Instrument> Song::instruments() const
@@ -820,10 +820,47 @@ read_instrument_midi_track(const MidiTrack& midi_track)
     return event_track;
 }
 
+static std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
+{
+    constexpr int BRE_KEY = 120;
+    constexpr int NOTE_OFF_ID = 0x80;
+    constexpr int NOTE_ON_ID = 0x90;
+    constexpr int UPPER_NIBBLE_MASK = 0xF0;
+
+    bool has_bre = false;
+    int bre_start = 0;
+    int bre_end = 0;
+
+    for (const auto& event : midi_track.events) {
+        const auto* midi_event = std::get_if<MidiEvent>(&event.event);
+        if (midi_event == nullptr) {
+            continue;
+        }
+        if (midi_event->data[0] != BRE_KEY) {
+            continue;
+        }
+        const auto event_type = midi_event->status & UPPER_NIBBLE_MASK;
+        if (event_type == NOTE_OFF_ID
+            || (event_type == NOTE_ON_ID && midi_event->data[1] == 0)) {
+            bre_end = event.time;
+            has_bre = true;
+            break;
+        } else if (event_type == NOTE_ON_ID) {
+            bre_start = event.time;
+        }
+    }
+
+    if (!has_bre) {
+        return std::nullopt;
+    }
+    return {{bre_start, bre_end}};
+}
+
 static std::map<Difficulty, NoteTrack<NoteColour>>
 note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
     const auto event_track = read_instrument_midi_track<NoteColour>(midi_track);
+    const auto bre = read_bre(midi_track);
 
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
     for (const auto& [diff, open_ons] : event_track.open_on_events) {
@@ -875,7 +912,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
         note_tracks.emplace(diff,
                             NoteTrack<NoteColour> {note_set, sp_phrases,
-                                                   std::move(solos),
+                                                   std::move(solos), bre,
                                                    resolution});
     }
 
@@ -921,10 +958,10 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
             solo_offs.push_back(pos);
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
-        note_tracks.emplace(diff,
-                            NoteTrack<GHLNoteColour> {note_set, sp_phrases,
-                                                      std::move(solos),
-                                                      resolution});
+        note_tracks.emplace(
+            diff,
+            NoteTrack<GHLNoteColour> {
+                note_set, sp_phrases, std::move(solos), {}, resolution});
     }
 
     return note_tracks;
@@ -995,10 +1032,10 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
             solo_offs.push_back(pos);
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
-        note_tracks.emplace(diff,
-                            NoteTrack<DrumNoteColour> {note_set, sp_phrases,
-                                                       std::move(solos),
-                                                       resolution});
+        note_tracks.emplace(
+            diff,
+            NoteTrack<DrumNoteColour> {
+                note_set, sp_phrases, std::move(solos), {}, resolution});
     }
 
     return note_tracks;

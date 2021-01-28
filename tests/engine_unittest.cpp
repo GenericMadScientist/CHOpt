@@ -49,3 +49,9 @@ TEST_CASE("Timing windows are correct")
     REQUIRE(ChEngine().timing_window() == Approx(0.07));
     REQUIRE(RbEngine().timing_window() == Approx(0.1));
 }
+
+TEST_CASE("Has BREs are correct")
+{
+    REQUIRE(!ChEngine().has_bres());
+    REQUIRE(RbEngine().has_bres());
+}

@@ -715,13 +715,14 @@ Image::Image(const ImageBuilder& builder)
     constexpr std::array<unsigned char, 3> yellow {255, 255, 0};
     constexpr std::array<unsigned char, 3> red {255, 0, 0};
     constexpr std::array<unsigned char, 3> solo_blue {0, 51, 128};
+    constexpr std::array<unsigned char, 3> pink {127, 0, 0};
 
     constexpr unsigned int IMAGE_WIDTH = 1024;
     constexpr float RANGE_OPACITY = 0.33333F;
     constexpr int SOLO_HEIGHT = 10;
     constexpr unsigned char WHITE = 255;
 
-    auto height = static_cast<unsigned int>(
+    const auto height = static_cast<unsigned int>(
         TOP_MARGIN + MARGIN + DIST_BETWEEN_MEASURES * builder.rows().size());
 
     m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
@@ -732,6 +733,12 @@ Image::Image(const ImageBuilder& builder)
 
     for (const auto& range : builder.solo_ranges()) {
         m_impl->colour_beat_range(builder, solo_blue, range,
+                                  {-SOLO_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT},
+                                  RANGE_OPACITY / 2);
+    }
+
+    for (const auto& range : builder.bre_ranges()) {
+        m_impl->colour_beat_range(builder, pink, range,
                                   {-SOLO_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT},
                                   RANGE_OPACITY / 2);
     }

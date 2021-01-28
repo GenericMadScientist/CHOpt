@@ -20,6 +20,7 @@
 #define CHOPT_SONGPARTS_HPP
 
 #include <algorithm>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -88,6 +89,11 @@ struct Solo {
     int value;
 };
 
+struct BigRockEnding {
+    int start;
+    int end;
+};
+
 class ParseError : public std::runtime_error {
 public:
     ParseError(const char* what)
@@ -110,6 +116,7 @@ private:
     std::vector<Note<T>> m_notes;
     std::vector<StarPower> m_sp_phrases;
     std::vector<Solo> m_solos;
+    std::optional<BigRockEnding> m_bre;
     int m_resolution;
     int m_base_score;
 
@@ -156,8 +163,9 @@ private:
 public:
     NoteTrack(std::vector<Note<T>> notes,
               const std::vector<StarPower>& sp_phrases, std::vector<Solo> solos,
-              int resolution)
-        : m_resolution {resolution}
+              std::optional<BigRockEnding> bre, int resolution)
+        : m_bre {bre}
+        , m_resolution {resolution}
     {
         if (m_resolution <= 0) {
             throw ParseError("Resolution non-positive");
@@ -232,6 +240,7 @@ public:
         return m_sp_phrases;
     }
     [[nodiscard]] const std::vector<Solo>& solos() const { return m_solos; }
+    [[nodiscard]] std::optional<BigRockEnding> bre() const { return m_bre; }
     [[nodiscard]] int resolution() const { return m_resolution; }
     [[nodiscard]] int base_score() const { return m_base_score; }
     [[nodiscard]] NoteTrack<T> trim_sustains(int speed) const
