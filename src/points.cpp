@@ -74,8 +74,8 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
 {
     assert(first != last); // NOLINT
 
-    const auto EARLY_WINDOW = Second(0.07 * squeeze);
-    const auto LATE_WINDOW = Second(0.07 * squeeze);
+    const auto EARLY_WINDOW = Second(engine.timing_window() * squeeze);
+    const auto LATE_WINDOW = Second(engine.timing_window() * squeeze);
 
     const auto note_value = engine.base_note_value();
     const auto chord_size = static_cast<int>(std::distance(first, last));
