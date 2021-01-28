@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020 Raymond Wright
+ * Copyright (C) 2020, 2021 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <tuple>
 #include <vector>
 
+#include "engine.hpp"
 #include "time.hpp"
 
 // Represents the minimum and maximum SP possible at a given time.
@@ -75,15 +76,15 @@ private:
         Beat note;
     };
 
-    static constexpr double DEFAULT_NET_SP_GAIN_RATE = 1 / 480.0;
     static constexpr double MEASURES_PER_BAR = 8.0;
-    static constexpr double SP_GAIN_RATE = 1 / 30.0;
 
     TimeConverter m_converter;
     std::vector<BeatRate> m_beat_rates;
     std::vector<WhammyRange> m_whammy_ranges;
     Beat m_last_whammy_point {-std::numeric_limits<double>::infinity()};
     std::vector<std::vector<WhammyRange>::const_iterator> m_initial_guesses;
+    const double m_sp_gain_rate;
+    const double m_default_net_sp_gain_rate;
 
     [[nodiscard]] double
     propagate_over_whammy_range(Beat start, Beat end,
@@ -94,7 +95,8 @@ private:
     first_whammy_range_after(Beat pos) const;
 
     static std::vector<BeatRate> form_beat_rates(int resolution,
-                                                 const SyncTrack& sync_track);
+                                                 const SyncTrack& sync_track,
+                                                 const Engine& engine);
 
     template <typename T>
     static std::vector<std::tuple<int, int>>
@@ -110,14 +112,15 @@ private:
     SpData(const std::vector<std::tuple<int, int>>& note_spans,
            const std::vector<StarPower>& phrases, int resolution,
            const SyncTrack& sync_track, double early_whammy, Second lazy_whammy,
-           Second video_lag);
+           Second video_lag, const Engine& engine);
 
 public:
     template <typename T>
     SpData(const NoteTrack<T>& track, const SyncTrack& sync_track,
-           double early_whammy, Second lazy_whammy, Second video_lag)
+           double early_whammy, Second lazy_whammy, Second video_lag,
+           const Engine& engine)
         : SpData(note_spans(track), track.sp_phrases(), track.resolution(),
-                 sync_track, early_whammy, lazy_whammy, video_lag)
+                 sync_track, early_whammy, lazy_whammy, video_lag, engine)
     {
     }
 

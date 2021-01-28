@@ -55,3 +55,9 @@ TEST_CASE("Has BREs are correct")
     REQUIRE(!ChEngine().has_bres());
     REQUIRE(RbEngine().has_bres());
 }
+
+TEST_CASE("SP gain rates are correct")
+{
+    REQUIRE(ChEngine().sp_gain_rate() == Approx(1 / 30.0));
+    REQUIRE(RbEngine().sp_gain_rate() == Approx(0.034));
+}

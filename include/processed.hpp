@@ -105,7 +105,8 @@ public:
                   Second video_lag, const Engine& engine)
         : m_converter {sync_track, track.resolution()}
         , m_points {track, m_converter, squeeze, video_lag, engine}
-        , m_sp_data {track, sync_track, early_whammy, lazy_whammy, video_lag}
+        , m_sp_data {track,       sync_track, early_whammy,
+                     lazy_whammy, video_lag,  engine}
         , m_total_bre_boost {bre_boost(track, engine, m_converter)}
         , m_base_score {track.base_score()}
     {

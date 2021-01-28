@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020 Raymond Wright
+ * Copyright (C) 2020, 2021 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,8 @@ static bool phrase_contains_pos(const StarPower& phrase, int position)
 }
 
 std::vector<SpData::BeatRate>
-SpData::form_beat_rates(int resolution, const SyncTrack& sync_track)
+SpData::form_beat_rates(int resolution, const SyncTrack& sync_track,
+                        const Engine& engine)
 {
     constexpr double DEFAULT_BEAT_RATE = 4.0;
 
@@ -42,7 +43,7 @@ SpData::form_beat_rates(int resolution, const SyncTrack& sync_track)
         const auto measure_rate
             = ts.numerator * DEFAULT_BEAT_RATE / ts.denominator;
         const auto drain_rate
-            = SP_GAIN_RATE - 1 / (MEASURES_PER_BAR * measure_rate);
+            = engine.sp_gain_rate() - 1 / (MEASURES_PER_BAR * measure_rate);
         beat_rates.push_back({Beat(pos), drain_rate});
     }
 
@@ -52,11 +53,13 @@ SpData::form_beat_rates(int resolution, const SyncTrack& sync_track)
 SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
                const std::vector<StarPower>& phrases, int resolution,
                const SyncTrack& sync_track, double early_whammy,
-               Second lazy_whammy, Second video_lag)
+               Second lazy_whammy, Second video_lag, const Engine& engine)
     : m_converter {sync_track, resolution}
-    , m_beat_rates {form_beat_rates(resolution, sync_track)}
+    , m_beat_rates {form_beat_rates(resolution, sync_track, engine)}
+    , m_sp_gain_rate {engine.sp_gain_rate()}
+    , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / 32.0}
 {
-    const Second early_timing_window {0.07 * early_whammy};
+    const Second early_timing_window {engine.timing_window() * early_whammy};
 
     // Elements are (whammy start, whammy end, note).
     std::vector<std::tuple<Beat, Beat, Beat>> ranges;
@@ -197,7 +200,7 @@ double SpData::propagate_over_whammy_range(Beat start, Beat end,
     } else {
         auto subrange_end = std::min(end, p->position);
         sp_bar_amount
-            += (subrange_end - start).value() * DEFAULT_NET_SP_GAIN_RATE;
+            += (subrange_end - start).value() * m_default_net_sp_gain_rate;
         sp_bar_amount = std::min(sp_bar_amount, 1.0);
         start = subrange_end;
     }
@@ -238,7 +241,7 @@ double SpData::available_whammy(Beat start, Beat end) const
         }
         const auto whammy_start = std::max(p->start.beat, start);
         const auto whammy_end = std::min(p->end.beat, end);
-        total_whammy += (whammy_end - whammy_start).value() * SP_GAIN_RATE;
+        total_whammy += (whammy_end - whammy_start).value() * m_sp_gain_rate;
     }
 
     return total_whammy;
@@ -255,7 +258,7 @@ double SpData::available_whammy(Beat start, Beat end, Beat note_pos) const
         }
         auto whammy_start = std::max(p->start.beat, start);
         auto whammy_end = std::min(p->end.beat, end);
-        total_whammy += (whammy_end - whammy_start).value() * SP_GAIN_RATE;
+        total_whammy += (whammy_end - whammy_start).value() * m_sp_gain_rate;
     }
 
     return total_whammy;
@@ -319,7 +322,7 @@ Beat SpData::whammy_propagation_endpoint(Beat start, Beat end,
     } else {
         auto subrange_end = std::min(end, p->position);
         auto sp_gain
-            = (subrange_end - start).value() * DEFAULT_NET_SP_GAIN_RATE;
+            = (subrange_end - start).value() * m_default_net_sp_gain_rate;
         sp_bar_amount += sp_gain;
         sp_bar_amount = std::min(sp_bar_amount, 1.0);
         start = subrange_end;
