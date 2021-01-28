@@ -845,7 +845,8 @@ static std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
             bre_end = event.time;
             has_bre = true;
             break;
-        } else if (event_type == NOTE_ON_ID) {
+        }
+        if (event_type == NOTE_ON_ID) {
             bre_start = event.time;
         }
     }
