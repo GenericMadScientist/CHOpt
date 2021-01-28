@@ -105,6 +105,9 @@ Settings from_args(int argc, char** argv)
         .default_value(DEFAULT_SPEED)
         .help("speed in %, defaults to 100")
         .action([](const std::string& value) { return str_to_int(value); });
+    program.add_argument("--engine")
+        .default_value("ch")
+        .help("engine, options are ch and rbguitar, defaults to ch");
     program.add_argument("-b", "--blank")
         .help("give a blank chart image")
         .default_value(false)
@@ -210,6 +213,15 @@ Settings from_args(int argc, char** argv)
     }
 
     settings.video_lag = video_lag / MS_PER_SECOND;
+
+    const auto engine_name = program.get<std::string>("--engine");
+    if (engine_name == "ch") {
+        settings.engine = std::make_unique<ChEngine>();
+    } else if (engine_name == "rb") {
+        settings.engine = std::make_unique<RbEngine>();
+    } else {
+        throw std::invalid_argument("Invalid engine specified");
+    }
 
     const auto speed = program.get<int>("--speed");
     if (speed < MIN_SPEED || speed > MAX_SPEED || speed % MIN_SPEED != 0) {

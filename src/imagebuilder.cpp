@@ -550,7 +550,8 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                                          settings.early_whammy,
                                          settings.squeeze,
                                          Second {settings.lazy_whammy},
-                                         Second {settings.video_lag}};
+                                         Second {settings.video_lag},
+                                         *(settings.engine)};
     Path path;
 
     // Nesting with if constexpr is purely to keep MSVC warnings happy.

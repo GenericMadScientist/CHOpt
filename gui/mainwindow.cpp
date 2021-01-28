@@ -92,10 +92,9 @@ public:
         }
     }
 
-    void set_data(const Settings& settings, const Song& song,
-                  const QString& file_name)
+    void set_data(Settings settings, const Song& song, const QString& file_name)
     {
-        m_settings = settings;
+        m_settings = std::move(settings);
         m_song = song;
         m_file_name = file_name;
     }
@@ -184,6 +183,7 @@ Settings MainWindow::get_settings() const
     settings.squeeze = m_ui->squeezeSlider->value() / 100.0;
     settings.early_whammy = m_ui->earlyWhammySlider->value() / 100.0;
     settings.video_lag = m_ui->videoLagSlider->value() / 1000.0;
+    settings.engine = std::make_unique<ChEngine>();
     settings.opacity = m_ui->opacitySlider->value() / 100.0F;
 
     const auto lazy_whammy_text = m_ui->lazyWhammyLineEdit->text();
@@ -262,9 +262,8 @@ void MainWindow::on_findPathButton_clicked()
     m_ui->selectFileButton->setEnabled(false);
     m_ui->findPathButton->setEnabled(false);
 
-    const auto settings = get_settings();
     auto* worker_thread = new OptimiserThread(this);
-    worker_thread->set_data(settings, *m_song, file_name);
+    worker_thread->set_data(get_settings(), *m_song, file_name);
     connect(worker_thread, &OptimiserThread::write_text, this,
             &MainWindow::write_message);
     connect(worker_thread, &OptimiserThread::finished, this,

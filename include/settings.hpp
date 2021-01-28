@@ -19,8 +19,10 @@
 #ifndef CHOPT_SETTINGS_HPP
 #define CHOPT_SETTINGS_HPP
 
+#include <memory>
 #include <string>
 
+#include "engine.hpp"
 #include "songparts.hpp"
 
 // This struct represents the options chosen on the command line by the user.
@@ -38,6 +40,7 @@ struct Settings {
     double lazy_whammy;
     double video_lag;
     int speed;
+    std::unique_ptr<Engine> engine;
     float opacity;
 };
 

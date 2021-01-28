@@ -23,6 +23,7 @@
 #include <tuple>
 #include <vector>
 
+#include "engine.hpp"
 #include "songparts.hpp"
 #include "time.hpp"
 
@@ -50,11 +51,13 @@ private:
 
 public:
     PointSet(const NoteTrack<NoteColour>& track, const TimeConverter& converter,
-             double squeeze, Second video_lag);
+             double squeeze, Second video_lag, const Engine& engine);
     PointSet(const NoteTrack<GHLNoteColour>& track,
-             const TimeConverter& converter, double squeeze, Second video_lag);
+             const TimeConverter& converter, double squeeze, Second video_lag,
+             const Engine& engine);
     PointSet(const NoteTrack<DrumNoteColour>& track,
-             const TimeConverter& converter, double squeeze, Second video_lag);
+             const TimeConverter& converter, double squeeze, Second video_lag,
+             const Engine& engine);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
     [[nodiscard]] PointPtr next_non_hold_point(PointPtr point) const;
