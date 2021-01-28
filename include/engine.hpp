@@ -22,17 +22,26 @@
 class Engine {
 public:
     virtual int base_note_value() const = 0;
+    virtual double burst_size() const = 0;
+    virtual bool do_chords_multiply_sustains() const = 0;
+    virtual int sust_points_per_beat() const = 0;
     virtual ~Engine() = default;
 };
 
 class ChEngine : public Engine {
 public:
     int base_note_value() const override { return 50; }
+    double burst_size() const override { return 0.25; }
+    bool do_chords_multiply_sustains() const override { return false; }
+    int sust_points_per_beat() const override { return 25; }
 };
 
 class RbEngine : public Engine {
 public:
     int base_note_value() const override { return 25; }
+    double burst_size() const override { return 0.0; }
+    bool do_chords_multiply_sustains() const override { return true; }
+    int sust_points_per_beat() const override { return 12; }
 };
 
 #endif

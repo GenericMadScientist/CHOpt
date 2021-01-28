@@ -25,3 +25,21 @@ TEST_CASE("Base note values are correct")
     REQUIRE(ChEngine().base_note_value() == 50);
     REQUIRE(RbEngine().base_note_value() == 25);
 }
+
+TEST_CASE("Sust points per beat are correct")
+{
+    REQUIRE(ChEngine().sust_points_per_beat() == 25);
+    REQUIRE(RbEngine().sust_points_per_beat() == 12);
+}
+
+TEST_CASE("Burst size is correct")
+{
+    REQUIRE(ChEngine().burst_size() == 0.25);
+    REQUIRE(RbEngine().burst_size() == 0.0);
+}
+
+TEST_CASE("Whether chords give bonus sustain points is correct")
+{
+    REQUIRE(!ChEngine().do_chords_multiply_sustains());
+    REQUIRE(RbEngine().do_chords_multiply_sustains());
+}

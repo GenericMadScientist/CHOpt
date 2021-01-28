@@ -33,27 +33,33 @@ static bool phrase_contains_pos(const StarPower& phrase, int position)
 }
 
 template <typename OutputIt>
-static void append_sustain_points(OutputIt points, int position,
-                                  int sust_length, int resolution,
-                                  const TimeConverter& converter)
+static void
+append_sustain_points(OutputIt points, int position, int sust_length,
+                      int resolution, int chord_size,
+                      const TimeConverter& converter, const Engine& engine)
 {
     constexpr double HALF_RES_OFFSET = 0.5;
 
     const double float_res = resolution;
-    const auto tick_gap = std::max(resolution / 25, 1);
-    auto sust_ticks = (sust_length + tick_gap - 1) / tick_gap;
+    double float_pos = position;
+    double float_sust_len = sust_length;
+    double tick_gap = std::max(resolution / engine.sust_points_per_beat(), 1);
+    if (engine.do_chords_multiply_sustains()) {
+        tick_gap /= chord_size;
+    }
+    auto sust_ticks = static_cast<int>((sust_length + tick_gap - 1) / tick_gap);
 
-    while (sust_length > (resolution / 4)) {
-        position += tick_gap;
-        sust_length -= tick_gap;
-        const Beat beat {(position - HALF_RES_OFFSET) / float_res};
+    while (float_sust_len > engine.burst_size() * resolution) {
+        float_pos += tick_gap;
+        float_sust_len -= tick_gap;
+        const Beat beat {(float_pos - HALF_RES_OFFSET) / float_res};
         const auto meas = converter.beats_to_measures(beat);
         --sust_ticks;
         *points++
             = {{beat, meas}, {beat, meas}, {beat, meas}, 1, 1, true, false};
     }
     if (sust_ticks > 0) {
-        const Beat beat {(position + HALF_RES_OFFSET) / float_res};
+        const Beat beat {(float_pos + HALF_RES_OFFSET) / float_res};
         const auto meas = converter.beats_to_measures(beat);
         *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, sust_ticks,
                      sust_ticks,   true,         false};
@@ -97,11 +103,11 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
           });
     if (min_iter->length == max_iter->length) {
         append_sustain_points(points, pos, max_iter->length, resolution,
-                              converter);
+                              chord_size, converter, engine);
     } else {
         for (auto p = first; p < last; ++p) {
             append_sustain_points(points, pos, p->length, resolution,
-                                  converter);
+                                  chord_size, converter, engine);
         }
     }
 }
