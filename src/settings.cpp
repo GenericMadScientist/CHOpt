@@ -106,8 +106,8 @@ Settings from_args(int argc, char** argv)
         .help("speed in %, defaults to 100")
         .action([](const std::string& value) { return str_to_int(value); });
     program.add_argument("--engine")
-        .default_value("ch")
-        .help("engine, options are ch and rbguitar, defaults to ch");
+        .default_value(std::string {"ch"})
+        .help("engine, options are ch and rb, defaults to ch");
     program.add_argument("-b", "--blank")
         .help("give a blank chart image")
         .default_value(false)
