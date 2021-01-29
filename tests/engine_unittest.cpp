@@ -67,3 +67,9 @@ TEST_CASE("Uses beat track is correct")
     REQUIRE(!ChEngine().uses_beat_track());
     REQUIRE(RbEngine().uses_beat_track());
 }
+
+TEST_CASE("Merge uneven sustains is correct")
+{
+    REQUIRE(!ChEngine().merge_uneven_sustains());
+    REQUIRE(RbEngine().merge_uneven_sustains());
+}

@@ -106,7 +106,8 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
         = std::minmax_element(first, last, [](const auto& x, const auto& y) {
               return x.length < y.length;
           });
-    if (min_iter->length == max_iter->length) {
+    if (min_iter->length == max_iter->length
+        || engine.merge_uneven_sustains()) {
         append_sustain_points(points, pos, max_iter->length, resolution,
                               chord_size, converter, engine);
     } else {

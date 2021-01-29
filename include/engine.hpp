@@ -25,6 +25,7 @@ public:
     virtual double burst_size() const = 0;
     virtual bool do_chords_multiply_sustains() const = 0;
     virtual bool has_bres() const = 0;
+    virtual bool merge_uneven_sustains() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
     virtual double timing_window() const = 0;
@@ -38,6 +39,7 @@ public:
     double burst_size() const override { return 0.25; }
     bool do_chords_multiply_sustains() const override { return false; }
     bool has_bres() const override { return false; }
+    bool merge_uneven_sustains() const override { return false; }
     double sp_gain_rate() const override { return 1 / 30.0; }
     int sust_points_per_beat() const override { return 25; }
     double timing_window() const override { return 0.07; }
@@ -50,6 +52,7 @@ public:
     double burst_size() const override { return 0.0; }
     bool do_chords_multiply_sustains() const override { return true; }
     bool has_bres() const override { return true; }
+    bool merge_uneven_sustains() const override { return true; }
     double sp_gain_rate() const override { return 0.034; }
     int sust_points_per_beat() const override { return 12; }
     double timing_window() const override { return 0.1; }
