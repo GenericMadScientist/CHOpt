@@ -1042,7 +1042,26 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     return note_tracks;
 }
 
-static std::optional<Instrument> midi_section_instrument(const MidiTrack& track)
+static std::optional<std::string> midi_track_name(const MidiTrack& track)
+{
+    if (track.events.empty()) {
+        return std::nullopt;
+    }
+    for (const auto& event : track.events) {
+        const auto* meta_event = std::get_if<MetaEvent>(&event.event);
+        if (meta_event == nullptr) {
+            continue;
+        }
+        if (meta_event->type != 3) {
+            continue;
+        }
+        return std::string {meta_event->data.cbegin(), meta_event->data.cend()};
+    }
+    return std::nullopt;
+}
+
+static std::optional<Instrument>
+midi_section_instrument(const std::string& track_name)
 {
     const std::map<std::string, Instrument> INSTRUMENTS {
         {"PART GUITAR", Instrument::Guitar},
@@ -1055,27 +1074,38 @@ static std::optional<Instrument> midi_section_instrument(const MidiTrack& track)
         {"PART BASS GHL", Instrument::GHLBass},
         {"PART DRUMS", Instrument::Drums}};
 
-    if (track.events.empty()) {
-        return std::nullopt;
-    }
-    std::string track_name;
-    for (const auto& event : track.events) {
-        const auto* meta_event = std::get_if<MetaEvent>(&event.event);
-        if (meta_event == nullptr) {
-            continue;
-        }
-        if (meta_event->type != 3) {
-            continue;
-        }
-        track_name
-            = std::string {meta_event->data.cbegin(), meta_event->data.cend()};
-        break;
-    }
     const auto iter = INSTRUMENTS.find(track_name);
     if (iter == INSTRUMENTS.end()) {
         return std::nullopt;
     }
     return iter->second;
+}
+
+static std::vector<int> od_beats_from_track(const MidiTrack& track)
+{
+    constexpr int NOTE_ON_ID = 0x90;
+    constexpr int UPPER_NIBBLE_MASK = 0xF0;
+
+    std::vector<int> od_beats;
+
+    for (const auto& event : track.events) {
+        const auto* midi_event = std::get_if<MidiEvent>(&event.event);
+        if (midi_event == nullptr) {
+            continue;
+        }
+        if ((midi_event->status & UPPER_NIBBLE_MASK) != NOTE_ON_ID) {
+            continue;
+        }
+        if (midi_event->data[1] == 0) {
+            continue;
+        }
+        const auto key = midi_event->data[0];
+        if (key == 12 || key == 13) {
+            od_beats.push_back(event.time);
+        }
+    }
+
+    return od_beats;
 }
 
 Song Song::from_midi(const Midi& midi, const IniValues& ini)
@@ -1098,7 +1128,14 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
     song.m_sync_track = read_first_midi_track(midi.tracks[0]);
 
     for (const auto& track : midi.tracks) {
-        const auto inst = midi_section_instrument(track);
+        const auto track_name = midi_track_name(track);
+        if (!track_name.has_value()) {
+            continue;
+        }
+        if (*track_name == "BEAT") {
+            song.m_od_beats = od_beats_from_track(track);
+        }
+        const auto inst = midi_section_instrument(*track_name);
         if (!inst.has_value()) {
             continue;
         }

@@ -43,6 +43,7 @@ private:
     std::string m_artist;
     std::string m_charter;
     SyncTrack m_sync_track;
+    std::vector<int> m_od_beats;
     std::map<std::tuple<Instrument, Difficulty>, NoteTrack<NoteColour>>
         m_five_fret_tracks;
     std::map<std::tuple<Instrument, Difficulty>, NoteTrack<GHLNoteColour>>
@@ -60,6 +61,7 @@ public:
     [[nodiscard]] const std::string& artist() const { return m_artist; }
     [[nodiscard]] const std::string& charter() const { return m_charter; }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
+    [[nodiscard]] const std::vector<int> od_beats() const { return m_od_beats; }
     [[nodiscard]] std::vector<Instrument> instruments() const;
     [[nodiscard]] std::vector<Difficulty>
     difficulties(Instrument instrument) const;

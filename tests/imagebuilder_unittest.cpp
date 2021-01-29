@@ -342,7 +342,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
     SECTION("Normal path is drawn correctly")
     {
         NoteTrack<NoteColour> track {{{0, 96}, {192}}, {{0, 50}}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25},
@@ -366,7 +366,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
     {
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {576}}, {}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
@@ -385,7 +385,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
     {
         NoteTrack<NoteColour> track {
             {{192}, {384}, {576}, {768}}, {}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
@@ -401,7 +401,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
     SECTION("Blue ranges are cropped by the end of the song")
     {
         NoteTrack<NoteColour> track {{{192}}, {}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
@@ -418,7 +418,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
     {
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {576}, {768}, {1530}}, {}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.05), ChEngine()};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
@@ -455,10 +455,11 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Notes with no activations or solos")
     {
         NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, {}, 192};
-        PointSet points {track, {{}, 192}, 1.0, Second(0.0), ChEngine()};
+        PointSet points {
+            track, {{}, 192, ChEngine(), {}}, 1.0, Second(0.0), ChEngine()};
         Path path;
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, {{}, 192}, path);
+        builder.add_measure_values(points, {{}, 192, ChEngine(), {}}, path);
         std::vector<int> expected_base_values {50, 50};
         std::vector<int> expected_score_values {50, 100};
 
@@ -470,10 +471,11 @@ TEST_CASE("add_measure_values gives correct values")
     {
         NoteTrack<NoteColour> track {
             {{768}}, {}, {{0, 100, 100}, {200, 800, 100}}, {}, 192};
-        PointSet points {track, {{}, 192}, 1.0, Second(0.0), ChEngine()};
+        PointSet points {
+            track, {{}, 192, ChEngine(), {}}, 1.0, Second(0.0), ChEngine()};
         Path path;
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, {{}, 192}, path);
+        builder.add_measure_values(points, {{}, 192, ChEngine(), {}}, path);
         std::vector<int> expected_score_values {100, 250};
 
         REQUIRE(builder.score_values() == expected_score_values);
@@ -484,10 +486,11 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Solos ending past last note are handled correctly")
     {
         NoteTrack<NoteColour> track {{{0}}, {}, {{0, 1600, 50}}, {}, 192};
-        PointSet points {track, {{}, 192}, 1.0, Second(0.0), ChEngine()};
+        PointSet points {
+            track, {{}, 192, ChEngine(), {}}, 1.0, Second(0.0), ChEngine()};
         Path path;
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, {{}, 192}, path);
+        builder.add_measure_values(points, {{}, 192, ChEngine(), {}}, path);
         std::vector<int> expected_score_values {100};
 
         REQUIRE(builder.score_values() == expected_score_values);
@@ -497,12 +500,13 @@ TEST_CASE("add_measure_values gives correct values")
     {
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {768}}, {}, {}, {}, 192};
-        PointSet points {track, {{}, 192}, 1.0, Second(0.0), ChEngine()};
+        PointSet points {
+            track, {{}, 192, ChEngine(), {}}, 1.0, Second(0.0), ChEngine()};
         Path path {{{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0},
                      Beat {0.0}}},
                    100};
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, {{}, 192}, path);
+        builder.add_measure_values(points, {{}, 192, ChEngine(), {}}, path);
         std::vector<int> expected_score_values {200, 300};
 
         REQUIRE(builder.score_values() == expected_score_values);
@@ -511,12 +515,13 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Video lag is accounted for")
     {
         NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, {}, 192};
-        PointSet points {track, {{}, 192}, 1.0, Second(-0.1), ChEngine()};
+        PointSet points {
+            track, {{}, 192, ChEngine(), {}}, 1.0, Second(-0.1), ChEngine()};
         Path path {{{points.cbegin() + 1, points.cbegin() + 1, Beat {0.0},
                      Beat {0.0}}},
                    50};
         ImageBuilder builder {track, {}};
-        builder.add_measure_values(points, {{}, 192}, path);
+        builder.add_measure_values(points, {{}, 192, ChEngine(), {}}, path);
         std::vector<int> expected_base_values {50, 50};
         std::vector<int> expected_score_values {50, 150};
 
@@ -528,7 +533,7 @@ TEST_CASE("add_measure_values gives correct values")
 TEST_CASE("add_sp_values gives correct values")
 {
     NoteTrack<NoteColour> track {{{0}, {192, 768}}, {{192, 50}}, {}, {}, 192};
-    SpData sp_data {track, {}, 1.0, Second(0.0), Second(0.0), ChEngine()};
+    SpData sp_data {track, {}, {}, 1.0, Second(0.0), Second(0.0), ChEngine()};
     ImageBuilder builder {track, {}};
     builder.add_sp_values(sp_data);
     std::vector<double> expected_sp_values {3.14, 1.0};
@@ -539,7 +544,7 @@ TEST_CASE("add_sp_values gives correct values")
 TEST_CASE("set_total_score sets the correct value")
 {
     NoteTrack<NoteColour> track {{{0}, {192}}, {{0, 50}}, {}, {}, 192};
-    TimeConverter converter {{}, 192};
+    TimeConverter converter {{}, 192, ChEngine(), {}};
     PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
     ImageBuilder builder {track, {}};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},

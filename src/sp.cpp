@@ -31,31 +31,48 @@ static bool phrase_contains_pos(const StarPower& phrase, int position)
 
 std::vector<SpData::BeatRate>
 SpData::form_beat_rates(int resolution, const SyncTrack& sync_track,
-                        const Engine& engine)
+                        const std::vector<int>& od_beats, const Engine& engine)
 {
     constexpr double DEFAULT_BEAT_RATE = 4.0;
 
     std::vector<BeatRate> beat_rates;
-    beat_rates.reserve(sync_track.time_sigs().size());
+    if (!engine.uses_beat_track()) {
+        beat_rates.reserve(sync_track.time_sigs().size());
 
-    for (const auto& ts : sync_track.time_sigs()) {
-        const auto pos = static_cast<double>(ts.position) / resolution;
-        const auto measure_rate
-            = ts.numerator * DEFAULT_BEAT_RATE / ts.denominator;
-        const auto drain_rate
-            = engine.sp_gain_rate() - 1 / (MEASURES_PER_BAR * measure_rate);
-        beat_rates.push_back({Beat(pos), drain_rate});
+        for (const auto& ts : sync_track.time_sigs()) {
+            const auto pos = static_cast<double>(ts.position) / resolution;
+            const auto measure_rate
+                = ts.numerator * DEFAULT_BEAT_RATE / ts.denominator;
+            const auto drain_rate
+                = engine.sp_gain_rate() - 1 / (MEASURES_PER_BAR * measure_rate);
+            beat_rates.push_back({Beat(pos), drain_rate});
+        }
+    } else if (!od_beats.empty()) {
+        beat_rates.reserve(od_beats.size() - 1);
+
+        for (auto i = 0U; i < od_beats.size() - 1; ++i) {
+            const auto pos = static_cast<double>(od_beats[i]) / resolution;
+            const auto next_marker
+                = static_cast<double>(od_beats[i + 1]) / resolution;
+            const auto drain_rate = engine.sp_gain_rate()
+                - 1 / (DEFAULT_BEATS_PER_BAR * (next_marker - pos));
+            beat_rates.push_back({Beat(pos), drain_rate});
+        }
+    } else {
+        beat_rates.push_back(
+            {Beat(0.0), engine.sp_gain_rate() - 1 / DEFAULT_BEATS_PER_BAR});
     }
 
     return beat_rates;
 }
 
 SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
-               const std::vector<StarPower>& phrases, int resolution,
+               const std::vector<StarPower>& phrases,
+               const std::vector<int>& od_beats, int resolution,
                const SyncTrack& sync_track, double early_whammy,
                Second lazy_whammy, Second video_lag, const Engine& engine)
-    : m_converter {sync_track, resolution}
-    , m_beat_rates {form_beat_rates(resolution, sync_track, engine)}
+    : m_converter {sync_track, resolution, engine, od_beats}
+    , m_beat_rates {form_beat_rates(resolution, sync_track, od_beats, engine)}
     , m_sp_gain_rate {engine.sp_gain_rate()}
     , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
 {

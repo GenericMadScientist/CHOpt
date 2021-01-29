@@ -102,10 +102,11 @@ public:
     template <typename T>
     ProcessedSong(const NoteTrack<T>& track, const SyncTrack& sync_track,
                   double early_whammy, double squeeze, Second lazy_whammy,
-                  Second video_lag, const Engine& engine)
-        : m_converter {sync_track, track.resolution()}
+                  Second video_lag, const Engine& engine,
+                  const std::vector<int>& od_beats)
+        : m_converter {sync_track, track.resolution(), engine, od_beats}
         , m_points {track, m_converter, squeeze, video_lag, engine}
-        , m_sp_data {track,       sync_track, early_whammy,
+        , m_sp_data {track,       sync_track, od_beats, early_whammy,
                      lazy_whammy, video_lag,  engine}
         , m_total_bre_boost {bre_boost(track, engine, m_converter)}
         , m_base_score {track.base_score()}

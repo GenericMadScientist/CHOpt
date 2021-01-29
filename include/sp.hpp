@@ -95,9 +95,9 @@ private:
     [[nodiscard]] std::vector<WhammyRange>::const_iterator
     first_whammy_range_after(Beat pos) const;
 
-    static std::vector<BeatRate> form_beat_rates(int resolution,
-                                                 const SyncTrack& sync_track,
-                                                 const Engine& engine);
+    static std::vector<BeatRate>
+    form_beat_rates(int resolution, const SyncTrack& sync_track,
+                    const std::vector<int>& od_beats, const Engine& engine);
 
     template <typename T>
     static std::vector<std::tuple<int, int>>
@@ -111,17 +111,19 @@ private:
     }
 
     SpData(const std::vector<std::tuple<int, int>>& note_spans,
-           const std::vector<StarPower>& phrases, int resolution,
+           const std::vector<StarPower>& phrases,
+           const std::vector<int>& od_beats, int resolution,
            const SyncTrack& sync_track, double early_whammy, Second lazy_whammy,
            Second video_lag, const Engine& engine);
 
 public:
     template <typename T>
     SpData(const NoteTrack<T>& track, const SyncTrack& sync_track,
-           double early_whammy, Second lazy_whammy, Second video_lag,
-           const Engine& engine)
-        : SpData(note_spans(track), track.sp_phrases(), track.resolution(),
-                 sync_track, early_whammy, lazy_whammy, video_lag, engine)
+           const std::vector<int>& od_beats, double early_whammy,
+           Second lazy_whammy, Second video_lag, const Engine& engine)
+        : SpData(note_spans(track), track.sp_phrases(), od_beats,
+                 track.resolution(), sync_track, early_whammy, lazy_whammy,
+                 video_lag, engine)
     {
     }
 

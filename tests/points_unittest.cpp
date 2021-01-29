@@ -72,7 +72,7 @@ TEST_CASE("Non-hold notes")
     SECTION("Single notes give 50 points")
     {
         NoteTrack<NoteColour> track {{{768}, {960}}, {}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
         std::vector<int> expected_values {50, 50};
 
@@ -87,7 +87,7 @@ TEST_CASE("Non-hold notes")
             {},
             {},
             192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
         std::vector<int> expected_values {100};
 
@@ -97,7 +97,7 @@ TEST_CASE("Non-hold notes")
     SECTION("GHL notes behave the same as 5 fret notes")
     {
         NoteTrack<GHLNoteColour> track {{{768}, {960}}, {}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
         std::vector<int> expected_values {50, 50};
 
@@ -110,12 +110,12 @@ TEST_CASE("Hold notes")
     SECTION("Hold note points depend on resolution")
     {
         NoteTrack<NoteColour> track {{{768, 15}}, {}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet first_points {track, converter, 1.0, Second(0.0), ChEngine()};
         std::vector<int> first_expected_values {50, 3};
         std::vector<Beat> first_expected_beats {Beat(4.0), Beat(4.0026)};
         NoteTrack<NoteColour> second_track {{{768, 15}}, {}, {}, {}, 200};
-        TimeConverter second_converter {{}, 200};
+        TimeConverter second_converter {{}, 200, ChEngine(), {}};
         PointSet second_points {second_track, second_converter, 1.0,
                                 Second(0.0), ChEngine()};
         std::vector<int> second_expected_values {50, 2};
@@ -135,7 +135,7 @@ TEST_CASE("Hold notes")
             {},
             {},
             192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
         std::vector<int> expected_values {100, 2};
         std::vector<Beat> expected_beats {Beat(4.0), Beat(4.0026)};
@@ -147,7 +147,7 @@ TEST_CASE("Hold notes")
     SECTION("Resolutions below 25 do not enter an infinite loop")
     {
         NoteTrack<NoteColour> track {{{768, 2}}, {}, {}, {}, 1};
-        TimeConverter converter {{}, 1};
+        TimeConverter converter {{}, 1, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
 
         REQUIRE(std::distance(points.cbegin(), points.cend()) == 3);
@@ -162,7 +162,7 @@ TEST_CASE("Hold notes")
                                      {},
                                      {},
                                      192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
         auto total_score = std::accumulate(
             points.cbegin(), points.cend(), 0,
@@ -175,7 +175,7 @@ TEST_CASE("Hold notes")
 TEST_CASE("Points are sorted")
 {
     NoteTrack<NoteColour> track {{{768, 15}, {770, 0}}, {}, {}, {}, 192};
-    TimeConverter converter {{}, 192};
+    TimeConverter converter {{}, 192, ChEngine(), {}};
     PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
     const auto beats = set_position_beats(points);
 
@@ -186,7 +186,7 @@ TEST_CASE("End of SP phrase points")
 {
     NoteTrack<NoteColour> track {
         {{768}, {960}, {1152}}, {{768, 1}, {900, 50}, {1100, 53}}, {}, {}, 192};
-    TimeConverter converter {{}, 192};
+    TimeConverter converter {{}, 192, ChEngine(), {}};
     PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
 
     REQUIRE(points.cbegin()->is_sp_granting_note);
@@ -204,7 +204,7 @@ TEST_CASE("Combo multiplier is taken into account")
             notes.push_back({192 * i});
         }
         NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
         std::vector<int> expected_values;
         std::vector<int> expected_base_values;
@@ -230,7 +230,7 @@ TEST_CASE("Combo multiplier is taken into account")
         notes.push_back({9600, 192});
 
         NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
 
         REQUIRE(std::prev(points.cend(), 2)->value == 4);
@@ -247,7 +247,7 @@ TEST_CASE("Combo multiplier is taken into account")
         notes[0].length = 2000;
 
         NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
 
         REQUIRE(std::prev(points.cend(), 2)->value == 2);
@@ -264,7 +264,7 @@ TEST_CASE("Combo multiplier is taken into account")
         notes.push_back({192 * 7, 0, DrumNoteColour::Yellow});
 
         NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, 192};
-        TimeConverter converter {{}, 192};
+        TimeConverter converter {{}, 192, ChEngine(), {}};
         PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
 
         REQUIRE(std::prev(points.cend(), 1)->value == 100);
@@ -275,7 +275,7 @@ TEST_CASE("Video lag is taken into account")
 {
     const std::vector<Note<NoteColour>> notes {{192, 0}, {384, 192}};
     const NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
-    const TimeConverter converter {{}, 192};
+    const TimeConverter converter {{}, 192, ChEngine(), {}};
 
     SECTION("Negative video lag is handled correctly")
     {
@@ -313,7 +313,8 @@ TEST_CASE("Video lag is taken into account")
 
 TEST_CASE("hit_window_start and hit_window_end are set correctly")
 {
-    TimeConverter converter {{{}, {{0, 150000}, {768, 200000}}}, 192};
+    TimeConverter converter {
+        {{}, {{0, 150000}, {768, 200000}}}, 192, ChEngine(), {}};
 
     SECTION("Hit window starts for notes are correct")
     {
@@ -365,7 +366,8 @@ TEST_CASE("next_non_hold_point is correct")
     std::vector<Note<NoteColour>> notes {{0}, {192, 192}};
     NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
 
-    PointSet points {track, {{}, 192}, 1.0, Second(0.0), ChEngine()};
+    PointSet points {
+        track, {{}, 192, ChEngine(), {}}, 1.0, Second(0.0), ChEngine()};
 
     REQUIRE(points.next_non_hold_point(points.cbegin()) == points.cbegin());
     REQUIRE(points.next_non_hold_point(std::next(points.cbegin(), 2))
@@ -377,7 +379,7 @@ TEST_CASE("next_sp_granting_note is correct")
     std::vector<Note<NoteColour>> notes {{100, 0}, {200, 100}, {400, 0}};
     std::vector<StarPower> phrases {{200, 1}, {400, 1}};
     NoteTrack<NoteColour> track {notes, phrases, {}, {}, 192};
-    TimeConverter converter {{}, 192};
+    TimeConverter converter {{}, 192, ChEngine(), {}};
 
     PointSet points {track, converter, 1.0, Second(0.0), ChEngine()};
 
@@ -393,7 +395,8 @@ TEST_CASE("Solo sections are added")
 {
     std::vector<Solo> solos {{0, 576, 100}, {768, 1152, 200}};
     NoteTrack<NoteColour> track {{}, {}, solos, {}, 192};
-    PointSet points {track, {{}, 192}, 1.0, Second(0.0), ChEngine()};
+    PointSet points {
+        track, {{}, 192, ChEngine(), {}}, 1.0, Second(0.0), ChEngine()};
     std::vector<std::tuple<Position, int>> expected_solo_boosts {
         {{Beat(3.0), Measure(0.75)}, 100}, {{Beat(6.0), Measure(1.5)}, 200}};
 
@@ -403,7 +406,8 @@ TEST_CASE("Solo sections are added")
 TEST_CASE("range_score is correct")
 {
     NoteTrack<NoteColour> track {{{0, 192}, {386}}, {}, {}, {}, 192};
-    PointSet points {track, {{}, 192}, 1.0, Second(0.0), ChEngine()};
+    PointSet points {
+        track, {{}, 192, ChEngine(), {}}, 1.0, Second(0.0), ChEngine()};
     const auto begin = points.cbegin();
     const auto end = points.cend();
 
@@ -419,7 +423,8 @@ TEST_CASE("colour_set is correct for 5 fret")
                                          {176, 100, NoteColour::Yellow},
                                          {500, 0, NoteColour::Blue}};
     NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
-    PointSet points {track, {{}, 192}, 1.0, Second(0.0), ChEngine()};
+    PointSet points {
+        track, {{}, 192, ChEngine(), {}}, 1.0, Second(0.0), ChEngine()};
     const auto begin = points.cbegin();
     const auto end = points.cend();
 
@@ -436,7 +441,8 @@ TEST_CASE("colour_set is correct for 6 fret")
         {176, 100, GHLNoteColour::BlackHigh},
         {500, 0, GHLNoteColour::Open}};
     NoteTrack<GHLNoteColour> track {notes, {}, {}, {}, 192};
-    PointSet points {track, {{}, 192}, 1.0, Second(0.0), ChEngine()};
+    PointSet points {
+        track, {{}, 192, ChEngine(), {}}, 1.0, Second(0.0), ChEngine()};
     const auto begin = points.cbegin();
     const auto end = points.cend();
 

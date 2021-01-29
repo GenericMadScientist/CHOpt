@@ -61,3 +61,9 @@ TEST_CASE("SP gain rates are correct")
     REQUIRE(ChEngine().sp_gain_rate() == Approx(1 / 30.0));
     REQUIRE(RbEngine().sp_gain_rate() == Approx(0.034));
 }
+
+TEST_CASE("Uses beat track is correct")
+{
+    REQUIRE(!ChEngine().uses_beat_track());
+    REQUIRE(RbEngine().uses_beat_track());
+}

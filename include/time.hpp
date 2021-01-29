@@ -21,6 +21,7 @@
 
 #include <vector>
 
+#include "engine.hpp"
 #include "songparts.hpp"
 
 class Measure;
@@ -283,7 +284,8 @@ private:
     int m_last_bpm;
 
 public:
-    TimeConverter(const SyncTrack& sync_track, int resolution);
+    TimeConverter(const SyncTrack& sync_track, int resolution,
+                  const Engine& engine, const std::vector<int>& od_beats);
     [[nodiscard]] Second beats_to_seconds(Beat beats) const;
     [[nodiscard]] Beat seconds_to_beats(Second seconds) const;
     [[nodiscard]] Measure beats_to_measures(Beat beats) const;

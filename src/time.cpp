@@ -20,7 +20,9 @@
 
 #include "time.hpp"
 
-TimeConverter::TimeConverter(const SyncTrack& sync_track, int resolution)
+TimeConverter::TimeConverter(const SyncTrack& sync_track, int resolution,
+                             const Engine& engine,
+                             const std::vector<int>& od_beats)
 {
     constexpr double MS_PER_MINUTE = 60000.0;
     const double float_resolution = resolution;
@@ -40,20 +42,34 @@ TimeConverter::TimeConverter(const SyncTrack& sync_track, int resolution)
 
     m_last_bpm = last_bpm;
 
-    last_tick = 0;
-    auto last_beat_rate = DEFAULT_BEAT_RATE;
-    auto last_measure = 0.0;
+    if (!engine.uses_beat_track()) {
+        last_tick = 0;
+        auto last_beat_rate = DEFAULT_BEAT_RATE;
+        auto last_measure = 0.0;
 
-    for (const auto& ts : sync_track.time_sigs()) {
-        last_measure
-            += (ts.position - last_tick) / (resolution * last_beat_rate);
-        const auto beat = ts.position / float_resolution;
-        m_measure_timestamps.push_back({Measure(last_measure), Beat(beat)});
-        last_beat_rate = (ts.numerator * DEFAULT_BEAT_RATE) / ts.denominator;
-        last_tick = ts.position;
+        for (const auto& ts : sync_track.time_sigs()) {
+            last_measure
+                += (ts.position - last_tick) / (resolution * last_beat_rate);
+            const auto beat = ts.position / float_resolution;
+            m_measure_timestamps.push_back({Measure(last_measure), Beat(beat)});
+            last_beat_rate
+                = (ts.numerator * DEFAULT_BEAT_RATE) / ts.denominator;
+            last_tick = ts.position;
+        }
+
+        m_last_beat_rate = last_beat_rate;
+    } else if (!od_beats.empty()) {
+        for (auto i = 0U; i < od_beats.size(); ++i) {
+            const auto beat = od_beats[i] / float_resolution;
+            m_measure_timestamps.push_back(
+                {Measure(i / DEFAULT_BEAT_RATE), Beat(beat)});
+        }
+
+        m_last_beat_rate = DEFAULT_BEAT_RATE;
+    } else {
+        m_measure_timestamps.push_back({Measure(0.0), Beat(0.0)});
+        m_last_beat_rate = DEFAULT_BEAT_RATE;
     }
-
-    m_last_beat_rate = last_beat_rate;
 
     assert(!m_beat_timestamps.empty()); // NOLINT
     assert(!m_measure_timestamps.empty()); // NOLINT

@@ -28,6 +28,7 @@ public:
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
     virtual double timing_window() const = 0;
+    virtual bool uses_beat_track() const = 0;
     virtual ~Engine() = default;
 };
 
@@ -40,6 +41,7 @@ public:
     double sp_gain_rate() const override { return 1 / 30.0; }
     int sust_points_per_beat() const override { return 25; }
     double timing_window() const override { return 0.07; }
+    bool uses_beat_track() const override { return false; }
 };
 
 class RbEngine final : public Engine {
@@ -51,6 +53,7 @@ public:
     double sp_gain_rate() const override { return 0.034; }
     int sust_points_per_beat() const override { return 12; }
     double timing_window() const override { return 0.1; }
+    bool uses_beat_track() const override { return true; }
 };
 
 #endif
