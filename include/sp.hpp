@@ -76,6 +76,7 @@ private:
         Beat note;
     };
 
+    static constexpr double DEFAULT_BEATS_PER_BAR = 32.0;
     static constexpr double MEASURES_PER_BAR = 8.0;
 
     TimeConverter m_converter;

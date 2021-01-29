@@ -57,7 +57,7 @@ SpData::SpData(const std::vector<std::tuple<int, int>>& note_spans,
     : m_converter {sync_track, resolution}
     , m_beat_rates {form_beat_rates(resolution, sync_track, engine)}
     , m_sp_gain_rate {engine.sp_gain_rate()}
-    , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / 32.0}
+    , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
 {
     const Second early_timing_window {engine.timing_window() * early_whammy};
 
