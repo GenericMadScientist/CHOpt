@@ -108,7 +108,7 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
           });
     if (min_iter->length == max_iter->length
         || engine.merge_uneven_sustains()) {
-        append_sustain_points(points, pos, max_iter->length, resolution,
+        append_sustain_points(points, pos, min_iter->length, resolution,
                               chord_size, converter, engine);
     } else {
         for (auto p = first; p < last; ++p) {
