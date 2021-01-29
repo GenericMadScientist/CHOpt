@@ -465,9 +465,8 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track)
     }
 }
 
-void ImageBuilder::add_sp_values(const SpData& sp_data)
+void ImageBuilder::add_sp_values(const SpData& sp_data, const Engine& engine)
 {
-    constexpr double WHAMMY_BEATS_IN_BAR = 30.0;
     m_sp_values.clear();
     m_sp_values.resize(m_measure_lines.size() - 1);
 
@@ -478,7 +477,7 @@ void ImageBuilder::add_sp_values(const SpData& sp_data)
             end = Beat {m_measure_lines[i + 1]};
         }
         m_sp_values[i]
-            = WHAMMY_BEATS_IN_BAR * sp_data.available_whammy(start, end);
+            = sp_data.available_whammy(start, end) / engine.sp_gain_rate();
     }
 }
 
@@ -568,7 +567,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                                          settings.squeeze,
                                          Second {settings.lazy_whammy},
                                          Second {settings.video_lag},
-                                         *(settings.engine),
+                                         *settings.engine,
                                          song.od_beats()};
     Path path;
 
@@ -592,7 +591,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
 
     builder.add_measure_values(processed_track.points(),
                                processed_track.converter(), path);
-    builder.add_sp_values(processed_track.sp_data());
+    builder.add_sp_values(processed_track.sp_data(), *settings.engine);
     builder.set_total_score(processed_track.points(), new_track.solos(), path);
     if (settings.engine->has_bres() && new_track.bre().has_value()) {
         builder.add_bre(*(new_track.bre()), new_track.resolution(),

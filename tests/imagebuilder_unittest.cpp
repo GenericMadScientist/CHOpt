@@ -535,7 +535,7 @@ TEST_CASE("add_sp_values gives correct values")
     NoteTrack<NoteColour> track {{{0}, {192, 768}}, {{192, 50}}, {}, {}, 192};
     SpData sp_data {track, {}, {}, 1.0, Second(0.0), Second(0.0), ChEngine()};
     ImageBuilder builder {track, {}};
-    builder.add_sp_values(sp_data);
+    builder.add_sp_values(sp_data, ChEngine());
     std::vector<double> expected_sp_values {3.14, 1.0};
 
     REQUIRE(builder.sp_values() == expected_sp_values);

@@ -25,6 +25,7 @@
 #include <tuple>
 #include <vector>
 
+#include "engine.hpp"
 #include "points.hpp"
 #include "processed.hpp"
 #include "settings.hpp"
@@ -92,7 +93,7 @@ public:
     void add_sp_phrases(const NoteTrack<NoteColour>& track);
     void add_sp_phrases(const NoteTrack<GHLNoteColour>& track);
     void add_sp_phrases(const NoteTrack<DrumNoteColour>& track);
-    void add_sp_values(const SpData& sp_data);
+    void add_sp_values(const SpData& sp_data, const Engine& engine);
     void add_time_sigs(const SyncTrack& sync_track, int resolution);
     void set_total_score(const PointSet& points, const std::vector<Solo>& solos,
                          const Path& path);
