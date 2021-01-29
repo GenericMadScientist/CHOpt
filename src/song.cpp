@@ -1085,6 +1085,8 @@ static std::vector<int> od_beats_from_track(const MidiTrack& track)
 {
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
+    constexpr int BEAT_LOW_KEY = 12;
+    constexpr int BEAT_HIGH_KEY = 13;
 
     std::vector<int> od_beats;
 
@@ -1100,7 +1102,7 @@ static std::vector<int> od_beats_from_track(const MidiTrack& track)
             continue;
         }
         const auto key = midi_event->data[0];
-        if (key == 12 || key == 13) {
+        if (key == BEAT_LOW_KEY || key == BEAT_HIGH_KEY) {
             od_beats.push_back(event.time);
         }
     }
