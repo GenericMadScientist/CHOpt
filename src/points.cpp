@@ -48,6 +48,11 @@ append_sustain_points(OutputIt points, int position, int sust_length,
         tick_gap /= chord_size;
     }
     auto sust_ticks = static_cast<int>((sust_length + tick_gap - 1) / tick_gap);
+    if (engine.do_chords_multiply_sustains()) {
+        while (sust_ticks % chord_size != 0) {
+            ++sust_ticks;
+        }
+    }
 
     while (float_sust_len > engine.burst_size() * resolution) {
         float_pos += tick_gap;
