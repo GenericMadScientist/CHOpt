@@ -191,7 +191,7 @@ TEST_CASE("Hold notes")
     }
 
     // RB1 Cherub Rock m24 Y sustain
-    SECTION("Rounding from length in RB is handled correctly")
+    SECTION("Rounding from length in RB for single notes is handled correctly")
     {
         NoteTrack<NoteColour> track {{{0, 419}}, {}, {}, {}, 480};
         TimeConverter converter {{}, 480, RbEngine(), {}};
@@ -201,6 +201,24 @@ TEST_CASE("Hold notes")
             [](const auto& a, const auto& b) { return a + b.value; });
 
         REQUIRE(total_score == 35);
+    }
+
+    // RB1 Cherub Rock m65 RO sustain
+    SECTION("Rounding from length in RB for chords is handled correctly")
+    {
+        NoteTrack<NoteColour> track {
+            {{0, 419, NoteColour::Red}, {0, 419, NoteColour::Orange}},
+            {},
+            {},
+            {},
+            480};
+        TimeConverter converter {{}, 480, RbEngine(), {}};
+        PointSet points {track, converter, 1.0, Second(0.0), RbEngine()};
+        const auto total_score = std::accumulate(
+            points.cbegin(), points.cend(), 0,
+            [](const auto& a, const auto& b) { return a + b.value; });
+
+        REQUIRE(total_score == 70);
     }
 }
 
