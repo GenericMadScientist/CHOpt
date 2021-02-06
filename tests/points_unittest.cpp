@@ -386,6 +386,7 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
 TEST_CASE("RB bass multiplier is taken into account")
 {
     std::vector<Note<NoteColour>> notes;
+    notes.reserve(60);
     for (auto i = 0; i < 60; ++i) {
         notes.push_back({192 * i});
     }
