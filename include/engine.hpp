@@ -19,6 +19,8 @@
 #ifndef CHOPT_ENGINE_HPP
 #define CHOPT_ENGINE_HPP
 
+enum class SustainRoundingPolicy { RoundUp, RoundToNearest };
+
 class Engine {
 public:
     virtual int base_note_value() const = 0;
@@ -28,6 +30,7 @@ public:
     virtual bool merge_uneven_sustains() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
+    virtual SustainRoundingPolicy sustain_rounding() const = 0;
     virtual double timing_window() const = 0;
     virtual bool uses_beat_track() const = 0;
     virtual ~Engine() = default;
@@ -42,6 +45,10 @@ public:
     bool merge_uneven_sustains() const override { return false; }
     double sp_gain_rate() const override { return 1 / 30.0; }
     int sust_points_per_beat() const override { return 25; }
+    SustainRoundingPolicy sustain_rounding() const override
+    {
+        return SustainRoundingPolicy::RoundUp;
+    }
     double timing_window() const override { return 0.07; }
     bool uses_beat_track() const override { return false; }
 };
@@ -55,6 +62,10 @@ public:
     bool merge_uneven_sustains() const override { return true; }
     double sp_gain_rate() const override { return 0.034; }
     int sust_points_per_beat() const override { return 12; }
+    SustainRoundingPolicy sustain_rounding() const override
+    {
+        return SustainRoundingPolicy::RoundToNearest;
+    }
     double timing_window() const override { return 0.1; }
     bool uses_beat_track() const override { return true; }
 };

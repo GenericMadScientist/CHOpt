@@ -32,6 +32,17 @@ static bool phrase_contains_pos(const StarPower& phrase, int position)
     return position < (phrase.position + phrase.length);
 }
 
+static double tick_gap_rounding_term(double tick_gap,
+                                     SustainRoundingPolicy rounding)
+{
+    switch (rounding) {
+    case SustainRoundingPolicy::RoundUp:
+        return tick_gap - 1;
+    case SustainRoundingPolicy::RoundToNearest:
+        return tick_gap / 2;
+    }
+}
+
 template <typename OutputIt>
 static void
 append_sustain_points(OutputIt points, int position, int sust_length,
@@ -47,7 +58,10 @@ append_sustain_points(OutputIt points, int position, int sust_length,
     if (engine.do_chords_multiply_sustains()) {
         tick_gap /= chord_size;
     }
-    auto sust_ticks = static_cast<int>((sust_length + tick_gap - 1) / tick_gap);
+    const auto rounding_term
+        = tick_gap_rounding_term(tick_gap, engine.sustain_rounding());
+    auto sust_ticks
+        = static_cast<int>((sust_length + rounding_term) / tick_gap);
     if (engine.do_chords_multiply_sustains()) {
         while (sust_ticks % chord_size != 0) {
             ++sust_ticks;

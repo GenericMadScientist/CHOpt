@@ -171,6 +171,7 @@ TEST_CASE("Hold notes")
         REQUIRE(total_score == 686);
     }
 
+    // RB1 Here It Goes Again m20 GRB sustain
     SECTION("Chord sustains in RB are handled correctly")
     {
         NoteTrack<NoteColour> track {{{0, 1800, NoteColour::Green},
@@ -187,6 +188,19 @@ TEST_CASE("Hold notes")
             [](const auto& a, const auto& b) { return a + b.value; });
 
         REQUIRE(total_score == 210);
+    }
+
+    // RB1 Cherub Rock m24 Y sustain
+    SECTION("Rounding from length in RB is handled correctly")
+    {
+        NoteTrack<NoteColour> track {{{0, 419}}, {}, {}, {}, 480};
+        TimeConverter converter {{}, 480, RbEngine(), {}};
+        PointSet points {track, converter, 1.0, Second(0.0), RbEngine()};
+        const auto total_score = std::accumulate(
+            points.cbegin(), points.cend(), 0,
+            [](const auto& a, const auto& b) { return a + b.value; });
+
+        REQUIRE(total_score == 35);
     }
 }
 
