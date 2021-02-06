@@ -383,6 +383,23 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     }
 }
 
+TEST_CASE("RB bass multiplier is taken into account")
+{
+    std::vector<Note<NoteColour>> notes;
+    for (auto i = 0; i < 60; ++i) {
+        notes.push_back({192 * i});
+    }
+    const NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+    const TimeConverter converter {{}, 192, RbBassEngine(), {}};
+    const PointSet points {track, converter, 1.0, Second(0.0), RbBassEngine()};
+
+    const auto total_points
+        = std::accumulate(points.cbegin(), points.cend(), 0,
+                          [&](auto x, auto y) { return x + y.value; });
+
+    REQUIRE(total_points == 5375);
+}
+
 TEST_CASE("Video lag is taken into account")
 {
     const std::vector<Note<NoteColour>> notes {{192, 0}, {384, 192}};

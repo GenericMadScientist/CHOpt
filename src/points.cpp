@@ -179,7 +179,8 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
         if (!point.is_hold_point) {
             ++combo;
         }
-        const auto multiplier = 1 + std::min(combo / 10, 3U);
+        const auto multiplier = std::min(
+            combo / 10 + 1, static_cast<unsigned int>(engine.max_multiplier()));
         point.value *= multiplier;
     }
 
