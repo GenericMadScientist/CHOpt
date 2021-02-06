@@ -25,9 +25,10 @@ class Engine {
 public:
     virtual int base_note_value() const = 0;
     virtual double burst_size() const = 0;
-    virtual bool do_chords_multiply_sustains() const = 0;
+    virtual bool chords_multiply_sustains() const = 0;
     virtual bool has_bres() const = 0;
     virtual bool merge_uneven_sustains() const = 0;
+    virtual bool restricted_back_end() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
     virtual SustainRoundingPolicy sustain_rounding() const = 0;
@@ -40,9 +41,10 @@ class ChEngine final : public Engine {
 public:
     int base_note_value() const override { return 50; }
     double burst_size() const override { return 0.25; }
-    bool do_chords_multiply_sustains() const override { return false; }
+    bool chords_multiply_sustains() const override { return false; }
     bool has_bres() const override { return false; }
     bool merge_uneven_sustains() const override { return false; }
+    bool restricted_back_end() const override { return false; }
     double sp_gain_rate() const override { return 1 / 30.0; }
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
@@ -57,9 +59,10 @@ class RbEngine final : public Engine {
 public:
     int base_note_value() const override { return 25; }
     double burst_size() const override { return 0.0; }
-    bool do_chords_multiply_sustains() const override { return true; }
+    bool chords_multiply_sustains() const override { return true; }
     bool has_bres() const override { return true; }
     bool merge_uneven_sustains() const override { return true; }
+    bool restricted_back_end() const override { return true; }
     double sp_gain_rate() const override { return 0.034; }
     int sust_points_per_beat() const override { return 12; }
     SustainRoundingPolicy sustain_rounding() const override

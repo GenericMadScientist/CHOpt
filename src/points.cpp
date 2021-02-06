@@ -55,7 +55,7 @@ append_sustain_points(OutputIt points, int position, int sust_length,
         break;
     }
     auto sust_ticks = static_cast<int>(float_sust_ticks);
-    if (engine.do_chords_multiply_sustains()) {
+    if (engine.chords_multiply_sustains()) {
         tick_gap /= chord_size;
         sust_ticks *= chord_size;
     }
@@ -79,15 +79,16 @@ append_sustain_points(OutputIt points, int position, int sust_length,
 }
 
 template <typename InputIt, typename OutputIt>
-static void append_note_points(InputIt first, InputIt last, OutputIt points,
-                               int resolution, bool is_note_sp_ender,
+static void append_note_points(InputIt first, InputIt last, InputIt note_end,
+                               OutputIt points, int resolution,
+                               bool is_note_sp_ender,
                                const TimeConverter& converter, double squeeze,
                                const Engine& engine)
 {
     assert(first != last); // NOLINT
 
     const auto EARLY_WINDOW = Second(engine.timing_window() * squeeze);
-    const auto LATE_WINDOW = Second(engine.timing_window() * squeeze);
+    const auto BASE_LATE_WINDOW = Second(engine.timing_window());
 
     const auto note_value = engine.base_note_value();
     const auto chord_size = static_cast<int>(std::distance(first, last));
@@ -98,8 +99,17 @@ static void append_note_points(InputIt first, InputIt last, OutputIt points,
     const auto early_beat
         = converter.seconds_to_beats(note_seconds - EARLY_WINDOW);
     const auto early_meas = converter.beats_to_measures(early_beat);
-    const auto late_beat
-        = converter.seconds_to_beats(note_seconds + LATE_WINDOW);
+    auto late_seconds = note_seconds + BASE_LATE_WINDOW;
+    if (engine.restricted_back_end() && last != note_end) {
+        const Beat next_note_beat {last->position
+                                   / static_cast<double>(resolution)};
+        const auto next_note_seconds
+            = converter.beats_to_seconds(next_note_beat);
+        const auto midpoint_seconds = (note_seconds + next_note_seconds) * 0.5;
+        late_seconds = std::min(late_seconds, midpoint_seconds);
+    }
+    const auto late_beat = converter.seconds_to_beats(
+        note_seconds * (1.0 - squeeze) + late_seconds * squeeze);
     const auto late_meas = converter.beats_to_measures(late_beat);
     *points++ = {{beat, meas},
                  {early_beat, early_meas},
@@ -153,8 +163,9 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
             is_note_sp_ender = true;
             ++current_phrase;
         }
-        append_note_points(p, q, std::back_inserter(points), track.resolution(),
-                           is_note_sp_ender, converter, squeeze, engine);
+        append_note_points(p, q, notes.cend(), std::back_inserter(points),
+                           track.resolution(), is_note_sp_ender, converter,
+                           squeeze, engine);
         p = q;
     }
 

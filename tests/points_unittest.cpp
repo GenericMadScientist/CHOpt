@@ -321,46 +321,6 @@ TEST_CASE("Combo multiplier is taken into account")
     }
 }
 
-TEST_CASE("Video lag is taken into account")
-{
-    const std::vector<Note<NoteColour>> notes {{192, 0}, {384, 192}};
-    const NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
-    const TimeConverter converter {{}, 192, ChEngine(), {}};
-
-    SECTION("Negative video lag is handled correctly")
-    {
-        PointSet points {track, converter, 1.0, Second(-0.20), ChEngine()};
-
-        REQUIRE(points.cbegin()->position.beat == Beat(0.6));
-        REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.46));
-        REQUIRE(points.cbegin()->hit_window_end.beat == Beat(0.74));
-        REQUIRE(std::next(points.cbegin(), 2)->position.beat == Beat(2.03385));
-    }
-
-    SECTION("Positive video lag is handled correctly")
-    {
-        PointSet points {track, converter, 1.0, Second(0.20), ChEngine()};
-
-        REQUIRE(points.cbegin()->position.beat == Beat(1.4));
-        REQUIRE(points.cbegin()->hit_window_start.beat == Beat(1.26));
-        REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.54));
-        REQUIRE(std::next(points.cbegin(), 2)->position.beat == Beat(2.03385));
-    }
-
-    SECTION("Tick points are not multiplied prematurely")
-    {
-        std::vector<Note<NoteColour>> other_notes {
-            {192}, {193}, {194}, {195},      {196},
-            {197}, {198}, {199}, {200, 200}, {400}};
-        NoteTrack<NoteColour> other_track {other_notes, {}, {}, {}, 192};
-        PointSet points {other_track, converter, 1.0, Second(-0.40),
-                         ChEngine()};
-
-        REQUIRE(std::prev(points.cend())->value == 100);
-        REQUIRE(std::prev(points.cend(), 2)->value == 7);
-    }
-}
-
 TEST_CASE("hit_window_start and hit_window_end are set correctly")
 {
     TimeConverter converter {
@@ -408,6 +368,58 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
 
         REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.9125));
         REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.0875));
+    }
+
+    SECTION("Restricted back end is taken account of")
+    {
+        std::vector<Note<NoteColour>> notes {{192}, {240}};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+        PointSet points {track, converter, 1.0, Second(0.0), RbEngine()};
+        PointSet fifty_sqz_points {track, converter, 0.5, Second(0.0),
+                                   RbEngine()};
+
+        REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.125));
+        REQUIRE(fifty_sqz_points.cbegin()->hit_window_end.beat == Beat(1.0625));
+    }
+}
+
+TEST_CASE("Video lag is taken into account")
+{
+    const std::vector<Note<NoteColour>> notes {{192, 0}, {384, 192}};
+    const NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+    const TimeConverter converter {{}, 192, ChEngine(), {}};
+
+    SECTION("Negative video lag is handled correctly")
+    {
+        PointSet points {track, converter, 1.0, Second(-0.20), ChEngine()};
+
+        REQUIRE(points.cbegin()->position.beat == Beat(0.6));
+        REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.46));
+        REQUIRE(points.cbegin()->hit_window_end.beat == Beat(0.74));
+        REQUIRE(std::next(points.cbegin(), 2)->position.beat == Beat(2.03385));
+    }
+
+    SECTION("Positive video lag is handled correctly")
+    {
+        PointSet points {track, converter, 1.0, Second(0.20), ChEngine()};
+
+        REQUIRE(points.cbegin()->position.beat == Beat(1.4));
+        REQUIRE(points.cbegin()->hit_window_start.beat == Beat(1.26));
+        REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.54));
+        REQUIRE(std::next(points.cbegin(), 2)->position.beat == Beat(2.03385));
+    }
+
+    SECTION("Tick points are not multiplied prematurely")
+    {
+        std::vector<Note<NoteColour>> other_notes {
+            {192}, {193}, {194}, {195},      {196},
+            {197}, {198}, {199}, {200, 200}, {400}};
+        NoteTrack<NoteColour> other_track {other_notes, {}, {}, {}, 192};
+        PointSet points {other_track, converter, 1.0, Second(-0.40),
+                         ChEngine()};
+
+        REQUIRE(std::prev(points.cend())->value == 100);
+        REQUIRE(std::prev(points.cend(), 2)->value == 7);
     }
 }
 
