@@ -170,6 +170,24 @@ TEST_CASE("Hold notes")
 
         REQUIRE(total_score == 686);
     }
+
+    SECTION("Chord sustains in RB are handled correctly")
+    {
+        NoteTrack<NoteColour> track {{{0, 1800, NoteColour::Green},
+                                      {0, 1800, NoteColour::Red},
+                                      {0, 1800, NoteColour::Blue}},
+                                     {},
+                                     {},
+                                     {},
+                                     480};
+        TimeConverter converter {{}, 480, RbEngine(), {}};
+        PointSet points {track, converter, 1.0, Second(0.0), RbEngine()};
+        const auto total_score = std::accumulate(
+            points.cbegin(), points.cend(), 0,
+            [](const auto& a, const auto& b) { return a + b.value; });
+
+        REQUIRE(total_score == 210);
+    }
 }
 
 TEST_CASE("Points are sorted")

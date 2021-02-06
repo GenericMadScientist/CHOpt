@@ -54,7 +54,8 @@ append_sustain_points(OutputIt points, int position, int sust_length,
         }
     }
 
-    while (float_sust_len > engine.burst_size() * resolution) {
+    while (float_sust_len > engine.burst_size() * resolution
+           && sust_ticks > 0) {
         float_pos += tick_gap;
         float_sust_len -= tick_gap;
         const Beat beat {(float_pos - HALF_RES_OFFSET) / float_res};
