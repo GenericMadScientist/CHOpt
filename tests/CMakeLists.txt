@@ -27,8 +27,6 @@ endfunction()
 package_add_test(chart_unittest chart_unittest.cpp "${SRC}/chart.cpp"
                  "${SRC}/stringutil.cpp")
 
-package_add_test(engine_unittest engine_unittest.cpp)
-
 package_add_test(
   imagebuilder_unittest
   imagebuilder_unittest.cpp
