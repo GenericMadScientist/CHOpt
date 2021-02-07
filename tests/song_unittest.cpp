@@ -1126,13 +1126,23 @@ TEST_CASE("unison_phrases() is correct")
                          {},
                          {},
                          {},
-                         {{768, 0, 0}},
+                         {{768, 0, 0}, {1024, 0, 0}},
                          {{768, 2, 100}, {1024, 2, 100}},
                          {}};
-    ChartSection bass {"ExpertDoubleBass", {}, {}, {}, {{768, 0, 0}},
-                       {{768, 2, 100}},    {}};
-    ChartSection drums {"ExpertDrums",   {}, {}, {}, {{768, 0, 0}},
-                        {{768, 2, 100}}, {}};
+    ChartSection bass {"ExpertDoubleBass",
+                       {},
+                       {},
+                       {},
+                       {{768, 0, 0}, {2048, 0, 0}},
+                       {{768, 2, 100}, {2048, 2, 100}},
+                       {}};
+    ChartSection drums {"ExpertDrums",
+                        {},
+                        {},
+                        {},
+                        {{768, 0, 0}, {4096, 0, 0}},
+                        {{768, 2, 100}, {4096, 2, 100}},
+                        {}};
     std::vector<ChartSection> sections {guitar, bass, drums};
     const Chart chart {sections};
     const auto song = Song::from_chart(chart, {});

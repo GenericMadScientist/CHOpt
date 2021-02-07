@@ -1179,6 +1179,7 @@ std::vector<StarPower> Song::unison_phrases() const
                     new_phrases.push_back(phrase);
                 }
             }
+            phrases = new_phrases;
         }
     }
     for (const auto& [key, value] : m_drum_note_tracks) {
@@ -1194,6 +1195,7 @@ std::vector<StarPower> Song::unison_phrases() const
                     new_phrases.push_back(phrase);
                 }
             }
+            phrases = new_phrases;
         }
     }
     return phrases;
