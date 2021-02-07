@@ -32,6 +32,9 @@ SpBar ProcessedSong::total_available_sp(Beat start, PointPtr first_point,
     for (auto p = m_points.next_sp_granting_note(first_point); p < act_start;
          p = m_points.next_sp_granting_note(std::next(p))) {
         sp_bar.add_phrase();
+        if (p->is_unison_sp_granting_note) {
+            sp_bar.add_phrase();
+        }
     }
 
     if (start >= required_whammy_end) {
@@ -65,6 +68,9 @@ std::tuple<SpBar, Position> ProcessedSong::total_available_sp_with_earliest_pos(
     for (auto p = m_points.next_sp_granting_note(first_point); p < act_start;
          p = m_points.next_sp_granting_note(std::next(p))) {
         sp_bar.add_phrase();
+        if (p->is_unison_sp_granting_note) {
+            sp_bar.add_phrase();
+        }
     }
 
     sp_bar.max() += m_sp_data.available_whammy(
@@ -256,6 +262,10 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
                                               required_whammy_end);
         status_for_early_end.add_phrase();
         status_for_late_end.add_phrase();
+        if (p->is_unison_sp_granting_note) {
+            status_for_early_end.add_phrase();
+            status_for_late_end.add_phrase();
+        }
     }
 
     status_for_late_end.advance_whammy_max(ending_pos, m_sp_data);
@@ -267,6 +277,9 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
                                           required_whammy_end);
     if (activation.act_end->is_sp_granting_note) {
         status_for_early_end.add_phrase();
+        if (activation.act_end->is_unison_sp_granting_note) {
+            status_for_early_end.add_phrase();
+        }
     }
     const auto end_meas = status_for_early_end.position().measure
         + Measure(status_for_early_end.sp() * MEASURES_PER_BAR);

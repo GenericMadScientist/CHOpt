@@ -92,6 +92,18 @@ TEST_CASE("3 arg total_available_sp counts SP correctly")
                                         points.cbegin() + 1)
                 == SpBar {0.25, 0.25});
     }
+
+    SECTION("Unison bonuses are taken account of")
+    {
+        ProcessedSong unison_song {note_track,  {},          1.0,
+                                   1.0,         Second(0.0), Second(0.0),
+                                   Rb3Engine(), {},          {{0, 50}}};
+        const auto& unison_points = unison_song.points();
+        REQUIRE(unison_song.total_available_sp(Beat(0.0),
+                                               unison_points.cbegin(),
+                                               unison_points.cbegin() + 1)
+                == SpBar {0.5, 0.5});
+    }
 }
 
 TEST_CASE("total_available_sp_with_earliest_pos counts SP correctly and gives "
@@ -110,6 +122,22 @@ TEST_CASE("total_available_sp_with_earliest_pos counts SP correctly and gives "
 
     REQUIRE(sp_bar.max() == Approx(0.5));
     REQUIRE(pos.beat.value() == Approx(7.5));
+}
+
+TEST_CASE("total_available_sp_with_earliest_pos counts unison bonuses")
+{
+    std::vector<Note<NoteColour>> notes {{0}, {192}};
+    std::vector<StarPower> phrases {{0, 100}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
+    ProcessedSong song {note_track,  {},          1.0, 1.0,    Second(0.0),
+                        Second(0.0), Rb3Engine(), {},  phrases};
+    const auto& points = song.points();
+
+    const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
+        Beat(0.0), points.cbegin(), std::next(points.cbegin()),
+        {Beat(0.0), Measure(0.0)});
+
+    REQUIRE(sp_bar.max() == Approx(0.5));
 }
 
 TEST_CASE("is_candidate_valid works with no whammy")
@@ -281,6 +309,40 @@ TEST_CASE("is_candidate_valid works with no whammy")
 
         REQUIRE(result.validity == ActValidity::success);
         REQUIRE(result.ending_position.beat.value() < 26.5);
+    }
+}
+
+TEST_CASE("is_candidate_valid acknowledges unison bonuses")
+{
+    std::vector<Note<NoteColour>> notes {{192}, {5376}};
+    std::vector<StarPower> phrases {{192, 1}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
+    ProcessedSong track {note_track,  {},          1.0, 1.0,    Second(0.0),
+                         Second(0.0), Rb3Engine(), {},  phrases};
+    const auto& points = track.points();
+
+    SECTION("Mid-activation unison bonuses are accounted for")
+    {
+        ActivationCandidate candidate {points.cbegin(),
+                                       points.cbegin() + 1,
+                                       {Beat(0.0), Measure(0.0)},
+                                       {0.5, 0.5}};
+
+        const auto result = track.is_candidate_valid(candidate);
+
+        REQUIRE(result.validity == ActValidity::success);
+    }
+
+    SECTION("Last note unison bonus accounted for excess SP")
+    {
+        ActivationCandidate candidate {points.cbegin(),
+                                       points.cbegin(),
+                                       {Beat(0.0), Measure(0.0)},
+                                       {0.5, 0.5}};
+
+        const auto result = track.is_candidate_valid(candidate);
+
+        REQUIRE(result.validity == ActValidity::surplus_sp);
     }
 }
 
