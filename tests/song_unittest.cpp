@@ -38,12 +38,6 @@ static bool operator==(const Solo& lhs, const Solo& rhs)
         == std::tie(rhs.start, rhs.end, rhs.value);
 }
 
-static bool operator==(const StarPower& lhs, const StarPower& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        == std::tie(rhs.position, rhs.length);
-}
-
 static bool operator==(const TimeSignature& lhs, const TimeSignature& rhs)
 {
     return std::tie(lhs.position, lhs.numerator, lhs.denominator)
@@ -1124,4 +1118,26 @@ TEST_CASE("Drums are read correctly from .mid")
     std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::Yellow}};
 
     REQUIRE(track.notes() == notes);
+}
+
+TEST_CASE("unison_phrases() is correct")
+{
+    ChartSection guitar {"ExpertSingle",
+                         {},
+                         {},
+                         {},
+                         {{768, 0, 0}},
+                         {{768, 2, 100}, {1024, 2, 100}},
+                         {}};
+    ChartSection bass {"ExpertDoubleBass", {}, {}, {}, {{768, 0, 0}},
+                       {{768, 2, 100}},    {}};
+    ChartSection drums {"ExpertDrums",   {}, {}, {}, {{768, 0, 0}},
+                        {{768, 2, 100}}, {}};
+    std::vector<ChartSection> sections {guitar, bass, drums};
+    const Chart chart {sections};
+    const auto song = Song::from_chart(chart, {});
+
+    std::vector<StarPower> expected_unison_phrases {{768, 100}};
+
+    REQUIRE(song.unison_phrases() == expected_unison_phrases);
 }

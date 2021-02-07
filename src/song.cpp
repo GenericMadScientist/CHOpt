@@ -1161,3 +1161,40 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
 
     return song;
 }
+
+std::vector<StarPower> Song::unison_phrases() const
+{
+    std::vector<StarPower> phrases;
+    auto filled_by_track = false;
+    for (const auto& [key, value] : m_five_fret_tracks) {
+        if (!filled_by_track) {
+            phrases = value.sp_phrases();
+            filled_by_track = true;
+        } else {
+            std::vector<StarPower> new_phrases;
+            for (const auto& phrase : phrases) {
+                if (std::find(value.sp_phrases().cbegin(),
+                              value.sp_phrases().cend(), phrase)
+                    != value.sp_phrases().cend()) {
+                    new_phrases.push_back(phrase);
+                }
+            }
+        }
+    }
+    for (const auto& [key, value] : m_drum_note_tracks) {
+        if (!filled_by_track) {
+            phrases = value.sp_phrases();
+            filled_by_track = true;
+        } else {
+            std::vector<StarPower> new_phrases;
+            for (const auto& phrase : phrases) {
+                if (std::find(value.sp_phrases().cbegin(),
+                              value.sp_phrases().cend(), phrase)
+                    != value.sp_phrases().cend()) {
+                    new_phrases.push_back(phrase);
+                }
+            }
+        }
+    }
+    return phrases;
+}

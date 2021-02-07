@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020 Raymond Wright
+ * Copyright (C) 2020, 2021 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -105,6 +105,7 @@ public:
     {
         return m_drum_note_tracks.at(diff);
     }
+    [[nodiscard]] std::vector<StarPower> unison_phrases() const;
 };
 
 #endif

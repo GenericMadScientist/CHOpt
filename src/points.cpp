@@ -67,21 +67,21 @@ append_sustain_points(OutputIt points, int position, int sust_length,
         const Beat beat {(float_pos - HALF_RES_OFFSET) / float_res};
         const auto meas = converter.beats_to_measures(beat);
         --sust_ticks;
-        *points++
-            = {{beat, meas}, {beat, meas}, {beat, meas}, 1, 1, true, false};
+        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, 1, 1,
+                     true,         false,        false};
     }
     if (sust_ticks > 0) {
         const Beat beat {(float_pos + HALF_RES_OFFSET) / float_res};
         const auto meas = converter.beats_to_measures(beat);
         *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, sust_ticks,
-                     sust_ticks,   true,         false};
+                     sust_ticks,   true,         false,        false};
     }
 }
 
 template <typename InputIt, typename OutputIt>
 static void append_note_points(InputIt first, InputIt last, InputIt note_end,
                                OutputIt points, int resolution,
-                               bool is_note_sp_ender,
+                               bool is_note_sp_ender, bool is_unison_sp_ender,
                                const TimeConverter& converter, double squeeze,
                                const Engine& engine)
 {
@@ -117,7 +117,8 @@ static void append_note_points(InputIt first, InputIt last, InputIt note_end,
                  note_value * chord_size,
                  note_value * chord_size,
                  false,
-                 is_note_sp_ender};
+                 is_note_sp_ender,
+                 is_unison_sp_ender};
 
     auto [min_iter, max_iter]
         = std::minmax_element(first, last, [](const auto& x, const auto& y) {
@@ -138,7 +139,8 @@ static void append_note_points(InputIt first, InputIt last, InputIt note_end,
 template <typename T>
 static std::vector<Point>
 points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
-                  double squeeze, Second video_lag, const Engine& engine)
+                  const std::vector<StarPower>& unison_phrases, double squeeze,
+                  Second video_lag, const Engine& engine)
 {
     const auto& notes = track.notes();
     std::vector<Point> points;
@@ -156,16 +158,23 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
             });
         }
         auto is_note_sp_ender = false;
+        auto is_unison_sp_ender = false;
         if (current_phrase != track.sp_phrases().cend()
             && phrase_contains_pos(*current_phrase, p->position)
             && ((q == notes.cend())
                 || !phrase_contains_pos(*current_phrase, q->position))) {
             is_note_sp_ender = true;
+            if (engine.has_unison_bonuses()
+                && std::find(unison_phrases.cbegin(), unison_phrases.cend(),
+                             *current_phrase)
+                    != unison_phrases.cend()) {
+                is_unison_sp_ender = true;
+            }
             ++current_phrase;
         }
         append_note_points(p, q, notes.cend(), std::back_inserter(points),
-                           track.resolution(), is_note_sp_ender, converter,
-                           squeeze, engine);
+                           track.resolution(), is_note_sp_ender,
+                           is_unison_sp_ender, converter, squeeze, engine);
         p = q;
     }
 
@@ -330,9 +339,11 @@ static std::vector<std::string> note_colours(const std::vector<Note<T>>& notes,
 }
 
 PointSet::PointSet(const NoteTrack<NoteColour>& track,
-                   const TimeConverter& converter, double squeeze,
+                   const TimeConverter& converter,
+                   const std::vector<StarPower>& unison_phrases, double squeeze,
                    Second video_lag, const Engine& engine)
-    : m_points {points_from_track(track, converter, squeeze, video_lag, engine)}
+    : m_points {points_from_track(track, converter, unison_phrases, squeeze,
+                                  video_lag, engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
@@ -344,9 +355,11 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track,
 }
 
 PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
-                   const TimeConverter& converter, double squeeze,
+                   const TimeConverter& converter,
+                   const std::vector<StarPower>& unison_phrases, double squeeze,
                    Second video_lag, const Engine& engine)
-    : m_points {points_from_track(track, converter, squeeze, video_lag, engine)}
+    : m_points {points_from_track(track, converter, unison_phrases, squeeze,
+                                  video_lag, engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
@@ -358,9 +371,11 @@ PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
 }
 
 PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
-                   const TimeConverter& converter, double squeeze,
+                   const TimeConverter& converter,
+                   const std::vector<StarPower>& unison_phrases, double squeeze,
                    Second video_lag, const Engine& engine)
-    : m_points {points_from_track(track, converter, squeeze, video_lag, engine)}
+    : m_points {points_from_track(track, converter, unison_phrases, squeeze,
+                                  video_lag, engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),

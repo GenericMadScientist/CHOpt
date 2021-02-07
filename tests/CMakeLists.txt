@@ -30,10 +30,14 @@ package_add_test(chart_unittest chart_unittest.cpp "${SRC}/chart.cpp"
 package_add_test(
   imagebuilder_unittest
   imagebuilder_unittest.cpp
+  "${SRC}/chart.cpp"
   "${SRC}/imagebuilder.cpp"
+  "${SRC}/ini.cpp"
+  "${SRC}/midi.cpp"
   "${SRC}/optimiser.cpp"
   "${SRC}/points.cpp"
   "${SRC}/processed.cpp"
+  "${SRC}/song.cpp"
   "${SRC}/songparts.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/stringutil.cpp"

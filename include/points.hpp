@@ -35,6 +35,7 @@ struct Point {
     int base_value;
     bool is_hold_point;
     bool is_sp_granting_note;
+    bool is_unison_sp_granting_note;
 };
 
 using PointPtr = std::vector<Point>::const_iterator;
@@ -51,13 +52,16 @@ private:
 
 public:
     PointSet(const NoteTrack<NoteColour>& track, const TimeConverter& converter,
-             double squeeze, Second video_lag, const Engine& engine);
+             const std::vector<StarPower>& unison_phrases, double squeeze,
+             Second video_lag, const Engine& engine);
     PointSet(const NoteTrack<GHLNoteColour>& track,
-             const TimeConverter& converter, double squeeze, Second video_lag,
-             const Engine& engine);
+             const TimeConverter& converter,
+             const std::vector<StarPower>& unison_phrases, double squeeze,
+             Second video_lag, const Engine& engine);
     PointSet(const NoteTrack<DrumNoteColour>& track,
-             const TimeConverter& converter, double squeeze, Second video_lag,
-             const Engine& engine);
+             const TimeConverter& converter,
+             const std::vector<StarPower>& unison_phrases, double squeeze,
+             Second video_lag, const Engine& engine);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
     [[nodiscard]] PointPtr next_non_hold_point(PointPtr point) const;

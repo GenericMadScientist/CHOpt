@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020 Raymond Wright
+ * Copyright (C) 2020, 2021 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -222,6 +222,12 @@ Settings from_args(int argc, char** argv)
             settings.engine = std::make_unique<RbBassEngine>();
         } else {
             settings.engine = std::make_unique<RbEngine>();
+        }
+    } else if (engine_name == "rb3") {
+        if (settings.instrument == Instrument::Bass) {
+            settings.engine = std::make_unique<Rb3BassEngine>();
+        } else {
+            settings.engine = std::make_unique<Rb3Engine>();
         }
     } else {
         throw std::invalid_argument("Invalid engine specified");
