@@ -70,6 +70,7 @@ private:
     std::vector<std::tuple<double, double>> m_yellow_ranges;
     std::vector<std::tuple<double, double>> m_solo_ranges;
     std::vector<std::tuple<double, double>> m_bre_ranges;
+    std::vector<std::tuple<double, double>> m_unison_ranges;
     float m_activation_opacity {0.33F};
     int m_total_score {0};
 
@@ -90,9 +91,12 @@ public:
                          std::string charter, int speed);
     void add_sp_acts(const PointSet& points, const TimeConverter& converter,
                      const Path& path);
-    void add_sp_phrases(const NoteTrack<NoteColour>& track);
-    void add_sp_phrases(const NoteTrack<GHLNoteColour>& track);
-    void add_sp_phrases(const NoteTrack<DrumNoteColour>& track);
+    void add_sp_phrases(const NoteTrack<NoteColour>& track,
+                        const std::vector<StarPower>& unison_phrases);
+    void add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
+                        const std::vector<StarPower>& unison_phrases);
+    void add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
+                        const std::vector<StarPower>& unison_phrases);
     void add_sp_values(const SpData& sp_data, const Engine& engine);
     void add_time_sigs(const SyncTrack& sync_track, int resolution);
     void set_total_score(const PointSet& points, const std::vector<Solo>& solos,
@@ -174,6 +178,11 @@ public:
         return m_time_sigs;
     }
     [[nodiscard]] TrackType track_type() const { return m_track_type; }
+    [[nodiscard]] const std::vector<std::tuple<double, double>>&
+    unison_ranges() const
+    {
+        return m_unison_ranges;
+    }
     [[nodiscard]] const std::vector<std::tuple<double, double>>&
     yellow_ranges() const
     {

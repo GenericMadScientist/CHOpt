@@ -402,7 +402,8 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
     }
 }
 
-void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track)
+void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
+                                  const std::vector<StarPower>& unison_phrases)
 {
     constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
 
@@ -422,10 +423,15 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track)
         }
         end = std::max(end, start + MINIMUM_GREEN_RANGE_SIZE);
         m_green_ranges.emplace_back(start, end);
+        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(), phrase)
+            != unison_phrases.cend()) {
+            m_unison_ranges.emplace_back(start, end);
+        }
     }
 }
 
-void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track)
+void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
+                                  const std::vector<StarPower>& unison_phrases)
 {
     for (const auto& phrase : track.sp_phrases()) {
         auto p = track.notes().cbegin();
@@ -442,10 +448,15 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track)
             ++p;
         }
         m_green_ranges.emplace_back(start, end);
+        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(), phrase)
+            != unison_phrases.cend()) {
+            m_unison_ranges.emplace_back(start, end);
+        }
     }
 }
 
-void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track)
+void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
+                                  const std::vector<StarPower>& unison_phrases)
 {
     for (const auto& phrase : track.sp_phrases()) {
         auto p = track.notes().cbegin();
@@ -462,6 +473,10 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track)
             ++p;
         }
         m_green_ranges.emplace_back(start, end);
+        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(), phrase)
+            != unison_phrases.cend()) {
+            m_unison_ranges.emplace_back(start, end);
+        }
     }
 }
 
@@ -547,7 +562,11 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     ImageBuilder builder {new_track, sync_track};
     builder.add_song_header(song.name(), song.artist(), song.charter(),
                             settings.speed);
-    builder.add_sp_phrases(new_track);
+    if (settings.engine->has_unison_bonuses()) {
+        builder.add_sp_phrases(new_track, song.unison_phrases());
+    } else {
+        builder.add_sp_phrases(new_track, {});
+    }
 
     if (settings.draw_bpms) {
         builder.add_bpms(sync_track, new_track.resolution());

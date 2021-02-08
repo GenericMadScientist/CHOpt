@@ -296,7 +296,7 @@ TEST_CASE("Green ranges for SP phrases are added correctly")
     NoteTrack<NoteColour> track {
         {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, 192};
     ImageBuilder builder {track, {}};
-    builder.add_sp_phrases(track);
+    builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
 
@@ -307,7 +307,7 @@ TEST_CASE("Green ranges have a minimum size")
 {
     NoteTrack<NoteColour> track {{{768}}, {{768, 384}}, {}, {}, 192};
     ImageBuilder builder {track, {}};
-    builder.add_sp_phrases(track);
+    builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{4.0, 4.1}};
 
     REQUIRE(builder.green_ranges() == expected_green_ranges);
@@ -318,7 +318,7 @@ TEST_CASE("Green ranges for six fret SP phrases are added correctly")
     NoteTrack<GHLNoteColour> track {
         {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, 192};
     ImageBuilder builder {track, {}};
-    builder.add_sp_phrases(track);
+    builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.0},
                                                                    {7.0, 7.5}};
 
@@ -330,11 +330,22 @@ TEST_CASE("Green ranges for drums SP phrases are added correctly")
     NoteTrack<DrumNoteColour> track {
         {{960}, {1344}}, {{768, 384}, {1200, 150}}, {}, {}, 192};
     ImageBuilder builder {track, {}};
-    builder.add_sp_phrases(track);
+    builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.0},
                                                                    {7.0, 7.0}};
 
     REQUIRE(builder.green_ranges() == expected_green_ranges);
+}
+
+TEST_CASE("Unison phrases are added correctly")
+{
+    NoteTrack<NoteColour> track {
+        {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, 192};
+    ImageBuilder builder {track, {}};
+    builder.add_sp_phrases(track, {{768, 384}});
+    std::vector<std::tuple<double, double>> expected_unison_ranges {{5.0, 5.1}};
+
+    REQUIRE(builder.unison_ranges() == expected_unison_ranges);
 }
 
 TEST_CASE("add_sp_acts adds correct ranges")
@@ -348,7 +359,7 @@ TEST_CASE("add_sp_acts adds correct ranges")
         Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25},
                      Beat {0.1}, Beat {0.9}}},
                    0};
-        builder.add_sp_phrases(track);
+        builder.add_sp_phrases(track, {});
         builder.add_sp_acts(points, converter, path);
         std::vector<std::tuple<double, double>> expected_blue_ranges {
             {0.1, 0.9}};

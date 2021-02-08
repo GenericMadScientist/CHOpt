@@ -743,6 +743,14 @@ Image::Image(const ImageBuilder& builder)
                                   RANGE_OPACITY / 2);
     }
 
+    for (const auto& range : builder.unison_ranges()) {
+        m_impl->colour_beat_range(builder, yellow, range, {-SOLO_HEIGHT, 0},
+                                  RANGE_OPACITY / 2);
+        m_impl->colour_beat_range(
+            builder, yellow, range,
+            {MEASURE_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT}, RANGE_OPACITY / 2);
+    }
+
     switch (builder.track_type()) {
     case TrackType::FiveFret:
         m_impl->draw_notes(builder);
