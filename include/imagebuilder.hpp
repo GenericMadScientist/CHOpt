@@ -92,11 +92,11 @@ public:
     void add_sp_acts(const PointSet& points, const TimeConverter& converter,
                      const Path& path);
     void add_sp_phrases(const NoteTrack<NoteColour>& track,
-                        const std::vector<StarPower>& unison_phrases);
+                        const std::vector<int>& unison_phrases);
     void add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
-                        const std::vector<StarPower>& unison_phrases);
+                        const std::vector<int>& unison_phrases);
     void add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
-                        const std::vector<StarPower>& unison_phrases);
+                        const std::vector<int>& unison_phrases);
     void add_sp_values(const SpData& sp_data, const Engine& engine);
     void add_time_sigs(const SyncTrack& sync_track, int resolution);
     void set_total_score(const PointSet& points, const std::vector<Solo>& solos,

@@ -129,8 +129,8 @@ TEST_CASE("total_available_sp_with_earliest_pos counts unison bonuses")
     std::vector<Note<NoteColour>> notes {{0}, {192}};
     std::vector<StarPower> phrases {{0, 100}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
-    ProcessedSong song {note_track,  {},          1.0, 1.0,    Second(0.0),
-                        Second(0.0), Rb3Engine(), {},  phrases};
+    ProcessedSong song {note_track,  {},          1.0, 1.0, Second(0.0),
+                        Second(0.0), Rb3Engine(), {},  {0}};
     const auto& points = song.points();
 
     const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
@@ -317,8 +317,8 @@ TEST_CASE("is_candidate_valid acknowledges unison bonuses")
     std::vector<Note<NoteColour>> notes {{192}, {5376}};
     std::vector<StarPower> phrases {{192, 1}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
-    ProcessedSong track {note_track,  {},          1.0, 1.0,    Second(0.0),
-                         Second(0.0), Rb3Engine(), {},  phrases};
+    ProcessedSong track {note_track,  {},          1.0, 1.0,  Second(0.0),
+                         Second(0.0), Rb3Engine(), {},  {192}};
     const auto& points = track.points();
 
     SECTION("Mid-activation unison bonuses are accounted for")

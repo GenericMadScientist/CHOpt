@@ -403,7 +403,7 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
 }
 
 void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
-                                  const std::vector<StarPower>& unison_phrases)
+                                  const std::vector<int>& unison_phrases)
 {
     constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
 
@@ -423,7 +423,8 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
         }
         end = std::max(end, start + MINIMUM_GREEN_RANGE_SIZE);
         m_green_ranges.emplace_back(start, end);
-        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(), phrase)
+        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(),
+                      phrase.position)
             != unison_phrases.cend()) {
             m_unison_ranges.emplace_back(start, end);
         }
@@ -431,7 +432,7 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
 }
 
 void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
-                                  const std::vector<StarPower>& unison_phrases)
+                                  const std::vector<int>& unison_phrases)
 {
     for (const auto& phrase : track.sp_phrases()) {
         auto p = track.notes().cbegin();
@@ -448,7 +449,8 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
             ++p;
         }
         m_green_ranges.emplace_back(start, end);
-        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(), phrase)
+        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(),
+                      phrase.position)
             != unison_phrases.cend()) {
             m_unison_ranges.emplace_back(start, end);
         }
@@ -456,7 +458,7 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
 }
 
 void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
-                                  const std::vector<StarPower>& unison_phrases)
+                                  const std::vector<int>& unison_phrases)
 {
     for (const auto& phrase : track.sp_phrases()) {
         auto p = track.notes().cbegin();
@@ -473,7 +475,8 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
             ++p;
         }
         m_green_ranges.emplace_back(start, end);
-        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(), phrase)
+        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(),
+                      phrase.position)
             != unison_phrases.cend()) {
             m_unison_ranges.emplace_back(start, end);
         }
@@ -563,7 +566,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     builder.add_song_header(song.name(), song.artist(), song.charter(),
                             settings.speed);
     if (settings.engine->has_unison_bonuses()) {
-        builder.add_sp_phrases(new_track, song.unison_phrases());
+        builder.add_sp_phrases(new_track, song.unison_phrase_positions());
     } else {
         builder.add_sp_phrases(new_track, {});
     }
@@ -588,7 +591,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                                          Second {settings.video_lag},
                                          *settings.engine,
                                          song.od_beats(),
-                                         song.unison_phrases()};
+                                         song.unison_phrase_positions()};
     Path path;
 
     // Nesting with if constexpr is purely to keep MSVC warnings happy.

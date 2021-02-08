@@ -1162,41 +1162,47 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
     return song;
 }
 
-std::vector<StarPower> Song::unison_phrases() const
+std::vector<int> Song::unison_phrase_positions() const
 {
-    std::vector<StarPower> phrases;
+    std::vector<int> unison_phrase_positions;
     auto filled_by_track = false;
     for (const auto& [key, value] : m_five_fret_tracks) {
         if (!filled_by_track) {
-            phrases = value.sp_phrases();
+            for (const auto& phrase : value.sp_phrases()) {
+                unison_phrase_positions.push_back(phrase.position);
+            }
             filled_by_track = true;
         } else {
-            std::vector<StarPower> new_phrases;
-            for (const auto& phrase : phrases) {
-                if (std::find(value.sp_phrases().cbegin(),
-                              value.sp_phrases().cend(), phrase)
+            std::vector<int> new_positions;
+            for (const auto& pos : unison_phrase_positions) {
+                if (std::find_if(
+                        value.sp_phrases().cbegin(), value.sp_phrases().cend(),
+                        [&](const auto& p) { return p.position == pos; })
                     != value.sp_phrases().cend()) {
-                    new_phrases.push_back(phrase);
+                    new_positions.push_back(pos);
                 }
             }
-            phrases = new_phrases;
+            unison_phrase_positions = new_positions;
         }
     }
     for (const auto& [key, value] : m_drum_note_tracks) {
         if (!filled_by_track) {
-            phrases = value.sp_phrases();
+            for (const auto& phrase : value.sp_phrases()) {
+                unison_phrase_positions.push_back(phrase.position);
+            }
             filled_by_track = true;
         } else {
-            std::vector<StarPower> new_phrases;
-            for (const auto& phrase : phrases) {
-                if (std::find(value.sp_phrases().cbegin(),
-                              value.sp_phrases().cend(), phrase)
+            std::vector<int> new_positions;
+            for (const auto& pos : unison_phrase_positions) {
+                if (std::find_if(
+                        value.sp_phrases().cbegin(), value.sp_phrases().cend(),
+                        [&](const auto& p) { return p.position == pos; })
                     != value.sp_phrases().cend()) {
-                    new_phrases.push_back(phrase);
+                    new_positions.push_back(pos);
                 }
             }
-            phrases = new_phrases;
+            unison_phrase_positions = new_positions;
         }
     }
-    return phrases;
+    return unison_phrase_positions;
 }

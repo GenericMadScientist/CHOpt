@@ -1120,7 +1120,7 @@ TEST_CASE("Drums are read correctly from .mid")
     REQUIRE(track.notes() == notes);
 }
 
-TEST_CASE("unison_phrases() is correct")
+TEST_CASE("unison_phrase_positions() is correct")
 {
     ChartSection guitar {"ExpertSingle",
                          {},
@@ -1129,12 +1129,15 @@ TEST_CASE("unison_phrases() is correct")
                          {{768, 0, 0}, {1024, 0, 0}},
                          {{768, 2, 100}, {1024, 2, 100}},
                          {}};
+    // Note the first phrase has a different length than the other instruments.
+    // It should still be a unison phrase: this happens in Roundabout, with the
+    // key phrases being a slightly different length.
     ChartSection bass {"ExpertDoubleBass",
                        {},
                        {},
                        {},
                        {{768, 0, 0}, {2048, 0, 0}},
-                       {{768, 2, 100}, {2048, 2, 100}},
+                       {{768, 2, 99}, {2048, 2, 100}},
                        {}};
     ChartSection drums {"ExpertDrums",
                         {},
@@ -1147,7 +1150,7 @@ TEST_CASE("unison_phrases() is correct")
     const Chart chart {sections};
     const auto song = Song::from_chart(chart, {});
 
-    std::vector<StarPower> expected_unison_phrases {{768, 100}};
+    const std::vector<int> expected_unison_phrases {768};
 
-    REQUIRE(song.unison_phrases() == expected_unison_phrases);
+    REQUIRE(song.unison_phrase_positions() == expected_unison_phrases);
 }

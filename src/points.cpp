@@ -139,7 +139,7 @@ static void append_note_points(InputIt first, InputIt last, InputIt note_end,
 template <typename T>
 static std::vector<Point>
 points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
-                  const std::vector<StarPower>& unison_phrases, double squeeze,
+                  const std::vector<int>& unison_phrases, double squeeze,
                   Second video_lag, const Engine& engine)
 {
     const auto& notes = track.notes();
@@ -166,7 +166,7 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
             is_note_sp_ender = true;
             if (engine.has_unison_bonuses()
                 && std::find(unison_phrases.cbegin(), unison_phrases.cend(),
-                             *current_phrase)
+                             current_phrase->position)
                     != unison_phrases.cend()) {
                 is_unison_sp_ender = true;
             }
@@ -340,7 +340,7 @@ static std::vector<std::string> note_colours(const std::vector<Note<T>>& notes,
 
 PointSet::PointSet(const NoteTrack<NoteColour>& track,
                    const TimeConverter& converter,
-                   const std::vector<StarPower>& unison_phrases, double squeeze,
+                   const std::vector<int>& unison_phrases, double squeeze,
                    Second video_lag, const Engine& engine)
     : m_points {points_from_track(track, converter, unison_phrases, squeeze,
                                   video_lag, engine)}
@@ -356,7 +356,7 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track,
 
 PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
                    const TimeConverter& converter,
-                   const std::vector<StarPower>& unison_phrases, double squeeze,
+                   const std::vector<int>& unison_phrases, double squeeze,
                    Second video_lag, const Engine& engine)
     : m_points {points_from_track(track, converter, unison_phrases, squeeze,
                                   video_lag, engine)}
@@ -372,7 +372,7 @@ PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
 
 PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
                    const TimeConverter& converter,
-                   const std::vector<StarPower>& unison_phrases, double squeeze,
+                   const std::vector<int>& unison_phrases, double squeeze,
                    Second video_lag, const Engine& engine)
     : m_points {points_from_track(track, converter, unison_phrases, squeeze,
                                   video_lag, engine)}

@@ -104,7 +104,7 @@ public:
                   double early_whammy, double squeeze, Second lazy_whammy,
                   Second video_lag, const Engine& engine,
                   const std::vector<int>& od_beats,
-                  const std::vector<StarPower>& unison_phrases)
+                  const std::vector<int>& unison_phrases)
         : m_converter {sync_track, track.resolution(), engine, od_beats}
         , m_points {track,   m_converter, unison_phrases,
                     squeeze, video_lag,   engine}

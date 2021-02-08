@@ -52,15 +52,15 @@ private:
 
 public:
     PointSet(const NoteTrack<NoteColour>& track, const TimeConverter& converter,
-             const std::vector<StarPower>& unison_phrases, double squeeze,
+             const std::vector<int>& unison_phrases, double squeeze,
              Second video_lag, const Engine& engine);
     PointSet(const NoteTrack<GHLNoteColour>& track,
              const TimeConverter& converter,
-             const std::vector<StarPower>& unison_phrases, double squeeze,
+             const std::vector<int>& unison_phrases, double squeeze,
              Second video_lag, const Engine& engine);
     PointSet(const NoteTrack<DrumNoteColour>& track,
              const TimeConverter& converter,
-             const std::vector<StarPower>& unison_phrases, double squeeze,
+             const std::vector<int>& unison_phrases, double squeeze,
              Second video_lag, const Engine& engine);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }

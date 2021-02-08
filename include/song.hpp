@@ -105,7 +105,7 @@ public:
     {
         return m_drum_note_tracks.at(diff);
     }
-    [[nodiscard]] std::vector<StarPower> unison_phrases() const;
+    [[nodiscard]] std::vector<int> unison_phrase_positions() const;
 };
 
 #endif
