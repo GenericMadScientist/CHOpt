@@ -1164,45 +1164,23 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
 
 std::vector<int> Song::unison_phrase_positions() const
 {
-    std::vector<int> unison_phrase_positions;
-    auto filled_by_track = false;
+    std::map<int, std::set<Instrument>> phrase_by_instrument;
     for (const auto& [key, value] : m_five_fret_tracks) {
-        if (!filled_by_track) {
-            for (const auto& phrase : value.sp_phrases()) {
-                unison_phrase_positions.push_back(phrase.position);
-            }
-            filled_by_track = true;
-        } else {
-            std::vector<int> new_positions;
-            for (const auto& pos : unison_phrase_positions) {
-                if (std::find_if(
-                        value.sp_phrases().cbegin(), value.sp_phrases().cend(),
-                        [&](const auto& p) { return p.position == pos; })
-                    != value.sp_phrases().cend()) {
-                    new_positions.push_back(pos);
-                }
-            }
-            unison_phrase_positions = new_positions;
+        const auto instrument = std::get<0>(key);
+        for (const auto& phrase : value.sp_phrases()) {
+            phrase_by_instrument[phrase.position].insert(instrument);
         }
     }
     for (const auto& [key, value] : m_drum_note_tracks) {
-        if (!filled_by_track) {
-            for (const auto& phrase : value.sp_phrases()) {
-                unison_phrase_positions.push_back(phrase.position);
-            }
-            filled_by_track = true;
-        } else {
-            std::vector<int> new_positions;
-            for (const auto& pos : unison_phrase_positions) {
-                if (std::find_if(
-                        value.sp_phrases().cbegin(), value.sp_phrases().cend(),
-                        [&](const auto& p) { return p.position == pos; })
-                    != value.sp_phrases().cend()) {
-                    new_positions.push_back(pos);
-                }
-            }
-            unison_phrase_positions = new_positions;
+        for (const auto& phrase : value.sp_phrases()) {
+            phrase_by_instrument[phrase.position].insert(Instrument::Drums);
         }
     }
-    return unison_phrase_positions;
+    std::vector<int> unison_starts;
+    for (const auto& [key, value] : phrase_by_instrument) {
+        if (value.size() > 1) {
+            unison_starts.push_back(key);
+        }
+    }
+    return unison_starts;
 }

@@ -1139,13 +1139,12 @@ TEST_CASE("unison_phrase_positions() is correct")
                        {{768, 0, 0}, {2048, 0, 0}},
                        {{768, 2, 99}, {2048, 2, 100}},
                        {}};
-    ChartSection drums {"ExpertDrums",
-                        {},
-                        {},
-                        {},
-                        {{768, 0, 0}, {4096, 0, 0}},
-                        {{768, 2, 100}, {4096, 2, 100}},
-                        {}};
+    // The 768 phrase is absent for drums: this is to test that unison bonuses
+    // can apply when at least 2 instruments have the phrase. This happens with
+    // the first phrase on RB3 Last Dance guitar, the phrase is missing on bass.
+    ChartSection drums {
+        "ExpertDrums",    {}, {}, {}, {{768, 0, 0}, {4096, 0, 0}},
+        {{4096, 2, 100}}, {}};
     std::vector<ChartSection> sections {guitar, bass, drums};
     const Chart chart {sections};
     const auto song = Song::from_chart(chart, {});
