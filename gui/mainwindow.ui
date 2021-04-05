@@ -40,24 +40,24 @@
       <item row="1" column="1">
        <widget class="QComboBox" name="instrumentComboBox"/>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>Difficulty</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QComboBox" name="difficultyComboBox"/>
       </item>
-      <item row="3" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
          <string>Squeeze%</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="4" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QSlider" name="squeezeSlider">
@@ -90,14 +90,14 @@
         </item>
        </layout>
       </item>
-      <item row="4" column="0">
+      <item row="5" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
          <string>Early Whammy%</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="5" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QSlider" name="earlyWhammySlider">
@@ -130,56 +130,56 @@
         </item>
        </layout>
       </item>
-      <item row="5" column="0">
+      <item row="6" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Lazy Whammy (ms)</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="6" column="1">
        <widget class="QLineEdit" name="lazyWhammyLineEdit">
         <property name="text">
          <string>0</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="0" colspan="2">
+      <item row="11" column="0" colspan="2">
        <widget class="QPushButton" name="findPathButton">
         <property name="text">
          <string>Draw image</string>
         </property>
        </widget>
       </item>
-      <item row="11" column="0" colspan="2">
+      <item row="12" column="0" colspan="2">
        <widget class="QTextEdit" name="messageBox">
         <property name="readOnly">
          <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="8" column="0">
        <widget class="QLabel" name="label_10">
         <property name="text">
          <string>Speed (%)</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="8" column="1">
        <widget class="QLineEdit" name="speedLineEdit">
         <property name="text">
          <string>100</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="7" column="0">
        <widget class="QLabel" name="label_11">
         <property name="text">
          <string>Video Lag</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="7" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QSlider" name="videoLagSlider">
@@ -206,14 +206,14 @@
         </item>
        </layout>
       </item>
-      <item row="9" column="0">
+      <item row="10" column="0">
        <widget class="QLabel" name="label_12">
         <property name="text">
          <string>Activation Opacity</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="1">
+      <item row="10" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <widget class="QSlider" name="opacitySlider">
@@ -240,7 +240,7 @@
         </item>
        </layout>
       </item>
-      <item row="8" column="0" colspan="2">
+      <item row="9" column="0" colspan="2">
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="2">
          <widget class="QLabel" name="label_2">
@@ -311,6 +311,16 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_13">
+        <property name="text">
+         <string>Engine</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="engineComboBox"/>
       </item>
      </layout>
     </item>

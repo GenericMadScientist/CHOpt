@@ -105,6 +105,8 @@ signals:
     void write_text(const QString& text);
 };
 
+enum class EngineType { CloneHero, RockBand, RockBand3 };
+
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , m_ui {std::make_unique<Ui::MainWindow>()}
@@ -112,6 +114,13 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->setupUi(this);
     m_ui->instrumentComboBox->setEnabled(false);
     m_ui->difficultyComboBox->setEnabled(false);
+    m_ui->engineComboBox->setEnabled(false);
+    m_ui->engineComboBox->addItem("Clone Hero",
+                                  QVariant::fromValue(EngineType::CloneHero));
+    m_ui->engineComboBox->addItem("Rock Band",
+                                  QVariant::fromValue(EngineType::RockBand));
+    m_ui->engineComboBox->addItem("Rock Band 3",
+                                  QVariant::fromValue(EngineType::RockBand3));
     m_ui->findPathButton->setEnabled(false);
 
     m_ui->lazyWhammyLineEdit->setValidator(new QIntValidator(
@@ -183,7 +192,26 @@ Settings MainWindow::get_settings() const
     settings.squeeze = m_ui->squeezeSlider->value() / 100.0;
     settings.early_whammy = m_ui->earlyWhammySlider->value() / 100.0;
     settings.video_lag = m_ui->videoLagSlider->value() / 1000.0;
-    settings.engine = std::make_unique<ChEngine>();
+    const auto engine = m_ui->engineComboBox->currentData().value<EngineType>();
+    switch (engine) {
+    case EngineType::CloneHero:
+        settings.engine = std::make_unique<ChEngine>();
+        break;
+    case EngineType::RockBand:
+        if (settings.instrument == Instrument::Bass) {
+            settings.engine = std::make_unique<RbBassEngine>();
+        } else {
+            settings.engine = std::make_unique<RbEngine>();
+        }
+        break;
+    case EngineType::RockBand3:
+        if (settings.instrument == Instrument::Bass) {
+            settings.engine = std::make_unique<Rb3BassEngine>();
+        } else {
+            settings.engine = std::make_unique<Rb3Engine>();
+        }
+        break;
+    }
     settings.opacity = m_ui->opacitySlider->value() / 100.0F;
 
     const auto lazy_whammy_text = m_ui->lazyWhammyLineEdit->text();
@@ -307,6 +335,7 @@ void MainWindow::song_read(const Song& song, const QString& file_name)
     m_ui->findPathButton->setEnabled(true);
     m_ui->instrumentComboBox->setEnabled(true);
     m_ui->difficultyComboBox->setEnabled(true);
+    m_ui->engineComboBox->setEnabled(true);
     m_ui->selectFileButton->setEnabled(true);
     setAcceptDrops(true);
 }
