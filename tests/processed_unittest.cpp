@@ -959,4 +959,19 @@ TEST_CASE("path_summary produces the correct output")
 
         REQUIRE(second_track.path_summary(path) == desired_path_output);
     }
+
+    SECTION("Average multiplier is ignored with RB")
+    {
+        Path path {{}, 0};
+        NoteTrack<NoteColour> second_note_track {notes, {}, solos, {}, 192};
+        ProcessedSong second_track {
+            second_note_track, {},         1.0, 1.0, Second(0.0),
+            Second(0.0),       RbEngine(), {},  {}};
+
+        const char* desired_path_output = "Path: None\n"
+                                          "No SP score: 225\n"
+                                          "Total score: 225";
+
+        REQUIRE(second_track.path_summary(path) == desired_path_output);
+    }
 }

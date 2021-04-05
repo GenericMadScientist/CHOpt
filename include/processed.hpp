@@ -82,6 +82,7 @@ private:
     int m_total_bre_boost;
     int m_total_solo_boost;
     int m_base_score;
+    bool m_ignore_average_multiplier;
 
     template <typename T>
     static int bre_boost(const NoteTrack<T>& track, const Engine& engine,
@@ -112,6 +113,7 @@ public:
                      lazy_whammy, video_lag,  engine}
         , m_total_bre_boost {bre_boost(track, engine, m_converter)}
         , m_base_score {track.base_score()}
+        , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
     {
         m_total_solo_boost = std::accumulate(
             track.solos().cbegin(), track.solos().cend(), 0,

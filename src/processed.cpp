@@ -348,11 +348,14 @@ std::string ProcessedSong::path_summary(const Path& path) const
     const auto total_score = no_sp_score + path.score_boost;
     stream << "\nTotal score: " << total_score;
 
-    const auto avg_mult
-        = static_cast<double>(total_score - m_total_solo_boost) / m_base_score;
-    stream.setf(std::ios_base::fixed, std::ios_base::floatfield);
-    stream << std::setprecision(3);
-    stream << "\nAverage multiplier: " << avg_mult << 'x';
+    if (!m_ignore_average_multiplier) {
+        const auto avg_mult
+            = static_cast<double>(total_score - m_total_solo_boost)
+            / m_base_score;
+        stream.setf(std::ios_base::fixed, std::ios_base::floatfield);
+        stream << std::setprecision(3);
+        stream << "\nAverage multiplier: " << avg_mult << 'x';
+    }
 
     stream << std::setprecision(2);
     for (std::size_t i = 0; i < path.activations.size(); ++i) {
