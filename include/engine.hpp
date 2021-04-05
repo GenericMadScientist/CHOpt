@@ -31,6 +31,7 @@ public:
     virtual int max_multiplier() const = 0;
     virtual bool merge_uneven_sustains() const = 0;
     virtual bool restricted_back_end() const = 0;
+    virtual int snap_gap() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
     virtual SustainRoundingPolicy sustain_rounding() const = 0;
@@ -49,6 +50,7 @@ public:
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return false; }
     bool restricted_back_end() const override { return false; }
+    int snap_gap() const override { return 0; }
     double sp_gain_rate() const override { return 1 / 30.0; }
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
@@ -59,84 +61,47 @@ public:
     bool uses_beat_track() const override { return false; }
 };
 
-class RbEngine final : public Engine {
+class BaseRbEngine : public Engine {
 public:
     int base_note_value() const override { return 25; }
     double burst_size() const override { return 0.0; }
     bool chords_multiply_sustains() const override { return true; }
     bool has_bres() const override { return true; }
+    bool merge_uneven_sustains() const override { return true; }
+    bool restricted_back_end() const override { return true; }
+    int snap_gap() const override { return 2; }
+    double sp_gain_rate() const override { return 0.034; }
+    int sust_points_per_beat() const override { return 12; }
+    SustainRoundingPolicy sustain_rounding() const override
+    {
+        return SustainRoundingPolicy::RoundToNearest;
+    }
+    double timing_window() const override { return 0.1; }
+    bool uses_beat_track() const override { return true; }
+};
+
+class RbEngine final : public BaseRbEngine {
+public:
     bool has_unison_bonuses() const override { return false; }
     int max_multiplier() const override { return 4; }
-    bool merge_uneven_sustains() const override { return true; }
-    bool restricted_back_end() const override { return true; }
-    double sp_gain_rate() const override { return 0.034; }
-    int sust_points_per_beat() const override { return 12; }
-    SustainRoundingPolicy sustain_rounding() const override
-    {
-        return SustainRoundingPolicy::RoundToNearest;
-    }
-    double timing_window() const override { return 0.1; }
-    bool uses_beat_track() const override { return true; }
 };
 
-class RbBassEngine final : public Engine {
+class RbBassEngine final : public BaseRbEngine {
 public:
-    int base_note_value() const override { return 25; }
-    double burst_size() const override { return 0.0; }
-    bool chords_multiply_sustains() const override { return true; }
-    bool has_bres() const override { return true; }
     bool has_unison_bonuses() const override { return false; }
     int max_multiplier() const override { return 6; }
-    bool merge_uneven_sustains() const override { return true; }
-    bool restricted_back_end() const override { return true; }
-    double sp_gain_rate() const override { return 0.034; }
-    int sust_points_per_beat() const override { return 12; }
-    SustainRoundingPolicy sustain_rounding() const override
-    {
-        return SustainRoundingPolicy::RoundToNearest;
-    }
-    double timing_window() const override { return 0.1; }
-    bool uses_beat_track() const override { return true; }
 };
 
-class Rb3Engine final : public Engine {
+class Rb3Engine final : public BaseRbEngine {
 public:
-    int base_note_value() const override { return 25; }
-    double burst_size() const override { return 0.0; }
-    bool chords_multiply_sustains() const override { return true; }
-    bool has_bres() const override { return true; }
     bool has_unison_bonuses() const override { return true; }
     int max_multiplier() const override { return 4; }
-    bool merge_uneven_sustains() const override { return true; }
-    bool restricted_back_end() const override { return true; }
-    double sp_gain_rate() const override { return 0.034; }
-    int sust_points_per_beat() const override { return 12; }
-    SustainRoundingPolicy sustain_rounding() const override
-    {
-        return SustainRoundingPolicy::RoundToNearest;
-    }
-    double timing_window() const override { return 0.1; }
-    bool uses_beat_track() const override { return true; }
 };
 
-class Rb3BassEngine final : public Engine {
+class Rb3BassEngine final : public BaseRbEngine {
 public:
-    int base_note_value() const override { return 25; }
-    double burst_size() const override { return 0.0; }
-    bool chords_multiply_sustains() const override { return true; }
-    bool has_bres() const override { return true; }
     bool has_unison_bonuses() const override { return true; }
     int max_multiplier() const override { return 6; }
-    bool merge_uneven_sustains() const override { return true; }
-    bool restricted_back_end() const override { return true; }
-    double sp_gain_rate() const override { return 0.034; }
-    int sust_points_per_beat() const override { return 12; }
-    SustainRoundingPolicy sustain_rounding() const override
-    {
-        return SustainRoundingPolicy::RoundToNearest;
-    }
-    double timing_window() const override { return 0.1; }
-    bool uses_beat_track() const override { return true; }
 };
 
 #endif

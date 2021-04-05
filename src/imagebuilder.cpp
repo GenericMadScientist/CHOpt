@@ -560,6 +560,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     if (song.is_from_midi()) {
         new_track = track.trim_sustains(settings.speed);
     }
+    new_track = new_track.snap_chords(settings.engine->snap_gap());
     const auto sync_track = song.sync_track().speedup(settings.speed);
 
     ImageBuilder builder {new_track, sync_track};

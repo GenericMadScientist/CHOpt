@@ -283,6 +283,17 @@ public:
 
         return trimmed_track;
     }
+    [[nodiscard]] NoteTrack<T> snap_chords(int snap_gap) const
+    {
+        auto new_track = *this;
+        auto& new_notes = new_track.m_notes;
+        for (auto i = 1U; i < m_notes.size(); ++i) {
+            if (new_notes[i].position - new_notes[i - 1].position <= snap_gap) {
+                new_notes[i].position = new_notes[i - 1].position;
+            }
+        }
+        return new_track;
+    }
 };
 
 // Invariants:

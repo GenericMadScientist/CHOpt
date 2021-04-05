@@ -236,6 +236,31 @@ TEST_CASE("trim_sustains is correct")
     }
 }
 
+TEST_CASE("snap_chords is correct")
+{
+    const std::vector<Note<NoteColour>> notes {{0, 0, NoteColour::Green},
+                                               {5, 0, NoteColour::Red}};
+    const NoteTrack<NoteColour> track {notes, {}, {}, {}, 480};
+
+    SECTION("No snapping")
+    {
+        auto new_track = track.snap_chords(0);
+        const auto& new_notes = new_track.notes();
+
+        REQUIRE(new_notes[0].position == 0);
+        REQUIRE(new_notes[1].position == 5);
+    }
+
+    SECTION("HMX GH snapping")
+    {
+        auto new_track = track.snap_chords(10);
+        const auto& new_notes = new_track.notes();
+
+        REQUIRE(new_notes[0].position == 0);
+        REQUIRE(new_notes[1].position == 0);
+    }
+}
+
 TEST_CASE("SyncTrack ctor maintains invariants")
 {
     SECTION("BPMs are sorted by position")
