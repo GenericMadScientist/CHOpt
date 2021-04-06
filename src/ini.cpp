@@ -58,14 +58,18 @@ IniValues parse_ini(std::string_view data)
                 continue;
             }
             value = skip_whitespace(value.substr(1));
-            values.charter = value;
+            if (!value.empty()) {
+                values.charter = value;
+            }
         } else if (line.substr(0, FRETS_SIZE) == "frets") {
             auto value = skip_whitespace(line.substr(FRETS_SIZE));
             if (value[0] != '=') {
                 continue;
             }
             value = skip_whitespace(value.substr(1));
-            values.charter = value;
+            if (!value.empty()) {
+                values.charter = value;
+            }
         }
     }
     return values;

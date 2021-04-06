@@ -75,6 +75,15 @@ TEST_CASE("frets is a synonym for charter")
     REQUIRE(ini_values.charter == "GMS");
 }
 
+TEST_CASE("Blank frets after charter is ignored")
+{
+    const char* text = "charter = Haggis\nfrets = ";
+
+    const auto ini_values = parse_ini(text);
+
+    REQUIRE(ini_values.charter == "Haggis");
+}
+
 TEST_CASE("UTF-16le strings are read correctly")
 {
     const std::string text {
