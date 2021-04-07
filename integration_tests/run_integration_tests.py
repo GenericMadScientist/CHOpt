@@ -22,12 +22,19 @@ for song in songs:
     output_lines.append(f"Total score: {total_score}")
     output_lines.append(f"Average multiplier: {avg_mult}x")
     c.execute(
-        ("select Description from Activations where SongID = ? "
-         "order by ActivationNumber"),
+        (
+            "select Description, ActivationEnd from Activations "
+            "where SongID = ? order by ActivationNumber"
+        ),
         (song_id,),
     )
-    for description, activation in zip(c.fetchall(), path.split("-")):
-        output_lines.append(f"{activation}: {description[0]}")
+    for (description, act_end), activation in zip(
+        c.fetchall(), path.split("-")
+    ):
+        if act_end is None:
+            output_lines.append(f"{activation}: {description}")
+        else:
+            output_lines.append(f"{activation}: {description} ({act_end})")
     output_lines.append("")
     outputs.append("\r\n".join(output_lines).encode("utf-8"))
 
