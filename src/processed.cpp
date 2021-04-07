@@ -405,6 +405,10 @@ std::string ProcessedSong::path_summary(const Path& path) const
         } else if (count == 1) {
             stream << "NN";
         }
+        const auto act_end = path.activations[i].act_end;
+        if (!act_end->is_hold_point) {
+            stream << " (" << m_points.colour_set(act_end) << ")";
+        }
     }
 
     return stream.str();

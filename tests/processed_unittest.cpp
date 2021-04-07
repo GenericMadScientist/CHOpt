@@ -793,7 +793,7 @@ TEST_CASE("path_summary produces the correct output")
                                           "No SP score: 350\n"
                                           "Total score: 450\n"
                                           "Average multiplier: 1.400x\n"
-                                          "2(+1): NN";
+                                          "2(+1): NN (G)";
 
         REQUIRE(track.path_summary(path) == desired_path_output);
     }
@@ -808,7 +808,7 @@ TEST_CASE("path_summary produces the correct output")
                                           "No SP score: 350\n"
                                           "Total score: 400\n"
                                           "Average multiplier: 1.200x\n"
-                                          "3: NN";
+                                          "3: NN (G)";
 
         REQUIRE(track.path_summary(path) == desired_path_output);
     }
@@ -823,7 +823,7 @@ TEST_CASE("path_summary produces the correct output")
                                           "No SP score: 350\n"
                                           "Total score: 400\n"
                                           "Average multiplier: 1.200x\n"
-                                          "3(+1): 2nd G";
+                                          "3(+1): 2nd G (G)";
 
         REQUIRE(track.path_summary(path) == desired_path_output);
     }
@@ -862,7 +862,7 @@ TEST_CASE("path_summary produces the correct output")
                                           "No SP score: 178\n"
                                           "Total score: 228\n"
                                           "Average multiplier: 1.303x\n"
-                                          "2: NN";
+                                          "2: NN (G)";
 
         REQUIRE(second_track.path_summary(path) == desired_path_output);
     }
@@ -909,7 +909,7 @@ TEST_CASE("path_summary produces the correct output")
                                           "No SP score: 200\n"
                                           "Total score: 250\n"
                                           "Average multiplier: 1.250x\n"
-                                          "2: 1st R";
+                                          "2: 1st R (R)";
 
         REQUIRE(second_track.path_summary(path) == desired_path_output);
     }
@@ -924,7 +924,7 @@ TEST_CASE("path_summary produces the correct output")
             second_note_track, {},         1.0, 1.0, Second(0.0),
             Second(0.0),       ChEngine(), {},  {}};
         const auto& second_points = second_track.points();
-        Path path {{{second_points.cbegin() + 2, second_points.cbegin() + 2,
+        Path path {{{second_points.cbegin() + 2, second_points.cend() - 1,
                      Beat {0.0}, Beat {0.0}}},
                    28};
 
