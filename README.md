@@ -42,6 +42,7 @@ by passing -h or --help to CHOpt, or by consulting the table below.
 | --lazy, --lazy-whammy | Set number of ms of whammy lost per sustain                 |
 | --lag, --video-lag    | Video calibration, in ms                                    |
 | -s, --speed           | Set speed the song is played at                             |
+| --engine              | Choose the engine (ch/rb/rb3)                               |
 | -b, --blank           | Output a blank image without pathing                        |
 | --no-bpms             | Do not draw BPMs                                            |
 | --no-solos            | Do not draw solo sections                                   |
