@@ -584,10 +584,12 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         builder.add_time_sigs(sync_track, new_track.resolution());
     }
 
+    // The 0.1% squeeze minimum is to get around dumb floating point rounding
+    // issues that visibly affect the path at 0% squeeze.
     const ProcessedSong processed_track {new_track,
                                          sync_track,
                                          settings.early_whammy,
-                                         settings.squeeze,
+                                         std::max(settings.squeeze, 0.001),
                                          Second {settings.lazy_whammy},
                                          Second {settings.video_lag},
                                          *settings.engine,
