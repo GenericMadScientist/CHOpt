@@ -44,6 +44,7 @@ by passing -h or --help to CHOpt, or by consulting the table below.
 | -s, --speed           | Set speed the song is played at                             |
 | --engine              | Choose the engine (ch/rb/rb3)                               |
 | -b, --blank           | Output a blank image without pathing                        |
+| --no-image            | Do not create an image                                      |
 | --no-bpms             | Do not draw BPMs                                            |
 | --no-solos            | Do not draw solo sections                                   |
 | --no-time-sigs        | Do not draw time signatures                                 |

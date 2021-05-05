@@ -52,8 +52,10 @@ int main(int argc, char** argv)
             song, settings, [&](auto p) { nowide::cout << p << '\n'; },
             &terminate);
         nowide::cout << std::flush;
-        const Image image {builder};
-        image.save(settings.image_path.c_str());
+        if (settings.draw_image) {
+            const Image image {builder};
+            image.save(settings.image_path.c_str());
+        }
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         nowide::cerr << "Error: " << e.what() << std::endl;

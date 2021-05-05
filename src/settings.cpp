@@ -112,6 +112,10 @@ Settings from_args(int argc, char** argv)
         .help("give a blank chart image")
         .default_value(false)
         .implicit_value(true);
+    program.add_argument("--no-image")
+        .help("do not create an image")
+        .default_value(false)
+        .implicit_value(true);
     program.add_argument("--no-bpms")
         .help("do not draw BPMs")
         .default_value(false)
@@ -180,6 +184,7 @@ Settings from_args(int argc, char** argv)
     }
     settings.image_path = image_path;
 
+    settings.draw_image = !program.get<bool>("--no-image");
     settings.draw_bpms = !program.get<bool>("--no-bpms");
     settings.draw_solos = !program.get<bool>("--no-solos");
     settings.draw_time_sigs = !program.get<bool>("--no-time-sigs");

@@ -30,6 +30,7 @@ struct Settings {
     bool blank;
     std::string filename;
     std::string image_path;
+    bool draw_image;
     bool draw_bpms;
     bool draw_solos;
     bool draw_time_sigs;
