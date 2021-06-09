@@ -125,6 +125,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_ui->lazyWhammyLineEdit->setValidator(new QIntValidator(
         0, std::numeric_limits<int>::max(), m_ui->lazyWhammyLineEdit));
+    m_ui->whammyDelayLineEdit->setValidator(new QIntValidator(
+        0, std::numeric_limits<int>::max(), m_ui->whammyDelayLineEdit));
     m_ui->speedLineEdit->setValidator(
         new QIntValidator(5, 5000, m_ui->speedLineEdit));
 
@@ -221,6 +223,14 @@ Settings MainWindow::get_settings() const
         settings.lazy_whammy = lazy_whammy_ms / 1000.0;
     } else {
         settings.lazy_whammy = 0.0;
+    }
+
+    const auto whammy_delay_text = m_ui->whammyDelayLineEdit->text();
+    auto whammy_delay_ms = whammy_delay_text.toInt(&ok, 10);
+    if (ok) {
+        settings.whammy_delay = whammy_delay_ms / 1000.0;
+    } else {
+        settings.whammy_delay = 0.0;
     }
 
     const auto speed_text = m_ui->speedLineEdit->text();
