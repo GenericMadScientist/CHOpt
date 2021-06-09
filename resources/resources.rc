@@ -1,17 +1,17 @@
 IDR_MAINFRAME ICON "icon.ico"
 1 VERSIONINFO
-    FILEVERSION    1,3,0,0
-    PRODUCTVERSION 1,3,0,0
+    FILEVERSION    1,3,1,0
+    PRODUCTVERSION 1,3,1,0
 {
     BLOCK "StringFileInfo"
     {
         BLOCK "080904B0"
         {
             VALUE "FileDescription", "CHOpt\0",
-            VALUE "FileVersion", "1.3.0.0\0",
+            VALUE "FileVersion", "1.3.1.0\0",
             VALUE "OriginalFilename", "CHOpt.exe\0",
             VALUE "ProductName", "CHOpt\0",
-            VALUE "ProductVersion", "1.3.0.0\0"
+            VALUE "ProductVersion", "1.3.1.0\0"
         }
     }
     BLOCK "VarFileInfo"

@@ -4,7 +4,7 @@ cmake_policy(SET CMP0091 NEW)
 
 project(
   chopt
-  VERSION 1.3.0
+  VERSION 1.3.1
   DESCRIPTION "A program to generate optimal Star Power paths for Clone Hero"
   LANGUAGES CXX)
 
