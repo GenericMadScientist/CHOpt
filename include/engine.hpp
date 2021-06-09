@@ -79,7 +79,6 @@ public:
     {
         return SustainRoundingPolicy::RoundToNearest;
     }
-    double timing_window() const override { return 0.1; }
     bool uses_beat_track() const override { return true; }
 };
 
@@ -87,24 +86,28 @@ class RbEngine final : public BaseRbEngine {
 public:
     bool has_unison_bonuses() const override { return false; }
     int max_multiplier() const override { return 4; }
+    double timing_window() const override { return 0.1; }
 };
 
 class RbBassEngine final : public BaseRbEngine {
 public:
     bool has_unison_bonuses() const override { return false; }
     int max_multiplier() const override { return 6; }
+    double timing_window() const override { return 0.1; }
 };
 
 class Rb3Engine final : public BaseRbEngine {
 public:
     bool has_unison_bonuses() const override { return true; }
     int max_multiplier() const override { return 4; }
+    double timing_window() const override { return 0.105; }
 };
 
 class Rb3BassEngine final : public BaseRbEngine {
 public:
     bool has_unison_bonuses() const override { return true; }
     int max_multiplier() const override { return 6; }
+    double timing_window() const override { return 0.105; }
 };
 
 #endif
