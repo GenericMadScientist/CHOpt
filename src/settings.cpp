@@ -97,6 +97,11 @@ Settings from_args(int argc, char** argv)
         .help("time before whammying starts on sustains in milliseconds, "
               "defaults to 0")
         .action([](const std::string& value) { return str_to_int(value); });
+    program.add_argument("--delay", "--whammy-delay")
+        .default_value(0)
+        .help("time after an activation ends before whammying can resume, "
+              "defaults to 0")
+        .action([](const std::string& value) { return str_to_int(value); });
     program.add_argument("--lag", "--video-lag")
         .default_value(0)
         .help("video lag calibration setting in milliseconds, defaults to 0")
@@ -195,6 +200,7 @@ Settings from_args(int argc, char** argv)
         early_whammy = str_to_int(program.get<std::string>("--early-whammy"));
     }
     const auto lazy_whammy = program.get<int>("--lazy-whammy");
+    const auto whammy_delay = program.get<int>("--whammy-delay");
 
     if (squeeze < 0 || squeeze > MAX_PERCENT) {
         throw std::invalid_argument("Squeeze must lie between 0 and 100");
@@ -206,10 +212,15 @@ Settings from_args(int argc, char** argv)
         throw std::invalid_argument(
             "Lazy whammy must be greater than or equal to 0");
     }
+    if (whammy_delay < 0) {
+        throw std::invalid_argument(
+            "Whammy delay must be greater than or equal to 0");
+    }
 
     settings.squeeze = squeeze / 100.0;
     settings.early_whammy = early_whammy / 100.0;
     settings.lazy_whammy = lazy_whammy / MS_PER_SECOND;
+    settings.whammy_delay = whammy_delay / MS_PER_SECOND;
 
     const auto video_lag = program.get<int>("--video-lag");
     if (video_lag < -MAX_VIDEO_LAG || video_lag > MAX_VIDEO_LAG) {

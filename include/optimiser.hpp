@@ -66,10 +66,12 @@ private:
     static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
     const ProcessedSong* m_song;
     const std::atomic<bool>* m_terminate;
+    Second m_whammy_delay;
     std::vector<PointPtr> m_next_candidate_points;
 
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
     [[nodiscard]] CacheKey advance_cache_key(CacheKey key) const;
+    [[nodiscard]] CacheKey add_whammy_delay(CacheKey key) const;
     [[nodiscard]] std::optional<CacheValue>
     try_previous_best_subpaths(CacheKey key, const Cache& cache,
                                bool has_full_sp) const;
@@ -86,7 +88,8 @@ private:
                  Position min_whammy_force) const;
 
 public:
-    Optimiser(const ProcessedSong* song, const std::atomic<bool>* terminate);
+    Optimiser(const ProcessedSong* song, const std::atomic<bool>* terminate,
+              Second whammy_delay);
     // Return the optimal Star Power path.
     [[nodiscard]] Path optimal_path() const;
 };

@@ -24,9 +24,10 @@
 #include "optimiser.hpp"
 
 Optimiser::Optimiser(const ProcessedSong* song,
-                     const std::atomic<bool>* terminate)
+                     const std::atomic<bool>* terminate, Second whammy_delay)
     : m_song {song}
     , m_terminate {terminate}
+    , m_whammy_delay {whammy_delay}
 {
     if (m_song == nullptr || m_terminate == nullptr) {
         throw std::invalid_argument(
@@ -68,6 +69,7 @@ Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
     if (key.point == m_song->points().cend()) {
         return key;
     }
+    key = add_whammy_delay(key);
     auto pos = key.point->hit_window_start;
     if (key.point != m_song->points().cbegin()) {
         pos = std::prev(key.point)->hit_window_start;
@@ -75,6 +77,16 @@ Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
     if (pos.beat >= key.position.beat) {
         key.position = pos;
     }
+    return key;
+}
+
+Optimiser::CacheKey Optimiser::add_whammy_delay(CacheKey key) const
+{
+    auto seconds = m_song->converter().beats_to_seconds(key.position.beat);
+    seconds += m_whammy_delay;
+    key.position.beat = m_song->converter().seconds_to_beats(seconds);
+    key.position.measure
+        = m_song->converter().beats_to_measures(key.position.beat);
     return key;
 }
 
@@ -359,7 +371,7 @@ Path Optimiser::optimal_path() const
         Activation act {best_proto_act.act_start, best_proto_act.act_end,
                         min_whammy_force.beat, start_pos, end_pos};
         path.activations.push_back(act);
-        start_key = advance_cache_key(best_next_key);
+        start_key = best_next_key;
     }
 
     return path;

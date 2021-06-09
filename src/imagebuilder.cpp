@@ -607,7 +607,8 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         }
     } else if (!settings.blank) {
         write("Optimising, please wait...");
-        const Optimiser optimiser {&processed_track, terminate};
+        const Optimiser optimiser {&processed_track, terminate,
+                                   Second {settings.whammy_delay}};
         path = optimiser.optimal_path();
         write(processed_track.path_summary(path).c_str());
         builder.add_sp_acts(processed_track.points(),

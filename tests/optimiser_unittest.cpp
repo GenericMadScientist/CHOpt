@@ -45,7 +45,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
                                                points.cbegin() + 2, Beat {0.0},
@@ -73,7 +73,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
             {points.cbegin() + 2, points.cbegin() + 2, Beat {0.0}, Beat {2.0},
@@ -93,7 +93,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
                                                points.cbegin() + 3, Beat {0.0},
@@ -111,7 +111,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
                                                points.cbegin() + 3, Beat {0.0},
@@ -130,7 +130,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 3,
                                                points.cbegin() + 3, Beat {0.0},
@@ -150,7 +150,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
             {points.cbegin() + 2, points.cbegin() + 2, Beat {0.0},
@@ -175,7 +175,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 750);
@@ -193,7 +193,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 50);
@@ -212,7 +212,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost < 100);
@@ -229,7 +229,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.activations[0].sp_start >= Beat(15.0));
@@ -243,7 +243,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 150);
@@ -267,7 +267,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
         const auto& act = opt_path.activations[0];
@@ -286,7 +286,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
         const auto& act = opt_path.activations[0];
@@ -312,7 +312,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
         const auto& act = opt_path.activations[0];
@@ -334,7 +334,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -352,7 +352,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -370,7 +370,7 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -387,10 +387,27 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
                              Second(0.1), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 0);
+    }
+
+    SECTION("Whammy delay is handled correctly")
+    {
+        std::vector<Note<NoteColour>> notes {
+            {0},     {192},   {768},   {3840, 1420}, {5376},  {13056},
+            {13248}, {13440}, {13632}, {13824},      {14016}, {14208}};
+        std::vector<StarPower> phrases {{0, 1}, {192, 1}, {3840, 1728}};
+        NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, 192};
+        ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
+                             Second(0.0), ChEngine(), {},  {}};
+        Optimiser optimiser {&track, &terminate, Second(0.1)};
+
+        const auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.activations.size() == 2);
+        REQUIRE(opt_path.score_boost == 550);
     }
 }

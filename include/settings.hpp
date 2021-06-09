@@ -40,6 +40,7 @@ struct Settings {
     double early_whammy;
     double lazy_whammy;
     double video_lag;
+    double whammy_delay;
     int speed;
     std::unique_ptr<Engine> engine;
     float opacity;
