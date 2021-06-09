@@ -30,25 +30,26 @@ Only the -f parameter is required, the difficulty defaults to Expert and the
 path is by default saved to path.png. The full list of arguments can be found
 by passing -h or --help to CHOpt, or by consulting the table below.
 
-| Arguments             | Action                                                      |
-| --------------------- | ----------------------------------------------------------- |
-| -h, --help            | List optional arguments                                     |
-| -f, --file            | Chart filename                                              |
-| -o, --output          | Filename of output image (.bmp or .png)                     |
-| -d, --diff            | Difficulty (easy/medium/hard/expert)                        |
-| -i, --instrument      | Instrument (guitar/coop/bass/rhythm/keys/ghl/ghlbass/drums) |
-| --sqz, --squeeze      | Set squeeze %                                               |
-| --ew, --early-whammy  | Set early whammy %                                          |
-| --lazy, --lazy-whammy | Set number of ms of whammy lost per sustain                 |
-| --lag, --video-lag    | Video calibration, in ms                                    |
-| -s, --speed           | Set speed the song is played at                             |
-| --engine              | Choose the engine (ch/rb/rb3)                               |
-| -b, --blank           | Output a blank image without pathing                        |
-| --no-image            | Do not create an image                                      |
-| --no-bpms             | Do not draw BPMs                                            |
-| --no-solos            | Do not draw solo sections                                   |
-| --no-time-sigs        | Do not draw time signatures                                 |
-| --act-opacity         | Set opacity of activations in images                        |
+| Arguments               | Action                                                           |
+| ----------------------- | ---------------------------------------------------------------- |
+| -h, --help              | List optional arguments                                          |
+| -f, --file              | Chart filename                                                   |
+| -o, --output            | Filename of output image (.bmp or .png)                          |
+| -d, --diff              | Difficulty (easy/medium/hard/expert)                             |
+| -i, --instrument        | Instrument (guitar/coop/bass/rhythm/keys/ghl/ghlbass/drums)      |
+| --sqz, --squeeze        | Set squeeze %                                                    |
+| --ew, --early-whammy    | Set early whammy %                                               |
+| --lazy, --lazy-whammy   | Set number of ms of whammy lost per sustain                      |
+| --delay, --whammy-delay | Amount of ms after each activation before whammy can be obtained |
+| --lag, --video-lag      | Video calibration, in ms                                         |
+| -s, --speed             | Set speed the song is played at                                  |
+| --engine                | Choose the engine (ch/rb/rb3)                                    |
+| -b, --blank             | Output a blank image without pathing                             |
+| --no-image              | Do not create an image                                           |
+| --no-bpms               | Do not draw BPMs                                                 |
+| --no-solos              | Do not draw solo sections                                        |
+| --no-time-sigs          | Do not draw time signatures                                      |
+| --act-opacity           | Set opacity of activations in images                             |
 
 If you would like to conveniently run CHOpt on a setlist and you happen to be
 on Windows, I made a PowerShell script that I've put [here](misc/setlist.ps1).
