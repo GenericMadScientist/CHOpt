@@ -69,7 +69,7 @@ in cmd then enter to open a command prompt in that folder, then run the command
 * [libpng](http://libpng.org/pub/png/libpng.html) 1.6.37 to save pngs
 * [nowide](https://github.com/boostorg/nowide) 11.0.0 to handle UTF-8 filenames
   on Windows
-* [Qt](https://www.qt.io) 6.0.3 for the GUI
+* [Qt](https://www.qt.io) 6.1.1 for the GUI
 * [zlib](https://zlib.net) 1.2.11 is a dependency of libpng
 
 Catch2 and CImg are vendored in the repo. argparse and nowide (standalone
