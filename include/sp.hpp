@@ -20,7 +20,7 @@
 #define CHOPT_SP_HPP
 
 #include <algorithm>
-#include <climits>
+#include <limits>
 #include <tuple>
 #include <vector>
 
