@@ -25,7 +25,7 @@ for:
   -
     matrix:
       only:
-        - job_name: MSVC and tests
+        - job_name: Windows (MSVC and tests)
 
     cache: C:/Tools/vcpkg/installed/
 
@@ -42,26 +42,10 @@ for:
   -
     matrix:
       only:
-        - job_name: Clang and static analysis
-
-    cache: C:/Tools/vcpkg/installed/
+        - job_name: Mac OSX (Clang and static analysis)
 
     build_script:
-    - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_CXX_COMPILER=Clang -DQt6_DIR=C:/Qt/6.0.1/msvc2019_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=C:/Qt/6.0.1/msvc2019_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=C:/Qt/6.0.1/msvc2019_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=C:/Qt/6.0.1/msvc2019_64/lib/cmake/Qt6WidgetsTools -G "Visual Studio 16 2019" ..
-    - cmd: cmake --build . --verbose --config %CONFIGURATION%
-
-    test_script:
-    - cmd: cd ..
-    - cmd: clang-tidy src/*.cpp -- -Iinclude -Ilibs -Ibuild/_deps/argparse-src/include -Ibuild/_deps/nowide-src/include -IC:/Tools/vcpkg/installed/x64-windows/include -std=c++17
-    - cmd: clang-tidy tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Iinclude -Ilibs -Ibuild/_deps/nowide-src/include -IC:/Tools/vcpkg/installed/x64-windows/include -std=c++17
-
-  -
-    matrix:
-      only:
-        - job_name: Mac
-
-    build_script:
-    - sh: brew install libpng
+    - sh: brew install clang-format clang-tidy libpng
     - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DQt6_DIR=$HOME/Qt/6.0.0/clang_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.0.0/clang_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.0.0/clang_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.0.0/clang_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
@@ -69,11 +53,13 @@ for:
     - sh: cd ..
     - sh: clang-format -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp
     - sh: git diff --color --exit-code
+    - sh: clang-tidy src/*.cpp -- -Iinclude -Ilibs -Ibuild/_deps/argparse-src/include -Ibuild/_deps/nowide-src/include -std=c++17
+    - sh: clang-tidy tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Iinclude -Ilibs -Ibuild/_deps/nowide-src/include -std=c++17
 
   -
     matrix:
       only:
-        - job_name: GCC
+        - job_name: Linux (GCC)
 
     build_script:
     - sh: cmake -DCMAKE_CXX_COMPILER=g++-9 -DBUILD_GUI=OFF ..
