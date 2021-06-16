@@ -8,6 +8,8 @@ environment:
   matrix:
     - job_name: MSVC and tests
     - job_name: Clang and static analysis
+    - job_name: Mac
+      APPVEYOR_BUILD_WORKER_IMAGE: macOS
     - job_name: GCC
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
 
@@ -54,6 +56,15 @@ for:
     - cmd: git diff --color --exit-code
     - cmd: clang-tidy src/*.cpp -- -Iinclude -Ilibs -Ibuild/_deps/argparse-src/include -Ibuild/_deps/nowide-src/include -IC:/Tools/vcpkg/installed/x64-windows/include -std=c++17
     - cmd: clang-tidy tests/*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers -- -Iinclude -Ilibs -Ibuild/_deps/nowide-src/include -IC:/Tools/vcpkg/installed/x64-windows/include -std=c++17
+
+  -
+    matrix:
+      only:
+        - job_name: Mac
+
+    build_script:
+    - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DBUILD_GUI=OFF ..
+    - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
   -
     matrix:
