@@ -63,6 +63,7 @@ for:
         - job_name: Mac
 
     build_script:
+    - sh: brew upgrade libpng
     - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DBUILD_GUI=OFF ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
