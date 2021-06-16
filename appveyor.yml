@@ -64,7 +64,7 @@ for:
 
     build_script:
     - sh: brew install libpng
-    - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DBUILD_GUI=OFF ..
+    - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DQt6_DIR=$HOME/Qt/6.0.0/clang_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.0.0/clang_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.0.0/clang_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.0.0/clang_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
   -
