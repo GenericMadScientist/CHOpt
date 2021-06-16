@@ -6,10 +6,10 @@ platform: x64
 
 environment:
   matrix:
-    - job_name: MSVC and tests
-    - job_name: Mac
+    - job_name: Windows (MSVC and tests)
+    - job_name: Mac OSX (Clang and static analysis)
       APPVEYOR_BUILD_WORKER_IMAGE: macOS
-    - job_name: GCC
+    - job_name: Linux (GCC)
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
 
 matrix:
