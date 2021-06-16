@@ -59,6 +59,6 @@ for:
 
     build_script:
     - sh: sudo apt update
-    - sh: sudo apt install libgl1-mesa-dev
+    - sh: sudo apt -y install libgl1-mesa-dev
     - sh: cmake -DCMAKE_CXX_COMPILER=g++-9 -DQt6_DIR=$HOME/Qt/6.0.1/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.0.1/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.0.1/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.0.1/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
