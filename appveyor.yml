@@ -7,7 +7,6 @@ platform: x64
 environment:
   matrix:
     - job_name: MSVC and tests
-    - job_name: Clang and static analysis
     - job_name: Mac
       APPVEYOR_BUILD_WORKER_IMAGE: macOS
     - job_name: GCC
