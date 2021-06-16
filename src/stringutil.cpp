@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <array>
 #include <stdexcept>
 
 // libc++ is special and doesn't support <cuchar> yet, so we need a different
@@ -24,7 +25,6 @@
 // general because it uses a feature deprecated in C++17 and Microsoft's STL
 // will complain if we use it.
 #ifndef _LIBCPP_VERSION
-#include <array>
 #include <climits>
 #include <cstdint>
 #include <cuchar>
