@@ -64,7 +64,7 @@ struct ActResult {
 
 struct Path {
     std::vector<Activation> activations;
-    int score_boost;
+    int score_boost {0};
 };
 
 // Represents a song processed for Star Power optimisation. The constructor
