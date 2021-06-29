@@ -245,6 +245,13 @@ Settings from_args(int argc, char** argv)
         } else {
             settings.engine = std::make_unique<Rb3Engine>();
         }
+    } else if (engine_name == "rb4") {
+        if (settings.instrument == Instrument::Bass) {
+            settings.engine = std::make_unique<Rb4BassEngine>();
+        } else {
+            settings.engine = std::make_unique<Rb4Engine>();
+        }
+        settings.early_whammy = 0.0;
     } else {
         throw std::invalid_argument("Invalid engine specified");
     }

@@ -71,7 +71,6 @@ public:
     bool has_bres() const override { return true; }
     bool ignore_average_multiplier() const override { return true; }
     bool merge_uneven_sustains() const override { return true; }
-    bool restricted_back_end() const override { return true; }
     int snap_gap() const override { return 2; }
     double sp_gain_rate() const override { return 0.034; }
     int sust_points_per_beat() const override { return 12; }
@@ -86,6 +85,7 @@ class RbEngine final : public BaseRbEngine {
 public:
     bool has_unison_bonuses() const override { return false; }
     int max_multiplier() const override { return 4; }
+    bool restricted_back_end() const override { return true; }
     double timing_window() const override { return 0.1; }
 };
 
@@ -93,6 +93,7 @@ class RbBassEngine final : public BaseRbEngine {
 public:
     bool has_unison_bonuses() const override { return false; }
     int max_multiplier() const override { return 6; }
+    bool restricted_back_end() const override { return true; }
     double timing_window() const override { return 0.1; }
 };
 
@@ -100,6 +101,7 @@ class Rb3Engine final : public BaseRbEngine {
 public:
     bool has_unison_bonuses() const override { return true; }
     int max_multiplier() const override { return 4; }
+    bool restricted_back_end() const override { return true; }
     double timing_window() const override { return 0.105; }
 };
 
@@ -107,7 +109,24 @@ class Rb3BassEngine final : public BaseRbEngine {
 public:
     bool has_unison_bonuses() const override { return true; }
     int max_multiplier() const override { return 6; }
+    bool restricted_back_end() const override { return true; }
     double timing_window() const override { return 0.105; }
+};
+
+class Rb4Engine final : public BaseRbEngine {
+public:
+    bool has_unison_bonuses() const override { return true; }
+    int max_multiplier() const override { return 4; }
+    bool restricted_back_end() const override { return false; }
+    double timing_window() const override { return 0.12; }
+};
+
+class Rb4BassEngine final : public BaseRbEngine {
+public:
+    bool has_unison_bonuses() const override { return true; }
+    int max_multiplier() const override { return 6; }
+    bool restricted_back_end() const override { return false; }
+    double timing_window() const override { return 0.12; }
 };
 
 #endif

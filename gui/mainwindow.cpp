@@ -105,7 +105,7 @@ signals:
     void write_text(const QString& text);
 };
 
-enum class EngineType { CloneHero, RockBand, RockBand3 };
+enum class EngineType { CloneHero, RockBand, RockBand3, RockBand4 };
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -121,6 +121,8 @@ MainWindow::MainWindow(QWidget* parent)
                                   QVariant::fromValue(EngineType::RockBand));
     m_ui->engineComboBox->addItem("Rock Band 3",
                                   QVariant::fromValue(EngineType::RockBand3));
+    m_ui->engineComboBox->addItem("Rock Band 4",
+                                  QVariant::fromValue(EngineType::RockBand4));
     m_ui->findPathButton->setEnabled(false);
 
     m_ui->lazyWhammyLineEdit->setValidator(new QIntValidator(
@@ -213,12 +215,20 @@ Settings MainWindow::get_settings() const
             settings.engine = std::make_unique<Rb3Engine>();
         }
         break;
+    case EngineType::RockBand4:
+        if (settings.instrument == Instrument::Bass) {
+            settings.engine = std::make_unique<Rb4BassEngine>();
+        } else {
+            settings.engine = std::make_unique<Rb4Engine>();
+        }
+        settings.early_whammy = 0.0;
+        break;
     }
     settings.opacity = m_ui->opacitySlider->value() / 100.0F;
 
     const auto lazy_whammy_text = m_ui->lazyWhammyLineEdit->text();
     bool ok;
-    auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok, 10);
+    const auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok, 10);
     if (ok) {
         settings.lazy_whammy = lazy_whammy_ms / 1000.0;
     } else {
@@ -226,7 +236,7 @@ Settings MainWindow::get_settings() const
     }
 
     const auto whammy_delay_text = m_ui->whammyDelayLineEdit->text();
-    auto whammy_delay_ms = whammy_delay_text.toInt(&ok, 10);
+    const auto whammy_delay_ms = whammy_delay_text.toInt(&ok, 10);
     if (ok) {
         settings.whammy_delay = whammy_delay_ms / 1000.0;
     } else {
@@ -234,7 +244,7 @@ Settings MainWindow::get_settings() const
     }
 
     const auto speed_text = m_ui->speedLineEdit->text();
-    auto speed = speed_text.toInt(&ok, 10);
+    const auto speed = speed_text.toInt(&ok, 10);
     if (ok) {
         settings.speed = speed;
     } else {
