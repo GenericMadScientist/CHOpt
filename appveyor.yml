@@ -29,7 +29,7 @@ for:
     cache: C:/Tools/vcpkg/installed/
 
     build_script:
-    - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DQt6_DIR=C:/Qt/6.0.1/msvc2019_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=C:/Qt/6.0.1/msvc2019_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=C:/Qt/6.0.1/msvc2019_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=C:/Qt/6.0.1/msvc2019_64/lib/cmake/Qt6WidgetsTools -G "Visual Studio 16 2019" ..
+    - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DQt6_DIR=C:/Qt/6.1.2/msvc2019_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=C:/Qt/6.1.2/msvc2019_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=C:/Qt/6.1.2/msvc2019_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=C:/Qt/6.1.2/msvc2019_64/lib/cmake/Qt6WidgetsTools -G "Visual Studio 16 2019" ..
     - cmd: cmake --build . --verbose --config %CONFIGURATION%
 
     test_script:
