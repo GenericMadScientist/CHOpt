@@ -66,10 +66,86 @@ static std::vector<std::string_view> split_by_space(std::string_view input)
     return substrings;
 }
 
-static ChartSection read_section(std::string_view& input)
+static NoteEvent
+convert_line_to_note(int position,
+                     const std::vector<std::string_view>& split_line)
 {
     constexpr int MAX_NORMAL_EVENT_SIZE = 5;
 
+    if (split_line.size() < MAX_NORMAL_EVENT_SIZE) {
+        throw ParseError("Line incomplete");
+    }
+    const auto fret = string_view_to_int(split_line[3]);
+    const auto length = string_view_to_int(split_line[4]);
+    if (!fret.has_value() || !length.has_value()) {
+        throw ParseError("Bad note event");
+    }
+    return {position, *fret, *length};
+}
+
+static SPEvent
+convert_line_to_sp(int position,
+                   const std::vector<std::string_view>& split_line)
+{
+    constexpr int MAX_NORMAL_EVENT_SIZE = 5;
+
+    if (split_line.size() < MAX_NORMAL_EVENT_SIZE) {
+        throw ParseError("Line incomplete");
+    }
+    const auto sp_key = string_view_to_int(split_line[3]);
+    const auto length = string_view_to_int(split_line[4]);
+    if (!sp_key.has_value() || !length.has_value()) {
+        throw ParseError("Bad SP event");
+    }
+    return {position, *sp_key, *length};
+}
+
+static BpmEvent
+convert_line_to_bpm(int position,
+                    const std::vector<std::string_view>& split_line)
+{
+    if (split_line.size() < 4) {
+        throw ParseError("Line incomplete");
+    }
+    const auto bpm = string_view_to_int(split_line[3]);
+    if (!bpm.has_value()) {
+        throw ParseError("Bad BPM event");
+    }
+    return {position, *bpm};
+}
+
+static TimeSigEvent
+convert_line_to_timesig(int position,
+                        const std::vector<std::string_view>& split_line)
+{
+    constexpr int MAX_NORMAL_EVENT_SIZE = 5;
+
+    if (split_line.size() < 4) {
+        throw ParseError("Line incomplete");
+    }
+    const auto numer = string_view_to_int(split_line[3]);
+    std::optional<int> denom = 2;
+    if (split_line.size() >= MAX_NORMAL_EVENT_SIZE) {
+        denom = string_view_to_int(split_line[4]);
+    }
+    if (!numer.has_value() || !denom.has_value()) {
+        throw ParseError("Bad TS event");
+    }
+    return {position, *numer, *denom};
+}
+
+static Event
+convert_line_to_event(int position,
+                      const std::vector<std::string_view>& split_line)
+{
+    if (split_line.size() < 4) {
+        throw ParseError("Line incomplete");
+    }
+    return {position, std::string {split_line[3]}};
+}
+
+static ChartSection read_section(std::string_view& input)
+{
     ChartSection section;
     section.name = strip_square_brackets(break_off_newline(input));
 
@@ -91,53 +167,20 @@ static ChartSection read_section(std::string_view& input)
         if (key_val.has_value()) {
             const auto pos = *key_val;
             if (separated_line[2] == "N") {
-                if (separated_line.size() < MAX_NORMAL_EVENT_SIZE) {
-                    throw ParseError("Line incomplete");
-                }
-                const auto fret = string_view_to_int(separated_line[3]);
-                const auto length = string_view_to_int(separated_line[4]);
-                if (!fret.has_value() || !length.has_value()) {
-                    throw ParseError("Bad note event");
-                }
-                section.note_events.push_back(NoteEvent {pos, *fret, *length});
+                section.note_events.push_back(
+                    convert_line_to_note(pos, separated_line));
             } else if (separated_line[2] == "S") {
-                if (separated_line.size() < MAX_NORMAL_EVENT_SIZE) {
-                    throw ParseError("Line incomplete");
-                }
-                const auto sp_key = string_view_to_int(separated_line[3]);
-                const auto length = string_view_to_int(separated_line[4]);
-                if (!sp_key.has_value() || !length.has_value()) {
-                    throw ParseError("Bad SP event");
-                }
-                section.sp_events.push_back(SPEvent {pos, *sp_key, *length});
+                section.sp_events.push_back(
+                    convert_line_to_sp(pos, separated_line));
             } else if (separated_line[2] == "B") {
-                if (separated_line.size() < 4) {
-                    throw ParseError("Line incomplete");
-                }
-                const auto bpm = string_view_to_int(separated_line[3]);
-                if (!bpm.has_value()) {
-                    throw ParseError("Bad BPM event");
-                }
-                section.bpm_events.push_back(BpmEvent {pos, *bpm});
+                section.bpm_events.push_back(
+                    convert_line_to_bpm(pos, separated_line));
             } else if (separated_line[2] == "TS") {
-                if (separated_line.size() < 4) {
-                    throw ParseError("Line incomplete");
-                }
-                const auto numer = string_view_to_int(separated_line[3]);
-                std::optional<int> denom = 2;
-                if (separated_line.size() >= MAX_NORMAL_EVENT_SIZE) {
-                    denom = string_view_to_int(separated_line[4]);
-                }
-                if (!numer.has_value() || !denom.has_value()) {
-                    throw ParseError("Bad TS event");
-                }
-                section.ts_events.push_back(TimeSigEvent {pos, *numer, *denom});
+                section.ts_events.push_back(
+                    convert_line_to_timesig(pos, separated_line));
             } else if (separated_line[2] == "E") {
-                if (separated_line.size() < 4) {
-                    throw ParseError("Line incomplete");
-                }
                 section.events.push_back(
-                    Event {pos, std::string {separated_line[3]}});
+                    convert_line_to_event(pos, separated_line));
             }
         } else {
             std::string value {separated_line[2]};

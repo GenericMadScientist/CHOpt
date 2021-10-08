@@ -58,6 +58,52 @@ static bool is_valid_image_path(const std::string& path)
     return false;
 }
 
+static Difficulty string_to_diff(std::string_view text)
+{
+    if (text == "expert") {
+        return Difficulty::Expert;
+    }
+    if (text == "hard") {
+        return Difficulty::Hard;
+    }
+    if (text == "medium") {
+        return Difficulty::Medium;
+    }
+    if (text == "easy") {
+        return Difficulty::Easy;
+    }
+    throw std::invalid_argument("Unrecognised difficulty");
+}
+
+static Instrument string_to_inst(std::string_view text)
+{
+    if (text == "guitar") {
+        return Instrument::Guitar;
+    }
+    if (text == "coop") {
+        return Instrument::GuitarCoop;
+    }
+    if (text == "bass") {
+        return Instrument::Bass;
+    }
+    if (text == "rhythm") {
+        return Instrument::Rhythm;
+    }
+    if (text == "keys") {
+        return Instrument::Keys;
+    }
+    if (text == "ghl") {
+        return Instrument::GHLGuitar;
+    }
+    if (text == "ghlbass") {
+        return Instrument::GHLBass;
+    }
+    if (text == "drums") {
+        return Instrument::Drums;
+    }
+    throw std::invalid_argument("Unrecognised instrument");
+}
+
 Settings from_args(int argc, char** argv)
 {
     constexpr float DEFAULT_OPACITY = 0.33F;
@@ -148,39 +194,9 @@ Settings from_args(int argc, char** argv)
         throw std::invalid_argument("No file was specified");
     }
 
-    const auto diff_string = program.get<std::string>("--diff");
-    if (diff_string == "expert") {
-        settings.difficulty = Difficulty::Expert;
-    } else if (diff_string == "hard") {
-        settings.difficulty = Difficulty::Hard;
-    } else if (diff_string == "medium") {
-        settings.difficulty = Difficulty::Medium;
-    } else if (diff_string == "easy") {
-        settings.difficulty = Difficulty::Easy;
-    } else {
-        throw std::invalid_argument("Unrecognised difficulty");
-    }
-
-    const auto inst_string = program.get<std::string>("--instrument");
-    if (inst_string == "guitar") {
-        settings.instrument = Instrument::Guitar;
-    } else if (inst_string == "coop") {
-        settings.instrument = Instrument::GuitarCoop;
-    } else if (inst_string == "bass") {
-        settings.instrument = Instrument::Bass;
-    } else if (inst_string == "rhythm") {
-        settings.instrument = Instrument::Rhythm;
-    } else if (inst_string == "keys") {
-        settings.instrument = Instrument::Keys;
-    } else if (inst_string == "ghl") {
-        settings.instrument = Instrument::GHLGuitar;
-    } else if (inst_string == "ghlbass") {
-        settings.instrument = Instrument::GHLBass;
-    } else if (inst_string == "drums") {
-        settings.instrument = Instrument::Drums;
-    } else {
-        throw std::invalid_argument("Unrecognised instrument");
-    }
+    settings.difficulty = string_to_diff(program.get<std::string>("--diff"));
+    settings.instrument
+        = string_to_inst(program.get<std::string>("--instrument"));
 
     const auto image_path = program.get<std::string>("--output");
     if (!is_valid_image_path(image_path)) {

@@ -20,6 +20,7 @@
 #define CHOPT_OPTIMISER_HPP
 
 #include <atomic>
+#include <cassert>
 #include <limits>
 #include <map>
 #include <optional>
@@ -63,6 +64,66 @@ private:
         std::map<PointPtr, CacheValue> full_sp_paths;
     };
 
+    // The idea is this is like a std::set<PointPtr>, but is add-only and takes
+    // advantage of the fact that we often tend to add all elements before a
+    // certain point.
+    class PointPtrRangeSet {
+    private:
+        PointPtr m_start;
+        PointPtr m_end;
+        PointPtr m_min_absent_ptr;
+        std::vector<PointPtr> m_abnormal_elements;
+
+    public:
+        PointPtrRangeSet(PointPtr start, PointPtr end)
+            : m_start {start}
+            , m_end {end}
+            , m_min_absent_ptr {start}
+        {
+            assert(start < end); // NOLINT
+        }
+
+        [[nodiscard]] bool contains(PointPtr element) const
+        {
+            if (m_start > element || m_end <= element) {
+                return false;
+            }
+            if (element < m_min_absent_ptr) {
+                return true;
+            }
+            return std::find(m_abnormal_elements.cbegin(),
+                             m_abnormal_elements.cend(), element)
+                != m_abnormal_elements.cend();
+        }
+
+        [[nodiscard]] PointPtr lowest_absent_element() const
+        {
+            return m_min_absent_ptr;
+        }
+
+        void add(PointPtr element)
+        {
+            assert(m_start <= element); // NOLINT
+            assert(element < m_end); // NOLINT
+            if (m_min_absent_ptr == element) {
+                ++m_min_absent_ptr;
+                while (true) {
+                    auto next_elem_iter = std::find(m_abnormal_elements.begin(),
+                                                    m_abnormal_elements.end(),
+                                                    m_min_absent_ptr);
+                    if (next_elem_iter == m_abnormal_elements.end()) {
+                        return;
+                    }
+                    std::swap(*next_elem_iter, m_abnormal_elements.back());
+                    m_abnormal_elements.pop_back();
+                    ++m_min_absent_ptr;
+                }
+            } else {
+                m_abnormal_elements.push_back(element);
+            }
+        }
+    };
+
     static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
     const ProcessedSong* m_song;
     const std::atomic<bool>* m_terminate;
@@ -86,6 +147,11 @@ private:
     [[nodiscard]] std::tuple<Beat, Beat>
     act_duration(ProtoActivation act, CacheKey key, double sqz_level,
                  Position min_whammy_force) const;
+    [[nodiscard]] PointPtr try_activation(
+        PointPtrRangeSet& attained_act_ends,
+        const ActivationCandidate& candidate, Cache& cache,
+        int& best_score_boost,
+        std::vector<std::tuple<ProtoActivation, CacheKey>>& acts) const;
 
 public:
     Optimiser(const ProcessedSong* song, const std::atomic<bool>* terminate,

@@ -99,6 +99,10 @@ private:
         return static_cast<int>(750 + 500 * seconds_gap.value());
     }
 
+    void append_activation(std::stringstream& stream,
+                           const Activation& activation,
+                           const std::string& act_summary) const;
+
 public:
     template <typename T>
     ProcessedSong(const NoteTrack<T>& track, const SyncTrack& sync_track,

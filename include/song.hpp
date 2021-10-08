@@ -50,6 +50,8 @@ private:
         m_six_fret_tracks;
     std::map<Difficulty, NoteTrack<DrumNoteColour>> m_drum_note_tracks;
     Song() = default;
+    void append_instrument_track(Instrument inst, Difficulty diff,
+                                 const ChartSection& section);
 
 public:
     static Song from_filename(const std::string& filename);

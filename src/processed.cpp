@@ -294,6 +294,62 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
     return {{end_beat, end_meas}, ActValidity::success};
 }
 
+void ProcessedSong::append_activation(std::stringstream& stream,
+                                      const Activation& activation,
+                                      const std::string& act_summary) const
+{
+    stream << '\n' << act_summary << ": ";
+    if (act_summary[0] == '0') {
+        stream << "See image";
+        return;
+    }
+    const auto act_start = activation.act_start;
+    auto previous_sp_note = std::prev(act_start);
+    while (!previous_sp_note->is_sp_granting_note) {
+        --previous_sp_note;
+    }
+    const auto count
+        = std::count_if(std::next(previous_sp_note), std::next(act_start),
+                        [](const auto& p) { return !p.is_hold_point; });
+    if (act_start->is_hold_point) {
+        auto starting_note = act_start;
+        while (starting_note->is_hold_point) {
+            --starting_note;
+        }
+        const auto beat_gap
+            = act_start->position.beat - starting_note->position.beat;
+        if (count > 0) {
+            stream << beat_gap.value() << " beats after ";
+        } else {
+            stream << "After " << beat_gap.value() << " beats";
+        }
+    }
+    if (count > 1) {
+        auto previous_note = act_start;
+        while (previous_note->is_hold_point) {
+            --previous_note;
+        }
+        const auto colour = m_points.colour_set(previous_note);
+        auto same_colour_count = 1;
+        for (auto p = std::next(previous_sp_note); p < previous_note; ++p) {
+            if (p->is_hold_point) {
+                continue;
+            }
+            if (m_points.colour_set(p) == colour) {
+                ++same_colour_count;
+            }
+        }
+        stream << to_ordinal(static_cast<int>(same_colour_count)) << ' '
+               << colour;
+    } else if (count == 1) {
+        stream << "NN";
+    }
+    const auto act_end = activation.act_end;
+    if (!act_end->is_hold_point) {
+        stream << " (" << m_points.colour_set(act_end) << ")";
+    }
+}
+
 std::string ProcessedSong::path_summary(const Path& path) const
 {
     // We use std::stringstream instead of std::string for better formating of
@@ -359,56 +415,7 @@ std::string ProcessedSong::path_summary(const Path& path) const
 
     stream << std::setprecision(2);
     for (std::size_t i = 0; i < path.activations.size(); ++i) {
-        stream << '\n' << activation_summaries[i] << ": ";
-        if (activation_summaries[i][0] == '0') {
-            stream << "See image";
-            continue;
-        }
-        const auto act_start = path.activations[i].act_start;
-        auto previous_sp_note = std::prev(act_start);
-        while (!previous_sp_note->is_sp_granting_note) {
-            --previous_sp_note;
-        }
-        const auto count
-            = std::count_if(std::next(previous_sp_note), std::next(act_start),
-                            [](const auto& p) { return !p.is_hold_point; });
-        if (act_start->is_hold_point) {
-            auto starting_note = act_start;
-            while (starting_note->is_hold_point) {
-                --starting_note;
-            }
-            const auto beat_gap
-                = act_start->position.beat - starting_note->position.beat;
-            if (count > 0) {
-                stream << beat_gap.value() << " beats after ";
-            } else {
-                stream << "After " << beat_gap.value() << " beats";
-            }
-        }
-        if (count > 1) {
-            auto previous_note = act_start;
-            while (previous_note->is_hold_point) {
-                --previous_note;
-            }
-            const auto colour = m_points.colour_set(previous_note);
-            auto same_colour_count = 1;
-            for (auto p = std::next(previous_sp_note); p < previous_note; ++p) {
-                if (p->is_hold_point) {
-                    continue;
-                }
-                if (m_points.colour_set(p) == colour) {
-                    ++same_colour_count;
-                }
-            }
-            stream << to_ordinal(static_cast<int>(same_colour_count)) << ' '
-                   << colour;
-        } else if (count == 1) {
-            stream << "NN";
-        }
-        const auto act_end = path.activations[i].act_end;
-        if (!act_end->is_hold_point) {
-            stream << " (" << m_points.colour_set(act_end) << ")";
-        }
+        append_activation(stream, path.activations[i], activation_summaries[i]);
     }
 
     return stream.str();

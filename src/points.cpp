@@ -183,13 +183,13 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
                          return x.position.beat < y.position.beat;
                      });
 
-    auto combo = 0U;
+    auto combo = 0;
     for (auto& point : points) {
         if (!point.is_hold_point) {
             ++combo;
         }
-        const auto multiplier = std::min(
-            combo / 10 + 1, static_cast<unsigned int>(engine.max_multiplier()));
+        const auto multiplier
+            = std::min(combo / 10 + 1, engine.max_multiplier());
         point.value *= multiplier;
     }
 

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cassert>
 #include <cstdint>
 #include <iterator>
 #include <stdexcept>
@@ -171,65 +170,51 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
     return {{next_acts, score_boost}};
 }
 
-// The idea is this is like a std::set<PointPtr>, but is add-only and takes
-// advantage of the fact that we often tend to add all elements before a certain
-// point.
-class PointPtrRangeSet {
-private:
-    PointPtr m_start;
-    PointPtr m_end;
-    PointPtr m_min_absent_ptr;
-    std::vector<PointPtr> m_abnormal_elements;
+// This function tries an activation and amends some data after. It then returns
+// the next activation end to try.
+PointPtr Optimiser::try_activation(
+    PointPtrRangeSet& attained_act_ends, const ActivationCandidate& candidate,
+    Cache& cache, int& best_score_boost,
+    std::vector<std::tuple<ProtoActivation, CacheKey>>& acts) const
+{
+    const auto p = candidate.act_start;
+    const auto q = candidate.act_end;
 
-public:
-    PointPtrRangeSet(PointPtr start, PointPtr end)
-        : m_start {start}
-        , m_end {end}
-        , m_min_absent_ptr {start}
-    {
-        assert(start < end); // NOLINT
+    if (attained_act_ends.contains(q)) {
+        return std::next(q);
     }
 
-    [[nodiscard]] bool contains(PointPtr element) const
-    {
-        if (m_start > element || m_end <= element) {
-            return false;
-        }
-        if (element < m_min_absent_ptr) {
-            return true;
-        }
-        return std::find(m_abnormal_elements.cbegin(),
-                         m_abnormal_elements.cend(), element)
-            != m_abnormal_elements.cend();
+    const auto candidate_result = m_song->is_candidate_valid(candidate);
+    if (candidate_result.validity != ActValidity::insufficient_sp) {
+        attained_act_ends.add(q);
+    } else if (!q->is_hold_point) {
+        // We cannot hit any later points if q is not a hold point, so
+        // we are done.
+        return m_song->points().cend();
+    } else {
+        // We cannot hit any subsequent hold point, so go straight to
+        // the next non-hold point.
+        return m_song->points().next_non_hold_point(q);
     }
 
-    [[nodiscard]] PointPtr lowest_absent_element() const
-    {
-        return m_min_absent_ptr;
+    if (candidate_result.validity != ActValidity::success) {
+        return std::next(q);
     }
 
-    void add(PointPtr element)
-    {
-        assert(m_start <= element); // NOLINT
-        assert(element < m_end); // NOLINT
-        if (m_min_absent_ptr == element) {
-            ++m_min_absent_ptr;
-            while (true) {
-                auto next_elem_iter
-                    = std::find(m_abnormal_elements.begin(),
-                                m_abnormal_elements.end(), m_min_absent_ptr);
-                if (next_elem_iter == m_abnormal_elements.end()) {
-                    return;
-                }
-                std::swap(*next_elem_iter, m_abnormal_elements.back());
-                m_abnormal_elements.pop_back();
-                ++m_min_absent_ptr;
-            }
-        } else {
-            m_abnormal_elements.push_back(element);
-        }
+    const auto act_score = m_song->points().range_score(p, std::next(q));
+    CacheKey next_key {std::next(q), candidate_result.ending_position};
+    next_key = advance_cache_key(next_key);
+    const auto rest_of_path_score_boost = get_partial_path(next_key, cache);
+    const auto score = act_score + rest_of_path_score_boost;
+    if (score > best_score_boost) {
+        best_score_boost = score;
+        acts.clear();
+        acts.push_back({{p, q}, next_key});
+    } else if (score == best_score_boost) {
+        acts.push_back({{p, q}, next_key});
     }
-};
+    return std::next(q);
+}
 
 Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                                                     bool has_full_sp) const
@@ -290,46 +275,9 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         }
         for (auto q = attained_act_ends.lowest_absent_element();
              q < m_song->points().cend();) {
-            if (attained_act_ends.contains(q)) {
-                ++q;
-                continue;
-            }
-
             ActivationCandidate candidate {p, q, starting_pos, sp_bar};
-            const auto candidate_result = m_song->is_candidate_valid(candidate);
-            if (candidate_result.validity != ActValidity::insufficient_sp) {
-                attained_act_ends.add(q);
-            } else if (!q->is_hold_point) {
-                // We cannot hit any later points if q is not a hold point, so
-                // we are done.
-                break;
-            } else {
-                // We cannot hit any subsequent hold point, so go straight to
-                // the next non-hold point.
-                q = m_song->points().next_non_hold_point(q);
-                continue;
-            }
-
-            if (candidate_result.validity != ActValidity::success) {
-                ++q;
-                continue;
-            }
-
-            const auto act_score
-                = m_song->points().range_score(p, std::next(q));
-            CacheKey next_key {std::next(q), candidate_result.ending_position};
-            next_key = advance_cache_key(next_key);
-            const auto rest_of_path_score_boost
-                = get_partial_path(next_key, cache);
-            const auto score = act_score + rest_of_path_score_boost;
-            if (score > best_score_boost) {
-                best_score_boost = score;
-                acts.clear();
-                acts.push_back({{p, q}, next_key});
-            } else if (score == best_score_boost) {
-                acts.push_back({{p, q}, next_key});
-            }
-            ++q;
+            q = try_activation(attained_act_ends, candidate, cache,
+                               best_score_boost, acts);
         }
     }
 
