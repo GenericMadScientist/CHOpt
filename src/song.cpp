@@ -531,7 +531,7 @@ template <typename T> static T colour_from_key(std::uint8_t key)
 
         for (auto min : diff_ranges) {
             if (key >= min && (key - min) < NOTE_COLOURS.size()) {
-                return NOTE_COLOURS[key - min];
+                return NOTE_COLOURS.at(key - min);
             }
         }
 
@@ -547,7 +547,7 @@ template <typename T> static T colour_from_key(std::uint8_t key)
 
         for (auto min : diff_ranges) {
             if (key >= min && (key - min) < GHL_NOTE_COLOURS.size()) {
-                return GHL_NOTE_COLOURS[key - min];
+                return GHL_NOTE_COLOURS.at(key - min);
             }
         }
 
@@ -562,7 +562,7 @@ template <typename T> static T colour_from_key(std::uint8_t key)
 
         for (auto min : diff_ranges) {
             if (key >= min && (key - min) <= DRUM_NOTE_COLOURS.size()) {
-                return DRUM_NOTE_COLOURS[key - min];
+                return DRUM_NOTE_COLOURS.at(key - min);
             }
         }
 
