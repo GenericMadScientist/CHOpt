@@ -527,12 +527,11 @@ template <typename T> static T colour_from_key(std::uint8_t key)
             NoteColour::Green, NoteColour::Red, NoteColour::Yellow,
             NoteColour::Blue, NoteColour::Orange};
 
-        constexpr std::array<std::tuple<int, int>, 4> diff_ranges {
-            {{96, 100}, {84, 88}, {72, 76}, {60, 64}}};
+        constexpr std::array<std::uint8_t, 4> diff_ranges {96, 84, 72, 60};
 
-        for (const auto& [min, max] : diff_ranges) {
-            if (key >= min && key <= max) {
-                return NOTE_COLOURS.at(key - min);
+        for (auto min : diff_ranges) {
+            if (key >= min && (key - min) < NOTE_COLOURS.size()) {
+                return NOTE_COLOURS[key - min];
             }
         }
 
@@ -544,12 +543,11 @@ template <typename T> static T colour_from_key(std::uint8_t key)
             GHLNoteColour::BlackLow, GHLNoteColour::BlackMid,
             GHLNoteColour::BlackHigh};
 
-        constexpr std::array<std::tuple<int, int>, 4> diff_ranges {
-            {{94, 100}, {82, 88}, {70, 76}, {58, 64}}};
+        constexpr std::array<std::uint8_t, 4> diff_ranges {94, 82, 70, 58};
 
-        for (const auto& [min, max] : diff_ranges) {
-            if (key >= min && key <= max) {
-                return GHL_NOTE_COLOURS.at(key - min);
+        for (auto min : diff_ranges) {
+            if (key >= min && (key - min) < GHL_NOTE_COLOURS.size()) {
+                return GHL_NOTE_COLOURS[key - min];
             }
         }
 
@@ -560,12 +558,11 @@ template <typename T> static T colour_from_key(std::uint8_t key)
             DrumNoteColour::YellowCymbal, DrumNoteColour::BlueCymbal,
             DrumNoteColour::GreenCymbal};
 
-        constexpr std::array<std::tuple<int, int>, 4> diff_ranges {
-            {{96, 100}, {84, 88}, {72, 76}, {60, 64}}};
+        constexpr std::array<std::uint8_t, 4> diff_ranges {96, 84, 72, 60};
 
-        for (const auto& [min, max] : diff_ranges) {
-            if (key >= min && key <= max) {
-                return DRUM_NOTE_COLOURS.at(key - min);
+        for (auto min : diff_ranges) {
+            if (key >= min && (key - min) <= DRUM_NOTE_COLOURS.size()) {
+                return DRUM_NOTE_COLOURS[key - min];
             }
         }
 

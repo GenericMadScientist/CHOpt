@@ -239,6 +239,74 @@ public:
         m_solos = std::move(solos);
 
         m_base_score = compute_base_score();
+
+        // We handle open note merging at the end because in v23 the removed
+        // notes still affect the base score.
+        std::vector<Note<T>> merged_notes;
+        if constexpr (std::is_same_v<T, NoteColour>) {
+            for (auto p = m_notes.cbegin(); p < m_notes.cend();) {
+                auto q = std::next(p);
+                while (q < m_notes.cend() && p->position == q->position) {
+                    q = std::next(q);
+                }
+                for (auto r = p; r < q; ++r) {
+                    if (r->colour == NoteColour::Open) {
+                        merged_notes.push_back(*r);
+                        continue;
+                    }
+                    bool discarded = false;
+                    for (auto s = p; s < q; ++s) {
+                        if (s == r) {
+                            continue;
+                        }
+                        if (s->colour != NoteColour::Open) {
+                            continue;
+                        }
+                        if (s->length == r->length) {
+                            discarded = true;
+                            break;
+                        }
+                    }
+                    if (!discarded) {
+                        merged_notes.push_back(*r);
+                    }
+                }
+                p = q;
+            }
+        } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
+            for (auto p = m_notes.cbegin(); p < m_notes.cend();) {
+                auto q = std::next(p);
+                while (q < m_notes.cend() && p->position == q->position) {
+                    q = std::next(q);
+                }
+                for (auto r = p; r < q; ++r) {
+                    if (r->colour == GHLNoteColour::Open) {
+                        merged_notes.push_back(*r);
+                        continue;
+                    }
+                    bool discarded = false;
+                    for (auto s = p; s < q; ++s) {
+                        if (s == r) {
+                            continue;
+                        }
+                        if (s->colour != GHLNoteColour::Open) {
+                            continue;
+                        }
+                        if (s->length == r->length) {
+                            discarded = true;
+                            break;
+                        }
+                    }
+                    if (!discarded) {
+                        merged_notes.push_back(*r);
+                    }
+                }
+                p = q;
+            }
+        } else {
+            merged_notes = m_notes;
+        }
+        m_notes = std::move(merged_notes);
     }
 
     [[nodiscard]] const std::vector<Note<T>>& notes() const { return m_notes; }

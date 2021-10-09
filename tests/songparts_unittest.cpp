@@ -82,6 +82,18 @@ TEST_CASE("NoteTrack ctor maintains invariants")
         REQUIRE(track.notes() == required_notes);
     }
 
+    SECTION("Open notes and non-open notes of same pos and length are merged")
+    {
+        std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green},
+                                             {768, 1, NoteColour::Red},
+                                             {768, 0, NoteColour::Open}};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+        std::vector<Note<NoteColour>> required_notes {
+            {768, 1, NoteColour::Red}, {768, 0, NoteColour::Open}};
+
+        REQUIRE(track.notes() == required_notes);
+    }
+
     SECTION("Resolution is positive")
     {
         std::vector<Note<NoteColour>> notes {{768}};
@@ -194,6 +206,15 @@ TEST_CASE("Base score for average multiplier is correct")
         NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
 
         REQUIRE(track.base_score() == 275);
+    }
+
+    SECTION("Base score is correctly handled with open note merging")
+    {
+        std::vector<Note<NoteColour>> notes {{0, 0}, {0, 0, NoteColour::Open}};
+
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+
+        REQUIRE(track.base_score() == 100);
     }
 }
 
