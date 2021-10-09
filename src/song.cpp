@@ -527,7 +527,7 @@ template <typename T> static T colour_from_key(std::uint8_t key)
             NoteColour::Green, NoteColour::Red, NoteColour::Yellow,
             NoteColour::Blue, NoteColour::Orange};
 
-        constexpr std::array<std::uint8_t, 4> diff_ranges {96, 84, 72, 60};
+        constexpr std::array<unsigned int, 4> diff_ranges {96, 84, 72, 60};
 
         for (auto min : diff_ranges) {
             if (key >= min && (key - min) < NOTE_COLOURS.size()) {
@@ -543,7 +543,7 @@ template <typename T> static T colour_from_key(std::uint8_t key)
             GHLNoteColour::BlackLow, GHLNoteColour::BlackMid,
             GHLNoteColour::BlackHigh};
 
-        constexpr std::array<std::uint8_t, 4> diff_ranges {94, 82, 70, 58};
+        constexpr std::array<unsigned int, 4> diff_ranges {94, 82, 70, 58};
 
         for (auto min : diff_ranges) {
             if (key >= min && (key - min) < GHL_NOTE_COLOURS.size()) {
@@ -558,7 +558,7 @@ template <typename T> static T colour_from_key(std::uint8_t key)
             DrumNoteColour::YellowCymbal, DrumNoteColour::BlueCymbal,
             DrumNoteColour::GreenCymbal};
 
-        constexpr std::array<std::uint8_t, 4> diff_ranges {96, 84, 72, 60};
+        constexpr std::array<unsigned int, 4> diff_ranges {96, 84, 72, 60};
 
         for (auto min : diff_ranges) {
             if (key >= min && (key - min) <= DRUM_NOTE_COLOURS.size()) {
