@@ -597,15 +597,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                                          song.unison_phrase_positions()};
     Path path;
 
-    // Nesting with if constexpr is purely to keep MSVC warnings happy.
-    if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        // Needed to keep GCC warnings happy since we never use terminate in the
-        // case of drums.
-        (void)terminate;
-        if (!settings.blank) {
-            write("Optimisation disabled for drums");
-        }
-    } else if (!settings.blank) {
+    if (!settings.blank) {
         write("Optimising, please wait...");
         const Optimiser optimiser {&processed_track, terminate,
                                    Second {settings.whammy_delay}};
