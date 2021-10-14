@@ -586,7 +586,6 @@ static bool is_cymbal_colour(DrumNoteColour note_colour)
 void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
-    constexpr std::array<unsigned char, 3> white {255, 255, 255};
     constexpr int RADIUS = 5;
 
     auto colour = note_colour_to_colour(note_colour);
@@ -597,15 +596,16 @@ void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
                                colour.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                black.data(), 1.0, ~0U);
+    } else if (is_cymbal_colour(note_colour)) {
+        m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
+                              y + offset + RADIUS, x + RADIUS,
+                              y + offset + RADIUS, colour.data());
+        m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
+                              y + offset + RADIUS, x + RADIUS,
+                              y + offset + RADIUS, black.data(), 1.0, ~0U);
     } else {
         m_image.draw_circle(x, y + offset, RADIUS, colour.data());
         m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
-        if (is_cymbal_colour(note_colour)) {
-            m_image.draw_circle(x, y + offset, RADIUS - 1, white.data(), 1.0,
-                                ~0U);
-            m_image.draw_circle(x, y + offset, RADIUS - 2, white.data(), 1.0,
-                                ~0U);
-        }
     }
 }
 
