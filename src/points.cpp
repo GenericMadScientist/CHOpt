@@ -138,6 +138,27 @@ static void append_note_points(InputIt first, InputIt last, InputIt note_end,
     }
 }
 
+static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
+                                       std::vector<Point>& points)
+{
+    for (auto fill : track.drum_fills()) {
+        const Beat fill_start {fill.start
+                               / static_cast<double>(track.resolution())};
+        const Beat fill_end {fill.end
+                             / static_cast<double>(track.resolution())};
+        const auto earliest
+            = std::find_if(points.begin(), points.end(), [&](auto p) {
+                  return p.position.beat >= fill_start;
+              });
+        const auto earliest_after
+            = std::find_if(earliest, points.end(),
+                           [&](auto p) { return p.position.beat >= fill_end; });
+        if (earliest != earliest_after) {
+            std::prev(earliest_after)->is_activation_note = true;
+        }
+    }
+}
+
 template <typename T>
 static std::vector<Point>
 points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
@@ -186,23 +207,7 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
                      });
 
     if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        for (auto fill : track.drum_fills()) {
-            const Beat fill_start {fill.start
-                                   / static_cast<double>(track.resolution())};
-            const Beat fill_end {fill.end
-                                 / static_cast<double>(track.resolution())};
-            const auto earliest
-                = std::find_if(points.begin(), points.end(), [&](auto p) {
-                      return p.position.beat >= fill_start;
-                  });
-            const auto earliest_after
-                = std::find_if(earliest, points.end(), [&](auto p) {
-                      return p.position.beat >= fill_end;
-                  });
-            if (earliest != earliest_after) {
-                std::prev(earliest_after)->is_activation_note = true;
-            }
-        }
+        add_drum_activation_points(track, points);
     }
 
     auto combo = 0;
