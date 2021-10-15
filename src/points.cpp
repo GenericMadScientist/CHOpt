@@ -67,14 +67,15 @@ append_sustain_points(OutputIt points, int position, int sust_length,
         const Beat beat {(float_pos - HALF_RES_OFFSET) / float_res};
         const auto meas = converter.beats_to_measures(beat);
         --sust_ticks;
-        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, 1, 1,
-                     true,         false,        false};
+        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, 1,    1,
+                     true,         false,        false,        false};
     }
     if (sust_ticks > 0) {
         const Beat beat {(float_pos + HALF_RES_OFFSET) / float_res};
         const auto meas = converter.beats_to_measures(beat);
-        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, sust_ticks,
-                     sust_ticks,   true,         false,        false};
+        *points++
+            = {{beat, meas}, {beat, meas}, {beat, meas}, sust_ticks, sust_ticks,
+               true,         false,        false,        false};
     }
 }
 
@@ -118,7 +119,8 @@ static void append_note_points(InputIt first, InputIt last, InputIt note_end,
                  note_value * chord_size,
                  false,
                  is_note_sp_ender,
-                 is_unison_sp_ender};
+                 is_unison_sp_ender,
+                 false};
 
     auto [min_iter, max_iter]
         = std::minmax_element(first, last, [](const auto& x, const auto& y) {
@@ -182,6 +184,26 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
                      [](const auto& x, const auto& y) {
                          return x.position.beat < y.position.beat;
                      });
+
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        for (auto fill : track.drum_fills()) {
+            const Beat fill_start {fill.start
+                                   / static_cast<double>(track.resolution())};
+            const Beat fill_end {fill.end
+                                 / static_cast<double>(track.resolution())};
+            const auto earliest
+                = std::find_if(points.begin(), points.end(), [&](auto p) {
+                      return p.position.beat >= fill_start;
+                  });
+            const auto earliest_after
+                = std::find_if(earliest, points.end(), [&](auto p) {
+                      return p.position.beat >= fill_end;
+                  });
+            if (earliest != earliest_after) {
+                std::prev(earliest_after)->is_activation_note = true;
+            }
+        }
+    }
 
     auto combo = 0;
     for (auto& point : points) {

@@ -36,6 +36,7 @@ struct Point {
     bool is_hold_point;
     bool is_sp_granting_note;
     bool is_unison_sp_granting_note;
+    bool is_activation_note;
 };
 
 using PointPtr = std::vector<Point>::const_iterator;

@@ -322,7 +322,7 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
         = form_solo_vector(solo_on_events, solo_off_events, notes, false);
 
     return NoteTrack<T> {
-        std::move(notes), std::move(sp), std::move(solos), {}, resolution};
+        std::move(notes), std::move(sp), std::move(solos), {}, {}, resolution};
 }
 
 std::vector<Instrument> Song::instruments() const
@@ -865,10 +865,10 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
             solo_offs.push_back(pos);
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
-        note_tracks.emplace(diff,
-                            NoteTrack<NoteColour> {note_set, sp_phrases,
-                                                   std::move(solos), bre,
-                                                   resolution});
+        note_tracks.emplace(
+            diff,
+            NoteTrack<NoteColour> {
+                note_set, sp_phrases, std::move(solos), {}, bre, resolution});
     }
 
     return note_tracks;
@@ -916,7 +916,7 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         note_tracks.emplace(
             diff,
             NoteTrack<GHLNoteColour> {
-                note_set, sp_phrases, std::move(solos), {}, resolution});
+                note_set, sp_phrases, std::move(solos), {}, {}, resolution});
     }
 
     return note_tracks;
@@ -1009,7 +1009,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         note_tracks.emplace(
             diff,
             NoteTrack<DrumNoteColour> {
-                note_set, sp_phrases, std::move(solos), {}, resolution});
+                note_set, sp_phrases, std::move(solos), {}, {}, resolution});
     }
 
     return note_tracks;

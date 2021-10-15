@@ -49,7 +49,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     SECTION("Notes are sorted")
     {
         std::vector<Note<NoteColour>> notes {{768}, {384}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
         std::vector<Note<NoteColour>> sorted_notes {{384}, {768}};
 
         REQUIRE(track.notes() == sorted_notes);
@@ -58,13 +58,13 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     SECTION("Notes of the same colour and position are merged")
     {
         std::vector<Note<NoteColour>> notes {{768, 0}, {768, 768}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
         std::vector<Note<NoteColour>> required_notes {{768, 768}};
 
         REQUIRE(track.notes() == required_notes);
 
         std::vector<Note<NoteColour>> second_notes {{768, 768}, {768, 0}};
-        NoteTrack<NoteColour> second_track {second_notes, {}, {}, {}, 192};
+        NoteTrack<NoteColour> second_track {second_notes, {}, {}, {}, {}, 192};
         std::vector<Note<NoteColour>> second_required_notes {{768, 0}};
 
         REQUIRE(second_track.notes() == second_required_notes);
@@ -75,7 +75,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
         std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green},
                                              {768, 0, NoteColour::Red},
                                              {768, 768, NoteColour::Green}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
         std::vector<Note<NoteColour>> required_notes {
             {768, 768, NoteColour::Green}, {768, 0, NoteColour::Red}};
 
@@ -87,7 +87,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
         std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green},
                                              {768, 1, NoteColour::Red},
                                              {768, 0, NoteColour::Open}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
         std::vector<Note<NoteColour>> required_notes {
             {768, 1, NoteColour::Red}, {768, 0, NoteColour::Open}};
 
@@ -98,7 +98,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     {
         std::vector<Note<NoteColour>> notes {{768}};
         REQUIRE_THROWS_AS(
-            [&] { return NoteTrack<NoteColour>(notes, {}, {}, {}, 0); }(),
+            [&] { return NoteTrack<NoteColour>(notes, {}, {}, {}, {}, 0); }(),
             ParseError);
     }
 
@@ -106,7 +106,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     {
         std::vector<Note<NoteColour>> notes {{768}};
         std::vector<StarPower> phrases {{0, 100}, {700, 100}, {1000, 100}};
-        NoteTrack<NoteColour> track {notes, phrases, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, 192};
         std::vector<StarPower> required_phrases {{700, 100}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
@@ -116,7 +116,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     {
         std::vector<Note<NoteColour>> notes {{768}, {1000}};
         std::vector<StarPower> phrases {{1000, 1}, {768, 1}};
-        NoteTrack<NoteColour> track {notes, phrases, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, 192};
         std::vector<StarPower> required_phrases {{768, 1}, {1000, 1}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
@@ -126,7 +126,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     {
         std::vector<Note<NoteColour>> notes {{768}, {1000}, {1500}};
         std::vector<StarPower> phrases {{768, 1000}, {900, 150}};
-        NoteTrack<NoteColour> track {notes, phrases, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, 192};
         std::vector<StarPower> required_phrases {{768, 282}, {1050, 718}};
 
         REQUIRE(track.sp_phrases() == required_phrases);
@@ -136,7 +136,7 @@ TEST_CASE("NoteTrack ctor maintains invariants")
     {
         std::vector<Note<NoteColour>> notes {{0}, {768}};
         std::vector<Solo> solos {{768, 868, 100}, {0, 100, 100}};
-        NoteTrack<NoteColour> track {notes, {}, solos, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, solos, {}, {}, 192};
         std::vector<Solo> required_solos {{0, 100, 100}, {768, 868, 100}};
 
         REQUIRE(track.solos() == required_solos);
@@ -150,7 +150,7 @@ TEST_CASE("Base score for average multiplier is correct")
         std::vector<Note<NoteColour>> notes {
             {192}, {384}, {384, 0, NoteColour::Red}};
 
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
 
         REQUIRE(track.base_score() == 150);
     }
@@ -161,9 +161,9 @@ TEST_CASE("Base score for average multiplier is correct")
         std::vector<Note<NoteColour>> notes_two {{192, 92}};
         std::vector<Note<NoteColour>> notes_three {{192, 93}};
 
-        NoteTrack<NoteColour> track_one {notes_one, {}, {}, {}, 192};
-        NoteTrack<NoteColour> track_two {notes_two, {}, {}, {}, 192};
-        NoteTrack<NoteColour> track_three {notes_three, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track_one {notes_one, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track_two {notes_two, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track_three {notes_three, {}, {}, {}, {}, 192};
 
         REQUIRE(track_one.base_score() == 75);
         REQUIRE(track_two.base_score() == 62);
@@ -175,7 +175,7 @@ TEST_CASE("Base score for average multiplier is correct")
         std::vector<Note<NoteColour>> notes {{192, 192},
                                              {192, 192, NoteColour::Red}};
 
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
 
         REQUIRE(track.base_score() == 125);
     }
@@ -184,7 +184,7 @@ TEST_CASE("Base score for average multiplier is correct")
     {
         std::vector<Note<NoteColour>> notes {{192, 192}};
 
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, 480};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 480};
 
         REQUIRE(track.base_score() == 60);
     }
@@ -193,7 +193,7 @@ TEST_CASE("Base score for average multiplier is correct")
     {
         std::vector<Note<NoteColour>> notes {{0, 100}, {192, 100}};
 
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
 
         REQUIRE(track.base_score() == 127);
     }
@@ -203,7 +203,7 @@ TEST_CASE("Base score for average multiplier is correct")
         std::vector<Note<NoteColour>> notes {
             {0, 384}, {0, 384, NoteColour::Red}, {0, 192, NoteColour::Yellow}};
 
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
 
         REQUIRE(track.base_score() == 275);
     }
@@ -212,7 +212,7 @@ TEST_CASE("Base score for average multiplier is correct")
     {
         std::vector<Note<NoteColour>> notes {{0, 0}, {0, 0, NoteColour::Open}};
 
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
 
         REQUIRE(track.base_score() == 100);
     }
@@ -221,7 +221,7 @@ TEST_CASE("Base score for average multiplier is correct")
 TEST_CASE("trim_sustains is correct")
 {
     const std::vector<Note<NoteColour>> notes {{0, 65}, {200, 70}, {400, 140}};
-    const NoteTrack<NoteColour> track {notes, {}, {}, {}, 200};
+    const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 200};
 
     SECTION("100% speed")
     {
@@ -261,7 +261,7 @@ TEST_CASE("snap_chords is correct")
 {
     const std::vector<Note<NoteColour>> notes {{0, 0, NoteColour::Green},
                                                {5, 0, NoteColour::Red}};
-    const NoteTrack<NoteColour> track {notes, {}, {}, {}, 480};
+    const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 480};
 
     SECTION("No snapping")
     {
