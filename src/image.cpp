@@ -72,7 +72,7 @@ static std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
     constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
     constexpr std::array<unsigned char, 3> BLUE {0, 0, 255};
     constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
-    constexpr std::array<unsigned char, 3> PURPLE {128, 0, 128};
+    constexpr std::array<unsigned char, 3> ORANGE {255, 165, 0};
 
     switch (colour) {
     case DrumNoteColour::Red:
@@ -87,7 +87,7 @@ static std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
     case DrumNoteColour::GreenCymbal:
         return GREEN;
     case DrumNoteColour::Kick:
-        return PURPLE;
+        return ORANGE;
     }
 
     throw std::invalid_argument("Invalid colour to note_colour_to_colour");
