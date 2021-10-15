@@ -315,6 +315,27 @@ static std::string to_colour_string(const std::vector<GHLNoteColour>& colours)
     return colour_string;
 }
 
+static std::string to_colour_string(DrumNoteColour colour)
+{
+    const std::vector<std::tuple<DrumNoteColour, std::string>> COLOUR_NAMES {
+        {DrumNoteColour::Red, "R"},
+        {DrumNoteColour::Yellow, "Y"},
+        {DrumNoteColour::Blue, "B"},
+        {DrumNoteColour::Green, "G"},
+        {DrumNoteColour::YellowCymbal, "Y cymbal"},
+        {DrumNoteColour::BlueCymbal, "B cymbal"},
+        {DrumNoteColour::GreenCymbal, "G cymbal"},
+        {DrumNoteColour::Kick, "kick"}};
+
+    for (const auto& [colour_key, string] : COLOUR_NAMES) {
+        if (colour_key == colour) {
+            return string;
+        }
+    }
+
+    throw std::invalid_argument("Invalid drum colour");
+}
+
 template <typename T>
 static std::vector<std::string> note_colours(const std::vector<Note<T>>& notes,
                                              const std::vector<Point>& points)
@@ -327,13 +348,19 @@ static std::vector<std::string> note_colours(const std::vector<Note<T>>& notes,
             colours.emplace_back("");
             continue;
         }
-        std::vector<T> current_colours;
-        const auto position = note_ptr->position;
-        while ((note_ptr != notes.cend()) && (note_ptr->position == position)) {
-            current_colours.push_back(note_ptr->colour);
+        if constexpr (std::is_same_v<T, DrumNoteColour>) {
+            colours.push_back(to_colour_string(note_ptr->colour));
             ++note_ptr;
+        } else {
+            std::vector<T> current_colours;
+            const auto position = note_ptr->position;
+            while ((note_ptr != notes.cend())
+                   && (note_ptr->position == position)) {
+                current_colours.push_back(note_ptr->colour);
+                ++note_ptr;
+            }
+            colours.push_back(to_colour_string(current_colours));
         }
-        colours.push_back(to_colour_string(current_colours));
     }
     return colours;
 }
@@ -382,6 +409,7 @@ PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
                                             converter)}
     , m_cumulative_score_totals {score_totals(m_points)}
     , m_video_lag {video_lag}
+    , m_colours {note_colours(track.notes(), m_points)}
 {
 }
 

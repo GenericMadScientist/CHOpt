@@ -538,3 +538,21 @@ TEST_CASE("colour_set is correct for 6 fret")
     REQUIRE(points.colour_set(begin + 1) == "B3");
     REQUIRE(points.colour_set(end - 1) == "open");
 }
+
+TEST_CASE("colour_set is correct for drums")
+{
+    std::vector<Note<DrumNoteColour>> notes {
+        {0},
+        {0, 0, DrumNoteColour::YellowCymbal},
+        {176, 0, DrumNoteColour::BlueCymbal},
+        {500, 0, DrumNoteColour::Kick}};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, 192};
+    PointSet points {track,     {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0),
+                     ChEngine()};
+    const auto begin = points.cbegin();
+    const auto end = points.cend();
+
+    REQUIRE(points.colour_set(begin) == "R");
+    REQUIRE(points.colour_set(begin + 1) == "Y cymbal");
+    REQUIRE(points.colour_set(end - 1) == "kick");
+}
