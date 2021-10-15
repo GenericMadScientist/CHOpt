@@ -20,6 +20,7 @@ function(set_cpp_standard target)
 endfunction()
 
 # Set warning flags
+# We need -Wno-reserved-identifier for now because Catch2 triggers it
 function(set_warnings target)
   target_compile_options(
     ${target}
@@ -27,7 +28,8 @@ function(set_warnings target)
             -Wall
             -Wextra
             -Werror
-            -Wno-c++98-compat>
+            -Wno-c++98-compat
+            -Wno-reserved-identifier>
             $<$<CXX_COMPILER_ID:MSVC>:
             /W4
             /WX>)
