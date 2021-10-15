@@ -29,7 +29,8 @@ function(set_warnings target)
             -Wextra
             -Werror
             -Wno-c++98-compat
-            -Wno-reserved-identifier>
+            -Wno-reserved-identifier
+            -Wno-unknown-warning-option>
             $<$<CXX_COMPILER_ID:MSVC>:
             /W4
             /WX>)
