@@ -40,7 +40,7 @@ struct NoteEvent {
     int length;
 };
 
-struct SPEvent {
+struct SpecialEvent {
     int position;
     int key;
     int length;
@@ -58,7 +58,7 @@ struct ChartSection {
     std::vector<BpmEvent> bpm_events;
     std::vector<Event> events;
     std::vector<NoteEvent> note_events;
-    std::vector<SPEvent> sp_events;
+    std::vector<SpecialEvent> special_events;
     std::vector<TimeSigEvent> ts_events;
 };
 

@@ -44,11 +44,19 @@ static bool operator==(const TimeSignature& lhs, const TimeSignature& rhs)
         == std::tie(rhs.position, rhs.numerator, rhs.denominator);
 }
 
+static bool operator==(const DrumFill& lhs, const DrumFill& rhs)
+{
+    return std::tie(lhs.position, lhs.length)
+        == std::tie(rhs.position, rhs.length);
+}
+
 template <typename T>
 static bool operator==(const NoteTrack<T>& lhs, const NoteTrack<T>& rhs)
 {
-    return std::tie(lhs.notes(), lhs.sp_phrases(), lhs.solos())
-        == std::tie(rhs.notes(), rhs.sp_phrases(), rhs.solos());
+    return std::tie(lhs.notes(), lhs.sp_phrases(), lhs.solos(),
+                    lhs.drum_fills())
+        == std::tie(rhs.notes(), rhs.sp_phrases(), rhs.solos(),
+                    rhs.drum_fills());
 }
 
 TEST_CASE("Chart -> Song has correct value for is_from_midi")
@@ -549,6 +557,20 @@ TEST_CASE("Invalid drum notes are ignored")
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
     REQUIRE(track.notes().size() == 1);
+}
+
+TEST_CASE("Drum fills are read from .chart")
+{
+    ChartSection drums {"ExpertDrums",  {}, {}, {}, {{192, 1, 0}},
+                        {{192, 64, 1}}, {}};
+    std::vector<ChartSection> sections {drums};
+    const Chart chart {sections};
+
+    const auto song = Song::from_chart(chart, {});
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    REQUIRE(track.drum_fills().size() == 1);
+    REQUIRE(track.drum_fills()[0] == DrumFill {192, 1});
 }
 
 TEST_CASE("Midi -> Song has correct value for is_from_midi")

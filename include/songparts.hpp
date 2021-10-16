@@ -97,8 +97,8 @@ struct Solo {
 };
 
 struct DrumFill {
-    int start;
-    int end;
+    int position;
+    int length;
 };
 
 struct BigRockEnding {

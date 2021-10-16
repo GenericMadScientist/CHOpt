@@ -142,9 +142,9 @@ static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
                                        std::vector<Point>& points)
 {
     for (auto fill : track.drum_fills()) {
-        const Beat fill_start {fill.start
+        const Beat fill_start {fill.position
                                / static_cast<double>(track.resolution())};
-        const Beat fill_end {fill.end
+        const Beat fill_end {(fill.position + fill.length)
                              / static_cast<double>(track.resolution())};
         const auto earliest
             = std::find_if(points.begin(), points.end(), [&](auto p) {

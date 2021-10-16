@@ -300,11 +300,18 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
         notes = apply_cymbal_events(notes);
     }
 
+    std::vector<DrumFill> fills;
     std::vector<StarPower> sp;
-    for (const auto& phrase : section.sp_events) {
+    for (const auto& phrase : section.special_events) {
         if (phrase.key == 2) {
             sp.push_back(StarPower {phrase.position, phrase.length});
+        } else if (phrase.key == 64) {
+            fills.push_back(DrumFill {phrase.position, phrase.length});
         }
+    }
+    if constexpr (!std::is_same_v<T, DrumNoteColour>) {
+        fills.clear();
+        fills.shrink_to_fit();
     }
 
     std::vector<int> solo_on_events;
@@ -322,7 +329,8 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
         = form_solo_vector(solo_on_events, solo_off_events, notes, false);
 
     return NoteTrack<T> {
-        std::move(notes), std::move(sp), std::move(solos), {}, {}, resolution};
+        std::move(notes), std::move(sp), std::move(solos), std::move(fills), {},
+        resolution};
 }
 
 std::vector<Instrument> Song::instruments() const

@@ -415,7 +415,7 @@ TEST_CASE("optimal_path produces the correct path")
     {
         std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {3000}, {4000}};
         std::vector<StarPower> phrases {{0, 1}, {192, 1}};
-        std::vector<DrumFill> fills {{3900, 4001}};
+        std::vector<DrumFill> fills {{3900, 101}};
         NoteTrack<DrumNoteColour> note_track {notes, phrases, {},
                                               fills, {},      192};
         ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
@@ -434,7 +434,7 @@ TEST_CASE("optimal_path produces the correct path")
             {0}, {192}, {3840}, {3940}, {4040}, {17000}, {20000}, {20100}};
         std::vector<StarPower> phrases {
             {0, 1}, {192, 1}, {4040, 1}, {17000, 1}};
-        std::vector<DrumFill> fills {{3830, 3850}, {19990, 20010}};
+        std::vector<DrumFill> fills {{3830, 20}, {19990, 20}};
         NoteTrack<DrumNoteColour> note_track {notes, phrases, {},
                                               fills, {},      192};
 

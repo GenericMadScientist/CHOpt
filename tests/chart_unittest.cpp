@@ -39,7 +39,7 @@ static bool operator==(const NoteEvent& lhs, const NoteEvent& rhs)
         == std::tie(rhs.position, rhs.fret, rhs.length);
 }
 
-static bool operator==(const SPEvent& lhs, const SPEvent& rhs)
+static bool operator==(const SpecialEvent& lhs, const SpecialEvent& rhs)
 {
     return std::tie(lhs.position, lhs.key, lhs.length)
         == std::tie(rhs.position, rhs.key, rhs.length);
@@ -137,11 +137,11 @@ TEST_CASE("TS events are read")
 TEST_CASE("S events are read")
 {
     const char* text = "[Section]\n{\n1000 = S 2 700\n}";
-    const std::vector<SPEvent> events {{1000, 2, 700}};
+    const std::vector<SpecialEvent> events {{1000, 2, 700}};
 
     const auto section = parse_chart(text).sections[0];
 
-    REQUIRE(section.sp_events == events);
+    REQUIRE(section.special_events == events);
 }
 
 TEST_CASE("E events are read")

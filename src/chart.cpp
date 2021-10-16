@@ -83,9 +83,9 @@ convert_line_to_note(int position,
     return {position, *fret, *length};
 }
 
-static SPEvent
-convert_line_to_sp(int position,
-                   const std::vector<std::string_view>& split_line)
+static SpecialEvent
+convert_line_to_special(int position,
+                        const std::vector<std::string_view>& split_line)
 {
     constexpr int MAX_NORMAL_EVENT_SIZE = 5;
 
@@ -170,8 +170,8 @@ static ChartSection read_section(std::string_view& input)
                 section.note_events.push_back(
                     convert_line_to_note(pos, separated_line));
             } else if (separated_line[2] == "S") {
-                section.sp_events.push_back(
-                    convert_line_to_sp(pos, separated_line));
+                section.special_events.push_back(
+                    convert_line_to_special(pos, separated_line));
             } else if (separated_line[2] == "B") {
                 section.bpm_events.push_back(
                     convert_line_to_bpm(pos, separated_line));
