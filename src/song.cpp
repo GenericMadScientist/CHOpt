@@ -288,6 +288,8 @@ template <typename T>
 static NoteTrack<T> note_track_from_section(const ChartSection& section,
                                             int resolution)
 {
+    constexpr int DRUM_FILL_KEY = 64;
+
     std::vector<Note<T>> notes;
     for (const auto& note_event : section.note_events) {
         const auto note = note_from_note_colour<T>(
@@ -305,7 +307,7 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
     for (const auto& phrase : section.special_events) {
         if (phrase.key == 2) {
             sp.push_back(StarPower {phrase.position, phrase.length});
-        } else if (phrase.key == 64) {
+        } else if (phrase.key == DRUM_FILL_KEY) {
             fills.push_back(DrumFill {phrase.position, phrase.length});
         }
     }
