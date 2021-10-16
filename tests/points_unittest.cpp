@@ -568,7 +568,7 @@ TEST_CASE("colour_set is correct for drums")
 
 TEST_CASE("Activation notes are marked with drum fills")
 {
-    std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {384}, {576}};
+    std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {385}, {576}};
     std::vector<DrumFill> fills {{380, 5}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, 192};
     PointSet points {track,     {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0),

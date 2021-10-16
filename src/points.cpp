@@ -152,7 +152,7 @@ static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
               });
         const auto earliest_after
             = std::find_if(earliest, points.end(),
-                           [&](auto p) { return p.position.beat >= fill_end; });
+                           [&](auto p) { return p.position.beat > fill_end; });
         if (earliest != earliest_after) {
             std::prev(earliest_after)->is_activation_note = true;
         }
