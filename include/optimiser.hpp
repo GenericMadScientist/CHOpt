@@ -147,9 +147,9 @@ private:
     [[nodiscard]] std::tuple<Beat, Beat>
     act_duration(ProtoActivation act, CacheKey key, double sqz_level,
                  Position min_whammy_force) const;
-    [[nodiscard]] PointPtr try_activation(
-        PointPtrRangeSet& attained_act_ends,
-        const ActivationCandidate& candidate, Cache& cache,
+    void complete_subpath(
+        PointPtr p, Position starting_pos, SpBar sp_bar,
+        PointPtrRangeSet& attained_act_ends, Cache& cache,
         int& best_score_boost,
         std::vector<std::tuple<ProtoActivation, CacheKey>>& acts) const;
 

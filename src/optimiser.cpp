@@ -170,50 +170,55 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
     return {{next_acts, score_boost}};
 }
 
-// This function tries an activation and amends some data after. It then returns
-// the next activation end to try.
-PointPtr Optimiser::try_activation(
-    PointPtrRangeSet& attained_act_ends, const ActivationCandidate& candidate,
-    Cache& cache, int& best_score_boost,
+// This function takes some information and completes the optimal subpaths from
+// it.
+void Optimiser::complete_subpath(
+    PointPtr p, Position starting_pos, SpBar sp_bar,
+    PointPtrRangeSet& attained_act_ends, Cache& cache, int& best_score_boost,
     std::vector<std::tuple<ProtoActivation, CacheKey>>& acts) const
 {
-    const auto p = candidate.act_start;
-    const auto q = candidate.act_end;
+    for (auto q = attained_act_ends.lowest_absent_element();
+         q < m_song->points().cend();) {
+        if (attained_act_ends.contains(q)) {
+            ++q;
+            continue;
+        }
 
-    if (attained_act_ends.contains(q)) {
-        return std::next(q);
-    }
+        ActivationCandidate candidate {p, q, starting_pos, sp_bar};
+        const auto candidate_result = m_song->is_candidate_valid(candidate);
+        if (candidate_result.validity != ActValidity::insufficient_sp) {
+            attained_act_ends.add(q);
+        } else if (!q->is_hold_point) {
+            // We cannot hit any later points if q is not a hold point, so
+            // we are done.
+            q = m_song->points().cend();
+            continue;
+        } else {
+            // We cannot hit any subsequent hold point, so go straight to
+            // the next non-hold point.
+            q = m_song->points().next_non_hold_point(q);
+            continue;
+        }
 
-    const auto candidate_result = m_song->is_candidate_valid(candidate);
-    if (candidate_result.validity != ActValidity::insufficient_sp) {
-        attained_act_ends.add(q);
-    } else if (!q->is_hold_point) {
-        // We cannot hit any later points if q is not a hold point, so
-        // we are done.
-        return m_song->points().cend();
-    } else {
-        // We cannot hit any subsequent hold point, so go straight to
-        // the next non-hold point.
-        return m_song->points().next_non_hold_point(q);
-    }
+        if (candidate_result.validity != ActValidity::success) {
+            ++q;
+            continue;
+        }
 
-    if (candidate_result.validity != ActValidity::success) {
-        return std::next(q);
+        const auto act_score = m_song->points().range_score(p, std::next(q));
+        CacheKey next_key {std::next(q), candidate_result.ending_position};
+        next_key = advance_cache_key(next_key);
+        const auto rest_of_path_score_boost = get_partial_path(next_key, cache);
+        const auto score = act_score + rest_of_path_score_boost;
+        if (score > best_score_boost) {
+            best_score_boost = score;
+            acts.clear();
+            acts.push_back({{p, q}, next_key});
+        } else if (score == best_score_boost) {
+            acts.push_back({{p, q}, next_key});
+        }
+        ++q;
     }
-
-    const auto act_score = m_song->points().range_score(p, std::next(q));
-    CacheKey next_key {std::next(q), candidate_result.ending_position};
-    next_key = advance_cache_key(next_key);
-    const auto rest_of_path_score_boost = get_partial_path(next_key, cache);
-    const auto score = act_score + rest_of_path_score_boost;
-    if (score > best_score_boost) {
-        best_score_boost = score;
-        acts.clear();
-        acts.push_back({{p, q}, next_key});
-    } else if (score == best_score_boost) {
-        acts.push_back({{p, q}, next_key});
-    }
-    return std::next(q);
 }
 
 Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
@@ -282,12 +287,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                 = PointPtrRangeSet {earliest_pt_end, m_song->points().cend()};
             lower_bound_set = true;
         }
-        for (auto q = attained_act_ends.lowest_absent_element();
-             q < m_song->points().cend();) {
-            ActivationCandidate candidate {p, q, starting_pos, sp_bar};
-            q = try_activation(attained_act_ends, candidate, cache,
-                               best_score_boost, acts);
-        }
+        complete_subpath(p, starting_pos, sp_bar, attained_act_ends, cache,
+                         best_score_boost, acts);
     }
 
     return {acts, best_score_boost};
