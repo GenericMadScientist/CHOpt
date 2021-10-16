@@ -410,4 +410,21 @@ TEST_CASE("optimal_path produces the correct path")
         REQUIRE(opt_path.activations.size() == 2);
         REQUIRE(opt_path.score_boost == 550);
     }
+
+    SECTION("Drum paths can only activation on activation notes")
+    {
+        std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {3000}, {4000}};
+        std::vector<StarPower> phrases {{0, 1}, {192, 1}};
+        std::vector<DrumFill> fills {{3900, 4001}};
+        NoteTrack<DrumNoteColour> note_track {notes, phrases, {},
+                                              fills, {},      192};
+        ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
+                             Second(0.0), ChEngine(), {},  {}};
+        Optimiser optimiser {&track, &terminate, Second(0.1)};
+
+        const auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.activations.size() == 1);
+        REQUIRE(opt_path.score_boost == 50);
+    }
 }

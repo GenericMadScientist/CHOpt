@@ -83,6 +83,7 @@ private:
     int m_total_solo_boost;
     int m_base_score;
     bool m_ignore_average_multiplier;
+    bool m_is_drums;
 
     template <typename T>
     static int bre_boost(const NoteTrack<T>& track, const Engine& engine,
@@ -118,6 +119,7 @@ public:
         , m_total_bre_boost {bre_boost(track, engine, m_converter)}
         , m_base_score {track.base_score()}
         , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
+        , m_is_drums {std::is_same_v<T, DrumNoteColour>}
     {
         m_total_solo_boost = std::accumulate(
             track.solos().cbegin(), track.solos().cend(), 0,
@@ -163,6 +165,7 @@ public:
     [[nodiscard]] const PointSet& points() const { return m_points; }
     [[nodiscard]] const SpData& sp_data() const { return m_sp_data; }
     [[nodiscard]] const TimeConverter& converter() const { return m_converter; }
+    [[nodiscard]] bool is_drums() const { return m_is_drums; }
 };
 
 #endif

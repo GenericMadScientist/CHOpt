@@ -774,6 +774,27 @@ TEST_CASE("Video lag is taken account of")
     }
 }
 
+TEST_CASE("is_drums returns the correct value")
+{
+    SECTION("False for guitar")
+    {
+        NoteTrack<NoteColour> note_track {{}, {}, {}, {}, {}, 192};
+        ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
+                             Second(0.0), ChEngine(), {},  {}};
+
+        REQUIRE(!track.is_drums());
+    }
+
+    SECTION("True for drums")
+    {
+        NoteTrack<DrumNoteColour> note_track {{}, {}, {}, {}, {}, 192};
+        ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
+                             Second(0.0), ChEngine(), {},  {}};
+
+        REQUIRE(track.is_drums());
+    }
+}
+
 TEST_CASE("path_summary produces the correct output")
 {
     std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};

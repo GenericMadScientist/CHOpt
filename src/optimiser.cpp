@@ -231,6 +231,9 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
     auto best_score_boost = 0;
 
     for (auto p = key.point; p < m_song->points().cend(); ++p) {
+        if (m_song->is_drums() && !p->is_activation_note) {
+            continue;
+        }
         SpBar sp_bar {1.0, 1.0};
         Position starting_pos {Beat {NEG_INF}, Measure {NEG_INF}};
         if (p != m_song->points().cbegin()) {
