@@ -246,6 +246,12 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             sp_bar = new_sp;
             starting_pos = new_pos;
         }
+        if (m_song->is_drums()) {
+            starting_pos.beat
+                = std::max(starting_pos.beat, p->hit_window_start.beat);
+            starting_pos.measure
+                = std::max(starting_pos.measure, p->hit_window_start.measure);
+        }
         if (!sp_bar.full_enough_to_activate()) {
             continue;
         }

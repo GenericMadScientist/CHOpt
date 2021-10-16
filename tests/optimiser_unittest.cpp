@@ -427,4 +427,24 @@ TEST_CASE("optimal_path produces the correct path")
         REQUIRE(opt_path.activations.size() == 1);
         REQUIRE(opt_path.score_boost == 50);
     }
+
+    SECTION("Drum paths can't activate way earlier than an activation note")
+    {
+        std::vector<Note<DrumNoteColour>> notes {
+            {0}, {192}, {3840}, {3940}, {4040}, {17000}, {20000}, {20100}};
+        std::vector<StarPower> phrases {
+            {0, 1}, {192, 1}, {4040, 1}, {17000, 1}};
+        std::vector<DrumFill> fills {{3830, 3850}, {19990, 20010}};
+        NoteTrack<DrumNoteColour> note_track {notes, phrases, {},
+                                              fills, {},      192};
+
+        ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
+                             Second(0.0), ChEngine(), {},  {}};
+        Optimiser optimiser {&track, &terminate, Second(0.1)};
+
+        const auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.activations.size() == 1);
+        REQUIRE(opt_path.score_boost == 150);
+    }
 }
