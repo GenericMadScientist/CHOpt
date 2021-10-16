@@ -418,9 +418,9 @@ TEST_CASE("optimal_path produces the correct path")
         std::vector<DrumFill> fills {{3900, 101}};
         NoteTrack<DrumNoteColour> note_track {notes, phrases, {},
                                               fills, {},      192};
-        ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
+        ProcessedSong track {note_track,  {},         0.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate, Second(0.1)};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -438,13 +438,32 @@ TEST_CASE("optimal_path produces the correct path")
         NoteTrack<DrumNoteColour> note_track {notes, phrases, {},
                                               fills, {},      192};
 
-        ProcessedSong track {note_track,  {},         1.0, 1.0, Second(0.0),
+        ProcessedSong track {note_track,  {},         0.0, 1.0, Second(0.0),
                              Second(0.0), ChEngine(), {},  {}};
-        Optimiser optimiser {&track, &terminate, Second(0.1)};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.activations.size() == 1);
         REQUIRE(opt_path.score_boost == 150);
+    }
+
+    SECTION("Drum reverse squeezes are drawn properly")
+    {
+        std::vector<Note<DrumNoteColour>> notes {
+            {0}, {192}, {19200}, {22232}, {22260}, {90000}, {90100}, {90200}};
+        std::vector<StarPower> phrases {
+            {0, 1}, {192, 1}, {22232, 1}, {22260, 1}};
+        std::vector<DrumFill> fills {{19190, 20}, {89990, 20}};
+        NoteTrack<DrumNoteColour> note_track {notes, phrases, {},
+                                              fills, {},      192};
+        ProcessedSong track {note_track,  {},         0.0, 1.0, Second(0.0),
+                             Second(0.0), ChEngine(), {},  {}};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
+
+        const auto opt_path = optimiser.optimal_path();
+
+        REQUIRE(opt_path.activations.size() == 2);
+        REQUIRE(opt_path.activations[0].sp_start > Beat(99.8));
     }
 }

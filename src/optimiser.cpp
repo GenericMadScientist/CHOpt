@@ -341,11 +341,14 @@ double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
 
     auto min_sqz = 0.0;
     auto max_sqz = 1.0;
-    auto prev_point = std::prev(act.act_start);
+    // Determines what point controls how early we can go: the previous point on
+    // guitar and the current point on drums.
+    const auto start_bound_point
+        = m_song->is_drums() ? act.act_start : std::prev(act.act_start);
     while (max_sqz - min_sqz > THRESHOLD) {
         auto trial_sqz = (min_sqz + max_sqz) / 2;
         auto start_pos
-            = m_song->adjusted_hit_window_start(prev_point, trial_sqz);
+            = m_song->adjusted_hit_window_start(start_bound_point, trial_sqz);
         if (start_pos.beat < key.position.beat) {
             start_pos = key.position;
         }
@@ -410,8 +413,12 @@ std::tuple<Beat, Beat> Optimiser::act_duration(ProtoActivation act,
 {
     constexpr double THRESHOLD = 0.01;
 
-    auto prev_point = std::prev(act.act_start);
-    auto min_pos = m_song->adjusted_hit_window_start(prev_point, sqz_level);
+    // Determines what point controls how early we can go: the previous point on
+    // guitar and the current point on drums.
+    const auto start_bound_point
+        = m_song->is_drums() ? act.act_start : std::prev(act.act_start);
+    auto min_pos
+        = m_song->adjusted_hit_window_start(start_bound_point, sqz_level);
     auto max_pos = m_song->adjusted_hit_window_end(act.act_start, sqz_level);
     auto sp_bar = m_song->total_available_sp(
         key.position.beat, key.point, act.act_start, min_whammy_force.beat);
