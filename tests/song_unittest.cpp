@@ -1142,6 +1142,26 @@ TEST_CASE("Drums are read correctly from .mid")
     REQUIRE(track.notes() == notes);
 }
 
+TEST_CASE("Drum fills are read correctly from .mid")
+{
+    MidiTrack note_track {{
+        {0,
+         {MetaEvent {
+             3, {0x50, 0x41, 0x52, 0x54, 0x20, 0x44, 0x52, 0x55, 0x4D, 0x53}}}},
+        {0, {MidiEvent {0x90, {98, 64}}}},
+        {45, {MidiEvent {0x90, {120, 64}}}},
+        {65, {MidiEvent {0x80, {98, 0}}}},
+        {75, {MidiEvent {0x80, {120, 0}}}},
+    }};
+    const Midi midi {192, {note_track}};
+    const auto song = Song::from_midi(midi, {});
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    std::vector<DrumFill> fills {{45, 30}};
+
+    REQUIRE(track.drum_fills() == fills);
+}
+
 TEST_CASE("unison_phrase_positions() is correct")
 {
     ChartSection guitar {"ExpertSingle",
