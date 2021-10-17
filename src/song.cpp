@@ -115,16 +115,20 @@ form_solo_vector(const std::vector<int>& solo_on_events,
     for (auto [start, end] :
          combine_solo_events(solo_on_events, solo_off_events)) {
         std::set<int> positions_in_solo;
+        auto note_count = 0;
         for (const auto& note : notes) {
             if ((note.position >= start && note.position < end)
                 || (note.position == end && !is_midi)) {
                 positions_in_solo.insert(note.position);
+                ++note_count;
             }
         }
         if (positions_in_solo.empty()) {
             continue;
         }
-        auto note_count = static_cast<int>(positions_in_solo.size());
+        if constexpr (!std::is_same_v<T, DrumNoteColour>) {
+            note_count = static_cast<int>(positions_in_solo.size());
+        }
         solos.push_back({start, end, SOLO_NOTE_VALUE * note_count});
     }
 

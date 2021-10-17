@@ -525,7 +525,7 @@ TEST_CASE("6 fret instruments are read correctly from .chart")
     }
 }
 
-TEST_CASE("Drums are read correctly from .chart")
+TEST_CASE("Drum notes are read correctly from .chart")
 {
     ChartSection expert_drums {
         "ExpertDrums",
@@ -544,6 +544,24 @@ TEST_CASE("Drums are read correctly from .chart")
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
     REQUIRE(track.notes() == notes);
+}
+
+TEST_CASE("Drum solos are read correctly from .chart")
+{
+    ChartSection expert_drums {"ExpertDrums",
+                               {},
+                               {},
+                               {{0, "solo"}, {200, "soloend"}},
+                               {{192, 1, 0}, {192, 2, 0}},
+                               {},
+                               {}};
+    std::vector<ChartSection> sections {expert_drums};
+    const Chart chart {sections};
+
+    const auto song = Song::from_chart(chart, {});
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    REQUIRE(track.solos()[0].value == 200);
 }
 
 TEST_CASE("Invalid drum notes are ignored")
