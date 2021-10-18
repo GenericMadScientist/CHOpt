@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -138,6 +139,12 @@ static void append_note_points(InputIt first, InputIt last, InputIt note_end,
     }
 }
 
+static bool is_kick_colour(DrumNoteColour colour)
+{
+    return colour == DrumNoteColour::Kick
+        || colour == DrumNoteColour::DoubleKick;
+}
+
 static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
                                        std::vector<Point>& points)
 {
@@ -161,11 +168,11 @@ static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
                 return n.position > (fill.position + fill.length);
             }));
         auto first_note = last_note;
-        bool has_non_kick = last_note->colour != DrumNoteColour::Kick;
+        bool has_non_kick = !is_kick_colour(last_note->colour);
         while (!has_non_kick && first_note > track.notes().cbegin()
                && std::prev(first_note)->position == last_note->position) {
             --first_note;
-            has_non_kick = first_note->colour != DrumNoteColour::Kick;
+            has_non_kick = !is_kick_colour(first_note->colour);
         }
         if (has_non_kick) {
             auto first_point = std::prev(earliest_after);
@@ -364,15 +371,16 @@ static std::string to_colour_string(const std::vector<GHLNoteColour>& colours)
 
 static std::string to_colour_string(DrumNoteColour colour)
 {
-    const std::vector<std::tuple<DrumNoteColour, std::string>> COLOUR_NAMES {
-        {DrumNoteColour::Red, "R"},
-        {DrumNoteColour::Yellow, "Y"},
-        {DrumNoteColour::Blue, "B"},
-        {DrumNoteColour::Green, "G"},
-        {DrumNoteColour::YellowCymbal, "Y cymbal"},
-        {DrumNoteColour::BlueCymbal, "B cymbal"},
-        {DrumNoteColour::GreenCymbal, "G cymbal"},
-        {DrumNoteColour::Kick, "kick"}};
+    const std::array<std::tuple<DrumNoteColour, std::string>, 9> COLOUR_NAMES {
+        {{DrumNoteColour::Red, "R"},
+         {DrumNoteColour::Yellow, "Y"},
+         {DrumNoteColour::Blue, "B"},
+         {DrumNoteColour::Green, "G"},
+         {DrumNoteColour::YellowCymbal, "Y cymbal"},
+         {DrumNoteColour::BlueCymbal, "B cymbal"},
+         {DrumNoteColour::GreenCymbal, "G cymbal"},
+         {DrumNoteColour::Kick, "kick"},
+         {DrumNoteColour::DoubleKick, "kick"}}};
 
     for (const auto& [colour_key, string] : COLOUR_NAMES) {
         if (colour_key == colour) {

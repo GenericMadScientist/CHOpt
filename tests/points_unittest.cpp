@@ -581,9 +581,23 @@ TEST_CASE("Activation notes are marked with drum fills")
     REQUIRE(!(begin + 3)->is_activation_note);
 }
 
-TEST_CASE("Fills ending only in an open are killed")
+TEST_CASE("Fills ending only in a kick are killed")
 {
     std::vector<Note<DrumNoteColour>> notes {{0}, {1, 0, DrumNoteColour::Kick}};
+    std::vector<DrumFill> fills {{0, 2}};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, 192};
+    PointSet points {track,     {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0),
+                     ChEngine()};
+    const auto begin = points.cbegin();
+
+    REQUIRE(!begin->is_activation_note);
+    REQUIRE(!(begin + 1)->is_activation_note);
+}
+
+TEST_CASE("Fills ending only in a double kick are killed")
+{
+    std::vector<Note<DrumNoteColour>> notes {
+        {0}, {1, 0, DrumNoteColour::DoubleKick}};
     std::vector<DrumFill> fills {{0, 2}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, 192};
     PointSet points {track,     {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0),

@@ -532,13 +532,15 @@ TEST_CASE("Drum notes are read correctly from .chart")
         {},
         {},
         {},
-        {{192, 1, 0}, {384, 2, 0}, {384, 66, 0}, {576, 5, 0}},
+        {{192, 1, 0}, {384, 2, 0}, {384, 66, 0}, {576, 5, 0}, {768, 32, 0}},
         {},
         {}};
     std::vector<ChartSection> sections {expert_drums};
     const Chart chart {sections};
     std::vector<Note<DrumNoteColour>> notes {
-        {192, 0, DrumNoteColour::Red}, {384, 0, DrumNoteColour::YellowCymbal}};
+        {192, 0, DrumNoteColour::Red},
+        {384, 0, DrumNoteColour::YellowCymbal},
+        {768, 0, DrumNoteColour::DoubleKick}};
 
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);

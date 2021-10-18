@@ -59,7 +59,8 @@ enum class DrumNoteColour {
     YellowCymbal,
     BlueCymbal,
     GreenCymbal,
-    Kick
+    Kick,
+    DoubleKick
 };
 
 struct TimeSignature {

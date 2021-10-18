@@ -178,6 +178,7 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
             {2, DrumNoteColour::Yellow},
             {3, DrumNoteColour::Blue},
             {4, DrumNoteColour::Green},
+            {32, DrumNoteColour::DoubleKick},
             {66, DrumNoteColour::YellowCymbal},
             {67, DrumNoteColour::BlueCymbal},
             {68, DrumNoteColour::GreenCymbal}};
@@ -261,6 +262,7 @@ apply_cymbal_events(const std::vector<Note<DrumNoteColour>>& notes)
         case DrumNoteColour::Blue:
         case DrumNoteColour::Green:
         case DrumNoteColour::Kick:
+        case DrumNoteColour::DoubleKick:
             continue;
         }
         bool delete_cymbal = true;

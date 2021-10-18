@@ -87,6 +87,7 @@ static std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
     case DrumNoteColour::GreenCymbal:
         return GREEN;
     case DrumNoteColour::Kick:
+    case DrumNoteColour::DoubleKick:
         return ORANGE;
     }
 
@@ -162,6 +163,7 @@ static int note_colour_to_offset(DrumNoteColour colour)
     case DrumNoteColour::GreenCymbal:
         return GREEN_OFFSET;
     case DrumNoteColour::Kick:
+    case DrumNoteColour::DoubleKick:
         return KICK_OFFSET;
     }
 
@@ -565,19 +567,23 @@ void ImageImpl::draw_ghl_note(int x, int y,
     }
 }
 
-static bool is_cymbal_colour(DrumNoteColour note_colour)
+enum class DrumSpriteShape { Kick, Cymbal, Tom };
+
+static DrumSpriteShape drum_colour_to_shape(DrumNoteColour colour)
 {
-    switch (note_colour) {
+    switch (colour) {
+    case DrumNoteColour::Kick:
+    case DrumNoteColour::DoubleKick:
+        return DrumSpriteShape::Kick;
     case DrumNoteColour::YellowCymbal:
     case DrumNoteColour::BlueCymbal:
     case DrumNoteColour::GreenCymbal:
-        return true;
+        return DrumSpriteShape::Cymbal;
     case DrumNoteColour::Red:
     case DrumNoteColour::Yellow:
     case DrumNoteColour::Blue:
     case DrumNoteColour::Green:
-    case DrumNoteColour::Kick:
-        return false;
+        return DrumSpriteShape::Tom;
     }
 
     throw std::invalid_argument("Invalid DrumNoteColour");
@@ -591,19 +597,22 @@ void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
     auto colour = note_colour_to_colour(note_colour);
     auto offset = note_colour_to_offset(note_colour);
 
-    if (note_colour == DrumNoteColour::Kick) {
+    switch (drum_colour_to_shape(note_colour)) {
+    case DrumSpriteShape::Kick:
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                colour.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                black.data(), 1.0, ~0U);
-    } else if (is_cymbal_colour(note_colour)) {
+        break;
+    case DrumSpriteShape::Cymbal:
         m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
                               y + offset + RADIUS, x + RADIUS,
                               y + offset + RADIUS, colour.data());
         m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
                               y + offset + RADIUS, x + RADIUS,
                               y + offset + RADIUS, black.data(), 1.0, ~0U);
-    } else {
+        break;
+    case DrumSpriteShape::Tom:
         m_image.draw_circle(x, y + offset, RADIUS, colour.data());
         m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
     }
