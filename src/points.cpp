@@ -153,8 +153,28 @@ static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
         const auto earliest_after
             = std::find_if(earliest, points.end(),
                            [&](auto p) { return p.position.beat > fill_end; });
-        if (earliest != earliest_after) {
-            std::prev(earliest_after)->is_activation_note = true;
+        if (earliest == earliest_after) {
+            continue;
+        }
+        const auto last_note = std::prev(std::find_if(
+            track.notes().cbegin(), track.notes().cend(), [&](auto n) {
+                return n.position > (fill.position + fill.length);
+            }));
+        auto first_note = last_note;
+        bool has_non_kick = last_note->colour != DrumNoteColour::Kick;
+        while (!has_non_kick && first_note > track.notes().cbegin()
+               && std::prev(first_note)->position == last_note->position) {
+            --first_note;
+            has_non_kick = first_note->colour != DrumNoteColour::Kick;
+        }
+        if (has_non_kick) {
+            auto first_point = std::prev(earliest_after);
+            while (first_point > points.begin()
+                   && std::prev(first_point)->position.beat
+                       >= std::prev(earliest_after)->position.beat) {
+                --first_point;
+            }
+            first_point->is_activation_note = true;
         }
     }
 }
