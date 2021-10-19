@@ -208,7 +208,20 @@ static std::vector<Point> points_from_track(
         if (has_relevant_bre && p->position >= track.bre()->start) {
             break;
         }
-        const auto q = std::next(p);
+        auto q = std::next(p);
+        std::vector<DrumNoteColour> colours_to_skip;
+        if (disable_kick) {
+            colours_to_skip.push_back(DrumNoteColour::Kick);
+        }
+        if (!enable_double_kick) {
+            colours_to_skip.push_back(DrumNoteColour::DoubleKick);
+        }
+        while (q != notes.cend()
+               && std::find(colours_to_skip.cbegin(), colours_to_skip.cend(),
+                            q->colour)
+                   != colours_to_skip.cend()) {
+            ++q;
+        }
         auto is_note_sp_ender = false;
         auto is_unison_sp_ender = false;
         if (current_phrase != track.sp_phrases().cend()

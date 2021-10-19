@@ -632,6 +632,34 @@ TEST_CASE("Single kicks are removed with disable_kick")
     REQUIRE(points.cend() - points.cbegin() == 1);
 }
 
+TEST_CASE("disable_kick doesn't kill SP phrases")
+{
+    std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::Red},
+                                             {192, 0, DrumNoteColour::Kick}};
+    std::vector<StarPower> phrases {{0, 200}};
+    NoteTrack<DrumNoteColour> track {notes, phrases, {}, {}, {}, 192};
+    PointSet points {track,       {{}, 192, ChEngine(), {}},
+                     {},          1.0,
+                     Second(0.0), ChEngine(),
+                     false,       true};
+
+    REQUIRE(points.cbegin()->is_sp_granting_note);
+}
+
+TEST_CASE("Double kicks don't kill phrases")
+{
+    std::vector<Note<DrumNoteColour>> notes {
+        {0, 0, DrumNoteColour::Red}, {192, 0, DrumNoteColour::DoubleKick}};
+    std::vector<StarPower> phrases {{0, 200}};
+    NoteTrack<DrumNoteColour> track {notes, phrases, {}, {}, {}, 192};
+    PointSet points {track,       {{}, 192, ChEngine(), {}},
+                     {},          1.0,
+                     Second(0.0), ChEngine(),
+                     false,       false};
+
+    REQUIRE(points.cbegin()->is_sp_granting_note);
+}
+
 TEST_CASE("Activation notes are marked with drum fills")
 {
     std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {385}, {576}};
