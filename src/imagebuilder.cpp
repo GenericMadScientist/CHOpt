@@ -629,6 +629,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                                          Second {settings.lazy_whammy},
                                          Second {settings.video_lag},
                                          *settings.engine,
+                                         settings.enable_double_kick,
                                          song.od_beats(),
                                          song.unison_phrase_positions()};
     Path path;

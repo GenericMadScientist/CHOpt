@@ -186,11 +186,10 @@ static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
     }
 }
 
-template <typename T>
-static std::vector<Point>
-points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
-                  const std::vector<int>& unison_phrases, double squeeze,
-                  Second video_lag, const Engine& engine)
+static std::vector<Point> points_from_track(
+    const NoteTrack<DrumNoteColour>& track, const TimeConverter& converter,
+    const std::vector<int>& unison_phrases, double squeeze, Second video_lag,
+    const Engine& engine, bool enable_double_kick)
 {
     const auto& notes = track.notes();
     std::vector<Point> points;
@@ -198,15 +197,14 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
     const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
     auto current_phrase = track.sp_phrases().cbegin();
     for (auto p = notes.cbegin(); p != notes.cend();) {
+        if (!enable_double_kick && p->colour == DrumNoteColour::DoubleKick) {
+            ++p;
+            continue;
+        }
         if (has_relevant_bre && p->position >= track.bre()->start) {
             break;
         }
-        auto q = std::next(p);
-        if constexpr (!std::is_same_v<T, DrumNoteColour>) {
-            q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
-                return x.position == p->position;
-            });
-        }
+        const auto q = std::next(p);
         auto is_note_sp_ender = false;
         auto is_unison_sp_ender = false;
         if (current_phrase != track.sp_phrases().cend()
@@ -233,9 +231,82 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
                          return x.position.beat < y.position.beat;
                      });
 
-    if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        add_drum_activation_points(track, points);
+    add_drum_activation_points(track, points);
+
+    auto combo = 0;
+    for (auto& point : points) {
+        if (!point.is_hold_point) {
+            ++combo;
+        }
+        const auto multiplier
+            = std::min(combo / 10 + 1, engine.max_multiplier());
+        point.value *= multiplier;
     }
+
+    const auto add_video_lag = [&](auto& position) {
+        auto seconds = converter.beats_to_seconds(position.beat);
+        seconds += video_lag;
+        position.beat = converter.seconds_to_beats(seconds);
+        position.measure = converter.beats_to_measures(position.beat);
+    };
+
+    for (auto& point : points) {
+        if (point.is_hold_point) {
+            continue;
+        }
+        add_video_lag(point.position);
+        add_video_lag(point.hit_window_start);
+        add_video_lag(point.hit_window_end);
+    }
+
+    return points;
+}
+
+template <typename T>
+static std::vector<Point>
+points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
+                  const std::vector<int>& unison_phrases, double squeeze,
+                  Second video_lag, const Engine& engine)
+{
+    static_assert(!std::is_same_v<T, DrumNoteColour>);
+
+    const auto& notes = track.notes();
+    std::vector<Point> points;
+
+    const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
+    auto current_phrase = track.sp_phrases().cbegin();
+    for (auto p = notes.cbegin(); p != notes.cend();) {
+        if (has_relevant_bre && p->position >= track.bre()->start) {
+            break;
+        }
+        const auto q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
+            return x.position == p->position;
+        });
+        auto is_note_sp_ender = false;
+        auto is_unison_sp_ender = false;
+        if (current_phrase != track.sp_phrases().cend()
+            && phrase_contains_pos(*current_phrase, p->position)
+            && ((q == notes.cend())
+                || !phrase_contains_pos(*current_phrase, q->position))) {
+            is_note_sp_ender = true;
+            if (engine.has_unison_bonuses()
+                && std::find(unison_phrases.cbegin(), unison_phrases.cend(),
+                             current_phrase->position)
+                    != unison_phrases.cend()) {
+                is_unison_sp_ender = true;
+            }
+            ++current_phrase;
+        }
+        append_note_points(p, q, notes.cend(), std::back_inserter(points),
+                           track.resolution(), is_note_sp_ender,
+                           is_unison_sp_ender, converter, squeeze, engine);
+        p = q;
+    }
+
+    std::stable_sort(points.begin(), points.end(),
+                     [](const auto& x, const auto& y) {
+                         return x.position.beat < y.position.beat;
+                     });
 
     auto combo = 0;
     for (auto& point : points) {
@@ -423,7 +494,8 @@ static std::vector<std::string> note_colours(const std::vector<Note<T>>& notes,
 PointSet::PointSet(const NoteTrack<NoteColour>& track,
                    const TimeConverter& converter,
                    const std::vector<int>& unison_phrases, double squeeze,
-                   Second video_lag, const Engine& engine)
+                   Second video_lag, const Engine& engine,
+                   bool enable_double_kick)
     : m_points {points_from_track(track, converter, unison_phrases, squeeze,
                                   video_lag, engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
@@ -434,12 +506,14 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track,
     , m_video_lag {video_lag}
     , m_colours {note_colours(track.notes(), m_points)}
 {
+    (void)enable_double_kick;
 }
 
 PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
                    const TimeConverter& converter,
                    const std::vector<int>& unison_phrases, double squeeze,
-                   Second video_lag, const Engine& engine)
+                   Second video_lag, const Engine& engine,
+                   bool enable_double_kick)
     : m_points {points_from_track(track, converter, unison_phrases, squeeze,
                                   video_lag, engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
@@ -450,14 +524,16 @@ PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
     , m_video_lag {video_lag}
     , m_colours {note_colours(track.notes(), m_points)}
 {
+    (void)enable_double_kick;
 }
 
 PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
                    const TimeConverter& converter,
                    const std::vector<int>& unison_phrases, double squeeze,
-                   Second video_lag, const Engine& engine)
+                   Second video_lag, const Engine& engine,
+                   bool enable_double_kick)
     : m_points {points_from_track(track, converter, unison_phrases, squeeze,
-                                  video_lag, engine)}
+                                  video_lag, engine, enable_double_kick)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),

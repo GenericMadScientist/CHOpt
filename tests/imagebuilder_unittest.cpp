@@ -372,7 +372,8 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{0, 96}, {192}}, {{0, 50}}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChEngine(), {}};
-        PointSet points {track, converter, {}, 1.0, Second(0.0), ChEngine()};
+        PointSet points {track,       converter,  {},   1.0,
+                         Second(0.0), ChEngine(), false};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25},
                      Beat {0.1}, Beat {0.9}}},
@@ -396,7 +397,8 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {576}}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChEngine(), {}};
-        PointSet points {track, converter, {}, 1.0, Second(0.0), ChEngine()};
+        PointSet points {track,       converter,  {},   1.0,
+                         Second(0.0), ChEngine(), false};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
                      Beat {0.1}, Beat {1.1}},
@@ -415,7 +417,8 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{192}, {384}, {576}, {768}}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChEngine(), {}};
-        PointSet points {track, converter, {}, 1.0, Second(0.0), ChEngine()};
+        PointSet points {track,       converter,  {},   1.0,
+                         Second(0.0), ChEngine(), false};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                      Beat {0.0}, Beat {5.0}}},
@@ -431,7 +434,8 @@ TEST_CASE("add_sp_acts adds correct ranges")
     {
         NoteTrack<NoteColour> track {{{192}}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChEngine(), {}};
-        PointSet points {track, converter, {}, 1.0, Second(0.0), ChEngine()};
+        PointSet points {track,       converter,  {},   1.0,
+                         Second(0.0), ChEngine(), false};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                      Beat {16.0}}},
@@ -448,7 +452,8 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {576}, {768}, {1530}}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChEngine(), {}};
-        PointSet points {track, converter, {}, 1.0, Second(0.05), ChEngine()};
+        PointSet points {track,        converter,  {},   1.0,
+                         Second(0.05), ChEngine(), false};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
                      Beat {0.1}, Beat {1.1}},
@@ -485,7 +490,8 @@ TEST_CASE("add_measure_values gives correct values")
     {
         NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, {}, {}, 192};
         PointSet points {
-            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine()};
+            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine(),
+            false};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChEngine(), {}}, path);
@@ -501,7 +507,8 @@ TEST_CASE("add_measure_values gives correct values")
         NoteTrack<NoteColour> track {
             {{768}}, {}, {{0, 100, 100}, {200, 800, 100}}, {}, {}, 192};
         PointSet points {
-            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine()};
+            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine(),
+            false};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChEngine(), {}}, path);
@@ -516,7 +523,8 @@ TEST_CASE("add_measure_values gives correct values")
     {
         NoteTrack<NoteColour> track {{{0}}, {}, {{0, 1600, 50}}, {}, {}, 192};
         PointSet points {
-            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine()};
+            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine(),
+            false};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChEngine(), {}}, path);
@@ -530,7 +538,8 @@ TEST_CASE("add_measure_values gives correct values")
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {768}}, {}, {}, {}, {}, 192};
         PointSet points {
-            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine()};
+            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine(),
+            false};
         Path path {{{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0},
                      Beat {0.0}}},
                    100};
@@ -544,9 +553,9 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Video lag is accounted for")
     {
         NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, {}, {}, 192};
-        PointSet points {track,        {{}, 192, ChEngine(), {}},
-                         {},           1.0,
-                         Second(-0.1), ChEngine()};
+        PointSet points {
+            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(-0.1), ChEngine(),
+            false};
         Path path {{{points.cbegin() + 1, points.cbegin() + 1, Beat {0.0},
                      Beat {0.0}}},
                    50};
@@ -576,7 +585,7 @@ TEST_CASE("set_total_score sets the correct value")
 {
     NoteTrack<NoteColour> track {{{0}, {192}}, {{0, 50}}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChEngine(), {}};
-    PointSet points {track, converter, {}, 1.0, Second(0.0), ChEngine()};
+    PointSet points {track, converter, {}, 1.0, Second(0.0), ChEngine(), false};
     ImageBuilder builder {track, {}};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},
