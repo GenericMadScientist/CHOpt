@@ -43,6 +43,7 @@ struct Settings {
     double whammy_delay;
     int speed;
     std::unique_ptr<Engine> engine;
+    bool enable_double_kick;
     float opacity;
 };
 

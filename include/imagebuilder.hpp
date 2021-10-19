@@ -80,7 +80,7 @@ public:
     ImageBuilder(const NoteTrack<GHLNoteColour>& track,
                  const SyncTrack& sync_track);
     ImageBuilder(const NoteTrack<DrumNoteColour>& track,
-                 const SyncTrack& sync_track);
+                 const SyncTrack& sync_track, bool enable_double_kick);
     void add_bpms(const SyncTrack& sync_track, int resolution);
     void add_bre(const BigRockEnding& bre, int resolution,
                  const TimeConverter& converter);

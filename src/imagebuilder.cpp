@@ -68,6 +68,30 @@ static double get_denom(const SyncTrack& sync_track, int resolution,
     return BASE_BEAT_RATE / ts->denominator;
 }
 
+static std::vector<DrawnNote<DrumNoteColour>>
+drawn_notes(const NoteTrack<DrumNoteColour>& track, bool enable_double_kick)
+{
+    std::vector<DrawnNote<DrumNoteColour>> notes;
+
+    for (const auto& note : track.notes()) {
+        if (note.colour == DrumNoteColour::DoubleKick && !enable_double_kick) {
+            continue;
+        }
+        auto beat = note.position / static_cast<double>(track.resolution());
+        auto length = note.length / static_cast<double>(track.resolution());
+        auto is_sp_note = false;
+        for (const auto& phrase : track.sp_phrases()) {
+            if (note.position >= phrase.position
+                && note.position < phrase.position + phrase.length) {
+                is_sp_note = true;
+            }
+        }
+        notes.push_back({beat, length, note.colour, is_sp_note});
+    }
+
+    return notes;
+}
+
 template <typename T>
 static std::vector<DrawnNote<T>> drawn_notes(const NoteTrack<T>& track)
 {
@@ -189,10 +213,10 @@ ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<DrumNoteColour>& track,
-                           const SyncTrack& sync_track)
+                           const SyncTrack& sync_track, bool enable_double_kick)
     : m_track_type {TrackType::Drums}
     , m_rows {drawn_rows(track, sync_track)}
-    , m_drum_notes {drawn_notes(track)}
+    , m_drum_notes {drawn_notes(track, enable_double_kick)}
 {
     constexpr double HALF_BEAT = 0.5;
 
@@ -550,6 +574,18 @@ track_from_inst_diff(const Settings& settings, const Song& song)
 }
 
 template <typename T>
+static ImageBuilder build_with_drum_params(const NoteTrack<T>& track,
+                                           const SyncTrack& sync_track,
+                                           const Settings& settings)
+{
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        return {track, sync_track, settings.enable_double_kick};
+    } else {
+        return {track, sync_track};
+    }
+}
+
+template <typename T>
 static ImageBuilder
 make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                         const Settings& settings,
@@ -563,7 +599,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     new_track = new_track.snap_chords(settings.engine->snap_gap());
     const auto sync_track = song.sync_track().speedup(settings.speed);
 
-    ImageBuilder builder {new_track, sync_track};
+    auto builder = build_with_drum_params(new_track, sync_track, settings);
     builder.add_song_header(song.name(), song.artist(), song.charter(),
                             settings.speed);
     if (settings.engine->has_unison_bonuses()) {

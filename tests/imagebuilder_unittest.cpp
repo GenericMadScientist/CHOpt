@@ -53,7 +53,7 @@ TEST_CASE("Track type is stored correctly")
     SECTION("Drums gets the right track type")
     {
         NoteTrack<DrumNoteColour> track {{}, {}, {}, {}, {}, 192};
-        ImageBuilder builder {track, {}};
+        ImageBuilder builder {track, {}, false};
 
         REQUIRE(builder.track_type() == TrackType::Drums);
     }
@@ -111,7 +111,7 @@ TEST_CASE("Notes are handled correclty")
     {
         NoteTrack<DrumNoteColour> track {
             {{0}, {768, 0, DrumNoteColour::YellowCymbal}}, {}, {}, {}, {}, 192};
-        ImageBuilder builder {track, {}};
+        ImageBuilder builder {track, {}, false};
         std::vector<DrawnNote<DrumNoteColour>> expected_notes {
             {0.0, 0.0, DrumNoteColour::Red, false},
             {4.0, 0.0, DrumNoteColour::YellowCymbal, false}};
@@ -330,12 +330,28 @@ TEST_CASE("Green ranges for drums SP phrases are added correctly")
 {
     NoteTrack<DrumNoteColour> track {
         {{960}, {1344}}, {{768, 384}, {1200, 150}}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.0},
                                                                    {7.0, 7.0}};
 
     REQUIRE(builder.green_ranges() == expected_green_ranges);
+}
+
+TEST_CASE("Double kicks only appear with enable_double_kick")
+{
+    NoteTrack<DrumNoteColour> track {
+        {{0, 0, DrumNoteColour::Kick}, {192, 0, DrumNoteColour::DoubleKick}},
+        {},
+        {},
+        {},
+        {},
+        192};
+    ImageBuilder no_double_builder {track, {}, false};
+    ImageBuilder double_builder {track, {}, true};
+
+    REQUIRE(no_double_builder.drum_notes().size() == 1);
+    REQUIRE(double_builder.drum_notes().size() == 2);
 }
 
 TEST_CASE("Unison phrases are added correctly")

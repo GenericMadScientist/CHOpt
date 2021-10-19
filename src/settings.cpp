@@ -153,9 +153,13 @@ Settings from_args(int argc, char** argv)
         .help("video lag calibration setting in milliseconds, defaults to 0")
         .action([](const std::string& value) { return str_to_int(value); });
     program.add_argument("-s", "--speed")
-        .default_value(DEFAULT_SPEED)
         .help("speed in %, defaults to 100")
+        .default_value(DEFAULT_SPEED)
         .action([](const std::string& value) { return str_to_int(value); });
+    program.add_argument("--double-kick")
+        .help("enable 2x kick for drum charts")
+        .default_value(false)
+        .implicit_value(true);
     program.add_argument("--engine")
         .default_value(std::string {"ch"})
         .help("engine, options are ch, rb, and rb3, defaults to ch");
@@ -209,6 +213,7 @@ Settings from_args(int argc, char** argv)
     settings.draw_bpms = !program.get<bool>("--no-bpms");
     settings.draw_solos = !program.get<bool>("--no-solos");
     settings.draw_time_sigs = !program.get<bool>("--no-time-sigs");
+    settings.enable_double_kick = program.get<bool>("--double-kick");
 
     const auto squeeze = program.get<int>("--squeeze");
     auto early_whammy = squeeze;
