@@ -69,12 +69,16 @@ static double get_denom(const SyncTrack& sync_track, int resolution,
 }
 
 static std::vector<DrawnNote<DrumNoteColour>>
-drawn_notes(const NoteTrack<DrumNoteColour>& track, bool enable_double_kick)
+drawn_notes(const NoteTrack<DrumNoteColour>& track, bool enable_double_kick,
+            bool disable_kick)
 {
     std::vector<DrawnNote<DrumNoteColour>> notes;
 
     for (const auto& note : track.notes()) {
         if (note.colour == DrumNoteColour::DoubleKick && !enable_double_kick) {
+            continue;
+        }
+        if (note.colour == DrumNoteColour::Kick && disable_kick) {
             continue;
         }
         auto beat = note.position / static_cast<double>(track.resolution());
@@ -213,10 +217,11 @@ ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<DrumNoteColour>& track,
-                           const SyncTrack& sync_track, bool enable_double_kick)
+                           const SyncTrack& sync_track, bool enable_double_kick,
+                           bool disable_kick)
     : m_track_type {TrackType::Drums}
     , m_rows {drawn_rows(track, sync_track)}
-    , m_drum_notes {drawn_notes(track, enable_double_kick)}
+    , m_drum_notes {drawn_notes(track, enable_double_kick, disable_kick)}
 {
     constexpr double HALF_BEAT = 0.5;
 
@@ -579,7 +584,8 @@ static ImageBuilder build_with_drum_params(const NoteTrack<T>& track,
                                            const Settings& settings)
 {
     if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        return {track, sync_track, settings.enable_double_kick};
+        return {track, sync_track, settings.enable_double_kick,
+                settings.disable_kick};
     } else {
         return {track, sync_track};
     }
@@ -630,6 +636,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                                          Second {settings.video_lag},
                                          *settings.engine,
                                          settings.enable_double_kick,
+                                         settings.disable_kick,
                                          song.od_beats(),
                                          song.unison_phrase_positions()};
     Path path;

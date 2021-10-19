@@ -53,7 +53,7 @@ TEST_CASE("Track type is stored correctly")
     SECTION("Drums gets the right track type")
     {
         NoteTrack<DrumNoteColour> track {{}, {}, {}, {}, {}, 192};
-        ImageBuilder builder {track, {}, false};
+        ImageBuilder builder {track, {}, false, false};
 
         REQUIRE(builder.track_type() == TrackType::Drums);
     }
@@ -111,7 +111,7 @@ TEST_CASE("Notes are handled correclty")
     {
         NoteTrack<DrumNoteColour> track {
             {{0}, {768, 0, DrumNoteColour::YellowCymbal}}, {}, {}, {}, {}, 192};
-        ImageBuilder builder {track, {}, false};
+        ImageBuilder builder {track, {}, false, false};
         std::vector<DrawnNote<DrumNoteColour>> expected_notes {
             {0.0, 0.0, DrumNoteColour::Red, false},
             {4.0, 0.0, DrumNoteColour::YellowCymbal, false}};
@@ -330,7 +330,7 @@ TEST_CASE("Green ranges for drums SP phrases are added correctly")
 {
     NoteTrack<DrumNoteColour> track {
         {{960}, {1344}}, {{768, 384}, {1200, 150}}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, false};
+    ImageBuilder builder {track, {}, false, false};
     builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.0},
                                                                    {7.0, 7.0}};
@@ -347,11 +347,25 @@ TEST_CASE("Double kicks only appear with enable_double_kick")
         {},
         {},
         192};
-    ImageBuilder no_double_builder {track, {}, false};
-    ImageBuilder double_builder {track, {}, true};
+    ImageBuilder no_double_builder {track, {}, false, false};
+    ImageBuilder double_builder {track, {}, true, false};
 
     REQUIRE(no_double_builder.drum_notes().size() == 1);
     REQUIRE(double_builder.drum_notes().size() == 2);
+}
+
+TEST_CASE("Single kicks disappear with disable_kick")
+{
+    NoteTrack<DrumNoteColour> track {
+        {{0, 0, DrumNoteColour::Kick}, {192, 0, DrumNoteColour::DoubleKick}},
+        {},
+        {},
+        {},
+        {},
+        192};
+    ImageBuilder builder {track, {}, true, true};
+
+    REQUIRE(builder.drum_notes().size() == 1);
 }
 
 TEST_CASE("Unison phrases are added correctly")
@@ -372,8 +386,8 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{0, 96}, {192}}, {{0, 50}}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChEngine(), {}};
-        PointSet points {track,       converter,  {},   1.0,
-                         Second(0.0), ChEngine(), false};
+        PointSet points {track,       converter,  {},    1.0,
+                         Second(0.0), ChEngine(), false, false};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25},
                      Beat {0.1}, Beat {0.9}}},
@@ -397,8 +411,8 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {576}}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChEngine(), {}};
-        PointSet points {track,       converter,  {},   1.0,
-                         Second(0.0), ChEngine(), false};
+        PointSet points {track,       converter,  {},    1.0,
+                         Second(0.0), ChEngine(), false, false};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
                      Beat {0.1}, Beat {1.1}},
@@ -417,8 +431,8 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{192}, {384}, {576}, {768}}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChEngine(), {}};
-        PointSet points {track,       converter,  {},   1.0,
-                         Second(0.0), ChEngine(), false};
+        PointSet points {track,       converter,  {},    1.0,
+                         Second(0.0), ChEngine(), false, false};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                      Beat {0.0}, Beat {5.0}}},
@@ -434,8 +448,8 @@ TEST_CASE("add_sp_acts adds correct ranges")
     {
         NoteTrack<NoteColour> track {{{192}}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChEngine(), {}};
-        PointSet points {track,       converter,  {},   1.0,
-                         Second(0.0), ChEngine(), false};
+        PointSet points {track,       converter,  {},    1.0,
+                         Second(0.0), ChEngine(), false, false};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                      Beat {16.0}}},
@@ -452,8 +466,8 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {576}, {768}, {1530}}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChEngine(), {}};
-        PointSet points {track,        converter,  {},   1.0,
-                         Second(0.05), ChEngine(), false};
+        PointSet points {track,        converter,  {},    1.0,
+                         Second(0.05), ChEngine(), false, false};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
                      Beat {0.1}, Beat {1.1}},
@@ -489,9 +503,10 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Notes with no activations or solos")
     {
         NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, {}, {}, 192};
-        PointSet points {
-            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine(),
-            false};
+        PointSet points {track,       {{}, 192, ChEngine(), {}},
+                         {},          1.0,
+                         Second(0.0), ChEngine(),
+                         false,       false};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChEngine(), {}}, path);
@@ -506,9 +521,10 @@ TEST_CASE("add_measure_values gives correct values")
     {
         NoteTrack<NoteColour> track {
             {{768}}, {}, {{0, 100, 100}, {200, 800, 100}}, {}, {}, 192};
-        PointSet points {
-            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine(),
-            false};
+        PointSet points {track,       {{}, 192, ChEngine(), {}},
+                         {},          1.0,
+                         Second(0.0), ChEngine(),
+                         false,       false};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChEngine(), {}}, path);
@@ -522,9 +538,10 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Solos ending past last note are handled correctly")
     {
         NoteTrack<NoteColour> track {{{0}}, {}, {{0, 1600, 50}}, {}, {}, 192};
-        PointSet points {
-            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine(),
-            false};
+        PointSet points {track,       {{}, 192, ChEngine(), {}},
+                         {},          1.0,
+                         Second(0.0), ChEngine(),
+                         false,       false};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChEngine(), {}}, path);
@@ -537,9 +554,10 @@ TEST_CASE("add_measure_values gives correct values")
     {
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {768}}, {}, {}, {}, {}, 192};
-        PointSet points {
-            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(0.0), ChEngine(),
-            false};
+        PointSet points {track,       {{}, 192, ChEngine(), {}},
+                         {},          1.0,
+                         Second(0.0), ChEngine(),
+                         false,       false};
         Path path {{{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0},
                      Beat {0.0}}},
                    100};
@@ -553,9 +571,10 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Video lag is accounted for")
     {
         NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, {}, {}, 192};
-        PointSet points {
-            track, {{}, 192, ChEngine(), {}}, {}, 1.0, Second(-0.1), ChEngine(),
-            false};
+        PointSet points {track,        {{}, 192, ChEngine(), {}},
+                         {},           1.0,
+                         Second(-0.1), ChEngine(),
+                         false,        false};
         Path path {{{points.cbegin() + 1, points.cbegin() + 1, Beat {0.0},
                      Beat {0.0}}},
                    50};
@@ -585,7 +604,8 @@ TEST_CASE("set_total_score sets the correct value")
 {
     NoteTrack<NoteColour> track {{{0}, {192}}, {{0, 50}}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChEngine(), {}};
-    PointSet points {track, converter, {}, 1.0, Second(0.0), ChEngine(), false};
+    PointSet points {track,       converter,  {},    1.0,
+                     Second(0.0), ChEngine(), false, false};
     ImageBuilder builder {track, {}};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},

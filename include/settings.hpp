@@ -44,6 +44,7 @@ struct Settings {
     int speed;
     std::unique_ptr<Engine> engine;
     bool enable_double_kick;
+    bool disable_kick;
     float opacity;
 };
 
