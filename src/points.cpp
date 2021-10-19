@@ -186,6 +186,18 @@ static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
     }
 }
 
+static bool skip_kick(DrumNoteColour colour, bool enable_double_kick,
+                      bool disable_kick)
+{
+    if (colour == DrumNoteColour::Kick) {
+        return disable_kick;
+    }
+    if (colour == DrumNoteColour::DoubleKick) {
+        return !enable_double_kick;
+    }
+    return false;
+}
+
 static std::vector<Point> points_from_track(
     const NoteTrack<DrumNoteColour>& track, const TimeConverter& converter,
     const std::vector<int>& unison_phrases, double squeeze, Second video_lag,
@@ -208,20 +220,10 @@ static std::vector<Point> points_from_track(
         if (has_relevant_bre && p->position >= track.bre()->start) {
             break;
         }
-        auto q = std::next(p);
-        std::vector<DrumNoteColour> colours_to_skip;
-        if (disable_kick) {
-            colours_to_skip.push_back(DrumNoteColour::Kick);
-        }
-        if (!enable_double_kick) {
-            colours_to_skip.push_back(DrumNoteColour::DoubleKick);
-        }
-        while (q != notes.cend()
-               && std::find(colours_to_skip.cbegin(), colours_to_skip.cend(),
-                            q->colour)
-                   != colours_to_skip.cend()) {
-            ++q;
-        }
+        const auto q = std::find_if_not(
+            std::next(p), notes.cend(), [&](auto note) {
+                return skip_kick(note.colour, enable_double_kick, disable_kick);
+            });
         auto is_note_sp_ender = false;
         auto is_unison_sp_ender = false;
         if (current_phrase != track.sp_phrases().cend()
