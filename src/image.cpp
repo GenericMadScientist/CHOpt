@@ -450,12 +450,34 @@ void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
     }
 }
 
+enum class DrumSpriteShape { Kick, Cymbal, Tom };
+
+static DrumSpriteShape drum_colour_to_shape(DrumNoteColour colour)
+{
+    switch (colour) {
+    case DrumNoteColour::Kick:
+    case DrumNoteColour::DoubleKick:
+        return DrumSpriteShape::Kick;
+    case DrumNoteColour::YellowCymbal:
+    case DrumNoteColour::BlueCymbal:
+    case DrumNoteColour::GreenCymbal:
+        return DrumSpriteShape::Cymbal;
+    case DrumNoteColour::Red:
+    case DrumNoteColour::Yellow:
+    case DrumNoteColour::Blue:
+    case DrumNoteColour::Green:
+        return DrumSpriteShape::Tom;
+    }
+
+    throw std::invalid_argument("Invalid DrumNoteColour");
+}
+
 void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
 {
     // We draw all the kicks first because we want RYBG to lie on top of the
     // kicks, not underneath.
     for (const auto& note : builder.drum_notes()) {
-        if (note.colour != DrumNoteColour::Kick) {
+        if (drum_colour_to_shape(note.colour) != DrumSpriteShape::Kick) {
             continue;
         }
         const auto [x, y] = get_xy(builder, note.beat);
@@ -463,7 +485,7 @@ void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
     }
 
     for (const auto& note : builder.drum_notes()) {
-        if (note.colour == DrumNoteColour::Kick) {
+        if (drum_colour_to_shape(note.colour) == DrumSpriteShape::Kick) {
             continue;
         }
         const auto [x, y] = get_xy(builder, note.beat);
@@ -565,28 +587,6 @@ void ImageImpl::draw_ghl_note(int x, int y,
                                    y + offset + RADIUS, black.data(), 1.0, ~0U);
         }
     }
-}
-
-enum class DrumSpriteShape { Kick, Cymbal, Tom };
-
-static DrumSpriteShape drum_colour_to_shape(DrumNoteColour colour)
-{
-    switch (colour) {
-    case DrumNoteColour::Kick:
-    case DrumNoteColour::DoubleKick:
-        return DrumSpriteShape::Kick;
-    case DrumNoteColour::YellowCymbal:
-    case DrumNoteColour::BlueCymbal:
-    case DrumNoteColour::GreenCymbal:
-        return DrumSpriteShape::Cymbal;
-    case DrumNoteColour::Red:
-    case DrumNoteColour::Yellow:
-    case DrumNoteColour::Blue:
-    case DrumNoteColour::Green:
-        return DrumSpriteShape::Tom;
-    }
-
-    throw std::invalid_argument("Invalid DrumNoteColour");
 }
 
 void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
