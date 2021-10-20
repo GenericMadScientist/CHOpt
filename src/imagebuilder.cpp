@@ -642,8 +642,10 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     Path path;
 
     if (!settings.blank) {
-        if (std::is_same_v<T,
-                           DrumNoteColour> && settings.engine->is_rock_band()) {
+        const auto is_rb_drums
+            = std::is_same_v<T,
+                             DrumNoteColour> && settings.engine->is_rock_band();
+        if (is_rb_drums) {
             write("Optimisation disabled for Rock Band drums, planned for a "
                   "future release");
         } else {
