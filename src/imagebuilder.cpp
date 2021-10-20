@@ -642,14 +642,20 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     Path path;
 
     if (!settings.blank) {
-        write("Optimising, please wait...");
-        const Optimiser optimiser {&processed_track, terminate,
-                                   Second {settings.whammy_delay}};
-        path = optimiser.optimal_path();
-        write(processed_track.path_summary(path).c_str());
-        builder.add_sp_acts(processed_track.points(),
-                            processed_track.converter(), path);
-        builder.activation_opacity() = settings.opacity;
+        if (std::is_same_v<T,
+                           DrumNoteColour> && settings.engine->is_rock_band()) {
+            write("Optimisation disabled for Rock Band drums, planned for a "
+                  "future release");
+        } else {
+            write("Optimising, please wait...");
+            const Optimiser optimiser {&processed_track, terminate,
+                                       Second {settings.whammy_delay}};
+            path = optimiser.optimal_path();
+            write(processed_track.path_summary(path).c_str());
+            builder.add_sp_acts(processed_track.points(),
+                                processed_track.converter(), path);
+            builder.activation_opacity() = settings.opacity;
+        }
     }
 
     builder.add_measure_values(processed_track.points(),

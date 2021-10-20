@@ -28,6 +28,7 @@ public:
     virtual bool chords_multiply_sustains() const = 0;
     virtual bool has_bres() const = 0;
     virtual bool has_unison_bonuses() const = 0;
+    virtual bool is_rock_band() const = 0;
     virtual bool ignore_average_multiplier() const = 0;
     virtual int max_multiplier() const = 0;
     virtual bool merge_uneven_sustains() const = 0;
@@ -49,6 +50,7 @@ public:
     bool has_bres() const override { return false; }
     bool has_unison_bonuses() const override { return false; }
     bool ignore_average_multiplier() const override { return false; }
+    bool is_rock_band() const override { return false; }
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return false; }
     bool restricted_back_end() const override { return false; }
@@ -70,6 +72,7 @@ public:
     bool chords_multiply_sustains() const override { return true; }
     bool has_bres() const override { return true; }
     bool ignore_average_multiplier() const override { return true; }
+    bool is_rock_band() const override { return true; }
     bool merge_uneven_sustains() const override { return true; }
     bool restricted_back_end() const override { return true; }
     int snap_gap() const override { return 2; }
