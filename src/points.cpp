@@ -104,6 +104,8 @@ static int get_chord_size(InputIt first, InputIt last, bool enable_double_kick,
                 ++note_count;
             }
         } else {
+            (void)enable_double_kick;
+            (void)disable_kick;
             ++note_count;
         }
     }
