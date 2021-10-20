@@ -187,6 +187,8 @@ Settings MainWindow::get_settings() const
     settings.draw_bpms = m_ui->drawBpmsCheckBox->isChecked();
     settings.draw_solos = m_ui->drawSolosCheckBox->isChecked();
     settings.draw_time_sigs = m_ui->drawTsesCheckBox->isChecked();
+    settings.enable_double_kick = m_ui->doubleKickCheckBox->isChecked();
+    settings.disable_kick = m_ui->noKickCheckBox->isChecked();
     settings.difficulty
         = m_ui->difficultyComboBox->currentData().value<Difficulty>();
     settings.instrument
