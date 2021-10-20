@@ -1144,15 +1144,14 @@ TEST_CASE("6 fret instruments are read correctly from .mid")
 
 TEST_CASE("Drums are read correctly from .mid")
 {
-    MidiTrack note_track {{
-        {0,
-         {MetaEvent {
-             3, {0x50, 0x41, 0x52, 0x54, 0x20, 0x44, 0x52, 0x55, 0x4D, 0x53}}}},
-        {0, {MidiEvent {0x90, {98, 64}}}},
-        {0, {MidiEvent {0x90, {110, 64}}}},
-        {65, {MidiEvent {0x80, {98, 0}}}},
-        {65, {MidiEvent {0x80, {110, 0}}}},
-    }};
+    MidiTrack note_track {{{0,
+                            {MetaEvent {3,
+                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x44,
+                                         0x52, 0x55, 0x4D, 0x53}}}},
+                           {0, {MidiEvent {0x90, {98, 64}}}},
+                           {0, {MidiEvent {0x90, {110, 64}}}},
+                           {65, {MidiEvent {0x80, {98, 0}}}},
+                           {65, {MidiEvent {0x80, {110, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
@@ -1162,17 +1161,34 @@ TEST_CASE("Drums are read correctly from .mid")
     REQUIRE(track.notes() == notes);
 }
 
+TEST_CASE("Double kicks are read correctly from .mid")
+{
+    MidiTrack note_track {{{0,
+                            {MetaEvent {3,
+                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x44,
+                                         0x52, 0x55, 0x4D, 0x53}}}},
+                           {0, {MidiEvent {0x90, {95, 64}}}},
+                           {65, {MidiEvent {0x80, {95, 0}}}}}};
+    const Midi midi {192, {note_track}};
+    const auto song = Song::from_midi(midi, {});
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    std::vector<Note<DrumNoteColour>> notes {
+        {0, 0, DrumNoteColour::DoubleKick}};
+
+    REQUIRE(track.notes() == notes);
+}
+
 TEST_CASE("Drum fills are read correctly from .mid")
 {
-    MidiTrack note_track {{
-        {0,
-         {MetaEvent {
-             3, {0x50, 0x41, 0x52, 0x54, 0x20, 0x44, 0x52, 0x55, 0x4D, 0x53}}}},
-        {0, {MidiEvent {0x90, {98, 64}}}},
-        {45, {MidiEvent {0x90, {120, 64}}}},
-        {65, {MidiEvent {0x80, {98, 0}}}},
-        {75, {MidiEvent {0x80, {120, 0}}}},
-    }};
+    MidiTrack note_track {{{0,
+                            {MetaEvent {3,
+                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x44,
+                                         0x52, 0x55, 0x4D, 0x53}}}},
+                           {0, {MidiEvent {0x90, {98, 64}}}},
+                           {45, {MidiEvent {0x90, {120, 64}}}},
+                           {65, {MidiEvent {0x80, {98, 0}}}},
+                           {75, {MidiEvent {0x80, {120, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);

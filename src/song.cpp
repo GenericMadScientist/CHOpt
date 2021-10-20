@@ -503,9 +503,7 @@ combine_note_on_off_events(const std::vector<std::tuple<int, int>>& on_events,
 template <typename T>
 static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
 {
-    if constexpr (std::is_same_v<
-                      T, NoteColour> || std::is_same_v<T, DrumNoteColour>) {
-
+    if constexpr (std::is_same_v<T, NoteColour>) {
         constexpr std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges {
             {{96, 100, Difficulty::Expert},
              {84, 88, Difficulty::Hard},
@@ -517,8 +515,6 @@ static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
                 return {diff};
             }
         }
-
-        return std::nullopt;
     } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
         constexpr std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges {
             {{94, 100, Difficulty::Expert},
@@ -531,9 +527,21 @@ static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
                 return {diff};
             }
         }
+    } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        constexpr std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges {
+            {{95, 100, Difficulty::Expert},
+             {83, 88, Difficulty::Hard},
+             {71, 76, Difficulty::Medium},
+             {59, 64, Difficulty::Easy}}};
 
-        return std::nullopt;
+        for (const auto& [min, max, diff] : diff_ranges) {
+            if (key >= min && key <= max) {
+                return {diff};
+            }
+        }
     }
+
+    return std::nullopt;
 }
 
 template <typename T> static T colour_from_key(std::uint8_t key)
@@ -569,12 +577,12 @@ template <typename T> static T colour_from_key(std::uint8_t key)
 
         throw ParseError("Invalid key for note");
     } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        constexpr std::array<DrumNoteColour, 5> DRUM_NOTE_COLOURS {
-            DrumNoteColour::Kick, DrumNoteColour::Red,
-            DrumNoteColour::YellowCymbal, DrumNoteColour::BlueCymbal,
-            DrumNoteColour::GreenCymbal};
+        constexpr std::array<DrumNoteColour, 6> DRUM_NOTE_COLOURS {
+            DrumNoteColour::DoubleKick, DrumNoteColour::Kick,
+            DrumNoteColour::Red,        DrumNoteColour::YellowCymbal,
+            DrumNoteColour::BlueCymbal, DrumNoteColour::GreenCymbal};
 
-        constexpr std::array<unsigned int, 4> diff_ranges {96, 84, 72, 60};
+        constexpr std::array<unsigned int, 4> diff_ranges {95, 83, 71, 59};
 
         for (auto min : diff_ranges) {
             if (key >= min && (key - min) <= DRUM_NOTE_COLOURS.size()) {
