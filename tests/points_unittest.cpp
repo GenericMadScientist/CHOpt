@@ -621,8 +621,8 @@ TEST_CASE("Double kicks only appear with enable_double_kick")
 
 TEST_CASE("Single kicks are removed with disable_kick")
 {
-    std::vector<Note<DrumNoteColour>> notes {
-        {0, 0, DrumNoteColour::Kick}, {192, 0, DrumNoteColour::DoubleKick}};
+    std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::DoubleKick},
+                                             {192, 0, DrumNoteColour::Kick}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChEngine(), {}},
                      {},          1.0,
@@ -630,6 +630,7 @@ TEST_CASE("Single kicks are removed with disable_kick")
                      true,        true};
 
     REQUIRE(points.cend() - points.cbegin() == 1);
+    REQUIRE(points.cbegin()->value == 50);
 }
 
 TEST_CASE("disable_kick doesn't kill SP phrases")

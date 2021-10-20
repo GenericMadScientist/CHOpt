@@ -80,12 +80,43 @@ append_sustain_points(OutputIt points, int position, int sust_length,
     }
 }
 
+static bool skip_kick(DrumNoteColour colour, bool enable_double_kick,
+                      bool disable_kick)
+{
+    if (colour == DrumNoteColour::Kick) {
+        return disable_kick;
+    }
+    if (colour == DrumNoteColour::DoubleKick) {
+        return !enable_double_kick;
+    }
+    return false;
+}
+
+template <typename InputIt>
+static int get_chord_size(InputIt first, InputIt last, bool enable_double_kick,
+                          bool disable_kick)
+{
+    int note_count = 0;
+    using T = decltype(first->colour);
+    for (; first < last; ++first) {
+        if constexpr (std::is_same_v<T, DrumNoteColour>) {
+            if (!skip_kick(first->colour, enable_double_kick, disable_kick)) {
+                ++note_count;
+            }
+        } else {
+            ++note_count;
+        }
+    }
+    return note_count;
+}
+
 template <typename InputIt, typename OutputIt>
 static void append_note_points(InputIt first, InputIt last, InputIt note_end,
                                OutputIt points, int resolution,
                                bool is_note_sp_ender, bool is_unison_sp_ender,
                                const TimeConverter& converter, double squeeze,
-                               const Engine& engine)
+                               const Engine& engine, bool enable_double_kick,
+                               bool disable_kick)
 {
     assert(first != last); // NOLINT
 
@@ -93,7 +124,8 @@ static void append_note_points(InputIt first, InputIt last, InputIt note_end,
     const auto BASE_LATE_WINDOW = Second(engine.timing_window());
 
     const auto note_value = engine.base_note_value();
-    const auto chord_size = static_cast<int>(std::distance(first, last));
+    const auto chord_size
+        = get_chord_size(first, last, enable_double_kick, disable_kick);
     auto pos = first->position;
     const Beat beat {pos / static_cast<double>(resolution)};
     const auto meas = converter.beats_to_measures(beat);
@@ -186,18 +218,6 @@ static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
     }
 }
 
-static bool skip_kick(DrumNoteColour colour, bool enable_double_kick,
-                      bool disable_kick)
-{
-    if (colour == DrumNoteColour::Kick) {
-        return disable_kick;
-    }
-    if (colour == DrumNoteColour::DoubleKick) {
-        return !enable_double_kick;
-    }
-    return false;
-}
-
 static std::vector<Point> points_from_track(
     const NoteTrack<DrumNoteColour>& track, const TimeConverter& converter,
     const std::vector<int>& unison_phrases, double squeeze, Second video_lag,
@@ -209,11 +229,7 @@ static std::vector<Point> points_from_track(
     const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
     auto current_phrase = track.sp_phrases().cbegin();
     for (auto p = notes.cbegin(); p != notes.cend();) {
-        if (!enable_double_kick && p->colour == DrumNoteColour::DoubleKick) {
-            ++p;
-            continue;
-        }
-        if (disable_kick && p->colour == DrumNoteColour::Kick) {
+        if (skip_kick(p->colour, enable_double_kick, disable_kick)) {
             ++p;
             continue;
         }
@@ -241,7 +257,8 @@ static std::vector<Point> points_from_track(
         }
         append_note_points(p, q, notes.cend(), std::back_inserter(points),
                            track.resolution(), is_note_sp_ender,
-                           is_unison_sp_ender, converter, squeeze, engine);
+                           is_unison_sp_ender, converter, squeeze, engine,
+                           enable_double_kick, disable_kick);
         p = q;
     }
 
@@ -318,7 +335,8 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
         }
         append_note_points(p, q, notes.cend(), std::back_inserter(points),
                            track.resolution(), is_note_sp_ender,
-                           is_unison_sp_ender, converter, squeeze, engine);
+                           is_unison_sp_ender, converter, squeeze, engine,
+                           false, false);
         p = q;
     }
 
