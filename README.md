@@ -43,6 +43,8 @@ by passing -h or --help to CHOpt, or by consulting the table below.
 | --delay, --whammy-delay | Amount of ms after each activation before whammy can be obtained |
 | --lag, --video-lag      | Video calibration, in ms                                         |
 | -s, --speed             | Set speed the song is played at                                  |
+| --double-kick           | Enable 2x kick (drums only)                                      |
+| --no-kick               | Disable non-2x kicks (drums only)                                |
 | --engine                | Choose the engine (ch/rb/rb3)                                    |
 | -b, --blank             | Output a blank image without pathing                             |
 | --no-image              | Do not create an image                                           |
@@ -69,7 +71,7 @@ in cmd then enter to open a command prompt in that folder, then run the command
 * [libpng](http://libpng.org/pub/png/libpng.html) 1.6.37 to save pngs
 * [nowide](https://github.com/boostorg/nowide) 11.0.0 to handle UTF-8 filenames
   on Windows
-* [Qt](https://www.qt.io) 6.1.2 for the GUI
+* [Qt](https://www.qt.io) 6.2.0 for the GUI
 * [zlib](https://zlib.net) 1.2.11 is a dependency of libpng
 
 Catch2 and CImg are vendored in the repo. argparse and nowide (standalone
