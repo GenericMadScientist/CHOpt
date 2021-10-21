@@ -188,8 +188,8 @@ Settings from_args(int argc, char** argv)
         .help("speed in %, defaults to 100")
         .default_value(DEFAULT_SPEED)
         .action([](const std::string& value) { return str_to_int(value); });
-    program.add_argument("--double-kick")
-        .help("enable 2x kick for drum charts")
+    program.add_argument("--no-double-kick")
+        .help("disable 2x kick for drum charts")
         .default_value(false)
         .implicit_value(true);
     program.add_argument("--no-kick")
@@ -253,7 +253,7 @@ Settings from_args(int argc, char** argv)
     settings.draw_bpms = !program.get<bool>("--no-bpms");
     settings.draw_solos = !program.get<bool>("--no-solos");
     settings.draw_time_sigs = !program.get<bool>("--no-time-sigs");
-    settings.enable_double_kick = program.get<bool>("--double-kick");
+    settings.enable_double_kick = !program.get<bool>("--no-double-kick");
     settings.disable_kick = program.get<bool>("--no-kick");
 
     const auto squeeze = program.get<int>("--squeeze");
