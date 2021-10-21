@@ -100,31 +100,63 @@ private:
                     const std::vector<int>& od_beats, const Engine& engine);
 
     template <typename T>
-    static std::vector<std::tuple<int, int>>
-    note_spans(const NoteTrack<T>& track)
+    std::vector<std::tuple<int, int, Second>>
+    note_spans(const NoteTrack<T>& track, double early_whammy,
+               const Engine& engine)
     {
-        std::vector<std::tuple<int, int>> spans;
-        for (const auto& note : track.notes()) {
-            spans.push_back({note.position, note.length});
+        std::vector<std::tuple<int, int, Second>> spans;
+        for (auto note = track.notes().cbegin(); note < track.notes().cend();
+             ++note) {
+            auto early_gap = std::numeric_limits<double>::infinity();
+            auto late_gap = std::numeric_limits<double>::infinity();
+            const auto current_note_time
+                = m_converter
+                      .beats_to_seconds(
+                          Beat {note->position
+                                / static_cast<double>(track.resolution())})
+                      .value();
+            if (note != track.notes().cbegin()) {
+                early_gap = current_note_time
+                    - m_converter
+                          .beats_to_seconds(
+                              Beat {std::prev(note)->position
+                                    / static_cast<double>(track.resolution())})
+                          .value();
+            }
+            if (std::next(note) < track.notes().cend()) {
+                late_gap = m_converter
+                               .beats_to_seconds(Beat {
+                                   std::next(note)->position
+                                   / static_cast<double>(track.resolution())})
+                               .value()
+                    - current_note_time;
+            }
+            spans.push_back(
+                {note->position, note->length,
+                 Second {engine.early_timing_window(early_gap, late_gap)}
+                     * early_whammy});
         }
         return spans;
     }
 
-    SpData(const std::vector<std::tuple<int, int>>& note_spans,
-           const std::vector<StarPower>& phrases,
-           const std::vector<int>& od_beats, int resolution,
-           const SyncTrack& sync_track, double early_whammy, Second lazy_whammy,
-           Second video_lag, const Engine& engine);
+    void initialise(std::vector<std::tuple<int, int, Second>> note_spans,
+                    const std::vector<StarPower>& phrases, int resolution,
+                    Second lazy_whammy, Second video_lag);
 
 public:
     template <typename T>
     SpData(const NoteTrack<T>& track, const SyncTrack& sync_track,
            const std::vector<int>& od_beats, double early_whammy,
            Second lazy_whammy, Second video_lag, const Engine& engine)
-        : SpData(note_spans(track), track.sp_phrases(), od_beats,
-                 track.resolution(), sync_track, early_whammy, lazy_whammy,
-                 video_lag, engine)
+        : m_converter {sync_track, track.resolution(), engine, od_beats}
+        , m_beat_rates {form_beat_rates(track.resolution(), sync_track,
+                                        od_beats, engine)}
+        , m_sp_gain_rate {engine.sp_gain_rate()}
+        , m_default_net_sp_gain_rate {m_sp_gain_rate
+                                      - 1 / DEFAULT_BEATS_PER_BAR}
     {
+        initialise(note_spans(track, early_whammy, engine), track.sp_phrases(),
+                   track.resolution(), lazy_whammy, video_lag);
     }
 
     // Return the maximum amount of SP available at the end after propagating

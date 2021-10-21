@@ -113,17 +113,15 @@ static int get_chord_size(InputIt first, InputIt last, bool enable_double_kick,
 }
 
 template <typename InputIt, typename OutputIt>
-static void append_note_points(InputIt first, InputIt last, InputIt note_end,
-                               OutputIt points, int resolution,
-                               bool is_note_sp_ender, bool is_unison_sp_ender,
+static void append_note_points(InputIt first, InputIt last, InputIt note_start,
+                               InputIt note_end, OutputIt points,
+                               int resolution, bool is_note_sp_ender,
+                               bool is_unison_sp_ender,
                                const TimeConverter& converter, double squeeze,
                                const Engine& engine, bool enable_double_kick,
                                bool disable_kick)
 {
     assert(first != last); // NOLINT
-
-    const auto EARLY_WINDOW = Second(engine.timing_window() * squeeze);
-    const auto BASE_LATE_WINDOW = Second(engine.timing_window());
 
     const auto note_value = engine.base_note_value();
     const auto chord_size
@@ -132,20 +130,34 @@ static void append_note_points(InputIt first, InputIt last, InputIt note_end,
     const Beat beat {pos / static_cast<double>(resolution)};
     const auto meas = converter.beats_to_measures(beat);
     const auto note_seconds = converter.beats_to_seconds(beat);
-    const auto early_beat
-        = converter.seconds_to_beats(note_seconds - EARLY_WINDOW);
-    const auto early_meas = converter.beats_to_measures(early_beat);
-    auto late_seconds = note_seconds + BASE_LATE_WINDOW;
-    if (engine.restricted_back_end() && last != note_end) {
+
+    auto early_gap = std::numeric_limits<double>::infinity();
+    if (first != note_start) {
+        const Beat prev_note_beat {std::prev(first)->position
+                                   / static_cast<double>(resolution)};
+        const auto prev_note_seconds
+            = converter.beats_to_seconds(prev_note_beat);
+        early_gap = (note_seconds - prev_note_seconds).value();
+    }
+    auto late_gap = std::numeric_limits<double>::infinity();
+    if (last != note_end) {
         const Beat next_note_beat {last->position
                                    / static_cast<double>(resolution)};
         const auto next_note_seconds
             = converter.beats_to_seconds(next_note_beat);
-        const auto midpoint_seconds = (note_seconds + next_note_seconds) * 0.5;
-        late_seconds = std::min(late_seconds, midpoint_seconds);
+        late_gap = (next_note_seconds - note_seconds).value();
     }
-    const auto late_beat = converter.seconds_to_beats(
-        note_seconds * (1.0 - squeeze) + late_seconds * squeeze);
+
+    const Second early_window {engine.early_timing_window(early_gap, late_gap)
+                               * squeeze};
+    const Second late_window {engine.late_timing_window(early_gap, late_gap)
+                              * squeeze};
+
+    const auto early_beat
+        = converter.seconds_to_beats(note_seconds - early_window);
+    const auto early_meas = converter.beats_to_measures(early_beat);
+    const auto late_beat
+        = converter.seconds_to_beats(note_seconds + late_window);
     const auto late_meas = converter.beats_to_measures(late_beat);
     *points++ = {{beat, meas},
                  {early_beat, early_meas},
@@ -257,10 +269,10 @@ static std::vector<Point> points_from_track(
             }
             ++current_phrase;
         }
-        append_note_points(p, q, notes.cend(), std::back_inserter(points),
-                           track.resolution(), is_note_sp_ender,
-                           is_unison_sp_ender, converter, squeeze, engine,
-                           enable_double_kick, disable_kick);
+        append_note_points(p, q, notes.cbegin(), notes.cend(),
+                           std::back_inserter(points), track.resolution(),
+                           is_note_sp_ender, is_unison_sp_ender, converter,
+                           squeeze, engine, enable_double_kick, disable_kick);
         p = q;
     }
 
@@ -335,10 +347,10 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
             }
             ++current_phrase;
         }
-        append_note_points(p, q, notes.cend(), std::back_inserter(points),
-                           track.resolution(), is_note_sp_ender,
-                           is_unison_sp_ender, converter, squeeze, engine,
-                           false, false);
+        append_note_points(p, q, notes.cbegin(), notes.cend(),
+                           std::back_inserter(points), track.resolution(),
+                           is_note_sp_ender, is_unison_sp_ender, converter,
+                           squeeze, engine, false, false);
         p = q;
     }
 

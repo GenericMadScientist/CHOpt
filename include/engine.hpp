@@ -26,18 +26,20 @@ public:
     virtual int base_note_value() const = 0;
     virtual double burst_size() const = 0;
     virtual bool chords_multiply_sustains() const = 0;
+    virtual double early_timing_window(double early_gap,
+                                       double late_gap) const = 0;
     virtual bool has_bres() const = 0;
     virtual bool has_unison_bonuses() const = 0;
     virtual bool is_rock_band() const = 0;
     virtual bool ignore_average_multiplier() const = 0;
+    virtual double late_timing_window(double early_gap,
+                                      double late_gap) const = 0;
     virtual int max_multiplier() const = 0;
     virtual bool merge_uneven_sustains() const = 0;
-    virtual bool restricted_back_end() const = 0;
     virtual int snap_gap() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
     virtual SustainRoundingPolicy sustain_rounding() const = 0;
-    virtual double timing_window() const = 0;
     virtual bool uses_beat_track() const = 0;
     virtual ~Engine() = default;
 };
@@ -47,13 +49,24 @@ public:
     int base_note_value() const override { return 50; }
     double burst_size() const override { return 0.25; }
     bool chords_multiply_sustains() const override { return false; }
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.07;
+    }
     bool has_bres() const override { return false; }
     bool has_unison_bonuses() const override { return false; }
     bool ignore_average_multiplier() const override { return false; }
     bool is_rock_band() const override { return false; }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.07;
+    }
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return false; }
-    bool restricted_back_end() const override { return false; }
     int snap_gap() const override { return 0; }
     double sp_gain_rate() const override { return 1 / 30.0; }
     int sust_points_per_beat() const override { return 25; }
@@ -61,7 +74,6 @@ public:
     {
         return SustainRoundingPolicy::RoundUp;
     }
-    double timing_window() const override { return 0.07; }
     bool uses_beat_track() const override { return false; }
 };
 
@@ -74,7 +86,6 @@ public:
     bool ignore_average_multiplier() const override { return true; }
     bool is_rock_band() const override { return true; }
     bool merge_uneven_sustains() const override { return true; }
-    bool restricted_back_end() const override { return true; }
     int snap_gap() const override { return 2; }
     double sp_gain_rate() const override { return 0.034; }
     int sust_points_per_beat() const override { return 12; }
@@ -87,30 +98,70 @@ public:
 
 class RbEngine final : public BaseRbEngine {
 public:
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.1;
+    }
     bool has_unison_bonuses() const override { return false; }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        return std::min(0.1, late_gap / 2);
+    }
     int max_multiplier() const override { return 4; }
-    double timing_window() const override { return 0.1; }
 };
 
 class RbBassEngine final : public BaseRbEngine {
 public:
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.1;
+    }
     bool has_unison_bonuses() const override { return false; }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        return std::min(0.1, late_gap / 2);
+    }
     int max_multiplier() const override { return 6; }
-    double timing_window() const override { return 0.1; }
 };
 
 class Rb3Engine final : public BaseRbEngine {
 public:
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.105;
+    }
     bool has_unison_bonuses() const override { return true; }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        return std::min(0.105, late_gap / 2);
+    }
     int max_multiplier() const override { return 4; }
-    double timing_window() const override { return 0.105; }
 };
 
 class Rb3BassEngine final : public BaseRbEngine {
 public:
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.105;
+    }
     bool has_unison_bonuses() const override { return true; }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        return std::min(0.105, late_gap / 2);
+    }
     int max_multiplier() const override { return 6; }
-    double timing_window() const override { return 0.105; }
 };
 
 #endif
