@@ -89,13 +89,17 @@ public:
     {
         early_gap = std::clamp(early_gap, 0.0375, 0.085);
         late_gap = std::clamp(late_gap, 0.0375, 0.085);
-        return 0.27619 * (early_gap + late_gap) + 0.021;
+        const auto total_gap = early_gap + late_gap;
+        return -2.23425815 * total_gap * total_gap
+            + 0.9428571428571415 * total_gap - 0.01;
     }
     double late_timing_window(double early_gap, double late_gap) const override
     {
         early_gap = std::clamp(early_gap, 0.0375, 0.085);
         late_gap = std::clamp(late_gap, 0.0375, 0.085);
-        return 0.27619 * (early_gap + late_gap) + 0.021;
+        const auto total_gap = early_gap + late_gap;
+        return -2.23425815 * total_gap * total_gap
+            + 0.9428571428571415 * total_gap - 0.01;
     }
 };
 

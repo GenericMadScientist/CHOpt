@@ -104,6 +104,31 @@ static Instrument string_to_inst(std::string_view text)
     throw std::invalid_argument("Unrecognised instrument");
 }
 
+static std::unique_ptr<Engine> string_to_engine(std::string_view engine,
+                                                Instrument instrument)
+{
+    if (engine == "ch") {
+        if (instrument == Instrument::Drums) {
+            return std::make_unique<ChDrumEngine>();
+        }
+        return std::make_unique<ChGuitarEngine>();
+    }
+    if (engine_name == "rb") {
+        if (instrument == Instrument::Bass) {
+            return std::make_unique<RbBassEngine>();
+        }
+        return std::make_unique<RbEngine>();
+    }
+    if (engine_name == "rb3") {
+        if (settings.instrument == Instrument::Bass) {
+            settings.engine = std::make_unique<Rb3BassEngine>();
+        }
+        return std::make_unique<Rb3Engine>();
+    }
+
+    throw std::invalid_argument("Invalid engine specified");
+}
+
 Settings from_args(int argc, char** argv)
 {
     constexpr float DEFAULT_OPACITY = 0.33F;
@@ -257,25 +282,7 @@ Settings from_args(int argc, char** argv)
     settings.video_lag = video_lag / MS_PER_SECOND;
 
     const auto engine_name = program.get<std::string>("--engine");
-    if (engine_name == "ch" && settings.instrument != Instrument::Drums) {
-        settings.engine = std::make_unique<ChGuitarEngine>();
-    } else if (engine_name == "ch") {
-        settings.engine = std::make_unique<ChDrumEngine>();
-    } else if (engine_name == "rb") {
-        if (settings.instrument == Instrument::Bass) {
-            settings.engine = std::make_unique<RbBassEngine>();
-        } else {
-            settings.engine = std::make_unique<RbEngine>();
-        }
-    } else if (engine_name == "rb3") {
-        if (settings.instrument == Instrument::Bass) {
-            settings.engine = std::make_unique<Rb3BassEngine>();
-        } else {
-            settings.engine = std::make_unique<Rb3Engine>();
-        }
-    } else {
-        throw std::invalid_argument("Invalid engine specified");
-    }
+    settings.engine = string_to_engine(engine_name, settings.instrument);
 
     const auto speed = program.get<int>("--speed");
     if (speed < MIN_SPEED || speed > MAX_SPEED || speed % MIN_SPEED != 0) {
