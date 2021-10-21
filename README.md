@@ -46,6 +46,7 @@ by passing -h or --help to CHOpt, or by consulting the table below.
 | --double-kick           | Enable 2x kick (drums only)                                      |
 | --no-kick               | Disable non-2x kicks (drums only)                                |
 | --engine                | Choose the engine (ch/rb/rb3)                                    |
+| -p, --precision-mode    | Enable precision mode (CH only)                                  |
 | -b, --blank             | Output a blank image without pathing                             |
 | --no-image              | Do not create an image                                           |
 | --no-bpms               | Do not draw BPMs                                                 |

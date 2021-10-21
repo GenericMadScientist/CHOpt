@@ -83,6 +83,24 @@ public:
     }
 };
 
+class ChPrecisionGuitarEngine final : public BaseChEngine {
+public:
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        early_gap = std::clamp(early_gap, 0.0, 0.0525);
+        late_gap = std::clamp(late_gap, 0.0, 0.0525);
+        const auto total_gap = early_gap + late_gap;
+        return 0.27619 * total_gap + 0.021;
+    }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        early_gap = std::clamp(early_gap, 0.0, 0.0525);
+        late_gap = std::clamp(late_gap, 0.0, 0.0525);
+        const auto total_gap = early_gap + late_gap;
+        return 0.27619 * total_gap + 0.021;
+    }
+};
+
 class ChDrumEngine final : public BaseChEngine {
 public:
     double early_timing_window(double early_gap, double late_gap) const override
@@ -100,6 +118,26 @@ public:
         const auto total_gap = early_gap + late_gap;
         return -2.23425815 * total_gap * total_gap
             + 0.9428571428571415 * total_gap - 0.01;
+    }
+};
+
+class ChPrecisionDrumEngine final : public BaseChEngine {
+public:
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        early_gap = std::clamp(early_gap, 0.025, 0.04);
+        late_gap = std::clamp(late_gap, 0.025, 0.04);
+        const auto total_gap = early_gap + late_gap;
+        return 2.4961183 * total_gap * total_gap + 0.24961183 * total_gap
+            + 0.0065;
+    }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        early_gap = std::clamp(early_gap, 0.025, 0.04);
+        late_gap = std::clamp(late_gap, 0.025, 0.04);
+        const auto total_gap = early_gap + late_gap;
+        return 2.4961183 * total_gap * total_gap + 0.24961183 * total_gap
+            + 0.0065;
     }
 };
 

@@ -105,11 +105,18 @@ static Instrument string_to_inst(std::string_view text)
 }
 
 static std::unique_ptr<Engine> string_to_engine(std::string_view engine,
-                                                Instrument instrument)
+                                                Instrument instrument,
+                                                bool precision_mode)
 {
     if (engine == "ch") {
         if (instrument == Instrument::Drums) {
+            if (precision_mode) {
+                return std::make_unique<ChPrecisionDrumEngine>();
+            }
             return std::make_unique<ChDrumEngine>();
+        }
+        if (precision_mode) {
+            return std::make_unique<ChPrecisionGuitarEngine>();
         }
         return std::make_unique<ChGuitarEngine>();
     }
@@ -186,12 +193,16 @@ Settings from_args(int argc, char** argv)
         .default_value(false)
         .implicit_value(true);
     program.add_argument("--no-kick")
-        .help("disable single kicks")
+        .help("disable single kicks for drum charts")
         .default_value(false)
         .implicit_value(true);
     program.add_argument("--engine")
         .default_value(std::string {"ch"})
         .help("engine, options are ch, rb, and rb3, defaults to ch");
+    program.add_argument("-p", "--precision-mode")
+        .help("turn on precision mode for CH")
+        .default_value(false)
+        .implicit_value(true);
     program.add_argument("-b", "--blank")
         .help("give a blank chart image")
         .default_value(false)
@@ -281,8 +292,10 @@ Settings from_args(int argc, char** argv)
 
     settings.video_lag = video_lag / MS_PER_SECOND;
 
+    const auto precision_mode = program.get<bool>("--precision-mode");
     const auto engine_name = program.get<std::string>("--engine");
-    settings.engine = string_to_engine(engine_name, settings.instrument);
+    settings.engine
+        = string_to_engine(engine_name, settings.instrument, precision_mode);
 
     const auto speed = program.get<int>("--speed");
     if (speed < MIN_SPEED || speed > MAX_SPEED || speed % MIN_SPEED != 0) {
