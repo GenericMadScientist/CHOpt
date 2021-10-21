@@ -66,9 +66,10 @@ SpData::form_beat_rates(int resolution, const SyncTrack& sync_track,
     return beat_rates;
 }
 
-void SpData::initialise(std::vector<std::tuple<int, int, Second>> note_spans,
-                        const std::vector<StarPower>& phrases, int resolution,
-                        Second lazy_whammy, Second video_lag)
+void SpData::initialise(
+    const std::vector<std::tuple<int, int, Second>>& note_spans,
+    const std::vector<StarPower>& phrases, int resolution, Second lazy_whammy,
+    Second video_lag)
 {
     // Elements are (whammy start, whammy end, note).
     std::vector<std::tuple<Beat, Beat, Beat>> ranges;

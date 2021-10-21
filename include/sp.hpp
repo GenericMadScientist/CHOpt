@@ -139,7 +139,7 @@ private:
         return spans;
     }
 
-    void initialise(std::vector<std::tuple<int, int, Second>> note_spans,
+    void initialise(const std::vector<std::tuple<int, int, Second>>& note_spans,
                     const std::vector<StarPower>& phrases, int resolution,
                     Second lazy_whammy, Second video_lag);
 
