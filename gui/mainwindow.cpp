@@ -199,7 +199,11 @@ Settings MainWindow::get_settings() const
     const auto engine = m_ui->engineComboBox->currentData().value<EngineType>();
     switch (engine) {
     case EngineType::CloneHero:
-        settings.engine = std::make_unique<ChEngine>();
+        if (settings.instrument == Instrument::Drums) {
+            settings.engine = std::make_unique<ChDrumEngine>();
+        } else {
+            settings.engine = std::make_unique<ChGuitarEngine>();
+        }
         break;
     case EngineType::RockBand:
         if (settings.instrument == Instrument::Bass) {

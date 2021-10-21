@@ -62,8 +62,8 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
     SECTION("Works correctly over 4/4")
     {
         std::vector<TimeSignature> time_sigs {{0, 4, 4}};
-        SpData sp_data {track,       {time_sigs, {}}, {},        1.0,
-                        Second(0.0), Second(0.0),     ChEngine()};
+        SpData sp_data {track,       {time_sigs, {}}, {}, 1.0, Second(0.0),
+                        Second(0.0), ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_max(
                     {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)}, 0.5)
@@ -76,8 +76,8 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
     SECTION("Works correctly over 3/4")
     {
         std::vector<TimeSignature> time_sigs {{0, 3, 4}};
-        SpData sp_data {track,       {time_sigs, {}}, {},        1.0,
-                        Second(0.0), Second(0.0),     ChEngine()};
+        SpData sp_data {track,       {time_sigs, {}}, {}, 1.0, Second(0.0),
+                        Second(0.0), ChGuitarEngine()};
 
         REQUIRE(
             sp_data.propagate_sp_over_whammy_max(
@@ -92,8 +92,8 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
     SECTION("Works correctly over changing time signatures")
     {
         std::vector<TimeSignature> time_sigs {{0, 4, 4}, {384, 3, 4}};
-        SpData sp_data {track,       {time_sigs, {}}, {},        1.0,
-                        Second(0.0), Second(0.0),     ChEngine()};
+        SpData sp_data {track,       {time_sigs, {}}, {}, 1.0, Second(0.0),
+                        Second(0.0), ChGuitarEngine()};
 
         REQUIRE(
             sp_data.propagate_sp_over_whammy_max(
@@ -108,8 +108,8 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
     SECTION("Returns -1 if SP runs out")
     {
         std::vector<TimeSignature> time_sigs {{0, 3, 4}, {384, 4, 4}};
-        SpData sp_data {track,       {time_sigs, {}}, {},        1.0,
-                        Second(0.0), Second(0.0),     ChEngine()};
+        SpData sp_data {track,       {time_sigs, {}}, {}, 1.0, Second(0.0),
+                        Second(0.0), ChGuitarEngine()};
 
         REQUIRE(
             sp_data.propagate_sp_over_whammy_max(
@@ -123,8 +123,8 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
 
     SECTION("Works even if some of the range isn't whammyable")
     {
-        SpData sp_data {track,       {},          {},        1.0,
-                        Second(0.0), Second(0.0), ChEngine()};
+        SpData sp_data {track,           {}, {}, 1.0, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_max(
                     {Beat(0.0), Measure(0.0)}, {Beat(12.0), Measure(3.0)}, 0.5)
@@ -133,8 +133,8 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
 
     SECTION("SP bar does not exceed full bar")
     {
-        SpData sp_data {track,       {},          {},        1.0,
-                        Second(0.0), Second(0.0), ChEngine()};
+        SpData sp_data {track,           {}, {}, 1.0, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_max(
                     {Beat(0.0), Measure(0.0)}, {Beat(10.0), Measure(2.5)}, 1.0)
@@ -145,11 +145,11 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
             == Approx(0.984375));
     }
 
-    SECTION("Hold notes not in a phrase do not contribute SP")
+    SECTION("Sustains not in a phrase do not contribute SP")
     {
         NoteTrack<NoteColour> no_sp_note_track {notes, {}, {}, {}, {}, 192};
-        SpData sp_data {no_sp_note_track, {},          {},        1.0,
-                        Second(0.0),      Second(0.0), ChEngine()};
+        SpData sp_data {no_sp_note_track, {}, {}, 1.0, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_max(
                     {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)}, 1.0)
@@ -158,8 +158,8 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
 
     SECTION("required_whammy_end is accounted for")
     {
-        SpData sp_data {track,       {},          {},        1.0,
-                        Second(0.0), Second(0.0), ChEngine()};
+        SpData sp_data {track,           {}, {}, 1.0, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_min(
                     {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)}, 0.5,
@@ -175,8 +175,8 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
         std::vector<StarPower> second_phrases {{0, 3100}};
         NoteTrack<NoteColour> second_track {
             second_notes, second_phrases, {}, {}, {}, 192};
-        SpData sp_data {second_track, {},          {},        1.0,
-                        Second(0.0),  Second(0.0), ChEngine()};
+        SpData sp_data {second_track,    {}, {}, 1.0, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_min(
                     {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)}, 0.5,
@@ -190,7 +190,8 @@ TEST_CASE("is_in_whammy_ranges works correctly")
     std::vector<Note<NoteColour>> notes {{0, 1920}, {2112}};
     std::vector<StarPower> phrases {{0, 2000}, {2112, 50}};
     NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, 192};
-    SpData sp_data {track, {}, {}, 1.0, Second(0.0), Second(0.0), ChEngine()};
+    SpData sp_data {track,           {}, {}, 1.0, Second(0.0), Second(0.0),
+                    ChGuitarEngine()};
 
     REQUIRE(sp_data.is_in_whammy_ranges(Beat(1.0)));
     REQUIRE(!sp_data.is_in_whammy_ranges(Beat(11.0)));
@@ -204,8 +205,8 @@ TEST_CASE("available_whammy works correctly")
 
     SECTION("100% early whammy")
     {
-        SpData sp_data {track,       {},          {},        1.0,
-                        Second(0.0), Second(0.0), ChEngine()};
+        SpData sp_data {track,           {}, {}, 1.0, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
 
         REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(16.0))
                 == Approx(0.471333));
@@ -217,8 +218,8 @@ TEST_CASE("available_whammy works correctly")
 
     SECTION("50% early whammy")
     {
-        SpData sp_data {track,       {},          {},        0.5,
-                        Second(0.0), Second(0.0), ChEngine()};
+        SpData sp_data {track,           {}, {}, 0.5, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
 
         REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(16.0))
                 == Approx(0.469));
@@ -230,8 +231,8 @@ TEST_CASE("available_whammy works correctly")
 
     SECTION("Negative early whammy")
     {
-        SpData sp_data {track,       {},          {},        0.0,
-                        Second(2.5), Second(0.0), ChEngine()};
+        SpData sp_data {track,           {}, {}, 0.0, Second(2.5), Second(0.0),
+                        ChGuitarEngine()};
 
         REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(10.0))
                 == Approx(0.166667));
@@ -241,8 +242,8 @@ TEST_CASE("available_whammy works correctly")
 
     SECTION("Three argument version works correctly")
     {
-        SpData sp_data {track,       {},          {},        1.0,
-                        Second(0.0), Second(0.0), ChEngine()};
+        SpData sp_data {track,           {}, {}, 1.0, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
 
         REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(12.0), Beat(12.0))
                 == Approx(0.333333));
@@ -255,8 +256,8 @@ TEST_CASE("activation_end_point works correctly")
     {
         std::vector<Note<NoteColour>> notes {{0}};
         NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
-        SpData sp_data {track,       {},          {},        1.0,
-                        Second(0.0), Second(0.0), ChEngine()};
+        SpData sp_data {track,           {}, {}, 1.0, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
 
@@ -268,8 +269,8 @@ TEST_CASE("activation_end_point works correctly")
     {
         std::vector<Note<NoteColour>> notes {{0}};
         NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
-        SpData sp_data {track,       {},          {},        1.0,
-                        Second(0.0), Second(0.0), ChEngine()};
+        SpData sp_data {track,           {}, {}, 1.0, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
 
@@ -282,8 +283,8 @@ TEST_CASE("activation_end_point works correctly")
         std::vector<Note<NoteColour>> notes {{0, 192}, {950}};
         std::vector<StarPower> phrases {{0, 1000}};
         NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, 192};
-        SpData sp_data {track,       {},          {},        1.0,
-                        Second(0.0), Second(0.0), ChEngine()};
+        SpData sp_data {track,           {}, {}, 1.0, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
 
@@ -296,8 +297,8 @@ TEST_CASE("activation_end_point works correctly")
         std::vector<Note<NoteColour>> notes {{0, 192}, {950}};
         std::vector<StarPower> phrases {{0, 1000}};
         NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, 192};
-        SpData sp_data {track,       {},          {},        1.0,
-                        Second(0.0), Second(0.0), ChEngine()};
+        SpData sp_data {track,           {}, {}, 1.0, Second(0.0), Second(0.0),
+                        ChGuitarEngine()};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(2.0), Measure(0.5)};
 
@@ -311,8 +312,8 @@ TEST_CASE("activation_end_point works correctly")
         std::vector<StarPower> phrases {{0, 1000}};
         SyncTrack sync_track {{{0, 2, 4}}, {}};
         NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, 192};
-        SpData sp_data {track,       sync_track,  {},        1.0,
-                        Second(0.0), Second(0.0), ChEngine()};
+        SpData sp_data {track,       sync_track,      {}, 1.0, Second(0.0),
+                        Second(0.0), ChGuitarEngine()};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
 
@@ -329,8 +330,8 @@ TEST_CASE("Video lag is taken account of")
 
     SECTION("Negative video lag is dealt with correctly")
     {
-        SpData sp_data {track,       {},           {},        0.0,
-                        Second(0.0), Second(-0.1), ChEngine()};
+        SpData sp_data {track,           {}, {}, 0.0, Second(0.0), Second(-0.1),
+                        ChGuitarEngine()};
 
         REQUIRE(sp_data.is_in_whammy_ranges(Beat(0.9)));
         REQUIRE(sp_data.is_in_whammy_ranges(Beat(1.9)));
@@ -338,8 +339,8 @@ TEST_CASE("Video lag is taken account of")
 
     SECTION("Positive video lag is dealt with correctly")
     {
-        SpData sp_data {track,       {},          {},        0.0,
-                        Second(0.0), Second(0.1), ChEngine()};
+        SpData sp_data {track,           {}, {}, 0.0, Second(0.0), Second(0.1),
+                        ChGuitarEngine()};
 
         REQUIRE(!sp_data.is_in_whammy_ranges(Beat(1.0)));
         REQUIRE(sp_data.is_in_whammy_ranges(Beat(1.9)));

@@ -246,7 +246,7 @@ TEST_CASE("Second operations", "Second")
 TEST_CASE("Beats to seconds conversion", "Beats<->S")
 {
     SyncTrack track {{{0, 4, 4}}, {{0, 150000}, {800, 200000}}};
-    TimeConverter converter {track, 200, ChEngine(), {}};
+    TimeConverter converter {track, 200, ChGuitarEngine(), {}};
     constexpr std::array beats {-1.0, 0.0, 3.0, 5.0};
     constexpr std::array seconds {-0.5, 0.0, 1.2, 1.9};
 
@@ -265,7 +265,7 @@ TEST_CASE("Beats to seconds conversion", "Beats<->S")
 TEST_CASE("Beats to measures conversion", "Beats<->Measures")
 {
     SyncTrack track {{{0, 5, 4}, {1000, 4, 4}, {1200, 4, 16}}, {}};
-    TimeConverter converter {track, 200, ChEngine(), {}};
+    TimeConverter converter {track, 200, ChGuitarEngine(), {}};
     constexpr std::array beats {-1.0, 0.0, 3.0, 5.5, 6.5};
     constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
 
@@ -285,7 +285,7 @@ TEST_CASE("Measures to seconds conversion", "Measures<->S")
 {
     SyncTrack track {{{0, 5, 4}, {1000, 4, 4}, {1200, 4, 16}},
                      {{0, 150000}, {800, 200000}}};
-    TimeConverter converter {track, 200, ChEngine(), {}};
+    TimeConverter converter {track, 200, ChGuitarEngine(), {}};
     constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
     constexpr std::array seconds {-0.5, 0.0, 1.2, 2.05, 2.35};
 

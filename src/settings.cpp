@@ -257,8 +257,10 @@ Settings from_args(int argc, char** argv)
     settings.video_lag = video_lag / MS_PER_SECOND;
 
     const auto engine_name = program.get<std::string>("--engine");
-    if (engine_name == "ch") {
-        settings.engine = std::make_unique<ChEngine>();
+    if (engine_name == "ch" && settings.instrument != Instrument::Drums) {
+        settings.engine = std::make_unique<ChGuitarEngine>();
+    } else if (engine_name == "ch") {
+        settings.engine = std::make_unique<ChDrumEngine>();
     } else if (engine_name == "rb") {
         if (settings.instrument == Instrument::Bass) {
             settings.engine = std::make_unique<RbBassEngine>();

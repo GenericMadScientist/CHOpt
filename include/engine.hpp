@@ -19,6 +19,8 @@
 #ifndef CHOPT_ENGINE_HPP
 #define CHOPT_ENGINE_HPP
 
+#include <algorithm>
+
 enum class SustainRoundingPolicy { RoundUp, RoundToNearest };
 
 class Engine {
@@ -44,27 +46,15 @@ public:
     virtual ~Engine() = default;
 };
 
-class ChEngine final : public Engine {
+class BaseChEngine : public Engine {
 public:
     int base_note_value() const override { return 50; }
     double burst_size() const override { return 0.25; }
     bool chords_multiply_sustains() const override { return false; }
-    double early_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)early_gap;
-        (void)late_gap;
-        return 0.07;
-    }
     bool has_bres() const override { return false; }
     bool has_unison_bonuses() const override { return false; }
     bool ignore_average_multiplier() const override { return false; }
     bool is_rock_band() const override { return false; }
-    double late_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)early_gap;
-        (void)late_gap;
-        return 0.07;
-    }
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return false; }
     int snap_gap() const override { return 0; }
@@ -75,6 +65,38 @@ public:
         return SustainRoundingPolicy::RoundUp;
     }
     bool uses_beat_track() const override { return false; }
+};
+
+class ChGuitarEngine final : public BaseChEngine {
+public:
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.07;
+    }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.07;
+    }
+};
+
+class ChDrumEngine final : public BaseChEngine {
+public:
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        early_gap = std::clamp(early_gap, 0.0375, 0.085);
+        late_gap = std::clamp(late_gap, 0.0375, 0.085);
+        return 0.27619 * (early_gap + late_gap) + 0.021;
+    }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        early_gap = std::clamp(early_gap, 0.0375, 0.085);
+        late_gap = std::clamp(late_gap, 0.0375, 0.085);
+        return 0.27619 * (early_gap + late_gap) + 0.021;
+    }
 };
 
 class BaseRbEngine : public Engine {
