@@ -113,15 +113,15 @@ static std::unique_ptr<Engine> string_to_engine(std::string_view engine,
         }
         return std::make_unique<ChGuitarEngine>();
     }
-    if (engine_name == "rb") {
+    if (engine == "rb") {
         if (instrument == Instrument::Bass) {
             return std::make_unique<RbBassEngine>();
         }
         return std::make_unique<RbEngine>();
     }
-    if (engine_name == "rb3") {
-        if (settings.instrument == Instrument::Bass) {
-            settings.engine = std::make_unique<Rb3BassEngine>();
+    if (engine == "rb3") {
+        if (instrument == Instrument::Bass) {
+            return std::make_unique<Rb3BassEngine>();
         }
         return std::make_unique<Rb3Engine>();
     }
