@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>433</width>
-    <height>553</height>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -333,6 +333,20 @@
         </item>
         <item row="2" column="3">
           <widget class="QCheckBox" name="noKickCheckBox">
+            <property name="checked">
+              <bool>false</bool>
+            </property>
+          </widget>
+        </item>
+        <item row="3" column="0">
+          <widget class="QLabel" name="label_precisionMode">
+            <property name="text">
+              <string>Precision Mode</string>
+            </property>
+          </widget>
+        </item>
+        <item row="3" column="1">
+          <widget class="QCheckBox" name="precisionModeCheckBox">
             <property name="checked">
               <bool>false</bool>
             </property>

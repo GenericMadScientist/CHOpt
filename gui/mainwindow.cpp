@@ -197,10 +197,17 @@ Settings MainWindow::get_settings() const
     settings.early_whammy = m_ui->earlyWhammySlider->value() / 100.0;
     settings.video_lag = m_ui->videoLagSlider->value() / 1000.0;
     const auto engine = m_ui->engineComboBox->currentData().value<EngineType>();
+    const auto precision_mode = m_ui->precisionModeCheckBox->isChecked();
     switch (engine) {
     case EngineType::CloneHero:
         if (settings.instrument == Instrument::Drums) {
-            settings.engine = std::make_unique<ChDrumEngine>();
+            if (precision_mode) {
+                settings.engine = std::make_unique<ChPrecisionDrumEngine>();
+            } else {
+                settings.engine = std::make_unique<ChDrumEngine>();
+            }
+        } else if (precision_mode) {
+            settings.engine = std::make_unique<ChPrecisionGuitarEngine>();
         } else {
             settings.engine = std::make_unique<ChGuitarEngine>();
         }
