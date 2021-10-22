@@ -807,9 +807,6 @@ read_instrument_midi_track(const MidiTrack& midi_track)
                 add_sysex_event(event_track, *sysex_event, event.time, rank);
                 continue;
             }
-            if constexpr (!std::is_same_v<T, DrumNoteColour>) {
-                continue;
-            }
             const auto* meta_event = std::get_if<MetaEvent>(&event.event);
             if (meta_event == nullptr) {
                 continue;
