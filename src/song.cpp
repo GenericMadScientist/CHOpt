@@ -336,9 +336,13 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
     auto solos
         = form_solo_vector(solo_on_events, solo_off_events, notes, false);
 
-    return NoteTrack<T> {
-        std::move(notes), std::move(sp), std::move(solos), std::move(fills), {},
-        resolution};
+    return NoteTrack<T> {std::move(notes),
+                         std::move(sp),
+                         std::move(solos),
+                         std::move(fills),
+                         {},
+                         {},
+                         resolution};
 }
 
 std::vector<Instrument> Song::instruments() const
@@ -676,6 +680,10 @@ template <typename T> struct InstrumentMidiTrack {
     std::vector<std::tuple<int, int>> sp_off_events;
     std::vector<std::tuple<int, int>> fill_on_events;
     std::vector<std::tuple<int, int>> fill_off_events;
+    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+        disco_flip_on_events;
+    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+        disco_flip_off_events;
 };
 
 template <typename T>
@@ -772,9 +780,22 @@ read_instrument_midi_track(const MidiTrack& midi_track)
 {
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
+    constexpr int TEXT_EVENT_ID = 1;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
+    constexpr std::array<std::uint8_t, 5> MIX {{'[', 'm', 'i', 'x', ' '}};
+    constexpr std::array<std::uint8_t, 6> DRUMS {
+        {' ', 'd', 'r', 'u', 'm', 's'}};
+
     InstrumentMidiTrack<T> event_track;
+    event_track.disco_flip_on_events[Difficulty::Easy] = {};
+    event_track.disco_flip_off_events[Difficulty::Easy] = {};
+    event_track.disco_flip_on_events[Difficulty::Medium] = {};
+    event_track.disco_flip_off_events[Difficulty::Medium] = {};
+    event_track.disco_flip_on_events[Difficulty::Hard] = {};
+    event_track.disco_flip_off_events[Difficulty::Hard] = {};
+    event_track.disco_flip_on_events[Difficulty::Expert] = {};
+    event_track.disco_flip_off_events[Difficulty::Expert] = {};
 
     int rank = 0;
     for (const auto& event : midi_track.events) {
@@ -784,6 +805,40 @@ read_instrument_midi_track(const MidiTrack& midi_track)
             const auto* sysex_event = std::get_if<SysexEvent>(&event.event);
             if (sysex_event != nullptr) {
                 add_sysex_event(event_track, *sysex_event, event.time, rank);
+                continue;
+            }
+            if constexpr (!std::is_same_v<T, DrumNoteColour>) {
+                continue;
+            }
+            const auto* meta_event = std::get_if<MetaEvent>(&event.event);
+            if (meta_event == nullptr) {
+                continue;
+            }
+            if (meta_event->type == TEXT_EVENT_ID) {
+                if (meta_event->data.size() != 14
+                    && meta_event->data.size() != 15) {
+                    continue;
+                }
+                if (!std::equal(MIX.cbegin(), MIX.cend(),
+                                meta_event->data.cbegin())) {
+                    continue;
+                }
+                if (!std::equal(DRUMS.cbegin(), DRUMS.cend(),
+                                meta_event->data.cbegin() + 6)) {
+                    continue;
+                }
+                const auto diff
+                    = static_cast<Difficulty>(meta_event->data[5] - '0');
+                if (meta_event->data.size() == 14
+                    && meta_event->data[13] == ']') {
+                    event_track.disco_flip_off_events[diff].push_back(
+                        {event.time, rank});
+                } else if (meta_event->data.size() == 15
+                           && meta_event->data[13] == 'd'
+                           && meta_event->data[14] == ']') {
+                    event_track.disco_flip_on_events[diff].push_back(
+                        {event.time, rank});
+                }
             }
             continue;
         }
@@ -897,10 +952,14 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
             solo_offs.push_back(pos);
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
-        note_tracks.emplace(
-            diff,
-            NoteTrack<NoteColour> {
-                note_set, sp_phrases, std::move(solos), {}, bre, resolution});
+        note_tracks.emplace(diff,
+                            NoteTrack<NoteColour> {note_set,
+                                                   sp_phrases,
+                                                   std::move(solos),
+                                                   {},
+                                                   {},
+                                                   bre,
+                                                   resolution});
     }
 
     return note_tracks;
@@ -945,10 +1004,14 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
             solo_offs.push_back(pos);
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
-        note_tracks.emplace(
-            diff,
-            NoteTrack<GHLNoteColour> {
-                note_set, sp_phrases, std::move(solos), {}, {}, resolution});
+        note_tracks.emplace(diff,
+                            NoteTrack<GHLNoteColour> {note_set,
+                                                      sp_phrases,
+                                                      std::move(solos),
+                                                      {},
+                                                      {},
+                                                      {},
+                                                      resolution});
     }
 
     return note_tracks;
@@ -1043,12 +1106,19 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         for (const auto& [pos, rank] : event_track.solo_off_events) {
             solo_offs.push_back(pos);
         }
+        std::vector<DiscoFlip> disco_flips;
+        for (const auto& [start, end] : combine_note_on_off_events(
+                 event_track.disco_flip_on_events.at(diff),
+                 event_track.disco_flip_off_events.at(diff))) {
+            disco_flips.push_back({start, end - start});
+        }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
         note_tracks.emplace(diff,
                             NoteTrack<DrumNoteColour> {note_set,
                                                        sp_phrases,
                                                        std::move(solos),
                                                        drum_fills,
+                                                       std::move(disco_flips),
                                                        {},
                                                        resolution});
     }

@@ -82,6 +82,28 @@ static DrumNoteColour cymbal_to_tom(DrumNoteColour colour)
     return colour;
 }
 
+static DrumNoteColour disco_flip(DrumNoteColour colour, int position,
+                                 const std::vector<DiscoFlip>& disco_flips)
+{
+    for (const auto& flip : disco_flips) {
+        if (flip.position > position
+            || (flip.position + flip.length) < position) {
+            continue;
+        }
+        if (colour == DrumNoteColour::YellowCymbal) {
+            return DrumNoteColour::Red;
+        }
+        if (colour == DrumNoteColour::Yellow) {
+            return DrumNoteColour::Red;
+        }
+        if (colour == DrumNoteColour::Red) {
+            return DrumNoteColour::YellowCymbal;
+        }
+        return colour;
+    }
+    return colour;
+}
+
 static std::vector<DrawnNote<DrumNoteColour>>
 drawn_notes(const NoteTrack<DrumNoteColour>& track, bool enable_double_kick,
             bool disable_kick, bool pro_drums)
@@ -95,8 +117,9 @@ drawn_notes(const NoteTrack<DrumNoteColour>& track, bool enable_double_kick,
         if (note.colour == DrumNoteColour::Kick && disable_kick) {
             continue;
         }
-        const auto note_colour
-            = pro_drums ? note.colour : cymbal_to_tom(note.colour);
+        const auto note_colour = pro_drums
+            ? disco_flip(note.colour, note.position, track.disco_flips())
+            : cymbal_to_tom(note.colour);
         const auto beat
             = note.position / static_cast<double>(track.resolution());
         const auto length

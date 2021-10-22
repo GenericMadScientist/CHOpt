@@ -26,7 +26,7 @@
 #include <tuple>
 #include <vector>
 
-enum class Difficulty { Easy, Medium, Hard, Expert };
+enum class Difficulty { Easy = 0, Medium = 1, Hard = 2, Expert = 3 };
 
 enum class Instrument {
     Guitar,
@@ -102,6 +102,11 @@ struct DrumFill {
     int length;
 };
 
+struct DiscoFlip {
+    int position;
+    int length;
+};
+
 struct BigRockEnding {
     int start;
     int end;
@@ -130,6 +135,7 @@ private:
     std::vector<StarPower> m_sp_phrases;
     std::vector<Solo> m_solos;
     std::vector<DrumFill> m_drum_fills;
+    std::vector<DiscoFlip> m_disco_flips;
     std::optional<BigRockEnding> m_bre;
     int m_resolution;
     int m_base_score;
@@ -178,8 +184,10 @@ public:
     NoteTrack(std::vector<Note<T>> notes,
               const std::vector<StarPower>& sp_phrases, std::vector<Solo> solos,
               std::vector<DrumFill> drum_fills,
+              std::vector<DiscoFlip> disco_flips,
               std::optional<BigRockEnding> bre, int resolution)
-        : m_drum_fills {drum_fills}
+        : m_drum_fills {std::move(drum_fills)}
+        , m_disco_flips {std::move(disco_flips)}
         , m_bre {bre}
         , m_resolution {resolution}
     {
@@ -327,6 +335,10 @@ public:
     [[nodiscard]] const std::vector<DrumFill>& drum_fills() const
     {
         return m_drum_fills;
+    }
+    [[nodiscard]] const std::vector<DiscoFlip>& disco_flips() const
+    {
+        return m_disco_flips;
     }
     [[nodiscard]] std::optional<BigRockEnding> bre() const { return m_bre; }
     [[nodiscard]] int resolution() const { return m_resolution; }

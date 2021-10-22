@@ -50,13 +50,19 @@ static bool operator==(const DrumFill& lhs, const DrumFill& rhs)
         == std::tie(rhs.position, rhs.length);
 }
 
+static bool operator==(const DiscoFlip& lhs, const DiscoFlip& rhs)
+{
+    return std::tie(lhs.position, lhs.length)
+        == std::tie(rhs.position, rhs.length);
+}
+
 template <typename T>
 static bool operator==(const NoteTrack<T>& lhs, const NoteTrack<T>& rhs)
 {
     return std::tie(lhs.notes(), lhs.sp_phrases(), lhs.solos(),
-                    lhs.drum_fills())
+                    lhs.drum_fills(), lhs.disco_flips())
         == std::tie(rhs.notes(), rhs.sp_phrases(), rhs.solos(),
-                    rhs.drum_fills());
+                    rhs.drum_fills(), rhs.disco_flips());
 }
 
 TEST_CASE("Chart -> Song has correct value for is_from_midi")
@@ -187,7 +193,7 @@ TEST_CASE("Chart reads easy note track correctly")
     std::vector<ChartSection> sections {easy_single};
     const Chart chart {sections};
     NoteTrack<NoteColour> note_track {
-        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}, {}, {}, 192};
+        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}, {}, {}, {}, 192};
 
     const auto song = Song::from_chart(chart, {});
 
@@ -201,7 +207,7 @@ TEST_CASE("Invalid note values are ignored")
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
     NoteTrack<NoteColour> note_track {
-        {{768, 0, NoteColour::Green}}, {}, {}, {}, {}, 192};
+        {{768, 0, NoteColour::Green}}, {}, {}, {}, {}, {}, 192};
 
     const auto song = Song::from_chart(chart, {});
 
@@ -215,7 +221,7 @@ TEST_CASE("SP phrases are read correctly from Chart")
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
     NoteTrack<NoteColour> note_track {
-        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}, {}, {}, 192};
+        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}, {}, {}, {}, 192};
 
     const auto song = Song::from_chart(chart, {});
 
@@ -1196,6 +1202,32 @@ TEST_CASE("Drum fills are read correctly from .mid")
     std::vector<DrumFill> fills {{45, 30}};
 
     REQUIRE(track.drum_fills() == fills);
+}
+
+TEST_CASE("Disco flips are read correctly from .mid")
+{
+    MidiTrack note_track {
+        {{0,
+          {MetaEvent {
+              3,
+              {0x50, 0x41, 0x52, 0x54, 0x20, 0x44, 0x52, 0x55, 0x4D, 0x53}}}},
+         {15,
+          {MetaEvent {1,
+                      {0x5B, 0x6D, 0x69, 0x78, 0x20, 0x33, 0x20, 0x64, 0x72,
+                       0x75, 0x6D, 0x73, 0x30, 0x64, 0x5D}}}},
+         {45, {MidiEvent {0x90, {98, 64}}}},
+         {65, {MidiEvent {0x80, {98, 0}}}},
+         {75,
+          {MetaEvent {1,
+                      {0x5B, 0x6D, 0x69, 0x78, 0x20, 0x33, 0x20, 0x64, 0x72,
+                       0x75, 0x6D, 0x73, 0x30, 0x5D}}}}}};
+    const Midi midi {192, {note_track}};
+    const auto song = Song::from_midi(midi, {});
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    std::vector<DiscoFlip> flips {{15, 60}};
+
+    REQUIRE(track.disco_flips() == flips);
 }
 
 TEST_CASE("unison_phrase_positions() is correct")

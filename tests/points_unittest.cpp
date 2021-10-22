@@ -71,7 +71,7 @@ TEST_CASE("Non-sustain notes")
 {
     SECTION("Single notes give 50 points")
     {
-        NoteTrack<NoteColour> track {{{768}, {960}}, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {{{768}, {960}}, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
         PointSet points {track,       converter,        {},    1.0,
                          Second(0.0), ChGuitarEngine(), false, false};
@@ -88,6 +88,7 @@ TEST_CASE("Non-sustain notes")
             {},
             {},
             {},
+            {},
             192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
         PointSet points {track,       converter,        {},    1.0,
@@ -99,7 +100,8 @@ TEST_CASE("Non-sustain notes")
 
     SECTION("GHL notes behave the same as 5 fret notes")
     {
-        NoteTrack<GHLNoteColour> track {{{768}, {960}}, {}, {}, {}, {}, 192};
+        NoteTrack<GHLNoteColour> track {
+            {{768}, {960}}, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
         PointSet points {track,       converter,        {},    1.0,
                          Second(0.0), ChGuitarEngine(), false, false};
@@ -113,13 +115,14 @@ TEST_CASE("Sustain notes")
 {
     SECTION("Sustain points depend on resolution")
     {
-        NoteTrack<NoteColour> track {{{768, 15}}, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {{{768, 15}}, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
         PointSet first_points {track,       converter,        {},    1.0,
                                Second(0.0), ChGuitarEngine(), false, false};
         std::vector<int> first_expected_values {50, 3};
         std::vector<Beat> first_expected_beats {Beat(4.0), Beat(4.0026)};
-        NoteTrack<NoteColour> second_track {{{768, 15}}, {}, {}, {}, {}, 200};
+        NoteTrack<NoteColour> second_track {{{768, 15}}, {}, {}, {},
+                                            {},          {}, 200};
         TimeConverter second_converter {{}, 200, ChGuitarEngine(), {}};
         PointSet second_points {second_track, second_converter, {},    1.0,
                                 Second(0.0),  ChGuitarEngine(), false, false};
@@ -140,6 +143,7 @@ TEST_CASE("Sustain notes")
             {},
             {},
             {},
+            {},
             192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
         PointSet points {track,       converter,        {},    1.0,
@@ -153,7 +157,7 @@ TEST_CASE("Sustain notes")
 
     SECTION("Resolutions below 25 do not enter an infinite loop")
     {
-        NoteTrack<NoteColour> track {{{768, 2}}, {}, {}, {}, {}, 1};
+        NoteTrack<NoteColour> track {{{768, 2}}, {}, {}, {}, {}, {}, 1};
         TimeConverter converter {{}, 1, ChGuitarEngine(), {}};
         PointSet points {track,       converter,        {},    1.0,
                          Second(0.0), ChGuitarEngine(), false, false};
@@ -166,6 +170,7 @@ TEST_CASE("Sustain notes")
         NoteTrack<NoteColour> track {{{0, 1504, NoteColour::Green},
                                       {0, 1504, NoteColour::Red},
                                       {0, 736, NoteColour::Yellow}},
+                                     {},
                                      {},
                                      {},
                                      {},
@@ -191,6 +196,7 @@ TEST_CASE("Sustain notes")
                                      {},
                                      {},
                                      {},
+                                     {},
                                      480};
         TimeConverter converter {{}, 480, RbEngine(), {}};
         PointSet points {track,       converter,  {},    1.0,
@@ -205,7 +211,7 @@ TEST_CASE("Sustain notes")
     // RB1 Cherub Rock m24 Y sustain
     SECTION("Rounding from length in RB for single notes is handled correctly")
     {
-        NoteTrack<NoteColour> track {{{0, 419}}, {}, {}, {}, {}, 480};
+        NoteTrack<NoteColour> track {{{0, 419}}, {}, {}, {}, {}, {}, 480};
         TimeConverter converter {{}, 480, RbEngine(), {}};
         PointSet points {track,       converter,  {},    1.0,
                          Second(0.0), RbEngine(), false, false};
@@ -225,6 +231,7 @@ TEST_CASE("Sustain notes")
             {},
             {},
             {},
+            {},
             480};
         TimeConverter converter {{}, 480, RbEngine(), {}};
         PointSet points {track,       converter,  {},    1.0,
@@ -239,7 +246,8 @@ TEST_CASE("Sustain notes")
 
 TEST_CASE("Points are sorted")
 {
-    NoteTrack<NoteColour> track {{{768, 15}, {770, 0}}, {}, {}, {}, {}, 192};
+    NoteTrack<NoteColour> track {
+        {{768, 15}, {770, 0}}, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,       converter,        {},    1.0,
                      Second(0.0), ChGuitarEngine(), false, false};
@@ -252,6 +260,7 @@ TEST_CASE("End of SP phrase points")
 {
     NoteTrack<NoteColour> track {{{768}, {960}, {1152}},
                                  {{768, 1}, {900, 50}, {1100, 53}},
+                                 {},
                                  {},
                                  {},
                                  {},
@@ -280,7 +289,7 @@ TEST_CASE("Combo multiplier is taken into account")
         for (int i = 0; i < 50; ++i) {
             notes.push_back({192 * i});
         }
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
         PointSet points {track,       converter,        {},    1.0,
                          Second(0.0), ChGuitarEngine(), false, false};
@@ -307,7 +316,7 @@ TEST_CASE("Combo multiplier is taken into account")
         }
         notes.push_back({9600, 192});
 
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
         PointSet points {track,       converter,        {},    1.0,
                          Second(0.0), ChGuitarEngine(), false, false};
@@ -325,7 +334,7 @@ TEST_CASE("Combo multiplier is taken into account")
         }
         notes[0].length = 2000;
 
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
         PointSet points {track,       converter,        {},    1.0,
                          Second(0.0), ChGuitarEngine(), false, false};
@@ -343,7 +352,7 @@ TEST_CASE("Combo multiplier is taken into account")
         }
         notes.push_back({192 * 7, 0, DrumNoteColour::Yellow});
 
-        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, 192};
+        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChDrumEngine(), {}};
         PointSet points {track,       converter,      {},    1.0,
                          Second(0.0), ChDrumEngine(), false, false};
@@ -360,7 +369,7 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     SECTION("Hit window starts for notes are correct")
     {
         std::vector<Note<NoteColour>> notes {{192}, {787}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         PointSet points {track,       converter,        {},    1.0,
                          Second(0.0), ChGuitarEngine(), false, false};
 
@@ -372,7 +381,7 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     SECTION("Hit window ends for notes are correct")
     {
         std::vector<Note<NoteColour>> notes {{192}, {749}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         PointSet points {track,       converter,        {},    1.0,
                          Second(0.0), ChGuitarEngine(), false, false};
 
@@ -384,7 +393,7 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     SECTION("Hit window starts and ends for hold points are correct")
     {
         std::vector<Note<NoteColour>> notes {{672, 192}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         PointSet points {track,       converter,        {},    1.0,
                          Second(0.0), ChGuitarEngine(), false, false};
 
@@ -397,7 +406,7 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     SECTION("Squeeze setting is accounted for")
     {
         std::vector<Note<NoteColour>> notes {{192}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         PointSet points {track,       converter,        {},    0.5,
                          Second(0.0), ChGuitarEngine(), false, false};
 
@@ -408,7 +417,7 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     SECTION("Restricted back end is taken account of")
     {
         std::vector<Note<NoteColour>> notes {{192}, {240}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         PointSet points {track,       converter,  {},    1.0,
                          Second(0.0), RbEngine(), false, false};
         PointSet fifty_sqz_points {track,       converter,  {},    0.5,
@@ -426,7 +435,7 @@ TEST_CASE("RB bass multiplier is taken into account")
     for (auto i = 0; i < 60; ++i) {
         notes.push_back({192 * i});
     }
-    const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+    const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
     const TimeConverter converter {{}, 192, RbBassEngine(), {}};
     const PointSet points {track,       converter,      {},    1.0,
                            Second(0.0), RbBassEngine(), false, false};
@@ -441,7 +450,7 @@ TEST_CASE("RB bass multiplier is taken into account")
 TEST_CASE("Video lag is taken into account")
 {
     const std::vector<Note<NoteColour>> notes {{192, 0}, {384, 192}};
-    const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+    const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
     const TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
 
     SECTION("Negative video lag is handled correctly")
@@ -471,7 +480,8 @@ TEST_CASE("Video lag is taken into account")
         std::vector<Note<NoteColour>> other_notes {
             {192}, {193}, {194}, {195},      {196},
             {197}, {198}, {199}, {200, 200}, {400}};
-        NoteTrack<NoteColour> other_track {other_notes, {}, {}, {}, {}, 192};
+        NoteTrack<NoteColour> other_track {other_notes, {}, {}, {},
+                                           {},          {}, 192};
         PointSet points {other_track,   converter,        {},    1.0,
                          Second(-0.40), ChGuitarEngine(), false, false};
 
@@ -483,7 +493,7 @@ TEST_CASE("Video lag is taken into account")
 TEST_CASE("next_non_hold_point is correct")
 {
     std::vector<Note<NoteColour>> notes {{0}, {192, 192}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
 
     PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
                      {},          1.0,
@@ -499,7 +509,7 @@ TEST_CASE("next_sp_granting_note is correct")
 {
     std::vector<Note<NoteColour>> notes {{100, 0}, {200, 100}, {400, 0}};
     std::vector<StarPower> phrases {{200, 1}, {400, 1}};
-    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, 192};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
 
     PointSet points {track,       converter,        {},    1.0,
@@ -516,7 +526,7 @@ TEST_CASE("next_sp_granting_note is correct")
 TEST_CASE("Solo sections are added")
 {
     std::vector<Solo> solos {{0, 576, 100}, {768, 1152, 200}};
-    NoteTrack<NoteColour> track {{}, {}, solos, {}, {}, 192};
+    NoteTrack<NoteColour> track {{}, {}, solos, {}, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChGuitarEngine(),
@@ -529,7 +539,7 @@ TEST_CASE("Solo sections are added")
 
 TEST_CASE("range_score is correct")
 {
-    NoteTrack<NoteColour> track {{{0, 192}, {386}}, {}, {}, {}, {}, 192};
+    NoteTrack<NoteColour> track {{{0, 192}, {386}}, {}, {}, {}, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChGuitarEngine(),
@@ -548,7 +558,7 @@ TEST_CASE("colour_set is correct for 5 fret")
                                          {0, 0, NoteColour::Red},
                                          {176, 100, NoteColour::Yellow},
                                          {500, 0, NoteColour::Blue}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, 192};
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChGuitarEngine(),
@@ -568,7 +578,7 @@ TEST_CASE("colour_set is correct for 6 fret")
         {0, 0, GHLNoteColour::WhiteMid},
         {176, 100, GHLNoteColour::BlackHigh},
         {500, 0, GHLNoteColour::Open}};
-    NoteTrack<GHLNoteColour> track {notes, {}, {}, {}, {}, 192};
+    NoteTrack<GHLNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChGuitarEngine(),
@@ -588,7 +598,7 @@ TEST_CASE("colour_set is correct for drums")
         {0, 0, DrumNoteColour::YellowCymbal},
         {176, 0, DrumNoteColour::BlueCymbal},
         {500, 0, DrumNoteColour::Kick}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, 192};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChDrumEngine(),
@@ -605,7 +615,7 @@ TEST_CASE("Double kicks only appear with enable_double_kick")
 {
     std::vector<Note<DrumNoteColour>> notes {
         {0, 0, DrumNoteColour::Kick}, {192, 0, DrumNoteColour::DoubleKick}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, 192};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
     PointSet single_points {track,       {{}, 192, ChDrumEngine(), {}},
                             {},          1.0,
                             Second(0.0), ChDrumEngine(),
@@ -623,7 +633,7 @@ TEST_CASE("Single kicks are removed with disable_kick")
 {
     std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::DoubleKick},
                                              {192, 0, DrumNoteColour::Kick}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, 192};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChDrumEngine(),
@@ -638,7 +648,7 @@ TEST_CASE("disable_kick doesn't kill SP phrases")
     std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::Red},
                                              {192, 0, DrumNoteColour::Kick}};
     std::vector<StarPower> phrases {{0, 200}};
-    NoteTrack<DrumNoteColour> track {notes, phrases, {}, {}, {}, 192};
+    NoteTrack<DrumNoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChDrumEngine(),
@@ -652,7 +662,7 @@ TEST_CASE("Double kicks don't kill phrases")
     std::vector<Note<DrumNoteColour>> notes {
         {0, 0, DrumNoteColour::Red}, {192, 0, DrumNoteColour::DoubleKick}};
     std::vector<StarPower> phrases {{0, 200}};
-    NoteTrack<DrumNoteColour> track {notes, phrases, {}, {}, {}, 192};
+    NoteTrack<DrumNoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChDrumEngine(),
@@ -665,7 +675,7 @@ TEST_CASE("Activation notes are marked with drum fills")
 {
     std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {385}, {576}};
     std::vector<DrumFill> fills {{380, 5}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, 192};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChDrumEngine(),
@@ -682,7 +692,7 @@ TEST_CASE("Fills ending only in a kick are killed")
 {
     std::vector<Note<DrumNoteColour>> notes {{0}, {1, 0, DrumNoteColour::Kick}};
     std::vector<DrumFill> fills {{0, 2}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, 192};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChDrumEngine(),
@@ -698,7 +708,7 @@ TEST_CASE("Fills ending only in a double kick are killed")
     std::vector<Note<DrumNoteColour>> notes {
         {0}, {1, 0, DrumNoteColour::DoubleKick}};
     std::vector<DrumFill> fills {{0, 2}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, 192};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChDrumEngine(),
@@ -714,7 +724,7 @@ TEST_CASE("Fills ending in a multi-note have the activation attached to the "
 {
     std::vector<Note<DrumNoteColour>> notes {{0}, {0, 0, DrumNoteColour::Kick}};
     std::vector<DrumFill> fills {{0, 2}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, 192};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
     PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
                      {},          1.0,
                      Second(0.0), ChDrumEngine(),
