@@ -68,9 +68,23 @@ static double get_denom(const SyncTrack& sync_track, int resolution,
     return BASE_BEAT_RATE / ts->denominator;
 }
 
+static DrumNoteColour cymbal_to_tom(DrumNoteColour colour)
+{
+    if (colour == DrumNoteColour::YellowCymbal) {
+        return DrumNoteColour::Yellow;
+    }
+    if (colour == DrumNoteColour::BlueCymbal) {
+        return DrumNoteColour::Blue;
+    }
+    if (colour == DrumNoteColour::GreenCymbal) {
+        return DrumNoteColour::Green;
+    }
+    return colour;
+}
+
 static std::vector<DrawnNote<DrumNoteColour>>
 drawn_notes(const NoteTrack<DrumNoteColour>& track, bool enable_double_kick,
-            bool disable_kick)
+            bool disable_kick, bool pro_drums)
 {
     std::vector<DrawnNote<DrumNoteColour>> notes;
 
@@ -81,8 +95,12 @@ drawn_notes(const NoteTrack<DrumNoteColour>& track, bool enable_double_kick,
         if (note.colour == DrumNoteColour::Kick && disable_kick) {
             continue;
         }
-        auto beat = note.position / static_cast<double>(track.resolution());
-        auto length = note.length / static_cast<double>(track.resolution());
+        const auto note_colour
+            = pro_drums ? note.colour : cymbal_to_tom(note.colour);
+        const auto beat
+            = note.position / static_cast<double>(track.resolution());
+        const auto length
+            = note.length / static_cast<double>(track.resolution());
         auto is_sp_note = false;
         for (const auto& phrase : track.sp_phrases()) {
             if (note.position >= phrase.position
@@ -90,7 +108,7 @@ drawn_notes(const NoteTrack<DrumNoteColour>& track, bool enable_double_kick,
                 is_sp_note = true;
             }
         }
-        notes.push_back({beat, length, note.colour, is_sp_note});
+        notes.push_back({beat, length, note_colour, is_sp_note});
     }
 
     return notes;
@@ -218,10 +236,11 @@ ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
 
 ImageBuilder::ImageBuilder(const NoteTrack<DrumNoteColour>& track,
                            const SyncTrack& sync_track, bool enable_double_kick,
-                           bool disable_kick)
+                           bool disable_kick, bool pro_drums)
     : m_track_type {TrackType::Drums}
     , m_rows {drawn_rows(track, sync_track)}
-    , m_drum_notes {drawn_notes(track, enable_double_kick, disable_kick)}
+    , m_drum_notes {
+          drawn_notes(track, enable_double_kick, disable_kick, pro_drums)}
 {
     constexpr double HALF_BEAT = 0.5;
 
@@ -585,7 +604,7 @@ static ImageBuilder build_with_drum_params(const NoteTrack<T>& track,
 {
     if constexpr (std::is_same_v<T, DrumNoteColour>) {
         return {track, sync_track, settings.enable_double_kick,
-                settings.disable_kick};
+                settings.disable_kick, settings.pro_drums};
     } else {
         return {track, sync_track};
     }

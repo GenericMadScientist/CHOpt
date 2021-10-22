@@ -196,6 +196,10 @@ Settings from_args(int argc, char** argv)
         .help("disable single kicks for drum charts")
         .default_value(false)
         .implicit_value(true);
+    program.add_argument("--no-pro-drums")
+        .help("disable pro drums")
+        .default_value(false)
+        .implicit_value(true);
     program.add_argument("--engine")
         .default_value(std::string {"ch"})
         .help("engine, options are ch, rb, and rb3, defaults to ch");
@@ -255,6 +259,7 @@ Settings from_args(int argc, char** argv)
     settings.draw_time_sigs = !program.get<bool>("--no-time-sigs");
     settings.enable_double_kick = !program.get<bool>("--no-double-kick");
     settings.disable_kick = program.get<bool>("--no-kick");
+    settings.pro_drums = !program.get<bool>("--no-pro-drums");
 
     const auto squeeze = program.get<int>("--squeeze");
     auto early_whammy = squeeze;

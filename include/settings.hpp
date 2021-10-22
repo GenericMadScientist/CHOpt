@@ -45,6 +45,7 @@ struct Settings {
     std::unique_ptr<Engine> engine;
     bool enable_double_kick;
     bool disable_kick;
+    bool pro_drums;
     float opacity;
 };
 

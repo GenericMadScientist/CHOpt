@@ -53,7 +53,7 @@ TEST_CASE("Track type is stored correctly")
     SECTION("Drums gets the right track type")
     {
         NoteTrack<DrumNoteColour> track {{}, {}, {}, {}, {}, 192};
-        ImageBuilder builder {track, {}, false, false};
+        ImageBuilder builder {track, {}, false, false, false};
 
         REQUIRE(builder.track_type() == TrackType::Drums);
     }
@@ -111,7 +111,7 @@ TEST_CASE("Notes are handled correclty")
     {
         NoteTrack<DrumNoteColour> track {
             {{0}, {768, 0, DrumNoteColour::YellowCymbal}}, {}, {}, {}, {}, 192};
-        ImageBuilder builder {track, {}, false, false};
+        ImageBuilder builder {track, {}, false, false, true};
         std::vector<DrawnNote<DrumNoteColour>> expected_notes {
             {0.0, 0.0, DrumNoteColour::Red, false},
             {4.0, 0.0, DrumNoteColour::YellowCymbal, false}};
@@ -330,7 +330,7 @@ TEST_CASE("Green ranges for drums SP phrases are added correctly")
 {
     NoteTrack<DrumNoteColour> track {
         {{960}, {1344}}, {{768, 384}, {1200, 150}}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, false, false};
+    ImageBuilder builder {track, {}, false, false, false};
     builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.0},
                                                                    {7.0, 7.0}};
@@ -347,8 +347,8 @@ TEST_CASE("Double kicks only appear with enable_double_kick")
         {},
         {},
         192};
-    ImageBuilder no_double_builder {track, {}, false, false};
-    ImageBuilder double_builder {track, {}, true, false};
+    ImageBuilder no_double_builder {track, {}, false, false, false};
+    ImageBuilder double_builder {track, {}, true, false, false};
 
     REQUIRE(no_double_builder.drum_notes().size() == 1);
     REQUIRE(double_builder.drum_notes().size() == 2);
@@ -363,9 +363,19 @@ TEST_CASE("Single kicks disappear with disable_kick")
         {},
         {},
         192};
-    ImageBuilder builder {track, {}, true, true};
+    ImageBuilder builder {track, {}, true, true, false};
 
     REQUIRE(builder.drum_notes().size() == 1);
+}
+
+TEST_CASE("Cymbals become toms with pro_drums off")
+{
+    NoteTrack<DrumNoteColour> track {
+        {{0, 0, DrumNoteColour::YellowCymbal}}, {}, {}, {}, {}, 192};
+    ImageBuilder builder {track, {}, false, false, false};
+
+    REQUIRE(builder.drum_notes().size() == 1);
+    REQUIRE(builder.drum_notes()[0].colour == DrumNoteColour::Yellow);
 }
 
 TEST_CASE("Unison phrases are added correctly")
