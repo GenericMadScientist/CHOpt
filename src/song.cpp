@@ -777,6 +777,8 @@ static void add_note_on_event(InstrumentMidiTrack<T>& track,
 static void append_disco_flip(InstrumentMidiTrack<DrumNoteColour>& event_track,
                               const MetaEvent& meta_event, int time, int rank)
 {
+    constexpr int FLIP_START_SIZE = 15;
+    constexpr int FLIP_END_SIZE = 14;
     constexpr int TEXT_EVENT_ID = 1;
     constexpr std::array<std::uint8_t, 5> MIX {{'[', 'm', 'i', 'x', ' '}};
     constexpr std::array<std::uint8_t, 6> DRUMS {
@@ -785,21 +787,25 @@ static void append_disco_flip(InstrumentMidiTrack<DrumNoteColour>& event_track,
     if (meta_event.type != TEXT_EVENT_ID) {
         return;
     }
-    if (meta_event.data.size() != 14 && meta_event.data.size() != 15) {
+    if (meta_event.data.size() != FLIP_START_SIZE
+        && meta_event.data.size() != FLIP_END_SIZE) {
         return;
     }
     if (!std::equal(MIX.cbegin(), MIX.cend(), meta_event.data.cbegin())) {
         return;
     }
     if (!std::equal(DRUMS.cbegin(), DRUMS.cend(),
-                    meta_event.data.cbegin() + 6)) {
+                    meta_event.data.cbegin() + MIX.size() + 1)) {
         return;
     }
-    const auto diff = static_cast<Difficulty>(meta_event.data[5] - '0');
-    if (meta_event.data.size() == 14 && meta_event.data[13] == ']') {
+    const auto diff
+        = static_cast<Difficulty>(meta_event.data[MIX.size()] - '0');
+    if (meta_event.data.size() == FLIP_END_SIZE
+        && meta_event.data[FLIP_END_SIZE - 1] == ']') {
         event_track.disco_flip_off_events[diff].push_back({time, rank});
-    } else if (meta_event.data.size() == 15 && meta_event.data[13] == 'd'
-               && meta_event.data[14] == ']') {
+    } else if (meta_event.data.size() == FLIP_START_SIZE
+               && meta_event.data[FLIP_START_SIZE - 2] == 'd'
+               && meta_event.data[FLIP_START_SIZE - 1] == ']') {
         event_track.disco_flip_on_events[diff].push_back({time, rank});
     }
 }
