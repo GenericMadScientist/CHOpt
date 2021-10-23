@@ -93,9 +93,6 @@ static DrumNoteColour disco_flip(DrumNoteColour colour, int position,
         if (colour == DrumNoteColour::YellowCymbal) {
             return DrumNoteColour::Red;
         }
-        if (colour == DrumNoteColour::Yellow) {
-            return DrumNoteColour::Red;
-        }
         if (colour == DrumNoteColour::Red) {
             return DrumNoteColour::YellowCymbal;
         }

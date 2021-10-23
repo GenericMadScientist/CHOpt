@@ -388,7 +388,8 @@ TEST_CASE("Cymbals become toms with pro_drums off")
 
 TEST_CASE("Disco flip matters only with pro_drums on")
 {
-    NoteTrack<DrumNoteColour> track {{{192, 0, DrumNoteColour::YellowCymbal}},
+    NoteTrack<DrumNoteColour> track {{{192, 0, DrumNoteColour::YellowCymbal},
+                                      {288, 0, DrumNoteColour::Yellow}},
                                      {},
                                      {},
                                      {},
@@ -398,10 +399,11 @@ TEST_CASE("Disco flip matters only with pro_drums on")
     ImageBuilder normal_builder {track, {}, false, false, false};
     ImageBuilder pro_builder {track, {}, false, false, true};
 
-    REQUIRE(normal_builder.drum_notes().size() == 1);
+    REQUIRE(normal_builder.drum_notes().size() == 2);
     REQUIRE(normal_builder.drum_notes()[0].colour == DrumNoteColour::Yellow);
-    REQUIRE(pro_builder.drum_notes().size() == 1);
+    REQUIRE(pro_builder.drum_notes().size() == 2);
     REQUIRE(pro_builder.drum_notes()[0].colour == DrumNoteColour::Red);
+    REQUIRE(pro_builder.drum_notes()[1].colour == DrumNoteColour::Yellow);
 }
 
 TEST_CASE("Unison phrases are added correctly")
