@@ -295,6 +295,9 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
                                             int resolution)
 {
     constexpr int DRUM_FILL_KEY = 64;
+    constexpr std::array<std::uint8_t, 4> MIX {{'m', 'i', 'x', '_'}};
+    constexpr std::array<std::uint8_t, 6> DRUMS {
+        {'_', 'd', 'r', 'u', 'm', 's'}};
 
     std::vector<Note<T>> notes;
     for (const auto& note_event : section.note_events) {
@@ -324,25 +327,42 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
 
     std::vector<int> solo_on_events;
     std::vector<int> solo_off_events;
+    std::vector<int> disco_flip_on_events;
+    std::vector<int> disco_flip_off_events;
     for (const auto& event : section.events) {
         if (event.data == "solo") {
             solo_on_events.push_back(event.position);
         } else if (event.data == "soloend") {
             solo_off_events.push_back(event.position);
+        } else if (event.data.size() >= 12) {
+            if (!std::equal(MIX.cbegin(), MIX.cend(), event.data.cbegin())
+                || !std::equal(DRUMS.cbegin(), DRUMS.cend(),
+                               event.data.cbegin() + 5)) {
+                continue;
+            }
+            if (event.data.size() == 12) {
+                disco_flip_off_events.push_back(event.position);
+            } else if (event.data.size() == 13 && event.data[12] == 'd') {
+                disco_flip_on_events.push_back(event.position);
+            }
         }
     }
     std::sort(solo_on_events.begin(), solo_on_events.end());
     std::sort(solo_off_events.begin(), solo_off_events.end());
     auto solos
         = form_solo_vector(solo_on_events, solo_off_events, notes, false);
+    std::sort(disco_flip_on_events.begin(), disco_flip_on_events.end());
+    std::sort(disco_flip_off_events.begin(), disco_flip_off_events.end());
+    std::vector<DiscoFlip> disco_flips;
+    for (auto [start, end] :
+         combine_solo_events(disco_flip_on_events, disco_flip_off_events)) {
+        disco_flips.push_back({start, end - start});
+    }
 
-    return NoteTrack<T> {std::move(notes),
-                         std::move(sp),
-                         std::move(solos),
-                         std::move(fills),
-                         {},
-                         {},
-                         resolution};
+    return NoteTrack<T> {
+        std::move(notes), std::move(sp),          std::move(solos),
+        std::move(fills), std::move(disco_flips), {},
+        resolution};
 }
 
 std::vector<Instrument> Song::instruments() const

@@ -599,6 +599,21 @@ TEST_CASE("Drum fills are read from .chart")
     REQUIRE(track.drum_fills()[0] == DrumFill {192, 1});
 }
 
+TEST_CASE("Disco flips are read from .chart")
+{
+    ChartSection drums {
+        "ExpertDrums", {}, {}, {{100, "mix_3_drums0d"}, {105, "mix_3_drums0"}},
+        {{192, 1, 0}}, {}, {}};
+    std::vector<ChartSection> sections {drums};
+    const Chart chart {sections};
+
+    const auto song = Song::from_chart(chart, {});
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    REQUIRE(track.disco_flips().size() == 1);
+    REQUIRE(track.disco_flips()[0] == DiscoFlip {100, 5});
+}
+
 TEST_CASE("Midi -> Song has correct value for is_from_midi")
 {
     const Midi midi {192, {}};
