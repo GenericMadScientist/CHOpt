@@ -294,6 +294,8 @@ template <typename T>
 static NoteTrack<T> note_track_from_section(const ChartSection& section,
                                             int resolution)
 {
+    constexpr int DISCO_FLIP_START_SIZE = 13;
+    constexpr int DISCO_FLIP_END_SIZE = 12;
     constexpr int DRUM_FILL_KEY = 64;
     constexpr std::array<std::uint8_t, 4> MIX {{'m', 'i', 'x', '_'}};
     constexpr std::array<std::uint8_t, 6> DRUMS {
@@ -334,15 +336,16 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
             solo_on_events.push_back(event.position);
         } else if (event.data == "soloend") {
             solo_off_events.push_back(event.position);
-        } else if (event.data.size() >= 12) {
+        } else if (event.data.size() >= DISCO_FLIP_END_SIZE) {
             if (!std::equal(MIX.cbegin(), MIX.cend(), event.data.cbegin())
                 || !std::equal(DRUMS.cbegin(), DRUMS.cend(),
-                               event.data.cbegin() + 5)) {
+                               event.data.cbegin() + MIX.size() + 1)) {
                 continue;
             }
-            if (event.data.size() == 12) {
+            if (event.data.size() == DISCO_FLIP_END_SIZE) {
                 disco_flip_off_events.push_back(event.position);
-            } else if (event.data.size() == 13 && event.data[12] == 'd') {
+            } else if (event.data.size() == DISCO_FLIP_START_SIZE
+                       && event.back() == 'd') {
                 disco_flip_on_events.push_back(event.position);
             }
         }
