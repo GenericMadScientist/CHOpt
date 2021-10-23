@@ -345,7 +345,7 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
             if (event.data.size() == DISCO_FLIP_END_SIZE) {
                 disco_flip_off_events.push_back(event.position);
             } else if (event.data.size() == DISCO_FLIP_START_SIZE
-                       && event.back() == 'd') {
+                       && event.data.back() == 'd') {
                 disco_flip_on_events.push_back(event.position);
             }
         }
