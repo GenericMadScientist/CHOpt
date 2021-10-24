@@ -80,32 +80,30 @@ append_sustain_points(OutputIt points, int position, int sust_length,
     }
 }
 
-static bool skip_kick(DrumNoteColour colour, bool enable_double_kick,
-                      bool disable_kick)
+static bool skip_kick(DrumNoteColour colour, const DrumSettings& drum_settings)
 {
     if (colour == DrumNoteColour::Kick) {
-        return disable_kick;
+        return drum_settings.disable_kick;
     }
     if (colour == DrumNoteColour::DoubleKick) {
-        return !enable_double_kick;
+        return !drum_settings.enable_double_kick;
     }
     return false;
 }
 
 template <typename InputIt>
-static int get_chord_size(InputIt first, InputIt last, bool enable_double_kick,
-                          bool disable_kick)
+static int get_chord_size(InputIt first, InputIt last,
+                          const DrumSettings& drum_settings)
 {
     int note_count = 0;
     using T = decltype(first->colour);
     for (; first < last; ++first) {
         if constexpr (std::is_same_v<T, DrumNoteColour>) {
-            if (!skip_kick(first->colour, enable_double_kick, disable_kick)) {
+            if (!skip_kick(first->colour, drum_settings)) {
                 ++note_count;
             }
         } else {
-            (void)enable_double_kick;
-            (void)disable_kick;
+            (void)drum_settings;
             ++note_count;
         }
     }
@@ -113,20 +111,18 @@ static int get_chord_size(InputIt first, InputIt last, bool enable_double_kick,
 }
 
 template <typename InputIt, typename OutputIt>
-static void append_note_points(InputIt first, InputIt last, InputIt note_start,
-                               InputIt note_end, OutputIt points,
-                               int resolution, bool is_note_sp_ender,
-                               bool is_unison_sp_ender,
-                               const TimeConverter& converter, double squeeze,
-                               const Engine& engine, bool enable_double_kick,
-                               bool disable_kick)
+static void
+append_note_points(InputIt first, InputIt last, InputIt note_start,
+                   InputIt note_end, OutputIt points, int resolution,
+                   bool is_note_sp_ender, bool is_unison_sp_ender,
+                   const TimeConverter& converter, double squeeze,
+                   const Engine& engine, const DrumSettings& drum_settings)
 {
     assert(first != last); // NOLINT
 
     const auto note_value = engine.base_note_value();
-    const auto chord_size
-        = get_chord_size(first, last, enable_double_kick, disable_kick);
-    auto pos = first->position;
+    const auto chord_size = get_chord_size(first, last, drum_settings);
+    const auto pos = first->position;
     const Beat beat {pos / static_cast<double>(resolution)};
     const auto meas = converter.beats_to_measures(beat);
     const auto note_seconds = converter.beats_to_seconds(beat);
@@ -235,7 +231,7 @@ static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
 static std::vector<Point> points_from_track(
     const NoteTrack<DrumNoteColour>& track, const TimeConverter& converter,
     const std::vector<int>& unison_phrases, double squeeze, Second video_lag,
-    const Engine& engine, bool enable_double_kick, bool disable_kick)
+    const Engine& engine, const DrumSettings& drum_settings)
 {
     const auto& notes = track.notes();
     std::vector<Point> points;
@@ -243,17 +239,17 @@ static std::vector<Point> points_from_track(
     const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
     auto current_phrase = track.sp_phrases().cbegin();
     for (auto p = notes.cbegin(); p != notes.cend();) {
-        if (skip_kick(p->colour, enable_double_kick, disable_kick)) {
+        if (skip_kick(p->colour, drum_settings)) {
             ++p;
             continue;
         }
         if (has_relevant_bre && p->position >= track.bre()->start) {
             break;
         }
-        const auto q = std::find_if_not(
-            std::next(p), notes.cend(), [&](auto note) {
-                return skip_kick(note.colour, enable_double_kick, disable_kick);
-            });
+        const auto q
+            = std::find_if_not(std::next(p), notes.cend(), [&](auto note) {
+                  return skip_kick(note.colour, drum_settings);
+              });
         auto is_note_sp_ender = false;
         auto is_unison_sp_ender = false;
         if (current_phrase != track.sp_phrases().cend()
@@ -272,7 +268,7 @@ static std::vector<Point> points_from_track(
         append_note_points(p, q, notes.cbegin(), notes.cend(),
                            std::back_inserter(points), track.resolution(),
                            is_note_sp_ender, is_unison_sp_ender, converter,
-                           squeeze, engine, enable_double_kick, disable_kick);
+                           squeeze, engine, drum_settings);
         p = q;
     }
 
@@ -350,7 +346,7 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
         append_note_points(p, q, notes.cbegin(), notes.cend(),
                            std::back_inserter(points), track.resolution(),
                            is_note_sp_ender, is_unison_sp_ender, converter,
-                           squeeze, engine, false, false);
+                           squeeze, engine, {false, false, false});
         p = q;
     }
 
@@ -546,7 +542,7 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track,
                    const TimeConverter& converter,
                    const std::vector<int>& unison_phrases, double squeeze,
                    Second video_lag, const Engine& engine,
-                   bool enable_double_kick, bool disable_kick)
+                   const DrumSettings& drum_settings)
     : m_points {points_from_track(track, converter, unison_phrases, squeeze,
                                   video_lag, engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
@@ -557,15 +553,14 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track,
     , m_video_lag {video_lag}
     , m_colours {note_colours(track.notes(), m_points)}
 {
-    (void)enable_double_kick;
-    (void)disable_kick;
+    (void)drum_settings;
 }
 
 PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
                    const TimeConverter& converter,
                    const std::vector<int>& unison_phrases, double squeeze,
                    Second video_lag, const Engine& engine,
-                   bool enable_double_kick, bool disable_kick)
+                   const DrumSettings& drum_settings)
     : m_points {points_from_track(track, converter, unison_phrases, squeeze,
                                   video_lag, engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
@@ -576,18 +571,16 @@ PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
     , m_video_lag {video_lag}
     , m_colours {note_colours(track.notes(), m_points)}
 {
-    (void)enable_double_kick;
-    (void)disable_kick;
+    (void)drum_settings;
 }
 
 PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
                    const TimeConverter& converter,
                    const std::vector<int>& unison_phrases, double squeeze,
                    Second video_lag, const Engine& engine,
-                   bool enable_double_kick, bool disable_kick)
+                   const DrumSettings& drum_settings)
     : m_points {points_from_track(track, converter, unison_phrases, squeeze,
-                                  video_lag, engine, enable_double_kick,
-                                  disable_kick)}
+                                  video_lag, engine, drum_settings)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),

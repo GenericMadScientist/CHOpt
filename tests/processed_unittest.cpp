@@ -31,9 +31,16 @@ TEST_CASE("3 arg total_available_sp counts SP correctly")
                                          {768, 192}, {1152}, {1344}, {1536}};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-    ProcessedSong song {
-        note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false, false, {},  {}};
+    ProcessedSong song {note_track,
+                        {},
+                        1.0,
+                        1.0,
+                        Second(0.0),
+                        Second(0.0),
+                        ChGuitarEngine(),
+                        {false, false, false},
+                        {},
+                        {}};
     const auto& points = song.points();
 
     SECTION("Phrases are counted correctly")
@@ -96,9 +103,10 @@ TEST_CASE("3 arg total_available_sp counts SP correctly")
 
     SECTION("Unison bonuses are taken account of")
     {
-        ProcessedSong unison_song {note_track,  {},          1.0,         1.0,
-                                   Second(0.0), Second(0.0), Rb3Engine(), false,
-                                   false,       {},          {{0, 50}}};
+        ProcessedSong unison_song {
+            note_track,  {},          1.0,         1.0,
+            Second(0.0), Second(0.0), Rb3Engine(), {false, false, false},
+            {},          {{0, 50}}};
         const auto& unison_points = unison_song.points();
         REQUIRE(unison_song.total_available_sp(Beat(0.0),
                                                unison_points.cbegin(),
@@ -113,9 +121,16 @@ TEST_CASE("total_available_sp_with_earliest_pos counts SP correctly and gives "
     std::vector<Note<NoteColour>> notes {{0, 1459}, {1459}};
     std::vector<StarPower> phrases {{0, 100}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-    ProcessedSong song {
-        note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false, false, {},  {}};
+    ProcessedSong song {note_track,
+                        {},
+                        1.0,
+                        1.0,
+                        Second(0.0),
+                        Second(0.0),
+                        ChGuitarEngine(),
+                        {false, false, false},
+                        {},
+                        {}};
     const auto& points = song.points();
 
     const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
@@ -131,9 +146,10 @@ TEST_CASE("total_available_sp_with_earliest_pos counts unison bonuses")
     std::vector<Note<NoteColour>> notes {{0}, {192}};
     std::vector<StarPower> phrases {{0, 100}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-    ProcessedSong song {note_track,  {},          1.0,         1.0,
-                        Second(0.0), Second(0.0), Rb3Engine(), false,
-                        false,       {},          {0}};
+    ProcessedSong song {
+        note_track,  {},          1.0,         1.0,
+        Second(0.0), Second(0.0), Rb3Engine(), {false, false, false},
+        {},          {0}};
     const auto& points = song.points();
 
     const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
@@ -147,18 +163,31 @@ TEST_CASE("is_candidate_valid works with no whammy")
 {
     std::vector<Note<NoteColour>> notes {{0}, {1536}, {3072}, {6144}};
     NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
-    ProcessedSong track {
-        note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false, false, {},  {}};
+    ProcessedSong track {note_track,
+                         {},
+                         1.0,
+                         1.0,
+                         Second(0.0),
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false},
+                         {},
+                         {}};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
                                    {Beat(0.0), Measure(0.0)},
                                    {1.0, 1.0}};
-    ProcessedSong second_track {
-        note_track,  SyncTrack({{0, 3, 4}}, {}), 1.0,   1.0,   Second(0.0),
-        Second(0.0), ChGuitarEngine(),           false, false, {},
-        {}};
+    ProcessedSong second_track {note_track,
+                                SyncTrack({{0, 3, 4}}, {}),
+                                1.0,
+                                1.0,
+                                Second(0.0),
+                                Second(0.0),
+                                ChGuitarEngine(),
+                                {false, false, false},
+                                {},
+                                {}};
     const auto& second_points = second_track.points();
     ActivationCandidate second_candidate {second_points.cbegin(),
                                           second_points.cbegin() + 3,
@@ -209,9 +238,16 @@ TEST_CASE("is_candidate_valid works with no whammy")
         std::vector<StarPower> phrases {{3000, 100}};
         NoteTrack<NoteColour> overlap_notes {notes, phrases, {}, {},
                                              {},    {},      192};
-        ProcessedSong overlap_track {
-            overlap_notes,    {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong overlap_track {overlap_notes,
+                                     {},
+                                     1.0,
+                                     1.0,
+                                     Second(0.0),
+                                     Second(0.0),
+                                     ChGuitarEngine(),
+                                     {false, false, false},
+                                     {},
+                                     {}};
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
                                                overlap_points.cbegin() + 3,
@@ -228,9 +264,16 @@ TEST_CASE("is_candidate_valid works with no whammy")
         std::vector<StarPower> phrases {{6000, 100}};
         NoteTrack<NoteColour> overlap_notes {notes, phrases, {}, {},
                                              {},    {},      192};
-        ProcessedSong overlap_track {
-            overlap_notes,    {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong overlap_track {overlap_notes,
+                                     {},
+                                     1.0,
+                                     1.0,
+                                     Second(0.0),
+                                     Second(0.0),
+                                     ChGuitarEngine(),
+                                     {false, false, false},
+                                     {},
+                                     {}};
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
                                                overlap_points.cbegin() + 3,
@@ -247,9 +290,16 @@ TEST_CASE("is_candidate_valid works with no whammy")
         std::vector<StarPower> phrases {{3072, 100}};
         NoteTrack<NoteColour> overlap_notes {notes, phrases, {}, {},
                                              {},    {},      192};
-        ProcessedSong overlap_track {
-            overlap_notes,    {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong overlap_track {overlap_notes,
+                                     {},
+                                     1.0,
+                                     1.0,
+                                     Second(0.0),
+                                     Second(0.0),
+                                     ChGuitarEngine(),
+                                     {false, false, false},
+                                     {},
+                                     {}};
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
                                                overlap_points.cbegin() + 2,
@@ -266,9 +316,16 @@ TEST_CASE("is_candidate_valid works with no whammy")
         std::vector<StarPower> phrases {{0, 1}, {2, 1}};
         NoteTrack<NoteColour> overlap_note_track {
             overlap_notes, phrases, {}, {}, {}, {}, 192};
-        ProcessedSong overlap_track {
-            overlap_note_track, {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(),   false, false, {},  {}};
+        ProcessedSong overlap_track {overlap_note_track,
+                                     {},
+                                     1.0,
+                                     1.0,
+                                     Second(0.0),
+                                     Second(0.0),
+                                     ChGuitarEngine(),
+                                     {false, false, false},
+                                     {},
+                                     {}};
         const auto& overlap_points = overlap_track.points();
         ActivationCandidate overlap_candidate {overlap_points.cbegin(),
                                                overlap_points.cbegin() + 2,
@@ -308,8 +365,7 @@ TEST_CASE("is_candidate_valid works with no whammy")
                                      Second(0.0),
                                      Second(0.0),
                                      ChGuitarEngine(),
-                                     false,
-                                     false,
+                                     {false, false, false},
                                      {},
                                      {}};
         const auto& overlap_points = overlap_track.points();
@@ -331,9 +387,10 @@ TEST_CASE("is_candidate_valid acknowledges unison bonuses")
     std::vector<Note<NoteColour>> notes {{192}, {5376}};
     std::vector<StarPower> phrases {{192, 1}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-    ProcessedSong track {note_track,  {},          1.0,         1.0,
-                         Second(0.0), Second(0.0), Rb3Engine(), false,
-                         false,       {},          {192}};
+    ProcessedSong track {
+        note_track,  {},          1.0,         1.0,
+        Second(0.0), Second(0.0), Rb3Engine(), {false, false, false},
+        {},          {192}};
     const auto& points = track.points();
 
     SECTION("Mid-activation unison bonuses are accounted for")
@@ -366,9 +423,16 @@ TEST_CASE("is_candidate_valid works with whammy")
     std::vector<Note<NoteColour>> notes {{0, 960}, {3840}, {6144}};
     std::vector<StarPower> phrases {{0, 7000}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-    ProcessedSong track {
-        note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false, false, {},  {}};
+    ProcessedSong track {note_track,
+                         {},
+                         1.0,
+                         1.0,
+                         Second(0.0),
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false},
+                         {},
+                         {}};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
@@ -389,9 +453,16 @@ TEST_CASE("is_candidate_valid works with whammy")
         notes_copy[1].position = 2880;
         NoteTrack<NoteColour> note_track_two {notes_copy, phrases, {}, {},
                                               {},         {},      192};
-        ProcessedSong track_two {
-            note_track_two,   {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong track_two {note_track_two,
+                                 {},
+                                 1.0,
+                                 1.0,
+                                 Second(0.0),
+                                 Second(0.0),
+                                 ChGuitarEngine(),
+                                 {false, false, false},
+                                 {},
+                                 {}};
         const auto& points_two = track_two.points();
         ActivationCandidate candidate_two {points_two.cend() - 2,
                                            points_two.cend() - 1,
@@ -412,9 +483,16 @@ TEST_CASE("is_candidate_valid works with whammy")
         std::vector<StarPower> phrases_two {{384, 1}};
         NoteTrack<NoteColour> note_track_two {notes_two, phrases_two, {}, {},
                                               {},        {},          192};
-        ProcessedSong track_two {
-            note_track_two,   {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong track_two {note_track_two,
+                                 {},
+                                 1.0,
+                                 1.0,
+                                 Second(0.0),
+                                 Second(0.0),
+                                 ChGuitarEngine(),
+                                 {false, false, false},
+                                 {},
+                                 {}};
         const auto& points_two = track_two.points();
         ActivationCandidate candidate_two {points_two.cbegin() + 2,
                                            points_two.cend() - 1,
@@ -437,9 +515,16 @@ TEST_CASE("is_candidate_valid takes into account minimum SP")
 {
     std::vector<Note<NoteColour>> notes {{0}, {1536}, {2304}, {3072}, {4608}};
     NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
-    ProcessedSong track {
-        note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false, false, {},  {}};
+    ProcessedSong track {note_track,
+                         {},
+                         1.0,
+                         1.0,
+                         Second(0.0),
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false},
+                         {},
+                         {}};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
@@ -468,9 +553,16 @@ TEST_CASE("is_candidate_valid takes into account squeezing")
     {
         std::vector<Note<NoteColour>> notes {{0}, {3110}};
         NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
-        ProcessedSong track {
-            note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong track {note_track,
+                             {},
+                             1.0,
+                             1.0,
+                             Second(0.0),
+                             Second(0.0),
+                             ChGuitarEngine(),
+                             {false, false, false},
+                             {},
+                             {}};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 1,
@@ -485,9 +577,16 @@ TEST_CASE("is_candidate_valid takes into account squeezing")
     {
         std::vector<Note<NoteColour>> notes {{0}, {3034}, {3053}};
         NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
-        ProcessedSong track {
-            note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong track {note_track,
+                             {},
+                             1.0,
+                             1.0,
+                             Second(0.0),
+                             Second(0.0),
+                             ChGuitarEngine(),
+                             {false, false, false},
+                             {},
+                             {}};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 1,
@@ -503,9 +602,16 @@ TEST_CASE("is_candidate_valid takes into account squeezing")
         std::vector<Note<NoteColour>> notes {{0}, {3102}, {4608}};
         std::vector<StarPower> phrases {{3100, 100}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-        ProcessedSong track {
-            note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong track {note_track,
+                             {},
+                             1.0,
+                             1.0,
+                             Second(0.0),
+                             Second(0.0),
+                             ChGuitarEngine(),
+                             {false, false, false},
+                             {},
+                             {}};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 2,
@@ -521,9 +627,16 @@ TEST_CASE("is_candidate_valid takes into account squeezing")
         std::vector<Note<NoteColour>> notes {{0}, {768}, {6942}};
         std::vector<StarPower> phrases {{768, 100}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-        ProcessedSong track {
-            note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong track {note_track,
+                             {},
+                             1.0,
+                             1.0,
+                             Second(0.0),
+                             Second(0.0),
+                             ChGuitarEngine(),
+                             {false, false, false},
+                             {},
+                             {}};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 2,
@@ -541,9 +654,16 @@ TEST_CASE("is_candidate_valid handles very high BPM SP granting notes")
     std::vector<StarPower> phrases {{4608, 50}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{}, {{3840, 4000000}}};
-    ProcessedSong track {
-        note_track,       sync_track, 1.0,   1.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false,      false, {},  {}};
+    ProcessedSong track {note_track,
+                         sync_track,
+                         1.0,
+                         1.0,
+                         Second(0.0),
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false},
+                         {},
+                         {}};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 2,
                                    points.cbegin() + 4,
@@ -560,9 +680,16 @@ TEST_CASE("is_candidate_valid takes into account squeeze param")
     {
         std::vector<Note<NoteColour>> notes {{0}, {3110}};
         NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
-        ProcessedSong track {
-            note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong track {note_track,
+                             {},
+                             1.0,
+                             1.0,
+                             Second(0.0),
+                             Second(0.0),
+                             ChGuitarEngine(),
+                             {false, false, false},
+                             {},
+                             {}};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 1,
@@ -580,9 +707,16 @@ TEST_CASE("is_candidate_valid takes into account squeeze param")
         std::vector<Note<NoteColour>> notes {{0}, {3102}, {4608}};
         std::vector<StarPower> phrases {{3100, 100}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-        ProcessedSong track {
-            note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong track {note_track,
+                             {},
+                             1.0,
+                             1.0,
+                             Second(0.0),
+                             Second(0.0),
+                             ChGuitarEngine(),
+                             {false, false, false},
+                             {},
+                             {}};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 2,
@@ -600,9 +734,16 @@ TEST_CASE("is_candidate_valid takes into account squeeze param")
         std::vector<Note<NoteColour>> notes {{0}, {768}, {6942}};
         std::vector<StarPower> phrases {{768, 100}};
         NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-        ProcessedSong track {
-            note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong track {note_track,
+                             {},
+                             1.0,
+                             1.0,
+                             Second(0.0),
+                             Second(0.0),
+                             ChGuitarEngine(),
+                             {false, false, false},
+                             {},
+                             {}};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 2,
@@ -619,9 +760,16 @@ TEST_CASE("is_candidate_valid takes into account squeeze param")
     {
         std::vector<Note<NoteColour>> notes {{0}, {3034}, {3053}};
         NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
-        ProcessedSong track {
-            note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong track {note_track,
+                             {},
+                             1.0,
+                             1.0,
+                             Second(0.0),
+                             Second(0.0),
+                             ChGuitarEngine(),
+                             {false, false, false},
+                             {},
+                             {}};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 1,
@@ -638,9 +786,16 @@ TEST_CASE("is_candidate_valid takes into account squeeze param")
     {
         std::vector<Note<NoteColour>> notes {{0}};
         NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
-        ProcessedSong track {
-            note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(), false, false, {},  {}};
+        ProcessedSong track {note_track,
+                             {},
+                             1.0,
+                             1.0,
+                             Second(0.0),
+                             Second(0.0),
+                             ChGuitarEngine(),
+                             {false, false, false},
+                             {},
+                             {}};
         const auto& points = track.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin(),
@@ -658,9 +813,16 @@ TEST_CASE("is_candidate_valid takes into account forced whammy")
     std::vector<Note<NoteColour>> notes {{0, 768}, {3072}, {3264}};
     std::vector<StarPower> phrases {{0, 3300}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-    ProcessedSong track {
-        note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false, false, {},  {}};
+    ProcessedSong track {note_track,
+                         {},
+                         1.0,
+                         1.0,
+                         Second(0.0),
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false},
+                         {},
+                         {}};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
@@ -681,9 +843,16 @@ TEST_CASE("is_candidate_valid also takes account of whammy from end of SP "
     std::vector<Note<NoteColour>> notes {{0, 960}, {2880}, {6144}};
     std::vector<StarPower> phrases {{0, 7000}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-    ProcessedSong track {
-        note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false, false, {},  {}};
+    ProcessedSong track {note_track,
+                         {},
+                         1.0,
+                         1.0,
+                         Second(0.0),
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false},
+                         {},
+                         {}};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cend() - 2,
                                    points.cend() - 1,
@@ -703,9 +872,16 @@ TEST_CASE("is_candidate_valid takes account of overlapped phrase at end if "
     std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {3456, 192}};
     std::vector<StarPower> phrases {{0, 1}, {192, 1}, {3456, 1}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
-    ProcessedSong track {
-        note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false, false, {},  {}};
+    ProcessedSong track {note_track,
+                         {},
+                         1.0,
+                         1.0,
+                         Second(0.0),
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false},
+                         {},
+                         {}};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 2,
                                    points.cend() - 1,
@@ -728,9 +904,16 @@ TEST_CASE("is_candidate_valid correctly clamps low SP")
     std::vector<StarPower> phrases {{0, 1}};
     NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 1, 4}}, {}};
-    ProcessedSong track {
-        note_track,       sync_track, 0.0,   0.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false,      false, {},  {}};
+    ProcessedSong track {note_track,
+                         sync_track,
+                         0.0,
+                         0.0,
+                         Second(0.0),
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false},
+                         {},
+                         {}};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 500,
                                    points.cbegin() + 750,
@@ -746,9 +929,16 @@ TEST_CASE("adjusted_hit_window_* functions return correct values")
 {
     std::vector<Note<NoteColour>> notes {{0}};
     NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
-    ProcessedSong track {
-        note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false, false, {},  {}};
+    ProcessedSong track {note_track,
+                         {},
+                         1.0,
+                         1.0,
+                         Second(0.0),
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false},
+                         {},
+                         {}};
     const auto& points = track.points();
 
     SECTION("adjusted_hit_window_start returns correct values")
@@ -777,9 +967,16 @@ TEST_CASE("Video lag is taken account of")
         std::vector<Note<NoteColour>> notes {{192}, {384, 192}, {768}};
         std::vector<StarPower> phrases {{384, 1}};
         NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
-        ProcessedSong song {
-            track, {},    0.0, 0.0, Second(0.0), Second(-0.1), ChGuitarEngine(),
-            false, false, {},  {}};
+        ProcessedSong song {track,
+                            {},
+                            0.0,
+                            0.0,
+                            Second(0.0),
+                            Second(-0.1),
+                            ChGuitarEngine(),
+                            {false, false, false},
+                            {},
+                            {}};
         const auto& points = song.points();
 
         auto result = song.total_available_sp(Beat(0.0), points.cbegin(),
@@ -793,10 +990,16 @@ TEST_CASE("Video lag is taken account of")
         std::vector<Note<NoteColour>> notes {{768}, {3840}};
         NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         SyncTrack sync_track {{{0, 4, 4}, {3840, 2, 4}}, {}};
-        ProcessedSong song {
-            track,       sync_track,       0.0,   0.0,   Second(0.0),
-            Second(0.1), ChGuitarEngine(), false, false, {},
-            {}};
+        ProcessedSong song {track,
+                            sync_track,
+                            0.0,
+                            0.0,
+                            Second(0.0),
+                            Second(0.1),
+                            ChGuitarEngine(),
+                            {false, false, false},
+                            {},
+                            {}};
         const auto& points = song.points();
         ActivationCandidate candidate {points.cbegin(),
                                        points.cbegin() + 1,
@@ -814,9 +1017,16 @@ TEST_CASE("is_drums returns the correct value")
     SECTION("False for guitar")
     {
         NoteTrack<NoteColour> note_track {{}, {}, {}, {}, {}, {}, 192};
-        ProcessedSong track {
-            note_track,     {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChDrumEngine(), false, false, {},  {}};
+        ProcessedSong track {note_track,
+                             {},
+                             1.0,
+                             1.0,
+                             Second(0.0),
+                             Second(0.0),
+                             ChDrumEngine(),
+                             {false, false, false},
+                             {},
+                             {}};
 
         REQUIRE(!track.is_drums());
     }
@@ -824,9 +1034,16 @@ TEST_CASE("is_drums returns the correct value")
     SECTION("True for drums")
     {
         NoteTrack<DrumNoteColour> note_track {{}, {}, {}, {}, {}, {}, 192};
-        ProcessedSong track {
-            note_track,     {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChDrumEngine(), false, false, {},  {}};
+        ProcessedSong track {note_track,
+                             {},
+                             1.0,
+                             1.0,
+                             Second(0.0),
+                             Second(0.0),
+                             ChDrumEngine(),
+                             {false, false, false},
+                             {},
+                             {}};
 
         REQUIRE(track.is_drums());
     }
@@ -838,9 +1055,16 @@ TEST_CASE("path_summary produces the correct output")
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
     std::vector<Solo> solos {{0, 50, 100}};
     NoteTrack<NoteColour> note_track {notes, phrases, solos, {}, {}, {}, 192};
-    ProcessedSong track {
-        note_track,       {},    1.0,   1.0, Second(0.0), Second(0.0),
-        ChGuitarEngine(), false, false, {},  {}};
+    ProcessedSong track {note_track,
+                         {},
+                         1.0,
+                         1.0,
+                         Second(0.0),
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false},
+                         {},
+                         {}};
     const auto& points = track.points();
 
     SECTION("Overlap and ES are denoted correctly")
@@ -893,9 +1117,16 @@ TEST_CASE("path_summary produces the correct output")
         Path path {{}, 0};
         NoteTrack<NoteColour> second_note_track {notes, {}, solos, {},
                                                  {},    {}, 192};
-        ProcessedSong second_track {
-            second_note_track, {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(),  false, false, {},  {}};
+        ProcessedSong second_track {second_note_track,
+                                    {},
+                                    1.0,
+                                    1.0,
+                                    Second(0.0),
+                                    Second(0.0),
+                                    ChGuitarEngine(),
+                                    {false, false, false},
+                                    {},
+                                    {}};
 
         const char* desired_path_output = "Path: None\n"
                                           "No SP score: 350\n"
@@ -911,9 +1142,16 @@ TEST_CASE("path_summary produces the correct output")
         std::vector<StarPower> second_phrases {{0, 50}, {192, 50}};
         NoteTrack<NoteColour> second_note_track {
             second_notes, second_phrases, {}, {}, {}, {}, 192};
-        ProcessedSong second_track {
-            second_note_track, {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(),  false, false, {},  {}};
+        ProcessedSong second_track {second_note_track,
+                                    {},
+                                    1.0,
+                                    1.0,
+                                    Second(0.0),
+                                    Second(0.0),
+                                    ChGuitarEngine(),
+                                    {false, false, false},
+                                    {},
+                                    {}};
         const auto& second_points = second_track.points();
         Path path {{{second_points.cend() - 1, second_points.cend() - 1,
                      Beat {0.0}, Beat {0.0}}},
@@ -934,9 +1172,16 @@ TEST_CASE("path_summary produces the correct output")
         std::vector<StarPower> second_phrases {{0, 50}, {192, 50}};
         NoteTrack<NoteColour> second_note_track {
             second_notes, second_phrases, {}, {}, {}, {}, 192};
-        ProcessedSong second_track {
-            second_note_track, {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(),  false, false, {},  {}};
+        ProcessedSong second_track {second_note_track,
+                                    {},
+                                    1.0,
+                                    1.0,
+                                    Second(0.0),
+                                    Second(0.0),
+                                    ChGuitarEngine(),
+                                    {false, false, false},
+                                    {},
+                                    {}};
         const auto& second_points = second_track.points();
         Path path {{{second_points.cbegin() + 3, second_points.cend() - 1,
                      Beat {0.0}, Beat {0.0}}},
@@ -958,9 +1203,16 @@ TEST_CASE("path_summary produces the correct output")
         std::vector<StarPower> second_phrases {{0, 50}, {192, 50}};
         NoteTrack<NoteColour> second_note_track {
             second_notes, second_phrases, {}, {}, {}, {}, 192};
-        ProcessedSong second_track {
-            second_note_track, {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(),  false, false, {},  {}};
+        ProcessedSong second_track {second_note_track,
+                                    {},
+                                    1.0,
+                                    1.0,
+                                    Second(0.0),
+                                    Second(0.0),
+                                    ChGuitarEngine(),
+                                    {false, false, false},
+                                    {},
+                                    {}};
         const auto& second_points = second_track.points();
         Path path {{{second_points.cend() - 1, second_points.cend() - 1,
                      Beat {0.0}, Beat {0.0}}},
@@ -982,9 +1234,16 @@ TEST_CASE("path_summary produces the correct output")
         std::vector<StarPower> second_phrases {{0, 50}, {192, 50}};
         NoteTrack<NoteColour> second_note_track {
             second_notes, second_phrases, {}, {}, {}, {}, 192};
-        ProcessedSong second_track {
-            second_note_track, {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(),  false, false, {},  {}};
+        ProcessedSong second_track {second_note_track,
+                                    {},
+                                    1.0,
+                                    1.0,
+                                    Second(0.0),
+                                    Second(0.0),
+                                    ChGuitarEngine(),
+                                    {false, false, false},
+                                    {},
+                                    {}};
         const auto& second_points = second_track.points();
         Path path {{{second_points.cend() - 1, second_points.cend() - 1,
                      Beat {0.0}, Beat {0.0}}},
@@ -1005,9 +1264,16 @@ TEST_CASE("path_summary produces the correct output")
         std::vector<StarPower> second_phrases {{0, 50}, {192, 50}};
         NoteTrack<NoteColour> second_note_track {
             second_notes, second_phrases, {}, {}, {}, {}, 192};
-        ProcessedSong second_track {
-            second_note_track, {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(),  false, false, {},  {}};
+        ProcessedSong second_track {second_note_track,
+                                    {},
+                                    1.0,
+                                    1.0,
+                                    Second(0.0),
+                                    Second(0.0),
+                                    ChGuitarEngine(),
+                                    {false, false, false},
+                                    {},
+                                    {}};
         const auto& second_points = second_track.points();
         Path path {{{second_points.cbegin() + 2, second_points.cend() - 1,
                      Beat {0.0}, Beat {0.0}}},
@@ -1028,9 +1294,16 @@ TEST_CASE("path_summary produces the correct output")
         std::vector<StarPower> second_phrases {{0, 3300}};
         NoteTrack<NoteColour> second_note_track {
             second_notes, second_phrases, {}, {}, {}, {}, 192};
-        ProcessedSong second_track {
-            second_note_track, {},    1.0,   1.0, Second(0.0), Second(0.0),
-            ChGuitarEngine(),  false, false, {},  {}};
+        ProcessedSong second_track {second_note_track,
+                                    {},
+                                    1.0,
+                                    1.0,
+                                    Second(0.0),
+                                    Second(0.0),
+                                    ChGuitarEngine(),
+                                    {false, false, false},
+                                    {},
+                                    {}};
         const auto& second_points = second_track.points();
         Path path {{{second_points.cend() - 3, second_points.cend() - 3,
                      Beat {0.0}, Beat {0.0}}},
@@ -1050,9 +1323,16 @@ TEST_CASE("path_summary produces the correct output")
         Path path {{}, 0};
         NoteTrack<NoteColour> second_note_track {notes, {}, solos, {},
                                                  {},    {}, 192};
-        ProcessedSong second_track {
-            second_note_track, {},    1.0,   1.0, Second(0.0), Second(0.0),
-            RbEngine(),        false, false, {},  {}};
+        ProcessedSong second_track {second_note_track,
+                                    {},
+                                    1.0,
+                                    1.0,
+                                    Second(0.0),
+                                    Second(0.0),
+                                    RbEngine(),
+                                    {false, false, false},
+                                    {},
+                                    {}};
 
         const char* desired_path_output = "Path: None\n"
                                           "No SP score: 225\n"

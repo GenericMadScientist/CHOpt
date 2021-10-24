@@ -25,6 +25,12 @@
 #include "engine.hpp"
 #include "songparts.hpp"
 
+struct DrumSettings {
+    bool enable_double_kick;
+    bool disable_kick;
+    bool pro_drums;
+};
+
 // This struct represents the options chosen on the command line by the user.
 struct Settings {
     bool blank;
@@ -43,9 +49,7 @@ struct Settings {
     double whammy_delay;
     int speed;
     std::unique_ptr<Engine> engine;
-    bool enable_double_kick;
-    bool disable_kick;
-    bool pro_drums;
+    DrumSettings drum_settings;
     float opacity;
 };
 

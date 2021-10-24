@@ -73,8 +73,13 @@ TEST_CASE("Non-sustain notes")
     {
         NoteTrack<NoteColour> track {{{768}, {960}}, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         std::vector<int> expected_values {50, 50};
 
         REQUIRE(set_values(points) == expected_values);
@@ -91,8 +96,13 @@ TEST_CASE("Non-sustain notes")
             {},
             192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         std::vector<int> expected_values {100};
 
         REQUIRE(set_values(points) == expected_values);
@@ -103,8 +113,13 @@ TEST_CASE("Non-sustain notes")
         NoteTrack<GHLNoteColour> track {
             {{768}, {960}}, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         std::vector<int> expected_values {50, 50};
 
         REQUIRE(set_values(points) == expected_values);
@@ -117,15 +132,21 @@ TEST_CASE("Sustain notes")
     {
         NoteTrack<NoteColour> track {{{768, 15}}, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet first_points {track,       converter,        {},    1.0,
-                               Second(0.0), ChGuitarEngine(), false, false};
+        PointSet first_points {track,
+                               converter,
+                               {},
+                               1.0,
+                               Second(0.0),
+                               ChGuitarEngine(),
+                               {false, false, false}};
         std::vector<int> first_expected_values {50, 3};
         std::vector<Beat> first_expected_beats {Beat(4.0), Beat(4.0026)};
         NoteTrack<NoteColour> second_track {{{768, 15}}, {}, {}, {},
                                             {},          {}, 200};
         TimeConverter second_converter {{}, 200, ChGuitarEngine(), {}};
-        PointSet second_points {second_track, second_converter, {},    1.0,
-                                Second(0.0),  ChGuitarEngine(), false, false};
+        PointSet second_points {
+            second_track,     second_converter,     {}, 1.0, Second(0.0),
+            ChGuitarEngine(), {false, false, false}};
         std::vector<int> second_expected_values {50, 2};
         std::vector<Beat> second_expected_beats {Beat(3.84), Beat(3.8425)};
 
@@ -146,8 +167,13 @@ TEST_CASE("Sustain notes")
             {},
             192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         std::vector<int> expected_values {100, 2};
         std::vector<Beat> expected_beats {Beat(4.0), Beat(4.0026)};
 
@@ -159,8 +185,13 @@ TEST_CASE("Sustain notes")
     {
         NoteTrack<NoteColour> track {{{768, 2}}, {}, {}, {}, {}, {}, 1};
         TimeConverter converter {{}, 1, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
 
         REQUIRE(std::distance(points.cbegin(), points.cend()) == 3);
     }
@@ -177,8 +208,13 @@ TEST_CASE("Sustain notes")
                                      {},
                                      192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         auto total_score = std::accumulate(
             points.cbegin(), points.cend(), 0,
             [](const auto& a, const auto& b) { return a + b.value; });
@@ -199,8 +235,13 @@ TEST_CASE("Sustain notes")
                                      {},
                                      480};
         TimeConverter converter {{}, 480, RbEngine(), {}};
-        PointSet points {track,       converter,  {},    1.0,
-                         Second(0.0), RbEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         RbEngine(),
+                         {false, false, false}};
         const auto total_score = std::accumulate(
             points.cbegin(), points.cend(), 0,
             [](const auto& a, const auto& b) { return a + b.value; });
@@ -213,8 +254,13 @@ TEST_CASE("Sustain notes")
     {
         NoteTrack<NoteColour> track {{{0, 419}}, {}, {}, {}, {}, {}, 480};
         TimeConverter converter {{}, 480, RbEngine(), {}};
-        PointSet points {track,       converter,  {},    1.0,
-                         Second(0.0), RbEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         RbEngine(),
+                         {false, false, false}};
         const auto total_score = std::accumulate(
             points.cbegin(), points.cend(), 0,
             [](const auto& a, const auto& b) { return a + b.value; });
@@ -234,8 +280,13 @@ TEST_CASE("Sustain notes")
             {},
             480};
         TimeConverter converter {{}, 480, RbEngine(), {}};
-        PointSet points {track,       converter,  {},    1.0,
-                         Second(0.0), RbEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         RbEngine(),
+                         {false, false, false}};
         const auto total_score = std::accumulate(
             points.cbegin(), points.cend(), 0,
             [](const auto& a, const auto& b) { return a + b.value; });
@@ -249,8 +300,13 @@ TEST_CASE("Points are sorted")
     NoteTrack<NoteColour> track {
         {{768, 15}, {770, 0}}, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-    PointSet points {track,       converter,        {},    1.0,
-                     Second(0.0), ChGuitarEngine(), false, false};
+    PointSet points {track,
+                     converter,
+                     {},
+                     1.0,
+                     Second(0.0),
+                     ChGuitarEngine(),
+                     {false, false, false}};
     const auto beats = set_position_beats(points);
 
     REQUIRE(std::is_sorted(beats.cbegin(), beats.cend()));
@@ -266,10 +322,15 @@ TEST_CASE("End of SP phrase points")
                                  {},
                                  192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-    PointSet points {track,       converter,        {},    1.0,
-                     Second(0.0), ChGuitarEngine(), false, false};
-    PointSet unison_points {track,       converter,   {{1100, 53}}, 1.0,
-                            Second(0.0), Rb3Engine(), false,        false};
+    PointSet points {track,
+                     converter,
+                     {},
+                     1.0,
+                     Second(0.0),
+                     ChGuitarEngine(),
+                     {false, false, false}};
+    PointSet unison_points {track,       converter,   {{1100, 53}},         1.0,
+                            Second(0.0), Rb3Engine(), {false, false, false}};
 
     REQUIRE(points.cbegin()->is_sp_granting_note);
     REQUIRE(!std::next(points.cbegin())->is_sp_granting_note);
@@ -291,8 +352,13 @@ TEST_CASE("Combo multiplier is taken into account")
         }
         NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         std::vector<int> expected_values;
         std::vector<int> expected_base_values;
         expected_values.reserve(50);
@@ -318,8 +384,13 @@ TEST_CASE("Combo multiplier is taken into account")
 
         NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
 
         REQUIRE(std::prev(points.cend(), 2)->value == 4);
         REQUIRE(std::prev(points.cend(), 2)->base_value == 1);
@@ -336,8 +407,13 @@ TEST_CASE("Combo multiplier is taken into account")
 
         NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
 
         REQUIRE(std::prev(points.cend(), 2)->value == 2);
         REQUIRE(std::prev(points.cend(), 2)->base_value == 1);
@@ -354,8 +430,13 @@ TEST_CASE("Combo multiplier is taken into account")
 
         NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChDrumEngine(), {}};
-        PointSet points {track,       converter,      {},    1.0,
-                         Second(0.0), ChDrumEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChDrumEngine(),
+                         {false, false, false}};
 
         REQUIRE(std::prev(points.cend(), 1)->value == 100);
     }
@@ -370,8 +451,13 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     {
         std::vector<Note<NoteColour>> notes {{192}, {787}};
         NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
 
         REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.825));
         REQUIRE(std::next(points.cbegin())->hit_window_start.beat
@@ -382,8 +468,13 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     {
         std::vector<Note<NoteColour>> notes {{192}, {749}};
         NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
 
         REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.175));
         REQUIRE(std::next(points.cbegin())->hit_window_end.beat
@@ -394,8 +485,13 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     {
         std::vector<Note<NoteColour>> notes {{672, 192}};
         NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
 
         for (auto p = std::next(points.cbegin()); p < points.cend(); ++p) {
             REQUIRE(p->position.beat == p->hit_window_start.beat);
@@ -407,8 +503,13 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     {
         std::vector<Note<NoteColour>> notes {{192}};
         NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        PointSet points {track,       converter,        {},    0.5,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         0.5,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
 
         REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.9125));
         REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.0875));
@@ -418,10 +519,20 @@ TEST_CASE("hit_window_start and hit_window_end are set correctly")
     {
         std::vector<Note<NoteColour>> notes {{192}, {240}};
         NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        PointSet points {track,       converter,  {},    1.0,
-                         Second(0.0), RbEngine(), false, false};
-        PointSet fifty_sqz_points {track,       converter,  {},    0.5,
-                                   Second(0.0), RbEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         RbEngine(),
+                         {false, false, false}};
+        PointSet fifty_sqz_points {track,
+                                   converter,
+                                   {},
+                                   0.5,
+                                   Second(0.0),
+                                   RbEngine(),
+                                   {false, false, false}};
 
         REQUIRE(points.cbegin()->hit_window_end.beat == Beat(1.125));
         REQUIRE(fifty_sqz_points.cbegin()->hit_window_end.beat == Beat(1.0625));
@@ -437,8 +548,13 @@ TEST_CASE("RB bass multiplier is taken into account")
     }
     const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
     const TimeConverter converter {{}, 192, RbBassEngine(), {}};
-    const PointSet points {track,       converter,      {},    1.0,
-                           Second(0.0), RbBassEngine(), false, false};
+    const PointSet points {track,
+                           converter,
+                           {},
+                           1.0,
+                           Second(0.0),
+                           RbBassEngine(),
+                           {false, false, false}};
 
     const auto total_points
         = std::accumulate(points.cbegin(), points.cend(), 0,
@@ -455,8 +571,13 @@ TEST_CASE("Video lag is taken into account")
 
     SECTION("Negative video lag is handled correctly")
     {
-        PointSet points {track,         converter,        {},    1.0,
-                         Second(-0.20), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(-0.20),
+                         ChGuitarEngine(),
+                         {false, false, false}};
 
         REQUIRE(points.cbegin()->position.beat == Beat(0.6));
         REQUIRE(points.cbegin()->hit_window_start.beat == Beat(0.46));
@@ -466,8 +587,13 @@ TEST_CASE("Video lag is taken into account")
 
     SECTION("Positive video lag is handled correctly")
     {
-        PointSet points {track,        converter,        {},    1.0,
-                         Second(0.20), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.20),
+                         ChGuitarEngine(),
+                         {false, false, false}};
 
         REQUIRE(points.cbegin()->position.beat == Beat(1.4));
         REQUIRE(points.cbegin()->hit_window_start.beat == Beat(1.26));
@@ -482,8 +608,13 @@ TEST_CASE("Video lag is taken into account")
             {197}, {198}, {199}, {200, 200}, {400}};
         NoteTrack<NoteColour> other_track {other_notes, {}, {}, {},
                                            {},          {}, 192};
-        PointSet points {other_track,   converter,        {},    1.0,
-                         Second(-0.40), ChGuitarEngine(), false, false};
+        PointSet points {other_track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(-0.40),
+                         ChGuitarEngine(),
+                         {false, false, false}};
 
         REQUIRE(std::prev(points.cend())->value == 100);
         REQUIRE(std::prev(points.cend(), 2)->value == 7);
@@ -495,10 +626,13 @@ TEST_CASE("next_non_hold_point is correct")
     std::vector<Note<NoteColour>> notes {{0}, {192, 192}};
     NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
 
-    PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChGuitarEngine(),
-                     false,       false};
+    PointSet points {track,
+                     {{}, 192, ChGuitarEngine(), {}},
+                     {},
+                     1.0,
+                     Second(0.0),
+                     ChGuitarEngine(),
+                     {false, false, false}};
 
     REQUIRE(points.next_non_hold_point(points.cbegin()) == points.cbegin());
     REQUIRE(points.next_non_hold_point(std::next(points.cbegin(), 2))
@@ -512,8 +646,13 @@ TEST_CASE("next_sp_granting_note is correct")
     NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
 
-    PointSet points {track,       converter,        {},    1.0,
-                     Second(0.0), ChGuitarEngine(), false, false};
+    PointSet points {track,
+                     converter,
+                     {},
+                     1.0,
+                     Second(0.0),
+                     ChGuitarEngine(),
+                     {false, false, false}};
 
     REQUIRE(points.next_sp_granting_note(points.cbegin())
             == std::next(points.cbegin()));
@@ -527,10 +666,13 @@ TEST_CASE("Solo sections are added")
 {
     std::vector<Solo> solos {{0, 576, 100}, {768, 1152, 200}};
     NoteTrack<NoteColour> track {{}, {}, solos, {}, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChGuitarEngine(),
-                     false,       false};
+    PointSet points {track,
+                     {{}, 192, ChGuitarEngine(), {}},
+                     {},
+                     1.0,
+                     Second(0.0),
+                     ChGuitarEngine(),
+                     {false, false, false}};
     std::vector<std::tuple<Position, int>> expected_solo_boosts {
         {{Beat(3.0), Measure(0.75)}, 100}, {{Beat(6.0), Measure(1.5)}, 200}};
 
@@ -540,10 +682,13 @@ TEST_CASE("Solo sections are added")
 TEST_CASE("range_score is correct")
 {
     NoteTrack<NoteColour> track {{{0, 192}, {386}}, {}, {}, {}, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChGuitarEngine(),
-                     false,       false};
+    PointSet points {track,
+                     {{}, 192, ChGuitarEngine(), {}},
+                     {},
+                     1.0,
+                     Second(0.0),
+                     ChGuitarEngine(),
+                     {false, false, false}};
     const auto begin = points.cbegin();
     const auto end = points.cend();
 
@@ -559,10 +704,13 @@ TEST_CASE("colour_set is correct for 5 fret")
                                          {176, 100, NoteColour::Yellow},
                                          {500, 0, NoteColour::Blue}};
     NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChGuitarEngine(),
-                     false,       false};
+    PointSet points {track,
+                     {{}, 192, ChGuitarEngine(), {}},
+                     {},
+                     1.0,
+                     Second(0.0),
+                     ChGuitarEngine(),
+                     {false, false, false}};
     const auto begin = points.cbegin();
     const auto end = points.cend();
 
@@ -579,10 +727,13 @@ TEST_CASE("colour_set is correct for 6 fret")
         {176, 100, GHLNoteColour::BlackHigh},
         {500, 0, GHLNoteColour::Open}};
     NoteTrack<GHLNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChGuitarEngine(),
-                     false,       false};
+    PointSet points {track,
+                     {{}, 192, ChGuitarEngine(), {}},
+                     {},
+                     1.0,
+                     Second(0.0),
+                     ChGuitarEngine(),
+                     {false, false, false}};
     const auto begin = points.cbegin();
     const auto end = points.cend();
 
@@ -599,10 +750,9 @@ TEST_CASE("colour_set is correct for drums")
         {176, 0, DrumNoteColour::BlueCymbal},
         {500, 0, DrumNoteColour::Kick}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChDrumEngine(),
-                     false,       false};
+    PointSet points {
+        track,          {{}, 192, ChDrumEngine(), {}}, {}, 1.0, Second(0.0),
+        ChDrumEngine(), {false, false, false}};
     const auto begin = points.cbegin();
     const auto end = points.cend();
 
@@ -616,14 +766,12 @@ TEST_CASE("Double kicks only appear with enable_double_kick")
     std::vector<Note<DrumNoteColour>> notes {
         {0, 0, DrumNoteColour::Kick}, {192, 0, DrumNoteColour::DoubleKick}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-    PointSet single_points {track,       {{}, 192, ChDrumEngine(), {}},
-                            {},          1.0,
-                            Second(0.0), ChDrumEngine(),
-                            false,       false};
-    PointSet double_points {track,       {{}, 192, ChDrumEngine(), {}},
-                            {},          1.0,
-                            Second(0.0), ChDrumEngine(),
-                            true,        false};
+    PointSet single_points {
+        track,          {{}, 192, ChDrumEngine(), {}}, {}, 1.0, Second(0.0),
+        ChDrumEngine(), {false, false, false}};
+    PointSet double_points {
+        track,          {{}, 192, ChDrumEngine(), {}}, {}, 1.0, Second(0.0),
+        ChDrumEngine(), {true, false, false}};
 
     REQUIRE(single_points.cend() - single_points.cbegin() == 1);
     REQUIRE(double_points.cend() - double_points.cbegin() == 2);
@@ -634,10 +782,13 @@ TEST_CASE("Single kicks are removed with disable_kick")
     std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::DoubleKick},
                                              {192, 0, DrumNoteColour::Kick}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChDrumEngine(),
-                     true,        true};
+    PointSet points {track,
+                     {{}, 192, ChDrumEngine(), {}},
+                     {},
+                     1.0,
+                     Second(0.0),
+                     ChDrumEngine(),
+                     {true, true, false}};
 
     REQUIRE(points.cend() - points.cbegin() == 1);
     REQUIRE(points.cbegin()->value == 50);
@@ -649,10 +800,9 @@ TEST_CASE("disable_kick doesn't kill SP phrases")
                                              {192, 0, DrumNoteColour::Kick}};
     std::vector<StarPower> phrases {{0, 200}};
     NoteTrack<DrumNoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChDrumEngine(),
-                     false,       true};
+    PointSet points {
+        track,          {{}, 192, ChDrumEngine(), {}}, {}, 1.0, Second(0.0),
+        ChDrumEngine(), {false, true, false}};
 
     REQUIRE(points.cbegin()->is_sp_granting_note);
 }
@@ -663,10 +813,9 @@ TEST_CASE("Double kicks don't kill phrases")
         {0, 0, DrumNoteColour::Red}, {192, 0, DrumNoteColour::DoubleKick}};
     std::vector<StarPower> phrases {{0, 200}};
     NoteTrack<DrumNoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChDrumEngine(),
-                     false,       false};
+    PointSet points {
+        track,          {{}, 192, ChDrumEngine(), {}}, {}, 1.0, Second(0.0),
+        ChDrumEngine(), {false, false, false}};
 
     REQUIRE(points.cbegin()->is_sp_granting_note);
 }
@@ -676,10 +825,9 @@ TEST_CASE("Activation notes are marked with drum fills")
     std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {385}, {576}};
     std::vector<DrumFill> fills {{380, 5}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChDrumEngine(),
-                     false,       false};
+    PointSet points {
+        track,          {{}, 192, ChDrumEngine(), {}}, {}, 1.0, Second(0.0),
+        ChDrumEngine(), {false, false, false}};
     const auto begin = points.cbegin();
 
     REQUIRE(!begin->is_activation_note);
@@ -693,10 +841,9 @@ TEST_CASE("Fills ending only in a kick are killed")
     std::vector<Note<DrumNoteColour>> notes {{0}, {1, 0, DrumNoteColour::Kick}};
     std::vector<DrumFill> fills {{0, 2}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChDrumEngine(),
-                     false,       false};
+    PointSet points {
+        track,          {{}, 192, ChDrumEngine(), {}}, {}, 1.0, Second(0.0),
+        ChDrumEngine(), {false, false, false}};
     const auto begin = points.cbegin();
 
     REQUIRE(!begin->is_activation_note);
@@ -709,10 +856,9 @@ TEST_CASE("Fills ending only in a double kick are killed")
         {0}, {1, 0, DrumNoteColour::DoubleKick}};
     std::vector<DrumFill> fills {{0, 2}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChDrumEngine(),
-                     true,        false};
+    PointSet points {
+        track,          {{}, 192, ChDrumEngine(), {}}, {}, 1.0, Second(0.0),
+        ChDrumEngine(), {true, false, false}};
     const auto begin = points.cbegin();
 
     REQUIRE(!begin->is_activation_note);
@@ -725,10 +871,9 @@ TEST_CASE("Fills ending in a multi-note have the activation attached to the "
     std::vector<Note<DrumNoteColour>> notes {{0}, {0, 0, DrumNoteColour::Kick}};
     std::vector<DrumFill> fills {{0, 2}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
-    PointSet points {track,       {{}, 192, ChDrumEngine(), {}},
-                     {},          1.0,
-                     Second(0.0), ChDrumEngine(),
-                     false,       false};
+    PointSet points {
+        track,          {{}, 192, ChDrumEngine(), {}}, {}, 1.0, Second(0.0),
+        ChDrumEngine(), {false, false, false}};
     const auto begin = points.cbegin();
 
     REQUIRE(begin->is_activation_note);

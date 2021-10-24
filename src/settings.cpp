@@ -257,9 +257,10 @@ Settings from_args(int argc, char** argv)
     settings.draw_bpms = !program.get<bool>("--no-bpms");
     settings.draw_solos = !program.get<bool>("--no-solos");
     settings.draw_time_sigs = !program.get<bool>("--no-time-sigs");
-    settings.enable_double_kick = !program.get<bool>("--no-double-kick");
-    settings.disable_kick = program.get<bool>("--no-kick");
-    settings.pro_drums = !program.get<bool>("--no-pro-drums");
+    settings.drum_settings.enable_double_kick
+        = !program.get<bool>("--no-double-kick");
+    settings.drum_settings.disable_kick = program.get<bool>("--no-kick");
+    settings.drum_settings.pro_drums = !program.get<bool>("--no-pro-drums");
 
     const auto squeeze = program.get<int>("--squeeze");
     auto early_whammy = squeeze;

@@ -53,7 +53,7 @@ TEST_CASE("Track type is stored correctly")
     SECTION("Drums gets the right track type")
     {
         NoteTrack<DrumNoteColour> track {{}, {}, {}, {}, {}, {}, 192};
-        ImageBuilder builder {track, {}, false, false, false};
+        ImageBuilder builder {track, {}, {false, false, false}};
 
         REQUIRE(builder.track_type() == TrackType::Drums);
     }
@@ -117,7 +117,7 @@ TEST_CASE("Notes are handled correclty")
             {},
             {},
             192};
-        ImageBuilder builder {track, {}, false, false, true};
+        ImageBuilder builder {track, {}, {false, false, true}};
         std::vector<DrawnNote<DrumNoteColour>> expected_notes {
             {0.0, 0.0, DrumNoteColour::Red, false},
             {4.0, 0.0, DrumNoteColour::YellowCymbal, false}};
@@ -336,7 +336,7 @@ TEST_CASE("Green ranges for drums SP phrases are added correctly")
 {
     NoteTrack<DrumNoteColour> track {
         {{960}, {1344}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, false, false, false};
+    ImageBuilder builder {track, {}, {false, false, false}};
     builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.0},
                                                                    {7.0, 7.0}};
@@ -354,8 +354,8 @@ TEST_CASE("Double kicks only appear with enable_double_kick")
         {},
         {},
         192};
-    ImageBuilder no_double_builder {track, {}, false, false, false};
-    ImageBuilder double_builder {track, {}, true, false, false};
+    ImageBuilder no_double_builder {track, {}, {false, false, false}};
+    ImageBuilder double_builder {track, {}, {true, false, false}};
 
     REQUIRE(no_double_builder.drum_notes().size() == 1);
     REQUIRE(double_builder.drum_notes().size() == 2);
@@ -371,7 +371,7 @@ TEST_CASE("Single kicks disappear with disable_kick")
         {},
         {},
         192};
-    ImageBuilder builder {track, {}, true, true, false};
+    ImageBuilder builder {track, {}, {true, true, false}};
 
     REQUIRE(builder.drum_notes().size() == 1);
 }
@@ -380,7 +380,7 @@ TEST_CASE("Cymbals become toms with pro_drums off")
 {
     NoteTrack<DrumNoteColour> track {
         {{0, 0, DrumNoteColour::YellowCymbal}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, false, false, false};
+    ImageBuilder builder {track, {}, {false, false, false}};
 
     REQUIRE(builder.drum_notes().size() == 1);
     REQUIRE(builder.drum_notes()[0].colour == DrumNoteColour::Yellow);
@@ -396,8 +396,8 @@ TEST_CASE("Disco flip matters only with pro_drums on")
                                      {{192, 192}},
                                      {},
                                      192};
-    ImageBuilder normal_builder {track, {}, false, false, false};
-    ImageBuilder pro_builder {track, {}, false, false, true};
+    ImageBuilder normal_builder {track, {}, {false, false, false}};
+    ImageBuilder pro_builder {track, {}, {false, false, true}};
 
     REQUIRE(normal_builder.drum_notes().size() == 2);
     REQUIRE(normal_builder.drum_notes()[0].colour == DrumNoteColour::Yellow);
@@ -424,8 +424,13 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{0, 96}, {192}}, {{0, 50}}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25},
                      Beat {0.1}, Beat {0.9}}},
@@ -449,8 +454,13 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {576}}, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
                      Beat {0.1}, Beat {1.1}},
@@ -469,8 +479,13 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{192}, {384}, {576}, {768}}, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                      Beat {0.0}, Beat {5.0}}},
@@ -486,8 +501,13 @@ TEST_CASE("add_sp_acts adds correct ranges")
     {
         NoteTrack<NoteColour> track {{{192}}, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,       converter,        {},    1.0,
-                         Second(0.0), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                      Beat {16.0}}},
@@ -504,8 +524,13 @@ TEST_CASE("add_sp_acts adds correct ranges")
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {576}, {768}, {1530}}, {}, {}, {}, {}, {}, 192};
         TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-        PointSet points {track,        converter,        {},    1.0,
-                         Second(0.05), ChGuitarEngine(), false, false};
+        PointSet points {track,
+                         converter,
+                         {},
+                         1.0,
+                         Second(0.05),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
                      Beat {0.1}, Beat {1.1}},
@@ -541,10 +566,13 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Notes with no activations or solos")
     {
         NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, {}, {}, {}, 192};
-        PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
-                         {},          1.0,
-                         Second(0.0), ChGuitarEngine(),
-                         false,       false};
+        PointSet points {track,
+                         {{}, 192, ChGuitarEngine(), {}},
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}},
@@ -560,10 +588,13 @@ TEST_CASE("add_measure_values gives correct values")
     {
         NoteTrack<NoteColour> track {
             {{768}}, {}, {{0, 100, 100}, {200, 800, 100}}, {}, {}, {}, 192};
-        PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
-                         {},          1.0,
-                         Second(0.0), ChGuitarEngine(),
-                         false,       false};
+        PointSet points {track,
+                         {{}, 192, ChGuitarEngine(), {}},
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}},
@@ -579,10 +610,13 @@ TEST_CASE("add_measure_values gives correct values")
     {
         NoteTrack<NoteColour> track {{{0}}, {}, {{0, 1600, 50}}, {}, {},
                                      {},    192};
-        PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
-                         {},          1.0,
-                         Second(0.0), ChGuitarEngine(),
-                         false,       false};
+        PointSet points {track,
+                         {{}, 192, ChGuitarEngine(), {}},
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}},
@@ -596,10 +630,13 @@ TEST_CASE("add_measure_values gives correct values")
     {
         NoteTrack<NoteColour> track {
             {{0}, {192}, {384}, {768}}, {}, {}, {}, {}, {}, 192};
-        PointSet points {track,       {{}, 192, ChGuitarEngine(), {}},
-                         {},          1.0,
-                         Second(0.0), ChGuitarEngine(),
-                         false,       false};
+        PointSet points {track,
+                         {{}, 192, ChGuitarEngine(), {}},
+                         {},
+                         1.0,
+                         Second(0.0),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         Path path {{{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0},
                      Beat {0.0}}},
                    100};
@@ -614,10 +651,13 @@ TEST_CASE("add_measure_values gives correct values")
     SECTION("Video lag is accounted for")
     {
         NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, {}, {}, {}, 192};
-        PointSet points {track,        {{}, 192, ChGuitarEngine(), {}},
-                         {},           1.0,
-                         Second(-0.1), ChGuitarEngine(),
-                         false,        false};
+        PointSet points {track,
+                         {{}, 192, ChGuitarEngine(), {}},
+                         {},
+                         1.0,
+                         Second(-0.1),
+                         ChGuitarEngine(),
+                         {false, false, false}};
         Path path {{{points.cbegin() + 1, points.cbegin() + 1, Beat {0.0},
                      Beat {0.0}}},
                    50};
@@ -649,8 +689,13 @@ TEST_CASE("set_total_score sets the correct value")
 {
     NoteTrack<NoteColour> track {{{0}, {192}}, {{0, 50}}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
-    PointSet points {track,       converter,        {},    1.0,
-                     Second(0.0), ChGuitarEngine(), false, false};
+    PointSet points {track,
+                     converter,
+                     {},
+                     1.0,
+                     Second(0.0),
+                     ChGuitarEngine(),
+                     {false, false, false}};
     ImageBuilder builder {track, {}};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},

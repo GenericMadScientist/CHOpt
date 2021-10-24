@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "engine.hpp"
+#include "settings.hpp"
 #include "songparts.hpp"
 #include "time.hpp"
 
@@ -54,18 +55,18 @@ private:
 public:
     PointSet(const NoteTrack<NoteColour>& track, const TimeConverter& converter,
              const std::vector<int>& unison_phrases, double squeeze,
-             Second video_lag, const Engine& engine, bool enable_double_kick,
-             bool disable_kick);
+             Second video_lag, const Engine& engine,
+             const DrumSettings& drum_settings);
     PointSet(const NoteTrack<GHLNoteColour>& track,
              const TimeConverter& converter,
              const std::vector<int>& unison_phrases, double squeeze,
-             Second video_lag, const Engine& engine, bool enable_double_kick,
-             bool disable_kick);
+             Second video_lag, const Engine& engine,
+             const DrumSettings& drum_settings);
     PointSet(const NoteTrack<DrumNoteColour>& track,
              const TimeConverter& converter,
              const std::vector<int>& unison_phrases, double squeeze,
-             Second video_lag, const Engine& engine, bool enable_double_kick,
-             bool disable_kick);
+             Second video_lag, const Engine& engine,
+             const DrumSettings& drum_settings);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
     [[nodiscard]] PointPtr next_non_hold_point(PointPtr point) const;

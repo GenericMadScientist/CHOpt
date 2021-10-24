@@ -102,19 +102,20 @@ static DrumNoteColour disco_flip(DrumNoteColour colour, int position,
 }
 
 static std::vector<DrawnNote<DrumNoteColour>>
-drawn_notes(const NoteTrack<DrumNoteColour>& track, bool enable_double_kick,
-            bool disable_kick, bool pro_drums)
+drawn_notes(const NoteTrack<DrumNoteColour>& track,
+            const DrumSettings& drum_settings)
 {
     std::vector<DrawnNote<DrumNoteColour>> notes;
 
     for (const auto& note : track.notes()) {
-        if (note.colour == DrumNoteColour::DoubleKick && !enable_double_kick) {
+        if (note.colour == DrumNoteColour::DoubleKick
+            && !drum_settings.enable_double_kick) {
             continue;
         }
-        if (note.colour == DrumNoteColour::Kick && disable_kick) {
+        if (note.colour == DrumNoteColour::Kick && drum_settings.disable_kick) {
             continue;
         }
-        const auto note_colour = pro_drums
+        const auto note_colour = drum_settings.pro_drums
             ? disco_flip(note.colour, note.position, track.disco_flips())
             : cymbal_to_tom(note.colour);
         const auto beat
@@ -255,12 +256,11 @@ ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<DrumNoteColour>& track,
-                           const SyncTrack& sync_track, bool enable_double_kick,
-                           bool disable_kick, bool pro_drums)
+                           const SyncTrack& sync_track,
+                           const DrumSettings& drum_settings)
     : m_track_type {TrackType::Drums}
     , m_rows {drawn_rows(track, sync_track)}
-    , m_drum_notes {
-          drawn_notes(track, enable_double_kick, disable_kick, pro_drums)}
+    , m_drum_notes {drawn_notes(track, drum_settings)}
 {
     constexpr double HALF_BEAT = 0.5;
 
@@ -623,8 +623,7 @@ static ImageBuilder build_with_drum_params(const NoteTrack<T>& track,
                                            const Settings& settings)
 {
     if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        return {track, sync_track, settings.enable_double_kick,
-                settings.disable_kick, settings.pro_drums};
+        return {track, sync_track, settings.drum_settings};
     } else {
         return {track, sync_track};
     }
@@ -674,8 +673,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                                          Second {settings.lazy_whammy},
                                          Second {settings.video_lag},
                                          *settings.engine,
-                                         settings.enable_double_kick,
-                                         settings.disable_kick,
+                                         settings.drum_settings,
                                          song.od_beats(),
                                          song.unison_phrase_positions()};
     Path path;
