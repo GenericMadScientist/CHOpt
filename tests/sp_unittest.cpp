@@ -65,7 +65,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
         SpData sp_data {track,
                         {time_sigs, {}},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_max(
@@ -82,7 +82,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
         SpData sp_data {track,
                         {time_sigs, {}},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(
@@ -101,7 +101,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
         SpData sp_data {track,
                         {time_sigs, {}},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(
@@ -120,7 +120,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
         SpData sp_data {track,
                         {time_sigs, {}},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(
@@ -138,7 +138,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
         SpData sp_data {track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_max(
@@ -151,7 +151,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
         SpData sp_data {track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_max(
@@ -169,7 +169,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
         SpData sp_data {no_sp_note_track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_max(
@@ -182,7 +182,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
         SpData sp_data {track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_min(
@@ -202,7 +202,7 @@ TEST_CASE("propagate_sp_over_whammy_* works correctly")
         SpData sp_data {second_track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(sp_data.propagate_sp_over_whammy_min(
@@ -217,11 +217,8 @@ TEST_CASE("is_in_whammy_ranges works correctly")
     std::vector<Note<NoteColour>> notes {{0, 1920}, {2112}};
     std::vector<StarPower> phrases {{0, 2000}, {2112, 50}};
     NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
-    SpData sp_data {track,
-                    {},
-                    {},
-                    {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
-                    ChGuitarEngine()};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     REQUIRE(sp_data.is_in_whammy_ranges(Beat(1.0)));
     REQUIRE(!sp_data.is_in_whammy_ranges(Beat(11.0)));
@@ -238,7 +235,7 @@ TEST_CASE("available_whammy works correctly")
         SpData sp_data {track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(16.0))
@@ -284,7 +281,7 @@ TEST_CASE("available_whammy works correctly")
         SpData sp_data {track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(12.0), Beat(12.0))
@@ -301,7 +298,7 @@ TEST_CASE("activation_end_point works correctly")
         SpData sp_data {track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
@@ -317,7 +314,7 @@ TEST_CASE("activation_end_point works correctly")
         SpData sp_data {track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
@@ -334,7 +331,7 @@ TEST_CASE("activation_end_point works correctly")
         SpData sp_data {track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
@@ -351,7 +348,7 @@ TEST_CASE("activation_end_point works correctly")
         SpData sp_data {track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(2.0), Measure(0.5)};
@@ -369,7 +366,7 @@ TEST_CASE("activation_end_point works correctly")
         SpData sp_data {track,
                         sync_track,
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
         Position start {Beat(0.0), Measure(0.0)};
         Position end {Beat(1.0), Measure(0.25)};
@@ -390,7 +387,7 @@ TEST_CASE("Video lag is taken account of")
         SpData sp_data {track,
                         {},
                         {},
-                        {1.0, 1.0, Second {0.0}, Second {-0.1}, Second {0.0}},
+                        SqueezeSettings::default_settings(),
                         ChGuitarEngine()};
 
         REQUIRE(sp_data.is_in_whammy_ranges(Beat(0.9)));

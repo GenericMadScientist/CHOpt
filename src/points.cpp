@@ -348,7 +348,7 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
         append_note_points(
             p, q, notes.cbegin(), notes.cend(), std::back_inserter(points),
             track.resolution(), is_note_sp_ender, is_unison_sp_ender, converter,
-            squeeze_settings.squeeze, engine, {false, false, false});
+            squeeze_settings.squeeze, engine, DrumSettings::default_settings());
         p = q;
     }
 

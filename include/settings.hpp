@@ -30,6 +30,8 @@ struct DrumSettings {
     bool enable_double_kick;
     bool disable_kick;
     bool pro_drums;
+
+    static DrumSettings default_settings() { return {true, false, true}; }
 };
 
 struct SqueezeSettings {
@@ -38,6 +40,11 @@ struct SqueezeSettings {
     Second lazy_whammy {0.0};
     Second video_lag {0.0};
     Second whammy_delay {0.0};
+
+    static SqueezeSettings default_settings()
+    {
+        return {1.0, 1.0, Second(0.0), Second(0.0), Second(0.0)};
+    }
 };
 
 // This struct represents the options chosen on the command line by the user.
