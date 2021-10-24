@@ -19,8 +19,8 @@ function(set_cpp_standard target)
                CXX_EXTENSIONS OFF)
 endfunction()
 
-# Set warning flags
-# We need -Wno-reserved-identifier for now because Catch2 triggers it
+# Set warning flags We need -Wno-reserved-identifier for now because Catch2
+# triggers it
 function(set_warnings target)
   target_compile_options(
     ${target}
@@ -93,7 +93,7 @@ add_executable(
   src/songparts.cpp
   src/sp.cpp
   src/stringutil.cpp
-  src/time.cpp
+  src/timeconverter.cpp
   resources/chopt.exe.manifest
   resources/resources.rc)
 target_include_directories(
@@ -138,7 +138,7 @@ if(BUILD_GUI)
     src/songparts.cpp
     src/sp.cpp
     src/stringutil.cpp
-    src/time.cpp
+    src/timeconverter.cpp
     resources/choptgui.exe.manifest
     resources/resources.qrc
     resources/resources.rc)

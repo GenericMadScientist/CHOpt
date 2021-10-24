@@ -26,6 +26,7 @@
 
 #include "engine.hpp"
 #include "time.hpp"
+#include "timeconverter.hpp"
 
 // Represents the minimum and maximum SP possible at a given time.
 class SpBar {

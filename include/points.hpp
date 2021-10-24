@@ -27,6 +27,7 @@
 #include "settings.hpp"
 #include "songparts.hpp"
 #include "time.hpp"
+#include "timeconverter.hpp"
 
 struct Point {
     Position position;

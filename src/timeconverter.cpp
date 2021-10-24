@@ -18,7 +18,7 @@
 
 #include <cassert>
 
-#include "time.hpp"
+#include "timeconverter.hpp"
 
 TimeConverter::TimeConverter(const SyncTrack& sync_track, int resolution,
                              const Engine& engine,

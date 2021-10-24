@@ -19,11 +19,6 @@
 #ifndef CHOPT_TIME_HPP
 #define CHOPT_TIME_HPP
 
-#include <vector>
-
-#include "engine.hpp"
-#include "songparts.hpp"
-
 class Measure;
 class Second;
 
@@ -262,36 +257,6 @@ inline Second Beat::to_second(int bpm) const
 struct Position {
     Beat beat;
     Measure measure;
-};
-
-class TimeConverter {
-private:
-    struct BeatTimestamp {
-        Beat beat;
-        Second time;
-    };
-
-    struct MeasureTimestamp {
-        Measure measure;
-        Beat beat;
-    };
-
-    static constexpr int DEFAULT_BPM = 120000;
-    static constexpr double DEFAULT_BEAT_RATE = 4.0;
-    std::vector<BeatTimestamp> m_beat_timestamps;
-    std::vector<MeasureTimestamp> m_measure_timestamps;
-    double m_last_beat_rate;
-    int m_last_bpm;
-
-public:
-    TimeConverter(const SyncTrack& sync_track, int resolution,
-                  const Engine& engine, const std::vector<int>& od_beats);
-    [[nodiscard]] Second beats_to_seconds(Beat beats) const;
-    [[nodiscard]] Beat seconds_to_beats(Second seconds) const;
-    [[nodiscard]] Measure beats_to_measures(Beat beats) const;
-    [[nodiscard]] Beat measures_to_beats(Measure measures) const;
-    [[nodiscard]] Second measures_to_seconds(Measure measures) const;
-    [[nodiscard]] Measure seconds_to_measures(Second seconds) const;
 };
 
 #endif

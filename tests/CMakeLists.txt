@@ -41,7 +41,7 @@ package_add_test(
   "${SRC}/songparts.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/stringutil.cpp"
-  "${SRC}/time.cpp")
+  "${SRC}/timeconverter.cpp")
 target_include_directories(imagebuilder_unittest PRIVATE ${PNG_INCLUDE_DIRS})
 target_link_libraries(imagebuilder_unittest PRIVATE ${PNG_LIBRARIES})
 
@@ -59,11 +59,11 @@ package_add_test(
   "${SRC}/songparts.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/stringutil.cpp"
-  "${SRC}/time.cpp")
+  "${SRC}/timeconverter.cpp")
 
 package_add_test(
   points_unittest points_unittest.cpp "${SRC}/points.cpp"
-  "${SRC}/songparts.cpp" "${SRC}/stringutil.cpp" "${SRC}/time.cpp")
+  "${SRC}/songparts.cpp" "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")
 
 package_add_test(
   processed_unittest
@@ -73,7 +73,7 @@ package_add_test(
   "${SRC}/songparts.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/stringutil.cpp"
-  "${SRC}/time.cpp")
+  "${SRC}/timeconverter.cpp")
 
 package_add_test(
   song_unittest
@@ -88,11 +88,15 @@ package_add_test(
 package_add_test(songparts_unittest songparts_unittest.cpp
                  "${SRC}/songparts.cpp")
 
-package_add_test(sp_unittest sp_unittest.cpp "${SRC}/songparts.cpp"
-                 "${SRC}/sp.cpp" "${SRC}/stringutil.cpp" "${SRC}/time.cpp")
+package_add_test(
+  sp_unittest sp_unittest.cpp "${SRC}/songparts.cpp" "${SRC}/sp.cpp"
+  "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")
 
 package_add_test(stringutil_unittest stringutil_unittest.cpp
                  "${SRC}/stringutil.cpp")
 
-package_add_test(time_unittest time_unittest.cpp "${SRC}/songparts.cpp"
-                 "${SRC}/stringutil.cpp" "${SRC}/time.cpp")
+package_add_test(time_unittest time_unittest.cpp)
+
+package_add_test(
+  timeconverter_unittest timeconverter_unittest.cpp "${SRC}/songparts.cpp"
+  "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")

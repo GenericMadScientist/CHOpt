@@ -31,6 +31,7 @@
 #include "settings.hpp"
 #include "song.hpp"
 #include "sp.hpp"
+#include "timeconverter.hpp"
 
 struct DrawnRow {
     double start;
