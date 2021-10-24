@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "engine.hpp"
+#include "settings.hpp"
 #include "time.hpp"
 #include "timeconverter.hpp"
 
@@ -142,13 +143,13 @@ private:
 
     void initialise(const std::vector<std::tuple<int, int, Second>>& note_spans,
                     const std::vector<StarPower>& phrases, int resolution,
-                    Second lazy_whammy, Second video_lag);
+                    const SqueezeSettings& squeeze_settings);
 
 public:
     template <typename T>
     SpData(const NoteTrack<T>& track, const SyncTrack& sync_track,
-           const std::vector<int>& od_beats, double early_whammy,
-           Second lazy_whammy, Second video_lag, const Engine& engine)
+           const std::vector<int>& od_beats,
+           const SqueezeSettings& squeeze_settings, const Engine& engine)
         : m_converter {sync_track, track.resolution(), engine, od_beats}
         , m_beat_rates {form_beat_rates(track.resolution(), sync_track,
                                         od_beats, engine)}
@@ -156,8 +157,8 @@ public:
         , m_default_net_sp_gain_rate {m_sp_gain_rate
                                       - 1 / DEFAULT_BEATS_PER_BAR}
     {
-        initialise(note_spans(track, early_whammy, engine), track.sp_phrases(),
-                   track.resolution(), lazy_whammy, video_lag);
+        initialise(note_spans(track, squeeze_settings.early_whammy, engine),
+                   track.sp_phrases(), track.resolution(), squeeze_settings);
     }
 
     // Return the maximum amount of SP available at the end after propagating

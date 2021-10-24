@@ -427,10 +427,9 @@ TEST_CASE("add_sp_acts adds correct ranges")
         PointSet points {track,
                          converter,
                          {},
-                         1.0,
-                         Second(0.0),
-                         ChGuitarEngine(),
-                         {false, false, false}};
+                         {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                         {false, false, false},
+                         ChGuitarEngine()};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25},
                      Beat {0.1}, Beat {0.9}}},
@@ -457,10 +456,9 @@ TEST_CASE("add_sp_acts adds correct ranges")
         PointSet points {track,
                          converter,
                          {},
-                         1.0,
-                         Second(0.0),
-                         ChGuitarEngine(),
-                         {false, false, false}};
+                         {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                         {false, false, false},
+                         ChGuitarEngine()};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
                      Beat {0.1}, Beat {1.1}},
@@ -482,10 +480,9 @@ TEST_CASE("add_sp_acts adds correct ranges")
         PointSet points {track,
                          converter,
                          {},
-                         1.0,
-                         Second(0.0),
-                         ChGuitarEngine(),
-                         {false, false, false}};
+                         {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                         {false, false, false},
+                         ChGuitarEngine()};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                      Beat {0.0}, Beat {5.0}}},
@@ -504,10 +501,9 @@ TEST_CASE("add_sp_acts adds correct ranges")
         PointSet points {track,
                          converter,
                          {},
-                         1.0,
-                         Second(0.0),
-                         ChGuitarEngine(),
-                         {false, false, false}};
+                         {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                         {false, false, false},
+                         ChGuitarEngine()};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                      Beat {16.0}}},
@@ -527,10 +523,9 @@ TEST_CASE("add_sp_acts adds correct ranges")
         PointSet points {track,
                          converter,
                          {},
-                         1.0,
-                         Second(0.05),
-                         ChGuitarEngine(),
-                         {false, false, false}};
+                         {1.0, 1.0, Second {0.0}, Second {0.05}, Second {0.0}},
+                         {false, false, false},
+                         ChGuitarEngine()};
         ImageBuilder builder {track, {}};
         Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25},
                      Beat {0.1}, Beat {1.1}},
@@ -569,10 +564,9 @@ TEST_CASE("add_measure_values gives correct values")
         PointSet points {track,
                          {{}, 192, ChGuitarEngine(), {}},
                          {},
-                         1.0,
-                         Second(0.0),
-                         ChGuitarEngine(),
-                         {false, false, false}};
+                         {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                         {false, false, false},
+                         ChGuitarEngine()};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}},
@@ -591,10 +585,9 @@ TEST_CASE("add_measure_values gives correct values")
         PointSet points {track,
                          {{}, 192, ChGuitarEngine(), {}},
                          {},
-                         1.0,
-                         Second(0.0),
-                         ChGuitarEngine(),
-                         {false, false, false}};
+                         {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                         {false, false, false},
+                         ChGuitarEngine()};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}},
@@ -613,10 +606,9 @@ TEST_CASE("add_measure_values gives correct values")
         PointSet points {track,
                          {{}, 192, ChGuitarEngine(), {}},
                          {},
-                         1.0,
-                         Second(0.0),
-                         ChGuitarEngine(),
-                         {false, false, false}};
+                         {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                         {false, false, false},
+                         ChGuitarEngine()};
         Path path;
         ImageBuilder builder {track, {}};
         builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}},
@@ -633,10 +625,9 @@ TEST_CASE("add_measure_values gives correct values")
         PointSet points {track,
                          {{}, 192, ChGuitarEngine(), {}},
                          {},
-                         1.0,
-                         Second(0.0),
-                         ChGuitarEngine(),
-                         {false, false, false}};
+                         {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                         {false, false, false},
+                         ChGuitarEngine()};
         Path path {{{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0},
                      Beat {0.0}}},
                    100};
@@ -654,10 +645,9 @@ TEST_CASE("add_measure_values gives correct values")
         PointSet points {track,
                          {{}, 192, ChGuitarEngine(), {}},
                          {},
-                         1.0,
-                         Second(-0.1),
-                         ChGuitarEngine(),
-                         {false, false, false}};
+                         {1.0, 1.0, Second {0.0}, Second {-0.1}, Second {0.0}},
+                         {false, false, false},
+                         ChGuitarEngine()};
         Path path {{{points.cbegin() + 1, points.cbegin() + 1, Beat {0.0},
                      Beat {0.0}}},
                    50};
@@ -676,7 +666,10 @@ TEST_CASE("add_sp_values gives correct values")
 {
     NoteTrack<NoteColour> track {
         {{0}, {192, 768}}, {{192, 50}}, {}, {}, {}, {}, 192};
-    SpData sp_data {track,           {}, {}, 1.0, Second(0.0), Second(0.0),
+    SpData sp_data {track,
+                    {},
+                    {},
+                    {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
                     ChGuitarEngine()};
     ImageBuilder builder {track, {}};
     builder.add_sp_values(sp_data, ChGuitarEngine());
@@ -692,10 +685,9 @@ TEST_CASE("set_total_score sets the correct value")
     PointSet points {track,
                      converter,
                      {},
-                     1.0,
-                     Second(0.0),
-                     ChGuitarEngine(),
-                     {false, false, false}};
+                     {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                     {false, false, false},
+                     ChGuitarEngine()};
     ImageBuilder builder {track, {}};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},

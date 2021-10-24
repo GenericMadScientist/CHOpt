@@ -68,8 +68,8 @@ SpData::form_beat_rates(int resolution, const SyncTrack& sync_track,
 
 void SpData::initialise(
     const std::vector<std::tuple<int, int, Second>>& note_spans,
-    const std::vector<StarPower>& phrases, int resolution, Second lazy_whammy,
-    Second video_lag)
+    const std::vector<StarPower>& phrases, int resolution,
+    const SqueezeSettings& squeeze_settings)
 {
     // Elements are (whammy start, whammy end, note).
     std::vector<std::tuple<Beat, Beat, Beat>> ranges;
@@ -88,8 +88,8 @@ void SpData::initialise(
         const Beat note {static_cast<double>(position) / resolution};
         auto second_start = m_converter.beats_to_seconds(note);
         second_start -= early_timing_window;
-        second_start += lazy_whammy;
-        second_start += video_lag;
+        second_start += squeeze_settings.lazy_whammy;
+        second_start += squeeze_settings.video_lag;
         const auto beat_start = m_converter.seconds_to_beats(second_start);
         Beat beat_end {static_cast<double>(position + length) / resolution};
         if (beat_start < beat_end) {

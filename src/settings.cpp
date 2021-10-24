@@ -285,10 +285,12 @@ Settings from_args(int argc, char** argv)
             "Whammy delay must be greater than or equal to 0");
     }
 
-    settings.squeeze = squeeze / 100.0;
-    settings.early_whammy = early_whammy / 100.0;
-    settings.lazy_whammy = lazy_whammy / MS_PER_SECOND;
-    settings.whammy_delay = whammy_delay / MS_PER_SECOND;
+    settings.squeeze_settings.squeeze = squeeze / 100.0;
+    settings.squeeze_settings.early_whammy = early_whammy / 100.0;
+    settings.squeeze_settings.lazy_whammy
+        = Second {lazy_whammy / MS_PER_SECOND};
+    settings.squeeze_settings.whammy_delay
+        = Second {whammy_delay / MS_PER_SECOND};
 
     const auto video_lag = program.get<int>("--video-lag");
     if (video_lag < -MAX_VIDEO_LAG || video_lag > MAX_VIDEO_LAG) {
@@ -296,7 +298,7 @@ Settings from_args(int argc, char** argv)
             "Video lag setting unsupported by Clone Hero");
     }
 
-    settings.video_lag = video_lag / MS_PER_SECOND;
+    settings.squeeze_settings.video_lag = Second {video_lag / MS_PER_SECOND};
 
     const auto precision_mode = program.get<bool>("--precision-mode");
     const auto engine_name = program.get<std::string>("--engine");

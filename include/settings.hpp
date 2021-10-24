@@ -24,11 +24,20 @@
 
 #include "engine.hpp"
 #include "songparts.hpp"
+#include "time.hpp"
 
 struct DrumSettings {
     bool enable_double_kick;
     bool disable_kick;
     bool pro_drums;
+};
+
+struct SqueezeSettings {
+    double squeeze;
+    double early_whammy;
+    Second lazy_whammy {0.0};
+    Second video_lag {0.0};
+    Second whammy_delay {0.0};
 };
 
 // This struct represents the options chosen on the command line by the user.
@@ -42,11 +51,7 @@ struct Settings {
     bool draw_time_sigs;
     Difficulty difficulty;
     Instrument instrument;
-    double squeeze;
-    double early_whammy;
-    double lazy_whammy;
-    double video_lag;
-    double whammy_delay;
+    SqueezeSettings squeeze_settings;
     int speed;
     std::unique_ptr<Engine> engine;
     DrumSettings drum_settings;

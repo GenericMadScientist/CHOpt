@@ -666,14 +666,13 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
 
     // The 0.1% squeeze minimum is to get around dumb floating point rounding
     // issues that visibly affect the path at 0% squeeze.
+    auto squeeze_settings = settings.squeeze_settings;
+    squeeze_settings.squeeze = std::max(squeeze_settings.squeeze, 0.001);
     const ProcessedSong processed_track {new_track,
                                          sync_track,
-                                         settings.early_whammy,
-                                         std::max(settings.squeeze, 0.001),
-                                         Second {settings.lazy_whammy},
-                                         Second {settings.video_lag},
-                                         *settings.engine,
+                                         settings.squeeze_settings,
                                          settings.drum_settings,
+                                         *settings.engine,
                                          song.od_beats(),
                                          song.unison_phrase_positions()};
     Path path;
@@ -688,7 +687,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         } else {
             write("Optimising, please wait...");
             const Optimiser optimiser {&processed_track, terminate,
-                                       Second {settings.whammy_delay}};
+                                       squeeze_settings.whammy_delay};
             path = optimiser.optimal_path();
             write(processed_track.path_summary(path).c_str());
             builder.add_sp_acts(processed_track.points(),

@@ -108,16 +108,15 @@ private:
 public:
     template <typename T>
     ProcessedSong(const NoteTrack<T>& track, const SyncTrack& sync_track,
-                  double early_whammy, double squeeze, Second lazy_whammy,
-                  Second video_lag, const Engine& engine,
-                  const DrumSettings& drum_settings,
+                  const SqueezeSettings& squeeze_settings,
+                  const DrumSettings& drum_settings, const Engine& engine,
                   const std::vector<int>& od_beats,
                   const std::vector<int>& unison_phrases)
         : m_converter {sync_track, track.resolution(), engine, od_beats}
-        , m_points {track,     m_converter, unison_phrases, squeeze,
-                    video_lag, engine,      drum_settings}
-        , m_sp_data {track,       sync_track, od_beats, early_whammy,
-                     lazy_whammy, video_lag,  engine}
+        , m_points {track,          m_converter,
+                    unison_phrases, squeeze_settings,
+                    drum_settings,  engine}
+        , m_sp_data {track, sync_track, od_beats, squeeze_settings, engine}
         , m_total_bre_boost {bre_boost(track, engine, m_converter)}
         , m_base_score {track.base_score()}
         , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
