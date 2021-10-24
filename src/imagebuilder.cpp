@@ -667,7 +667,9 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     // The 0.1% squeeze minimum is to get around dumb floating point rounding
     // issues that visibly affect the path at 0% squeeze.
     auto squeeze_settings = settings.squeeze_settings;
-    squeeze_settings.squeeze = std::max(squeeze_settings.squeeze, 0.001);
+    constexpr double SQUEEZE_EPSILON = 0.001;
+    squeeze_settings.squeeze
+        = std::max(squeeze_settings.squeeze, SQUEEZE_EPSILON);
     const ProcessedSong processed_track {new_track,
                                          sync_track,
                                          settings.squeeze_settings,
