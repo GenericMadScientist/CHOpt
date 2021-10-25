@@ -221,6 +221,27 @@ void Optimiser::complete_subpath(
     }
 }
 
+Second Optimiser::earliest_fill_appearance(CacheKey key, bool has_full_sp) const
+{
+    if (!m_song->is_drums() || has_full_sp) {
+        return Second(0.0);
+    }
+
+    int sp_count = 0;
+    for (auto p = key.point; p < m_song->points().cend(); ++p) {
+        if (p->is_sp_granting_note) {
+            ++sp_count;
+            if (sp_count == 2) {
+                return m_song->converter().beats_to_seconds(
+                           p->hit_window_start.beat)
+                    + Second(2.0);
+            }
+        }
+    }
+
+    return Second(0.0);
+}
+
 Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                                                     bool has_full_sp) const
 {
@@ -230,27 +251,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         return *subpath_from_prev;
     }
 
-    Second earliest_fill_appearance {0.0};
-    if (m_song->is_drums() && !has_full_sp) {
-        auto sp_count = 0;
-        auto last_point = key.point;
-        while (last_point < m_song->points().cend()) {
-            if (last_point->is_sp_granting_note) {
-                ++sp_count;
-                if (sp_count == 2) {
-                    break;
-                }
-            }
-            ++last_point;
-        }
-        if (sp_count < 2) {
-            return {{}, 0};
-        }
-        earliest_fill_appearance = m_song->converter().beats_to_seconds(
-                                       last_point->hit_window_start.beat)
-            + Second {2.0};
-    }
-
+    const auto early_act_bound = earliest_fill_appearance(key, has_full_sp);
     std::vector<std::tuple<ProtoActivation, CacheKey>> acts;
     PointPtrRangeSet attained_act_ends {key.point, m_song->points().cend()};
     auto lower_bound_set = false;
@@ -259,7 +260,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
     for (auto p = key.point; p < m_song->points().cend(); ++p) {
         if (m_song->is_drums()
             && (!p->fill_start.has_value()
-                || p->fill_start < earliest_fill_appearance)) {
+                || p->fill_start < early_act_bound)) {
             continue;
         }
         SpBar sp_bar {1.0, 1.0};

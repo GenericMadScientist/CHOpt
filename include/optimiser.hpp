@@ -147,6 +147,8 @@ private:
     [[nodiscard]] std::tuple<Beat, Beat>
     act_duration(ProtoActivation act, CacheKey key, double sqz_level,
                  Position min_whammy_force) const;
+    [[nodiscard]] Second earliest_fill_appearance(CacheKey key,
+                                                  bool has_full_sp) const;
     void complete_subpath(
         PointPtr p, Position starting_pos, SpBar sp_bar,
         PointPtrRangeSet& attained_act_ends, Cache& cache,
