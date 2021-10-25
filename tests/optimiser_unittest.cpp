@@ -578,4 +578,25 @@ TEST_CASE("optimal_path produces the correct path")
         REQUIRE(opt_path.activations.size() == 2);
         REQUIRE(opt_path.activations[0].sp_start > Beat(99.8));
     }
+
+    SECTION("Drum activations can only happen 2 seconds after getting SP")
+    {
+        std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {800}, {1000}};
+        std::vector<StarPower> phrases {{0, 1}, {192, 1}};
+        std::vector<DrumFill> fills {{800, 1}, {1000, 1}};
+        NoteTrack<DrumNoteColour> note_track {notes, phrases, {}, fills,
+                                              {},    {},      192};
+
+        ProcessedSong track {note_track,
+                             {},
+                             SqueezeSettings::default_settings(),
+                             DrumSettings::default_settings(),
+                             ChDrumEngine(),
+                             {},
+                             {}};
+        Optimiser optimiser {&track, &terminate, Second(0.0)};
+
+        const auto opt_path = optimiser.optimal_path();
+        REQUIRE(opt_path.score_boost == 50);
+    }
 }

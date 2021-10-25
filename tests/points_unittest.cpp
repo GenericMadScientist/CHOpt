@@ -28,6 +28,11 @@ static bool operator==(const Beat& lhs, const Beat& rhs)
     return lhs.value() == Approx(rhs.value());
 }
 
+static bool operator==(const Second& lhs, const Second& rhs)
+{
+    return lhs.value() == Approx(rhs.value());
+}
+
 static bool operator==(const Position& lhs, const Position& rhs)
 {
     return lhs.beat.value() == Approx(rhs.beat.value())
@@ -813,7 +818,7 @@ TEST_CASE("Double kicks don't kill phrases")
 TEST_CASE("Activation notes are marked with drum fills")
 {
     std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {385}, {576}};
-    std::vector<DrumFill> fills {{380, 5}};
+    std::vector<DrumFill> fills {{384, 5}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
@@ -823,10 +828,10 @@ TEST_CASE("Activation notes are marked with drum fills")
                      ChDrumEngine()};
     const auto begin = points.cbegin();
 
-    REQUIRE(!begin->is_activation_note);
-    REQUIRE(!(begin + 1)->is_activation_note);
-    REQUIRE((begin + 2)->is_activation_note);
-    REQUIRE(!(begin + 3)->is_activation_note);
+    REQUIRE(!begin->fill_start.has_value());
+    REQUIRE(!(begin + 1)->fill_start.has_value());
+    REQUIRE((begin + 2)->fill_start == Second(1.0));
+    REQUIRE(!(begin + 3)->fill_start.has_value());
 }
 
 TEST_CASE("Fills ending only in a kick are killed")
@@ -842,8 +847,8 @@ TEST_CASE("Fills ending only in a kick are killed")
                      ChDrumEngine()};
     const auto begin = points.cbegin();
 
-    REQUIRE(!begin->is_activation_note);
-    REQUIRE(!(begin + 1)->is_activation_note);
+    REQUIRE(!begin->fill_start.has_value());
+    REQUIRE(!(begin + 1)->fill_start.has_value());
 }
 
 TEST_CASE("Fills ending only in a double kick are killed")
@@ -860,8 +865,8 @@ TEST_CASE("Fills ending only in a double kick are killed")
                      ChDrumEngine()};
     const auto begin = points.cbegin();
 
-    REQUIRE(!begin->is_activation_note);
-    REQUIRE(!(begin + 1)->is_activation_note);
+    REQUIRE(!begin->fill_start.has_value());
+    REQUIRE(!(begin + 1)->fill_start.has_value());
 }
 
 TEST_CASE("Fills ending in a multi-note have the activation attached to the "
@@ -878,6 +883,6 @@ TEST_CASE("Fills ending in a multi-note have the activation attached to the "
                      ChDrumEngine()};
     const auto begin = points.cbegin();
 
-    REQUIRE(begin->is_activation_note);
-    REQUIRE(!(begin + 1)->is_activation_note);
+    REQUIRE(begin->fill_start == Second(0.0));
+    REQUIRE(!(begin + 1)->fill_start.has_value());
 }

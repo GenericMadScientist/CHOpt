@@ -68,15 +68,14 @@ append_sustain_points(OutputIt points, int position, int sust_length,
         const Beat beat {(float_pos - HALF_RES_OFFSET) / float_res};
         const auto meas = converter.beats_to_measures(beat);
         --sust_ticks;
-        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, 1,    1,
-                     true,         false,        false,        false};
+        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, {}, 1, 1,
+                     true,         false,        false};
     }
     if (sust_ticks > 0) {
         const Beat beat {(float_pos + HALF_RES_OFFSET) / float_res};
         const auto meas = converter.beats_to_measures(beat);
-        *points++
-            = {{beat, meas}, {beat, meas}, {beat, meas}, sust_ticks, sust_ticks,
-               true,         false,        false,        false};
+        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, {},   sust_ticks,
+                     sust_ticks,   true,         false,        false};
     }
 }
 
@@ -155,15 +154,10 @@ append_note_points(InputIt first, InputIt last, InputIt note_start,
     const auto late_beat
         = converter.seconds_to_beats(note_seconds + late_window);
     const auto late_meas = converter.beats_to_measures(late_beat);
-    *points++ = {{beat, meas},
-                 {early_beat, early_meas},
-                 {late_beat, late_meas},
-                 note_value * chord_size,
-                 note_value * chord_size,
-                 false,
-                 is_note_sp_ender,
-                 is_unison_sp_ender,
-                 false};
+    *points++
+        = {{beat, meas}, {early_beat, early_meas}, {late_beat, late_meas},
+           {},           note_value * chord_size,  note_value * chord_size,
+           false,        is_note_sp_ender,         is_unison_sp_ender};
 
     auto [min_iter, max_iter]
         = std::minmax_element(first, last, [](const auto& x, const auto& y) {
@@ -188,6 +182,7 @@ static bool is_kick_colour(DrumNoteColour colour)
 }
 
 static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
+                                       const TimeConverter& converter,
                                        std::vector<Point>& points)
 {
     for (auto fill : track.drum_fills()) {
@@ -223,7 +218,7 @@ static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
                        >= std::prev(earliest_after)->position.beat) {
                 --first_point;
             }
-            first_point->is_activation_note = true;
+            first_point->fill_start = converter.beats_to_seconds(fill_start);
         }
     }
 }
@@ -279,7 +274,7 @@ points_from_track(const NoteTrack<DrumNoteColour>& track,
                          return x.position.beat < y.position.beat;
                      });
 
-    add_drum_activation_points(track, points);
+    add_drum_activation_points(track, converter, points);
 
     auto combo = 0;
     for (auto& point : points) {

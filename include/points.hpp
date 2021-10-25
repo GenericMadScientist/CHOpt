@@ -19,6 +19,7 @@
 #ifndef CHOPT_POINTS_HPP
 #define CHOPT_POINTS_HPP
 
+#include <optional>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -29,16 +30,18 @@
 #include "time.hpp"
 #include "timeconverter.hpp"
 
+// fill_start is used for Drums, giving the start of the fill that makes a point
+// an activation note if it is one, or nullopt otherwise.
 struct Point {
     Position position;
     Position hit_window_start;
     Position hit_window_end;
+    std::optional<Second> fill_start;
     int value;
     int base_value;
     bool is_hold_point;
     bool is_sp_granting_note;
     bool is_unison_sp_granting_note;
-    bool is_activation_note;
 };
 
 using PointPtr = std::vector<Point>::const_iterator;
