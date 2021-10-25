@@ -234,7 +234,7 @@ Second Optimiser::earliest_fill_appearance(CacheKey key, bool has_full_sp) const
             if (sp_count == 2) {
                 return m_song->converter().beats_to_seconds(
                            p->hit_window_start.beat)
-                    + Second(2.0);
+                    + m_drum_fill_delay;
             }
         }
     }

@@ -127,6 +127,7 @@ private:
     static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
     const ProcessedSong* m_song;
     const std::atomic<bool>* m_terminate;
+    const Second m_drum_fill_delay {2.0};
     Second m_whammy_delay;
     std::vector<PointPtr> m_next_candidate_points;
 
