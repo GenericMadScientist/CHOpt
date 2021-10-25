@@ -122,8 +122,9 @@ public:
         , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
         , m_is_drums {std::is_same_v<T, DrumNoteColour>}
     {
+        const auto solos = track.solos(drum_settings);
         m_total_solo_boost = std::accumulate(
-            track.solos().cbegin(), track.solos().cend(), 0,
+            solos.cbegin(), solos.cend(), 0,
             [](const auto x, const auto& y) { return x + y.value; });
     }
 

@@ -656,8 +656,9 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         builder.add_bpms(sync_track, new_track.resolution());
     }
 
+    const auto solos = new_track.solos(settings.drum_settings);
     if (settings.draw_solos) {
-        builder.add_solo_sections(new_track.solos(), new_track.resolution());
+        builder.add_solo_sections(solos, new_track.resolution());
     }
 
     if (settings.draw_time_sigs) {
@@ -701,7 +702,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     builder.add_measure_values(processed_track.points(),
                                processed_track.converter(), path);
     builder.add_sp_values(processed_track.sp_data(), *settings.engine);
-    builder.set_total_score(processed_track.points(), new_track.solos(), path);
+    builder.set_total_score(processed_track.points(), solos, path);
     if (settings.engine->has_bres() && new_track.bre().has_value()) {
         builder.add_bre(*(new_track.bre()), new_track.resolution(),
                         processed_track.converter());

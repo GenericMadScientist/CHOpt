@@ -550,7 +550,8 @@ TEST_CASE("add_solo_sections add correct ranges")
 {
     NoteTrack<NoteColour> track {{{0}}, {}, {{192, 384, 0}}, {}, {}, {}, 192};
     ImageBuilder builder {track, {}};
-    builder.add_solo_sections(track.solos(), 192);
+    builder.add_solo_sections(track.solos(DrumSettings::default_settings()),
+                              192);
     std::vector<std::tuple<double, double>> expected_solo_ranges {{1.0, 2.0}};
 
     REQUIRE(builder.solo_ranges() == expected_solo_ranges);

@@ -142,8 +142,22 @@ TEST_CASE("NoteTrack ctor maintains invariants")
         NoteTrack<NoteColour> track {notes, {}, solos, {}, {}, {}, 192};
         std::vector<Solo> required_solos {{0, 100, 100}, {768, 868, 100}};
 
-        REQUIRE(track.solos() == required_solos);
+        REQUIRE(track.solos(DrumSettings::default_settings())
+                == required_solos);
     }
+}
+
+TEST_CASE("Solos do take into account drum settings")
+{
+    std::vector<Note<DrumNoteColour>> notes {
+        {0, 0, DrumNoteColour::Red},
+        {0, 0, DrumNoteColour::DoubleKick},
+        {192, 0, DrumNoteColour::DoubleKick}};
+    std::vector<Solo> solos {{0, 1, 200}, {192, 193, 100}};
+    NoteTrack<DrumNoteColour> track {notes, {}, solos, {}, {}, {}, 192};
+    std::vector<Solo> required_solos {{0, 1, 100}};
+
+    REQUIRE(track.solos({false, false, true}) == required_solos);
 }
 
 TEST_CASE("Base score for average multiplier is correct")

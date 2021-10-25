@@ -26,18 +26,7 @@
 #include <tuple>
 #include <vector>
 
-enum class Difficulty { Easy = 0, Medium = 1, Hard = 2, Expert = 3 };
-
-enum class Instrument {
-    Guitar,
-    GuitarCoop,
-    Bass,
-    Rhythm,
-    Keys,
-    GHLGuitar,
-    GHLBass,
-    Drums
-};
+#include "settings.hpp"
 
 enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
 
@@ -331,7 +320,39 @@ public:
     {
         return m_sp_phrases;
     }
-    [[nodiscard]] const std::vector<Solo>& solos() const { return m_solos; }
+    [[nodiscard]] std::vector<Solo>
+    solos(const DrumSettings& drum_settings) const
+    {
+        if constexpr (std::is_same_v<T, DrumNoteColour>) {
+            auto solos = m_solos;
+            auto p = m_notes.cbegin();
+            auto q = solos.begin();
+            while (p < m_notes.cend() && q < solos.end()) {
+                if (p->position < q->start) {
+                    ++p;
+                    continue;
+                }
+                if (p->position > q->end) {
+                    ++q;
+                    continue;
+                }
+                if (p->colour == DrumNoteColour::DoubleKick
+                    && !drum_settings.enable_double_kick) {
+                    q->value -= 100;
+                } else if (p->colour == DrumNoteColour::Kick
+                           && drum_settings.disable_kick) {
+                    q->value -= 100;
+                }
+                ++p;
+            }
+            auto it = std::remove_if(solos.begin(), solos.end(),
+                                     [](auto solo) { return solo.value == 0; });
+            solos.erase(it, solos.end());
+            return solos;
+        } else {
+            return m_solos;
+        }
+    }
     [[nodiscard]] const std::vector<DrumFill>& drum_fills() const
     {
         return m_drum_fills;

@@ -549,8 +549,9 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track,
                                   squeeze_settings, engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
-    , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
-                                            converter)}
+    , m_solo_boosts {solo_boosts_from_solos(
+          track.solos(DrumSettings::default_settings()), track.resolution(),
+          converter)}
     , m_cumulative_score_totals {score_totals(m_points)}
     , m_video_lag {squeeze_settings.video_lag}
     , m_colours {note_colours(track.notes(), m_points)}
@@ -567,8 +568,9 @@ PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
                                   squeeze_settings, engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
-    , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
-                                            converter)}
+    , m_solo_boosts {solo_boosts_from_solos(
+          track.solos(DrumSettings::default_settings()), track.resolution(),
+          converter)}
     , m_cumulative_score_totals {score_totals(m_points)}
     , m_video_lag {squeeze_settings.video_lag}
     , m_colours {note_colours(track.notes(), m_points)}
@@ -585,8 +587,8 @@ PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
                                   squeeze_settings, drum_settings, engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
-    , m_solo_boosts {solo_boosts_from_solos(track.solos(), track.resolution(),
-                                            converter)}
+    , m_solo_boosts {solo_boosts_from_solos(track.solos(drum_settings),
+                                            track.resolution(), converter)}
     , m_cumulative_score_totals {score_totals(m_points)}
     , m_video_lag {squeeze_settings.video_lag}
     , m_colours {note_colours(track.notes(), m_points)}

@@ -23,8 +23,20 @@
 #include <string>
 
 #include "engine.hpp"
-#include "songparts.hpp"
 #include "time.hpp"
+
+enum class Difficulty { Easy = 0, Medium = 1, Hard = 2, Expert = 3 };
+
+enum class Instrument {
+    Guitar,
+    GuitarCoop,
+    Bass,
+    Rhythm,
+    Keys,
+    GHLGuitar,
+    GHLBass,
+    Drums
+};
 
 struct DrumSettings {
     bool enable_double_kick;

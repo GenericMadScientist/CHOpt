@@ -59,10 +59,12 @@ static bool operator==(const DiscoFlip& lhs, const DiscoFlip& rhs)
 template <typename T>
 static bool operator==(const NoteTrack<T>& lhs, const NoteTrack<T>& rhs)
 {
-    return std::tie(lhs.notes(), lhs.sp_phrases(), lhs.solos(),
-                    lhs.drum_fills(), lhs.disco_flips())
-        == std::tie(rhs.notes(), rhs.sp_phrases(), rhs.solos(),
-                    rhs.drum_fills(), rhs.disco_flips());
+    const auto lhs_solos = lhs.solos(DrumSettings::default_settings());
+    const auto rhs_solos = rhs.solos(DrumSettings::default_settings());
+    return std::tie(lhs.notes(), lhs.sp_phrases(), lhs_solos, lhs.drum_fills(),
+                    lhs.disco_flips())
+        == std::tie(rhs.notes(), rhs.sp_phrases(), rhs_solos, rhs.drum_fills(),
+                    rhs.disco_flips());
 }
 
 TEST_CASE("Chart -> Song has correct value for is_from_midi")
@@ -326,7 +328,8 @@ TEST_CASE("Solos are read properly")
 
         const auto song = Song::from_chart(chart, {});
 
-        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
+        REQUIRE(song.guitar_note_track(Difficulty::Expert)
+                    .solos(DrumSettings::default_settings())
                 == required_solos);
     }
 
@@ -345,7 +348,8 @@ TEST_CASE("Solos are read properly")
 
         const auto song = Song::from_chart(chart, {});
 
-        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
+        REQUIRE(song.guitar_note_track(Difficulty::Expert)
+                    .solos(DrumSettings::default_settings())
                 == required_solos);
     }
 
@@ -359,7 +363,9 @@ TEST_CASE("Solos are read properly")
 
         const auto song = Song::from_chart(chart, {});
 
-        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos().empty());
+        REQUIRE(song.guitar_note_track(Difficulty::Expert)
+                    .solos(DrumSettings::default_settings())
+                    .empty());
     }
 
     SECTION("Repeated solo starts and ends don't matter")
@@ -378,7 +384,8 @@ TEST_CASE("Solos are read properly")
 
         const auto song = Song::from_chart(chart, {});
 
-        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
+        REQUIRE(song.guitar_note_track(Difficulty::Expert)
+                    .solos(DrumSettings::default_settings())
                 == required_solos);
     }
 
@@ -393,7 +400,8 @@ TEST_CASE("Solos are read properly")
 
         const auto song = Song::from_chart(chart, {});
 
-        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos()
+        REQUIRE(song.guitar_note_track(Difficulty::Expert)
+                    .solos(DrumSettings::default_settings())
                 == required_solos);
     }
 
@@ -406,7 +414,9 @@ TEST_CASE("Solos are read properly")
 
         const auto song = Song::from_chart(chart, {});
 
-        REQUIRE(song.guitar_note_track(Difficulty::Expert).solos().empty());
+        REQUIRE(song.guitar_note_track(Difficulty::Expert)
+                    .solos(DrumSettings::default_settings())
+                    .empty());
     }
 }
 
@@ -569,7 +579,7 @@ TEST_CASE("Drum solos are read correctly from .chart")
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
-    REQUIRE(track.solos()[0].value == 200);
+    REQUIRE(track.solos(DrumSettings::default_settings())[0].value == 200);
 }
 
 TEST_CASE("Invalid drum notes are ignored")
@@ -977,7 +987,9 @@ TEST_CASE("Solos are read from .mid correctly")
 
     const auto song = Song::from_midi(midi, {});
 
-    REQUIRE(song.guitar_note_track(Difficulty::Expert).solos() == solos);
+    REQUIRE(song.guitar_note_track(Difficulty::Expert)
+                .solos(DrumSettings::default_settings())
+            == solos);
 }
 
 TEST_CASE("Star Power is read")
@@ -1036,7 +1048,7 @@ TEST_CASE(".mids with multiple solos and no Star Power have solos read as SP")
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.guitar_note_track(Difficulty::Expert);
 
-    REQUIRE(track.solos().empty());
+    REQUIRE(track.solos(DrumSettings::default_settings()).empty());
     REQUIRE(track.sp_phrases().size() == 2);
 }
 
