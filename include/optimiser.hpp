@@ -127,7 +127,7 @@ private:
     static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
     const ProcessedSong* m_song;
     const std::atomic<bool>* m_terminate;
-    const Second m_drum_fill_delay {2.0};
+    const Second m_drum_fill_delay;
     Second m_whammy_delay;
     std::vector<PointPtr> m_next_candidate_points;
 
@@ -158,7 +158,7 @@ private:
 
 public:
     Optimiser(const ProcessedSong* song, const std::atomic<bool>* terminate,
-              Second whammy_delay);
+              int speed, Second whammy_delay);
     // Return the optimal Star Power path.
     [[nodiscard]] Path optimal_path() const;
 };

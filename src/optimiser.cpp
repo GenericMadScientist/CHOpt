@@ -23,9 +23,11 @@
 #include "optimiser.hpp"
 
 Optimiser::Optimiser(const ProcessedSong* song,
-                     const std::atomic<bool>* terminate, Second whammy_delay)
+                     const std::atomic<bool>* terminate, int speed,
+                     Second whammy_delay)
     : m_song {song}
     , m_terminate {terminate}
+    , m_drum_fill_delay {200.0 / speed}
     , m_whammy_delay {whammy_delay}
 {
     if (m_song == nullptr || m_terminate == nullptr) {

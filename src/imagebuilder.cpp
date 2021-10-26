@@ -690,6 +690,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         } else {
             write("Optimising, please wait...");
             const Optimiser optimiser {&processed_track, terminate,
+                                       settings.speed,
                                        squeeze_settings.whammy_delay};
             path = optimiser.optimal_path();
             write(processed_track.path_summary(path).c_str());

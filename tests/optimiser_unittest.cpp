@@ -50,7 +50,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
                                                points.cbegin() + 2, Beat {0.0},
@@ -83,7 +83,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
             {points.cbegin() + 2, points.cbegin() + 2, Beat {0.0}, Beat {2.0},
@@ -108,7 +108,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
                                                points.cbegin() + 3, Beat {0.0},
@@ -131,7 +131,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 2,
                                                points.cbegin() + 3, Beat {0.0},
@@ -155,7 +155,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {{points.cbegin() + 3,
                                                points.cbegin() + 3, Beat {0.0},
@@ -180,7 +180,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
         const auto& points = track.points();
         std::vector<Activation> optimal_acts {
             {points.cbegin() + 2, points.cbegin() + 2, Beat {0.0},
@@ -210,7 +210,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 750);
@@ -233,7 +233,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 50);
@@ -257,7 +257,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost < 100);
@@ -279,7 +279,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.activations[0].sp_start >= Beat(15.0));
@@ -298,7 +298,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
         const auto opt_path = optimiser.optimal_path();
 
         REQUIRE(opt_path.score_boost == 150);
@@ -327,7 +327,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
         const auto& act = opt_path.activations[0];
@@ -351,7 +351,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
         const auto& act = opt_path.activations[0];
@@ -382,7 +382,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
         const auto& act = opt_path.activations[0];
@@ -409,7 +409,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -432,7 +432,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -455,7 +455,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChGuitarEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -478,7 +478,7 @@ TEST_CASE("optimal_path produces the correct path")
             ChGuitarEngine(),
             {},
             {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -500,7 +500,7 @@ TEST_CASE("optimal_path produces the correct path")
             ChGuitarEngine(),
             {},
             {}};
-        Optimiser optimiser {&track, &terminate, Second(0.1)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.1)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -522,7 +522,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChDrumEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -547,7 +547,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChDrumEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -571,7 +571,7 @@ TEST_CASE("optimal_path produces the correct path")
                              ChDrumEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
 
@@ -594,7 +594,28 @@ TEST_CASE("optimal_path produces the correct path")
                              ChDrumEngine(),
                              {},
                              {}};
-        Optimiser optimiser {&track, &terminate, Second(0.0)};
+        Optimiser optimiser {&track, &terminate, 100, Second(0.0)};
+
+        const auto opt_path = optimiser.optimal_path();
+        REQUIRE(opt_path.score_boost == 50);
+    }
+
+    SECTION("Drum activation delay is affected by speed")
+    {
+        std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {800}, {1000}};
+        std::vector<StarPower> phrases {{0, 1}, {192, 1}};
+        std::vector<DrumFill> fills {{800, 1}, {1000, 1}};
+        NoteTrack<DrumNoteColour> note_track {notes, phrases, {}, fills,
+                                              {},    {},      192};
+
+        ProcessedSong track {note_track,
+                             SyncTrack().speedup(200),
+                             SqueezeSettings::default_settings(),
+                             DrumSettings::default_settings(),
+                             ChDrumEngine(),
+                             {},
+                             {}};
+        Optimiser optimiser {&track, &terminate, 200, Second(0.0)};
 
         const auto opt_path = optimiser.optimal_path();
         REQUIRE(opt_path.score_boost == 50);
