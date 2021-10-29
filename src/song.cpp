@@ -571,6 +571,21 @@ static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
     return std::nullopt;
 }
 
+template <typename T, std::size_t N>
+static T
+colour_from_key_and_bounds(std::uint8_t key,
+                           const std::array<unsigned int, 4>& diff_ranges,
+                           const std::array<T, N>& colours)
+{
+    for (auto min : diff_ranges) {
+        if (key >= min && (key - min) < colours.size()) {
+            return colours.at(key - min);
+        }
+    }
+
+    throw ParseError("Invalid key for note");
+}
+
 template <typename T>
 static T colour_from_key(std::uint8_t key, bool from_five_lane)
 {
@@ -594,39 +609,20 @@ static T colour_from_key(std::uint8_t key, bool from_five_lane)
 
     if constexpr (std::is_same_v<T, NoteColour>) {
         constexpr std::array<unsigned int, 4> diff_ranges {96, 84, 72, 60};
-
-        for (auto min : diff_ranges) {
-            if (key >= min && (key - min) < NOTE_COLOURS.size()) {
-                return NOTE_COLOURS.at(key - min);
-            }
-        }
+        return colour_from_key_and_bounds(key, diff_ranges, NOTE_COLOURS);
     } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
         constexpr std::array<unsigned int, 4> diff_ranges {94, 82, 70, 58};
-
-        for (auto min : diff_ranges) {
-            if (key >= min && (key - min) < GHL_NOTE_COLOURS.size()) {
-                return GHL_NOTE_COLOURS.at(key - min);
-            }
-        }
+        return colour_from_key_and_bounds(key, diff_ranges, GHL_NOTE_COLOURS);
     } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
         constexpr std::array<unsigned int, 4> diff_ranges {95, 83, 71, 59};
-
-        if (!from_five_lane) {
-            for (auto min : diff_ranges) {
-                if (key >= min && (key - min) <= DRUM_NOTE_COLOURS.size()) {
-                    return DRUM_NOTE_COLOURS.at(key - min);
-                }
-            }
+        if (from_five_lane) {
+            return colour_from_key_and_bounds(key, diff_ranges,
+                                              FIVE_LANE_COLOURS);
         } else {
-            for (auto min : diff_ranges) {
-                if (key >= min && (key - min) <= FIVE_LANE_COLOURS.size()) {
-                    return FIVE_LANE_COLOURS.at(key - min);
-                }
-            }
+            return colour_from_key_and_bounds(key, diff_ranges,
+                                              DRUM_NOTE_COLOURS);
         }
     }
-
-    throw ParseError("Invalid key for note");
 }
 
 static bool is_open_event_sysex(const SysexEvent& event)
@@ -841,6 +837,26 @@ static void append_disco_flip(InstrumentMidiTrack<DrumNoteColour>& event_track,
     }
 }
 
+static bool is_five_lane_green_note(const TimedEvent& event)
+{
+    constexpr std::array<std::uint8_t, 4> GREEN_LANE_KEYS {65, 77, 89, 101};
+    constexpr int NOTE_OFF_ID = 0x80;
+    constexpr int NOTE_ON_ID = 0x90;
+    constexpr int UPPER_NIBBLE_MASK = 0xF0;
+
+    const auto* midi_event = std::get_if<MidiEvent>(&event.event);
+    if (midi_event == nullptr) {
+        return false;
+    }
+    const auto event_type = midi_event->status & UPPER_NIBBLE_MASK;
+    if (event_type != NOTE_ON_ID && event_type != NOTE_OFF_ID) {
+        return false;
+    }
+    const auto key = midi_event->data[0];
+    return std::find(GREEN_LANE_KEYS.cbegin(), GREEN_LANE_KEYS.cend(), key)
+        != GREEN_LANE_KEYS.cend();
+}
+
 template <typename T>
 static InstrumentMidiTrack<T>
 read_instrument_midi_track(const MidiTrack& midi_track)
@@ -851,21 +867,10 @@ read_instrument_midi_track(const MidiTrack& midi_track)
 
     bool from_five_lane = false;
     if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        for (const auto& event : midi_track.events) {
-            const auto* midi_event = std::get_if<MidiEvent>(&event.event);
-            if (midi_event == nullptr) {
-                continue;
-            }
-            const auto event_type = midi_event->status & UPPER_NIBBLE_MASK;
-            if (event_type != NOTE_ON_ID && event_type != NOTE_OFF_ID) {
-                continue;
-            }
-            const auto key = midi_event->data[0];
-            if (key == 65 || key == 77 || key == 89 || key == 101) {
-                from_five_lane = true;
-                break;
-            }
-        }
+        from_five_lane
+            = std::find_if(midi_track.events.cbegin(), midi_track.events.cend(),
+                           is_five_lane_green_note)
+            != midi_track.events.cend();
     }
 
     InstrumentMidiTrack<T> event_track;
@@ -1118,6 +1123,28 @@ public:
     }
 };
 
+// This is to deal with G cymbal + G tom from five lane being turned into G
+// cymbal + B tom. This combination cannot happen from a four lane chart.
+static void fix_double_greens(std::vector<Note<DrumNoteColour>>& notes)
+{
+    std::set<int> green_cymbal_positions;
+
+    for (const auto& note : notes) {
+        if (note.colour == DrumNoteColour::GreenCymbal) {
+            green_cymbal_positions.insert(note.position);
+        }
+    }
+
+    for (auto& note : notes) {
+        if (note.colour != DrumNoteColour::Green) {
+            continue;
+        }
+        if (green_cymbal_positions.count(note.position) != 0) {
+            note.colour = DrumNoteColour::Blue;
+        }
+    }
+}
+
 static std::map<Difficulty, NoteTrack<DrumNoteColour>>
 drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
@@ -1138,23 +1165,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
             notes[diff].push_back(
                 {pos, 0, tom_events.apply_tom_events(colour, pos)});
         }
-        // This is to deal with G cymbal + G tom from five lane being turned
-        // into G cymbal + B tom. This combination cannot happen from a four
-        // lane chart.
-        std::set<int> green_cymbal_positions;
-        for (const auto& note : notes[diff]) {
-            if (note.colour == DrumNoteColour::GreenCymbal) {
-                green_cymbal_positions.insert(note.position);
-            }
-        }
-        for (auto& note : notes[diff]) {
-            if (note.colour != DrumNoteColour::Green) {
-                continue;
-            }
-            if (green_cymbal_positions.count(note.position) != 0) {
-                note.colour = DrumNoteColour::Blue;
-            }
-        }
+        fix_double_greens(notes[diff]);
     }
 
     std::vector<StarPower> sp_phrases;
