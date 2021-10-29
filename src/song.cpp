@@ -589,32 +589,31 @@ colour_from_key_and_bounds(std::uint8_t key,
 template <typename T>
 static T colour_from_key(std::uint8_t key, bool from_five_lane)
 {
-    constexpr std::array NOTE_COLOURS {NoteColour::Green, NoteColour::Red,
-                                       NoteColour::Yellow, NoteColour::Blue,
-                                       NoteColour::Orange};
-    constexpr std::array GHL_NOTE_COLOURS {
-        GHLNoteColour::Open,     GHLNoteColour::WhiteLow,
-        GHLNoteColour::WhiteMid, GHLNoteColour::WhiteHigh,
-        GHLNoteColour::BlackLow, GHLNoteColour::BlackMid,
-        GHLNoteColour::BlackHigh};
-    constexpr std::array DRUM_NOTE_COLOURS {
-        DrumNoteColour::DoubleKick, DrumNoteColour::Kick,
-        DrumNoteColour::Red,        DrumNoteColour::YellowCymbal,
-        DrumNoteColour::BlueCymbal, DrumNoteColour::GreenCymbal};
-    constexpr std::array FIVE_LANE_COLOURS {
-        DrumNoteColour::DoubleKick, DrumNoteColour::Kick,
-        DrumNoteColour::Red,        DrumNoteColour::YellowCymbal,
-        DrumNoteColour::Blue,       DrumNoteColour::GreenCymbal,
-        DrumNoteColour::Green};
-
     if constexpr (std::is_same_v<T, NoteColour>) {
         constexpr std::array<unsigned int, 4> diff_ranges {96, 84, 72, 60};
+        constexpr std::array NOTE_COLOURS {NoteColour::Green, NoteColour::Red,
+                                           NoteColour::Yellow, NoteColour::Blue,
+                                           NoteColour::Orange};
         return colour_from_key_and_bounds(key, diff_ranges, NOTE_COLOURS);
     } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
         constexpr std::array<unsigned int, 4> diff_ranges {94, 82, 70, 58};
+        constexpr std::array GHL_NOTE_COLOURS {
+            GHLNoteColour::Open,     GHLNoteColour::WhiteLow,
+            GHLNoteColour::WhiteMid, GHLNoteColour::WhiteHigh,
+            GHLNoteColour::BlackLow, GHLNoteColour::BlackMid,
+            GHLNoteColour::BlackHigh};
         return colour_from_key_and_bounds(key, diff_ranges, GHL_NOTE_COLOURS);
     } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
         constexpr std::array<unsigned int, 4> diff_ranges {95, 83, 71, 59};
+        constexpr std::array DRUM_NOTE_COLOURS {
+            DrumNoteColour::DoubleKick, DrumNoteColour::Kick,
+            DrumNoteColour::Red,        DrumNoteColour::YellowCymbal,
+            DrumNoteColour::BlueCymbal, DrumNoteColour::GreenCymbal};
+        constexpr std::array FIVE_LANE_COLOURS {
+            DrumNoteColour::DoubleKick, DrumNoteColour::Kick,
+            DrumNoteColour::Red,        DrumNoteColour::YellowCymbal,
+            DrumNoteColour::Blue,       DrumNoteColour::GreenCymbal,
+            DrumNoteColour::Green};
         if (from_five_lane) {
             return colour_from_key_and_bounds(key, diff_ranges,
                                               FIVE_LANE_COLOURS);
