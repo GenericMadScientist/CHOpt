@@ -618,10 +618,8 @@ static T colour_from_key(std::uint8_t key, bool from_five_lane)
         if (from_five_lane) {
             return colour_from_key_and_bounds(key, diff_ranges,
                                               FIVE_LANE_COLOURS);
-        } else {
-            return colour_from_key_and_bounds(key, diff_ranges,
-                                              DRUM_NOTE_COLOURS);
         }
+        return colour_from_key_and_bounds(key, diff_ranges, DRUM_NOTE_COLOURS);
     }
 }
 
