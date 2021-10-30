@@ -548,7 +548,7 @@ TEST_CASE("Drum notes are read correctly from .chart")
         {},
         {},
         {},
-        {{192, 1, 0}, {384, 2, 0}, {384, 66, 0}, {576, 5, 0}, {768, 32, 0}},
+        {{192, 1, 0}, {384, 2, 0}, {384, 66, 0}, {768, 32, 0}},
         {},
         {}};
     std::vector<ChartSection> sections {expert_drums};
@@ -580,6 +580,27 @@ TEST_CASE("Drum solos are read correctly from .chart")
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
     REQUIRE(track.solos(DrumSettings::default_settings())[0].value == 200);
+}
+
+TEST_CASE("Fifth lane notes are read correctly from .chart")
+{
+    ChartSection expert_drums {"ExpertDrums",
+                               {},
+                               {},
+                               {},
+                               {{192, 5, 0}, {384, 4, 0}, {384, 5, 0}},
+                               {},
+                               {}};
+    std::vector<ChartSection> sections {expert_drums};
+    const Chart chart {sections};
+    std::vector<Note<DrumNoteColour>> notes {{192, 0, DrumNoteColour::Green},
+                                             {384, 0, DrumNoteColour::Blue},
+                                             {384, 0, DrumNoteColour::Green}};
+
+    const auto song = Song::from_chart(chart, {});
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    REQUIRE(track.notes() == notes);
 }
 
 TEST_CASE("Invalid drum notes are ignored")

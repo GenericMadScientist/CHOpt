@@ -310,6 +310,23 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
         }
     }
     if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        std::set<int> green_positions;
+        for (const auto& note : notes) {
+            if (note.colour == DrumNoteColour::Green) {
+                green_positions.insert(note.position);
+            }
+        }
+        for (const auto& note_event : section.note_events) {
+            if (note_event.fret != 5) {
+                continue;
+            }
+            if (green_positions.count(note_event.position) != 0) {
+                notes.push_back({note_event.position, 0, DrumNoteColour::Blue});
+            } else {
+                notes.push_back(
+                    {note_event.position, 0, DrumNoteColour::Green});
+            }
+        }
         notes = apply_cymbal_events(notes);
     }
 
