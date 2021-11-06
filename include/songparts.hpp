@@ -21,12 +21,12 @@
 
 #include <algorithm>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <vector>
 
 #include "settings.hpp"
+#include "timeconverter.hpp"
 
 enum class NoteColour { Green, Red, Yellow, Blue, Orange, Open };
 
@@ -50,17 +50,6 @@ enum class DrumNoteColour {
     GreenCymbal,
     Kick,
     DoubleKick
-};
-
-struct TimeSignature {
-    int position;
-    int numerator;
-    int denominator;
-};
-
-struct BPM {
-    int position;
-    int bpm;
 };
 
 template <typename T> struct Note {
@@ -99,14 +88,6 @@ struct DiscoFlip {
 struct BigRockEnding {
     int start;
     int end;
-};
-
-class ParseError : public std::runtime_error {
-public:
-    ParseError(const char* what)
-        : std::runtime_error {what}
-    {
-    }
 };
 
 // Invariants:
@@ -315,6 +296,25 @@ public:
         m_notes = std::move(merged_notes);
     }
 
+    void generate_drum_fills(const TimeConverter& converter)
+    {
+        if (m_notes.empty()) {
+            return;
+        }
+
+        const auto final_measure = converter.beats_to_measures(
+            Beat(m_notes.back().position / static_cast<double>(m_resolution)));
+        for (Measure m {1.0}; m <= final_measure; m += Measure(4.0)) {
+            const auto fill_start = static_cast<int>(
+                m_resolution
+                * converter.measures_to_beats(m - Measure(0.5)).value());
+            const auto fill_end = static_cast<int>(
+                m_resolution * converter.measures_to_beats(m).value());
+            m_drum_fills.push_back(
+                DrumFill {fill_start, fill_end - fill_start});
+        }
+    }
+
     [[nodiscard]] const std::vector<Note<T>>& notes() const { return m_notes; }
     [[nodiscard]] const std::vector<StarPower>& sp_phrases() const
     {
@@ -408,33 +408,6 @@ public:
         }
         return new_track;
     }
-};
-
-// Invariants:
-// bpms() are sorted by position.
-// bpms() never has two BPMs with the same position.
-// bpms() is never empty.
-// time_sigs() are sorted by position.
-// time_sigs() never has two TimeSignatures with the same position.
-// time_sigs() is never empty.
-class SyncTrack {
-private:
-    std::vector<TimeSignature> m_time_sigs;
-    std::vector<BPM> m_bpms;
-
-public:
-    SyncTrack()
-        : SyncTrack({}, {})
-    {
-    }
-    SyncTrack(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms);
-    [[nodiscard]] const std::vector<TimeSignature>& time_sigs() const
-    {
-        return m_time_sigs;
-    }
-    [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
-    // Return the SyncTrack for a speedup of speed% (normal speed is 100).
-    [[nodiscard]] SyncTrack speedup(int speed) const;
 };
 
 #endif

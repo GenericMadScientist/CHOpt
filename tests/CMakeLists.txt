@@ -38,7 +38,6 @@ package_add_test(
   "${SRC}/points.cpp"
   "${SRC}/processed.cpp"
   "${SRC}/song.cpp"
-  "${SRC}/songparts.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/stringutil.cpp"
   "${SRC}/timeconverter.cpp")
@@ -56,21 +55,18 @@ package_add_test(
   "${SRC}/optimiser.cpp"
   "${SRC}/points.cpp"
   "${SRC}/processed.cpp"
-  "${SRC}/songparts.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/stringutil.cpp"
   "${SRC}/timeconverter.cpp")
 
-package_add_test(
-  points_unittest points_unittest.cpp "${SRC}/points.cpp"
-  "${SRC}/songparts.cpp" "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")
+package_add_test(points_unittest points_unittest.cpp "${SRC}/points.cpp"
+                 "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")
 
 package_add_test(
   processed_unittest
   processed_unittest.cpp
   "${SRC}/points.cpp"
   "${SRC}/processed.cpp"
-  "${SRC}/songparts.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/stringutil.cpp"
   "${SRC}/timeconverter.cpp")
@@ -82,21 +78,19 @@ package_add_test(
   "${SRC}/ini.cpp"
   "${SRC}/midi.cpp"
   "${SRC}/song.cpp"
-  "${SRC}/songparts.cpp"
-  "${SRC}/stringutil.cpp")
+  "${SRC}/stringutil.cpp"
+  "${SRC}/timeconverter.cpp")
 
 package_add_test(songparts_unittest songparts_unittest.cpp
-                 "${SRC}/songparts.cpp")
+                 "${SRC}/timeconverter.cpp")
 
-package_add_test(
-  sp_unittest sp_unittest.cpp "${SRC}/songparts.cpp" "${SRC}/sp.cpp"
-  "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")
+package_add_test(sp_unittest sp_unittest.cpp "${SRC}/sp.cpp"
+                 "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")
 
 package_add_test(stringutil_unittest stringutil_unittest.cpp
                  "${SRC}/stringutil.cpp")
 
 package_add_test(time_unittest time_unittest.cpp)
 
-package_add_test(
-  timeconverter_unittest timeconverter_unittest.cpp "${SRC}/songparts.cpp"
-  "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")
+package_add_test(timeconverter_unittest timeconverter_unittest.cpp
+                 "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")

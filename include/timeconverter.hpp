@@ -19,11 +19,57 @@
 #ifndef CHOPT_TIMECONVERTER_HPP
 #define CHOPT_TIMECONVERTER_HPP
 
+#include <stdexcept>
 #include <vector>
 
 #include "engine.hpp"
-#include "songparts.hpp"
 #include "time.hpp"
+
+struct TimeSignature {
+    int position;
+    int numerator;
+    int denominator;
+};
+
+struct BPM {
+    int position;
+    int bpm;
+};
+
+class ParseError : public std::runtime_error {
+public:
+    ParseError(const char* what)
+        : std::runtime_error {what}
+    {
+    }
+};
+
+// Invariants:
+// bpms() are sorted by position.
+// bpms() never has two BPMs with the same position.
+// bpms() is never empty.
+// time_sigs() are sorted by position.
+// time_sigs() never has two TimeSignatures with the same position.
+// time_sigs() is never empty.
+class SyncTrack {
+private:
+    std::vector<TimeSignature> m_time_sigs;
+    std::vector<BPM> m_bpms;
+
+public:
+    SyncTrack()
+        : SyncTrack({}, {})
+    {
+    }
+    SyncTrack(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms);
+    [[nodiscard]] const std::vector<TimeSignature>& time_sigs() const
+    {
+        return m_time_sigs;
+    }
+    [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
+    // Return the SyncTrack for a speedup of speed% (normal speed is 100).
+    [[nodiscard]] SyncTrack speedup(int speed) const;
+};
 
 class TimeConverter {
 private:

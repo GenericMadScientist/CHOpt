@@ -20,11 +20,6 @@
 
 #include "songparts.hpp"
 
-static bool operator==(const BPM& lhs, const BPM& rhs)
-{
-    return std::tie(lhs.position, lhs.bpm) == std::tie(rhs.position, rhs.bpm);
-}
-
 template <typename T>
 static bool operator==(const Note<T>& lhs, const Note<T>& rhs)
 {
@@ -38,10 +33,10 @@ static bool operator==(const Solo& lhs, const Solo& rhs)
         == std::tie(rhs.start, rhs.end, rhs.value);
 }
 
-static bool operator==(const TimeSignature& lhs, const TimeSignature& rhs)
+static bool operator==(const DrumFill& lhs, const DrumFill& rhs)
 {
-    return std::tie(lhs.position, lhs.numerator, lhs.denominator)
-        == std::tie(rhs.position, rhs.numerator, rhs.denominator);
+    return std::tie(lhs.position, lhs.length)
+        == std::tie(rhs.position, rhs.length);
 }
 
 TEST_CASE("NoteTrack ctor maintains invariants")
@@ -158,6 +153,23 @@ TEST_CASE("Solos do take into account drum settings")
     std::vector<Solo> required_solos {{0, 1, 100}};
 
     REQUIRE(track.solos({false, false, true}) == required_solos);
+}
+
+TEST_CASE("Automatic drum activation zone generation is correct")
+{
+    SECTION("Automatic zones are created")
+    {
+        std::vector<Note<DrumNoteColour>> notes {
+            {768}, {1536}, {2304}, {3072}, {3840}};
+        TimeConverter converter {{}, 192, ChDrumEngine(), {}};
+
+        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+        std::vector<DrumFill> fills {{384, 384}, {3456, 384}};
+
+        track.generate_drum_fills(converter);
+
+        REQUIRE(track.drum_fills() == fills);
+    }
 }
 
 TEST_CASE("Base score for average multiplier is correct")
@@ -298,101 +310,4 @@ TEST_CASE("snap_chords is correct")
         REQUIRE(new_notes[0].position == 0);
         REQUIRE(new_notes[1].position == 0);
     }
-}
-
-TEST_CASE("SyncTrack ctor maintains invariants")
-{
-    SECTION("BPMs are sorted by position")
-    {
-        SyncTrack track {{}, {{0, 150000}, {2000, 200000}, {1000, 225000}}};
-        std::vector<BPM> expected_bpms {
-            {0, 150000}, {1000, 225000}, {2000, 200000}};
-
-        REQUIRE(track.bpms() == expected_bpms);
-    }
-
-    SECTION("No two BPMs have the same position")
-    {
-        SyncTrack track {{}, {{0, 150000}, {0, 200000}}};
-        std::vector<BPM> expected_bpms {{0, 200000}};
-
-        REQUIRE(track.bpms() == expected_bpms);
-    }
-
-    SECTION("bpms() is never empty")
-    {
-        SyncTrack track;
-        std::vector<BPM> expected_bpms {{0, 120000}};
-
-        REQUIRE(track.bpms() == expected_bpms);
-    }
-
-    SECTION("TimeSignatures are sorted by position")
-    {
-        SyncTrack track {{{0, 4, 4}, {2000, 3, 3}, {1000, 2, 2}}, {}};
-        std::vector<TimeSignature> expected_tses {
-            {0, 4, 4}, {1000, 2, 2}, {2000, 3, 3}};
-
-        REQUIRE(track.time_sigs() == expected_tses);
-    }
-
-    SECTION("No two TimeSignatures have the same position")
-    {
-        SyncTrack track {{{0, 4, 4}, {0, 3, 4}}, {}};
-        std::vector<TimeSignature> expected_tses {{0, 3, 4}};
-
-        REQUIRE(track.time_sigs() == expected_tses);
-    }
-
-    SECTION("time_sigs() is never empty")
-    {
-        SyncTrack track;
-        std::vector<TimeSignature> expected_tses {{0, 4, 4}};
-
-        REQUIRE(track.time_sigs() == expected_tses);
-    }
-
-    SECTION("BPMs must not be zero or negative")
-    {
-        REQUIRE_THROWS_AS(([&] {
-                              return SyncTrack {{}, {{192, 0}}};
-                          })(),
-                          ParseError);
-        REQUIRE_THROWS_AS(([&] {
-                              return SyncTrack {{}, {{192, -1}}};
-                          })(),
-                          ParseError);
-    }
-
-    SECTION("Time Signatures must be positive/positive")
-    {
-        REQUIRE_THROWS_AS(([&] {
-                              return SyncTrack {{{0, 0, 4}}, {}};
-                          })(),
-                          ParseError);
-        REQUIRE_THROWS_AS(([&] {
-                              return SyncTrack {{{0, -1, 4}}, {}};
-                          })(),
-                          ParseError);
-        REQUIRE_THROWS_AS(([&] {
-                              return SyncTrack {{{0, 4, 0}}, {}};
-                          })(),
-                          ParseError);
-        REQUIRE_THROWS_AS(([&] {
-                              return SyncTrack {{{0, 4, -1}}, {}};
-                          })(),
-                          ParseError);
-    }
-}
-
-TEST_CASE("Speedup returns the correct SyncTrack")
-{
-    const SyncTrack sync_track {{{0, 4, 4}}, {{0, 120000}, {192, 240000}}};
-    const std::vector<BPM> expected_bpms {{0, 180000}, {192, 360000}};
-    const std::vector<TimeSignature> expected_tses {{0, 4, 4}};
-
-    const auto speedup = sync_track.speedup(150);
-
-    REQUIRE(speedup.bpms() == expected_bpms);
-    REQUIRE(speedup.time_sigs() == expected_tses);
 }
