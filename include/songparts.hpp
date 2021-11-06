@@ -302,16 +302,34 @@ public:
             return;
         }
 
+        std::vector<std::tuple<Second, int>> note_times;
+        for (const auto& n : m_notes) {
+            const auto seconds = converter.beats_to_seconds(
+                Beat(n.position / static_cast<double>(m_resolution)));
+            note_times.push_back({seconds, n.position});
+        }
         const auto final_measure = converter.beats_to_measures(
             Beat(m_notes.back().position / static_cast<double>(m_resolution)));
         for (Measure m {1.0}; m <= final_measure; m += Measure(4.0)) {
+            const auto fill_seconds = converter.measures_to_seconds(m);
+            bool exists_close_note = false;
+            int close_note_position = 0;
+            for (const auto& [s, pos] : note_times) {
+                const auto s_diff = s - fill_seconds;
+                if (s_diff <= Second(0.25) && s_diff >= Second(-0.25)) {
+                    exists_close_note = true;
+                    close_note_position = pos;
+                    break;
+                }
+            }
+            if (!exists_close_note) {
+                continue;
+            }
             const auto fill_start = static_cast<int>(
                 m_resolution
                 * converter.measures_to_beats(m - Measure(0.5)).value());
-            const auto fill_end = static_cast<int>(
-                m_resolution * converter.measures_to_beats(m).value());
             m_drum_fills.push_back(
-                DrumFill {fill_start, fill_end - fill_start});
+                DrumFill {fill_start, close_note_position - fill_start});
         }
     }
 

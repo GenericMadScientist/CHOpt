@@ -170,6 +170,20 @@ TEST_CASE("Automatic drum activation zone generation is correct")
 
         REQUIRE(track.drum_fills() == fills);
     }
+
+    SECTION("Automatic zones have 250ms of leniency")
+    {
+        std::vector<Note<DrumNoteColour>> notes {
+            {672}, {3936}, {6815}, {10081}};
+        TimeConverter converter {{}, 192, ChDrumEngine(), {}};
+
+        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+        std::vector<DrumFill> fills {{384, 288}, {3456, 480}};
+
+        track.generate_drum_fills(converter);
+
+        REQUIRE(track.drum_fills() == fills);
+    }
 }
 
 TEST_CASE("Base score for average multiplier is correct")
