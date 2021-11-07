@@ -310,7 +310,8 @@ public:
         }
         const auto final_measure = converter.beats_to_measures(
             Beat(m_notes.back().position / static_cast<double>(m_resolution)));
-        for (Measure m {1.0}; m <= final_measure; m += Measure(4.0)) {
+        Measure m {1.0};
+        while (m <= final_measure) {
             const auto fill_seconds = converter.measures_to_seconds(m);
             bool exists_close_note = false;
             int close_note_position = 0;
@@ -323,6 +324,7 @@ public:
                 }
             }
             if (!exists_close_note) {
+                m += Measure(1.0);
                 continue;
             }
             const auto fill_start = static_cast<int>(
@@ -330,6 +332,7 @@ public:
                 * converter.measures_to_beats(m - Measure(0.5)).value());
             m_drum_fills.push_back(
                 DrumFill {fill_start, close_note_position - fill_start});
+            m += Measure(4.0);
         }
     }
 

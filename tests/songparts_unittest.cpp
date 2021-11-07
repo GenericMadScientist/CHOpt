@@ -184,6 +184,19 @@ TEST_CASE("Automatic drum activation zone generation is correct")
 
         REQUIRE(track.drum_fills() == fills);
     }
+
+    SECTION("Automatic zones handle skipped measures correctly")
+    {
+        std::vector<Note<DrumNoteColour>> notes {{768}, {4608}};
+        TimeConverter converter {{}, 192, ChDrumEngine(), {}};
+
+        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+        std::vector<DrumFill> fills {{384, 384}, {4224, 384}};
+
+        track.generate_drum_fills(converter);
+
+        REQUIRE(track.drum_fills() == fills);
+    }
 }
 
 TEST_CASE("Base score for average multiplier is correct")
