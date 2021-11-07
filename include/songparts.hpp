@@ -20,6 +20,7 @@
 #define CHOPT_SONGPARTS_HPP
 
 #include <algorithm>
+#include <cstdlib>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -315,14 +316,24 @@ public:
         Measure m {1.0};
         while (m <= measure_bound) {
             const auto fill_seconds = converter.measures_to_seconds(m);
+            const auto measure_ticks = static_cast<int>(
+                m_resolution * converter.measures_to_beats(m).value());
             bool exists_close_note = false;
             int close_note_position = 0;
             for (const auto& [s, pos] : note_times) {
                 const auto s_diff = s - fill_seconds;
-                if (s_diff <= Second(0.25) && s_diff >= Second(-0.25)) {
+                if (s_diff > Second(0.25)) {
+                    break;
+                }
+                if (s_diff < Second(-0.25)) {
+                    continue;
+                }
+                if (!exists_close_note) {
                     exists_close_note = true;
                     close_note_position = pos;
-                    break;
+                } else if (std::abs(measure_ticks - pos)
+                           <= std::abs(measure_ticks - close_note_position)) {
+                    close_note_position = pos;
                 }
             }
             if (!exists_close_note) {
