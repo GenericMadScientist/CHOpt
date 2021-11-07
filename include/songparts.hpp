@@ -329,9 +329,13 @@ public:
                 m += Measure(1.0);
                 continue;
             }
+            const auto m_seconds = converter.measures_to_seconds(m);
+            const auto prev_m_seconds
+                = converter.measures_to_seconds(m - Measure(1.0));
+            const auto mid_m_seconds = (m_seconds + prev_m_seconds) * 0.5;
             const auto fill_start = static_cast<int>(
                 m_resolution
-                * converter.measures_to_beats(m - Measure(0.5)).value());
+                * converter.seconds_to_beats(mid_m_seconds).value());
             m_drum_fills.push_back(
                 DrumFill {fill_start, close_note_position - fill_start});
             m += Measure(4.0);

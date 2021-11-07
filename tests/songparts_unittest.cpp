@@ -210,6 +210,20 @@ TEST_CASE("Automatic drum activation zone generation is correct")
 
         REQUIRE(track.drum_fills() == fills);
     }
+
+    SECTION("Automatic zones are half a measure long, according to seconds")
+    {
+        std::vector<Note<DrumNoteColour>> notes {{768}};
+        SyncTrack sync_track {{}, {{576, 40000}}};
+        TimeConverter converter {sync_track, 192, ChDrumEngine(), {}};
+
+        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+        std::vector<DrumFill> fills {{576, 192}};
+
+        track.generate_drum_fills(converter);
+
+        REQUIRE(track.drum_fills() == fills);
+    }
 }
 
 TEST_CASE("Base score for average multiplier is correct")
