@@ -197,6 +197,19 @@ TEST_CASE("Automatic drum activation zone generation is correct")
 
         REQUIRE(track.drum_fills() == fills);
     }
+
+    SECTION("The last automatic zone exists even if the note is early")
+    {
+        std::vector<Note<DrumNoteColour>> notes {{760}};
+        TimeConverter converter {{}, 192, ChDrumEngine(), {}};
+
+        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+        std::vector<DrumFill> fills {{384, 376}};
+
+        track.generate_drum_fills(converter);
+
+        REQUIRE(track.drum_fills() == fills);
+    }
 }
 
 TEST_CASE("Base score for average multiplier is correct")

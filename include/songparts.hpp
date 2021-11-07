@@ -308,10 +308,12 @@ public:
                 Beat(n.position / static_cast<double>(m_resolution)));
             note_times.push_back({seconds, n.position});
         }
-        const auto final_measure = converter.beats_to_measures(
+        const auto final_note_s = converter.beats_to_seconds(
             Beat(m_notes.back().position / static_cast<double>(m_resolution)));
+        const auto measure_bound
+            = converter.seconds_to_measures(final_note_s + Second(0.25));
         Measure m {1.0};
-        while (m <= final_measure) {
+        while (m <= measure_bound) {
             const auto fill_seconds = converter.measures_to_seconds(m);
             bool exists_close_note = false;
             int close_note_position = 0;
