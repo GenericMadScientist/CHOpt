@@ -641,6 +641,15 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         new_track = track.trim_sustains(settings.speed);
     }
     new_track = new_track.snap_chords(settings.engine->snap_gap());
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        if (!settings.engine->is_rock_band()
+            && new_track.drum_fills().empty()) {
+            new_track.generate_drum_fills({song.sync_track(),
+                                           new_track.resolution(),
+                                           *settings.engine,
+                                           {}});
+        }
+    }
     const auto sync_track = song.sync_track().speedup(settings.speed);
 
     auto builder = build_with_drum_params(new_track, sync_track, settings);
