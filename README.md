@@ -22,7 +22,7 @@ graphical version has the same options as the command-line version and is
 self-explanatory enough. As for the command-line version, an example usage to
 path Trogdor on Hard and save the output to trogdor_path.png is
 
-```
+```bat
 > CHOpt.exe -f trogdor.chart -d hard -o trogdor_path.png
 ```
 
@@ -61,7 +61,7 @@ Change the four variables then run the script. The simplest way to do that is
 probably to open the folder the script is in, double click the top bar and type
 in cmd then enter to open a command prompt in that folder, then run the command
 
-```
+```bat
 > powershell -ExecutionPolicy Bypass -File setlist.ps1
 ```
 
