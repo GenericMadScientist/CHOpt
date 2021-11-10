@@ -178,7 +178,7 @@ TEST_CASE("Automatic drum activation zone generation is correct")
         TimeConverter converter {{}, 192, ChDrumEngine(), {}};
 
         NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<DrumFill> fills {{384, 288}, {3456, 480}};
+        std::vector<DrumFill> fills {{384, 384}, {3456, 384}};
 
         track.generate_drum_fills(converter);
 
@@ -204,7 +204,7 @@ TEST_CASE("Automatic drum activation zone generation is correct")
         TimeConverter converter {{}, 192, ChDrumEngine(), {}};
 
         NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<DrumFill> fills {{384, 376}};
+        std::vector<DrumFill> fills {{384, 384}};
 
         track.generate_drum_fills(converter);
 
@@ -225,14 +225,14 @@ TEST_CASE("Automatic drum activation zone generation is correct")
         REQUIRE(track.drum_fills() == fills);
     }
 
-    SECTION("Fill ends are snapped to note closest to measure")
+    SECTION("Fill ends remain snapped to measure")
     {
         std::vector<Note<DrumNoteColour>> notes {{758},  {770},  {3830},
                                                  {3860}, {6900}, {6924}};
         TimeConverter converter {{}, 192, ChDrumEngine(), {}};
 
         NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<DrumFill> fills {{384, 386}, {3456, 374}, {6528, 396}};
+        std::vector<DrumFill> fills {{384, 384}, {3456, 384}, {6528, 384}};
 
         track.generate_drum_fills(converter);
 

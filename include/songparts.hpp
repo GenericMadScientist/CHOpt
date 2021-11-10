@@ -348,7 +348,7 @@ public:
                 m_resolution
                 * converter.seconds_to_beats(mid_m_seconds).value());
             m_drum_fills.push_back(
-                DrumFill {fill_start, close_note_position - fill_start});
+                DrumFill {fill_start, measure_ticks - fill_start});
             m += Measure(4.0);
         }
     }
