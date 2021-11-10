@@ -175,6 +175,26 @@ append_note_points(InputIt first, InputIt last, InputIt note_start,
     }
 }
 
+static std::vector<Point>::iterator closest_point(std::vector<Point>& points,
+                                                  Beat fill_end)
+{
+    assert(!points.empty()); // NOLINT
+    auto nearest = points.begin();
+    auto best_gap = std::abs((nearest->position.beat - fill_end).value());
+    for (auto p = std::next(points.begin()); p < points.end(); ++p) {
+        if (p->position.beat <= nearest->position.beat) {
+            continue;
+        }
+        const auto new_gap = std::abs((p->position.beat - fill_end).value());
+        if (new_gap > best_gap) {
+            break;
+        }
+        nearest = p;
+        best_gap = new_gap;
+    }
+    return nearest;
+}
+
 static bool is_kick_colour(DrumNoteColour colour)
 {
     return colour == DrumNoteColour::Kick
@@ -185,40 +205,33 @@ static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
                                        const TimeConverter& converter,
                                        std::vector<Point>& points)
 {
+    if (points.empty()) {
+        return;
+    }
     for (auto fill : track.drum_fills()) {
         const Beat fill_start {fill.position
                                / static_cast<double>(track.resolution())};
         const Beat fill_end {(fill.position + fill.length)
                              / static_cast<double>(track.resolution())};
-        const auto earliest
-            = std::find_if(points.begin(), points.end(), [&](auto p) {
-                  return p.position.beat >= fill_start;
-              });
-        const auto earliest_after
-            = std::find_if(earliest, points.end(),
-                           [&](auto p) { return p.position.beat > fill_end; });
-        if (earliest == earliest_after) {
-            continue;
-        }
-        const auto last_note = std::prev(std::find_if(
-            track.notes().cbegin(), track.notes().cend(), [&](auto n) {
-                return n.position > (fill.position + fill.length);
-            }));
-        auto first_note = last_note;
-        bool has_non_kick = !is_kick_colour(last_note->colour);
-        while (!has_non_kick && first_note > track.notes().cbegin()
-               && std::prev(first_note)->position == last_note->position) {
-            --first_note;
-            has_non_kick = !is_kick_colour(first_note->colour);
+        const auto best_point = closest_point(points, fill_end);
+        bool has_non_kick = false;
+        for (const auto& note : track.notes()) {
+            if (is_kick_colour(note.colour)) {
+                continue;
+            }
+            const Beat note_position {
+                note.position / static_cast<double>(track.resolution())};
+            if (note_position < best_point->position.beat) {
+                continue;
+            }
+            if (note_position > best_point->position.beat) {
+                break;
+            }
+            has_non_kick = true;
+            break;
         }
         if (has_non_kick) {
-            auto first_point = std::prev(earliest_after);
-            while (first_point > points.begin()
-                   && std::prev(first_point)->position.beat
-                       >= std::prev(earliest_after)->position.beat) {
-                --first_point;
-            }
-            first_point->fill_start = converter.beats_to_seconds(fill_start);
+            best_point->fill_start = converter.beats_to_seconds(fill_start);
         }
     }
 }

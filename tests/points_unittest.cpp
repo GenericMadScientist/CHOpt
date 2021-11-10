@@ -886,3 +886,39 @@ TEST_CASE("Fills ending in a multi-note have the activation attached to the "
     REQUIRE(begin->fill_start == Second(0.0));
     REQUIRE(!(begin + 1)->fill_start.has_value());
 }
+
+TEST_CASE("Fills are attached to the nearest ending point")
+{
+    std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {370}, {384}};
+    std::vector<DrumFill> fills {{0, 2}, {193, 5}, {377, 4}};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
+    PointSet points {track,
+                     {{}, 192, ChDrumEngine(), {}},
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     ChDrumEngine()};
+    const auto begin = points.cbegin();
+
+    REQUIRE(begin->fill_start.has_value());
+    REQUIRE((begin + 1)->fill_start.has_value());
+    REQUIRE(!(begin + 2)->fill_start.has_value());
+    REQUIRE((begin + 3)->fill_start.has_value());
+}
+
+TEST_CASE("Fills attach to later point in case of a tie")
+{
+    std::vector<Note<DrumNoteColour>> notes {{0}, {192}};
+    std::vector<DrumFill> fills {{0, 96}};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
+    PointSet points {track,
+                     {{}, 192, ChDrumEngine(), {}},
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     ChDrumEngine()};
+    const auto begin = points.cbegin();
+
+    REQUIRE(!begin->fill_start.has_value());
+    REQUIRE((begin + 1)->fill_start.has_value());
+}
