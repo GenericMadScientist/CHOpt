@@ -315,6 +315,48 @@ void ImageBuilder::add_bre(const BigRockEnding& bre, int resolution,
                               bre.end / static_cast<double>(resolution));
 }
 
+static bool is_kick_colour(DrumNoteColour colour)
+{
+    return colour == DrumNoteColour::Kick
+        || colour == DrumNoteColour::DoubleKick;
+}
+
+static bool is_fill_active(const std::vector<Note<DrumNoteColour>>& notes,
+                           DrumFill fill)
+{
+    if (notes.empty()) {
+        return false;
+    }
+    const auto fill_end = fill.position + fill.length;
+    auto best_position = notes.front().position;
+    auto has_non_kick = !is_kick_colour(notes.front().colour);
+    for (auto i = 1U; i < notes.size(); ++i) {
+        if (std::abs(fill_end - notes[i].position)
+            > std::abs(fill_end - best_position)) {
+            break;
+        }
+        if (notes[i].position == best_position) {
+            has_non_kick |= !is_kick_colour(notes[i].colour);
+        } else {
+            best_position = notes[i].position;
+            has_non_kick = !is_kick_colour(notes[i].colour);
+        }
+    }
+    return has_non_kick;
+}
+
+void ImageBuilder::add_drum_fills(const NoteTrack<DrumNoteColour>& track)
+{
+    const auto resolution = static_cast<double>(track.resolution());
+    for (auto fill : track.drum_fills()) {
+        if (is_fill_active(track.notes(), fill)) {
+            m_fill_ranges.emplace_back(fill.position / resolution,
+                                       (fill.position + fill.length)
+                                           / resolution);
+        }
+    }
+}
+
 void ImageBuilder::add_measure_values(const PointSet& points,
                                       const TimeConverter& converter,
                                       const Path& path)
@@ -659,6 +701,10 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         builder.add_sp_phrases(new_track, song.unison_phrase_positions());
     } else {
         builder.add_sp_phrases(new_track, {});
+    }
+
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        builder.add_drum_fills(track);
     }
 
     if (settings.draw_bpms) {

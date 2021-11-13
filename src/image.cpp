@@ -752,6 +752,12 @@ Image::Image(const ImageBuilder& builder)
                                   RANGE_OPACITY / 2);
     }
 
+    for (const auto& range : builder.fill_ranges()) {
+        m_impl->colour_beat_range(builder, pink, range,
+                                  {-SOLO_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT},
+                                  RANGE_OPACITY / 2);
+    }
+
     for (const auto& range : builder.unison_ranges()) {
         m_impl->colour_beat_range(builder, yellow, range, {-SOLO_HEIGHT, 0},
                                   RANGE_OPACITY / 2);

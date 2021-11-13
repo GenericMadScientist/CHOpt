@@ -344,6 +344,28 @@ TEST_CASE("Green ranges for drums SP phrases are added correctly")
     REQUIRE(builder.green_ranges() == expected_green_ranges);
 }
 
+TEST_CASE("Drum fills are drawn with add_drum_fills")
+{
+    NoteTrack<DrumNoteColour> track {
+        {{288, 0, DrumNoteColour::Red}}, {}, {}, {{192, 96}}, {}, {}, 192};
+    ImageBuilder builder {track, {}, DrumSettings::default_settings()};
+    builder.add_drum_fills(track);
+
+    std::vector<std::tuple<double, double>> expected_fill_ranges {{1.0, 1.5}};
+
+    REQUIRE(builder.fill_ranges() == expected_fill_ranges);
+}
+
+TEST_CASE("Drum fills cancelled by a kick are not drawn")
+{
+    NoteTrack<DrumNoteColour> track {
+        {{288, 0, DrumNoteColour::Kick}}, {}, {}, {{192, 96}}, {}, {}, 192};
+    ImageBuilder builder {track, {}, DrumSettings::default_settings()};
+    builder.add_drum_fills(track);
+
+    REQUIRE(builder.fill_ranges().empty());
+}
+
 TEST_CASE("Double kicks only appear with enable_double_kick")
 {
     NoteTrack<DrumNoteColour> track {

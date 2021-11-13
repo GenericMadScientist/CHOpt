@@ -71,6 +71,7 @@ private:
     std::vector<std::tuple<double, double>> m_yellow_ranges;
     std::vector<std::tuple<double, double>> m_solo_ranges;
     std::vector<std::tuple<double, double>> m_bre_ranges;
+    std::vector<std::tuple<double, double>> m_fill_ranges;
     std::vector<std::tuple<double, double>> m_unison_ranges;
     float m_activation_opacity {0.33F};
     int m_total_score {0};
@@ -86,6 +87,7 @@ public:
     void add_bpms(const SyncTrack& sync_track, int resolution);
     void add_bre(const BigRockEnding& bre, int resolution,
                  const TimeConverter& converter);
+    void add_drum_fills(const NoteTrack<DrumNoteColour>& track);
     void add_measure_values(const PointSet& points,
                             const TimeConverter& converter, const Path& path);
     void add_solo_sections(const std::vector<Solo>& solos, int resolution);
@@ -118,16 +120,21 @@ public:
     {
         return m_blue_ranges;
     }
+    [[nodiscard]] const std::vector<std::tuple<double, double>>& bpms() const
+    {
+        return m_bpms;
+    }
     [[nodiscard]] const std::vector<std::tuple<double, double>>&
     bre_ranges() const
     {
         return m_bre_ranges;
     }
-    [[nodiscard]] const std::vector<std::tuple<double, double>>& bpms() const
-    {
-        return m_bpms;
-    }
     [[nodiscard]] const std::string& charter() const { return m_charter; }
+    [[nodiscard]] const std::vector<std::tuple<double, double>>&
+    fill_ranges() const
+    {
+        return m_fill_ranges;
+    }
     [[nodiscard]] const std::vector<std::tuple<double, double>>&
     green_ranges() const
     {
