@@ -704,7 +704,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     }
 
     if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        builder.add_drum_fills(track);
+        builder.add_drum_fills(new_track);
     }
 
     if (settings.draw_bpms) {
