@@ -1278,6 +1278,28 @@ TEST_CASE("Disco flips are read correctly from .mid")
     REQUIRE(track.disco_flips() == flips);
 }
 
+TEST_CASE("Missing disco flip end event just ends at MAX_INT")
+{
+    MidiTrack note_track {
+        {{0,
+          {MetaEvent {
+              3,
+              {0x50, 0x41, 0x52, 0x54, 0x20, 0x44, 0x52, 0x55, 0x4D, 0x53}}}},
+         {15,
+          {MetaEvent {1,
+                      {0x5B, 0x6D, 0x69, 0x78, 0x20, 0x33, 0x20, 0x64, 0x72,
+                       0x75, 0x6D, 0x73, 0x30, 0x64, 0x5D}}}},
+         {45, {MidiEvent {0x90, {98, 64}}}},
+         {65, {MidiEvent {0x80, {98, 0}}}}}};
+    const Midi midi {192, {note_track}};
+    const auto song = Song::from_midi(midi, {});
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    std::vector<DiscoFlip> flips {{15, 2147483632}};
+
+    REQUIRE(track.disco_flips() == flips);
+}
+
 TEST_CASE("Drum 5-lane -> 4-lane conversion is done from .mid")
 {
     MidiTrack note_track {{{0,

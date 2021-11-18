@@ -19,6 +19,7 @@
 #include <climits>
 #include <filesystem>
 #include <iterator>
+#include <limits>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -937,6 +938,15 @@ read_instrument_midi_track(const MidiTrack& midi_track)
             break;
         }
     }
+
+    event_track.disco_flip_off_events.at(Difficulty::Easy)
+        .push_back({std::numeric_limits<int>::max(), ++rank});
+    event_track.disco_flip_off_events.at(Difficulty::Medium)
+        .push_back({std::numeric_limits<int>::max(), ++rank});
+    event_track.disco_flip_off_events.at(Difficulty::Hard)
+        .push_back({std::numeric_limits<int>::max(), ++rank});
+    event_track.disco_flip_off_events.at(Difficulty::Expert)
+        .push_back({std::numeric_limits<int>::max(), ++rank});
 
     if (event_track.sp_on_events.empty()
         && event_track.solo_on_events.size() > 1) {
