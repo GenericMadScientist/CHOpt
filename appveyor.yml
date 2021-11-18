@@ -8,7 +8,7 @@ environment:
     - job_name: Windows (MSVC, tests, and static analysis)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     - job_name: Mac OSX (Clang)
-      APPVEYOR_BUILD_WORKER_IMAGE: macOS
+      APPVEYOR_BUILD_WORKER_IMAGE: macOS-BigSur
     - job_name: Linux (GCC)
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
 
@@ -49,7 +49,7 @@ for:
 
     build_script:
     - sh: brew install libpng
-    - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DQt6_DIR=$HOME/Qt/6.1.2/macos/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.1.2/macos/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.1.2/macos/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.1.2/macos/lib/cmake/Qt6WidgetsTools ..
+    - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DQt6_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
   -
@@ -60,5 +60,5 @@ for:
     build_script:
     - sh: sudo apt update
     - sh: sudo apt -y install libgl1-mesa-dev
-    - sh: cmake -DCMAKE_CXX_COMPILER=g++-9 -DQt6_DIR=$HOME/Qt/6.1.2/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.1.2/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.1.2/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.1.2/gcc_64/lib/cmake/Qt6WidgetsTools ..
+    - sh: cmake -DCMAKE_CXX_COMPILER=g++-9 -DQt6_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
