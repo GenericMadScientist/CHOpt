@@ -200,6 +200,10 @@ Settings from_args(int argc, char** argv)
         .help("disable pro drums")
         .default_value(false)
         .implicit_value(true);
+    program.add_argument("--enable-dynamics")
+        .help("enable double points for ghost and accented notes")
+        .default_value(false)
+        .implicit_value(true);
     program.add_argument("--engine")
         .default_value(std::string {"ch"})
         .help("engine, options are ch, rb, and rb3, defaults to ch");
@@ -261,6 +265,8 @@ Settings from_args(int argc, char** argv)
         = !program.get<bool>("--no-double-kick");
     settings.drum_settings.disable_kick = program.get<bool>("--no-kick");
     settings.drum_settings.pro_drums = !program.get<bool>("--no-pro-drums");
+    settings.drum_settings.enable_dynamics
+        = program.get<bool>("--enable-dynamics");
 
     const auto squeeze = program.get<int>("--squeeze");
     auto early_whammy = squeeze;

@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -66,6 +67,46 @@ enum class DrumNoteColour {
     Kick,
     DoubleKick
 };
+
+constexpr DrumNoteColour strip_dynamics(DrumNoteColour colour)
+{
+    switch (colour) {
+    case DrumNoteColour::Red:
+    case DrumNoteColour::RedGhost:
+    case DrumNoteColour::RedAccent:
+        return DrumNoteColour::Red;
+    case DrumNoteColour::Yellow:
+    case DrumNoteColour::YellowGhost:
+    case DrumNoteColour::YellowAccent:
+        return DrumNoteColour::Yellow;
+    case DrumNoteColour::Blue:
+    case DrumNoteColour::BlueGhost:
+    case DrumNoteColour::BlueAccent:
+        return DrumNoteColour::Blue;
+    case DrumNoteColour::Green:
+    case DrumNoteColour::GreenGhost:
+    case DrumNoteColour::GreenAccent:
+        return DrumNoteColour::Green;
+    case DrumNoteColour::YellowCymbal:
+    case DrumNoteColour::YellowCymbalGhost:
+    case DrumNoteColour::YellowCymbalAccent:
+        return DrumNoteColour::YellowCymbal;
+    case DrumNoteColour::BlueCymbal:
+    case DrumNoteColour::BlueCymbalGhost:
+    case DrumNoteColour::BlueCymbalAccent:
+        return DrumNoteColour::BlueCymbal;
+    case DrumNoteColour::GreenCymbal:
+    case DrumNoteColour::GreenCymbalGhost:
+    case DrumNoteColour::GreenCymbalAccent:
+        return DrumNoteColour::GreenCymbal;
+    case DrumNoteColour::Kick:
+        return DrumNoteColour::Kick;
+    case DrumNoteColour::DoubleKick:
+        return DrumNoteColour::DoubleKick;
+    }
+
+    throw std::invalid_argument("Invalid DrumNoteColour");
+}
 
 template <typename T> struct Note {
     int position {0};
@@ -364,6 +405,15 @@ public:
             m_drum_fills.push_back(
                 DrumFill {fill_start, measure_ticks - fill_start});
             m += Measure(4.0);
+        }
+    }
+
+    void disable_dynamics()
+    {
+        if constexpr (std::is_same_v<T, DrumNoteColour>) {
+            for (auto& n : m_notes) {
+                n.colour = strip_dynamics(n.colour);
+            }
         }
     }
 

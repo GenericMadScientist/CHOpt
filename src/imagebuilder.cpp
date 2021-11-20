@@ -691,6 +691,9 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                                            *settings.engine,
                                            {}});
         }
+        if (!settings.drum_settings.enable_dynamics) {
+            new_track.disable_dynamics();
+        }
     }
     const auto sync_track = song.sync_track().speedup(settings.speed);
 

@@ -1271,36 +1271,6 @@ static void fix_double_greens(std::vector<Note<DrumNoteColour>>& notes)
     }
 }
 
-static DrumNoteColour dedynamic_colour(DrumNoteColour colour)
-{
-    const std::map<DrumNoteColour, DrumNoteColour> dedynamic_map {
-        {DrumNoteColour::Red, DrumNoteColour::Red},
-        {DrumNoteColour::Yellow, DrumNoteColour::Yellow},
-        {DrumNoteColour::Blue, DrumNoteColour::Blue},
-        {DrumNoteColour::Green, DrumNoteColour::Green},
-        {DrumNoteColour::YellowCymbal, DrumNoteColour::YellowCymbal},
-        {DrumNoteColour::BlueCymbal, DrumNoteColour::BlueCymbal},
-        {DrumNoteColour::GreenCymbal, DrumNoteColour::GreenCymbal},
-        {DrumNoteColour::RedGhost, DrumNoteColour::Red},
-        {DrumNoteColour::YellowGhost, DrumNoteColour::Yellow},
-        {DrumNoteColour::BlueGhost, DrumNoteColour::Blue},
-        {DrumNoteColour::GreenGhost, DrumNoteColour::Green},
-        {DrumNoteColour::YellowCymbalGhost, DrumNoteColour::YellowCymbal},
-        {DrumNoteColour::BlueCymbalGhost, DrumNoteColour::BlueCymbal},
-        {DrumNoteColour::GreenCymbalGhost, DrumNoteColour::GreenCymbal},
-        {DrumNoteColour::RedAccent, DrumNoteColour::Red},
-        {DrumNoteColour::YellowAccent, DrumNoteColour::Yellow},
-        {DrumNoteColour::BlueAccent, DrumNoteColour::Blue},
-        {DrumNoteColour::GreenAccent, DrumNoteColour::Green},
-        {DrumNoteColour::YellowCymbalAccent, DrumNoteColour::YellowCymbal},
-        {DrumNoteColour::BlueCymbalAccent, DrumNoteColour::BlueCymbal},
-        {DrumNoteColour::GreenCymbalAccent, DrumNoteColour::GreenCymbal},
-        {DrumNoteColour::Kick, DrumNoteColour::Kick},
-        {DrumNoteColour::DoubleKick, DrumNoteColour::DoubleKick}};
-
-    return dedynamic_map.at(colour);
-}
-
 static std::map<Difficulty, NoteTrack<DrumNoteColour>>
 drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
@@ -1313,7 +1283,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour] = key;
         const std::tuple<Difficulty, DrumNoteColour> dedynamic_key {
-            diff, dedynamic_colour(colour)};
+            diff, strip_dynamics(colour)};
         if (event_track.note_off_events.count(dedynamic_key) == 0) {
             throw ParseError("No corresponding Note Off events");
         }

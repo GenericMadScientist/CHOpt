@@ -379,3 +379,19 @@ TEST_CASE("snap_chords is correct")
         REQUIRE(new_notes[1].position == 0);
     }
 }
+
+TEST_CASE("disable_dynamics is correct")
+{
+    const std::vector<Note<DrumNoteColour>> notes {
+        {0, 0, DrumNoteColour::Red},
+        {192, 0, DrumNoteColour::RedGhost},
+        {384, 0, DrumNoteColour::RedAccent}};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    track.disable_dynamics();
+
+    const std::vector<Note<DrumNoteColour>> new_notes {
+        {0, 0, DrumNoteColour::Red},
+        {192, 0, DrumNoteColour::Red},
+        {384, 0, DrumNoteColour::Red}};
+    REQUIRE(track.notes() == new_notes);
+}
