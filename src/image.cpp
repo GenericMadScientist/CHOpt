@@ -76,15 +76,29 @@ static std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
 
     switch (colour) {
     case DrumNoteColour::Red:
+    case DrumNoteColour::RedGhost:
+    case DrumNoteColour::RedAccent:
         return RED;
     case DrumNoteColour::Yellow:
     case DrumNoteColour::YellowCymbal:
+    case DrumNoteColour::YellowGhost:
+    case DrumNoteColour::YellowCymbalGhost:
+    case DrumNoteColour::YellowAccent:
+    case DrumNoteColour::YellowCymbalAccent:
         return YELLOW;
     case DrumNoteColour::Blue:
     case DrumNoteColour::BlueCymbal:
+    case DrumNoteColour::BlueGhost:
+    case DrumNoteColour::BlueCymbalGhost:
+    case DrumNoteColour::BlueAccent:
+    case DrumNoteColour::BlueCymbalAccent:
         return BLUE;
     case DrumNoteColour::Green:
     case DrumNoteColour::GreenCymbal:
+    case DrumNoteColour::GreenGhost:
+    case DrumNoteColour::GreenCymbalGhost:
+    case DrumNoteColour::GreenAccent:
+    case DrumNoteColour::GreenCymbalAccent:
         return GREEN;
     case DrumNoteColour::Kick:
     case DrumNoteColour::DoubleKick:
@@ -152,15 +166,29 @@ static int note_colour_to_offset(DrumNoteColour colour)
 
     switch (colour) {
     case DrumNoteColour::Red:
+    case DrumNoteColour::RedGhost:
+    case DrumNoteColour::RedAccent:
         return RED_OFFSET;
     case DrumNoteColour::Yellow:
     case DrumNoteColour::YellowCymbal:
+    case DrumNoteColour::YellowGhost:
+    case DrumNoteColour::YellowCymbalGhost:
+    case DrumNoteColour::YellowAccent:
+    case DrumNoteColour::YellowCymbalAccent:
         return YELLOW_OFFSET;
     case DrumNoteColour::Blue:
     case DrumNoteColour::BlueCymbal:
+    case DrumNoteColour::BlueGhost:
+    case DrumNoteColour::BlueCymbalGhost:
+    case DrumNoteColour::BlueAccent:
+    case DrumNoteColour::BlueCymbalAccent:
         return BLUE_OFFSET;
     case DrumNoteColour::Green:
     case DrumNoteColour::GreenCymbal:
+    case DrumNoteColour::GreenGhost:
+    case DrumNoteColour::GreenCymbalGhost:
+    case DrumNoteColour::GreenAccent:
+    case DrumNoteColour::GreenCymbalAccent:
         return GREEN_OFFSET;
     case DrumNoteColour::Kick:
     case DrumNoteColour::DoubleKick:
@@ -461,11 +489,25 @@ static DrumSpriteShape drum_colour_to_shape(DrumNoteColour colour)
     case DrumNoteColour::YellowCymbal:
     case DrumNoteColour::BlueCymbal:
     case DrumNoteColour::GreenCymbal:
+    case DrumNoteColour::YellowCymbalGhost:
+    case DrumNoteColour::BlueCymbalGhost:
+    case DrumNoteColour::GreenCymbalGhost:
+    case DrumNoteColour::YellowCymbalAccent:
+    case DrumNoteColour::BlueCymbalAccent:
+    case DrumNoteColour::GreenCymbalAccent:
         return DrumSpriteShape::Cymbal;
     case DrumNoteColour::Red:
     case DrumNoteColour::Yellow:
     case DrumNoteColour::Blue:
     case DrumNoteColour::Green:
+    case DrumNoteColour::RedGhost:
+    case DrumNoteColour::YellowGhost:
+    case DrumNoteColour::BlueGhost:
+    case DrumNoteColour::GreenGhost:
+    case DrumNoteColour::RedAccent:
+    case DrumNoteColour::YellowAccent:
+    case DrumNoteColour::BlueAccent:
+    case DrumNoteColour::GreenAccent:
         return DrumSpriteShape::Tom;
     }
 

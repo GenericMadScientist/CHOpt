@@ -788,10 +788,47 @@ static void add_note_off_event(InstrumentMidiTrack<T>& track,
     }
 }
 
+static DrumNoteColour add_dynamics(DrumNoteColour colour, std::uint8_t velocity,
+                                   bool parse_dynamics)
+{
+    const std::map<DrumNoteColour, DrumNoteColour> ghosts {
+        {DrumNoteColour::Red, DrumNoteColour::RedGhost},
+        {DrumNoteColour::Yellow, DrumNoteColour::YellowGhost},
+        {DrumNoteColour::Blue, DrumNoteColour::BlueGhost},
+        {DrumNoteColour::Green, DrumNoteColour::GreenGhost},
+        {DrumNoteColour::YellowCymbal, DrumNoteColour::YellowCymbalGhost},
+        {DrumNoteColour::BlueCymbal, DrumNoteColour::BlueCymbalGhost},
+        {DrumNoteColour::GreenCymbal, DrumNoteColour::GreenCymbalGhost},
+        {DrumNoteColour::Kick, DrumNoteColour::Kick},
+        {DrumNoteColour::DoubleKick, DrumNoteColour::DoubleKick}};
+    const std::map<DrumNoteColour, DrumNoteColour> accents {
+        {DrumNoteColour::Red, DrumNoteColour::RedAccent},
+        {DrumNoteColour::Yellow, DrumNoteColour::YellowAccent},
+        {DrumNoteColour::Blue, DrumNoteColour::BlueAccent},
+        {DrumNoteColour::Green, DrumNoteColour::GreenAccent},
+        {DrumNoteColour::YellowCymbal, DrumNoteColour::YellowCymbalAccent},
+        {DrumNoteColour::BlueCymbal, DrumNoteColour::BlueCymbalAccent},
+        {DrumNoteColour::GreenCymbal, DrumNoteColour::GreenCymbalAccent},
+        {DrumNoteColour::Kick, DrumNoteColour::Kick},
+        {DrumNoteColour::DoubleKick, DrumNoteColour::DoubleKick}};
+
+    if (!parse_dynamics) {
+        return colour;
+    }
+    if (velocity == 1) {
+        return ghosts.at(colour);
+    }
+    if (velocity >= 127) {
+        return accents.at(colour);
+    }
+    return colour;
+}
+
 template <typename T>
 static void add_note_on_event(InstrumentMidiTrack<T>& track,
                               const std::array<std::uint8_t, 2>& data, int time,
-                              int rank, bool from_five_lane)
+                              int rank, bool from_five_lane,
+                              bool parse_dynamics)
 {
     constexpr int YELLOW_TOM_ID = 110;
     constexpr int BLUE_TOM_ID = 111;
@@ -808,7 +845,10 @@ static void add_note_on_event(InstrumentMidiTrack<T>& track,
 
     const auto diff = difficulty_from_key<T>(data[0]);
     if (diff.has_value()) {
-        const auto colour = colour_from_key<T>(data[0], from_five_lane);
+        auto colour = colour_from_key<T>(data[0], from_five_lane);
+        if constexpr (std::is_same_v<T, DrumNoteColour>) {
+            colour = add_dynamics(colour, data[1], parse_dynamics);
+        }
         track.note_on_events[{*diff, colour}].push_back({time, rank});
     } else if (data[0] == YELLOW_TOM_ID) {
         track.yellow_tom_on_events.push_back({time, rank});
@@ -881,6 +921,22 @@ static bool is_five_lane_green_note(const TimedEvent& event)
         != GREEN_LANE_KEYS.cend();
 }
 
+static bool is_enable_chart_dynamics(const TimedEvent& event)
+{
+    using namespace std::literals;
+    constexpr auto ENABLE_DYNAMICS = "[ENABLE_CHART_DYNAMICS]"sv;
+
+    const auto* meta_event = std::get_if<MetaEvent>(&event.event);
+    if (meta_event == nullptr) {
+        return false;
+    }
+    if (meta_event->type != 1) {
+        return false;
+    }
+    return std::equal(meta_event->data.cbegin(), meta_event->data.cend(),
+                      ENABLE_DYNAMICS.cbegin(), ENABLE_DYNAMICS.cend());
+}
+
 template <typename T>
 static InstrumentMidiTrack<T>
 read_instrument_midi_track(const MidiTrack& midi_track)
@@ -894,6 +950,13 @@ read_instrument_midi_track(const MidiTrack& midi_track)
         from_five_lane
             = std::find_if(midi_track.events.cbegin(), midi_track.events.cend(),
                            is_five_lane_green_note)
+            != midi_track.events.cend();
+    }
+    bool parse_dynamics = false;
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        parse_dynamics
+            = std::find_if(midi_track.events.cbegin(), midi_track.events.cend(),
+                           is_enable_chart_dynamics)
             != midi_track.events.cend();
     }
 
@@ -934,7 +997,7 @@ read_instrument_midi_track(const MidiTrack& midi_track)
             break;
         case NOTE_ON_ID:
             add_note_on_event(event_track, midi_event->data, event.time, rank,
-                              from_five_lane);
+                              from_five_lane, parse_dynamics);
             break;
         }
     }
@@ -1178,6 +1241,36 @@ static void fix_double_greens(std::vector<Note<DrumNoteColour>>& notes)
     }
 }
 
+static DrumNoteColour dedynamic_colour(DrumNoteColour colour)
+{
+    const std::map<DrumNoteColour, DrumNoteColour> dedynamic_map {
+        {DrumNoteColour::Red, DrumNoteColour::Red},
+        {DrumNoteColour::Yellow, DrumNoteColour::Yellow},
+        {DrumNoteColour::Blue, DrumNoteColour::Blue},
+        {DrumNoteColour::Green, DrumNoteColour::Green},
+        {DrumNoteColour::YellowCymbal, DrumNoteColour::YellowCymbal},
+        {DrumNoteColour::BlueCymbal, DrumNoteColour::BlueCymbal},
+        {DrumNoteColour::GreenCymbal, DrumNoteColour::GreenCymbal},
+        {DrumNoteColour::RedGhost, DrumNoteColour::Red},
+        {DrumNoteColour::YellowGhost, DrumNoteColour::Yellow},
+        {DrumNoteColour::BlueGhost, DrumNoteColour::Blue},
+        {DrumNoteColour::GreenGhost, DrumNoteColour::Green},
+        {DrumNoteColour::YellowCymbalGhost, DrumNoteColour::YellowCymbal},
+        {DrumNoteColour::BlueCymbalGhost, DrumNoteColour::BlueCymbal},
+        {DrumNoteColour::GreenCymbalGhost, DrumNoteColour::GreenCymbal},
+        {DrumNoteColour::RedAccent, DrumNoteColour::Red},
+        {DrumNoteColour::YellowAccent, DrumNoteColour::Yellow},
+        {DrumNoteColour::BlueAccent, DrumNoteColour::Blue},
+        {DrumNoteColour::GreenAccent, DrumNoteColour::Green},
+        {DrumNoteColour::YellowCymbalAccent, DrumNoteColour::YellowCymbal},
+        {DrumNoteColour::BlueCymbalAccent, DrumNoteColour::BlueCymbal},
+        {DrumNoteColour::GreenCymbalAccent, DrumNoteColour::GreenCymbal},
+        {DrumNoteColour::Kick, DrumNoteColour::Kick},
+        {DrumNoteColour::DoubleKick, DrumNoteColour::DoubleKick}};
+
+    return dedynamic_map.at(colour);
+}
+
 static std::map<Difficulty, NoteTrack<DrumNoteColour>>
 drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
@@ -1189,10 +1282,12 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     std::map<Difficulty, std::vector<Note<DrumNoteColour>>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour] = key;
-        if (event_track.note_off_events.count(key) == 0) {
+        const std::tuple<Difficulty, DrumNoteColour> dedynamic_key {
+            diff, dedynamic_colour(colour)};
+        if (event_track.note_off_events.count(dedynamic_key) == 0) {
             throw ParseError("No corresponding Note Off events");
         }
-        const auto& note_offs = event_track.note_off_events.at(key);
+        const auto& note_offs = event_track.note_off_events.at(dedynamic_key);
         for (const auto& [pos, end] :
              combine_note_on_off_events(note_ons, note_offs)) {
             notes[diff].push_back(

@@ -499,7 +499,7 @@ static std::string to_colour_string(const std::vector<GHLNoteColour>& colours)
 
 static std::string to_colour_string(DrumNoteColour colour)
 {
-    const std::array<std::tuple<DrumNoteColour, std::string>, 9> COLOUR_NAMES {
+    const std::array<std::tuple<DrumNoteColour, std::string>, 23> COLOUR_NAMES {
         {{DrumNoteColour::Red, "R"},
          {DrumNoteColour::Yellow, "Y"},
          {DrumNoteColour::Blue, "B"},
@@ -507,6 +507,20 @@ static std::string to_colour_string(DrumNoteColour colour)
          {DrumNoteColour::YellowCymbal, "Y cymbal"},
          {DrumNoteColour::BlueCymbal, "B cymbal"},
          {DrumNoteColour::GreenCymbal, "G cymbal"},
+         {DrumNoteColour::RedGhost, "R ghost"},
+         {DrumNoteColour::YellowGhost, "Y ghost"},
+         {DrumNoteColour::BlueGhost, "B ghost"},
+         {DrumNoteColour::GreenGhost, "G ghost"},
+         {DrumNoteColour::YellowCymbalGhost, "Y ghost cymbal"},
+         {DrumNoteColour::BlueCymbalGhost, "B ghost cymbal"},
+         {DrumNoteColour::GreenCymbalGhost, "G ghost cymbal"},
+         {DrumNoteColour::RedAccent, "R accent"},
+         {DrumNoteColour::YellowAccent, "Y accent"},
+         {DrumNoteColour::BlueAccent, "B accent"},
+         {DrumNoteColour::GreenAccent, "G accent"},
+         {DrumNoteColour::YellowCymbalAccent, "Y accent cymbal"},
+         {DrumNoteColour::BlueCymbalAccent, "B accent cymbal"},
+         {DrumNoteColour::GreenCymbalAccent, "G accent cymbal"},
          {DrumNoteColour::Kick, "kick"},
          {DrumNoteColour::DoubleKick, "kick"}}};
 

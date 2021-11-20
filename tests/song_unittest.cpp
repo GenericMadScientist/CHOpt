@@ -1327,6 +1327,56 @@ TEST_CASE("Drum 5-lane -> 4-lane conversion is done from .mid")
     REQUIRE(track.notes() == notes);
 }
 
+TEST_CASE("Dynamics are parsed from .mid")
+{
+    MidiTrack note_track {
+        {{0,
+          {MetaEvent {
+              3,
+              {0x50, 0x41, 0x52, 0x54, 0x20, 0x44, 0x52, 0x55, 0x4D, 0x53}}}},
+         {0, {MetaEvent {1, {0x5B, 0x45, 0x4E, 0x41, 0x42, 0x4C, 0x45, 0x5F,
+                             0x43, 0x48, 0x41, 0x52, 0x54, 0x5F, 0x44, 0x59,
+                             0x4E, 0x41, 0x4D, 0x49, 0x43, 0x53, 0x5D}}}},
+         {0, {MidiEvent {0x90, {97, 1}}}},
+         {1, {MidiEvent {0x80, {97, 0}}}},
+         {2, {MidiEvent {0x90, {97, 64}}}},
+         {3, {MidiEvent {0x80, {97, 0}}}},
+         {4, {MidiEvent {0x90, {97, 127}}}},
+         {5, {MidiEvent {0x80, {97, 0}}}}}};
+    const Midi midi {192, {note_track}};
+    const auto song = Song::from_midi(midi, {});
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::RedGhost},
+                                             {2, 0, DrumNoteColour::Red},
+                                             {4, 0, DrumNoteColour::RedAccent}};
+
+    REQUIRE(track.notes() == notes);
+}
+
+TEST_CASE("Dynamics are not parsed from .mid without [ENABLE_CHART_DYNAMICS]")
+{
+    MidiTrack note_track {{{0,
+                            {MetaEvent {3,
+                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x44,
+                                         0x52, 0x55, 0x4D, 0x53}}}},
+                           {0, {MidiEvent {0x90, {97, 1}}}},
+                           {1, {MidiEvent {0x80, {97, 0}}}},
+                           {2, {MidiEvent {0x90, {97, 64}}}},
+                           {3, {MidiEvent {0x80, {97, 0}}}},
+                           {4, {MidiEvent {0x90, {97, 127}}}},
+                           {5, {MidiEvent {0x80, {97, 0}}}}}};
+    const Midi midi {192, {note_track}};
+    const auto song = Song::from_midi(midi, {});
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::Red},
+                                             {2, 0, DrumNoteColour::Red},
+                                             {4, 0, DrumNoteColour::Red}};
+
+    REQUIRE(track.notes() == notes);
+}
+
 TEST_CASE("unison_phrase_positions() is correct")
 {
     ChartSection guitar {"ExpertSingle",
