@@ -376,8 +376,8 @@ TEST_CASE("Double kicks only appear with enable_double_kick")
         {},
         {},
         192};
-    ImageBuilder no_double_builder {track, {}, {false, false, false}};
-    ImageBuilder double_builder {track, {}, {true, false, false}};
+    ImageBuilder no_double_builder {track, {}, {false, false, false, false}};
+    ImageBuilder double_builder {track, {}, {true, false, false, false}};
 
     REQUIRE(no_double_builder.drum_notes().size() == 1);
     REQUIRE(double_builder.drum_notes().size() == 2);
@@ -393,7 +393,7 @@ TEST_CASE("Single kicks disappear with disable_kick")
         {},
         {},
         192};
-    ImageBuilder builder {track, {}, {true, true, false}};
+    ImageBuilder builder {track, {}, {true, true, false, false}};
 
     REQUIRE(builder.drum_notes().size() == 1);
 }
@@ -402,7 +402,7 @@ TEST_CASE("Cymbals become toms with pro_drums off")
 {
     NoteTrack<DrumNoteColour> track {
         {{0, 0, DrumNoteColour::YellowCymbal}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, {true, false, false}};
+    ImageBuilder builder {track, {}, {true, false, false, false}};
 
     REQUIRE(builder.drum_notes().size() == 1);
     REQUIRE(builder.drum_notes()[0].colour == DrumNoteColour::Yellow);
@@ -418,7 +418,7 @@ TEST_CASE("Disco flip matters only with pro_drums on")
                                      {{192, 192}},
                                      {},
                                      192};
-    ImageBuilder normal_builder {track, {}, {true, false, false}};
+    ImageBuilder normal_builder {track, {}, {true, false, false, false}};
     ImageBuilder pro_builder {track, {}, DrumSettings::default_settings()};
 
     REQUIRE(normal_builder.drum_notes().size() == 2);
