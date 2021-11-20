@@ -922,3 +922,23 @@ TEST_CASE("Fills attach to later point in case of a tie")
     REQUIRE(!begin->fill_start.has_value());
     REQUIRE((begin + 1)->fill_start.has_value());
 }
+
+TEST_CASE("Dynamics get double points")
+{
+    std::vector<Note<DrumNoteColour>> notes {
+        {0, 0, DrumNoteColour::RedGhost},
+        {192, 0, DrumNoteColour::RedAccent},
+        {384, 0, DrumNoteColour::Red}};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    PointSet points {track,
+                     {{}, 192, ChDrumEngine(), {}},
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     ChDrumEngine()};
+    const auto begin = points.cbegin();
+
+    REQUIRE(begin->value == 100);
+    REQUIRE((begin + 1)->value == 100);
+    REQUIRE((begin + 2)->value == 50);
+}

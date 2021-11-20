@@ -109,6 +109,18 @@ static int get_chord_size(InputIt first, InputIt last,
     return note_count;
 }
 
+static bool is_dynamics_colour(DrumNoteColour colour)
+{
+    constexpr std::array NORMAL_COLOURS {
+        DrumNoteColour::Red,          DrumNoteColour::Yellow,
+        DrumNoteColour::Blue,         DrumNoteColour::Green,
+        DrumNoteColour::YellowCymbal, DrumNoteColour::BlueCymbal,
+        DrumNoteColour::GreenCymbal,  DrumNoteColour::Kick,
+        DrumNoteColour::DoubleKick};
+    return std::find(NORMAL_COLOURS.cbegin(), NORMAL_COLOURS.cend(), colour)
+        == NORMAL_COLOURS.cend();
+}
+
 template <typename InputIt, typename OutputIt>
 static void
 append_note_points(InputIt first, InputIt last, InputIt note_start,
@@ -119,7 +131,12 @@ append_note_points(InputIt first, InputIt last, InputIt note_start,
 {
     assert(first != last); // NOLINT
 
-    const auto note_value = engine.base_note_value();
+    auto note_value = engine.base_note_value();
+    if constexpr (std::is_same_v<decltype(first->colour), DrumNoteColour>) {
+        if (is_dynamics_colour(first->colour)) {
+            note_value *= 2;
+        }
+    }
     const auto chord_size = get_chord_size(first, last, drum_settings);
     const auto pos = first->position;
     const Beat beat {pos / static_cast<double>(resolution)};
