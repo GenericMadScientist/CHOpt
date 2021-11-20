@@ -191,6 +191,8 @@ Settings MainWindow::get_settings() const
         = m_ui->doubleKickCheckBox->isChecked();
     settings.drum_settings.disable_kick = m_ui->noKickCheckBox->isChecked();
     settings.drum_settings.pro_drums = m_ui->proDrumsCheckBox->isChecked();
+    settings.drum_settings.enable_dynamics
+        = m_ui->dynamicsCheckBox->isChecked();
     settings.difficulty
         = m_ui->difficultyComboBox->currentData().value<Difficulty>();
     settings.instrument
