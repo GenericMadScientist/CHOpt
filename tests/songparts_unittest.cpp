@@ -152,7 +152,7 @@ TEST_CASE("Solos do take into account drum settings")
     NoteTrack<DrumNoteColour> track {notes, {}, solos, {}, {}, {}, 192};
     std::vector<Solo> required_solos {{0, 1, 100}};
 
-    REQUIRE(track.solos({false, false, true}) == required_solos);
+    REQUIRE(track.solos({false, false, true, false}) == required_solos);
 }
 
 TEST_CASE("Automatic drum activation zone generation is correct")
