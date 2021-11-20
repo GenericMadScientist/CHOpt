@@ -277,16 +277,42 @@ apply_cymbal_events(const std::vector<Note<DrumNoteColour>>& notes)
         case DrumNoteColour::YellowCymbal:
             non_cymbal_colour = DrumNoteColour::Yellow;
             break;
+        case DrumNoteColour::YellowCymbalGhost:
+            non_cymbal_colour = DrumNoteColour::YellowGhost;
+            break;
+        case DrumNoteColour::YellowCymbalAccent:
+            non_cymbal_colour = DrumNoteColour::YellowAccent;
+            break;
         case DrumNoteColour::BlueCymbal:
             non_cymbal_colour = DrumNoteColour::Blue;
+            break;
+        case DrumNoteColour::BlueCymbalGhost:
+            non_cymbal_colour = DrumNoteColour::BlueGhost;
+            break;
+        case DrumNoteColour::BlueCymbalAccent:
+            non_cymbal_colour = DrumNoteColour::BlueAccent;
             break;
         case DrumNoteColour::GreenCymbal:
             non_cymbal_colour = DrumNoteColour::Green;
             break;
+        case DrumNoteColour::GreenCymbalGhost:
+            non_cymbal_colour = DrumNoteColour::GreenGhost;
+            break;
+        case DrumNoteColour::GreenCymbalAccent:
+            non_cymbal_colour = DrumNoteColour::GreenAccent;
+            break;
         case DrumNoteColour::Red:
+        case DrumNoteColour::RedGhost:
+        case DrumNoteColour::RedAccent:
         case DrumNoteColour::Yellow:
+        case DrumNoteColour::YellowGhost:
+        case DrumNoteColour::YellowAccent:
         case DrumNoteColour::Blue:
+        case DrumNoteColour::BlueGhost:
+        case DrumNoteColour::BlueAccent:
         case DrumNoteColour::Green:
+        case DrumNoteColour::GreenGhost:
+        case DrumNoteColour::GreenAccent:
         case DrumNoteColour::Kick:
         case DrumNoteColour::DoubleKick:
             continue;
@@ -791,6 +817,7 @@ static void add_note_off_event(InstrumentMidiTrack<T>& track,
 static DrumNoteColour add_dynamics(DrumNoteColour colour, std::uint8_t velocity,
                                    bool parse_dynamics)
 {
+    constexpr std::uint8_t MIN_ACCENT_VELOCITY = 127;
     const std::map<DrumNoteColour, DrumNoteColour> ghosts {
         {DrumNoteColour::Red, DrumNoteColour::RedGhost},
         {DrumNoteColour::Yellow, DrumNoteColour::YellowGhost},
@@ -818,7 +845,7 @@ static DrumNoteColour add_dynamics(DrumNoteColour colour, std::uint8_t velocity,
     if (velocity == 1) {
         return ghosts.at(colour);
     }
-    if (velocity >= 127) {
+    if (velocity >= MIN_ACCENT_VELOCITY) {
         return accents.at(colour);
     }
     return colour;
