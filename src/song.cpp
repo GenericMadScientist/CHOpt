@@ -875,6 +875,9 @@ static void add_note_on_event(InstrumentMidiTrack<T>& track,
         auto colour = colour_from_key<T>(data[0], from_five_lane);
         if constexpr (std::is_same_v<T, DrumNoteColour>) {
             colour = add_dynamics(colour, data[1], parse_dynamics);
+        } else {
+            // Needed because of a GCC warning.
+            (void)parse_dynamics;
         }
         track.note_on_events[{*diff, colour}].push_back({time, rank});
     } else if (data[0] == YELLOW_TOM_ID) {
