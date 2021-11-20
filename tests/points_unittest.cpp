@@ -754,7 +754,7 @@ TEST_CASE("Double kicks only appear with enable_double_kick")
                             {{}, 192, ChDrumEngine(), {}},
                             {},
                             SqueezeSettings::default_settings(),
-                            {false, false, true},
+                            {false, false, true, false},
                             ChDrumEngine()};
     PointSet double_points {track,
                             {{}, 192, ChDrumEngine(), {}},
@@ -776,7 +776,7 @@ TEST_CASE("Single kicks are removed with disable_kick")
                      {{}, 192, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
-                     {true, true, false},
+                     {true, true, false, false},
                      ChDrumEngine()};
 
     REQUIRE(points.cend() - points.cbegin() == 1);
@@ -793,7 +793,7 @@ TEST_CASE("disable_kick doesn't kill SP phrases")
                      {{}, 192, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
-                     {false, true, false},
+                     {false, true, false, false},
                      ChDrumEngine()};
 
     REQUIRE(points.cbegin()->is_sp_granting_note);
@@ -809,7 +809,7 @@ TEST_CASE("Double kicks don't kill phrases")
                      {{}, 192, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
-                     {false, false, false},
+                     {false, false, false, false},
                      ChDrumEngine()};
 
     REQUIRE(points.cbegin()->is_sp_granting_note);
@@ -843,7 +843,7 @@ TEST_CASE("Fills ending only in a kick are killed")
                      {{}, 192, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
-                     {false, false, false},
+                     {false, false, false, false},
                      ChDrumEngine()};
     const auto begin = points.cbegin();
 
