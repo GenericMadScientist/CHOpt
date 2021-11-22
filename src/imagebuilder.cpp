@@ -544,6 +544,8 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
 void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
                                   const std::vector<int>& unison_phrases)
 {
+    constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
+
     for (const auto& phrase : track.sp_phrases()) {
         auto p = track.notes().cbegin();
         while (p->position < phrase.position) {
@@ -558,6 +560,7 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
             end = std::max(end, current_end);
             ++p;
         }
+        end = std::max(end, start + MINIMUM_GREEN_RANGE_SIZE);
         m_green_ranges.emplace_back(start, end);
         if (std::find(unison_phrases.cbegin(), unison_phrases.cend(),
                       phrase.position)
@@ -570,6 +573,8 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
 void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
                                   const std::vector<int>& unison_phrases)
 {
+    constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
+
     for (const auto& phrase : track.sp_phrases()) {
         auto p = track.notes().cbegin();
         while (p->position < phrase.position) {
@@ -584,6 +589,7 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
             end = std::max(end, current_end);
             ++p;
         }
+        end = std::max(end, start + MINIMUM_GREEN_RANGE_SIZE);
         m_green_ranges.emplace_back(start, end);
         if (std::find(unison_phrases.cbegin(), unison_phrases.cend(),
                       phrase.position)

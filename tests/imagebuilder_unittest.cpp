@@ -315,6 +315,7 @@ TEST_CASE("Green ranges have a minimum size")
     NoteTrack<NoteColour> track {{{768}}, {{768, 384}}, {}, {}, {}, {}, 192};
     ImageBuilder builder {track, {}};
     builder.add_sp_phrases(track, {});
+
     std::vector<std::tuple<double, double>> expected_green_ranges {{4.0, 4.1}};
 
     REQUIRE(builder.green_ranges() == expected_green_ranges);
@@ -326,7 +327,7 @@ TEST_CASE("Green ranges for six fret SP phrases are added correctly")
         {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
     ImageBuilder builder {track, {}};
     builder.add_sp_phrases(track, {});
-    std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.0},
+    std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
 
     REQUIRE(builder.green_ranges() == expected_green_ranges);
@@ -338,8 +339,8 @@ TEST_CASE("Green ranges for drums SP phrases are added correctly")
         {{960}, {1344}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
     ImageBuilder builder {track, {}, DrumSettings::default_settings()};
     builder.add_sp_phrases(track, {});
-    std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.0},
-                                                                   {7.0, 7.0}};
+    std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
+                                                                   {7.0, 7.1}};
 
     REQUIRE(builder.green_ranges() == expected_green_ranges);
 }
