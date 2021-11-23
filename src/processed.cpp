@@ -405,9 +405,11 @@ std::string ProcessedSong::path_summary(const Path& path) const
     stream << "\nTotal score: " << total_score;
 
     if (!m_ignore_average_multiplier) {
-        const auto avg_mult
-            = static_cast<double>(total_score - m_total_solo_boost)
-            / m_base_score;
+        double avg_mult = 0;
+        if (m_base_score != 0) {
+            avg_mult = static_cast<double>(total_score - m_total_solo_boost)
+                / m_base_score;
+        }
         stream.setf(std::ios_base::fixed, std::ios_base::floatfield);
         stream << std::setprecision(3);
         stream << "\nAverage multiplier: " << avg_mult << 'x';

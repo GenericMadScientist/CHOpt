@@ -168,8 +168,8 @@ private:
 
     int compute_base_score()
     {
-        constexpr auto BASE_NOTE_VALUE = 50;
-        constexpr auto BASE_SUSTAIN_DENSITY = 25;
+        constexpr int BASE_NOTE_VALUE = 50;
+        constexpr int BASE_SUSTAIN_DENSITY = 25;
 
         auto base_score = static_cast<int>(BASE_NOTE_VALUE * m_notes.size());
         auto total_ticks = 0;
@@ -466,6 +466,23 @@ public:
     [[nodiscard]] std::optional<BigRockEnding> bre() const { return m_bre; }
     [[nodiscard]] int resolution() const { return m_resolution; }
     [[nodiscard]] int base_score() const { return m_base_score; }
+    [[nodiscard]] int base_score(DrumSettings drum_settings) const
+    {
+        constexpr int BASE_NOTE_VALUE = 50;
+
+        auto count_note = [&](auto& note) {
+            if (note.colour == DrumNoteColour::Kick) {
+                return !drum_settings.disable_kick;
+            }
+            if (note.colour == DrumNoteColour::DoubleKick) {
+                return drum_settings.enable_double_kick;
+            }
+            return true;
+        };
+        return BASE_NOTE_VALUE
+            * static_cast<int>(
+                   std::count_if(m_notes.cbegin(), m_notes.cend(), count_note));
+    }
     [[nodiscard]] NoteTrack<T> trim_sustains() const
     {
         constexpr int DEFAULT_RESOLUTION = 192;

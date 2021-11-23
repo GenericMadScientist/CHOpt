@@ -1209,6 +1209,52 @@ TEST_CASE("path_summary produces the correct output")
         REQUIRE(second_track.path_summary(path) == desired_path_output);
     }
 
+    SECTION("Average multiplier is correct for drums")
+    {
+        Path path {{}, 0};
+        std::vector<Note<DrumNoteColour>> drum_notes {
+            {0, 0, DrumNoteColour::Red}, {192, 0, DrumNoteColour::DoubleKick}};
+        NoteTrack<DrumNoteColour> second_note_track {drum_notes, {}, {}, {},
+                                                     {},         {}, 192};
+        ProcessedSong second_track {second_note_track,
+                                    {},
+                                    SqueezeSettings::default_settings(),
+                                    {false, false, true, false},
+                                    ChDrumEngine(),
+                                    {},
+                                    {}};
+
+        const char* desired_path_output = "Path: None\n"
+                                          "No SP score: 50\n"
+                                          "Total score: 50\n"
+                                          "Average multiplier: 1.000x";
+
+        REQUIRE(second_track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("Average multiplier is correct for zero notes")
+    {
+        Path path {{}, 0};
+        std::vector<Note<DrumNoteColour>> drum_notes {
+            {192, 0, DrumNoteColour::DoubleKick}};
+        NoteTrack<DrumNoteColour> second_note_track {drum_notes, {}, {}, {},
+                                                     {},         {}, 192};
+        ProcessedSong second_track {second_note_track,
+                                    {},
+                                    SqueezeSettings::default_settings(),
+                                    {false, false, true, false},
+                                    ChDrumEngine(),
+                                    {},
+                                    {}};
+
+        const char* desired_path_output = "Path: None\n"
+                                          "No SP score: 0\n"
+                                          "Total score: 0\n"
+                                          "Average multiplier: 0.000x";
+
+        REQUIRE(second_track.path_summary(path) == desired_path_output);
+    }
+
     SECTION("Average multiplier is ignored with RB")
     {
         Path path {{}, 0};

@@ -120,7 +120,29 @@ public:
         , m_total_bre_boost {bre_boost(track, engine, m_converter)}
         , m_base_score {track.base_score()}
         , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
-        , m_is_drums {std::is_same_v<T, DrumNoteColour>}
+        , m_is_drums {false}
+    {
+        const auto solos = track.solos(drum_settings);
+        m_total_solo_boost = std::accumulate(
+            solos.cbegin(), solos.cend(), 0,
+            [](const auto x, const auto& y) { return x + y.value; });
+    }
+
+    ProcessedSong(const NoteTrack<DrumNoteColour>& track,
+                  const SyncTrack& sync_track,
+                  const SqueezeSettings& squeeze_settings,
+                  const DrumSettings& drum_settings, const Engine& engine,
+                  const std::vector<int>& od_beats,
+                  const std::vector<int>& unison_phrases)
+        : m_converter {sync_track, track.resolution(), engine, od_beats}
+        , m_points {track,          m_converter,
+                    unison_phrases, squeeze_settings,
+                    drum_settings,  engine}
+        , m_sp_data {track, sync_track, od_beats, squeeze_settings, engine}
+        , m_total_bre_boost {bre_boost(track, engine, m_converter)}
+        , m_base_score {track.base_score(drum_settings)}
+        , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
+        , m_is_drums {true}
     {
         const auto solos = track.solos(drum_settings);
         m_total_solo_boost = std::accumulate(

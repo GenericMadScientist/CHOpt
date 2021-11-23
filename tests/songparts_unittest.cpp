@@ -316,6 +316,36 @@ TEST_CASE("Base score for average multiplier is correct")
     }
 }
 
+TEST_CASE("Base score is correct for drums")
+{
+    std::vector<Note<DrumNoteColour>> notes {
+        {0, 0, DrumNoteColour::Red},
+        {192, 0, DrumNoteColour::Kick},
+        {384, 0, DrumNoteColour::DoubleKick}};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+
+    SECTION("All kicks gives correct answer")
+    {
+        DrumSettings settings {true, false, true, false};
+
+        REQUIRE(track.base_score(settings) == 150);
+    }
+
+    SECTION("Only single kicks gives correct answer")
+    {
+        DrumSettings settings {false, false, true, false};
+
+        REQUIRE(track.base_score(settings) == 100);
+    }
+
+    SECTION("No kicks gives correct answer")
+    {
+        DrumSettings settings {false, true, true, false};
+
+        REQUIRE(track.base_score(settings) == 50);
+    }
+}
+
 TEST_CASE("trim_sustains is correct")
 {
     const std::vector<Note<NoteColour>> notes {{0, 65}, {200, 70}, {400, 140}};
