@@ -469,7 +469,6 @@ public:
     [[nodiscard]] NoteTrack<T> trim_sustains() const
     {
         constexpr int DEFAULT_RESOLUTION = 192;
-        constexpr int DEFAULT_SPEED = 100;
         constexpr int DEFAULT_SUST_CUTOFF = 64;
 
         auto trimmed_track = *this;
