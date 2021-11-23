@@ -320,39 +320,13 @@ TEST_CASE("trim_sustains is correct")
 {
     const std::vector<Note<NoteColour>> notes {{0, 65}, {200, 70}, {400, 140}};
     const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 200};
+    const auto new_track = track.trim_sustains();
+    const auto& new_notes = new_track.notes();
 
-    SECTION("100% speed")
-    {
-        auto new_track = track.trim_sustains(100);
-        const auto& new_notes = new_track.notes();
-
-        REQUIRE(new_notes[0].length == 0);
-        REQUIRE(new_notes[1].length == 70);
-        REQUIRE(new_notes[2].length == 140);
-        REQUIRE(new_track.base_score() == 177);
-    }
-
-    SECTION("50% speed")
-    {
-        auto new_track = track.trim_sustains(50);
-        const auto& new_notes = new_track.notes();
-
-        REQUIRE(new_notes[0].length == 0);
-        REQUIRE(new_notes[1].length == 70);
-        REQUIRE(new_notes[2].length == 140);
-        REQUIRE(new_track.base_score() == 185);
-    }
-
-    SECTION("200% speed")
-    {
-        auto new_track = track.trim_sustains(200);
-        const auto& new_notes = new_track.notes();
-
-        REQUIRE(new_notes[0].length == 0);
-        REQUIRE(new_notes[1].length == 0);
-        REQUIRE(new_notes[2].length == 140);
-        REQUIRE(new_track.base_score() == 168);
-    }
+    REQUIRE(new_notes[0].length == 0);
+    REQUIRE(new_notes[1].length == 70);
+    REQUIRE(new_notes[2].length == 140);
+    REQUIRE(new_track.base_score() == 177);
 }
 
 TEST_CASE("snap_chords is correct")

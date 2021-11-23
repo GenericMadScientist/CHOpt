@@ -686,7 +686,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
 {
     auto new_track = track;
     if (song.is_from_midi()) {
-        new_track = track.trim_sustains(settings.speed);
+        new_track = track.trim_sustains();
     }
     new_track = new_track.snap_chords(settings.engine->snap_gap());
     if constexpr (std::is_same_v<T, DrumNoteColour>) {

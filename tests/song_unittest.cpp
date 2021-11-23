@@ -1073,8 +1073,7 @@ TEST_CASE(".mids with multiple solos and no Star Power have solos read as SP")
     REQUIRE(track.sp_phrases().size() == 2);
 }
 
-// This should be done by NoteTrack's trim_sustains method, because we may want
-// to trim sustains for slowdowns.
+// This should be done by NoteTrack's trim_sustains method.
 TEST_CASE("Short midi sustains are not trimmed")
 {
     MidiTrack note_track {{{0,

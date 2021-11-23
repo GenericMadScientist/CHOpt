@@ -466,15 +466,15 @@ public:
     [[nodiscard]] std::optional<BigRockEnding> bre() const { return m_bre; }
     [[nodiscard]] int resolution() const { return m_resolution; }
     [[nodiscard]] int base_score() const { return m_base_score; }
-    [[nodiscard]] NoteTrack<T> trim_sustains(int speed) const
+    [[nodiscard]] NoteTrack<T> trim_sustains() const
     {
         constexpr int DEFAULT_RESOLUTION = 192;
         constexpr int DEFAULT_SPEED = 100;
         constexpr int DEFAULT_SUST_CUTOFF = 64;
 
         auto trimmed_track = *this;
-        auto sust_cutoff = (DEFAULT_SUST_CUTOFF * m_resolution * speed)
-            / (DEFAULT_SPEED * DEFAULT_RESOLUTION);
+        const auto sust_cutoff
+            = (DEFAULT_SUST_CUTOFF * m_resolution) / DEFAULT_RESOLUTION;
 
         for (auto& note : trimmed_track.m_notes) {
             if (note.length <= sust_cutoff) {
@@ -483,19 +483,6 @@ public:
         }
 
         trimmed_track.m_base_score = trimmed_track.compute_base_score();
-
-        // We need to do this because for speeds below 100%, the sustains are
-        // trimmed the same as 100% speed but the base score can be higher.
-        if (speed < DEFAULT_SPEED) {
-            sust_cutoff
-                = (DEFAULT_SUST_CUTOFF * m_resolution) / DEFAULT_RESOLUTION;
-
-            for (auto& note : trimmed_track.m_notes) {
-                if (note.length <= sust_cutoff) {
-                    note.length = 0;
-                }
-            }
-        }
 
         return trimmed_track;
     }
