@@ -101,6 +101,7 @@ private:
         return static_cast<int>(750 + 500 * seconds_gap.value());
     }
 
+    std::vector<std::string> act_summaries(const Path& path) const;
     void append_activation(std::stringstream& stream,
                            const Activation& activation,
                            const std::string& act_summary) const;

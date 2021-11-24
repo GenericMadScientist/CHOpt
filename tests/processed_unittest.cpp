@@ -1255,6 +1255,68 @@ TEST_CASE("path_summary produces the correct output")
         REQUIRE(second_track.path_summary(path) == desired_path_output);
     }
 
+    SECTION("Alternate path notation is used for drums")
+    {
+        std::vector<Note<DrumNoteColour>> drum_notes {
+            {0}, {192}, {1536}, {6336}, {6528}, {6912}, {9984}, {13056}};
+        std::vector<StarPower> drum_phrases {
+            {0, 1}, {192, 1}, {6336, 1}, {6528, 1}};
+        NoteTrack<DrumNoteColour> drum_note_track {
+            drum_notes, drum_phrases, {}, {}, {}, {}, 192};
+        drum_note_track.generate_drum_fills({{}, 192, ChDrumEngine(), {}});
+        ProcessedSong drum_track {drum_note_track,
+                                  {},
+                                  SqueezeSettings::default_settings(),
+                                  {false, false, true, false},
+                                  ChDrumEngine(),
+                                  {},
+                                  {}};
+        const auto& drum_points = drum_track.points();
+        Path path {{{drum_points.cbegin() + 2, drum_points.cbegin() + 2,
+                     Beat {8.0}, Beat {24.0}},
+                    {drum_points.cend() - 1, drum_points.cend() - 1,
+                     Beat {68.0}, Beat {84.0}}},
+                   100};
+
+        const char* desired_path_output = "Path: 0-1\n"
+                                          "No SP score: 400\n"
+                                          "Total score: 500\n"
+                                          "Average multiplier: 1.250x";
+
+        REQUIRE(drum_track.path_summary(path) == desired_path_output);
+    }
+
+    SECTION("Alternate path notation (L) and (E) are used for drums")
+    {
+        std::vector<Note<DrumNoteColour>> drum_notes {
+            {0}, {390}, {1536}, {5568}, {5755}, {6912}, {9984}, {13056}};
+        std::vector<StarPower> drum_phrases {
+            {0, 1}, {390, 1}, {5568, 1}, {5755, 1}};
+        NoteTrack<DrumNoteColour> drum_note_track {
+            drum_notes, drum_phrases, {}, {}, {}, {}, 192};
+        drum_note_track.generate_drum_fills({{}, 192, ChDrumEngine(), {}});
+        ProcessedSong drum_track {drum_note_track,
+                                  {},
+                                  SqueezeSettings::default_settings(),
+                                  {false, false, true, false},
+                                  ChDrumEngine(),
+                                  {},
+                                  {}};
+        const auto& drum_points = drum_track.points();
+        Path path {{{drum_points.cbegin() + 2, drum_points.cbegin() + 2,
+                     Beat {8.0}, Beat {24.0}},
+                    {drum_points.cend() - 1, drum_points.cend() - 1,
+                     Beat {68.0}, Beat {84.0}}},
+                   100};
+
+        const char* desired_path_output = "Path: 0(E)-1(L)\n"
+                                          "No SP score: 400\n"
+                                          "Total score: 500\n"
+                                          "Average multiplier: 1.250x";
+
+        REQUIRE(drum_track.path_summary(path) == desired_path_output);
+    }
+
     SECTION("Average multiplier is ignored with RB")
     {
         Path path {{}, 0};
