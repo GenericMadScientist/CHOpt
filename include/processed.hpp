@@ -102,6 +102,7 @@ private:
     }
 
     std::vector<std::string> act_summaries(const Path& path) const;
+    std::vector<std::string> drum_act_summaries(const Path& path) const;
     void append_activation(std::stringstream& stream,
                            const Activation& activation,
                            const std::string& act_summary) const;

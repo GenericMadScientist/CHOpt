@@ -354,76 +354,80 @@ std::vector<std::string> ProcessedSong::act_summaries(const Path& path) const
 {
     std::vector<std::string> activation_summaries;
     auto start_point = m_points.cbegin();
-    if (!m_is_drums) {
-        for (const auto& act : path.activations) {
-            const auto sp_before
-                = std::count_if(start_point, act.act_start, [](const auto& p) {
-                      return p.is_sp_granting_note;
-                  });
-            const auto sp_during = std::count_if(
-                act.act_start, std::next(act.act_end),
-                [](const auto& p) { return p.is_sp_granting_note; });
-            auto summary = std::to_string(sp_before);
-            if (sp_during != 0) {
-                summary += "(+";
-                summary += std::to_string(sp_during);
-                summary += ")";
-            }
-            activation_summaries.push_back(summary);
-            start_point = std::next(act.act_end);
-        }
-
-        const auto spare_sp
-            = std::count_if(start_point, m_points.cend(), [](const auto& p) {
+    for (const auto& act : path.activations) {
+        const auto sp_before
+            = std::count_if(start_point, act.act_start, [](const auto& p) {
                   return p.is_sp_granting_note;
               });
-        if (spare_sp != 0) {
-            activation_summaries.push_back(std::string("ES")
-                                           + std::to_string(spare_sp));
+        const auto sp_during = std::count_if(
+            act.act_start, std::next(act.act_end),
+            [](const auto& p) { return p.is_sp_granting_note; });
+        auto summary = std::to_string(sp_before);
+        if (sp_during != 0) {
+            summary += "(+";
+            summary += std::to_string(sp_during);
+            summary += ")";
         }
-    } else {
-        for (const auto& act : path.activations) {
-            assert(act.act_start->fill_start.has_value()); // NOLINT
-            int sp_count = 0;
-            while (sp_count < 2) {
-                if (start_point->is_sp_granting_note) {
-                    ++sp_count;
-                }
+        activation_summaries.push_back(summary);
+        start_point = std::next(act.act_end);
+    }
+
+    const auto spare_sp
+        = std::count_if(start_point, m_points.cend(),
+                        [](const auto& p) { return p.is_sp_granting_note; });
+    if (spare_sp != 0) {
+        activation_summaries.push_back(std::string("ES")
+                                       + std::to_string(spare_sp));
+    }
+
+    return activation_summaries;
+}
+
+std::vector<std::string>
+ProcessedSong::drum_act_summaries(const Path& path) const
+{
+    std::vector<std::string> activation_summaries;
+    auto start_point = m_points.cbegin();
+    for (const auto& act : path.activations) {
+        assert(act.act_start->fill_start.has_value()); // NOLINT
+        int sp_count = 0;
+        while (sp_count < 2) {
+            if (start_point->is_sp_granting_note) {
+                ++sp_count;
+            }
+            ++start_point;
+        }
+        const auto early_fill_point
+            = m_converter.beats_to_seconds(
+                  std::prev(start_point)->hit_window_start.beat)
+            + Second(2.0);
+        const auto late_fill_point
+            = m_converter.beats_to_seconds(
+                  std::prev(start_point)->hit_window_end.beat)
+            + Second(2.0);
+        const auto skipped_fills
+            = std::count_if(start_point, act.act_start, [&](const auto& p) {
+                  return p.fill_start.has_value()
+                      && *p.fill_start >= early_fill_point;
+              });
+        if (skipped_fills == 0
+            && late_fill_point > *act.act_start->fill_start) {
+            activation_summaries.emplace_back("0(E)");
+        } else if (skipped_fills > 0) {
+            while (!start_point->fill_start.has_value()) {
                 ++start_point;
             }
-            const auto early_fill_point
-                = m_converter.beats_to_seconds(
-                      std::prev(start_point)->hit_window_start.beat)
-                + Second(2.0);
-            const auto late_fill_point
-                = m_converter.beats_to_seconds(
-                      std::prev(start_point)->hit_window_end.beat)
-                + Second(2.0);
-            const auto skipped_fills
-                = std::count_if(start_point, act.act_start, [&](const auto& p) {
-                      return p.fill_start.has_value()
-                          && *p.fill_start >= early_fill_point;
-                  });
-            if (skipped_fills == 0
-                && late_fill_point > *act.act_start->fill_start) {
-                activation_summaries.push_back("0(E)");
-            } else if (skipped_fills > 0) {
-                while (!start_point->fill_start.has_value()) {
-                    ++start_point;
-                }
-                if (late_fill_point > *start_point->fill_start
-                    && early_fill_point < *start_point->fill_start) {
-                    activation_summaries.push_back(
-                        std::to_string(skipped_fills - 1) + "(L)");
-                } else {
-                    activation_summaries.push_back(
-                        std::to_string(skipped_fills));
-                }
+            if (late_fill_point > *start_point->fill_start
+                && early_fill_point < *start_point->fill_start) {
+                activation_summaries.push_back(std::to_string(skipped_fills - 1)
+                                               + "(L)");
             } else {
                 activation_summaries.push_back(std::to_string(skipped_fills));
             }
-            start_point = std::next(act.act_end);
+        } else {
+            activation_summaries.push_back(std::to_string(skipped_fills));
         }
+        start_point = std::next(act.act_end);
     }
 
     return activation_summaries;
@@ -436,7 +440,8 @@ std::string ProcessedSong::path_summary(const Path& path) const
     std::stringstream stream;
     stream << "Path: ";
 
-    const auto activation_summaries = act_summaries(path);
+    const auto activation_summaries
+        = m_is_drums ? drum_act_summaries(path) : act_summaries(path);
     if (activation_summaries.empty()) {
         stream << "None";
     } else {
