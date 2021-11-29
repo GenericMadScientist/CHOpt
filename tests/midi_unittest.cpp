@@ -105,6 +105,21 @@ TEST_CASE("Track magic number is checked")
     REQUIRE_THROWS_AS([&] { return parse_midi(data); }(), ParseError);
 }
 
+TEST_CASE("Extra tracks in header are ignored")
+{
+    std::vector<std::uint8_t> track_one {0x4D, 0x54, 0x72, 0x6B, 0, 0, 0, 0};
+    std::vector<std::uint8_t> track_two {0x4D, 0x54, 0x72, 0x6B, 0,    0,
+                                         0,    4,    0,    0x85, 0x60, 0};
+    auto data = midi_from_tracks({track_one, track_two});
+    data[11] = 3;
+
+    const auto midi = parse_midi(data);
+
+    REQUIRE(midi.tracks.size() == 2);
+    REQUIRE(midi.tracks[0].events.empty());
+    REQUIRE(midi.tracks[1].events.size() == 1);
+}
+
 TEST_CASE("Event times are handled correctly")
 {
     SECTION("Multi-byte delta times are parsed correctly")

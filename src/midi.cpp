@@ -260,6 +260,9 @@ Midi parse_midi(const std::vector<std::uint8_t>& data)
     span = read_midi_header(span, header);
     std::vector<MidiTrack> tracks;
     for (auto i = 0; i < header.num_of_tracks; ++i) {
+        if (span.size() == 0) {
+            break;
+        }
         MidiTrack track {};
         span = read_midi_track(span, track);
         tracks.push_back(track);
