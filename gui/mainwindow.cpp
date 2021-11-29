@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <limits>
 #include <stdexcept>
 
 #include <QDesktopServices>
@@ -111,6 +110,10 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , m_ui {std::make_unique<Ui::MainWindow>()}
 {
+    // This is the maximum for our validators instead of MAX_INT because with
+    // MAX_INT the user can enter 9,999,999,999 which causes an overflow.
+    constexpr int max_digits_int = 999999999;
+
     m_ui->setupUi(this);
     m_ui->instrumentComboBox->setEnabled(false);
     m_ui->difficultyComboBox->setEnabled(false);
@@ -123,10 +126,10 @@ MainWindow::MainWindow(QWidget* parent)
                                   QVariant::fromValue(EngineType::RockBand3));
     m_ui->findPathButton->setEnabled(false);
 
-    m_ui->lazyWhammyLineEdit->setValidator(new QIntValidator(
-        0, std::numeric_limits<int>::max(), m_ui->lazyWhammyLineEdit));
-    m_ui->whammyDelayLineEdit->setValidator(new QIntValidator(
-        0, std::numeric_limits<int>::max(), m_ui->whammyDelayLineEdit));
+    m_ui->lazyWhammyLineEdit->setValidator(
+        new QIntValidator(0, max_digits_int, m_ui->lazyWhammyLineEdit));
+    m_ui->whammyDelayLineEdit->setValidator(
+        new QIntValidator(0, max_digits_int, m_ui->whammyDelayLineEdit));
     m_ui->speedLineEdit->setValidator(
         new QIntValidator(5, 5000, m_ui->speedLineEdit));
 

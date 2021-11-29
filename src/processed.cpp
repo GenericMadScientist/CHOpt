@@ -447,7 +447,7 @@ std::string ProcessedSong::path_summary(const Path& path) const
     } else {
         stream << activation_summaries[0];
         for (std::size_t i = 1; i < activation_summaries.size(); ++i) {
-            stream << "-" << activation_summaries[i];
+            stream << '-' << activation_summaries[i];
         }
     }
 
