@@ -66,8 +66,6 @@ FetchContent_MakeAvailable(Nowide)
 
 # We do not care about building nowide's tests
 set(BUILD_TESTING OFF)
-set_property(TARGET nowide PROPERTY MSVC_RUNTIME_LIBRARY
-                                    "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
 
 cmake_policy(SET CMP0083 NEW)
 include(CheckPIESupported)
@@ -102,8 +100,6 @@ target_link_libraries_system(chopt PRIVATE argparse nowide)
 target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES})
 
 set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
-set_property(TARGET chopt PROPERTY MSVC_RUNTIME_LIBRARY
-                                   "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
 set_cpp_standard(chopt)
 set_warnings(chopt)
 enable_sanitisers(chopt)
@@ -147,9 +143,9 @@ if(BUILD_GUI)
   target_link_libraries(choptgui PRIVATE ${PNG_LIBRARIES} Qt6::Widgets)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
-  set_property(
-    TARGET choptgui PROPERTY MSVC_RUNTIME_LIBRARY
-                             "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
+  if(APPLE)
+    set_property(TARGET choptgui PROPERTY MACOSX_BUNDLE TRUE)
+  endif()
   set_cpp_standard(choptgui)
 endif()
 
