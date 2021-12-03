@@ -7,10 +7,9 @@ A program to generate optimal Star Power paths for Clone Hero.
 ## Install
 
 Download the latest version from the [Releases page](../../releases). If you're
-on something other than Windows or Linux, then either compile it yourself or ask
-me. The tests do pass on Mac OS, but I've not tried the program proper on it. If
-you do plan to compile CHOpt yourself, make sure to set ENABLE_LTO to ON in your
-CMakeCache.
+on Windows, you will need to have installed the latest Visual Studio
+Redistributable whose installer can be obtained
+[here](https://aka.ms/vs/17/release/vc_redist.x64.exe).
 
 ## Usage
 
@@ -92,9 +91,9 @@ details).
 getting an initial idea of Clone Hero's parsing behaviour.
 * Dinoguy1000 and shadoweh helped me make sure CHOpt runs on other peoples'
 machines.
-* Various users for feedback, including 3-UP, CyclopsDragon, DNelson,
-Generalguy26, GHNerd, Haggis, Joel, Jrh, Kyleruth, LightlessWalk, Lucretio,
-RileyTheFox, Taka, Venxm, and Zantor.
+* Various users for feedback and testing, including 3-UP, CyclopsDragon,
+DNelson, Generalguy26, GHNerd, Haggis, Joel, Jrh, Kyleruth, LightlessWalk,
+Littlejth, Lucretio, RileyTheFox, Taka, Venxm, and Zantor.
 
 ## Contact
 

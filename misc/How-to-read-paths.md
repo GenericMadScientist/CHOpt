@@ -38,6 +38,7 @@ activation.
 ## Images
 
 CHOpt highlights regions of the song with the following colours:
+
 * blue: where star power should be active
 * green: where a star power phrase is
 * red: where to squeeze at the start and end of an activation
