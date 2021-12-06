@@ -16,7 +16,6 @@ matrix:
   fast_finish: true
 
 before_build:
-  - cmd: vcpkg install libpng:x64-windows
   - ps: mkdir artifacts
   - ps: mkdir build
   - ps: cd build
@@ -30,13 +29,13 @@ for:
     cache: C:\Tools\vcpkg\installed\
 
     build_script:
-    - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DQt6_DIR=C:\Qt\6.2.1\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.2.1\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.2.1\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.2.1\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 16 2019" ..
+    - cmd: vcpkg install libpng:x64-windows
+    - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DQt6_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 16 2019" ..
     - cmd: cmake --build . --verbose --config %CONFIGURATION%
 
     test_script:
     - cmd: ctest --verbose -C %CONFIGURATION%
     - cmd: cd ..
-    - cmd: set PATH=C:\Python39-x64;C:\Python39-x64\Scripts;%PATH%
     - cmd: python integration_tests\run_integration_tests.py
     - cmd: clang-format -i gui\*.hpp gui\*.cpp include\*.hpp src\*.cpp tests\*.cpp
     - cmd: git diff --color --exit-code
@@ -45,14 +44,14 @@ for:
 
     before_deploy:
     - cmd: cd build
-    - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DQt6_DIR=C:\Qt\6.2.1\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.2.1\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.2.1\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.2.1\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 16 2019" ..
+    - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DQt6_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 16 2019" ..
     - cmd: cmake --build . --verbose --config Release
     - cmd: cd Release
     - cmd: rename chopt.exe CHOpt.exe
     - cmd: 7z a "..\artifacts\CHOpt CLI %APPVEYOR_BUILD_VERSION% (x64 Windows).zip" CHOpt.exe libpng16.dll zlib1.dll
     - cmd: del CHOpt.exe
     - cmd: rename choptgui.exe CHOpt.exe
-    - cmd: C:\Qt\6.2.1\msvc2019_64\bin\windeployqt.exe --release --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations CHOpt.exe
+    - cmd: C:\Qt\6.2.2\msvc2019_64\bin\windeployqt.exe --release --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations CHOpt.exe
     - cmd: 7z a "..\artifacts\CHOpt GUI %APPVEYOR_BUILD_VERSION% (x64 Windows).zip" *
     - cmd: appveyor PushArtifact "..\artifacts\CHOpt CLI %APPVEYOR_BUILD_VERSION% (x64 Windows).zip"
     - cmd: appveyor PushArtifact "..\artifacts\CHOpt GUI %APPVEYOR_BUILD_VERSION% (x64 Windows).zip"
