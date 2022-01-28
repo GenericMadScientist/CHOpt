@@ -25,7 +25,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-#include "nowide_wrapper.hpp"
+#include <boost/nowide/fstream.hpp>
 
 #include "song.hpp"
 

@@ -19,7 +19,8 @@
 #include <ostream>
 #include <stdexcept>
 
-#include "nowide_wrapper.hpp"
+#include <boost/nowide/args.hpp>
+#include <boost/nowide/iostream.hpp>
 
 #include "image.hpp"
 #include "optimiser.hpp"

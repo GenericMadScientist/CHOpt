@@ -19,7 +19,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "nowide_wrapper.hpp"
+#include <boost/nowide/iostream.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
