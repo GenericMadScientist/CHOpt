@@ -32,29 +32,32 @@ int main(int argc, char** argv)
     try {
         boost::nowide::args a(argc, argv);
         const auto settings = from_args(argc, argv);
-        const auto song = Song::from_filename(settings.filename);
+        if (!settings.has_value()) {
+            return EXIT_SUCCESS;
+        }
+        const auto song = Song::from_filename(settings->filename);
         const auto instruments = song.instruments();
         if (std::find(instruments.cbegin(), instruments.cend(),
-                      settings.instrument)
+                      settings->instrument)
             == instruments.cend()) {
             throw std::invalid_argument(
                 "Chosen instrument not present in song");
         }
-        const auto difficulties = song.difficulties(settings.instrument);
+        const auto difficulties = song.difficulties(settings->instrument);
         if (std::find(difficulties.cbegin(), difficulties.cend(),
-                      settings.difficulty)
+                      settings->difficulty)
             == difficulties.cend()) {
             throw std::invalid_argument(
                 "Difficulty not available for chosen instrument");
         }
         const std::atomic<bool> terminate {false};
         const auto builder = make_builder(
-            song, settings, [&](auto p) { boost::nowide::cout << p << '\n'; },
+            song, *settings, [&](auto p) { boost::nowide::cout << p << '\n'; },
             &terminate);
         boost::nowide::cout << std::flush;
-        if (settings.draw_image) {
+        if (settings->draw_image) {
             const Image image {builder};
-            image.save(settings.image_path.c_str());
+            image.save(settings->image_path.c_str());
         }
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {

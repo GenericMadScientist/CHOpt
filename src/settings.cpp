@@ -19,29 +19,14 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "argparse_wrapper.hpp"
+#include "nowide_wrapper.hpp"
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/variables_map.hpp>
 
 #include "settings.hpp"
 
-static int str_to_int(const std::string& value)
-{
-    std::size_t pos = 0;
-    const auto converted_value = std::stoi(value, &pos);
-    if (pos != value.size()) {
-        throw std::invalid_argument("Could not convert string to int");
-    }
-    return converted_value;
-}
-
-static float str_to_float(const std::string& value)
-{
-    std::size_t pos = 0;
-    const auto converted_value = std::stof(value, &pos);
-    if (pos != value.size()) {
-        throw std::invalid_argument("Could not convert string to float");
-    }
-    return converted_value;
-}
+namespace po = boost::program_options;
 
 static bool is_valid_image_path(const std::string& path)
 {
@@ -136,7 +121,7 @@ static std::unique_ptr<Engine> string_to_engine(std::string_view engine,
     throw std::invalid_argument("Invalid engine specified");
 }
 
-Settings from_args(int argc, char** argv)
+std::optional<Settings> from_args(int argc, char** argv)
 {
     constexpr float DEFAULT_OPACITY = 0.33F;
     constexpr int DEFAULT_SPEED = 100;
@@ -146,135 +131,90 @@ Settings from_args(int argc, char** argv)
     constexpr int MIN_SPEED = 5;
     constexpr double MS_PER_SECOND = 1000.0;
 
-    argparse::ArgumentParser program {"CHOpt"};
+    po::options_description desc {"Allowed options"};
 
-    program.add_argument("-f", "--file")
-        .default_value(std::string {"-"})
-        .help("chart filename");
-    program.add_argument("-o", "--output")
-        .default_value(std::string {"path.png"})
-        .help("location to save output image (must be a .bmp or .png), "
-              "defaults to path.png");
-    program.add_argument("-d", "--diff")
-        .default_value(std::string {"expert"})
-        .help("difficulty, options are easy, medium, hard, expert, defaults to "
-              "expert");
-    program.add_argument("-i", "--instrument")
-        .default_value(std::string {"guitar"})
-        .help("instrument, options are guitar, coop, bass, rhythm, keys, ghl, "
-              "ghlbass, drums, defaults to guitar");
-    program.add_argument("--sqz", "--squeeze")
-        .default_value(MAX_PERCENT)
-        .help("squeeze% (0 to 100), defaults to 100")
-        .action([](const std::string& value) { return str_to_int(value); });
-    program.add_argument("--ew", "--early-whammy")
-        .default_value(std::string {"match"})
-        .help("early whammy% (0 to 100), <= squeeze, defaults to squeeze");
-    program.add_argument("--lazy", "--lazy-whammy")
-        .default_value(0)
-        .help("time before whammying starts on sustains in milliseconds, "
-              "defaults to 0")
-        .action([](const std::string& value) { return str_to_int(value); });
-    program.add_argument("--delay", "--whammy-delay")
-        .default_value(0)
-        .help("time after an activation ends before whammying can resume, "
-              "defaults to 0")
-        .action([](const std::string& value) { return str_to_int(value); });
-    program.add_argument("--lag", "--video-lag")
-        .default_value(0)
-        .help("video lag calibration setting in milliseconds, defaults to 0")
-        .action([](const std::string& value) { return str_to_int(value); });
-    program.add_argument("-s", "--speed")
-        .help("speed in %, defaults to 100")
-        .default_value(DEFAULT_SPEED)
-        .action([](const std::string& value) { return str_to_int(value); });
-    program.add_argument("--no-double-kick")
-        .help("disable 2x kick for drum charts")
-        .default_value(false)
-        .implicit_value(true);
-    program.add_argument("--no-kick")
-        .help("disable single kicks for drum charts")
-        .default_value(false)
-        .implicit_value(true);
-    program.add_argument("--no-pro-drums")
-        .help("disable pro drums")
-        .default_value(false)
-        .implicit_value(true);
-    program.add_argument("--enable-dynamics")
-        .help("enable double points for ghost and accented notes")
-        .default_value(false)
-        .implicit_value(true);
-    program.add_argument("--engine")
-        .default_value(std::string {"ch"})
-        .help("engine, options are ch, rb, and rb3, defaults to ch");
-    program.add_argument("-p", "--precision-mode")
-        .help("turn on precision mode for CH")
-        .default_value(false)
-        .implicit_value(true);
-    program.add_argument("-b", "--blank")
-        .help("give a blank chart image")
-        .default_value(false)
-        .implicit_value(true);
-    program.add_argument("--no-image")
-        .help("do not create an image")
-        .default_value(false)
-        .implicit_value(true);
-    program.add_argument("--no-bpms")
-        .help("do not draw BPMs")
-        .default_value(false)
-        .implicit_value(true);
-    program.add_argument("--no-solos")
-        .help("do not draw solo sections")
-        .default_value(false)
-        .implicit_value(true);
-    program.add_argument("--no-time-sigs")
-        .help("do not draw time signatures")
-        .default_value(false)
-        .implicit_value(true);
-    program.add_argument("--act-opacity")
-        .help("opacity of drawn activations (0.0 to 1.0), defaults to 0.33")
-        .default_value(DEFAULT_OPACITY)
-        .action([](const std::string& value) { return str_to_float(value); });
+    auto add_option = desc.add_options();
+    add_option("help,h", "produce help message");
+    add_option("file,f", po::value<std::string>(), "chart filename");
+    add_option("output,o", po::value<std::string>()->default_value("path.png"),
+               "location to save output image (must be a .bmp or .png)");
+    add_option("diff,d", po::value<std::string>()->default_value("expert"),
+               "difficulty, options are easy, medium, hard, expert");
+    add_option("instrument,i",
+               po::value<std::string>()->default_value("guitar"),
+               "instrument, options are guitar, coop, bass, rhythm, keys, ghl, "
+               "ghlbass, drums");
+    add_option("squeeze,sqz", po::value<int>()->default_value(MAX_PERCENT),
+               "squeeze% (0 to 100)");
+    add_option("early-whammy,ew", po::value<int>(),
+               "early whammy% (0 to 100), <= squeeze, defaults to squeeze");
+    add_option("lazy-whammy,lazy", po::value<int>()->default_value(0),
+               "time before whammying starts on sustains in milliseconds");
+    add_option("whammy-delay,delay", po::value<int>()->default_value(0),
+               "time after an activation ends before whammying can resume");
+    add_option("video-lag,lag", po::value<int>()->default_value(0),
+               "video lag calibration setting in milliseconds");
+    add_option("speed,s", po::value<int>()->default_value(DEFAULT_SPEED),
+               "speed in %");
+    add_option("no-double-kick", "disable 2x kick for drum charts");
+    add_option("no-kick", "disable single kicks for drum charts");
+    add_option("no-pro-drums", "disable pro drums");
+    add_option("enable-dynamics",
+               "enable double points for ghost and accented notes");
+    add_option("engine", po::value<std::string>()->default_value("ch"),
+               "engine, options are ch, rb, and rb3");
+    add_option("precision-mode,p", "turn on precision mode for CH");
+    add_option("blank,b", "give a blank chart image");
+    add_option("no-image", "do not create an image");
+    add_option("no-bpms", "do not draw BPMs");
+    add_option("no-solos", "do not draw solo sections");
+    add_option("no-time-sigs", "do not draw time signatures");
+    add_option("act-opacity",
+               po::value<float>()->default_value(DEFAULT_OPACITY),
+               "opacity of drawn activations (0.0 to 1.0)");
 
-    program.parse_args(argc, argv);
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+
+    if (vm.count("help")) {
+        boost::nowide::cout << desc << '\n';
+        return {};
+    }
 
     Settings settings;
 
-    settings.blank = program.get<bool>("--blank");
-    settings.filename = program.get<std::string>("--file");
-    if (settings.filename == "-") {
+    settings.blank = vm.count("blank") != 0;
+    if (vm.count("file") == 0) {
         throw std::invalid_argument("No file was specified");
     }
+    settings.filename = vm["file"].as<std::string>();
 
-    settings.difficulty = string_to_diff(program.get<std::string>("--diff"));
-    settings.instrument
-        = string_to_inst(program.get<std::string>("--instrument"));
+    settings.difficulty = string_to_diff(vm["diff"].as<std::string>());
+    settings.instrument = string_to_inst(vm["instrument"].as<std::string>());
 
-    const auto image_path = program.get<std::string>("--output");
-    if (!is_valid_image_path(image_path)) {
+    settings.image_path = vm["output"].as<std::string>();
+    if (!is_valid_image_path(settings.image_path)) {
         throw std::invalid_argument(
             "Image output must be a bitmap or png (.bmp / .png)");
     }
-    settings.image_path = image_path;
 
-    settings.draw_image = !program.get<bool>("--no-image");
-    settings.draw_bpms = !program.get<bool>("--no-bpms");
-    settings.draw_solos = !program.get<bool>("--no-solos");
-    settings.draw_time_sigs = !program.get<bool>("--no-time-sigs");
-    settings.drum_settings.enable_double_kick
-        = !program.get<bool>("--no-double-kick");
-    settings.drum_settings.disable_kick = program.get<bool>("--no-kick");
-    settings.drum_settings.pro_drums = !program.get<bool>("--no-pro-drums");
-    settings.drum_settings.enable_dynamics
-        = program.get<bool>("--enable-dynamics");
+    settings.draw_image = vm.count("no-image") == 0;
+    settings.draw_bpms = vm.count("no-bpms") == 0;
+    settings.draw_solos = vm.count("no-solos") == 0;
+    settings.draw_time_sigs = vm.count("no-time-sigs") == 0;
+    settings.drum_settings.enable_double_kick = vm.count("no-double-kick") == 0;
+    settings.drum_settings.disable_kick = vm.count("no-kick") != 0;
+    settings.drum_settings.pro_drums = vm.count("no-pro-drums") == 0;
+    settings.drum_settings.enable_dynamics = vm.count("enable-dynamics") != 0;
 
-    const auto squeeze = program.get<int>("--squeeze");
+    const auto squeeze = vm["squeeze"].as<int>();
     auto early_whammy = squeeze;
-    if (program.get<std::string>("--early-whammy") != "match") {
-        early_whammy = str_to_int(program.get<std::string>("--early-whammy"));
+    if (vm.count("early-whammy") != 0) {
+        early_whammy = vm["early-whammy"].as<int>();
     }
-    const auto lazy_whammy = program.get<int>("--lazy-whammy");
-    const auto whammy_delay = program.get<int>("--whammy-delay");
+    const auto lazy_whammy = vm["lazy-whammy"].as<int>();
+    const auto whammy_delay = vm["whammy-delay"].as<int>();
 
     if (squeeze < 0 || squeeze > MAX_PERCENT) {
         throw std::invalid_argument("Squeeze must lie between 0 and 100");
@@ -298,7 +238,7 @@ Settings from_args(int argc, char** argv)
     settings.squeeze_settings.whammy_delay
         = Second {whammy_delay / MS_PER_SECOND};
 
-    const auto video_lag = program.get<int>("--video-lag");
+    const auto video_lag = vm["video-lag"].as<int>();
     if (video_lag < -MAX_VIDEO_LAG || video_lag > MAX_VIDEO_LAG) {
         throw std::invalid_argument(
             "Video lag setting unsupported by Clone Hero");
@@ -306,19 +246,19 @@ Settings from_args(int argc, char** argv)
 
     settings.squeeze_settings.video_lag = Second {video_lag / MS_PER_SECOND};
 
-    const auto precision_mode = program.get<bool>("--precision-mode");
-    const auto engine_name = program.get<std::string>("--engine");
+    const auto precision_mode = vm.count("precision-mode") != 0;
+    const auto engine_name = vm["engine"].as<std::string>();
     settings.engine
         = string_to_engine(engine_name, settings.instrument, precision_mode);
 
-    const auto speed = program.get<int>("--speed");
+    const auto speed = vm["speed"].as<int>();
     if (speed < MIN_SPEED || speed > MAX_SPEED || speed % MIN_SPEED != 0) {
         throw std::invalid_argument("Speed unsupported by Clone Hero");
     }
 
     settings.speed = speed;
 
-    const auto opacity = program.get<float>("--act-opacity");
+    const auto opacity = vm["act-opacity"].as<float>();
     if (opacity < 0.0F || opacity > 1.0F) {
         throw std::invalid_argument(
             "Activation opacity should lie between 0.0 and 1.0");

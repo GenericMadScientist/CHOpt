@@ -20,6 +20,7 @@
 #define CHOPT_SETTINGS_HPP
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "engine.hpp"
@@ -82,7 +83,7 @@ struct Settings {
 };
 
 // Parses the command line options. If something is wrong with the options
-// chosen, an exception is thrown.
-Settings from_args(int argc, char** argv);
+// chosen, an exception is thrown. If --help is requested, returns empty.
+std::optional<Settings> from_args(int argc, char** argv);
 
 #endif
