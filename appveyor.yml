@@ -30,7 +30,7 @@ for:
 
     build_script:
     - cmd: vcpkg install libpng:x64-windows
-    - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DQt6_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 16 2019" ..
+    - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=C:\Libraries\boost_1_77_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 16 2019" ..
     - cmd: cmake --build . --verbose --config %CONFIGURATION%
 
     test_script:
@@ -39,8 +39,8 @@ for:
     - cmd: python integration_tests\run_integration_tests.py
     - cmd: clang-format -i gui\*.hpp gui\*.cpp include\*.hpp src\*.cpp tests\*.cpp
     - cmd: git diff --color --exit-code
-    - cmd: clang-tidy src\*.cpp -- -Iinclude -Ilibs -Ibuild\_deps\argparse-src\include -Ibuild\_deps\nowide-src\include -IC:\Tools\vcpkg\installed\x64-windows\include -std=c++17
-    - cmd: clang-tidy tests\*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-function-cognitive-complexity,-readability-magic-numbers -- -Iinclude -Ilibs -Ibuild\_deps\nowide-src\include -IC:\Tools\vcpkg\installed\x64-windows\include -std=c++17
+    - cmd: clang-tidy src\*.cpp -- -Iinclude -Ilibs -Ibuild\_deps\argparse-src\include -IC:\Libraries\boost_1_77_0 -IC:\Tools\vcpkg\installed\x64-windows\include -std=c++17
+    - cmd: clang-tidy tests\*.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-readability-function-cognitive-complexity,-readability-magic-numbers -- -Iinclude -Ilibs -IC:\Libraries\boost_1_77_0 -IC:\Tools\vcpkg\installed\x64-windows\include -std=c++17
 
     before_deploy:
     - cmd: cd build
@@ -62,7 +62,7 @@ for:
         - job_name: Mac OSX (Clang)
 
     build_script:
-    - sh: brew install libpng
+    - sh: brew install boost libpng
     - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DPACKAGE_TESTS=OFF -DCMAKE_FIND_FRAMEWORK=LAST -DQt6_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
@@ -91,13 +91,19 @@ for:
     build_script:
     - sh: sudo apt update
     - sh: sudo apt -y install libgl1-mesa-dev
-    - sh: cmake -DCMAKE_CXX_COMPILER=g++-9 -DPACKAGE_TESTS=OFF -DQt6_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6WidgetsTools ..
+    - sh: wget -O $HOME/boost_1_78_0.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2
+    - sh: tar --bzip2 -xf $HOME/boost_1_78_0.tar.bz2 -C $HOME
+    - sh: cd $HOME/boost_1_78_0
+    - sh: ./bootstrap.sh --with-libraries=nowide --prefix=.
+    - sh: ./b2 install > /dev/null
+    - sh: cd $HOME/projects/CHOpt/build
+    - sh: cmake -DCMAKE_CXX_COMPILER=g++-9 -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_78_0 -DQt6_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
     before_deploy:
     - sh: sudo apt -y install g++-10
     - sh: rm -rf *
-    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DQt6_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6WidgetsTools ..
+    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_78_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config Release
     - sh: strip -s chopt
     - sh: strip -s choptgui

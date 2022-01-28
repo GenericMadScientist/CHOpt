@@ -34,9 +34,9 @@
 #pragma warning(push, 0)
 #endif
 
-#include <nowide/args.hpp>
-#include <nowide/fstream.hpp>
-#include <nowide/iostream.hpp>
+#include <boost/nowide/args.hpp>
+#include <boost/nowide/fstream.hpp>
+#include <boost/nowide/iostream.hpp>
 
 #if defined(__clang__)
 #pragma clang diagnostic pop

@@ -49,7 +49,7 @@ Song Song::from_filename(const std::string& filename)
     const std::filesystem::path song_path {filename};
     const auto song_directory = song_path.parent_path();
     const auto ini_path = song_directory / "song.ini";
-    nowide::ifstream ini_in {ini_path.string()};
+    boost::nowide::ifstream ini_in {ini_path.string()};
     if (ini_in.is_open()) {
         ini_file = std::string {std::istreambuf_iterator<char>(ini_in),
                                 std::istreambuf_iterator<char>()};
@@ -57,7 +57,7 @@ Song Song::from_filename(const std::string& filename)
     const auto ini = parse_ini(ini_file);
 
     if (ends_with_suffix(filename, ".chart")) {
-        nowide::ifstream in {filename};
+        boost::nowide::ifstream in {filename};
         if (!in.is_open()) {
             throw std::invalid_argument("File did not open");
         }
@@ -66,7 +66,7 @@ Song Song::from_filename(const std::string& filename)
         return Song::from_chart(parse_chart(contents), ini);
     }
     if (ends_with_suffix(filename, ".mid")) {
-        nowide::ifstream in {filename, std::ios::binary};
+        boost::nowide::ifstream in {filename, std::ios::binary};
         if (!in.is_open()) {
             throw std::invalid_argument("File did not open");
         }

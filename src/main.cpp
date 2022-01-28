@@ -30,7 +30,7 @@
 int main(int argc, char** argv)
 {
     try {
-        nowide::args a(argc, argv);
+        boost::nowide::args a(argc, argv);
         const auto settings = from_args(argc, argv);
         const auto song = Song::from_filename(settings.filename);
         const auto instruments = song.instruments();
@@ -49,19 +49,19 @@ int main(int argc, char** argv)
         }
         const std::atomic<bool> terminate {false};
         const auto builder = make_builder(
-            song, settings, [&](auto p) { nowide::cout << p << '\n'; },
+            song, settings, [&](auto p) { boost::nowide::cout << p << '\n'; },
             &terminate);
-        nowide::cout << std::flush;
+        boost::nowide::cout << std::flush;
         if (settings.draw_image) {
             const Image image {builder};
             image.save(settings.image_path.c_str());
         }
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
-        nowide::cerr << "Error: " << e.what() << std::endl;
+        boost::nowide::cerr << "Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     } catch (...) {
-        nowide::cerr << "Unexpected non-exception error!" << std::endl;
+        boost::nowide::cerr << "Unexpected non-exception error!" << std::endl;
         return EXIT_FAILURE;
     }
 }

@@ -48,6 +48,7 @@ function(target_link_libraries_system target scope)
 endfunction()
 
 find_package(PNG REQUIRED)
+find_package(Boost 1.76 REQUIRED COMPONENTS nowide)
 
 include(FetchContent)
 
@@ -56,16 +57,7 @@ FetchContent_Declare(
   GIT_REPOSITORY "https://github.com/p-ranav/argparse"
   GIT_TAG "473d550ea313ea315a820b3b1b426254ad17061a")
 
-FetchContent_Declare(
-  Nowide
-  GIT_REPOSITORY "https://github.com/boostorg/nowide"
-  GIT_TAG "02f40f0b5f5686627fcddae93ff88ca399db4766")
-
 FetchContent_MakeAvailable(Argparse)
-FetchContent_MakeAvailable(Nowide)
-
-# We do not care about building nowide's tests
-set(BUILD_TESTING OFF)
 
 cmake_policy(SET CMP0083 NEW)
 include(CheckPIESupported)
@@ -96,8 +88,9 @@ add_executable(
 target_include_directories(
   chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs"
                 ${PNG_INCLUDE_DIRS})
-target_link_libraries_system(chopt PRIVATE argparse nowide)
-target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES})
+target_link_libraries_system(chopt PRIVATE argparse)
+target_link_directories(chopt PRIVATE ${Boost_LIBRARY_DIRS})
+target_link_libraries(chopt PRIVATE Boost::nowide ${PNG_LIBRARIES})
 
 set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 set_cpp_standard(chopt)
@@ -137,10 +130,12 @@ if(BUILD_GUI)
     resources/resources.qrc
     resources/resources.rc)
   target_include_directories(
-    choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include"
-                     "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
-  target_link_libraries_system(choptgui PRIVATE argparse nowide)
-  target_link_libraries(choptgui PRIVATE ${PNG_LIBRARIES} Qt6::Widgets)
+    choptgui
+    PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs"
+            ${PNG_INCLUDE_DIRS})
+  target_link_directories(choptgui PRIVATE ${Boost_LIBRARY_DIRS})
+  target_link_libraries_system(choptgui PRIVATE argparse)
+  target_link_libraries(choptgui PRIVATE Boost::nowide ${PNG_LIBRARIES} Qt6::Widgets)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
   if(APPLE)
