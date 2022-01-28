@@ -177,7 +177,7 @@ std::optional<Settings> from_args(int argc, char** argv)
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
 
-    if (vm.count("help")) {
+    if (vm.count("help") != 0) {
         boost::nowide::cout << desc << '\n';
         return {};
     }
