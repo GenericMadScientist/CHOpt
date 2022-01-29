@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE(chart_reads_easy_note_track_correctly)
     std::vector<StarPower> sp_phrases {{768, 100}};
 
     const auto song = Song::from_chart(chart, {});
-    const auto track = song.guitar_note_track(Difficulty::Easy);
+    const auto& track = song.guitar_note_track(Difficulty::Easy);
 
     BOOST_CHECK_EQUAL(track.resolution(), 192);
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
@@ -282,7 +282,7 @@ BOOST_AUTO_TEST_CASE(invalid_note_values_are_ignored)
     std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green}};
 
     const auto song = Song::from_chart(chart, {});
-    const auto parsed_notes
+    const auto& parsed_notes
         = song.guitar_note_track(Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_notes.cbegin(), parsed_notes.cend(),
@@ -339,7 +339,7 @@ BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
     std::vector<BPM> bpms {{0, 200000}};
 
     const auto song = Song::from_chart(chart, {});
-    const auto parsed_notes
+    const auto& parsed_notes
         = song.guitar_note_track(Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(song.resolution(), 200);
@@ -365,7 +365,7 @@ BOOST_AUTO_TEST_CASE(later_nonempty_sections_are_ignored)
     std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green}};
 
     const auto song = Song::from_chart(chart, {});
-    const auto parsed_notes
+    const auto& parsed_notes
         = song.guitar_note_track(Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_notes.cbegin(), parsed_notes.cend(),
@@ -382,7 +382,7 @@ BOOST_AUTO_TEST_CASE(leading_empty_sections_are_ignored)
     std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Red}};
 
     const auto song = Song::from_chart(chart, {});
-    const auto parsed_notes
+    const auto& parsed_notes
         = song.guitar_note_track(Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_notes.cbegin(), parsed_notes.cend(),
@@ -891,7 +891,7 @@ BOOST_AUTO_TEST_CASE(notes_of_every_difficulty_are_read)
     const auto song = Song::from_midi(midi, {});
 
     for (auto diff : diffs) {
-        const auto notes = song.guitar_note_track(diff).notes();
+        const auto& notes = song.guitar_note_track(diff).notes();
         BOOST_CHECK_EQUAL_COLLECTIONS(notes.cbegin(), notes.cend(),
                                       green_note.cbegin(), green_note.cend());
     }
@@ -1146,7 +1146,7 @@ BOOST_AUTO_TEST_CASE(a_single_phrase_is_read)
     const std::vector<StarPower> sp_phrases {{768, 132}};
 
     const auto song = Song::from_midi(midi, {});
-    const auto parsed_sp
+    const auto& parsed_sp
         = song.guitar_note_track(Difficulty::Expert).sp_phrases();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_sp.cbegin(), parsed_sp.cend(),
