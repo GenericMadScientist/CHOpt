@@ -25,9 +25,9 @@ BOOST_AUTO_TEST_CASE(default_ini_values_are_correct)
 {
     const auto ini_values = parse_ini("");
 
-    BOOST_TEST(ini_values.name == "Unknown Song");
-    BOOST_TEST(ini_values.artist == "Unknown Artist");
-    BOOST_TEST(ini_values.charter == "Unknown Charter");
+    BOOST_CHECK_EQUAL(ini_values.name, "Unknown Song");
+    BOOST_CHECK_EQUAL(ini_values.artist, "Unknown Artist");
+    BOOST_CHECK_EQUAL(ini_values.charter, "Unknown Charter");
 }
 
 BOOST_AUTO_TEST_CASE(values_with_no_spaces_around_equals_are_read)
@@ -37,9 +37,9 @@ BOOST_AUTO_TEST_CASE(values_with_no_spaces_around_equals_are_read)
 
     const auto ini_values = parse_ini(text);
 
-    BOOST_TEST(ini_values.name == "Dummy Song");
-    BOOST_TEST(ini_values.artist == "Dummy Artist");
-    BOOST_TEST(ini_values.charter == "Dummy Charter");
+    BOOST_CHECK_EQUAL(ini_values.name, "Dummy Song");
+    BOOST_CHECK_EQUAL(ini_values.artist, "Dummy Artist");
+    BOOST_CHECK_EQUAL(ini_values.charter, "Dummy Charter");
 }
 
 BOOST_AUTO_TEST_CASE(values_with_spaces_around_equals_are_read)
@@ -49,9 +49,9 @@ BOOST_AUTO_TEST_CASE(values_with_spaces_around_equals_are_read)
 
     const auto ini_values = parse_ini(text);
 
-    BOOST_TEST(ini_values.name == "Dummy Song 2");
-    BOOST_TEST(ini_values.artist == "Dummy Artist 2");
-    BOOST_TEST(ini_values.charter == "Dummy Charter 2");
+    BOOST_CHECK_EQUAL(ini_values.name, "Dummy Song 2");
+    BOOST_CHECK_EQUAL(ini_values.artist, "Dummy Artist 2");
+    BOOST_CHECK_EQUAL(ini_values.charter, "Dummy Charter 2");
 }
 
 BOOST_AUTO_TEST_CASE(equals_must_be_the_character_after_the_key)
@@ -60,9 +60,9 @@ BOOST_AUTO_TEST_CASE(equals_must_be_the_character_after_the_key)
 
     const auto ini_values = parse_ini(text);
 
-    BOOST_TEST(ini_values.name == "Unknown Song");
-    BOOST_TEST(ini_values.artist == "Unknown Artist");
-    BOOST_TEST(ini_values.charter == "Unknown Charter");
+    BOOST_CHECK_EQUAL(ini_values.name, "Unknown Song");
+    BOOST_CHECK_EQUAL(ini_values.artist, "Unknown Artist");
+    BOOST_CHECK_EQUAL(ini_values.charter, "Unknown Charter");
 }
 
 BOOST_AUTO_TEST_CASE(frets_is_a_synonym_for_charter)
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(frets_is_a_synonym_for_charter)
 
     const auto ini_values = parse_ini(text);
 
-    BOOST_TEST(ini_values.charter == "GMS");
+    BOOST_CHECK_EQUAL(ini_values.charter, "GMS");
 }
 
 BOOST_AUTO_TEST_CASE(blank_frets_after_charter_is_ignored)
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(blank_frets_after_charter_is_ignored)
 
     const auto ini_values = parse_ini(text);
 
-    BOOST_TEST(ini_values.charter == "Haggis");
+    BOOST_CHECK_EQUAL(ini_values.charter, "Haggis");
 }
 
 BOOST_AUTO_TEST_CASE(utf16le_inis_are_read_correctly)
@@ -92,5 +92,5 @@ BOOST_AUTO_TEST_CASE(utf16le_inis_are_read_correctly)
 
     const auto ini_values = parse_ini(text);
 
-    BOOST_TEST(ini_values.name == "Test");
+    BOOST_CHECK_EQUAL(ini_values.name, "Test");
 }

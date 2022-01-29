@@ -27,31 +27,31 @@ BOOST_AUTO_TEST_CASE(break_off_newline_works_correctly)
 {
     std::string_view data = "Hello\nThere\r\nWorld!";
 
-    BOOST_TEST(break_off_newline(data) == "Hello");
-    BOOST_TEST(data == "There\r\nWorld!");
-    BOOST_TEST(break_off_newline(data) == "There");
-    BOOST_TEST(data == "World!");
+    BOOST_CHECK_EQUAL(break_off_newline(data), "Hello");
+    BOOST_CHECK_EQUAL(data, "There\r\nWorld!");
+    BOOST_CHECK_EQUAL(break_off_newline(data), "There");
+    BOOST_CHECK_EQUAL(data, "World!");
 }
 
 BOOST_AUTO_TEST_CASE(skip_whitespace_works_correctly)
 {
-    BOOST_TEST(skip_whitespace("Hello") == "Hello");
-    BOOST_TEST(skip_whitespace("  Hello") == "Hello");
-    BOOST_TEST(skip_whitespace("H  ello") == "H  ello");
+    BOOST_CHECK_EQUAL(skip_whitespace("Hello"), "Hello");
+    BOOST_CHECK_EQUAL(skip_whitespace("  Hello"), "Hello");
+    BOOST_CHECK_EQUAL(skip_whitespace("H  ello"), "H  ello");
 }
 
 BOOST_AUTO_TEST_CASE(to_utf8_string_strips_utf8_bom)
 {
     const std::string text {"\xEF\xBB\xBF\x6E"};
 
-    BOOST_TEST(to_utf8_string(text) == "n");
+    BOOST_CHECK_EQUAL(to_utf8_string(text), "n");
 }
 
 BOOST_AUTO_TEST_CASE(to_utf8_string_treats_no_bom_string_as_utf8)
 {
     const std::string text {"Hello"};
 
-    BOOST_TEST(to_utf8_string(text) == "Hello");
+    BOOST_CHECK_EQUAL(to_utf8_string(text), "Hello");
 }
 
 BOOST_AUTO_TEST_CASE(to_utf8_string_correctly_converts_from_utf16le_to_utf8)
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(to_utf8_string_correctly_converts_from_utf16le_to_utf8)
         "\x00\x74\x00",
         20};
 
-    BOOST_TEST(to_utf8_string(text) == "name=Test");
+    BOOST_CHECK_EQUAL(to_utf8_string(text), "name=Test");
 }
 
 BOOST_AUTO_TEST_CASE(to_utf8_string_throws_on_a_string_with_odd_length)
@@ -73,13 +73,13 @@ BOOST_AUTO_TEST_CASE(to_utf8_string_throws_on_a_string_with_odd_length)
 
 BOOST_AUTO_TEST_CASE(to_ordinal_works_correctly)
 {
-    BOOST_TEST(to_ordinal(0) == "0th");
-    BOOST_TEST(to_ordinal(1) == "1st");
-    BOOST_TEST(to_ordinal(2) == "2nd");
-    BOOST_TEST(to_ordinal(3) == "3rd");
-    BOOST_TEST(to_ordinal(4) == "4th");
-    BOOST_TEST(to_ordinal(11) == "11th");
-    BOOST_TEST(to_ordinal(12) == "12th");
-    BOOST_TEST(to_ordinal(13) == "13th");
+    BOOST_CHECK_EQUAL(to_ordinal(0), "0th");
+    BOOST_CHECK_EQUAL(to_ordinal(1), "1st");
+    BOOST_CHECK_EQUAL(to_ordinal(2), "2nd");
+    BOOST_CHECK_EQUAL(to_ordinal(3), "3rd");
+    BOOST_CHECK_EQUAL(to_ordinal(4), "4th");
+    BOOST_CHECK_EQUAL(to_ordinal(11), "11th");
+    BOOST_CHECK_EQUAL(to_ordinal(12), "12th");
+    BOOST_CHECK_EQUAL(to_ordinal(13), "13th");
     BOOST_CHECK_THROW([&] { return to_ordinal(-1); }(), std::exception);
 }

@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,225 +16,214 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "catch.hpp"
+#define BOOST_TEST_MODULE Time Tests
+#include <boost/test/unit_test.hpp>
 
 #include "time.hpp"
 
-TEST_CASE("Beat operations", "Beat")
+static void operator<<(std::ostream& stream, Beat beat)
 {
-    SECTION(".value() works correctly")
-    {
-        REQUIRE(Beat(1.0).value() == Approx(1.0));
-        REQUIRE(Beat(-1.0).value() == Approx(-1.0));
-    }
-
-    SECTION(".to_second() works correctly")
-    {
-        REQUIRE(Beat(2.0).to_second(120000).value() == Approx(1.0));
-        REQUIRE(Beat(8.0).to_second(240000).value() == Approx(2.0));
-    }
-
-    SECTION(".to_measure() works correctly")
-    {
-        REQUIRE(Beat(2.0).to_measure(4.0).value() == Approx(0.5));
-        REQUIRE(Beat(8.0).to_measure(2.0).value() == Approx(4.0));
-    }
-
-    SECTION("< and > work correctly")
-    {
-        REQUIRE(Beat(1.0) < Beat(2.0));
-        REQUIRE(!(Beat(1.0) > Beat(2.0)));
-        REQUIRE(!(Beat(1.0) < Beat(0.5)));
-        REQUIRE(Beat(1.0) > Beat(0.5));
-        REQUIRE(!(Beat(1.0) < Beat(1.0)));
-        REQUIRE(!(Beat(1.0) > Beat(1.0)));
-    }
-
-    SECTION("<= and >= work correctly")
-    {
-        REQUIRE(Beat(1.0) <= Beat(2.0));
-        REQUIRE(!(Beat(1.0) >= Beat(2.0)));
-        REQUIRE(!(Beat(1.0) <= Beat(0.5)));
-        REQUIRE(Beat(1.0) >= Beat(0.5));
-        REQUIRE(Beat(1.0) <= Beat(1.0));
-        REQUIRE(Beat(1.0) >= Beat(1.0));
-    }
-
-    SECTION("+= and + work correctly")
-    {
-        Beat lhs {1.0};
-        Beat rhs {0.5};
-        lhs += rhs;
-
-        REQUIRE(lhs.value() == Approx(1.5));
-        REQUIRE((Beat(1.0) + Beat(0.5)).value() == Approx(1.5));
-    }
-
-    SECTION("-= and - work correctly")
-    {
-        Beat lhs {1.0};
-        Beat rhs {0.5};
-        lhs -= rhs;
-
-        REQUIRE(lhs.value() == Approx(0.5));
-        REQUIRE((Beat(1.0) - Beat(0.5)).value() == Approx(0.5));
-    }
-
-    SECTION("*= and * work correctly")
-    {
-        Beat lhs {1.0};
-        double rhs {0.5};
-        lhs *= rhs;
-
-        REQUIRE(lhs.value() == Approx(0.5));
-        REQUIRE((Beat(1.0) * 0.5).value() == Approx(0.5));
-    }
-
-    SECTION("/ works correctly")
-    {
-        REQUIRE(Beat(1.0) / Beat(2.0) == Approx(0.5));
-        REQUIRE(Beat(2.0) / Beat(1.0) == Approx(2.0));
-    }
+    stream << beat.value() << 'b';
 }
 
-TEST_CASE("Measure operations", "Measure")
+static void operator<<(std::ostream& stream, Measure measure)
 {
-    SECTION(".value() works correctly")
-    {
-        REQUIRE(Measure(1.0).value() == Approx(1.0));
-        REQUIRE(Measure(-1.0).value() == Approx(-1.0));
-    }
-
-    SECTION(".to_beat() works correctly")
-    {
-        REQUIRE(Measure(1.0).to_beat(4.0).value() == Approx(4.0));
-        REQUIRE(Measure(2.0).to_beat(3.0).value() == Approx(6.0));
-    }
-
-    SECTION("< and > work correctly")
-    {
-        REQUIRE(Measure(1.0) < Measure(2.0));
-        REQUIRE(!(Measure(1.0) > Measure(2.0)));
-        REQUIRE(!(Measure(1.0) < Measure(0.5)));
-        REQUIRE(Measure(1.0) > Measure(0.5));
-        REQUIRE(!(Measure(1.0) < Measure(1.0)));
-        REQUIRE(!(Measure(1.0) > Measure(1.0)));
-    }
-
-    SECTION("<= and >= work correctly")
-    {
-        REQUIRE(Measure(1.0) <= Measure(2.0));
-        REQUIRE(!(Measure(1.0) >= Measure(2.0)));
-        REQUIRE(!(Measure(1.0) <= Measure(0.5)));
-        REQUIRE(Measure(1.0) >= Measure(0.5));
-        REQUIRE(Measure(1.0) <= Measure(1.0));
-        REQUIRE(Measure(1.0) >= Measure(1.0));
-    }
-
-    SECTION("+= and + work correctly")
-    {
-        Measure lhs {1.0};
-        Measure rhs {0.5};
-        lhs += rhs;
-
-        REQUIRE(lhs.value() == Approx(1.5));
-        REQUIRE((Measure(1.0) + Measure(0.5)).value() == Approx(1.5));
-    }
-
-    SECTION("-= and - work correctly")
-    {
-        Measure lhs {1.0};
-        Measure rhs {0.5};
-        lhs -= rhs;
-
-        REQUIRE(lhs.value() == Approx(0.5));
-        REQUIRE((Measure(1.0) - Measure(0.5)).value() == Approx(0.5));
-    }
-
-    SECTION("*= and * work correctly")
-    {
-        Measure lhs {1.0};
-        double rhs {0.5};
-        lhs *= rhs;
-
-        REQUIRE(lhs.value() == Approx(0.5));
-        REQUIRE((Measure(1.0) * 0.5).value() == Approx(0.5));
-    }
-
-    SECTION("/ works correctly")
-    {
-        REQUIRE(Measure(1.0) / Measure(2.0) == Approx(0.5));
-        REQUIRE(Measure(2.0) / Measure(1.0) == Approx(2.0));
-    }
+    stream << measure.value() << 'm';
 }
 
-TEST_CASE("Second operations", "Second")
+static void operator<<(std::ostream& stream, Second second)
 {
-    SECTION(".value() works correctly")
-    {
-        REQUIRE(Second(1.0).value() == Approx(1.0));
-        REQUIRE(Second(-1.0).value() == Approx(-1.0));
-    }
-
-    SECTION(".to_beat() works correctly")
-    {
-        REQUIRE(Second(1.0).to_beat(120000).value() == Approx(2.0));
-        REQUIRE(Second(2.0).to_beat(240000).value() == Approx(8.0));
-    }
-
-    SECTION("< and > work correctly")
-    {
-        REQUIRE(Second(1.0) < Second(2.0));
-        REQUIRE(!(Second(1.0) > Second(2.0)));
-        REQUIRE(!(Second(1.0) < Second(0.5)));
-        REQUIRE(Second(1.0) > Second(0.5));
-        REQUIRE(!(Second(1.0) < Second(1.0)));
-        REQUIRE(!(Second(1.0) > Second(1.0)));
-    }
-
-    SECTION("<= and >= work correctly")
-    {
-        REQUIRE(Second(1.0) <= Second(2.0));
-        REQUIRE(!(Second(1.0) >= Second(2.0)));
-        REQUIRE(!(Second(1.0) <= Second(0.5)));
-        REQUIRE(Second(1.0) >= Second(0.5));
-        REQUIRE(Second(1.0) <= Second(1.0));
-        REQUIRE(Second(1.0) >= Second(1.0));
-    }
-
-    SECTION("+= and + work correctly")
-    {
-        Second lhs {1.0};
-        Second rhs {0.5};
-        lhs += rhs;
-
-        REQUIRE(lhs.value() == Approx(1.5));
-        REQUIRE((Second(1.0) + Second(0.5)).value() == Approx(1.5));
-    }
-
-    SECTION("-= and - work correctly")
-    {
-        Second lhs {1.0};
-        Second rhs {0.5};
-        lhs -= rhs;
-
-        REQUIRE(lhs.value() == Approx(0.5));
-        REQUIRE((Second(1.0) - Second(0.5)).value() == Approx(0.5));
-    }
-
-    SECTION("*= and * work correctly")
-    {
-        Second lhs {1.0};
-        double rhs {0.5};
-        lhs *= rhs;
-
-        REQUIRE(lhs.value() == Approx(0.5));
-        REQUIRE((Second(1.0) * 0.5).value() == Approx(0.5));
-    }
-
-    SECTION("/ works correctly")
-    {
-        REQUIRE(Second(1.0) / Second(2.0) == Approx(0.5));
-        REQUIRE(Second(2.0) / Second(1.0) == Approx(2.0));
-    }
+    stream << second.value() << 's';
 }
+
+BOOST_AUTO_TEST_SUITE(beat_operations)
+
+BOOST_AUTO_TEST_CASE(value_works_correctly)
+{
+    BOOST_CHECK_CLOSE(Beat(1.0).value(), 1.0, 0.0001);
+    BOOST_CHECK_CLOSE(Beat(-1.0).value(), -1.0, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(to_second_works_correctly)
+{
+    BOOST_CHECK_CLOSE(Beat(2.0).to_second(120000).value(), 1.0, 0.0001);
+    BOOST_CHECK_CLOSE(Beat(8.0).to_second(240000).value(), 2.0, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(to_measure_works_correctly)
+{
+    BOOST_CHECK_CLOSE(Beat(2.0).to_measure(4.0).value(), 0.5, 0.0001);
+    BOOST_CHECK_CLOSE(Beat(8.0).to_measure(2.0).value(), 4.0, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(order_operations_work_correctly)
+{
+    BOOST_CHECK_LT(Beat(1.0), Beat(2.0));
+    BOOST_CHECK_GT(Beat(1.0), Beat(0.5));
+    BOOST_CHECK_LE(Beat(1.0), Beat(2.0));
+    BOOST_CHECK_GE(Beat(1.0), Beat(0.5));
+    BOOST_CHECK_LE(Beat(1.0), Beat(1.0));
+    BOOST_CHECK_GE(Beat(1.0), Beat(1.0));
+}
+
+BOOST_AUTO_TEST_CASE(addition_works_correctly)
+{
+    Beat lhs {1.0};
+    Beat rhs {0.5};
+    lhs += rhs;
+
+    BOOST_CHECK_CLOSE(lhs.value(), 1.5, 0.0001);
+    BOOST_CHECK_CLOSE((Beat(1.0) + Beat(0.5)).value(), 1.5, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(subtraction_works_correctly)
+{
+    Beat lhs {1.0};
+    Beat rhs {0.5};
+    lhs -= rhs;
+
+    BOOST_CHECK_CLOSE(lhs.value(), 0.5, 0.0001);
+    BOOST_CHECK_CLOSE((Beat(1.0) - Beat(0.5)).value(), 0.5, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(multiplication_works_correctly)
+{
+    Beat lhs {1.0};
+    double rhs {0.5};
+    lhs *= rhs;
+
+    BOOST_CHECK_CLOSE(lhs.value(), 0.5, 0.0001);
+    BOOST_CHECK_CLOSE((Beat(1.0) * 0.5).value(), 0.5, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(division_works_correctly)
+{
+    BOOST_CHECK_CLOSE(Beat(1.0) / Beat(2.0), 0.5, 0.0001);
+    BOOST_CHECK_CLOSE(Beat(2.0) / Beat(1.0), 2.0, 0.0001);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(measure_operations)
+
+BOOST_AUTO_TEST_CASE(value_works_correctly)
+{
+    BOOST_CHECK_CLOSE(Measure(1.0).value(), 1.0, 0.0001);
+    BOOST_CHECK_CLOSE(Measure(-1.0).value(), -1.0, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(to_beat_works_correctly)
+{
+    BOOST_CHECK_CLOSE(Measure(1.0).to_beat(4.0).value(), 4.0, 0.0001);
+    BOOST_CHECK_CLOSE(Measure(2.0).to_beat(3.0).value(), 6.0, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(order_operations_work_correctly)
+{
+    BOOST_CHECK_LT(Measure(1.0), Measure(2.0));
+    BOOST_CHECK_GT(Measure(1.0), Measure(0.5));
+    BOOST_CHECK_LE(Measure(1.0), Measure(2.0));
+    BOOST_CHECK_GE(Measure(1.0), Measure(0.5));
+    BOOST_CHECK_LE(Measure(1.0), Measure(1.0));
+    BOOST_CHECK_GE(Measure(1.0), Measure(1.0));
+}
+
+BOOST_AUTO_TEST_CASE(addition_works_correctly)
+{
+    Measure lhs {1.0};
+    Measure rhs {0.5};
+    lhs += rhs;
+
+    BOOST_CHECK_CLOSE(lhs.value(), 1.5, 0.0001);
+    BOOST_CHECK_CLOSE((Measure(1.0) + Measure(0.5)).value(), 1.5, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(subtraction_works_correctly)
+{
+    Measure lhs {1.0};
+    Measure rhs {0.5};
+    lhs -= rhs;
+
+    BOOST_CHECK_CLOSE(lhs.value(), 0.5, 0.0001);
+    BOOST_CHECK_CLOSE((Measure(1.0) - Measure(0.5)).value(), 0.5, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(multiplication_works_correctly)
+{
+    Measure lhs {1.0};
+    double rhs {0.5};
+    lhs *= rhs;
+
+    BOOST_CHECK_CLOSE(lhs.value(), 0.5, 0.0001);
+    BOOST_CHECK_CLOSE((Measure(1.0) * 0.5).value(), 0.5, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(division_works_correctly)
+{
+    BOOST_CHECK_CLOSE(Measure(1.0) / Measure(2.0), 0.5, 0.0001);
+    BOOST_CHECK_CLOSE(Measure(2.0) / Measure(1.0), 2.0, 0.0001);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(second_operations)
+
+BOOST_AUTO_TEST_CASE(value_works_correctly)
+{
+    BOOST_CHECK_CLOSE(Second(1.0).value(), 1.0, 0.0001);
+    BOOST_CHECK_CLOSE(Second(-1.0).value(), -1.0, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(to_beat_works_correctly)
+{
+    BOOST_CHECK_CLOSE(Second(1.0).to_beat(120000).value(), 2.0, 0.0001);
+    BOOST_CHECK_CLOSE(Second(2.0).to_beat(240000).value(), 8.0, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(order_operations_work_correctly)
+{
+    BOOST_CHECK_LT(Second(1.0), Second(2.0));
+    BOOST_CHECK_GT(Second(1.0), Second(0.5));
+    BOOST_CHECK_LE(Second(1.0), Second(2.0));
+    BOOST_CHECK_GE(Second(1.0), Second(0.5));
+    BOOST_CHECK_LE(Second(1.0), Second(1.0));
+    BOOST_CHECK_GE(Second(1.0), Second(1.0));
+}
+
+BOOST_AUTO_TEST_CASE(addition_works_correctly)
+{
+    Second lhs {1.0};
+    Second rhs {0.5};
+    lhs += rhs;
+
+    BOOST_CHECK_CLOSE(lhs.value(), 1.5, 0.0001);
+    BOOST_CHECK_CLOSE((Second(1.0) + Second(0.5)).value(), 1.5, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(subtraction_works_correctly)
+{
+    Second lhs {1.0};
+    Second rhs {0.5};
+    lhs -= rhs;
+
+    BOOST_CHECK_CLOSE(lhs.value(), 0.5, 0.0001);
+    BOOST_CHECK_CLOSE((Second(1.0) - Second(0.5)).value(), 0.5, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(multiplication_works_correctly)
+{
+    Second lhs {1.0};
+    double rhs {0.5};
+    lhs *= rhs;
+
+    BOOST_CHECK_CLOSE(lhs.value(), 0.5, 0.0001);
+    BOOST_CHECK_CLOSE((Second(1.0) * 0.5).value(), 0.5, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(division_works_correctly)
+{
+    BOOST_CHECK_CLOSE(Second(1.0) / Second(2.0), 0.5, 0.0001);
+    BOOST_CHECK_CLOSE(Second(2.0) / Second(1.0), 2.0, 0.0001);
+}
+
+BOOST_AUTO_TEST_SUITE_END()

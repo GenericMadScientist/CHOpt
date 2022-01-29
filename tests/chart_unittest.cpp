@@ -24,32 +24,60 @@
 #include "chart.hpp"
 #include "songparts.hpp"
 
-static bool operator==(const BpmEvent& lhs, const BpmEvent& rhs)
+static bool operator!=(const BpmEvent& lhs, const BpmEvent& rhs)
 {
-    return std::tie(lhs.position, lhs.bpm) == std::tie(rhs.position, rhs.bpm);
+    return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
 }
 
-static bool operator==(const Event& lhs, const Event& rhs)
+static void operator<<(std::ostream& stream, const BpmEvent& event)
 {
-    return std::tie(lhs.position, lhs.data) == std::tie(rhs.position, rhs.data);
+    stream << "{Pos " << event.position << ", BPM " << event.bpm << '}';
 }
 
-static bool operator==(const NoteEvent& lhs, const NoteEvent& rhs)
+static bool operator!=(const Event& lhs, const Event& rhs)
+{
+    return std::tie(lhs.position, lhs.data) != std::tie(rhs.position, rhs.data);
+}
+
+static void operator<<(std::ostream& stream, const Event& event)
+{
+    stream << "{Pos " << event.position << ", Data " << event.data << '}';
+}
+
+static bool operator!=(const NoteEvent& lhs, const NoteEvent& rhs)
 {
     return std::tie(lhs.position, lhs.fret, lhs.length)
-        == std::tie(rhs.position, rhs.fret, rhs.length);
+        != std::tie(rhs.position, rhs.fret, rhs.length);
 }
 
-static bool operator==(const SpecialEvent& lhs, const SpecialEvent& rhs)
+static void operator<<(std::ostream& stream, const NoteEvent& event)
+{
+    stream << "{Pos " << event.position << ", Fret " << event.fret << ", Length"
+           << event.length << '}';
+}
+
+static bool operator!=(const SpecialEvent& lhs, const SpecialEvent& rhs)
 {
     return std::tie(lhs.position, lhs.key, lhs.length)
-        == std::tie(rhs.position, rhs.key, rhs.length);
+        != std::tie(rhs.position, rhs.key, rhs.length);
 }
 
-static bool operator==(const TimeSigEvent& lhs, const TimeSigEvent& rhs)
+static void operator<<(std::ostream& stream, const SpecialEvent& event)
+{
+    stream << "{Pos " << event.position << ", Key " << event.key << ", Length"
+           << event.length << '}';
+}
+
+static bool operator!=(const TimeSigEvent& lhs, const TimeSigEvent& rhs)
 {
     return std::tie(lhs.position, lhs.numerator, lhs.denominator)
-        == std::tie(rhs.position, rhs.numerator, rhs.denominator);
+        != std::tie(rhs.position, rhs.numerator, rhs.denominator);
+}
+
+static void operator<<(std::ostream& stream, const TimeSigEvent& ts)
+{
+    stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
+           << ts.denominator << '}';
 }
 
 BOOST_AUTO_TEST_CASE(section_names_are_read)
@@ -58,9 +86,9 @@ BOOST_AUTO_TEST_CASE(section_names_are_read)
 
     const auto chart = parse_chart(text);
 
-    BOOST_TEST(chart.sections.size() == 2);
-    BOOST_TEST(chart.sections[0].name == "SectionA");
-    BOOST_TEST(chart.sections[1].name == "SectionB");
+    BOOST_CHECK_EQUAL(chart.sections.size(), 2);
+    BOOST_CHECK_EQUAL(chart.sections[0].name, "SectionA");
+    BOOST_CHECK_EQUAL(chart.sections[1].name, "SectionB");
 }
 
 BOOST_AUTO_TEST_CASE(parser_skips_utf8_bom)
@@ -69,8 +97,8 @@ BOOST_AUTO_TEST_CASE(parser_skips_utf8_bom)
 
     const auto chart = parse_chart(text);
 
-    BOOST_TEST(chart.sections.size() == 1);
-    BOOST_TEST(chart.sections[0].name == "Song");
+    BOOST_CHECK_EQUAL(chart.sections.size(), 1);
+    BOOST_CHECK_EQUAL(chart.sections[0].name, "Song");
 }
 
 BOOST_AUTO_TEST_CASE(chart_can_end_without_newline)
@@ -90,12 +118,12 @@ BOOST_AUTO_TEST_CASE(parser_does_not_infinite_loop_due_to_unfinished_section)
 BOOST_AUTO_TEST_CASE(key_value_pairs_are_read)
 {
     const char* text = "[Section]\n{\nKey = Value\nKey2 = Value2\n}";
-    const std::map<std::string, std::string> pairs {{"Key", "Value"},
-                                                    {"Key2", "Value2"}};
 
     const auto section = parse_chart(text).sections[0];
 
-    BOOST_TEST(section.key_value_pairs == pairs);
+    BOOST_CHECK_EQUAL(section.key_value_pairs.size(), 2);
+    BOOST_CHECK_EQUAL(section.key_value_pairs.at("Key"), "Value");
+    BOOST_CHECK_EQUAL(section.key_value_pairs.at("Key2"), "Value2");
 }
 
 BOOST_AUTO_TEST_CASE(note_events_are_read)
@@ -105,7 +133,9 @@ BOOST_AUTO_TEST_CASE(note_events_are_read)
 
     const auto section = parse_chart(text).sections[0];
 
-    BOOST_TEST(section.note_events == events);
+    BOOST_CHECK_EQUAL_COLLECTIONS(section.note_events.cbegin(),
+                                  section.note_events.cend(), events.cbegin(),
+                                  events.cend());
 }
 
 BOOST_AUTO_TEST_CASE(note_events_with_extra_spaces_throw)
@@ -122,7 +152,9 @@ BOOST_AUTO_TEST_CASE(bpm_events_are_read)
 
     const auto section = parse_chart(text).sections[0];
 
-    BOOST_TEST(section.bpm_events == events);
+    BOOST_CHECK_EQUAL_COLLECTIONS(section.bpm_events.cbegin(),
+                                  section.bpm_events.cend(), events.cbegin(),
+                                  events.cend());
 }
 
 BOOST_AUTO_TEST_CASE(timesig_events_are_read)
@@ -132,7 +164,9 @@ BOOST_AUTO_TEST_CASE(timesig_events_are_read)
 
     const auto section = parse_chart(text).sections[0];
 
-    BOOST_TEST(section.ts_events == events);
+    BOOST_CHECK_EQUAL_COLLECTIONS(section.ts_events.cbegin(),
+                                  section.ts_events.cend(), events.cbegin(),
+                                  events.cend());
 }
 
 BOOST_AUTO_TEST_CASE(special_events_are_read)
@@ -142,7 +176,9 @@ BOOST_AUTO_TEST_CASE(special_events_are_read)
 
     const auto section = parse_chart(text).sections[0];
 
-    BOOST_TEST(section.special_events == events);
+    BOOST_CHECK_EQUAL_COLLECTIONS(section.special_events.cbegin(),
+                                  section.special_events.cend(),
+                                  events.cbegin(), events.cend());
 }
 
 BOOST_AUTO_TEST_CASE(e_events_are_read)
@@ -152,7 +188,9 @@ BOOST_AUTO_TEST_CASE(e_events_are_read)
 
     const auto section = parse_chart(text).sections[0];
 
-    BOOST_TEST(section.events == events);
+    BOOST_CHECK_EQUAL_COLLECTIONS(section.events.cbegin(),
+                                  section.events.cend(), events.cbegin(),
+                                  events.cend());
 }
 
 BOOST_AUTO_TEST_CASE(other_events_are_ignored)
@@ -178,8 +216,8 @@ BOOST_AUTO_TEST_CASE(utf16le_charts_are_read_correctly)
 
     const auto chart = parse_chart(text);
 
-    BOOST_TEST(chart.sections.size() == 1);
-    BOOST_TEST(chart.sections[0].name == "Song");
+    BOOST_CHECK_EQUAL(chart.sections.size(), 1);
+    BOOST_CHECK_EQUAL(chart.sections[0].name, "Song");
 }
 
 BOOST_AUTO_TEST_CASE(utf16le_charts_must_be_of_even_length)

@@ -23,15 +23,26 @@
 
 #include "timeconverter.hpp"
 
-static bool operator==(const BPM& lhs, const BPM& rhs)
+static bool operator!=(const BPM& lhs, const BPM& rhs)
 {
-    return std::tie(lhs.position, lhs.bpm) == std::tie(rhs.position, rhs.bpm);
+    return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
 }
 
-static bool operator==(const TimeSignature& lhs, const TimeSignature& rhs)
+static void operator<<(std::ostream& stream, const BPM& bpm)
+{
+    stream << "{Pos " << bpm.position << ", BPM " << bpm.bpm << '}';
+}
+
+static bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
 {
     return std::tie(lhs.position, lhs.numerator, lhs.denominator)
-        == std::tie(rhs.position, rhs.numerator, rhs.denominator);
+        != std::tie(rhs.position, rhs.numerator, rhs.denominator);
+}
+
+static void operator<<(std::ostream& stream, const TimeSignature& ts)
+{
+    stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
+           << ts.denominator << '}';
 }
 
 BOOST_AUTO_TEST_SUITE(sync_track_ctor_maintains_invariants)
@@ -42,7 +53,8 @@ BOOST_AUTO_TEST_CASE(bpms_are_sorted_by_position)
     std::vector<BPM> expected_bpms {
         {0, 150000}, {1000, 225000}, {2000, 200000}};
 
-    BOOST_TEST(track.bpms() == expected_bpms);
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.bpms().cbegin(), track.bpms().cend(),
+                                  expected_bpms.cbegin(), expected_bpms.cend());
 }
 
 BOOST_AUTO_TEST_CASE(no_two_bpms_have_the_same_position)
@@ -50,7 +62,8 @@ BOOST_AUTO_TEST_CASE(no_two_bpms_have_the_same_position)
     SyncTrack track {{}, {{0, 150000}, {0, 200000}}};
     std::vector<BPM> expected_bpms {{0, 200000}};
 
-    BOOST_TEST(track.bpms() == expected_bpms);
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.bpms().cbegin(), track.bpms().cend(),
+                                  expected_bpms.cbegin(), expected_bpms.cend());
 }
 
 BOOST_AUTO_TEST_CASE(bpms_is_never_empty)
@@ -58,7 +71,8 @@ BOOST_AUTO_TEST_CASE(bpms_is_never_empty)
     SyncTrack track;
     std::vector<BPM> expected_bpms {{0, 120000}};
 
-    BOOST_TEST(track.bpms() == expected_bpms);
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.bpms().cbegin(), track.bpms().cend(),
+                                  expected_bpms.cbegin(), expected_bpms.cend());
 }
 
 BOOST_AUTO_TEST_CASE(time_signatures_are_sorted_by_position)
@@ -67,7 +81,9 @@ BOOST_AUTO_TEST_CASE(time_signatures_are_sorted_by_position)
     std::vector<TimeSignature> expected_tses {
         {0, 4, 4}, {1000, 2, 2}, {2000, 3, 3}};
 
-    BOOST_TEST(track.time_sigs() == expected_tses);
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.time_sigs().cbegin(),
+                                  track.time_sigs().cend(),
+                                  expected_tses.cbegin(), expected_tses.cend());
 }
 
 BOOST_AUTO_TEST_CASE(no_two_time_signatures_have_the_same_position)
@@ -75,7 +91,9 @@ BOOST_AUTO_TEST_CASE(no_two_time_signatures_have_the_same_position)
     SyncTrack track {{{0, 4, 4}, {0, 3, 4}}, {}};
     std::vector<TimeSignature> expected_tses {{0, 3, 4}};
 
-    BOOST_TEST(track.time_sigs() == expected_tses);
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.time_sigs().cbegin(),
+                                  track.time_sigs().cend(),
+                                  expected_tses.cbegin(), expected_tses.cend());
 }
 
 BOOST_AUTO_TEST_CASE(time_sigs_is_never_empty)
@@ -83,7 +101,9 @@ BOOST_AUTO_TEST_CASE(time_sigs_is_never_empty)
     SyncTrack track;
     std::vector<TimeSignature> expected_tses {{0, 4, 4}};
 
-    BOOST_TEST(track.time_sigs() == expected_tses);
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.time_sigs().cbegin(),
+                                  track.time_sigs().cend(),
+                                  expected_tses.cbegin(), expected_tses.cend());
 }
 
 BOOST_AUTO_TEST_CASE(bpms_must_not_be_zero_or_negative)
@@ -128,8 +148,12 @@ BOOST_AUTO_TEST_CASE(speedup_returns_correct_synctrack)
 
     const auto speedup = sync_track.speedup(150);
 
-    BOOST_TEST(speedup.bpms() == expected_bpms);
-    BOOST_TEST(speedup.time_sigs() == expected_tses);
+    BOOST_CHECK_EQUAL_COLLECTIONS(speedup.bpms().cbegin(),
+                                  speedup.bpms().cend(), expected_bpms.cbegin(),
+                                  expected_bpms.cend());
+    BOOST_CHECK_EQUAL_COLLECTIONS(speedup.time_sigs().cbegin(),
+                                  speedup.time_sigs().cend(),
+                                  expected_tses.cbegin(), expected_tses.cend());
 }
 
 BOOST_AUTO_TEST_CASE(beats_to_seconds_conversion_works_correctly)
