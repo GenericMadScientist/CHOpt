@@ -37,7 +37,10 @@ function(set_warnings target)
 endfunction()
 
 find_package(PNG REQUIRED)
-find_package(Boost 1.76 REQUIRED COMPONENTS nowide program_options)
+find_package(
+  Boost 1.76 REQUIRED
+  COMPONENTS nowide program_options
+  OPTIONAL_COMPONENTS unit_test_framework)
 
 cmake_policy(SET CMP0083 NEW)
 include(CheckPIESupported)
@@ -127,6 +130,9 @@ include(CTest)
 
 option(PACKAGE_TESTS "Build the tests" ON)
 if(PACKAGE_TESTS)
+  if(NOT Boost_unit_test_framework_FOUND)
+    message(FATAL_ERROR "Tests need Boost::Test in order to be built")
+  endif()
   enable_testing()
   add_subdirectory(tests)
 endif()

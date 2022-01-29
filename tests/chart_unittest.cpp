@@ -18,7 +18,8 @@
 
 #include <tuple>
 
-#include "catch.hpp"
+#define BOOST_TEST_MODULE Chart Parser Tests
+#include <boost/test/unit_test.hpp>
 
 #include "chart.hpp"
 #include "songparts.hpp"
@@ -51,42 +52,42 @@ static bool operator==(const TimeSigEvent& lhs, const TimeSigEvent& rhs)
         == std::tie(rhs.position, rhs.numerator, rhs.denominator);
 }
 
-TEST_CASE("Section names are read")
+BOOST_AUTO_TEST_CASE(section_names_are_read)
 {
     const char* text = "[SectionA]\n{\n}\n[SectionB]\n{\n}\n";
 
     const auto chart = parse_chart(text);
 
-    REQUIRE(chart.sections.size() == 2);
-    REQUIRE(chart.sections[0].name == "SectionA");
-    REQUIRE(chart.sections[1].name == "SectionB");
+    BOOST_TEST(chart.sections.size() == 2);
+    BOOST_TEST(chart.sections[0].name == "SectionA");
+    BOOST_TEST(chart.sections[1].name == "SectionB");
 }
 
-TEST_CASE("Parser skips UTF-8 BOM")
+BOOST_AUTO_TEST_CASE(parser_skips_utf8_bom)
 {
     const char* text = "\xEF\xBB\xBF[Song]\n{\n}\n";
 
     const auto chart = parse_chart(text);
 
-    REQUIRE(chart.sections.size() == 1);
-    REQUIRE(chart.sections[0].name == "Song");
+    BOOST_TEST(chart.sections.size() == 1);
+    BOOST_TEST(chart.sections[0].name == "Song");
 }
 
-TEST_CASE("Chart can end without a newline")
+BOOST_AUTO_TEST_CASE(chart_can_end_without_newline)
 {
     const char* text = "[Song]\n{\n}";
 
-    REQUIRE_NOTHROW([&] { return parse_chart(text); }());
+    BOOST_CHECK_NO_THROW([&] { return parse_chart(text); }());
 }
 
-TEST_CASE("Parser does not infinite loop on an unfinished section")
+BOOST_AUTO_TEST_CASE(parser_does_not_infinite_loop_due_to_unfinished_section)
 {
     const char* text = "[UnrecognisedSection]\n{\n";
 
-    REQUIRE_THROWS_AS([&] { return parse_chart(text); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parse_chart(text); }(), ParseError);
 }
 
-TEST_CASE("Key value pairs are read")
+BOOST_AUTO_TEST_CASE(key_value_pairs_are_read)
 {
     const char* text = "[Section]\n{\nKey = Value\nKey2 = Value2\n}";
     const std::map<std::string, std::string> pairs {{"Key", "Value"},
@@ -94,81 +95,81 @@ TEST_CASE("Key value pairs are read")
 
     const auto section = parse_chart(text).sections[0];
 
-    REQUIRE(section.key_value_pairs == pairs);
+    BOOST_TEST(section.key_value_pairs == pairs);
 }
 
-TEST_CASE("Note events are read")
+BOOST_AUTO_TEST_CASE(note_events_are_read)
 {
     const char* text = "[Section]\n{\n1000 = N 1 0\n}";
     const std::vector<NoteEvent> events {{1000, 1, 0}};
 
     const auto section = parse_chart(text).sections[0];
 
-    REQUIRE(section.note_events == events);
+    BOOST_TEST(section.note_events == events);
 }
 
-TEST_CASE("Note events with extra spaces cause an exception")
+BOOST_AUTO_TEST_CASE(note_events_with_extra_spaces_throw)
 {
     const char* text = "[Section]\n{\n768 = N  0 0\n}";
 
-    REQUIRE_THROWS_AS([&] { return parse_chart(text); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parse_chart(text); }(), ParseError);
 }
 
-TEST_CASE("BPM events are read")
+BOOST_AUTO_TEST_CASE(bpm_events_are_read)
 {
     const char* text = "[Section]\n{\n1000 = B 150000\n}";
     const std::vector<BpmEvent> events {{1000, 150000}};
 
     const auto section = parse_chart(text).sections[0];
 
-    REQUIRE(section.bpm_events == events);
+    BOOST_TEST(section.bpm_events == events);
 }
 
-TEST_CASE("TS events are read")
+BOOST_AUTO_TEST_CASE(timesig_events_are_read)
 {
     const char* text = "[Section]\n{\n1000 = TS 4\n2000 = TS 3 3\n}";
     const std::vector<TimeSigEvent> events {{1000, 4, 2}, {2000, 3, 3}};
 
     const auto section = parse_chart(text).sections[0];
 
-    REQUIRE(section.ts_events == events);
+    BOOST_TEST(section.ts_events == events);
 }
 
-TEST_CASE("S events are read")
+BOOST_AUTO_TEST_CASE(special_events_are_read)
 {
     const char* text = "[Section]\n{\n1000 = S 2 700\n}";
     const std::vector<SpecialEvent> events {{1000, 2, 700}};
 
     const auto section = parse_chart(text).sections[0];
 
-    REQUIRE(section.special_events == events);
+    BOOST_TEST(section.special_events == events);
 }
 
-TEST_CASE("E events are read")
+BOOST_AUTO_TEST_CASE(e_events_are_read)
 {
     const char* text = "[Section]\n{\n1000 = E soloing\n}";
     const std::vector<Event> events {{1000, "soloing"}};
 
     const auto section = parse_chart(text).sections[0];
 
-    REQUIRE(section.events == events);
+    BOOST_TEST(section.events == events);
 }
 
-TEST_CASE("Other events are ignored")
+BOOST_AUTO_TEST_CASE(other_events_are_ignored)
 {
     const char* text = "[Section]\n{\n1105 = A 133\n}";
 
     const auto section = parse_chart(text).sections[0];
 
-    REQUIRE(section.note_events.empty());
-    REQUIRE(section.note_events.empty());
-    REQUIRE(section.bpm_events.empty());
-    REQUIRE(section.ts_events.empty());
-    REQUIRE(section.events.empty());
+    BOOST_TEST(section.note_events.empty());
+    BOOST_TEST(section.note_events.empty());
+    BOOST_TEST(section.bpm_events.empty());
+    BOOST_TEST(section.ts_events.empty());
+    BOOST_TEST(section.events.empty());
 }
 
 // Yes, these are actually a thing. Clone Hero accepts them, so I have to.
-TEST_CASE("Charts in UTF-16le are read correctly")
+BOOST_AUTO_TEST_CASE(utf16le_charts_are_read_correctly)
 {
     const std::string text {
         "\xFF\xFE\x5B\x00\x53\x00\x6F\x00\x6E\x00\x67\x00\x5D\x00\x0D\x00\x0A"
@@ -177,30 +178,30 @@ TEST_CASE("Charts in UTF-16le are read correctly")
 
     const auto chart = parse_chart(text);
 
-    REQUIRE(chart.sections.size() == 1);
-    REQUIRE(chart.sections[0].name == "Song");
+    BOOST_TEST(chart.sections.size() == 1);
+    BOOST_TEST(chart.sections[0].name == "Song");
 }
 
-TEST_CASE("Charts in UTF-16le must be an even number of bytes large")
+BOOST_AUTO_TEST_CASE(utf16le_charts_must_be_of_even_length)
 {
     const std::string text {
         "\xFF\xFE\x5B\x00\x53\x00\x6F\x00\x6E\x00\x67\x00\x5D\x00\x0D\x00\x0A"
         "\x00\x7B\x00\x0D\x00\x0A\x00\x7D\x00\x00",
         27};
 
-    REQUIRE_THROWS_AS([&] { return parse_chart(text); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parse_chart(text); }(), ParseError);
 }
 
-TEST_CASE("Single character headers should throw an error")
+BOOST_AUTO_TEST_CASE(single_character_headers_should_throw)
 {
-    REQUIRE_THROWS_AS([] { return parse_chart("\n"); }(), ParseError);
+    BOOST_CHECK_THROW([] { return parse_chart("\n"); }(), ParseError);
 }
 
-TEST_CASE("Short mid-section lines throw an error")
+BOOST_AUTO_TEST_CASE(short_mid_section_lines_throw)
 {
-    REQUIRE_THROWS_AS(
+    BOOST_CHECK_THROW(
         [&] { return parse_chart("[ExpertGuitar]\n{\n1 1\n}"); }(), ParseError);
-    REQUIRE_THROWS_AS(
+    BOOST_CHECK_THROW(
         [&] { return parse_chart("[ExpertGuitar]\n{\n1 = N 1\n}"); }(),
         ParseError);
 }
