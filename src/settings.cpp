@@ -28,7 +28,7 @@
 
 namespace po = boost::program_options;
 
-static bool is_valid_image_path(const std::string& path)
+static bool is_valid_image_path(std::string_view path)
 {
     if (path.size() < 4) {
         return false;
