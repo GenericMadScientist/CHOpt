@@ -119,12 +119,6 @@ struct StarPower {
     int length;
 };
 
-constexpr bool operator==(const StarPower& lhs, const StarPower& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        == std::tie(rhs.position, rhs.length);
-}
-
 struct Solo {
     int start;
     int end;

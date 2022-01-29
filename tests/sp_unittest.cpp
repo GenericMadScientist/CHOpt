@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,203 +16,210 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "catch.hpp"
+#define BOOST_TEST_MODULE Star Power Tests
+#include <boost/test/unit_test.hpp>
 
 #include "sp.hpp"
 
-static bool operator==(const SpBar& lhs, const SpBar& rhs)
+BOOST_AUTO_TEST_SUITE(spbar_methods)
+
+BOOST_AUTO_TEST_CASE(add_phrase_works_correctly)
 {
-    return lhs.min() == Approx(rhs.min()) && lhs.max() == Approx(rhs.max());
+    SpBar sp_bar {0.0, 0.25};
+    sp_bar.add_phrase();
+
+    BOOST_CHECK_CLOSE(sp_bar.min(), 0.25, 0.0001);
+    BOOST_CHECK_CLOSE(sp_bar.max(), 0.5, 0.0001);
+
+    sp_bar = {0.8, 1.0};
+    sp_bar.add_phrase();
+
+    BOOST_CHECK_CLOSE(sp_bar.min(), 1.0, 0.0001);
+    BOOST_CHECK_CLOSE(sp_bar.max(), 1.0, 0.0001);
 }
 
-TEST_CASE("SpBar methods")
+BOOST_AUTO_TEST_CASE(full_enough_to_activate_works_correctly)
 {
-    SECTION("add_phrase() works correctly")
-    {
-        SpBar sp_bar {0.0, 0.25};
-        sp_bar.add_phrase();
+    SpBar sp_bar {0.49, 0.49};
 
-        REQUIRE(sp_bar == SpBar {0.25, 0.5});
+    BOOST_TEST(!sp_bar.full_enough_to_activate());
 
-        sp_bar = {0.8, 1.0};
-        sp_bar.add_phrase();
+    sp_bar = {0.0, 0.5};
 
-        REQUIRE(sp_bar == SpBar {1.0, 1.0});
-    }
-
-    SECTION("full_enough_to_activate() works correctly")
-    {
-        SpBar sp_bar {0.49, 0.49};
-
-        REQUIRE(!sp_bar.full_enough_to_activate());
-
-        sp_bar = {0.0, 0.5};
-
-        REQUIRE(sp_bar.full_enough_to_activate());
-    }
+    BOOST_TEST(sp_bar.full_enough_to_activate());
 }
 
-// Last checked: 24.0.1555-master
-TEST_CASE("propagate_sp_over_whammy_* works correctly")
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(propagate_sp_over_whammy_works_correctly)
+
+BOOST_AUTO_TEST_CASE(works_correctly_over_four_four)
 {
     std::vector<Note<NoteColour>> notes {{0, 1920}, {2112, 576}, {3000}};
     std::vector<StarPower> phrases {{0, 3000}};
     NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    std::vector<TimeSignature> time_sigs {{0, 4, 4}};
+    SpData sp_data {track,
+                    {time_sigs, {}},
+                    {},
+                    SqueezeSettings::default_settings(),
+                    ChGuitarEngine()};
 
-    SECTION("Works correctly over 4/4")
-    {
-        std::vector<TimeSignature> time_sigs {{0, 4, 4}};
-        SpData sp_data {track,
-                        {time_sigs, {}},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-
-        REQUIRE(sp_data.propagate_sp_over_whammy_max(
-                    {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)}, 0.5)
-                == Approx(0.508333));
-        REQUIRE(sp_data.propagate_sp_over_whammy_max(
-                    {Beat(1.0), Measure(0.25)}, {Beat(4.0), Measure(1.0)}, 0.5)
-                == Approx(0.50625));
-    }
-
-    SECTION("Works correctly over 3/4")
-    {
-        std::vector<TimeSignature> time_sigs {{0, 3, 4}};
-        SpData sp_data {track,
-                        {time_sigs, {}},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-
-        REQUIRE(
-            sp_data.propagate_sp_over_whammy_max(
-                {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(4.0 / 3)}, 0.5)
-            == Approx(0.466667));
-        REQUIRE(sp_data.propagate_sp_over_whammy_max(
-                    {Beat(-1.0), Measure(-0.25)}, {Beat(4.0), Measure(4.0 / 3)},
-                    0.5)
-                == Approx(0.440083));
-    }
-
-    SECTION("Works correctly over changing time signatures")
-    {
-        std::vector<TimeSignature> time_sigs {{0, 4, 4}, {384, 3, 4}};
-        SpData sp_data {track,
-                        {time_sigs, {}},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-
-        REQUIRE(
-            sp_data.propagate_sp_over_whammy_max(
-                {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(7.0 / 6)}, 0.5)
-            == Approx(0.4875));
-        REQUIRE(
-            sp_data.propagate_sp_over_whammy_max(
-                {Beat(1.0), Measure(0.25)}, {Beat(4.0), Measure(7.0 / 6)}, 0.5)
-            == Approx(0.485417));
-    }
-
-    SECTION("Returns -1 if SP runs out")
-    {
-        std::vector<TimeSignature> time_sigs {{0, 3, 4}, {384, 4, 4}};
-        SpData sp_data {track,
-                        {time_sigs, {}},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-
-        REQUIRE(
-            sp_data.propagate_sp_over_whammy_max(
-                {Beat(0.0), Measure(0.0)}, {Beat(2.0), Measure(2.0 / 3)}, 0.015)
-            == Approx(-1.0));
-        REQUIRE(sp_data.propagate_sp_over_whammy_max(
-                    {Beat(0.0), Measure(0.0)}, {Beat(10.0), Measure(8.0 / 3)},
-                    0.015)
-                == Approx(-1.0));
-    }
-
-    SECTION("Works even if some of the range isn't whammyable")
-    {
-        SpData sp_data {track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-
-        REQUIRE(sp_data.propagate_sp_over_whammy_max(
-                    {Beat(0.0), Measure(0.0)}, {Beat(12.0), Measure(3.0)}, 0.5)
-                == Approx(0.496333));
-    }
-
-    SECTION("SP bar does not exceed full bar")
-    {
-        SpData sp_data {track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-
-        REQUIRE(sp_data.propagate_sp_over_whammy_max(
-                    {Beat(0.0), Measure(0.0)}, {Beat(10.0), Measure(2.5)}, 1.0)
-                == Approx(1.0));
-        REQUIRE(
-            sp_data.propagate_sp_over_whammy_max(
-                {Beat(0.0), Measure(0.0)}, {Beat(10.5), Measure(2.625)}, 1.0)
-            == Approx(0.984375));
-    }
-
-    SECTION("Sustains not in a phrase do not contribute SP")
-    {
-        NoteTrack<NoteColour> no_sp_note_track {notes, {}, {}, {}, {}, {}, 192};
-        SpData sp_data {no_sp_note_track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-
-        REQUIRE(sp_data.propagate_sp_over_whammy_max(
-                    {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)}, 1.0)
-                == Approx(0.875));
-    }
-
-    SECTION("required_whammy_end is accounted for")
-    {
-        SpData sp_data {track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-
-        REQUIRE(sp_data.propagate_sp_over_whammy_min(
-                    {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)}, 0.5,
-                    {Beat(2.0), Measure(0.5)})
-                == Approx(0.441667));
-    }
-
-    SECTION("Check optional whammy is not used when not asked for in minimum")
-    {
-        constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
-
-        std::vector<Note<NoteColour>> second_notes {{0, 768}, {3072}};
-        std::vector<StarPower> second_phrases {{0, 3100}};
-        NoteTrack<NoteColour> second_track {
-            second_notes, second_phrases, {}, {}, {}, {}, 192};
-        SpData sp_data {second_track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-
-        REQUIRE(sp_data.propagate_sp_over_whammy_min(
-                    {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)}, 0.5,
-                    {Beat {NEG_INF}, Measure {NEG_INF}})
-                == Approx(0.375));
-    }
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
+                                             {Beat(4.0), Measure(1.0)}, 0.5),
+        0.508333, 0.0001);
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max({Beat(1.0), Measure(0.25)},
+                                             {Beat(4.0), Measure(1.0)}, 0.5),
+        0.50625, 0.0001);
 }
 
-TEST_CASE("is_in_whammy_ranges works correctly")
+BOOST_AUTO_TEST_CASE(works_correctly_over_three_four)
+{
+    std::vector<Note<NoteColour>> notes {{0, 1920}, {2112, 576}, {3000}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    std::vector<TimeSignature> time_sigs {{0, 3, 4}};
+    SpData sp_data {track,
+                    {time_sigs, {}},
+                    {},
+                    SqueezeSettings::default_settings(),
+                    ChGuitarEngine()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max(
+            {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(4.0 / 3)}, 0.5),
+        0.466667, 0.0001);
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max(
+            {Beat(-1.0), Measure(-0.25)}, {Beat(4.0), Measure(4.0 / 3)}, 0.5),
+        0.440083, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(works_correctly_over_changing_time_signatures)
+{
+    std::vector<Note<NoteColour>> notes {{0, 1920}, {2112, 576}, {3000}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    std::vector<TimeSignature> time_sigs {{0, 4, 4}, {384, 3, 4}};
+    SpData sp_data {track,
+                    {time_sigs, {}},
+                    {},
+                    SqueezeSettings::default_settings(),
+                    ChGuitarEngine()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max(
+            {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(7.0 / 6)}, 0.5),
+        0.4875, 0.0001);
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max(
+            {Beat(1.0), Measure(0.25)}, {Beat(4.0), Measure(7.0 / 6)}, 0.5),
+        0.485417, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(returns_negative_one_if_sp_runs_out)
+{
+    std::vector<Note<NoteColour>> notes {{0, 1920}, {2112, 576}, {3000}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    std::vector<TimeSignature> time_sigs {{0, 3, 4}, {384, 4, 4}};
+    SpData sp_data {track,
+                    {time_sigs, {}},
+                    {},
+                    SqueezeSettings::default_settings(),
+                    ChGuitarEngine()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max(
+            {Beat(0.0), Measure(0.0)}, {Beat(2.0), Measure(2.0 / 3)}, 0.015),
+        -1.0, 0.0001);
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max(
+            {Beat(0.0), Measure(0.0)}, {Beat(10.0), Measure(8.0 / 3)}, 0.015),
+        -1.0, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(works_even_if_some_of_the_range_isnt_whammyable)
+{
+    std::vector<Note<NoteColour>> notes {{0, 1920}, {2112, 576}, {3000}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
+                                             {Beat(12.0), Measure(3.0)}, 0.5),
+        0.496333, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
+{
+    std::vector<Note<NoteColour>> notes {{0, 1920}, {2112, 576}, {3000}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
+                                             {Beat(10.0), Measure(2.5)}, 1.0),
+        1.0, 0.0001);
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
+                                             {Beat(10.5), Measure(2.625)}, 1.0),
+        0.984375, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(sustains_not_in_a_phrase_do_not_contribute_sp)
+{
+    std::vector<Note<NoteColour>> notes {{0, 1920}, {2112, 576}, {3000}};
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
+                                             {Beat(4.0), Measure(1.0)}, 1.0),
+        0.875, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
+{
+    std::vector<Note<NoteColour>> notes {{0, 1920}, {2112, 576}, {3000}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+
+    BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_min(
+                          {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)},
+                          0.5, {Beat(2.0), Measure(0.5)}),
+                      0.441667, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(
+    check_optional_whammy_is_not_used_when_not_asked_for_in_minimum)
+{
+    constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
+
+    std::vector<Note<NoteColour>> notes {{0, 768}, {3072}};
+    std::vector<StarPower> phrases {{0, 3100}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+
+    BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_min(
+                          {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)},
+                          0.5, {Beat {NEG_INF}, Measure {NEG_INF}}),
+                      0.375, 0.0001);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_CASE(is_in_whammy_ranges_works_correctly)
 {
     std::vector<Note<NoteColour>> notes {{0, 1920}, {2112}};
     std::vector<StarPower> phrases {{0, 2000}, {2112, 50}};
@@ -220,189 +227,189 @@ TEST_CASE("is_in_whammy_ranges works correctly")
     SpData sp_data {
         track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
-    REQUIRE(sp_data.is_in_whammy_ranges(Beat(1.0)));
-    REQUIRE(!sp_data.is_in_whammy_ranges(Beat(11.0)));
+    BOOST_TEST(sp_data.is_in_whammy_ranges(Beat(1.0)));
+    BOOST_TEST(!sp_data.is_in_whammy_ranges(Beat(11.0)));
 }
 
-TEST_CASE("available_whammy works correctly")
+BOOST_AUTO_TEST_SUITE(available_whammy_works_correctly)
+
+BOOST_AUTO_TEST_CASE(max_early_whammy)
 {
     std::vector<Note<NoteColour>> notes {{0, 1920}, {2112}, {2304, 768}};
     std::vector<StarPower> phrases {{0, 3000}};
     NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
-    SECTION("100% early whammy")
-    {
-        SpData sp_data {track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-
-        REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(16.0))
-                == Approx(0.471333));
-        REQUIRE(sp_data.available_whammy(Beat(10.0), Beat(11.0))
-                == Approx(0.0));
-        REQUIRE(sp_data.available_whammy(Beat(1.0), Beat(8.0))
-                == Approx(0.233333));
-    }
-
-    SECTION("50% early whammy")
-    {
-        SpData sp_data {track,
-                        {},
-                        {},
-                        {1.0, 0.5, Second {0.0}, Second {0.0}, Second {0.0}},
-                        ChGuitarEngine()};
-
-        REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(16.0))
-                == Approx(0.469));
-        REQUIRE(sp_data.available_whammy(Beat(10.0), Beat(11.0))
-                == Approx(0.0));
-        REQUIRE(sp_data.available_whammy(Beat(1.0), Beat(8.0))
-                == Approx(0.233333));
-    }
-
-    SECTION("Negative early whammy")
-    {
-        SpData sp_data {track,
-                        {},
-                        {},
-                        {1.0, 0.0, Second {2.5}, Second {0.0}, Second {0.0}},
-                        ChGuitarEngine()};
-
-        REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(10.0))
-                == Approx(0.166667));
-        REQUIRE(sp_data.available_whammy(Beat(12.0), Beat(16.0))
-                == Approx(0.0));
-    }
-
-    SECTION("Three argument version works correctly")
-    {
-        SpData sp_data {track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-
-        REQUIRE(sp_data.available_whammy(Beat(0.0), Beat(12.0), Beat(12.0))
-                == Approx(0.333333));
-    }
+    BOOST_CHECK_CLOSE(sp_data.available_whammy(Beat(0.0), Beat(16.0)), 0.471333,
+                      0.0001);
+    BOOST_CHECK_CLOSE(sp_data.available_whammy(Beat(10.0), Beat(11.0)), 0.0,
+                      0.0001);
+    BOOST_CHECK_CLOSE(sp_data.available_whammy(Beat(1.0), Beat(8.0)), 0.2333333,
+                      0.0001);
 }
 
-TEST_CASE("activation_end_point works correctly")
+BOOST_AUTO_TEST_CASE(mid_early_whammy)
 {
-    SECTION("Works when SP is sufficient")
-    {
-        std::vector<Note<NoteColour>> notes {{0}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        SpData sp_data {track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-        Position start {Beat(0.0), Measure(0.0)};
-        Position end {Beat(1.0), Measure(0.25)};
+    std::vector<Note<NoteColour>> notes {{0, 1920}, {2112}, {2304, 768}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    SpData sp_data {track,
+                    {},
+                    {},
+                    {1.0, 0.5, Second {0.0}, Second {0.0}, Second {0.0}},
+                    ChGuitarEngine()};
 
-        REQUIRE(sp_data.activation_end_point(start, end, 0.5).beat.value()
-                == Approx(1.0));
-    }
-
-    SECTION("Works when SP is insufficient")
-    {
-        std::vector<Note<NoteColour>> notes {{0}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        SpData sp_data {track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-        Position start {Beat(0.0), Measure(0.0)};
-        Position end {Beat(1.0), Measure(0.25)};
-
-        REQUIRE(sp_data.activation_end_point(start, end, 0.01).beat.value()
-                == Approx(0.32));
-    }
-
-    SECTION("Works when adding whammy makes SP sufficient")
-    {
-        std::vector<Note<NoteColour>> notes {{0, 192}, {950}};
-        std::vector<StarPower> phrases {{0, 1000}};
-        NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
-        SpData sp_data {track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-        Position start {Beat(0.0), Measure(0.0)};
-        Position end {Beat(1.0), Measure(0.25)};
-
-        REQUIRE(sp_data.activation_end_point(start, end, 0.01).beat.value()
-                == Approx(1.0));
-    }
-
-    SECTION("Works when whammy is present but insufficient")
-    {
-        std::vector<Note<NoteColour>> notes {{0, 192}, {950}};
-        std::vector<StarPower> phrases {{0, 1000}};
-        NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
-        SpData sp_data {track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-        Position start {Beat(0.0), Measure(0.0)};
-        Position end {Beat(2.0), Measure(0.5)};
-
-        REQUIRE(sp_data.activation_end_point(start, end, 0.01).beat.value()
-                == Approx(1.38667));
-    }
-
-    SECTION("Works when whammy is present but accumulation is too slow")
-    {
-        std::vector<Note<NoteColour>> notes {{0, 192}, {950}};
-        std::vector<StarPower> phrases {{0, 1000}};
-        SyncTrack sync_track {{{0, 2, 4}}, {}};
-        NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
-        SpData sp_data {track,
-                        sync_track,
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
-        Position start {Beat(0.0), Measure(0.0)};
-        Position end {Beat(1.0), Measure(0.25)};
-
-        REQUIRE(sp_data.activation_end_point(start, end, 0.01).beat.value()
-                == Approx(0.342857));
-    }
+    BOOST_CHECK_CLOSE(sp_data.available_whammy(Beat(0.0), Beat(16.0)), 0.469,
+                      0.0001);
+    BOOST_CHECK_CLOSE(sp_data.available_whammy(Beat(10.0), Beat(11.0)), 0.0,
+                      0.0001);
+    BOOST_CHECK_CLOSE(sp_data.available_whammy(Beat(1.0), Beat(8.0)), 0.2333333,
+                      0.0001);
 }
 
-TEST_CASE("Video lag is taken account of")
+BOOST_AUTO_TEST_CASE(negative_early_whammy)
+{
+    std::vector<Note<NoteColour>> notes {{0, 1920}, {2112}, {2304, 768}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    SpData sp_data {track,
+                    {},
+                    {},
+                    {1.0, 0.0, Second {2.5}, Second {0.0}, Second {0.0}},
+                    ChGuitarEngine()};
+
+    BOOST_CHECK_CLOSE(sp_data.available_whammy(Beat(0.0), Beat(10.0)),
+                      0.1666667, 0.0001);
+    BOOST_CHECK_CLOSE(sp_data.available_whammy(Beat(12.0), Beat(16.0)), 0.0,
+                      0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(three_argument_version_works_correctly)
+{
+    std::vector<Note<NoteColour>> notes {{0, 1920}, {2112}, {2304, 768}};
+    std::vector<StarPower> phrases {{0, 3000}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.available_whammy(Beat(0.0), Beat(12.0), Beat(12.0)), 0.3333333,
+        0.0001);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(activation_end_point_works_correctly)
+
+BOOST_AUTO_TEST_CASE(works_when_sp_is_sufficient)
+{
+    std::vector<Note<NoteColour>> notes {{0}};
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+    Position start {Beat(0.0), Measure(0.0)};
+    Position end {Beat(1.0), Measure(0.25)};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.activation_end_point(start, end, 0.5).beat.value(), 1.0,
+        0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(works_when_sp_is_insufficient)
+{
+    std::vector<Note<NoteColour>> notes {{0}};
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+    Position start {Beat(0.0), Measure(0.0)};
+    Position end {Beat(1.0), Measure(0.25)};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.activation_end_point(start, end, 0.01).beat.value(), 0.32,
+        0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(works_when_adding_whammy_makes_sp_sufficient)
+{
+    std::vector<Note<NoteColour>> notes {{0, 192}, {950}};
+    std::vector<StarPower> phrases {{0, 1000}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+    Position start {Beat(0.0), Measure(0.0)};
+    Position end {Beat(1.0), Measure(0.25)};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.activation_end_point(start, end, 0.01).beat.value(), 1.0,
+        0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_insufficient)
+{
+    std::vector<Note<NoteColour>> notes {{0, 192}, {950}};
+    std::vector<StarPower> phrases {{0, 1000}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+    Position start {Beat(0.0), Measure(0.0)};
+    Position end {Beat(2.0), Measure(0.5)};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.activation_end_point(start, end, 0.01).beat.value(), 1.386667,
+        0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_accumulation_is_too_slow)
+{
+    std::vector<Note<NoteColour>> notes {{0, 192}, {950}};
+    std::vector<StarPower> phrases {{0, 1000}};
+    SyncTrack sync_track {{{0, 2, 4}}, {}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    SpData sp_data {track,
+                    sync_track,
+                    {},
+                    SqueezeSettings::default_settings(),
+                    ChGuitarEngine()};
+    Position start {Beat(0.0), Measure(0.0)};
+    Position end {Beat(1.0), Measure(0.25)};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.activation_end_point(start, end, 0.01).beat.value(), 0.342857,
+        0.0001);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(video_lag_is_taken_account_of)
+
+BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
 {
     const std::vector<Note<NoteColour>> notes {{192, 192}};
     const std::vector<StarPower> phrases {{0, 384}};
     const NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
 
-    SECTION("Negative video lag is dealt with correctly")
-    {
-        SpData sp_data {track,
-                        {},
-                        {},
-                        SqueezeSettings::default_settings(),
-                        ChGuitarEngine()};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
-        REQUIRE(sp_data.is_in_whammy_ranges(Beat(0.9)));
-        REQUIRE(sp_data.is_in_whammy_ranges(Beat(1.9)));
-    }
-
-    SECTION("Positive video lag is dealt with correctly")
-    {
-        SpData sp_data {track,
-                        {},
-                        {},
-                        {1.0, 1.0, Second {0.0}, Second {0.1}, Second {0.0}},
-                        ChGuitarEngine()};
-
-        REQUIRE(!sp_data.is_in_whammy_ranges(Beat(1.0)));
-        REQUIRE(sp_data.is_in_whammy_ranges(Beat(1.9)));
-    }
+    BOOST_TEST(sp_data.is_in_whammy_ranges(Beat(0.9)));
+    BOOST_TEST(sp_data.is_in_whammy_ranges(Beat(1.9)));
 }
+
+BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
+{
+    const std::vector<Note<NoteColour>> notes {{192, 192}};
+    const std::vector<StarPower> phrases {{0, 384}};
+    const NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+
+    SpData sp_data {track,
+                    {},
+                    {},
+                    {1.0, 1.0, Second {0.0}, Second {0.1}, Second {0.0}},
+                    ChGuitarEngine()};
+
+    BOOST_TEST(!sp_data.is_in_whammy_ranges(Beat(1.0)));
+    BOOST_TEST(sp_data.is_in_whammy_ranges(Beat(1.9)));
+}
+
+BOOST_AUTO_TEST_SUITE_END()

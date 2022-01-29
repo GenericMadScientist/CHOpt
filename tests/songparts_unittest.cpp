@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,133 +16,179 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "catch.hpp"
+#define BOOST_TEST_MODULE Song Parts Tests
+#include <boost/test/unit_test.hpp>
 
 #include "songparts.hpp"
 
 template <typename T>
-static bool operator==(const Note<T>& lhs, const Note<T>& rhs)
+static bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
 {
     return std::tie(lhs.position, lhs.length, lhs.colour)
-        == std::tie(rhs.position, rhs.length, rhs.colour);
+        != std::tie(rhs.position, rhs.length, rhs.colour);
 }
 
-static bool operator==(const Solo& lhs, const Solo& rhs)
+template <typename T>
+static void operator<<(std::ostream& stream, const Note<T>& note)
+{
+    stream << "{Pos " << note.position << ", Length " << note.length
+           << ", Colour " << static_cast<int>(note.colour) << '}';
+}
+
+static bool operator!=(const Solo& lhs, const Solo& rhs)
 {
     return std::tie(lhs.start, lhs.end, lhs.value)
-        == std::tie(rhs.start, rhs.end, rhs.value);
+        != std::tie(rhs.start, rhs.end, rhs.value);
 }
 
-static bool operator==(const DrumFill& lhs, const DrumFill& rhs)
+static void operator<<(std::ostream& stream, const Solo& solo)
+{
+    stream << "{Start " << solo.start << ", End " << solo.end << ", Value "
+           << solo.value << '}';
+}
+
+static bool operator!=(const DrumFill& lhs, const DrumFill& rhs)
 {
     return std::tie(lhs.position, lhs.length)
-        == std::tie(rhs.position, rhs.length);
+        != std::tie(rhs.position, rhs.length);
 }
 
-TEST_CASE("NoteTrack ctor maintains invariants")
+static void operator<<(std::ostream& stream, const DrumFill& fill)
 {
-    SECTION("Notes are sorted")
-    {
-        std::vector<Note<NoteColour>> notes {{768}, {384}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<Note<NoteColour>> sorted_notes {{384}, {768}};
-
-        REQUIRE(track.notes() == sorted_notes);
-    }
-
-    SECTION("Notes of the same colour and position are merged")
-    {
-        std::vector<Note<NoteColour>> notes {{768, 0}, {768, 768}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<Note<NoteColour>> required_notes {{768, 768}};
-
-        REQUIRE(track.notes() == required_notes);
-
-        std::vector<Note<NoteColour>> second_notes {{768, 768}, {768, 0}};
-        NoteTrack<NoteColour> second_track {second_notes, {}, {}, {},
-                                            {},           {}, 192};
-        std::vector<Note<NoteColour>> second_required_notes {{768, 0}};
-
-        REQUIRE(second_track.notes() == second_required_notes);
-    }
-
-    SECTION("Notes of different colours are dealt with separately")
-    {
-        std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green},
-                                             {768, 0, NoteColour::Red},
-                                             {768, 768, NoteColour::Green}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<Note<NoteColour>> required_notes {
-            {768, 768, NoteColour::Green}, {768, 0, NoteColour::Red}};
-
-        REQUIRE(track.notes() == required_notes);
-    }
-
-    SECTION("Open notes and non-open notes of same pos and length are merged")
-    {
-        std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green},
-                                             {768, 1, NoteColour::Red},
-                                             {768, 0, NoteColour::Open}};
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<Note<NoteColour>> required_notes {
-            {768, 1, NoteColour::Red}, {768, 0, NoteColour::Open}};
-
-        REQUIRE(track.notes() == required_notes);
-    }
-
-    SECTION("Resolution is positive")
-    {
-        std::vector<Note<NoteColour>> notes {{768}};
-        REQUIRE_THROWS_AS(
-            [&] {
-                return NoteTrack<NoteColour>(notes, {}, {}, {}, {}, {}, 0);
-            }(),
-            ParseError);
-    }
-
-    SECTION("Empty SP phrases are culled")
-    {
-        std::vector<Note<NoteColour>> notes {{768}};
-        std::vector<StarPower> phrases {{0, 100}, {700, 100}, {1000, 100}};
-        NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
-        std::vector<StarPower> required_phrases {{700, 100}};
-
-        REQUIRE(track.sp_phrases() == required_phrases);
-    }
-
-    SECTION("SP phrases are sorted")
-    {
-        std::vector<Note<NoteColour>> notes {{768}, {1000}};
-        std::vector<StarPower> phrases {{1000, 1}, {768, 1}};
-        NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
-        std::vector<StarPower> required_phrases {{768, 1}, {1000, 1}};
-
-        REQUIRE(track.sp_phrases() == required_phrases);
-    }
-
-    SECTION("SP phrases do not overlap")
-    {
-        std::vector<Note<NoteColour>> notes {{768}, {1000}, {1500}};
-        std::vector<StarPower> phrases {{768, 1000}, {900, 150}};
-        NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
-        std::vector<StarPower> required_phrases {{768, 282}, {1050, 718}};
-
-        REQUIRE(track.sp_phrases() == required_phrases);
-    }
-
-    SECTION("Solos are sorted")
-    {
-        std::vector<Note<NoteColour>> notes {{0}, {768}};
-        std::vector<Solo> solos {{768, 868, 100}, {0, 100, 100}};
-        NoteTrack<NoteColour> track {notes, {}, solos, {}, {}, {}, 192};
-        std::vector<Solo> required_solos {{0, 100, 100}, {768, 868, 100}};
-
-        REQUIRE(track.solos(DrumSettings::default_settings())
-                == required_solos);
-    }
+    stream << "{Pos " << fill.position << ", Length " << fill.length << '}';
 }
 
-TEST_CASE("Solos do take into account drum settings")
+static bool operator!=(const StarPower& lhs, const StarPower& rhs)
+{
+    return std::tie(lhs.position, lhs.length)
+        != std::tie(rhs.position, rhs.length);
+}
+
+static void operator<<(std::ostream& stream, const StarPower& sp)
+{
+    stream << "{Pos " << sp.position << ", Length " << sp.length << '}';
+}
+
+BOOST_AUTO_TEST_SUITE(note_track_ctor_maintains_invariants)
+
+BOOST_AUTO_TEST_CASE(notes_are_sorted)
+{
+    std::vector<Note<NoteColour>> notes {{768}, {384}};
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note<NoteColour>> sorted_notes {{384}, {768}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
+                                  sorted_notes.cbegin(), sorted_notes.cend());
+}
+
+BOOST_AUTO_TEST_CASE(notes_of_the_same_colour_and_position_are_merged)
+{
+    std::vector<Note<NoteColour>> notes {{768, 0}, {768, 768}};
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note<NoteColour>> required_notes {{768, 768}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
+                                  required_notes.cbegin(),
+                                  required_notes.cend());
+
+    std::vector<Note<NoteColour>> second_notes {{768, 768}, {768, 0}};
+    NoteTrack<NoteColour> second_track {second_notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note<NoteColour>> second_required_notes {{768, 0}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        second_track.notes().cbegin(), second_track.notes().cend(),
+        second_required_notes.cbegin(), second_required_notes.cend());
+}
+
+BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_dealt_with_separately)
+{
+    std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green},
+                                         {768, 0, NoteColour::Red},
+                                         {768, 768, NoteColour::Green}};
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note<NoteColour>> required_notes {{768, 768, NoteColour::Green},
+                                                  {768, 0, NoteColour::Red}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
+                                  required_notes.cbegin(),
+                                  required_notes.cend());
+}
+
+BOOST_AUTO_TEST_CASE(open_and_non_open_notes_of_same_pos_and_length_are_merged)
+{
+    std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green},
+                                         {768, 1, NoteColour::Red},
+                                         {768, 0, NoteColour::Open}};
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note<NoteColour>> required_notes {{768, 1, NoteColour::Red},
+                                                  {768, 0, NoteColour::Open}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
+                                  required_notes.cbegin(),
+                                  required_notes.cend());
+}
+
+BOOST_AUTO_TEST_CASE(resolution_is_positive)
+{
+    std::vector<Note<NoteColour>> notes {{768}};
+    BOOST_CHECK_THROW(
+        [&] { return NoteTrack<NoteColour>(notes, {}, {}, {}, {}, {}, 0); }(),
+        ParseError);
+}
+
+BOOST_AUTO_TEST_CASE(empty_sp_phrases_are_culled)
+{
+    std::vector<Note<NoteColour>> notes {{768}};
+    std::vector<StarPower> phrases {{0, 100}, {700, 100}, {1000, 100}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    std::vector<StarPower> required_phrases {{700, 100}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        track.sp_phrases().cbegin(), track.sp_phrases().cend(),
+        required_phrases.cbegin(), required_phrases.cend());
+}
+
+BOOST_AUTO_TEST_CASE(sp_phrases_are_sorted)
+{
+    std::vector<Note<NoteColour>> notes {{768}, {1000}};
+    std::vector<StarPower> phrases {{1000, 1}, {768, 1}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    std::vector<StarPower> required_phrases {{768, 1}, {1000, 1}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        track.sp_phrases().cbegin(), track.sp_phrases().cend(),
+        required_phrases.cbegin(), required_phrases.cend());
+}
+
+BOOST_AUTO_TEST_CASE(sp_phrases_do_not_overlap)
+{
+    std::vector<Note<NoteColour>> notes {{768}, {1000}, {1500}};
+    std::vector<StarPower> phrases {{768, 1000}, {900, 150}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    std::vector<StarPower> required_phrases {{768, 282}, {1050, 718}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        track.sp_phrases().cbegin(), track.sp_phrases().cend(),
+        required_phrases.cbegin(), required_phrases.cend());
+}
+
+BOOST_AUTO_TEST_CASE(solos_are_sorted)
+{
+    std::vector<Note<NoteColour>> notes {{0}, {768}};
+    std::vector<Solo> solos {{768, 868, 100}, {0, 100, 100}};
+    NoteTrack<NoteColour> track {notes, {}, solos, {}, {}, {}, 192};
+    std::vector<Solo> required_solos {{0, 100, 100}, {768, 868, 100}};
+    std::vector<Solo> solo_output
+        = track.solos(DrumSettings::default_settings());
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(solo_output.cbegin(), solo_output.cend(),
+                                  required_solos.cbegin(),
+                                  required_solos.cend());
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_CASE(solos_do_take_into_account_drum_settings)
 {
     std::vector<Note<DrumNoteColour>> notes {
         {0, 0, DrumNoteColour::Red},
@@ -151,240 +197,268 @@ TEST_CASE("Solos do take into account drum settings")
     std::vector<Solo> solos {{0, 1, 200}, {192, 193, 100}};
     NoteTrack<DrumNoteColour> track {notes, {}, solos, {}, {}, {}, 192};
     std::vector<Solo> required_solos {{0, 1, 100}};
+    std::vector<Solo> solo_output = track.solos({false, false, true, false});
 
-    REQUIRE(track.solos({false, false, true, false}) == required_solos);
+    BOOST_CHECK_EQUAL_COLLECTIONS(solo_output.cbegin(), solo_output.cend(),
+                                  required_solos.cbegin(),
+                                  required_solos.cend());
 }
 
-TEST_CASE("Automatic drum activation zone generation is correct")
+BOOST_AUTO_TEST_SUITE(automatic_drum_activation_zone_generation_is_correct)
+
+BOOST_AUTO_TEST_CASE(automatic_zones_are_created)
 {
-    SECTION("Automatic zones are created")
-    {
-        std::vector<Note<DrumNoteColour>> notes {
-            {768}, {1536}, {2304}, {3072}, {3840}};
-        TimeConverter converter {{}, 192, ChDrumEngine(), {}};
+    std::vector<Note<DrumNoteColour>> notes {
+        {768}, {1536}, {2304}, {3072}, {3840}};
+    TimeConverter converter {{}, 192, ChDrumEngine(), {}};
 
-        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<DrumFill> fills {{384, 384}, {3456, 384}};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<DrumFill> fills {{384, 384}, {3456, 384}};
 
-        track.generate_drum_fills(converter);
+    track.generate_drum_fills(converter);
 
-        REQUIRE(track.drum_fills() == fills);
-    }
-
-    SECTION("Automatic zones have 250ms of leniency")
-    {
-        std::vector<Note<DrumNoteColour>> notes {
-            {672}, {3936}, {6815}, {10081}};
-        TimeConverter converter {{}, 192, ChDrumEngine(), {}};
-
-        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<DrumFill> fills {{384, 384}, {3456, 384}};
-
-        track.generate_drum_fills(converter);
-
-        REQUIRE(track.drum_fills() == fills);
-    }
-
-    SECTION("Automatic zones handle skipped measures correctly")
-    {
-        std::vector<Note<DrumNoteColour>> notes {{768}, {4608}};
-        TimeConverter converter {{}, 192, ChDrumEngine(), {}};
-
-        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<DrumFill> fills {{384, 384}, {4224, 384}};
-
-        track.generate_drum_fills(converter);
-
-        REQUIRE(track.drum_fills() == fills);
-    }
-
-    SECTION("The last automatic zone exists even if the note is early")
-    {
-        std::vector<Note<DrumNoteColour>> notes {{760}};
-        TimeConverter converter {{}, 192, ChDrumEngine(), {}};
-
-        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<DrumFill> fills {{384, 384}};
-
-        track.generate_drum_fills(converter);
-
-        REQUIRE(track.drum_fills() == fills);
-    }
-
-    SECTION("Automatic zones are half a measure long, according to seconds")
-    {
-        std::vector<Note<DrumNoteColour>> notes {{768}};
-        SyncTrack sync_track {{}, {{576, 40000}}};
-        TimeConverter converter {sync_track, 192, ChDrumEngine(), {}};
-
-        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<DrumFill> fills {{576, 192}};
-
-        track.generate_drum_fills(converter);
-
-        REQUIRE(track.drum_fills() == fills);
-    }
-
-    SECTION("Fill ends remain snapped to measure")
-    {
-        std::vector<Note<DrumNoteColour>> notes {{758},  {770},  {3830},
-                                                 {3860}, {6900}, {6924}};
-        TimeConverter converter {{}, 192, ChDrumEngine(), {}};
-
-        NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-        std::vector<DrumFill> fills {{384, 384}, {3456, 384}, {6528, 384}};
-
-        track.generate_drum_fills(converter);
-
-        REQUIRE(track.drum_fills() == fills);
-    }
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
+                                  track.drum_fills().cend(), fills.cbegin(),
+                                  fills.cend());
 }
 
-TEST_CASE("Base score for average multiplier is correct")
+BOOST_AUTO_TEST_CASE(automatic_zones_have_250ms_of_leniency)
 {
-    SECTION("Base score is correct for songs without sustains")
-    {
-        std::vector<Note<NoteColour>> notes {
-            {192}, {384}, {384, 0, NoteColour::Red}};
+    std::vector<Note<DrumNoteColour>> notes {{672}, {3936}, {6815}, {10081}};
+    TimeConverter converter {{}, 192, ChDrumEngine(), {}};
 
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<DrumFill> fills {{384, 384}, {3456, 384}};
 
-        REQUIRE(track.base_score() == 150);
-    }
+    track.generate_drum_fills(converter);
 
-    SECTION("Base score is correct for songs with sustains")
-    {
-        std::vector<Note<NoteColour>> notes_one {{192, 192}};
-        std::vector<Note<NoteColour>> notes_two {{192, 92}};
-        std::vector<Note<NoteColour>> notes_three {{192, 93}};
-
-        NoteTrack<NoteColour> track_one {notes_one, {}, {}, {}, {}, {}, 192};
-        NoteTrack<NoteColour> track_two {notes_two, {}, {}, {}, {}, {}, 192};
-        NoteTrack<NoteColour> track_three {notes_three, {}, {}, {},
-                                           {},          {}, 192};
-
-        REQUIRE(track_one.base_score() == 75);
-        REQUIRE(track_two.base_score() == 62);
-        REQUIRE(track_three.base_score() == 63);
-    }
-
-    SECTION("Base score is correct for songs with chord sustains")
-    {
-        std::vector<Note<NoteColour>> notes {{192, 192},
-                                             {192, 192, NoteColour::Red}};
-
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-
-        REQUIRE(track.base_score() == 125);
-    }
-
-    SECTION("Base score is correct for other resolutions")
-    {
-        std::vector<Note<NoteColour>> notes {{192, 192}};
-
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 480};
-
-        REQUIRE(track.base_score() == 60);
-    }
-
-    SECTION("Fractional ticks from multiple holds are added together correctly")
-    {
-        std::vector<Note<NoteColour>> notes {{0, 100}, {192, 100}};
-
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-
-        REQUIRE(track.base_score() == 127);
-    }
-
-    SECTION("Disjoint chords are handled correctly")
-    {
-        std::vector<Note<NoteColour>> notes {
-            {0, 384}, {0, 384, NoteColour::Red}, {0, 192, NoteColour::Yellow}};
-
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-
-        REQUIRE(track.base_score() == 275);
-    }
-
-    SECTION("Base score is correctly handled with open note merging")
-    {
-        std::vector<Note<NoteColour>> notes {{0, 0}, {0, 0, NoteColour::Open}};
-
-        NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-
-        REQUIRE(track.base_score() == 100);
-    }
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
+                                  track.drum_fills().cend(), fills.cbegin(),
+                                  fills.cend());
 }
 
-TEST_CASE("Base score is correct for drums")
+BOOST_AUTO_TEST_CASE(automatic_zones_handle_skipped_measures_correctly)
+{
+    std::vector<Note<DrumNoteColour>> notes {{768}, {4608}};
+    TimeConverter converter {{}, 192, ChDrumEngine(), {}};
+
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<DrumFill> fills {{384, 384}, {4224, 384}};
+
+    track.generate_drum_fills(converter);
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
+                                  track.drum_fills().cend(), fills.cbegin(),
+                                  fills.cend());
+}
+
+BOOST_AUTO_TEST_CASE(the_last_automatic_zone_exists_even_if_the_note_is_early)
+{
+    std::vector<Note<DrumNoteColour>> notes {{760}};
+    TimeConverter converter {{}, 192, ChDrumEngine(), {}};
+
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<DrumFill> fills {{384, 384}};
+
+    track.generate_drum_fills(converter);
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
+                                  track.drum_fills().cend(), fills.cbegin(),
+                                  fills.cend());
+}
+
+BOOST_AUTO_TEST_CASE(automatic_zones_are_half_a_measure_according_to_seconds)
+{
+    std::vector<Note<DrumNoteColour>> notes {{768}};
+    SyncTrack sync_track {{}, {{576, 40000}}};
+    TimeConverter converter {sync_track, 192, ChDrumEngine(), {}};
+
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<DrumFill> fills {{576, 192}};
+
+    track.generate_drum_fills(converter);
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
+                                  track.drum_fills().cend(), fills.cbegin(),
+                                  fills.cend());
+}
+
+BOOST_AUTO_TEST_CASE(fill_ends_remain_snapped_to_measure)
+{
+    std::vector<Note<DrumNoteColour>> notes {{758},  {770},  {3830},
+                                             {3860}, {6900}, {6924}};
+    TimeConverter converter {{}, 192, ChDrumEngine(), {}};
+
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<DrumFill> fills {{384, 384}, {3456, 384}, {6528, 384}};
+
+    track.generate_drum_fills(converter);
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
+                                  track.drum_fills().cend(), fills.cbegin(),
+                                  fills.cend());
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(base_score_for_average_multiplier_is_correct)
+
+BOOST_AUTO_TEST_CASE(base_score_is_correct_for_songs_without_sustains)
+{
+    std::vector<Note<NoteColour>> notes {
+        {192}, {384}, {384, 0, NoteColour::Red}};
+
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+
+    BOOST_CHECK_EQUAL(track.base_score(), 150);
+}
+
+BOOST_AUTO_TEST_CASE(base_score_is_correct_for_songs_with_sustains)
+{
+    std::vector<Note<NoteColour>> notes_one {{192, 192}};
+    std::vector<Note<NoteColour>> notes_two {{192, 92}};
+    std::vector<Note<NoteColour>> notes_three {{192, 93}};
+
+    NoteTrack<NoteColour> track_one {notes_one, {}, {}, {}, {}, {}, 192};
+    NoteTrack<NoteColour> track_two {notes_two, {}, {}, {}, {}, {}, 192};
+    NoteTrack<NoteColour> track_three {notes_three, {}, {}, {}, {}, {}, 192};
+
+    BOOST_CHECK_EQUAL(track_one.base_score(), 75);
+    BOOST_CHECK_EQUAL(track_two.base_score(), 62);
+    BOOST_CHECK_EQUAL(track_three.base_score(), 63);
+}
+
+BOOST_AUTO_TEST_CASE(base_score_is_correct_for_songs_with_chord_sustains)
+{
+    std::vector<Note<NoteColour>> notes {{192, 192},
+                                         {192, 192, NoteColour::Red}};
+
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+
+    BOOST_CHECK_EQUAL(track.base_score(), 125);
+}
+
+BOOST_AUTO_TEST_CASE(base_score_is_correct_for_other_resolutions)
+{
+    std::vector<Note<NoteColour>> notes {{192, 192}};
+
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 480};
+
+    BOOST_CHECK_EQUAL(track.base_score(), 60);
+}
+
+BOOST_AUTO_TEST_CASE(fractional_ticks_from_multiple_holds_are_added_correctly)
+{
+    std::vector<Note<NoteColour>> notes {{0, 100}, {192, 100}};
+
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+
+    BOOST_CHECK_EQUAL(track.base_score(), 127);
+}
+
+BOOST_AUTO_TEST_CASE(disjoint_chords_are_handled_correctly)
+{
+    std::vector<Note<NoteColour>> notes {
+        {0, 384}, {0, 384, NoteColour::Red}, {0, 192, NoteColour::Yellow}};
+
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+
+    BOOST_CHECK_EQUAL(track.base_score(), 275);
+}
+
+BOOST_AUTO_TEST_CASE(base_score_is_correctly_handled_with_open_note_merging)
+{
+    std::vector<Note<NoteColour>> notes {{0, 0}, {0, 0, NoteColour::Open}};
+
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+
+    BOOST_CHECK_EQUAL(track.base_score(), 100);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(base_score_is_correct_for_drums)
+
+BOOST_AUTO_TEST_CASE(all_kicks_gives_correct_answer)
 {
     std::vector<Note<DrumNoteColour>> notes {
         {0, 0, DrumNoteColour::Red},
         {192, 0, DrumNoteColour::Kick},
         {384, 0, DrumNoteColour::DoubleKick}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    DrumSettings settings {true, false, true, false};
 
-    SECTION("All kicks gives correct answer")
-    {
-        DrumSettings settings {true, false, true, false};
-
-        REQUIRE(track.base_score(settings) == 150);
-    }
-
-    SECTION("Only single kicks gives correct answer")
-    {
-        DrumSettings settings {false, false, true, false};
-
-        REQUIRE(track.base_score(settings) == 100);
-    }
-
-    SECTION("No kicks gives correct answer")
-    {
-        DrumSettings settings {false, true, true, false};
-
-        REQUIRE(track.base_score(settings) == 50);
-    }
+    BOOST_CHECK_EQUAL(track.base_score(settings), 150);
 }
 
-TEST_CASE("trim_sustains is correct")
+BOOST_AUTO_TEST_CASE(only_single_kicks_gives_correct_answer)
+{
+    std::vector<Note<DrumNoteColour>> notes {
+        {0, 0, DrumNoteColour::Red},
+        {192, 0, DrumNoteColour::Kick},
+        {384, 0, DrumNoteColour::DoubleKick}};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    DrumSettings settings {false, false, true, false};
+
+    BOOST_CHECK_EQUAL(track.base_score(settings), 100);
+}
+
+BOOST_AUTO_TEST_CASE(no_kicks_gives_correct_answer)
+{
+    std::vector<Note<DrumNoteColour>> notes {
+        {0, 0, DrumNoteColour::Red},
+        {192, 0, DrumNoteColour::Kick},
+        {384, 0, DrumNoteColour::DoubleKick}};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    DrumSettings settings {false, true, true, false};
+
+    BOOST_CHECK_EQUAL(track.base_score(settings), 50);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_CASE(trim_sustains_is_correct)
 {
     const std::vector<Note<NoteColour>> notes {{0, 65}, {200, 70}, {400, 140}};
     const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 200};
     const auto new_track = track.trim_sustains();
     const auto& new_notes = new_track.notes();
 
-    REQUIRE(new_notes[0].length == 0);
-    REQUIRE(new_notes[1].length == 70);
-    REQUIRE(new_notes[2].length == 140);
-    REQUIRE(new_track.base_score() == 177);
+    BOOST_CHECK_EQUAL(new_notes[0].length, 0);
+    BOOST_CHECK_EQUAL(new_notes[1].length, 70);
+    BOOST_CHECK_EQUAL(new_notes[2].length, 140);
+    BOOST_CHECK_EQUAL(new_track.base_score(), 177);
 }
 
-TEST_CASE("snap_chords is correct")
+BOOST_AUTO_TEST_SUITE(snap_chords_is_correct)
+
+BOOST_AUTO_TEST_CASE(no_snapping)
 {
     const std::vector<Note<NoteColour>> notes {{0, 0, NoteColour::Green},
                                                {5, 0, NoteColour::Red}};
     const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 480};
+    auto new_track = track.snap_chords(0);
+    const auto& new_notes = new_track.notes();
 
-    SECTION("No snapping")
-    {
-        auto new_track = track.snap_chords(0);
-        const auto& new_notes = new_track.notes();
-
-        REQUIRE(new_notes[0].position == 0);
-        REQUIRE(new_notes[1].position == 5);
-    }
-
-    SECTION("HMX GH snapping")
-    {
-        auto new_track = track.snap_chords(10);
-        const auto& new_notes = new_track.notes();
-
-        REQUIRE(new_notes[0].position == 0);
-        REQUIRE(new_notes[1].position == 0);
-    }
+    BOOST_CHECK_EQUAL(new_notes[0].position, 0);
+    BOOST_CHECK_EQUAL(new_notes[1].position, 5);
 }
 
-TEST_CASE("disable_dynamics is correct")
+BOOST_AUTO_TEST_CASE(hmx_gh_snapping)
+{
+    const std::vector<Note<NoteColour>> notes {{0, 0, NoteColour::Green},
+                                               {5, 0, NoteColour::Red}};
+    const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 480};
+    auto new_track = track.snap_chords(10);
+    const auto& new_notes = new_track.notes();
+
+    BOOST_CHECK_EQUAL(new_notes[0].position, 0);
+    BOOST_CHECK_EQUAL(new_notes[1].position, 0);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_CASE(disable_dynamics_is_correct)
 {
     const std::vector<Note<DrumNoteColour>> notes {
         {0, 0, DrumNoteColour::Red},
@@ -397,5 +471,6 @@ TEST_CASE("disable_dynamics is correct")
         {0, 0, DrumNoteColour::Red},
         {192, 0, DrumNoteColour::Red},
         {384, 0, DrumNoteColour::Red}};
-    REQUIRE(track.notes() == new_notes);
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
+                                  new_notes.cbegin(), new_notes.cend());
 }

@@ -38,6 +38,12 @@ static bool operator==(const Solo& lhs, const Solo& rhs)
         == std::tie(rhs.start, rhs.end, rhs.value);
 }
 
+static bool operator==(const StarPower& lhs, const StarPower& rhs)
+{
+    return std::tie(lhs.position, lhs.length)
+        == std::tie(rhs.position, rhs.length);
+}
+
 static bool operator==(const TimeSignature& lhs, const TimeSignature& rhs)
 {
     return std::tie(lhs.position, lhs.numerator, lhs.denominator)
