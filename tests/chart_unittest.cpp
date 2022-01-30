@@ -29,9 +29,10 @@ static bool operator!=(const BpmEvent& lhs, const BpmEvent& rhs)
     return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
 }
 
-static void operator<<(std::ostream& stream, const BpmEvent& event)
+static std::ostream& operator<<(std::ostream& stream, const BpmEvent& event)
 {
     stream << "{Pos " << event.position << ", BPM " << event.bpm << '}';
+    return stream;
 }
 
 static bool operator!=(const Event& lhs, const Event& rhs)
@@ -39,9 +40,10 @@ static bool operator!=(const Event& lhs, const Event& rhs)
     return std::tie(lhs.position, lhs.data) != std::tie(rhs.position, rhs.data);
 }
 
-static void operator<<(std::ostream& stream, const Event& event)
+static std::ostream& operator<<(std::ostream& stream, const Event& event)
 {
     stream << "{Pos " << event.position << ", Data " << event.data << '}';
+    return stream;
 }
 
 static bool operator!=(const NoteEvent& lhs, const NoteEvent& rhs)
@@ -50,10 +52,11 @@ static bool operator!=(const NoteEvent& lhs, const NoteEvent& rhs)
         != std::tie(rhs.position, rhs.fret, rhs.length);
 }
 
-static void operator<<(std::ostream& stream, const NoteEvent& event)
+static std::ostream& operator<<(std::ostream& stream, const NoteEvent& event)
 {
     stream << "{Pos " << event.position << ", Fret " << event.fret << ", Length"
            << event.length << '}';
+    return stream;
 }
 
 static bool operator!=(const SpecialEvent& lhs, const SpecialEvent& rhs)
@@ -62,10 +65,11 @@ static bool operator!=(const SpecialEvent& lhs, const SpecialEvent& rhs)
         != std::tie(rhs.position, rhs.key, rhs.length);
 }
 
-static void operator<<(std::ostream& stream, const SpecialEvent& event)
+static std::ostream& operator<<(std::ostream& stream, const SpecialEvent& event)
 {
     stream << "{Pos " << event.position << ", Key " << event.key << ", Length"
            << event.length << '}';
+    return stream;
 }
 
 static bool operator!=(const TimeSigEvent& lhs, const TimeSigEvent& rhs)
@@ -74,10 +78,11 @@ static bool operator!=(const TimeSigEvent& lhs, const TimeSigEvent& rhs)
         != std::tie(rhs.position, rhs.numerator, rhs.denominator);
 }
 
-static void operator<<(std::ostream& stream, const TimeSigEvent& ts)
+static std::ostream& operator<<(std::ostream& stream, const TimeSigEvent& ts)
 {
     stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
            << ts.denominator << '}';
+    return stream;
 }
 
 BOOST_AUTO_TEST_CASE(section_names_are_read)

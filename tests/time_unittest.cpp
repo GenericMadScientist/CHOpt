@@ -21,19 +21,22 @@
 
 #include "time.hpp"
 
-static void operator<<(std::ostream& stream, Beat beat)
+static std::ostream& operator<<(std::ostream& stream, Beat beat)
 {
     stream << beat.value() << 'b';
+    return stream;
 }
 
-static void operator<<(std::ostream& stream, Measure measure)
+static std::ostream& operator<<(std::ostream& stream, Measure measure)
 {
     stream << measure.value() << 'm';
+    return stream;
 }
 
-static void operator<<(std::ostream& stream, Second second)
+static std::ostream& operator<<(std::ostream& stream, Second second)
 {
     stream << second.value() << 's';
+    return stream;
 }
 
 BOOST_AUTO_TEST_SUITE(beat_operations)

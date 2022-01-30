@@ -29,10 +29,11 @@ static bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
 }
 
 template <typename T>
-static void operator<<(std::ostream& stream, const Note<T>& note)
+static std::ostream& operator<<(std::ostream& stream, const Note<T>& note)
 {
     stream << "{Pos " << note.position << ", Length " << note.length
            << ", Colour " << static_cast<int>(note.colour) << '}';
+    return stream;
 }
 
 static bool operator!=(const Solo& lhs, const Solo& rhs)
@@ -41,10 +42,11 @@ static bool operator!=(const Solo& lhs, const Solo& rhs)
         != std::tie(rhs.start, rhs.end, rhs.value);
 }
 
-static void operator<<(std::ostream& stream, const Solo& solo)
+static std::ostream& operator<<(std::ostream& stream, const Solo& solo)
 {
     stream << "{Start " << solo.start << ", End " << solo.end << ", Value "
            << solo.value << '}';
+    return stream;
 }
 
 static bool operator!=(const DrumFill& lhs, const DrumFill& rhs)
@@ -53,9 +55,10 @@ static bool operator!=(const DrumFill& lhs, const DrumFill& rhs)
         != std::tie(rhs.position, rhs.length);
 }
 
-static void operator<<(std::ostream& stream, const DrumFill& fill)
+static std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
 {
     stream << "{Pos " << fill.position << ", Length " << fill.length << '}';
+    return stream;
 }
 
 static bool operator!=(const StarPower& lhs, const StarPower& rhs)
@@ -64,9 +67,10 @@ static bool operator!=(const StarPower& lhs, const StarPower& rhs)
         != std::tie(rhs.position, rhs.length);
 }
 
-static void operator<<(std::ostream& stream, const StarPower& sp)
+static std::ostream& operator<<(std::ostream& stream, const StarPower& sp)
 {
     stream << "{Pos " << sp.position << ", Length " << sp.length << '}';
+    return stream;
 }
 
 BOOST_AUTO_TEST_SUITE(note_track_ctor_maintains_invariants)

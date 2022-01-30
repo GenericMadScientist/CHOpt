@@ -28,9 +28,10 @@ static bool operator!=(const BPM& lhs, const BPM& rhs)
     return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
 }
 
-static void operator<<(std::ostream& stream, const BPM& bpm)
+static std::ostream& operator<<(std::ostream& stream, const BPM& bpm)
 {
     stream << "{Pos " << bpm.position << ", BPM " << bpm.bpm << '}';
+    return stream;
 }
 
 static bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
@@ -39,10 +40,11 @@ static bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
         != std::tie(rhs.position, rhs.numerator, rhs.denominator);
 }
 
-static void operator<<(std::ostream& stream, const TimeSignature& ts)
+static std::ostream& operator<<(std::ostream& stream, const TimeSignature& ts)
 {
     stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
            << ts.denominator << '}';
+    return stream;
 }
 
 BOOST_AUTO_TEST_SUITE(sync_track_ctor_maintains_invariants)

@@ -26,9 +26,10 @@ static bool operator!=(const BPM& lhs, const BPM& rhs)
     return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
 }
 
-static void operator<<(std::ostream& stream, const BPM& bpm)
+static std::ostream& operator<<(std::ostream& stream, const BPM& bpm)
 {
     stream << "{Pos " << bpm.position << ", BPM " << bpm.bpm << '}';
+    return stream;
 }
 
 template <typename T>
@@ -39,10 +40,11 @@ static bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
 }
 
 template <typename T>
-static void operator<<(std::ostream& stream, const Note<T>& note)
+static std::ostream& operator<<(std::ostream& stream, const Note<T>& note)
 {
     stream << "{Pos " << note.position << ", Length " << note.length
            << ", Colour " << static_cast<int>(note.colour) << '}';
+    return stream;
 }
 
 static bool operator!=(const Solo& lhs, const Solo& rhs)
@@ -51,10 +53,11 @@ static bool operator!=(const Solo& lhs, const Solo& rhs)
         != std::tie(rhs.start, rhs.end, rhs.value);
 }
 
-static void operator<<(std::ostream& stream, const Solo& solo)
+static std::ostream& operator<<(std::ostream& stream, const Solo& solo)
 {
     stream << "{Start " << solo.start << ", End " << solo.end << ", Value "
            << solo.value << '}';
+    return stream;
 }
 
 static bool operator!=(const StarPower& lhs, const StarPower& rhs)
@@ -63,9 +66,10 @@ static bool operator!=(const StarPower& lhs, const StarPower& rhs)
         != std::tie(rhs.position, rhs.length);
 }
 
-static void operator<<(std::ostream& stream, const StarPower& sp)
+static std::ostream& operator<<(std::ostream& stream, const StarPower& sp)
 {
     stream << "{Pos " << sp.position << ", Length " << sp.length << '}';
+    return stream;
 }
 
 static bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
@@ -74,10 +78,11 @@ static bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
         != std::tie(rhs.position, rhs.numerator, rhs.denominator);
 }
 
-static void operator<<(std::ostream& stream, const TimeSignature& ts)
+static std::ostream& operator<<(std::ostream& stream, const TimeSignature& ts)
 {
     stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
            << ts.denominator << '}';
+    return stream;
 }
 
 static bool operator==(const DrumFill& lhs, const DrumFill& rhs)
@@ -91,9 +96,10 @@ static bool operator!=(const DrumFill& lhs, const DrumFill& rhs)
     return !(lhs == rhs);
 }
 
-static void operator<<(std::ostream& stream, const DrumFill& fill)
+static std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
 {
     stream << "{Pos " << fill.position << ", Length " << fill.length << '}';
+    return stream;
 }
 
 static bool operator==(const DiscoFlip& lhs, const DiscoFlip& rhs)
@@ -107,24 +113,28 @@ static bool operator!=(const DiscoFlip& lhs, const DiscoFlip& rhs)
     return !(lhs == rhs);
 }
 
-static void operator<<(std::ostream& stream, const DiscoFlip& flip)
+static std::ostream& operator<<(std::ostream& stream, const DiscoFlip& flip)
 {
     stream << "{Pos " << flip.position << ", Length " << flip.length << '}';
+    return stream;
 }
 
-static void operator<<(std::ostream& stream, Difficulty diff)
+static std::ostream& operator<<(std::ostream& stream, Difficulty diff)
 {
     stream << static_cast<int>(diff);
+    return stream;
 }
 
-static void operator<<(std::ostream& stream, Instrument inst)
+static std::ostream& operator<<(std::ostream& stream, Instrument inst)
 {
     stream << static_cast<int>(inst);
+    return stream;
 }
 
-static void operator<<(std::ostream& stream, NoteColour colour)
+static std::ostream& operator<<(std::ostream& stream, NoteColour colour)
 {
     stream << static_cast<int>(colour);
+    return stream;
 }
 
 BOOST_AUTO_TEST_CASE(chart_to_song_has_correct_value_for_is_from_midi)
