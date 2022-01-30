@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#define BOOST_TEST_MODULE Song Tests
 #include <boost/test/unit_test.hpp>
 
 #include "song.hpp"

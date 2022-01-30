@@ -19,7 +19,6 @@
 #include <tuple>
 #include <vector>
 
-#define BOOST_TEST_MODULE Midi Parser Tests
 #include <boost/test/unit_test.hpp>
 
 #include "midi.hpp"

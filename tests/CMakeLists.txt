@@ -12,16 +12,12 @@ function(package_add_test testname)
   add_executable(${testname} ${ARGN})
   target_include_directories(${testname} PRIVATE ${INCLUDE} ${LIBS})
   target_link_directories(${testname} PRIVATE ${Boost_LIBRARY_DIRS})
-  target_link_libraries(${testname} PRIVATE catch_main Boost::nowide
-                                            Boost::unit_test_framework)
+  target_link_libraries(${testname} PRIVATE catch_main Boost::nowide)
   add_test(NAME ${testname} COMMAND ${testname})
   set_cpp_standard(${testname})
   set_warnings(${testname})
   enable_sanitisers(${testname})
 endfunction()
-
-package_add_test(chart_unittest chart_unittest.cpp "${SRC}/chart.cpp"
-                 "${SRC}/stringutil.cpp")
 
 package_add_test(
   imagebuilder_unittest
@@ -39,11 +35,6 @@ package_add_test(
   "${SRC}/timeconverter.cpp")
 target_include_directories(imagebuilder_unittest PRIVATE ${PNG_INCLUDE_DIRS})
 target_link_libraries(imagebuilder_unittest PRIVATE ${PNG_LIBRARIES})
-
-package_add_test(ini_unittest ini_unittest.cpp "${SRC}/ini.cpp"
-                 "${SRC}/stringutil.cpp")
-
-package_add_test(midi_unittest midi_unittest.cpp "${SRC}/midi.cpp")
 
 package_add_test(
   optimiser_unittest
@@ -67,26 +58,28 @@ package_add_test(
   "${SRC}/stringutil.cpp"
   "${SRC}/timeconverter.cpp")
 
-package_add_test(
-  song_unittest
+add_executable(chopt_tests
+  test_main.cpp
+  chart_unittest.cpp
+  ini_unittest.cpp
+  midi_unittest.cpp
   song_unittest.cpp
+  songparts_unittest.cpp
+  sp_unittest.cpp
+  stringutil_unittest.cpp
+  time_unittest.cpp
+  timeconverter_unittest.cpp
   "${SRC}/chart.cpp"
   "${SRC}/ini.cpp"
   "${SRC}/midi.cpp"
   "${SRC}/song.cpp"
-  "${SRC}/stringutil.cpp"
-  "${SRC}/timeconverter.cpp")
-
-package_add_test(songparts_unittest songparts_unittest.cpp
-                 "${SRC}/timeconverter.cpp")
-
-package_add_test(sp_unittest sp_unittest.cpp "${SRC}/sp.cpp"
-                 "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")
-
-package_add_test(stringutil_unittest stringutil_unittest.cpp
-                 "${SRC}/stringutil.cpp")
-
-package_add_test(time_unittest time_unittest.cpp)
-
-package_add_test(timeconverter_unittest timeconverter_unittest.cpp
-                 "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")
+  "${SRC}/sp.cpp" "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp"
+)
+target_include_directories(chopt_tests PRIVATE ${INCLUDE} ${LIBS})
+target_link_directories(chopt_tests PRIVATE ${Boost_LIBRARY_DIRS})
+target_link_libraries(chopt_tests PRIVATE Boost::nowide
+                                          Boost::unit_test_framework)
+add_test(NAME chopt_tests COMMAND chopt_tests)
+set_cpp_standard(chopt_tests)
+set_warnings(chopt_tests)
+enable_sanitisers(chopt_tests)

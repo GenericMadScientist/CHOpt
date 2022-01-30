@@ -18,7 +18,6 @@
 
 #include <array>
 
-#define BOOST_TEST_MODULE Time Converter Tests
 #include <boost/test/unit_test.hpp>
 
 #include "timeconverter.hpp"

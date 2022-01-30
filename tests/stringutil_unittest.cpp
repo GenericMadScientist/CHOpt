@@ -18,7 +18,6 @@
 
 #include <stdexcept>
 
-#define BOOST_TEST_MODULE Stringutils Tests
 #include <boost/test/unit_test.hpp>
 
 #include "stringutil.hpp"
