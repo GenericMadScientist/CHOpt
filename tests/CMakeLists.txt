@@ -46,9 +46,6 @@ package_add_test(
   "${SRC}/stringutil.cpp"
   "${SRC}/timeconverter.cpp")
 
-package_add_test(points_unittest points_unittest.cpp "${SRC}/points.cpp"
-                 "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp")
-
 package_add_test(
   processed_unittest
   processed_unittest.cpp
@@ -58,11 +55,13 @@ package_add_test(
   "${SRC}/stringutil.cpp"
   "${SRC}/timeconverter.cpp")
 
-add_executable(chopt_tests
+add_executable(
+  chopt_tests
   test_main.cpp
   chart_unittest.cpp
   ini_unittest.cpp
   midi_unittest.cpp
+  points_unittest.cpp
   song_unittest.cpp
   songparts_unittest.cpp
   sp_unittest.cpp
@@ -72,9 +71,11 @@ add_executable(chopt_tests
   "${SRC}/chart.cpp"
   "${SRC}/ini.cpp"
   "${SRC}/midi.cpp"
+  "${SRC}/points.cpp"
   "${SRC}/song.cpp"
-  "${SRC}/sp.cpp" "${SRC}/stringutil.cpp" "${SRC}/timeconverter.cpp"
-)
+  "${SRC}/sp.cpp"
+  "${SRC}/stringutil.cpp"
+  "${SRC}/timeconverter.cpp")
 target_include_directories(chopt_tests PRIVATE ${INCLUDE} ${LIBS})
 target_link_directories(chopt_tests PRIVATE ${Boost_LIBRARY_DIRS})
 target_link_libraries(chopt_tests PRIVATE Boost::nowide
