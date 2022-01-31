@@ -20,16 +20,6 @@ function(package_add_test testname)
 endfunction()
 
 package_add_test(
-  optimiser_unittest
-  optimiser_unittest.cpp
-  "${SRC}/optimiser.cpp"
-  "${SRC}/points.cpp"
-  "${SRC}/processed.cpp"
-  "${SRC}/sp.cpp"
-  "${SRC}/stringutil.cpp"
-  "${SRC}/timeconverter.cpp")
-
-package_add_test(
   processed_unittest
   processed_unittest.cpp
   "${SRC}/points.cpp"
@@ -45,6 +35,7 @@ add_executable(
   imagebuilder_unittest.cpp
   ini_unittest.cpp
   midi_unittest.cpp
+  optimiser_unittest.cpp
   points_unittest.cpp
   song_unittest.cpp
   songparts_unittest.cpp
