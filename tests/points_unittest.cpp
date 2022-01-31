@@ -65,7 +65,7 @@ static std::ostream& operator<<(std::ostream& stream, const Position& position)
 static std::ostream& operator<<(std::ostream& stream,
                                 const std::tuple<Position, int>& tuple)
 {
-    stream << '(' << std::get<0>(tuple) << ", " << std::get<1>(tuple) << '}';
+    stream << '{' << std::get<0>(tuple) << ", " << std::get<1>(tuple) << '}';
     return stream;
 }
 

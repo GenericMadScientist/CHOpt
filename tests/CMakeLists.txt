@@ -20,23 +20,6 @@ function(package_add_test testname)
 endfunction()
 
 package_add_test(
-  imagebuilder_unittest
-  imagebuilder_unittest.cpp
-  "${SRC}/chart.cpp"
-  "${SRC}/imagebuilder.cpp"
-  "${SRC}/ini.cpp"
-  "${SRC}/midi.cpp"
-  "${SRC}/optimiser.cpp"
-  "${SRC}/points.cpp"
-  "${SRC}/processed.cpp"
-  "${SRC}/song.cpp"
-  "${SRC}/sp.cpp"
-  "${SRC}/stringutil.cpp"
-  "${SRC}/timeconverter.cpp")
-target_include_directories(imagebuilder_unittest PRIVATE ${PNG_INCLUDE_DIRS})
-target_link_libraries(imagebuilder_unittest PRIVATE ${PNG_LIBRARIES})
-
-package_add_test(
   optimiser_unittest
   optimiser_unittest.cpp
   "${SRC}/optimiser.cpp"
@@ -59,6 +42,7 @@ add_executable(
   chopt_tests
   test_main.cpp
   chart_unittest.cpp
+  imagebuilder_unittest.cpp
   ini_unittest.cpp
   midi_unittest.cpp
   points_unittest.cpp
@@ -69,9 +53,12 @@ add_executable(
   time_unittest.cpp
   timeconverter_unittest.cpp
   "${SRC}/chart.cpp"
+  "${SRC}/imagebuilder.cpp"
   "${SRC}/ini.cpp"
   "${SRC}/midi.cpp"
+  "${SRC}/optimiser.cpp"
   "${SRC}/points.cpp"
+  "${SRC}/processed.cpp"
   "${SRC}/song.cpp"
   "${SRC}/sp.cpp"
   "${SRC}/stringutil.cpp"
