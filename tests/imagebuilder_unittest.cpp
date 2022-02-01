@@ -58,29 +58,24 @@ static std::ostream& operator<<(std::ostream& stream, TrackType track_type)
     return stream;
 }
 
-namespace boost {
-namespace test_tools {
-    namespace tt_detail {
-        template <> struct print_log_value<std::tuple<double, double>> {
-            void operator()(std::ostream& stream,
-                            const std::tuple<double, double>& tuple)
-            {
-                const auto& [first, second] = tuple;
-                stream << '{' << first << ", " << second << '}';
-            }
-        };
-
-        template <> struct print_log_value<std::tuple<double, int, int>> {
-            void operator()(std::ostream& stream,
-                            const std::tuple<double, int, int>& tuple)
-            {
-                const auto& [first, second, third] = tuple;
-                stream << '{' << first << ", " << second << ", " << third
-                       << '}';
-            }
-        };
+namespace boost::test_tools::tt_detail {
+template <> struct print_log_value<std::tuple<double, double>> {
+    void operator()(std::ostream& stream,
+                    const std::tuple<double, double>& tuple)
+    {
+        const auto& [first, second] = tuple;
+        stream << '{' << first << ", " << second << '}';
     }
-}
+};
+
+template <> struct print_log_value<std::tuple<double, int, int>> {
+    void operator()(std::ostream& stream,
+                    const std::tuple<double, int, int>& tuple)
+    {
+        const auto& [first, second, third] = tuple;
+        stream << '{' << first << ", " << second << ", " << third << '}';
+    }
+};
 }
 
 BOOST_AUTO_TEST_SUITE(track_type_is_stored_correctly)
