@@ -26,7 +26,7 @@
 
 static bool operator==(const Beat& lhs, const Beat& rhs)
 {
-    return std::abs(lhs.value() - rhs.value()) < 0.000001;
+    return std::abs(lhs.value() - rhs.value()) < 0.00001;
 }
 
 static bool operator!=(const Beat& lhs, const Beat& rhs)
