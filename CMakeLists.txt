@@ -19,8 +19,7 @@ function(set_cpp_standard target)
                CXX_EXTENSIONS OFF)
 endfunction()
 
-# Set warning flags We need -Wno-reserved-identifier for now because Catch2
-# triggers it
+# Set warning flags
 function(set_warnings target)
   target_compile_options(
     ${target}
@@ -29,7 +28,6 @@ function(set_warnings target)
             -Wextra
             -Werror
             -Wno-c++98-compat
-            -Wno-reserved-identifier
             -Wno-unknown-warning-option>
             $<$<CXX_COMPILER_ID:MSVC>:
             /W4
@@ -133,8 +131,45 @@ if(PACKAGE_TESTS)
   if(NOT Boost_unit_test_framework_FOUND)
     message(FATAL_ERROR "Tests need Boost::Test in order to be built")
   endif()
+
   enable_testing()
-  add_subdirectory(tests)
+  add_executable(
+    chopt_tests
+    tests/test_main.cpp
+    tests/chart_unittest.cpp
+    tests/imagebuilder_unittest.cpp
+    tests/ini_unittest.cpp
+    tests/midi_unittest.cpp
+    tests/optimiser_unittest.cpp
+    tests/points_unittest.cpp
+    tests/processed_unittest.cpp
+    tests/song_unittest.cpp
+    tests/songparts_unittest.cpp
+    tests/sp_unittest.cpp
+    tests/stringutil_unittest.cpp
+    tests/time_unittest.cpp
+    tests/timeconverter_unittest.cpp
+    src/chart.cpp
+    src/imagebuilder.cpp
+    src/ini.cpp
+    src/midi.cpp
+    src/optimiser.cpp
+    src/points.cpp
+    src/processed.cpp
+    src/song.cpp
+    src/sp.cpp
+    src/stringutil.cpp
+    src/timeconverter.cpp)
+
+  target_include_directories(chopt_tests
+                             PRIVATE "${PROJECT_SOURCE_DIR}/include")
+  target_link_directories(chopt_tests PRIVATE ${Boost_LIBRARY_DIRS})
+  target_link_libraries(chopt_tests PRIVATE Boost::nowide
+                                            Boost::unit_test_framework)
+  add_test(NAME chopt_tests COMMAND chopt_tests)
+  set_cpp_standard(chopt_tests)
+  set_warnings(chopt_tests)
+  enable_sanitisers(chopt_tests)
 endif()
 
 option(BUILD_FUZZ_TARGETS "Build the fuzzing targets" OFF)
