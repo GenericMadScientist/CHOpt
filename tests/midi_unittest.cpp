@@ -50,7 +50,7 @@ static std::ostream& operator<<(std::ostream& stream,
         stream << values[0];
     }
     for (auto i = 1U; i < values.size(); ++i) {
-        stream << ", " << values[i];
+        stream << ", " << values.at(i);
     }
     stream << '}';
     return stream;

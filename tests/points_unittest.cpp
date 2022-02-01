@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <cstdlib>
 #include <numeric>
 
 #include <boost/test/unit_test.hpp>
@@ -25,7 +26,7 @@
 
 static bool operator==(const Beat& lhs, const Beat& rhs)
 {
-    return boost::test_tools::check_is_close(lhs.value(), rhs.value(), 0.0001);
+    return std::abs(lhs.value() - rhs.value()) < 0.000001;
 }
 
 static bool operator!=(const Beat& lhs, const Beat& rhs)
@@ -41,7 +42,7 @@ static std::ostream& operator<<(std::ostream& stream, Beat beat)
 
 static bool operator==(const Measure& lhs, const Measure& rhs)
 {
-    return boost::test_tools::check_is_close(lhs.value(), rhs.value(), 0.0001);
+    return std::abs(lhs.value() - rhs.value()) < 0.000001;
 }
 
 static std::ostream& operator<<(std::ostream& stream, Measure measure)

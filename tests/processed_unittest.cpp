@@ -16,14 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cstdlib>
+
 #include <boost/test/unit_test.hpp>
 
 #include "processed.hpp"
 
 static bool operator==(const SpBar& lhs, const SpBar& rhs)
 {
-    return boost::test_tools::check_is_close(lhs.min(), rhs.min(), 0.0001)
-        && boost::test_tools::check_is_close(lhs.max(), rhs.max(), 0.0001);
+    return std::abs(lhs.min() - rhs.min()) < 0.000001
+        && std::abs(lhs.max() - rhs.max()) < 0.000001;
 }
 
 static std::ostream& operator<<(std::ostream& stream, const SpBar& sp)

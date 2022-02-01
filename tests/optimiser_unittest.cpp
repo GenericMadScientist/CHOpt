@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <cstdlib>
 #include <iterator>
 
 #include <boost/test/unit_test.hpp>
@@ -25,7 +26,7 @@
 
 static bool operator==(const Beat& lhs, const Beat& rhs)
 {
-    return boost::test_tools::check_is_close(lhs.value(), rhs.value(), 0.01);
+    return std::abs(lhs.value() - rhs.value()) < 0.000001;
 }
 
 static bool operator!=(const Activation& lhs, const Activation& rhs)

@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cstdlib>
+
 #include <boost/test/unit_test.hpp>
 
 #include "imagebuilder.hpp"
@@ -23,8 +25,8 @@
 template <typename T>
 static bool operator!=(const DrawnNote<T>& lhs, const DrawnNote<T>& rhs)
 {
-    return !boost::test_tools::check_is_close(lhs.beat, rhs.beat, 0.0001)
-        || !boost::test_tools::check_is_close(lhs.length, rhs.length, 0.0001)
+    return std::abs(lhs.beat - rhs.beat) >= 0.000001
+        || std::abs(lhs.length - rhs.length) >= 0.000001
         || std::tie(lhs.colour, lhs.is_sp_note)
         != std::tie(rhs.colour, rhs.is_sp_note);
 }
@@ -40,8 +42,8 @@ static std::ostream& operator<<(std::ostream& stream, const DrawnNote<T>& note)
 
 static bool operator!=(const DrawnRow& lhs, const DrawnRow& rhs)
 {
-    return !boost::test_tools::check_is_close(lhs.start, rhs.start, 0.0001)
-        || !boost::test_tools::check_is_close(lhs.end, rhs.end, 0.0001);
+    return std::abs(lhs.start - rhs.start) >= 0.000001
+        || std::abs(lhs.end - rhs.end) >= 0.000001;
 }
 
 static std::ostream& operator<<(std::ostream& stream, const DrawnRow& row)
