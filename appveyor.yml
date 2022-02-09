@@ -94,6 +94,7 @@ for:
     - sh: wget -O $HOME/boost_1_78_0.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2
     - sh: tar --bzip2 -xf $HOME/boost_1_78_0.tar.bz2 -C $HOME
     - sh: cd $HOME/boost_1_78_0
+    - sh: ./bootstrap.sh --show-libraries
     - sh: ./bootstrap.sh --with-libraries=nowide,program_options --prefix=.
     - sh: ./b2 install > /dev/null
     - sh: cd $HOME/projects/CHOpt/build

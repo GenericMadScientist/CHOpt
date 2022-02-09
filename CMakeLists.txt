@@ -37,7 +37,7 @@ endfunction()
 find_package(PNG REQUIRED)
 find_package(
   Boost 1.76 REQUIRED
-  COMPONENTS nowide program_options
+  COMPONENTS json nowide program_options
   OPTIONAL_COMPONENTS unit_test_framework)
 
 cmake_policy(SET CMP0083 NEW)
