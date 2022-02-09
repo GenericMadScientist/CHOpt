@@ -8,8 +8,10 @@ conn = sqlite3.connect("integration_tests/tests.db")
 c = conn.cursor()
 
 c.execute(
-    ("select ID, File, Difficulty, Instrument, Path, BaseScore, TotalScore, "
-     "AvgMultiplier from Songs")
+    (
+        "select ID, File, Difficulty, Instrument, Path, BaseScore, TotalScore, "
+        "AvgMultiplier from Songs"
+    )
 )
 songs = list(c.fetchall())
 
@@ -28,9 +30,7 @@ for song in songs:
         ),
         (song_id,),
     )
-    for (description, act_end), activation in zip(
-        c.fetchall(), path.split("-")
-    ):
+    for (description, act_end), activation in zip(c.fetchall(), path.split("-")):
         if act_end is None:
             output_lines.append(f"{activation}: {description}")
         else:
@@ -43,9 +43,8 @@ conn.close()
 for song, output in zip(songs, outputs):
     _, file, difficulty, instrument, _, _, _, _ = song
     result = subprocess.run(
-        [program, "-f", f"{song_dir}/{file}",
-            "-d", difficulty, "-i", instrument],
-        capture_output=True
+        [program, "-f", f"{song_dir}/{file}", "-d", difficulty, "-i", instrument],
+        capture_output=True,
     )
     result.check_returncode()
     if result.stdout != output:

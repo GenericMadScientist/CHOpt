@@ -4,4 +4,5 @@ build/
 out/
 fuzzing_targets/CHART_CORPUS/
 fuzzing_targets/MIDI_CORPUS/
+chopt-env/
 CMakeSettings.json
