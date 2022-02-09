@@ -94,8 +94,7 @@ for:
     - sh: wget -O $HOME/boost_1_78_0.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2
     - sh: tar --bzip2 -xf $HOME/boost_1_78_0.tar.bz2 -C $HOME
     - sh: cd $HOME/boost_1_78_0
-    - sh: ./bootstrap.sh --show-libraries
-    - sh: ./bootstrap.sh --with-libraries=nowide,program_options --prefix=.
+    - sh: ./bootstrap.sh --with-libraries=json,nowide,program_options --prefix=.
     - sh: ./b2 install > /dev/null
     - sh: cd $HOME/projects/CHOpt/build
     - sh: cmake -DCMAKE_CXX_COMPILER=g++-9 -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_78_0 -DQt6_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6WidgetsTools ..

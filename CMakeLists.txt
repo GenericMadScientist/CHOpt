@@ -37,8 +37,8 @@ endfunction()
 find_package(PNG REQUIRED)
 find_package(
   Boost 1.76 REQUIRED
-  COMPONENTS json nowide program_options
-  OPTIONAL_COMPONENTS unit_test_framework)
+  COMPONENTS nowide program_options
+  OPTIONAL_COMPONENTS json unit_test_framework)
 
 cmake_policy(SET CMP0083 NEW)
 include(CheckPIESupported)
@@ -80,6 +80,10 @@ enable_sanitisers(chopt)
 
 option(BUILD_GUI "Build the GUI version" ON)
 if(BUILD_GUI)
+  if(NOT Boost_json_FOUND)
+    message(FATAL_ERROR "GUI version needs Boost::JSON in order to be built")
+  endif()
+
   find_package(
     Qt6
     COMPONENTS Widgets
@@ -114,8 +118,8 @@ if(BUILD_GUI)
     choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include"
                      "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
   target_link_directories(choptgui PRIVATE ${Boost_LIBRARY_DIRS})
-  target_link_libraries(choptgui PRIVATE Boost::nowide ${PNG_LIBRARIES}
-                                         Qt6::Widgets)
+  target_link_libraries(choptgui PRIVATE Boost::json Boost::nowide
+                                         ${PNG_LIBRARIES} Qt6::Widgets)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
   if(APPLE)
