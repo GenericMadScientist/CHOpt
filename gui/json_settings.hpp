@@ -19,6 +19,8 @@
 #ifndef CHOPT_JSON_SETTINGS_HPP
 #define CHOPT_JSON_SETTINGS_HPP
 
+#include <string>
+
 struct JsonSettings {
     int squeeze;
     int early_whammy;
@@ -27,7 +29,7 @@ struct JsonSettings {
     int video_lag;
 };
 
-JsonSettings load_saved_settings();
-void save_settings(const JsonSettings& settings);
+JsonSettings load_saved_settings(std::string application_dir);
+void save_settings(const JsonSettings& settings, std::string application_dir);
 
 #endif

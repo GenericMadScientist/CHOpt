@@ -139,7 +139,8 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->videoLagLabel->setMinimumWidth(30);
     m_ui->opacityLabel->setMinimumWidth(30);
 
-    const auto settings = load_saved_settings();
+    const auto settings = load_saved_settings(
+        QCoreApplication::applicationDirPath().toStdString());
     m_ui->squeezeSlider->setValue(settings.squeeze);
     m_ui->earlyWhammySlider->setValue(settings.early_whammy);
     m_ui->lazyWhammyLineEdit->setText(QString::number(settings.lazy_whammy));
@@ -172,7 +173,8 @@ MainWindow::~MainWindow()
         settings.whammy_delay = 0;
     }
 
-    save_settings(settings);
+    save_settings(settings,
+                  QCoreApplication::applicationDirPath().toStdString());
 
     if (m_thread != nullptr) {
         auto* opt_thread = dynamic_cast<OptimiserThread*>(m_thread);

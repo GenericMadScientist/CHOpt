@@ -16,21 +16,48 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <filesystem>
+#include <utility>
+
 #include <boost/json.hpp>
 #include <boost/nowide/fstream.hpp>
 
 #include "json_settings.hpp"
 
-JsonSettings load_saved_settings()
+static std::filesystem::path settings_path(std::string application_dir)
 {
-    JsonSettings settings;
-    settings.squeeze = 100;
-    settings.early_whammy = 100;
+    return std::filesystem::path(std::move(application_dir)) / "settings.json";
+}
+
+static int read_value(const boost::json::object& settings, const char* name,
+                      int min_value, int max_value, int default_value)
+{
+    const auto* it = settings.find(name);
+    if (it != settings.cend() && it->value().is_int64()) {
+        const auto value = it->value().get_int64();
+        if (value >= min_value && value <= max_value) {
+            return static_cast<int>(value);
+        }
+    }
+    return default_value;
+}
+
+JsonSettings load_saved_settings(std::string application_dir)
+{
+    constexpr int MAX_LINE_EDIT_INT = 999999999;
+    constexpr int MAX_PERCENT = 100;
+    constexpr int MAX_VIDEO_LAG = 200;
+    constexpr int MIN_VIDEO_LAG = -200;
+
+    JsonSettings settings {};
+    settings.squeeze = MAX_PERCENT;
+    settings.early_whammy = MAX_PERCENT;
     settings.lazy_whammy = 0;
     settings.whammy_delay = 0;
     settings.video_lag = 0;
 
-    boost::nowide::ifstream settings_file {"settings.json"};
+    const auto path = settings_path(std::move(application_dir));
+    boost::nowide::ifstream settings_file {path};
     if (!settings_file.is_open()) {
         return settings;
     }
@@ -45,52 +72,27 @@ JsonSettings load_saved_settings()
     }
 
     const auto& obj = jv.get_object();
-    auto it = obj.find("squeeze");
-    if (it != obj.cend() && it->value().is_int64()) {
-        const auto squeeze = it->value().get_int64();
-        if (squeeze >= 0 && squeeze <= 100) {
-            settings.squeeze = squeeze;
-        }
-    }
-    it = obj.find("early_whammy");
-    if (it != obj.cend() && it->value().is_int64()) {
-        const auto early_whammy = it->value().get_int64();
-        if (early_whammy >= 0 && early_whammy <= 100) {
-            settings.early_whammy = early_whammy;
-        }
-    }
-    it = obj.find("lazy_whammy");
-    if (it != obj.cend() && it->value().is_int64()) {
-        const auto lazy_whammy = it->value().get_int64();
-        if (lazy_whammy >= 0 && lazy_whammy <= 999999999) {
-            settings.lazy_whammy = lazy_whammy;
-        }
-    }
-    it = obj.find("whammy_delay");
-    if (it != obj.cend() && it->value().is_int64()) {
-        const auto whammy_delay = it->value().get_int64();
-        if (whammy_delay >= 0 && whammy_delay <= 999999999) {
-            settings.whammy_delay = whammy_delay;
-        }
-    }
-    it = obj.find("video_lag");
-    if (it != obj.cend() && it->value().is_int64()) {
-        const auto video_lag = it->value().get_int64();
-        if (video_lag >= -200 && video_lag <= 200) {
-            settings.video_lag = video_lag;
-        }
-    }
+    settings.squeeze = read_value(obj, "squeeze", 0, MAX_PERCENT, MAX_PERCENT);
+    settings.early_whammy
+        = read_value(obj, "early_whammy", 0, MAX_PERCENT, MAX_PERCENT);
+    settings.lazy_whammy
+        = read_value(obj, "lazy_whammy", 0, MAX_LINE_EDIT_INT, 0);
+    settings.whammy_delay
+        = read_value(obj, "whammy_delay", 0, MAX_LINE_EDIT_INT, 0);
+    settings.video_lag
+        = read_value(obj, "video_lag", MIN_VIDEO_LAG, MAX_VIDEO_LAG, 0);
 
     return settings;
 }
 
-void save_settings(const JsonSettings& settings)
+void save_settings(const JsonSettings& settings, std::string application_dir)
 {
     const boost::json::object obj = {{"squeeze", settings.squeeze},
                                      {"early_whammy", settings.early_whammy},
                                      {"lazy_whammy", settings.lazy_whammy},
                                      {"whammy_delay", settings.whammy_delay},
                                      {"video_lag", settings.video_lag}};
-    boost::nowide::ofstream settings_file {"settings.json"};
+    const auto path = settings_path(std::move(application_dir));
+    boost::nowide::ofstream settings_file {path};
     settings_file << obj;
 }
