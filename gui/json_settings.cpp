@@ -17,16 +17,15 @@
  */
 
 #include <filesystem>
-#include <utility>
 
 #include <boost/json.hpp>
 #include <boost/nowide/fstream.hpp>
 
 #include "json_settings.hpp"
 
-static std::filesystem::path settings_path(std::string application_dir)
+std::filesystem::path settings_path(std::string_view application_dir)
 {
-    return std::filesystem::path(std::move(application_dir)) / "settings.json";
+    return std::filesystem::path(application_dir) / "settings.json";
 }
 
 static int read_value(const boost::json::object& settings, const char* name,
@@ -42,7 +41,7 @@ static int read_value(const boost::json::object& settings, const char* name,
     return default_value;
 }
 
-JsonSettings load_saved_settings(std::string application_dir)
+JsonSettings load_saved_settings(std::string_view application_dir)
 {
     constexpr int MAX_LINE_EDIT_INT = 999999999;
     constexpr int MAX_PERCENT = 100;
@@ -56,7 +55,7 @@ JsonSettings load_saved_settings(std::string application_dir)
     settings.whammy_delay = 0;
     settings.video_lag = 0;
 
-    const auto path = settings_path(std::move(application_dir));
+    const auto path = settings_path(application_dir);
     boost::nowide::ifstream settings_file {path};
     if (!settings_file.is_open()) {
         return settings;
@@ -85,14 +84,15 @@ JsonSettings load_saved_settings(std::string application_dir)
     return settings;
 }
 
-void save_settings(const JsonSettings& settings, std::string application_dir)
+void save_settings(const JsonSettings& settings,
+                   std::string_view application_dir)
 {
     const boost::json::object obj = {{"squeeze", settings.squeeze},
                                      {"early_whammy", settings.early_whammy},
                                      {"lazy_whammy", settings.lazy_whammy},
                                      {"whammy_delay", settings.whammy_delay},
                                      {"video_lag", settings.video_lag}};
-    const auto path = settings_path(std::move(application_dir));
+    const auto path = settings_path(application_dir);
     boost::nowide::ofstream settings_file {path};
     settings_file << obj;
 }
