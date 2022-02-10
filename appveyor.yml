@@ -39,7 +39,7 @@ for:
     - cmd: python integration_tests\run_integration_tests.py
     - cmd: clang-format -i gui\*.hpp gui\*.cpp include\*.hpp src\*.cpp tests\*.cpp
     - cmd: git diff --color --exit-code
-    - cmd: clang-tidy src\*.cpp -- -Iinclude -Ilibs -IC:\Libraries\boost_1_77_0 -IC:\Tools\vcpkg\installed\x64-windows\include -std=c++17
+    - cmd: clang-tidy src\*.cpp gui\json_settings.cpp -- -Iinclude -Ilibs -IC:\Libraries\boost_1_77_0 -IC:\Tools\vcpkg\installed\x64-windows\include -std=c++17
     - cmd: clang-tidy tests\*_unittest.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers -- -Iinclude -IC:\Libraries\boost_1_77_0 -IC:\Tools\vcpkg\installed\x64-windows\include -std=c++17
 
     before_deploy:

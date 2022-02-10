@@ -25,6 +25,7 @@
 #include <QUrl>
 
 #include "image.hpp"
+#include "json_settings.hpp"
 #include "mainwindow.hpp"
 #include "optimiser.hpp"
 #include "ui_mainwindow.h"
@@ -138,11 +139,41 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->videoLagLabel->setMinimumWidth(30);
     m_ui->opacityLabel->setMinimumWidth(30);
 
+    const auto settings = load_saved_settings();
+    m_ui->squeezeSlider->setValue(settings.squeeze);
+    m_ui->earlyWhammySlider->setValue(settings.early_whammy);
+    m_ui->lazyWhammyLineEdit->setText(QString::number(settings.lazy_whammy));
+    m_ui->whammyDelayLineEdit->setText(QString::number(settings.whammy_delay));
+    m_ui->videoLagSlider->setValue(settings.video_lag);
+
     setAcceptDrops(true);
 }
 
 MainWindow::~MainWindow()
 {
+    JsonSettings settings;
+    settings.squeeze = m_ui->squeezeSlider->value();
+    settings.early_whammy = m_ui->earlyWhammySlider->value();
+    settings.video_lag = m_ui->videoLagSlider->value();
+
+    bool ok;
+    const auto lazy_whammy_text = m_ui->lazyWhammyLineEdit->text();
+    const auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok, 10);
+    if (ok) {
+        settings.lazy_whammy = lazy_whammy_ms;
+    } else {
+        settings.lazy_whammy = 0;
+    }
+    const auto whammy_delay_text = m_ui->whammyDelayLineEdit->text();
+    const auto whammy_delay_ms = whammy_delay_text.toInt(&ok, 10);
+    if (ok) {
+        settings.whammy_delay = whammy_delay_ms;
+    } else {
+        settings.whammy_delay = 0;
+    }
+
+    save_settings(settings);
+
     if (m_thread != nullptr) {
         auto* opt_thread = dynamic_cast<OptimiserThread*>(m_thread);
         if (opt_thread != nullptr) {

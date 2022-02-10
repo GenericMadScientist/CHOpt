@@ -96,6 +96,7 @@ if(BUILD_GUI)
 
   add_executable(
     choptgui WIN32
+    gui/json_settings.cpp
     gui/main.cpp
     gui/mainwindow.cpp
     gui/mainwindow.ui
