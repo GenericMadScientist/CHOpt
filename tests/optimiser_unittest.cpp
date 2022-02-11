@@ -521,6 +521,8 @@ BOOST_AUTO_TEST_CASE(whammy_delay_is_handled_correctly)
     BOOST_CHECK_EQUAL(opt_path.score_boost, 550);
 }
 
+BOOST_AUTO_TEST_SUITE(drum_paths)
+
 BOOST_AUTO_TEST_CASE(drum_paths_can_only_activate_on_activation_notes)
 {
     std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {3000}, {4000}};
@@ -633,3 +635,5 @@ BOOST_AUTO_TEST_CASE(drum_activation_delay_is_affected_by_speed)
     const auto opt_path = optimiser.optimal_path();
     BOOST_CHECK_EQUAL(opt_path.score_boost, 50);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
