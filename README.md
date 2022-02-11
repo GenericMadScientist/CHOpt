@@ -67,22 +67,20 @@ in cmd then enter to open a command prompt in that folder, then run the command
 
 ## Dependencies
 
-* [argparse](https://github.com/p-ranav/argparse) 2.1 for argument parsing
-* [Catch2](https://github.com/catchorg/Catch2) 2.13.7 for tests
+* [Boost](https://www.boost.org/) 1.76.0 for JSON, Nowide, Program Options and
+Test
 * [CImg](https://cimg.eu) 2.9.9 to produce images
 * [libpng](http://libpng.org/pub/png/libpng.html) 1.6.37 to save pngs
-* [nowide](https://github.com/boostorg/nowide) 11.0.0 to handle UTF-8 filenames
-  on Windows
 * [Qt](https://www.qt.io) 6.2 for the GUI
 * [zlib](https://zlib.net) 1.2.11 is a dependency of libpng
 
-Catch2 and CImg are vendored in the repo. argparse and nowide (standalone
-version) are pulled in automatically by CMake. libpng, Qt, and zlib will need to
-be provided by anyone compiling CHOpt for themselves, although Qt is only
-required if the GUI version is being compiled. libpng and zlib need to be set up
-so that [FindPNG](https://cmake.org/cmake/help/latest/module/FindPNG.html) can
-find them, and the same is true for Qt (see
-[this page](https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html) for
+CImg is vendored in the repo. Boost, libpng, Qt, and zlib will need to be
+provided by anyone compiling CHOpt for themselves, although Qt is only required
+if the GUI version is being compiled. libpng and zlib need to be set up so that
+[FindPNG](https://cmake.org/cmake/help/latest/module/FindPNG.html) can find
+them, and the same is true for Boost and Qt (see
+[this](https://cmake.org/cmake/help/latest/module/FindBoost.html) and
+[this](https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html) page for
 details).
 
 ## Acknowledgements
@@ -93,7 +91,7 @@ getting an initial idea of Clone Hero's parsing behaviour.
 machines.
 * Various users for feedback and testing, including 3-UP, CyclopsDragon,
 DNelson, Generalguy26, GHNerd, Haggis, Joel, Jrh, Kyleruth, LightlessWalk,
-Littlejth, Lucretio, RileyTheFox, Taka, Venxm, and Zantor.
+Littlejth, Lucretio, RandomDays, RileyTheFox, Taka, Venxm, and Zantor.
 
 ## Contact
 
