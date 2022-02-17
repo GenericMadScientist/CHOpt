@@ -26,10 +26,15 @@ for:
       only:
         - job_name: Windows (MSVC, tests, and static analysis)
 
-    cache: C:\Tools\vcpkg\installed\
+    cache: C:\Tools\vcpkg\archives -> appveyor_files\vcpkg_deps.txt
+
+    environment:
+      VCPKG_DEFAULT_BINARY_CACHE: C:\Tools\vcpkg\archives
+      LOG_DIR: C:\Users\appveyor\AppData\Local\Temp\1\build-cache-logs
 
     build_script:
-    - cmd: vcpkg install libpng:x64-windows
+    - cmd: if not exist C:\Tools\vcpkg\archives (mkdir C:\Tools\vcpkg\archives)
+    - cmd: vcpkg --triplet x64-windows install "@C:\projects\CHOpt\appveyor_files\vcpkg_deps.txt"
     - cmd: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=C:\Libraries\boost_1_77_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.2.2\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 16 2019" ..
     - cmd: cmake --build . --verbose --config %CONFIGURATION%
 
@@ -56,13 +61,19 @@ for:
     - cmd: appveyor PushArtifact "..\artifacts\CHOpt CLI %APPVEYOR_BUILD_VERSION% (x64 Windows).zip"
     - cmd: appveyor PushArtifact "..\artifacts\CHOpt GUI %APPVEYOR_BUILD_VERSION% (x64 Windows).zip"
 
+    on_finish:
+    - ps: if (Test-Path -Path $env:LOG_DIR) { Get-ChildItem $env:LOG_DIR\*.log | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } }
+
   -
     matrix:
       only:
         - job_name: Mac OSX (Clang)
 
+    cache: /usr/local/Cellar/ -> appveyor_files/brew_deps.txt
+
     build_script:
-    - sh: brew install boost libpng
+    - sh: xargs brew install < ../appveyor_files/brew_deps.txt
+    - sh: xargs brew link < ../appveyor_files/brew_deps.txt
     - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DPACKAGE_TESTS=OFF -DCMAKE_FIND_FRAMEWORK=LAST -DQt6_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
@@ -88,20 +99,17 @@ for:
       only:
         - job_name: Linux (GCC)
 
+    cache: $HOME/boost_1_78_0 -> appveyor_files/install_boost.sh
+
     build_script:
     - sh: sudo apt update
-    - sh: sudo apt -y install libgl1-mesa-dev
-    - sh: wget -O $HOME/boost_1_78_0.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2
-    - sh: tar --bzip2 -xf $HOME/boost_1_78_0.tar.bz2 -C $HOME
-    - sh: cd $HOME/boost_1_78_0
-    - sh: ./bootstrap.sh --with-libraries=json,nowide,program_options --prefix=.
-    - sh: ./b2 install > /dev/null
-    - sh: cd $HOME/projects/CHOpt/build
-    - sh: cmake -DCMAKE_CXX_COMPILER=g++-9 -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_78_0 -DQt6_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6WidgetsTools ..
+    - sh: xargs sudo apt -y install < ../appveyor_files/apt_deps.txt
+    - sh: chmod +x ../appveyor_files/install_boost.sh
+    - sh: ../appveyor_files/install_boost.sh
+    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_78_0 -DQt6_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
     before_deploy:
-    - sh: sudo apt -y install g++-10
     - sh: rm -rf *
     - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_78_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.1/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config Release

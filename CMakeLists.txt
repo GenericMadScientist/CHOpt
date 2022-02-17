@@ -8,6 +8,7 @@ project(
   DESCRIPTION "A program to generate optimal Star Power paths for Clone Hero"
   LANGUAGES CXX)
 
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 include(cmake/Sanitisers.cmake)
 
 # Require standard C++17
@@ -39,6 +40,7 @@ find_package(
   Boost 1.76 REQUIRED
   COMPONENTS nowide program_options
   OPTIONAL_COMPONENTS json unit_test_framework)
+find_package(Cairo REQUIRED)
 
 cmake_policy(SET CMP0083 NEW)
 include(CheckPIESupported)
@@ -68,10 +70,10 @@ add_executable(
   resources/resources.rc)
 target_include_directories(
   chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs"
-                ${PNG_INCLUDE_DIRS})
+                ${PNG_INCLUDE_DIRS} ${Cairo_INCLUDE_DIR})
 target_link_directories(chopt PRIVATE ${Boost_LIBRARY_DIRS})
 target_link_libraries(chopt PRIVATE Boost::nowide Boost::program_options
-                                    ${PNG_LIBRARIES})
+                                    ${PNG_LIBRARIES} ${Cairo_LIBRARIES})
 
 set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 set_cpp_standard(chopt)
@@ -116,11 +118,13 @@ if(BUILD_GUI)
     resources/resources.qrc
     resources/resources.rc)
   target_include_directories(
-    choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include"
-                     "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
+    choptgui
+    PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs"
+            ${PNG_INCLUDE_DIRS} ${Cairo_INCLUDE_DIR})
   target_link_directories(choptgui PRIVATE ${Boost_LIBRARY_DIRS})
-  target_link_libraries(choptgui PRIVATE Boost::json Boost::nowide
-                                         ${PNG_LIBRARIES} Qt6::Widgets)
+  target_link_libraries(
+    choptgui PRIVATE Boost::json Boost::nowide ${PNG_LIBRARIES}
+                     ${Cairo_LIBRARIES} Qt6::Widgets)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
   if(APPLE)

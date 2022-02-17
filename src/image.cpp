@@ -23,6 +23,8 @@
 #include <set>
 #include <stdexcept>
 
+#include <cairo/cairo.h>
+
 #include "cimg_wrapper.hpp"
 
 #include "image.hpp"
@@ -201,6 +203,8 @@ static int note_colour_to_offset(DrumNoteColour colour)
 class ImageImpl {
 private:
     CImg<unsigned char> m_image;
+    cairo_surface_t* m_surface;
+    cairo_t* m_cr;
 
     void draw_note_circle(int x, int y, NoteColour note_colour);
     void draw_note_star(int x, int y, NoteColour note_colour);
@@ -224,7 +228,22 @@ public:
               unsigned int size_c, const unsigned char& value)
         : m_image {size_x, size_y, size_z, size_c, value}
     {
+        m_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                               static_cast<int>(size_x),
+                                               static_cast<int>(size_y));
+        m_cr = cairo_create(m_surface);
     }
+
+    ~ImageImpl()
+    {
+        cairo_destroy(m_cr);
+        cairo_surface_destroy(m_surface);
+    }
+
+    ImageImpl(const ImageImpl&) = delete;
+    ImageImpl& operator=(const ImageImpl&) = delete;
+    ImageImpl(ImageImpl&&) = delete;
+    ImageImpl& operator=(ImageImpl&&) = delete;
 
     void colour_beat_range(const ImageBuilder& builder,
                            std::array<unsigned char, 3> colour,
