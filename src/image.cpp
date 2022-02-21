@@ -898,7 +898,6 @@ Image::Image(const ImageBuilder& builder)
     constexpr unsigned int IMAGE_WIDTH = 1024;
     constexpr float RANGE_OPACITY = 0.33333F;
     constexpr int SOLO_HEIGHT = 10;
-    constexpr unsigned char WHITE = 255;
 
     const auto height = static_cast<unsigned int>(
         TOP_MARGIN + MARGIN + DIST_BETWEEN_MEASURES * builder.rows().size());
