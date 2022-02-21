@@ -69,8 +69,8 @@ add_executable(
   resources/chopt.exe.manifest
   resources/resources.rc)
 target_include_directories(
-  chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs"
-                ${PNG_INCLUDE_DIRS} ${Cairo_INCLUDE_DIR})
+  chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" ${PNG_INCLUDE_DIRS}
+                ${Cairo_INCLUDE_DIR})
 target_link_directories(chopt PRIVATE ${Boost_LIBRARY_DIRS})
 target_link_libraries(chopt PRIVATE Boost::nowide Boost::program_options
                                     ${PNG_LIBRARIES} ${Cairo_LIBRARIES})
@@ -118,9 +118,8 @@ if(BUILD_GUI)
     resources/resources.qrc
     resources/resources.rc)
   target_include_directories(
-    choptgui
-    PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs"
-            ${PNG_INCLUDE_DIRS} ${Cairo_INCLUDE_DIR})
+    choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include" ${PNG_INCLUDE_DIRS}
+                     ${Cairo_INCLUDE_DIR})
   target_link_directories(choptgui PRIVATE ${Boost_LIBRARY_DIRS})
   target_link_libraries(
     choptgui PRIVATE Boost::json Boost::nowide ${PNG_LIBRARIES}
