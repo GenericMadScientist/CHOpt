@@ -469,6 +469,7 @@ void ImageImpl::draw_tempos(const ImageBuilder& builder)
 void ImageImpl::draw_time_sigs(const ImageBuilder& builder)
 {
     constexpr Colour GREY {0.627, 0.627, 0.627};
+    constexpr int HALF_MEASURE_HEIGHT = MEASURE_HEIGHT / 2;
     constexpr int TS_FONT_HEIGHT = 36;
     constexpr int TS_X_GAP = 3;
     constexpr int TS_Y_GAP = 2;
@@ -478,7 +479,7 @@ void ImageImpl::draw_time_sigs(const ImageBuilder& builder)
 
     for (const auto& [pos, num, denom] : builder.time_sigs()) {
         auto [x, y] = get_xy(builder, pos);
-        cairo_move_to(m_cr, x + TS_X_GAP, y + MEASURE_HEIGHT / 2.0 - TS_Y_GAP);
+        cairo_move_to(m_cr, x + TS_X_GAP, y + HALF_MEASURE_HEIGHT - TS_Y_GAP);
         cairo_show_text(m_cr, std::to_string(num).c_str());
         cairo_move_to(m_cr, x + TS_X_GAP, y + MEASURE_HEIGHT - TS_Y_GAP);
         cairo_show_text(m_cr, std::to_string(denom).c_str());
@@ -670,14 +671,15 @@ ghl_note_colour_codes(const std::set<GHLNoteColour>& note_colours)
 
 void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour)
 {
+    constexpr int OPEN_WIDTH = 6;
     constexpr int RADIUS = 5;
 
     auto colour = note_colour_to_colour(note_colour);
     auto offset = note_colour_to_offset(note_colour);
 
     if (note_colour == NoteColour::Open) {
-        cairo_rectangle(m_cr, x - 3 + HALF_PIXEL, y - 3 + HALF_PIXEL, 6,
-                        MEASURE_HEIGHT + 6);
+        cairo_rectangle(m_cr, x - 3 + HALF_PIXEL, y - 3 + HALF_PIXEL,
+                        OPEN_WIDTH, MEASURE_HEIGHT + OPEN_WIDTH);
         cairo_set_source_rgba(m_cr, colour.red, colour.green, colour.blue,
                               OPEN_NOTE_OPACITY);
     } else {
@@ -696,11 +698,12 @@ void ImageImpl::draw_ghl_note(int x, int y,
 {
     constexpr Colour DARK_GREY {0.118, 0.118, 0.118};
     constexpr int FRET_GAP = 30;
+    constexpr int OPEN_WIDTH = 6;
     constexpr int RADIUS = 5;
 
     if (note_colours.count(GHLNoteColour::Open) != 0) {
-        cairo_rectangle(m_cr, x - 3 + HALF_PIXEL, y - 3 + HALF_PIXEL, 6,
-                        MEASURE_HEIGHT + 6);
+        cairo_rectangle(m_cr, x - 3 + HALF_PIXEL, y - 3 + HALF_PIXEL,
+                        OPEN_WIDTH, MEASURE_HEIGHT + OPEN_WIDTH);
         cairo_set_source_rgba(m_cr, 1.0, 1.0, 1.0, OPEN_NOTE_OPACITY);
         cairo_fill_preserve(m_cr);
         cairo_set_source_rgb(m_cr, 0.0, 0.0, 0.0);
@@ -777,6 +780,7 @@ void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
 void ImageImpl::draw_note_star(int x, int y, NoteColour note_colour)
 {
     constexpr int OPEN_WIDTH = 6;
+    constexpr int STAR_RADIUS = 6;
 
     const auto colour = note_colour_to_colour(note_colour);
     const auto offset = note_colour_to_offset(note_colour);
@@ -787,7 +791,8 @@ void ImageImpl::draw_note_star(int x, int y, NoteColour note_colour)
         cairo_set_source_rgba(m_cr, colour.red, colour.green, colour.blue,
                               OPEN_NOTE_OPACITY);
     } else {
-        cairo_move_to(m_cr, x + HALF_PIXEL, y + offset - 6 + HALF_PIXEL);
+        cairo_move_to(m_cr, x + HALF_PIXEL,
+                      y + offset - STAR_RADIUS + HALF_PIXEL);
         cairo_rel_line_to(m_cr, 1, 4);
         cairo_rel_line_to(m_cr, 4, 0);
         cairo_rel_line_to(m_cr, -3, 3);
