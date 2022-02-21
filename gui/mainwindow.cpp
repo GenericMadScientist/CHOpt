@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ public:
                 &m_terminate);
             emit write_text("Saving image...");
             const Image image {builder};
-            image.save(m_file_name.toStdString().c_str());
+            image.save(m_file_name.toStdString());
             emit write_text("Image saved");
             QDesktopServices::openUrl(QUrl::fromLocalFile(m_file_name));
         } catch (const std::runtime_error&) {

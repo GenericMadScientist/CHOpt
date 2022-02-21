@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020 Raymond Wright
+ * Copyright (C) 2020, 2022 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #define CHOPT_IMAGE_HPP
 
 #include <memory>
+#include <string>
 
 #include "imagebuilder.hpp"
 
@@ -37,7 +38,7 @@ public:
     Image& operator=(const Image&) = delete;
     Image& operator=(Image&& image) noexcept;
 
-    void save(const char* filename) const;
+    void save(const std::string& filename) const;
 };
 
 #endif

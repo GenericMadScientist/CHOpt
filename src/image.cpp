@@ -972,4 +972,4 @@ Image::Image(Image&& image) noexcept = default;
 
 Image& Image::operator=(Image&& image) noexcept = default;
 
-void Image::save(const char* filename) const { m_impl->save(filename); }
+void Image::save(const std::string& filename) const { m_impl->save(filename); }

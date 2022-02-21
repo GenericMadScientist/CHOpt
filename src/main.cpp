@@ -58,7 +58,7 @@ int main(int argc, char** argv)
         boost::nowide::cout << std::flush;
         if (settings->draw_image) {
             const Image image {builder};
-            image.save(settings->image_path.c_str());
+            image.save(settings->image_path);
         }
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
