@@ -37,15 +37,22 @@ constexpr int MEASURE_HEIGHT = 61;
 constexpr float OPEN_NOTE_OPACITY = 0.5F;
 constexpr int TOP_MARGIN = 100;
 constexpr int DIST_BETWEEN_MEASURES = MEASURE_HEIGHT + MARGIN;
+constexpr double HALF_PIXEL = 0.5; // Needed due to how Cairo aligns lines
 
-static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
+struct Colour {
+    double red;
+    double green;
+    double blue;
+};
+
+static Colour note_colour_to_colour(NoteColour colour)
 {
-    constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
-    constexpr std::array<unsigned char, 3> RED {255, 0, 0};
-    constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
-    constexpr std::array<unsigned char, 3> BLUE {0, 0, 255};
-    constexpr std::array<unsigned char, 3> ORANGE {255, 165, 0};
-    constexpr std::array<unsigned char, 3> PURPLE {128, 0, 128};
+    constexpr Colour GREEN {0.0, 1.0, 0.0};
+    constexpr Colour RED {1.0, 0.0, 0.0};
+    constexpr Colour YELLOW {1.0, 1.0, 0.0};
+    constexpr Colour BLUE {0.0, 0.0, 1.0};
+    constexpr Colour ORANGE {1.0, 0.647, 0.0};
+    constexpr Colour PURPLE {0.5, 0, 0.5};
 
     switch (colour) {
     case NoteColour::Green:
@@ -65,13 +72,13 @@ static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_colour");
 }
 
-static std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
+static Colour note_colour_to_colour(DrumNoteColour colour)
 {
-    constexpr std::array<unsigned char, 3> RED {255, 0, 0};
-    constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
-    constexpr std::array<unsigned char, 3> BLUE {0, 0, 255};
-    constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
-    constexpr std::array<unsigned char, 3> ORANGE {255, 165, 0};
+    constexpr Colour RED {1.0, 0.0, 0.0};
+    constexpr Colour YELLOW {1.0, 1.0, 0.0};
+    constexpr Colour BLUE {0.0, 0.0, 1.0};
+    constexpr Colour GREEN {0.0, 1.0, 0.0};
+    constexpr Colour ORANGE {1.0, 0.647, 0.0};
 
     switch (colour) {
     case DrumNoteColour::Red:
@@ -199,28 +206,33 @@ static int note_colour_to_offset(DrumNoteColour colour)
 
 static void write_int(boost::nowide::ofstream& stream, int value)
 {
-    stream.write(reinterpret_cast<char*>(&value), sizeof value);
+    stream.write(reinterpret_cast<char*>(&value), sizeof value); // NOLINT
 }
 
 static void write_24_bit_bmp_header(boost::nowide::ofstream& stream, int width,
                                     int height)
 {
+    constexpr int BPP_AND_PLANES = 0x00180001;
+    constexpr int DIB_HEADER_SIZE = 40;
+    constexpr int HEADER_SIZE = 54;
+    constexpr int PPM_RESOLUTION = 256;
+
     const auto row_padding
         = ((3 * width) % 4 == 0) ? 0 : (4 - ((3 * width) % 4));
     const auto size = (3 * width + row_padding) * height;
 
     stream << "BM";
-    write_int(stream, size + 54);
+    write_int(stream, size + HEADER_SIZE);
     write_int(stream, 0);
-    write_int(stream, 54);
-    write_int(stream, 40);
+    write_int(stream, HEADER_SIZE);
+    write_int(stream, DIB_HEADER_SIZE);
     write_int(stream, width);
     write_int(stream, height);
-    write_int(stream, 0x00180001);
+    write_int(stream, BPP_AND_PLANES);
     write_int(stream, 0);
     write_int(stream, size);
-    write_int(stream, 256);
-    write_int(stream, 256);
+    write_int(stream, PPM_RESOLUTION);
+    write_int(stream, PPM_RESOLUTION);
     write_int(stream, 0);
     write_int(stream, 0);
 }
@@ -240,11 +252,10 @@ private:
                                const DrawnNote<GHLNoteColour>& note);
     void draw_drum_note(int x, int y, DrumNoteColour note_colour);
     void draw_text_backwards(int x, int y, const char* text,
-                             const unsigned char* color,
-                             unsigned int font_height);
+                             const Colour& colour, unsigned int font_height);
     void draw_vertical_lines(const ImageBuilder& builder,
                              const std::vector<double>& positions,
-                             std::array<unsigned char, 3> colour);
+                             const Colour& colour);
 
 public:
     ImageImpl(int width, int height)
@@ -273,8 +284,7 @@ public:
     ImageImpl(ImageImpl&&) = delete;
     ImageImpl& operator=(ImageImpl&&) = delete;
 
-    void colour_beat_range(const ImageBuilder& builder,
-                           std::array<unsigned char, 3> colour,
+    void colour_beat_range(const ImageBuilder& builder, const Colour& colour,
                            const std::tuple<double, double>& x_range,
                            const std::tuple<int, int>& y_range, float opacity);
     void draw_header(const ImageBuilder& builder);
@@ -300,7 +310,6 @@ public:
             const auto stride = cairo_image_surface_get_stride(m_surface);
             const auto row_padding
                 = ((3 * width) % 4 == 0) ? 0 : (4 - ((3 * width) % 4));
-            const auto size = (3 * width + row_padding) * height;
             boost::nowide::ofstream out(path, std::ios::binary);
             write_24_bit_bmp_header(out, width, height);
             constexpr std::array<char, 3> zeroes {{0, 0, 0}};
@@ -308,7 +317,7 @@ public:
                 for (int j = 0; j < width; ++j) {
                     out.write(reinterpret_cast<const char*>(data + stride * i
                                                             + 4 * j),
-                              3);
+                              3); // NOLINT
                 }
                 out.write(zeroes.data(), row_padding);
             }
@@ -375,10 +384,10 @@ static int numb_of_fret_lines(TrackType track_type)
 
 void ImageImpl::draw_measures(const ImageBuilder& builder)
 {
-    constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
-    constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
-    constexpr std::array<unsigned char, 3> LIGHT_GREY {224, 224, 224};
-    constexpr std::array<unsigned char, 3> RED {140, 0, 0};
+    constexpr Colour BLACK {0.0, 0.0, 0.0};
+    constexpr Colour GREY {0.627, 0.627, 0.627};
+    constexpr Colour LIGHT_GREY {0.878, 0.878, 0.878};
+    constexpr Colour RED {0.549, 0, 0};
     constexpr int MEASURE_NUMB_GAP = 5;
 
     const int fret_lines = numb_of_fret_lines(builder.track_type());
@@ -392,15 +401,15 @@ void ImageImpl::draw_measures(const ImageBuilder& builder)
         auto y = TOP_MARGIN + DIST_BETWEEN_MEASURES * current_row + MARGIN;
         const auto measure_width = BEAT_WIDTH * (row.end - row.start);
         for (int i = 1; i < fret_lines; ++i) {
-            cairo_set_source_rgb(m_cr, 0.627, 0.627, 0.627);
-            cairo_move_to(m_cr, LEFT_MARGIN + 0.5,
-                          y + colour_distance * i + 0.5);
+            cairo_set_source_rgb(m_cr, GREY.red, GREY.green, GREY.blue);
+            cairo_move_to(m_cr, LEFT_MARGIN + HALF_PIXEL,
+                          y + colour_distance * i + HALF_PIXEL);
             cairo_rel_line_to(m_cr, measure_width, 0);
             cairo_stroke(m_cr);
         }
         cairo_set_source_rgb(m_cr, 0.0, 0.0, 0.0);
-        cairo_rectangle(m_cr, LEFT_MARGIN + 0.5, y + 0.5, measure_width,
-                        MEASURE_HEIGHT);
+        cairo_rectangle(m_cr, LEFT_MARGIN + HALF_PIXEL, y + HALF_PIXEL,
+                        measure_width, MEASURE_HEIGHT);
         cairo_stroke(m_cr);
         ++current_row;
     }
@@ -414,7 +423,7 @@ void ImageImpl::draw_measures(const ImageBuilder& builder)
         std::prev(builder.measure_lines().cend())};
     draw_vertical_lines(builder, measure_copy, BLACK);
 
-    cairo_set_source_rgb(m_cr, 0.549, 0.0, 0.0);
+    cairo_set_source_rgb(m_cr, RED.red, RED.green, RED.blue);
     cairo_set_font_size(m_cr, FONT_HEIGHT);
     for (std::size_t i = 0; i < builder.measure_lines().size() - 1; ++i) {
         auto pos = builder.measure_lines()[i];
@@ -427,10 +436,9 @@ void ImageImpl::draw_measures(const ImageBuilder& builder)
 
 void ImageImpl::draw_vertical_lines(const ImageBuilder& builder,
                                     const std::vector<double>& positions,
-                                    std::array<unsigned char, 3> colour)
+                                    const Colour& colour)
 {
-    cairo_set_source_rgb(m_cr, colour[0] / 255.0, colour[1] / 255.0,
-                         colour[2] / 255.0);
+    cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
 
     for (auto pos : positions) {
         auto [x, y] = get_xy(builder, pos);
@@ -458,7 +466,6 @@ void ImageImpl::draw_tempos(const ImageBuilder& builder)
 
 void ImageImpl::draw_time_sigs(const ImageBuilder& builder)
 {
-    constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
     constexpr int TS_FONT_HEIGHT = 36;
     constexpr int TS_X_GAP = 3;
     constexpr int TS_Y_GAP = 2;
@@ -477,9 +484,9 @@ void ImageImpl::draw_time_sigs(const ImageBuilder& builder)
 
 void ImageImpl::draw_score_totals(const ImageBuilder& builder)
 {
-    constexpr std::array<unsigned char, 3> CYAN {0, 160, 160};
-    constexpr std::array<unsigned char, 3> GREEN {0, 100, 0};
-    constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
+    constexpr Colour CYAN {0.0, 0.627, 0.627};
+    constexpr Colour GREEN {0, 0.392, 0};
+    constexpr Colour GREY {0.627, 0.627, 0.627};
 
     constexpr int BASE_VALUE_MARGIN = 5;
     // This is enough room for the max double (below 10^309, a '.', two more
@@ -501,25 +508,24 @@ void ImageImpl::draw_score_totals(const ImageBuilder& builder)
         auto [x, y] = get_xy(builder, pos);
         y += BASE_VALUE_MARGIN + MEASURE_HEIGHT;
         auto text = std::to_string(base_values[i]);
-        draw_text_backwards(x, y, text.c_str(), GREY.data(), FONT_HEIGHT);
+        draw_text_backwards(x, y, text.c_str(), GREY, FONT_HEIGHT);
         text = std::to_string(score_values[i]);
         y += VALUE_GAP;
-        draw_text_backwards(x, y, text.c_str(), GREEN.data(), FONT_HEIGHT);
+        draw_text_backwards(x, y, text.c_str(), GREEN, FONT_HEIGHT);
         if (sp_values[i] > 0) {
             y += VALUE_GAP;
             std::snprintf(buffer.data(), BUFFER_SIZE, "%.2fSP", sp_values[i]);
-            draw_text_backwards(x, y, buffer.data(), CYAN.data(), FONT_HEIGHT);
+            draw_text_backwards(x, y, buffer.data(), CYAN, FONT_HEIGHT);
         }
     }
 }
 
 void ImageImpl::draw_text_backwards(int x, int y, const char* text,
-                                    const unsigned char* color,
+                                    const Colour& colour,
                                     unsigned int font_height)
 {
     cairo_text_extents_t te;
-    cairo_set_source_rgb(m_cr, color[0] / 255.0, color[1] / 255.0,
-                         color[2] / 255.0);
+    cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
     cairo_set_font_size(m_cr, font_height);
     cairo_text_extents(m_cr, text, &te);
     cairo_move_to(m_cr, x - te.width, y + te.height);
@@ -661,7 +667,6 @@ ghl_note_colour_codes(const std::set<GHLNoteColour>& note_colours)
 
 void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour)
 {
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr int RADIUS = 5;
 
     auto colour = note_colour_to_colour(note_colour);
@@ -669,13 +674,12 @@ void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour)
 
     if (note_colour == NoteColour::Open) {
         cairo_rectangle(m_cr, x - 2.5, y - 2.5, 6, MEASURE_HEIGHT + 6);
-        cairo_set_source_rgba(m_cr, colour[0] / 255.0, colour[1] / 255.0,
-                              colour[2] / 255.0, OPEN_NOTE_OPACITY);
+        cairo_set_source_rgba(m_cr, colour.red, colour.green, colour.blue,
+                              OPEN_NOTE_OPACITY);
     } else {
         cairo_new_sub_path(m_cr);
         cairo_arc(m_cr, x, y + offset, RADIUS, 0, 6.29);
-        cairo_set_source_rgb(m_cr, colour[0] / 255.0, colour[1] / 255.0,
-                             colour[2] / 255.0);
+        cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
     }
 
     cairo_fill_preserve(m_cr);
@@ -686,9 +690,6 @@ void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour)
 void ImageImpl::draw_ghl_note(int x, int y,
                               const std::set<GHLNoteColour>& note_colours)
 {
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
-    constexpr std::array<unsigned char, 3> grey {30, 30, 30};
-    constexpr std::array<unsigned char, 3> white {255, 255, 255};
     constexpr int FRET_GAP = 30;
     constexpr int RADIUS = 5;
 
@@ -733,7 +734,6 @@ void ImageImpl::draw_ghl_note(int x, int y,
 
 void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
 {
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr int RADIUS = 5;
 
     auto colour = note_colour_to_colour(note_colour);
@@ -742,22 +742,20 @@ void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
     switch (drum_colour_to_shape(note_colour)) {
     case DrumSpriteShape::Kick:
         cairo_rectangle(m_cr, x - 2.5, y - 2.5, 6, MEASURE_HEIGHT + 6);
-        cairo_set_source_rgba(m_cr, colour[0] / 255.0, colour[1] / 255.0,
-                              colour[2] / 255.0, OPEN_NOTE_OPACITY);
+        cairo_set_source_rgba(m_cr, colour.red, colour.green, colour.blue,
+                              OPEN_NOTE_OPACITY);
         break;
     case DrumSpriteShape::Cymbal:
         cairo_move_to(m_cr, x + 0.5, y + offset - RADIUS + 0.5);
         cairo_rel_line_to(m_cr, -RADIUS, 2 * RADIUS);
         cairo_rel_line_to(m_cr, 2 * RADIUS, 0);
         cairo_close_path(m_cr);
-        cairo_set_source_rgb(m_cr, colour[0] / 255.0, colour[1] / 255.0,
-                             colour[2] / 255.0);
+        cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
         break;
     case DrumSpriteShape::Tom:
         cairo_new_sub_path(m_cr);
         cairo_arc(m_cr, x, y + offset, RADIUS, 0, 6.29);
-        cairo_set_source_rgb(m_cr, colour[0] / 255.0, colour[1] / 255.0,
-                             colour[2] / 255.0);
+        cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
     }
 
     cairo_fill_preserve(m_cr);
@@ -767,15 +765,13 @@ void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
 
 void ImageImpl::draw_note_star(int x, int y, NoteColour note_colour)
 {
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
-
-    auto colour = note_colour_to_colour(note_colour);
-    auto offset = note_colour_to_offset(note_colour);
+    const auto colour = note_colour_to_colour(note_colour);
+    const auto offset = note_colour_to_offset(note_colour);
 
     if (note_colour == NoteColour::Open) {
         cairo_rectangle(m_cr, x - 2.5, y - 2.5, 6, MEASURE_HEIGHT + 6);
-        cairo_set_source_rgba(m_cr, colour[0] / 255.0, colour[1] / 255.0,
-                              colour[2] / 255.0, OPEN_NOTE_OPACITY);
+        cairo_set_source_rgba(m_cr, colour.red, colour.green, colour.blue,
+                              OPEN_NOTE_OPACITY);
     } else {
         cairo_move_to(m_cr, x + 0.5, y + offset - 5.5);
         cairo_rel_line_to(m_cr, 1, 4);
@@ -788,8 +784,7 @@ void ImageImpl::draw_note_star(int x, int y, NoteColour note_colour)
         cairo_rel_line_to(m_cr, -3, -3);
         cairo_rel_line_to(m_cr, 4, 0);
         cairo_close_path(m_cr);
-        cairo_set_source_rgb(m_cr, colour[0] / 255.0, colour[1] / 255.0,
-                             colour[2] / 255.0);
+        cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
     }
 
     cairo_fill_preserve(m_cr);
@@ -818,7 +813,7 @@ void ImageImpl::draw_ghl_note_sustain(const ImageBuilder& builder,
                                       const DrawnNote<GHLNoteColour>& note)
 {
     constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
-    constexpr std::array<unsigned char, 3> SUST_COLOUR {150, 150, 150};
+    constexpr Colour SUST_COLOUR {0.588, 0.588, 0.588};
 
     std::tuple<double, double> x_range {note.beat, note.beat + note.length};
     auto offset = note_colour_to_offset(note.colour);
@@ -832,7 +827,7 @@ void ImageImpl::draw_ghl_note_sustain(const ImageBuilder& builder,
 }
 
 void ImageImpl::colour_beat_range(const ImageBuilder& builder,
-                                  std::array<unsigned char, 3> colour,
+                                  const Colour& colour,
                                   const std::tuple<double, double>& x_range,
                                   const std::tuple<int, int>& y_range,
                                   float opacity)
@@ -862,8 +857,8 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
             const auto y = TOP_MARGIN + MARGIN + DIST_BETWEEN_MEASURES * row;
             cairo_rectangle(m_cr, x_min, y + y_min, x_max - x_min,
                             y_max - y_min);
-            cairo_set_source_rgba(m_cr, colour[0] / 255.0, colour[1] / 255.0,
-                                  colour[2] / 255.0, opacity);
+            cairo_set_source_rgba(m_cr, colour.red, colour.green, colour.blue,
+                                  opacity);
             cairo_fill(m_cr);
         }
         start = block_end;
@@ -874,12 +869,12 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
 
 Image::Image(const ImageBuilder& builder)
 {
-    constexpr std::array<unsigned char, 3> green {0, 255, 0};
-    constexpr std::array<unsigned char, 3> blue {0, 0, 255};
-    constexpr std::array<unsigned char, 3> yellow {255, 255, 0};
-    constexpr std::array<unsigned char, 3> red {255, 0, 0};
-    constexpr std::array<unsigned char, 3> solo_blue {0, 51, 128};
-    constexpr std::array<unsigned char, 3> pink {127, 0, 0};
+    constexpr Colour green {0.0, 1.0, 0.0};
+    constexpr Colour blue {0.0, 0.0, 1.0};
+    constexpr Colour yellow {1.0, 1.0, 0};
+    constexpr Colour red {1.0, 0, 0};
+    constexpr Colour solo_blue {0, 0.2, 0.5};
+    constexpr Colour pink {0.5, 0, 0};
 
     constexpr unsigned int IMAGE_WIDTH = 1024;
     constexpr float RANGE_OPACITY = 0.33333F;
