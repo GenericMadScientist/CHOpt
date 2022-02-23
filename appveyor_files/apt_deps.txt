@@ -1,3 +1,6 @@
 g++-10
 libcairo2-dev
 libgl1-mesa-dev
+libglib2.0-dev
+libharfbuzz-dev
+libpango1.0-dev

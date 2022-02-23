@@ -25,6 +25,7 @@
 
 #include <boost/nowide/fstream.hpp>
 #include <cairo/cairo.h>
+#include <pango/pangocairo.h>
 
 #include "image.hpp"
 #include "optimiser.hpp"
@@ -242,6 +243,8 @@ class ImageImpl {
 private:
     cairo_surface_t* m_surface;
     cairo_t* m_cr;
+    PangoFontDescription* m_font_description;
+    PangoLayout* m_layout;
 
     void draw_note_circle(int x, int y, NoteColour note_colour);
     void draw_note_star(int x, int y, NoteColour note_colour);
@@ -270,14 +273,24 @@ public:
         cairo_fill(m_cr);
 
         cairo_set_line_width(m_cr, 1.0);
-        cairo_select_font_face(m_cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL,
-                               CAIRO_FONT_WEIGHT_NORMAL);
+
+        m_font_description = pango_font_description_new();
+        pango_font_description_set_family(m_font_description, "sans-serif");
+        pango_font_description_set_weight(m_font_description,
+                                          PANGO_WEIGHT_NORMAL);
+        pango_font_description_set_absolute_size(m_font_description,
+                                                 FONT_HEIGHT * PANGO_SCALE);
+
+        m_layout = pango_cairo_create_layout(m_cr);
+        pango_layout_set_font_description(m_layout, m_font_description);
     }
 
     ~ImageImpl()
     {
         cairo_destroy(m_cr);
         cairo_surface_destroy(m_surface);
+        g_object_unref(m_layout);
+        pango_font_description_free(m_font_description);
     }
 
     ImageImpl(const ImageImpl&) = delete;
@@ -350,23 +363,39 @@ void ImageImpl::draw_header(const ImageBuilder& builder)
     constexpr int HEADER_FONT_HEIGHT = 23;
 
     const auto x = LEFT_MARGIN;
-    const auto y = LEFT_MARGIN + HEADER_FONT_HEIGHT;
+    const auto y = LEFT_MARGIN;
+
+    PangoFontDescription* font_description = pango_font_description_new();
+    pango_font_description_set_family(font_description, "sans-serif");
+    pango_font_description_set_weight(font_description, PANGO_WEIGHT_NORMAL);
+    pango_font_description_set_absolute_size(font_description,
+                                             HEADER_FONT_HEIGHT * PANGO_SCALE);
+
+    PangoLayout* layout = pango_cairo_create_layout(m_cr);
+    pango_layout_set_font_description(layout, font_description);
 
     cairo_set_source_rgb(m_cr, 0.0, 0.0, 0.0);
-    cairo_set_font_size(m_cr, HEADER_FONT_HEIGHT);
 
     cairo_move_to(m_cr, x, y);
-    cairo_show_text(m_cr, builder.song_name().c_str());
+    pango_layout_set_text(layout, builder.song_name().c_str(), -1);
+    pango_cairo_show_layout(m_cr, layout);
 
     cairo_move_to(m_cr, x, y + HEADER_FONT_HEIGHT);
-    cairo_show_text(m_cr, builder.artist().c_str());
+    pango_layout_set_text(layout, builder.artist().c_str(), -1);
+    pango_cairo_show_layout(m_cr, layout);
 
     cairo_move_to(m_cr, x, y + 2 * HEADER_FONT_HEIGHT);
-    cairo_show_text(m_cr, builder.charter().c_str());
+    pango_layout_set_text(layout, builder.charter().c_str(), -1);
+    pango_cairo_show_layout(m_cr, layout);
 
     cairo_move_to(m_cr, x, y + 3 * HEADER_FONT_HEIGHT);
-    cairo_show_text(m_cr, "Total score = ");
-    cairo_show_text(m_cr, std::to_string(builder.total_score()).c_str());
+    const auto text
+        = std::string("Total score = ") + std::to_string(builder.total_score());
+    pango_layout_set_text(layout, text.c_str(), -1);
+    pango_cairo_show_layout(m_cr, layout);
+
+    g_object_unref(layout);
+    pango_font_description_free(font_description);
 }
 
 static int numb_of_fret_lines(TrackType track_type)
@@ -389,7 +418,7 @@ void ImageImpl::draw_measures(const ImageBuilder& builder)
     constexpr Colour GREY {0.627, 0.627, 0.627};
     constexpr Colour LIGHT_GREY {0.878, 0.878, 0.878};
     constexpr Colour RED {0.549, 0, 0};
-    constexpr int MEASURE_NUMB_GAP = 5;
+    constexpr int MEASURE_NUMB_GAP = 18;
 
     const int fret_lines = numb_of_fret_lines(builder.track_type());
     const int colour_distance = (MEASURE_HEIGHT - 1) / fret_lines;
@@ -425,13 +454,13 @@ void ImageImpl::draw_measures(const ImageBuilder& builder)
     draw_vertical_lines(builder, measure_copy, BLACK);
 
     cairo_set_source_rgb(m_cr, RED.red, RED.green, RED.blue);
-    cairo_set_font_size(m_cr, FONT_HEIGHT);
     for (std::size_t i = 0; i < builder.measure_lines().size() - 1; ++i) {
         auto pos = builder.measure_lines()[i];
         auto [x, y] = get_xy(builder, pos);
         y -= MEASURE_NUMB_GAP;
         cairo_move_to(m_cr, x, y);
-        cairo_show_text(m_cr, std::to_string(i + 1).c_str());
+        pango_layout_set_text(m_layout, std::to_string(i + 1).c_str(), -1);
+        pango_cairo_show_layout(m_cr, m_layout);
     }
 }
 
@@ -452,7 +481,7 @@ void ImageImpl::draw_vertical_lines(const ImageBuilder& builder,
 void ImageImpl::draw_tempos(const ImageBuilder& builder)
 {
     constexpr Colour GREY {0.627, 0.627, 0.627};
-    constexpr int TEMPO_OFFSET = 18;
+    constexpr int TEMPO_OFFSET = 31;
 
     cairo_set_source_rgb(m_cr, GREY.red, GREY.green, GREY.blue);
     cairo_set_font_size(m_cr, FONT_HEIGHT);
@@ -462,7 +491,8 @@ void ImageImpl::draw_tempos(const ImageBuilder& builder)
         const auto text = std::string("♩=")
             + std::to_string(static_cast<int>(std::round(tempo)));
         cairo_move_to(m_cr, x + 1, y - TEMPO_OFFSET);
-        cairo_show_text(m_cr, text.c_str());
+        pango_layout_set_text(m_layout, text.c_str(), -1);
+        pango_cairo_show_layout(m_cr, m_layout);
     }
 }
 
@@ -472,17 +502,25 @@ void ImageImpl::draw_time_sigs(const ImageBuilder& builder)
     constexpr int HALF_MEASURE_HEIGHT = MEASURE_HEIGHT / 2;
     constexpr int TS_FONT_HEIGHT = 36;
     constexpr int TS_X_GAP = 3;
-    constexpr int TS_Y_GAP = 2;
+    constexpr int TS_Y_GAP = 38;
 
+    PangoFontDescription* font_description = pango_font_description_new();
+    pango_font_description_set_family(font_description, "sans-serif");
+    pango_font_description_set_weight(font_description, PANGO_WEIGHT_NORMAL);
+    pango_font_description_set_absolute_size(font_description,
+                                             TS_FONT_HEIGHT * PANGO_SCALE);
+    PangoLayout* layout = pango_cairo_create_layout(m_cr);
+    pango_layout_set_font_description(layout, font_description);
     cairo_set_source_rgb(m_cr, GREY.red, GREY.green, GREY.blue);
-    cairo_set_font_size(m_cr, TS_FONT_HEIGHT);
 
     for (const auto& [pos, num, denom] : builder.time_sigs()) {
         auto [x, y] = get_xy(builder, pos);
         cairo_move_to(m_cr, x + TS_X_GAP, y + HALF_MEASURE_HEIGHT - TS_Y_GAP);
-        cairo_show_text(m_cr, std::to_string(num).c_str());
+        pango_layout_set_text(layout, std::to_string(num).c_str(), -1);
+        pango_cairo_show_layout(m_cr, layout);
         cairo_move_to(m_cr, x + TS_X_GAP, y + MEASURE_HEIGHT - TS_Y_GAP);
-        cairo_show_text(m_cr, std::to_string(denom).c_str());
+        pango_layout_set_text(layout, std::to_string(denom).c_str(), -1);
+        pango_cairo_show_layout(m_cr, layout);
     }
 }
 

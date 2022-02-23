@@ -44,7 +44,7 @@ for:
     - cmd: python integration_tests\run_integration_tests.py
     - cmd: clang-format -i gui\*.hpp gui\*.cpp include\*.hpp src\*.cpp tests\*.cpp
     - cmd: git diff --color --exit-code
-    - cmd: clang-tidy src\*.cpp gui\json_settings.cpp -- -Iinclude -IC:\Libraries\boost_1_77_0 -IC:\Tools\vcpkg\installed\x64-windows\include -std=c++17
+    - cmd: clang-tidy src\*.cpp gui\json_settings.cpp -- -Iinclude -IC:\Libraries\boost_1_77_0 -IC:\Tools\vcpkg\installed\x64-windows\include -IC:\Tools\vcpkg\installed\x64-windows\include\cairo -IC:\Tools\vcpkg\installed\x64-windows\include\pango-1.0 -IC:\Tools\vcpkg\installed\x64-windows\include\glib-2.0 -IC:\Tools\vcpkg\installed\x64-windows\lib\glib-2.0\include -IC:\Tools\vcpkg\installed\x64-windows\include\harfbuzz -std=c++17
     - cmd: clang-tidy tests\*_unittest.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers -- -Iinclude -IC:\Libraries\boost_1_77_0 -IC:\Tools\vcpkg\installed\x64-windows\include -std=c++17
 
     before_deploy:
@@ -74,12 +74,12 @@ for:
     build_script:
     - sh: xargs brew install < ../appveyor_files/brew_deps.txt
     - sh: xargs brew link < ../appveyor_files/brew_deps.txt
-    - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DPACKAGE_TESTS=OFF -DCMAKE_FIND_FRAMEWORK=LAST -DQt6_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6WidgetsTools ..
+    - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DPACKAGE_TESTS=OFF -DCMAKE_FIND_FRAMEWORK=LAST -DGLIB_LIBDIR=/usr/local/Cellar/glib/2.70.4/lib -DGLIB_INCLUDE_DIR=/usr/local/Cellar/glib/2.70.4/include/glib-2.0 -DQt6_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
     before_deploy:
     - sh: rm -rf *
-    - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DCMAKE_FIND_FRAMEWORK=LAST -DQt6_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6WidgetsTools ..
+    - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DCMAKE_FIND_FRAMEWORK=LAST -DGLIB_LIBDIR=/usr/local/Cellar/glib/2.70.4/lib -DGLIB_INCLUDE_DIR=/usr/local/Cellar/glib/2.70.4/include/glib-2.0 -DQt6_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2.0/macos/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config Release
     - sh: strip -x chopt
     - sh: mv chopt CHOpt

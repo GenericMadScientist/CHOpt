@@ -1,3 +1,6 @@
 boost
 cairo
+glib
+harfbuzz
 libpng
+pango

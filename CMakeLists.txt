@@ -41,6 +41,7 @@ find_package(
   COMPONENTS nowide program_options
   OPTIONAL_COMPONENTS json unit_test_framework)
 find_package(Cairo REQUIRED)
+find_package(Pango REQUIRED)
 
 cmake_policy(SET CMP0083 NEW)
 include(CheckPIESupported)
@@ -70,10 +71,10 @@ add_executable(
   resources/resources.rc)
 target_include_directories(
   chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" ${PNG_INCLUDE_DIRS}
-                ${Cairo_INCLUDE_DIR})
+                ${Cairo_INCLUDE_DIR} ${Pango_INCLUDE_DIRS})
 target_link_directories(chopt PRIVATE ${Boost_LIBRARY_DIRS})
 target_link_libraries(chopt PRIVATE Boost::nowide Boost::program_options
-                                    ${PNG_LIBRARIES} ${Cairo_LIBRARIES})
+                                    ${PNG_LIBRARIES} ${Cairo_LIBRARIES} ${Pango_LIBRARIES})
 
 set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 set_cpp_standard(chopt)
@@ -119,11 +120,11 @@ if(BUILD_GUI)
     resources/resources.rc)
   target_include_directories(
     choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include" ${PNG_INCLUDE_DIRS}
-                     ${Cairo_INCLUDE_DIR})
+                     ${Cairo_INCLUDE_DIR} ${Pango_INCLUDE_DIRS})
   target_link_directories(choptgui PRIVATE ${Boost_LIBRARY_DIRS})
   target_link_libraries(
     choptgui PRIVATE Boost::json Boost::nowide ${PNG_LIBRARIES}
-                     ${Cairo_LIBRARIES} Qt6::Widgets)
+                     ${Cairo_LIBRARIES} ${Pango_LIBRARIES} Qt6::Widgets)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
   if(APPLE)
