@@ -67,21 +67,21 @@ in cmd then enter to open a command prompt in that folder, then run the command
 
 ## Dependencies
 
-* [Boost](https://www.boost.org/) 1.76.0 for JSON, Nowide, Program Options and
-Test
-* [CImg](https://cimg.eu) 2.9.9 to produce images
-* [libpng](http://libpng.org/pub/png/libpng.html) 1.6.37 to save pngs
-* [Qt](https://www.qt.io) 6.2 for the GUI
-* [zlib](https://zlib.net) 1.2.11 is a dependency of libpng
+* [Boost](https://www.boost.org) for JSON, Nowide, Program Options and Test
+* [Cairo](https://www.cairographics.org) for rasterisation
+* [libpng](http://libpng.org/pub/png/libpng.html) to save pngs
+* [Pango](https://pango.gnome.org) for drawing UTF-8 text
+* [Qt 6](https://www.qt.io) for the GUI
 
-CImg is vendored in the repo. Boost, libpng, Qt, and zlib will need to be
-provided by anyone compiling CHOpt for themselves, although Qt is only required
-if the GUI version is being compiled. libpng and zlib need to be set up so that
+In addition, we depend on their dependencies (e.g. zlib for libpng). libpng and
+zlib need to be set up so that
 [FindPNG](https://cmake.org/cmake/help/latest/module/FindPNG.html) can find
 them, and the same is true for Boost and Qt (see
 [this](https://cmake.org/cmake/help/latest/module/FindBoost.html) and
 [this](https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html) page for
-details).
+details). Pango, Cairo, and their dependencies GLib and HarfBuzz do not have
+modules included with CMake to find them. Look at [appveyor.yml](appveyor.yml)
+to see how to find them.
 
 ## Acknowledgements
 
