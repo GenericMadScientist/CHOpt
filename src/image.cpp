@@ -522,6 +522,9 @@ void ImageImpl::draw_time_sigs(const ImageBuilder& builder)
         pango_layout_set_text(layout, std::to_string(denom).c_str(), -1);
         pango_cairo_show_layout(m_cr, layout);
     }
+
+    g_object_unref(layout);
+    pango_font_description_free(font_description);
 }
 
 void ImageImpl::draw_score_totals(const ImageBuilder& builder)
@@ -566,12 +569,24 @@ void ImageImpl::draw_text_backwards(int x, int y, const char* text,
                                     const Colour& colour,
                                     unsigned int font_height)
 {
-    cairo_text_extents_t te;
+    PangoFontDescription* font_description = pango_font_description_new();
+    pango_font_description_set_family(font_description, "sans-serif");
+    pango_font_description_set_weight(font_description, PANGO_WEIGHT_NORMAL);
+    pango_font_description_set_absolute_size(font_description,
+                                             font_height * PANGO_SCALE);
+
+    PangoLayout* layout = pango_cairo_create_layout(m_cr);
+    pango_layout_set_font_description(layout, font_description);
+    pango_layout_set_text(layout, text, -1);
+
+    int width = 0;
+    pango_layout_get_pixel_size(layout, &width, nullptr);
+    cairo_move_to(m_cr, x - width, y);
     cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
-    cairo_set_font_size(m_cr, font_height);
-    cairo_text_extents(m_cr, text, &te);
-    cairo_move_to(m_cr, x - te.width, y + te.height);
-    cairo_show_text(m_cr, text);
+    pango_cairo_show_layout(m_cr, layout);
+
+    g_object_unref(layout);
+    pango_font_description_free(font_description);
 }
 
 void ImageImpl::draw_notes(const ImageBuilder& builder)
