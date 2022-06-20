@@ -37,7 +37,7 @@ endfunction()
 
 find_package(PNG REQUIRED)
 find_package(
-  Boost 1.76 REQUIRED
+  Boost 1.77 REQUIRED
   COMPONENTS nowide program_options
   OPTIONAL_COMPONENTS json unit_test_framework)
 find_package(Cairo REQUIRED)

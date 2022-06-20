@@ -70,11 +70,11 @@ if(NOT Cairo_LIBRARY)
   find_library(
     Cairo_LIBRARY_RELEASE
     NAMES cairo cairo-static
-    HINTS ${_Cairo_LIBDIR} ${_Cairo_ROOT_HINTS_AND_PATHS}
+    HINTS ${_Cairo_ROOT_HINTS_AND_PATHS} ${_Cairo_LIBDIR}
     PATH_SUFFIXES "lib" "local/lib")
 
   find_library(
-    Cairo_LIBRARY_RELEASE
+    Cairo_LIBRARY_DEBUG
     NAMES cairo cairo-staticd
     HINTS ${Cairo_DEBUG_LIBDIR}
     PATH_SUFFIXES "lib" "local/lib"
@@ -82,7 +82,7 @@ if(NOT Cairo_LIBRARY)
   find_library(
     Cairo_LIBRARY_DEBUG
     NAMES cairod cairo-staticd
-    HINTS ${_Cairo_LIBDIR} ${_Cairo_ROOT_HINTS_AND_PATHS}
+    HINTS ${_Cairo_ROOT_HINTS_AND_PATHS} ${_Cairo_LIBDIR}
     PATH_SUFFIXES "lib" "local/lib")
 
   include(SelectLibraryConfigurations)
