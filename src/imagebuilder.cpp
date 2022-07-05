@@ -291,7 +291,7 @@ void ImageBuilder::add_bpms(const SyncTrack& sync_track, int resolution)
 
     for (const auto& bpm : sync_track.bpms()) {
         auto pos = bpm.position / static_cast<double>(resolution);
-        auto tempo = bpm.bpm / MS_PER_SECOND;
+        auto tempo = static_cast<double>(bpm.bpm) / MS_PER_SECOND;
         if (pos < m_rows.back().end) {
             m_bpms.emplace_back(pos, tempo);
         }
