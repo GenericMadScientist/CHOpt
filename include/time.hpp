@@ -19,6 +19,8 @@
 #ifndef CHOPT_TIME_HPP
 #define CHOPT_TIME_HPP
 
+#include <cstdint>
+
 class Measure;
 class Second;
 
@@ -32,7 +34,7 @@ public:
     {
     }
     [[nodiscard]] double value() const { return m_value; }
-    [[nodiscard]] Second to_second(int bpm) const;
+    [[nodiscard]] Second to_second(std::int64_t bpm) const;
     [[nodiscard]] Measure to_measure(double beat_rate) const;
 
     friend bool operator<(const Beat& lhs, const Beat& rhs)
@@ -178,7 +180,7 @@ public:
     {
     }
     [[nodiscard]] double value() const { return m_value; }
-    [[nodiscard]] Beat to_beat(int bpm) const
+    [[nodiscard]] Beat to_beat(std::int64_t bpm) const
     {
         constexpr double MS_PER_MINUTE = 60000.0;
         return Beat(m_value * bpm / MS_PER_MINUTE);
@@ -248,7 +250,7 @@ inline Measure Beat::to_measure(double beat_rate) const
     return Measure(m_value / beat_rate);
 }
 
-inline Second Beat::to_second(int bpm) const
+inline Second Beat::to_second(std::int64_t bpm) const
 {
     constexpr double MS_PER_MINUTE = 60000.0;
     return Second(m_value * MS_PER_MINUTE / bpm);

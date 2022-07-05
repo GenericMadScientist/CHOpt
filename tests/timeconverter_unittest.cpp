@@ -157,6 +157,18 @@ BOOST_AUTO_TEST_CASE(speedup_returns_correct_synctrack)
                                   expected_tses.cbegin(), expected_tses.cend());
 }
 
+BOOST_AUTO_TEST_CASE(speedup_doesnt_overflow)
+{
+    const SyncTrack sync_track {{}, {{0, 200000000}}};
+    const std::vector<BPM> expected_bpms {{0, 400000000}};
+
+    const auto speedup = sync_track.speedup(200);
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(speedup.bpms().cbegin(),
+                                  speedup.bpms().cend(), expected_bpms.cbegin(),
+                                  expected_bpms.cend());
+}
+
 BOOST_AUTO_TEST_CASE(beats_to_seconds_conversion_works_correctly)
 {
     SyncTrack track {{{0, 4, 4}}, {{0, 150000}, {800, 200000}}};

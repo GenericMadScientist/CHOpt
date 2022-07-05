@@ -19,6 +19,7 @@
 #ifndef CHOPT_TIMECONVERTER_HPP
 #define CHOPT_TIMECONVERTER_HPP
 
+#include <cstdint>
 #include <stdexcept>
 #include <vector>
 
@@ -33,7 +34,8 @@ struct TimeSignature {
 
 struct BPM {
     int position;
-    int bpm;
+    // Larger int type is needed to handle speedups.
+    std::int64_t bpm;
 };
 
 class ParseError : public std::runtime_error {
@@ -83,12 +85,12 @@ private:
         Beat beat;
     };
 
-    static constexpr int DEFAULT_BPM = 120000;
+    static constexpr std::int64_t DEFAULT_BPM = 120000;
     static constexpr double DEFAULT_BEAT_RATE = 4.0;
     std::vector<BeatTimestamp> m_beat_timestamps;
     std::vector<MeasureTimestamp> m_measure_timestamps;
     double m_last_beat_rate;
-    int m_last_bpm;
+    std::int64_t m_last_bpm;
 
 public:
     TimeConverter(const SyncTrack& sync_track, int resolution,
