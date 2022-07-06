@@ -83,7 +83,7 @@ public:
                 &m_terminate);
             emit write_text("Saving image...");
             const Image image {builder};
-            image.save(m_file_name.toStdString());
+            image.save(m_file_name.toStdString().c_str());
             emit write_text("Image saved");
             QDesktopServices::openUrl(QUrl::fromLocalFile(m_file_name));
         } catch (const std::runtime_error&) {

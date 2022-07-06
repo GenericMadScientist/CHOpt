@@ -20,7 +20,6 @@
 #define CHOPT_IMAGE_HPP
 
 #include <memory>
-#include <string>
 
 #include "imagebuilder.hpp"
 
@@ -38,7 +37,7 @@ public:
     Image& operator=(const Image&) = delete;
     Image& operator=(Image&& image) noexcept;
 
-    void save(const std::string& filename) const;
+    void save(const char* filename) const;
 };
 
 #endif

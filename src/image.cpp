@@ -23,12 +23,12 @@
 #include <set>
 #include <stdexcept>
 
-#include <boost/nowide/fstream.hpp>
-#include <cairo/cairo.h>
-#include <pango/pangocairo.h>
+#include "cimg_wrapper.hpp"
 
 #include "image.hpp"
 #include "optimiser.hpp"
+
+using namespace cimg_library;
 
 constexpr int BEAT_WIDTH = 60;
 constexpr int FONT_HEIGHT = 13;
@@ -38,23 +38,15 @@ constexpr int MEASURE_HEIGHT = 61;
 constexpr float OPEN_NOTE_OPACITY = 0.5F;
 constexpr int TOP_MARGIN = 100;
 constexpr int DIST_BETWEEN_MEASURES = MEASURE_HEIGHT + MARGIN;
-constexpr double HALF_PIXEL = 0.5; // Needed due to how Cairo aligns lines
-constexpr double TWO_PI = 6.283185307179586;
 
-struct Colour {
-    double red;
-    double green;
-    double blue;
-};
-
-static Colour note_colour_to_colour(NoteColour colour)
+static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
 {
-    constexpr Colour GREEN {0.0, 1.0, 0.0};
-    constexpr Colour RED {1.0, 0.0, 0.0};
-    constexpr Colour YELLOW {1.0, 1.0, 0.0};
-    constexpr Colour BLUE {0.0, 0.0, 1.0};
-    constexpr Colour ORANGE {1.0, 0.647, 0.0};
-    constexpr Colour PURPLE {0.5, 0, 0.5};
+    constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
+    constexpr std::array<unsigned char, 3> RED {255, 0, 0};
+    constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
+    constexpr std::array<unsigned char, 3> BLUE {0, 0, 255};
+    constexpr std::array<unsigned char, 3> ORANGE {255, 165, 0};
+    constexpr std::array<unsigned char, 3> PURPLE {128, 0, 128};
 
     switch (colour) {
     case NoteColour::Green:
@@ -74,13 +66,13 @@ static Colour note_colour_to_colour(NoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_colour");
 }
 
-static Colour note_colour_to_colour(DrumNoteColour colour)
+static std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
 {
-    constexpr Colour RED {1.0, 0.0, 0.0};
-    constexpr Colour YELLOW {1.0, 1.0, 0.0};
-    constexpr Colour BLUE {0.0, 0.0, 1.0};
-    constexpr Colour GREEN {0.0, 1.0, 0.0};
-    constexpr Colour ORANGE {1.0, 0.647, 0.0};
+    constexpr std::array<unsigned char, 3> RED {255, 0, 0};
+    constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
+    constexpr std::array<unsigned char, 3> BLUE {0, 0, 255};
+    constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
+    constexpr std::array<unsigned char, 3> ORANGE {255, 165, 0};
 
     switch (colour) {
     case DrumNoteColour::Red:
@@ -206,45 +198,9 @@ static int note_colour_to_offset(DrumNoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_offset");
 }
 
-static void write_int(boost::nowide::ofstream& stream, int value)
-{
-    stream.write(reinterpret_cast<char*>(&value), sizeof value); // NOLINT
-}
-
-static void write_24_bit_bmp_header(boost::nowide::ofstream& stream, int width,
-                                    int height)
-{
-    constexpr int BPP_AND_PLANES = 0x00180001;
-    constexpr int DIB_HEADER_SIZE = 40;
-    constexpr int HEADER_SIZE = 54;
-    constexpr int PPM_RESOLUTION = 256;
-
-    const auto row_padding
-        = ((3 * width) % 4 == 0) ? 0 : (4 - ((3 * width) % 4));
-    const auto size = (3 * width + row_padding) * height;
-
-    stream << "BM";
-    write_int(stream, size + HEADER_SIZE);
-    write_int(stream, 0);
-    write_int(stream, HEADER_SIZE);
-    write_int(stream, DIB_HEADER_SIZE);
-    write_int(stream, width);
-    write_int(stream, height);
-    write_int(stream, BPP_AND_PLANES);
-    write_int(stream, 0);
-    write_int(stream, size);
-    write_int(stream, PPM_RESOLUTION);
-    write_int(stream, PPM_RESOLUTION);
-    write_int(stream, 0);
-    write_int(stream, 0);
-}
-
 class ImageImpl {
 private:
-    cairo_surface_t* m_surface;
-    cairo_t* m_cr;
-    PangoFontDescription* m_font_description;
-    PangoLayout* m_layout;
+    CImg<unsigned char> m_image;
 
     void draw_note_circle(int x, int y, NoteColour note_colour);
     void draw_note_star(int x, int y, NoteColour note_colour);
@@ -255,50 +211,30 @@ private:
     void draw_ghl_note_sustain(const ImageBuilder& builder,
                                const DrawnNote<GHLNoteColour>& note);
     void draw_drum_note(int x, int y, DrumNoteColour note_colour);
+    void draw_quarter_note(int x, int y);
     void draw_text_backwards(int x, int y, const char* text,
-                             const Colour& colour, unsigned int font_height);
+                             const unsigned char* color, float opacity,
+                             unsigned int font_height);
     void draw_vertical_lines(const ImageBuilder& builder,
                              const std::vector<double>& positions,
-                             const Colour& colour);
+                             std::array<unsigned char, 3> colour);
 
 public:
-    ImageImpl(int width, int height)
+    ImageImpl(unsigned int size_x, unsigned int size_y, unsigned int size_z,
+              unsigned int size_c, const unsigned char& value)
+        : m_image {size_x, size_y, size_z, size_c, value}
     {
-        m_surface
-            = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
-        m_cr = cairo_create(m_surface);
-
-        cairo_set_source_rgb(m_cr, 1.0, 1.0, 1.0);
-        cairo_rectangle(m_cr, 0, 0, width, height);
-        cairo_fill(m_cr);
-
-        cairo_set_line_width(m_cr, 1.0);
-
-        m_font_description = pango_font_description_new();
-        pango_font_description_set_family(m_font_description, "sans-serif");
-        pango_font_description_set_weight(m_font_description,
-                                          PANGO_WEIGHT_NORMAL);
-        pango_font_description_set_absolute_size(m_font_description,
-                                                 FONT_HEIGHT * PANGO_SCALE);
-
-        m_layout = pango_cairo_create_layout(m_cr);
-        pango_layout_set_font_description(m_layout, m_font_description);
     }
 
-    ~ImageImpl()
-    {
-        cairo_destroy(m_cr);
-        cairo_surface_destroy(m_surface);
-        g_object_unref(m_layout);
-        pango_font_description_free(m_font_description);
-    }
+    ~ImageImpl() {}
 
     ImageImpl(const ImageImpl&) = delete;
     ImageImpl& operator=(const ImageImpl&) = delete;
     ImageImpl(ImageImpl&&) = delete;
     ImageImpl& operator=(ImageImpl&&) = delete;
 
-    void colour_beat_range(const ImageBuilder& builder, const Colour& colour,
+    void colour_beat_range(const ImageBuilder& builder,
+                           std::array<unsigned char, 3> colour,
                            const std::tuple<double, double>& x_range,
                            const std::tuple<int, int>& y_range, float opacity);
     void draw_header(const ImageBuilder& builder);
@@ -310,41 +246,7 @@ public:
     void draw_tempos(const ImageBuilder& builder);
     void draw_time_sigs(const ImageBuilder& builder);
 
-    void save(const std::string& path) const
-    {
-        if (path.size() < 4) {
-            throw std::runtime_error("Unsupported file type");
-        }
-        const auto file_type = path.substr(path.size() - 4, 4);
-        if (file_type == ".bmp") {
-            cairo_surface_flush(m_surface);
-            const auto* data = reinterpret_cast<char*>( // NOLINT
-                cairo_image_surface_get_data(m_surface));
-            const auto width = cairo_image_surface_get_width(m_surface);
-            const auto height = cairo_image_surface_get_height(m_surface);
-            const auto stride = cairo_image_surface_get_stride(m_surface);
-            const auto row_padding
-                = ((3 * width) % 4 == 0) ? 0 : (4 - ((3 * width) % 4));
-            boost::nowide::ofstream out(path, std::ios::binary);
-            write_24_bit_bmp_header(out, width, height);
-            constexpr std::array<char, 3> zeroes {{0, 0, 0}};
-            for (int i = height - 1; i >= 0; --i) {
-                for (int j = 0; j < width; ++j) {
-                    const auto* pixel = data + stride * i + 4 * j; // NOLINT
-                    out.write(pixel, 3);
-                }
-                out.write(zeroes.data(), row_padding);
-            }
-        } else if (file_type == ".png") {
-            const auto status
-                = cairo_surface_write_to_png(m_surface, path.c_str());
-            if (status != CAIRO_STATUS_SUCCESS) {
-                throw std::runtime_error("Unable to write to png");
-            }
-        } else {
-            throw std::runtime_error("Unsupported file type");
-        }
-    }
+    void save(const char* filename) const { m_image.save(filename); }
 };
 
 static std::tuple<int, int> get_xy(const ImageBuilder& builder, double pos)
@@ -360,42 +262,15 @@ static std::tuple<int, int> get_xy(const ImageBuilder& builder, double pos)
 
 void ImageImpl::draw_header(const ImageBuilder& builder)
 {
+    constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
     constexpr int HEADER_FONT_HEIGHT = 23;
 
     const auto x = LEFT_MARGIN;
     const auto y = LEFT_MARGIN;
-
-    PangoFontDescription* font_description = pango_font_description_new();
-    pango_font_description_set_family(font_description, "sans-serif");
-    pango_font_description_set_weight(font_description, PANGO_WEIGHT_NORMAL);
-    pango_font_description_set_absolute_size(font_description,
-                                             HEADER_FONT_HEIGHT * PANGO_SCALE);
-
-    PangoLayout* layout = pango_cairo_create_layout(m_cr);
-    pango_layout_set_font_description(layout, font_description);
-
-    cairo_set_source_rgb(m_cr, 0.0, 0.0, 0.0);
-
-    cairo_move_to(m_cr, x, y);
-    pango_layout_set_text(layout, builder.song_name().c_str(), -1);
-    pango_cairo_show_layout(m_cr, layout);
-
-    cairo_move_to(m_cr, x, y + HEADER_FONT_HEIGHT);
-    pango_layout_set_text(layout, builder.artist().c_str(), -1);
-    pango_cairo_show_layout(m_cr, layout);
-
-    cairo_move_to(m_cr, x, y + 2 * HEADER_FONT_HEIGHT);
-    pango_layout_set_text(layout, builder.charter().c_str(), -1);
-    pango_cairo_show_layout(m_cr, layout);
-
-    cairo_move_to(m_cr, x, y + 3 * HEADER_FONT_HEIGHT);
-    const auto text
-        = std::string("Total score = ") + std::to_string(builder.total_score());
-    pango_layout_set_text(layout, text.c_str(), -1);
-    pango_cairo_show_layout(m_cr, layout);
-
-    g_object_unref(layout);
-    pango_font_description_free(font_description);
+    m_image.draw_text(x, y, "%s\n%s\n%s\nTotal score = %d", BLACK.data(), 0,
+                      1.0, HEADER_FONT_HEIGHT, builder.song_name().c_str(),
+                      builder.artist().c_str(), builder.charter().c_str(),
+                      builder.total_score());
 }
 
 static int numb_of_fret_lines(TrackType track_type)
@@ -414,10 +289,10 @@ static int numb_of_fret_lines(TrackType track_type)
 
 void ImageImpl::draw_measures(const ImageBuilder& builder)
 {
-    constexpr Colour BLACK {0.0, 0.0, 0.0};
-    constexpr Colour GREY {0.627, 0.627, 0.627};
-    constexpr Colour LIGHT_GREY {0.878, 0.878, 0.878};
-    constexpr Colour RED {0.549, 0, 0};
+    constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
+    constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
+    constexpr std::array<unsigned char, 3> LIGHT_GREY {224, 224, 224};
+    constexpr std::array<unsigned char, 3> RED {140, 0, 0};
     constexpr int MEASURE_NUMB_GAP = 18;
 
     const int fret_lines = numb_of_fret_lines(builder.track_type());
@@ -429,18 +304,14 @@ void ImageImpl::draw_measures(const ImageBuilder& builder)
     auto current_row = 0;
     for (const auto& row : builder.rows()) {
         auto y = TOP_MARGIN + DIST_BETWEEN_MEASURES * current_row + MARGIN;
-        const auto measure_width = BEAT_WIDTH * (row.end - row.start);
+        auto x_max = LEFT_MARGIN
+            + static_cast<int>(BEAT_WIDTH * (row.end - row.start));
         for (int i = 1; i < fret_lines; ++i) {
-            cairo_set_source_rgb(m_cr, GREY.red, GREY.green, GREY.blue);
-            cairo_move_to(m_cr, LEFT_MARGIN + HALF_PIXEL,
-                          y + colour_distance * i + HALF_PIXEL);
-            cairo_rel_line_to(m_cr, measure_width, 0);
-            cairo_stroke(m_cr);
+            m_image.draw_line(LEFT_MARGIN, y + colour_distance * i, x_max,
+                              y + colour_distance * i, GREY.data());
         }
-        cairo_set_source_rgb(m_cr, 0.0, 0.0, 0.0);
-        cairo_rectangle(m_cr, LEFT_MARGIN + HALF_PIXEL, y + HALF_PIXEL,
-                        measure_width, MEASURE_HEIGHT);
-        cairo_stroke(m_cr);
+        m_image.draw_rectangle(LEFT_MARGIN, y, x_max, y + MEASURE_HEIGHT,
+                               BLACK.data(), 1.0, ~0U);
         ++current_row;
     }
 
@@ -453,85 +324,77 @@ void ImageImpl::draw_measures(const ImageBuilder& builder)
         std::prev(builder.measure_lines().cend())};
     draw_vertical_lines(builder, measure_copy, BLACK);
 
-    cairo_set_source_rgb(m_cr, RED.red, RED.green, RED.blue);
     for (std::size_t i = 0; i < builder.measure_lines().size() - 1; ++i) {
         auto pos = builder.measure_lines()[i];
         auto [x, y] = get_xy(builder, pos);
         y -= MEASURE_NUMB_GAP;
-        cairo_move_to(m_cr, x, y);
-        pango_layout_set_text(m_layout, std::to_string(i + 1).c_str(), -1);
-        pango_cairo_show_layout(m_cr, m_layout);
+        m_image.draw_text(x, y, "%u", RED.data(), 0, 1.0, FONT_HEIGHT, i + 1);
     }
 }
 
 void ImageImpl::draw_vertical_lines(const ImageBuilder& builder,
                                     const std::vector<double>& positions,
-                                    const Colour& colour)
+                                    std::array<unsigned char, 3> colour)
 {
-    cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
-
     for (auto pos : positions) {
         auto [x, y] = get_xy(builder, pos);
-        cairo_move_to(m_cr, x + HALF_PIXEL, y + HALF_PIXEL);
-        cairo_rel_line_to(m_cr, 0, MEASURE_HEIGHT);
-        cairo_stroke(m_cr);
+        m_image.draw_line(x, y, x, y + MEASURE_HEIGHT, colour.data());
     }
 }
 
 void ImageImpl::draw_tempos(const ImageBuilder& builder)
 {
-    constexpr Colour GREY {0.627, 0.627, 0.627};
+    constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
     constexpr int TEMPO_OFFSET = 31;
-
-    cairo_set_source_rgb(m_cr, GREY.red, GREY.green, GREY.blue);
-    cairo_set_font_size(m_cr, FONT_HEIGHT);
 
     for (const auto& [pos, tempo] : builder.bpms()) {
         auto [x, y] = get_xy(builder, pos);
-        const auto text = std::string("♩=")
-            + std::to_string(static_cast<int>(std::round(tempo)));
-        cairo_move_to(m_cr, x + 1, y - TEMPO_OFFSET);
-        pango_layout_set_text(m_layout, text.c_str(), -1);
-        pango_cairo_show_layout(m_cr, m_layout);
+        y -= TEMPO_OFFSET;
+        m_image.draw_text(x + 1, y, " =%.f", GREY.data(), 0, 1.0, FONT_HEIGHT,
+                          tempo);
+        draw_quarter_note(x, y);
+    }
+}
+
+void ImageImpl::draw_quarter_note(int x, int y)
+{
+    constexpr int GREY_VALUE = 160;
+    constexpr std::array<std::tuple<int, int>, 26> PIXELS {
+        {{4, 0},  {4, 1},  {4, 2},  {4, 3},  {4, 4},  {4, 5},  {4, 6},
+         {4, 7},  {4, 8},  {4, 9},  {4, 10}, {4, 11}, {3, 9},  {3, 10},
+         {3, 11}, {3, 12}, {2, 9},  {2, 10}, {2, 11}, {2, 12}, {1, 9},
+         {1, 10}, {1, 11}, {1, 12}, {0, 10}, {0, 11}}};
+
+    for (const auto& [diff_x, diff_y] : PIXELS) {
+        auto x_pos = static_cast<unsigned int>(x + diff_x);
+        auto y_pos = static_cast<unsigned int>(y + diff_y);
+        m_image(x_pos, y_pos, 0) = GREY_VALUE;
+        m_image(x_pos, y_pos, 1) = GREY_VALUE;
+        m_image(x_pos, y_pos, 2) = GREY_VALUE;
     }
 }
 
 void ImageImpl::draw_time_sigs(const ImageBuilder& builder)
 {
-    constexpr Colour GREY {0.627, 0.627, 0.627};
-    constexpr int HALF_MEASURE_HEIGHT = MEASURE_HEIGHT / 2;
-    constexpr int TS_FONT_HEIGHT = 36;
-    constexpr int TS_X_GAP = 3;
-    constexpr int TS_Y_GAP = 38;
-
-    PangoFontDescription* font_description = pango_font_description_new();
-    pango_font_description_set_family(font_description, "sans-serif");
-    pango_font_description_set_weight(font_description, PANGO_WEIGHT_NORMAL);
-    pango_font_description_set_absolute_size(font_description,
-                                             TS_FONT_HEIGHT * PANGO_SCALE);
-    PangoLayout* layout = pango_cairo_create_layout(m_cr);
-    pango_layout_set_font_description(layout, font_description);
-    cairo_set_source_rgb(m_cr, GREY.red, GREY.green, GREY.blue);
+    constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
+    constexpr int TS_FONT_HEIGHT = 38;
+    constexpr int TS_GAP = MEASURE_HEIGHT / 16;
 
     for (const auto& [pos, num, denom] : builder.time_sigs()) {
         auto [x, y] = get_xy(builder, pos);
-        cairo_move_to(m_cr, x + TS_X_GAP, y + HALF_MEASURE_HEIGHT - TS_Y_GAP);
-        pango_layout_set_text(layout, std::to_string(num).c_str(), -1);
-        pango_cairo_show_layout(m_cr, layout);
-        cairo_move_to(m_cr, x + TS_X_GAP, y + MEASURE_HEIGHT - TS_Y_GAP);
-        pango_layout_set_text(layout, std::to_string(denom).c_str(), -1);
-        pango_cairo_show_layout(m_cr, layout);
+        x += TS_GAP;
+        y -= TS_GAP;
+        m_image.draw_text(x, y, "%d", GREY.data(), 0, 1.0, TS_FONT_HEIGHT, num);
+        m_image.draw_text(x, y + MEASURE_HEIGHT / 2, "%d", GREY.data(), 0, 1.0,
+                          TS_FONT_HEIGHT, denom);
     }
-
-    g_object_unref(layout);
-    pango_font_description_free(font_description);
 }
 
 void ImageImpl::draw_score_totals(const ImageBuilder& builder)
 {
-    constexpr Colour CYAN {0.0, 0.627, 0.627};
-    constexpr Colour GREEN {0, 0.392, 0};
-    constexpr Colour GREY {0.627, 0.627, 0.627};
+    constexpr std::array<unsigned char, 3> CYAN {0, 160, 160};
+    constexpr std::array<unsigned char, 3> GREEN {0, 100, 0};
+    constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
 
     constexpr int BASE_VALUE_MARGIN = 5;
     // This is enough room for the max double (below 10^309, a '.', two more
@@ -553,40 +416,33 @@ void ImageImpl::draw_score_totals(const ImageBuilder& builder)
         auto [x, y] = get_xy(builder, pos);
         y += BASE_VALUE_MARGIN + MEASURE_HEIGHT;
         auto text = std::to_string(base_values[i]);
-        draw_text_backwards(x, y, text.c_str(), GREY, FONT_HEIGHT);
+        draw_text_backwards(x, y, text.c_str(), GREY.data(), 1.0F, FONT_HEIGHT);
         text = std::to_string(score_values[i]);
         y += VALUE_GAP;
-        draw_text_backwards(x, y, text.c_str(), GREEN, FONT_HEIGHT);
+        draw_text_backwards(x, y, text.c_str(), GREEN.data(), 1.0F,
+                            FONT_HEIGHT);
         if (sp_values[i] > 0) {
             y += VALUE_GAP;
             std::snprintf(buffer.data(), BUFFER_SIZE, "%.2fSP", sp_values[i]);
-            draw_text_backwards(x, y, buffer.data(), CYAN, FONT_HEIGHT);
+            draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
+                                FONT_HEIGHT);
         }
     }
 }
 
+// CImg's normal draw_text method draws the text so the top left corner of the
+// box is at (x, y). This method draws the text so that the top right corner of
+// the box is at (x, y).
 void ImageImpl::draw_text_backwards(int x, int y, const char* text,
-                                    const Colour& colour,
+                                    const unsigned char* color, float opacity,
                                     unsigned int font_height)
 {
-    PangoFontDescription* font_description = pango_font_description_new();
-    pango_font_description_set_family(font_description, "sans-serif");
-    pango_font_description_set_weight(font_description, PANGO_WEIGHT_NORMAL);
-    pango_font_description_set_absolute_size(font_description,
-                                             font_height * PANGO_SCALE);
-
-    PangoLayout* layout = pango_cairo_create_layout(m_cr);
-    pango_layout_set_font_description(layout, font_description);
-    pango_layout_set_text(layout, text, -1);
-
-    int width = 0;
-    pango_layout_get_pixel_size(layout, &width, nullptr);
-    cairo_move_to(m_cr, x - width, y);
-    cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
-    pango_cairo_show_layout(m_cr, layout);
-
-    g_object_unref(layout);
-    pango_font_description_free(font_description);
+    // Hack for getting the text box width from the answer at
+    // stackoverflow.com/questions/24190327.
+    CImg<int> img_text;
+    img_text.draw_text(0, 0, text, color, 0, opacity, font_height);
+    x -= img_text.width();
+    m_image.draw_text(x, y, text, color, 0, opacity, font_height);
 }
 
 void ImageImpl::draw_notes(const ImageBuilder& builder)
@@ -724,43 +580,37 @@ ghl_note_colour_codes(const std::set<GHLNoteColour>& note_colours)
 
 void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour)
 {
-    constexpr int OPEN_WIDTH = 6;
+    constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr int RADIUS = 5;
 
     auto colour = note_colour_to_colour(note_colour);
     auto offset = note_colour_to_offset(note_colour);
 
     if (note_colour == NoteColour::Open) {
-        cairo_rectangle(m_cr, x - 3 + HALF_PIXEL, y - 3 + HALF_PIXEL,
-                        OPEN_WIDTH, MEASURE_HEIGHT + OPEN_WIDTH);
-        cairo_set_source_rgba(m_cr, colour.red, colour.green, colour.blue,
-                              OPEN_NOTE_OPACITY);
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               colour.data(), OPEN_NOTE_OPACITY);
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               black.data(), 1.0, ~0U);
     } else {
-        cairo_new_sub_path(m_cr);
-        cairo_arc(m_cr, x, y + offset, RADIUS, 0, TWO_PI);
-        cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
+        m_image.draw_circle(x, y + offset, RADIUS, colour.data());
+        m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
     }
-
-    cairo_fill_preserve(m_cr);
-    cairo_set_source_rgb(m_cr, 0.0, 0.0, 0.0);
-    cairo_stroke(m_cr);
 }
 
 void ImageImpl::draw_ghl_note(int x, int y,
                               const std::set<GHLNoteColour>& note_colours)
 {
-    constexpr Colour DARK_GREY {0.118, 0.118, 0.118};
+    constexpr std::array<unsigned char, 3> black {0, 0, 0};
+    constexpr std::array<unsigned char, 3> grey {30, 30, 30};
+    constexpr std::array<unsigned char, 3> white {255, 255, 255};
     constexpr int FRET_GAP = 30;
-    constexpr int OPEN_WIDTH = 6;
     constexpr int RADIUS = 5;
 
     if (note_colours.count(GHLNoteColour::Open) != 0) {
-        cairo_rectangle(m_cr, x - 3 + HALF_PIXEL, y - 3 + HALF_PIXEL,
-                        OPEN_WIDTH, MEASURE_HEIGHT + OPEN_WIDTH);
-        cairo_set_source_rgba(m_cr, 1.0, 1.0, 1.0, OPEN_NOTE_OPACITY);
-        cairo_fill_preserve(m_cr);
-        cairo_set_source_rgb(m_cr, 0.0, 0.0, 0.0);
-        cairo_stroke(m_cr);
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               white.data(), OPEN_NOTE_OPACITY);
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               black.data(), 1.0, ~0U);
         return;
     }
 
@@ -772,34 +622,25 @@ void ImageImpl::draw_ghl_note(int x, int y,
             continue;
         }
         if (codes.at(i) == 1) {
-            cairo_new_sub_path(m_cr);
-            cairo_arc(m_cr, x, y + offset, RADIUS, 0, TWO_PI);
-            cairo_set_source_rgb(m_cr, 1.0, 1.0, 1.0);
+            m_image.draw_circle(x, y + offset, RADIUS, white.data());
+            m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
         } else if (codes.at(i) == 2) {
-            cairo_new_sub_path(m_cr);
-            cairo_arc(m_cr, x, y + offset, RADIUS, 0, TWO_PI);
-            cairo_set_source_rgb(m_cr, DARK_GREY.red, DARK_GREY.green,
-                                 DARK_GREY.blue);
+            m_image.draw_circle(x, y + offset, RADIUS, grey.data());
+            m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
         } else if (codes.at(i) == 3) {
-            cairo_rectangle(m_cr, x - RADIUS + HALF_PIXEL,
-                            y + offset - RADIUS + HALF_PIXEL, 2 * RADIUS,
-                            RADIUS);
-            cairo_set_source_rgb(m_cr, DARK_GREY.red, DARK_GREY.green,
-                                 DARK_GREY.blue);
-            cairo_fill(m_cr);
-            cairo_rectangle(m_cr, x - RADIUS + HALF_PIXEL,
-                            y + offset + HALF_PIXEL, 2 * RADIUS, RADIUS);
-            cairo_set_source_rgb(m_cr, 1.0, 1.0, 1.0);
+            m_image.draw_rectangle(x - RADIUS, y + offset - RADIUS, x + RADIUS,
+                                   y + offset, grey.data());
+            m_image.draw_rectangle(x - RADIUS, y + offset, x + RADIUS,
+                                   y + offset + RADIUS, white.data());
+            m_image.draw_rectangle(x - RADIUS, y + offset, x + RADIUS,
+                                   y + offset + RADIUS, black.data(), 1.0, ~0U);
         }
-        cairo_fill_preserve(m_cr);
-        cairo_set_source_rgb(m_cr, 0.0, 0.0, 0.0);
-        cairo_stroke(m_cr);
     }
 }
 
 void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
 {
-    constexpr int OPEN_WIDTH = 6;
+    constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr int RADIUS = 5;
 
     auto colour = note_colour_to_colour(note_colour);
@@ -807,61 +648,50 @@ void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour)
 
     switch (drum_colour_to_shape(note_colour)) {
     case DrumSpriteShape::Kick:
-        cairo_rectangle(m_cr, x - 3 + HALF_PIXEL, y - 3 + HALF_PIXEL,
-                        OPEN_WIDTH, MEASURE_HEIGHT + OPEN_WIDTH);
-        cairo_set_source_rgba(m_cr, colour.red, colour.green, colour.blue,
-                              OPEN_NOTE_OPACITY);
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               colour.data(), OPEN_NOTE_OPACITY);
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               black.data(), 1.0, ~0U);
         break;
     case DrumSpriteShape::Cymbal:
-        cairo_move_to(m_cr, x + HALF_PIXEL, y + offset - RADIUS + HALF_PIXEL);
-        cairo_rel_line_to(m_cr, -RADIUS, 2 * RADIUS);
-        cairo_rel_line_to(m_cr, 2 * RADIUS, 0);
-        cairo_close_path(m_cr);
-        cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
+        m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
+                              y + offset + RADIUS, x + RADIUS,
+                              y + offset + RADIUS, colour.data());
+        m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
+                              y + offset + RADIUS, x + RADIUS,
+                              y + offset + RADIUS, black.data(), 1.0, ~0U);
         break;
     case DrumSpriteShape::Tom:
-        cairo_new_sub_path(m_cr);
-        cairo_arc(m_cr, x, y + offset, RADIUS, 0, TWO_PI);
-        cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
+        m_image.draw_circle(x, y + offset, RADIUS, colour.data());
+        m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
     }
-
-    cairo_fill_preserve(m_cr);
-    cairo_set_source_rgb(m_cr, 0.0, 0.0, 0.0);
-    cairo_stroke(m_cr);
 }
 
 void ImageImpl::draw_note_star(int x, int y, NoteColour note_colour)
 {
-    constexpr int OPEN_WIDTH = 6;
-    constexpr int STAR_RADIUS = 6;
+    constexpr std::array<unsigned char, 3> black {0, 0, 0};
 
-    const auto colour = note_colour_to_colour(note_colour);
-    const auto offset = note_colour_to_offset(note_colour);
+    auto colour = note_colour_to_colour(note_colour);
+    auto offset = note_colour_to_offset(note_colour);
 
-    if (note_colour == NoteColour::Open) {
-        cairo_rectangle(m_cr, x - 3 + HALF_PIXEL, y - 3 + HALF_PIXEL,
-                        OPEN_WIDTH, MEASURE_HEIGHT + OPEN_WIDTH);
-        cairo_set_source_rgba(m_cr, colour.red, colour.green, colour.blue,
-                              OPEN_NOTE_OPACITY);
-    } else {
-        cairo_move_to(m_cr, x + HALF_PIXEL,
-                      y + offset - STAR_RADIUS + HALF_PIXEL);
-        cairo_rel_line_to(m_cr, 1, 4);
-        cairo_rel_line_to(m_cr, 4, 0);
-        cairo_rel_line_to(m_cr, -3, 3);
-        cairo_rel_line_to(m_cr, 1, 4);
-        cairo_rel_line_to(m_cr, -3, -3);
-        cairo_rel_line_to(m_cr, -3, 3);
-        cairo_rel_line_to(m_cr, 1, -4);
-        cairo_rel_line_to(m_cr, -3, -3);
-        cairo_rel_line_to(m_cr, 4, 0);
-        cairo_close_path(m_cr);
-        cairo_set_source_rgb(m_cr, colour.red, colour.green, colour.blue);
+    constexpr unsigned int POINTS_IN_STAR_POLYGON = 10;
+    CImg<int> points {POINTS_IN_STAR_POLYGON, 2};
+    constexpr std::array<int, 20> coords {0, -6, 1, -2, 5, -2, 2,  1,  3, 5, 0,
+                                          2, -3, 5, -2, 1, -5, -2, -1, -2};
+    for (auto i = 0U; i < POINTS_IN_STAR_POLYGON; ++i) {
+        points(i, 0) = coords[2 * i] + x; // NOLINT
+        points(i, 1) = coords[2 * i + 1] + y + offset; // NOLINT
     }
 
-    cairo_fill_preserve(m_cr);
-    cairo_set_source_rgb(m_cr, 0.0, 0.0, 0.0);
-    cairo_stroke(m_cr);
+    if (note_colour == NoteColour::Open) {
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               colour.data(), OPEN_NOTE_OPACITY);
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+                               black.data(), 1.0, ~0U);
+    } else {
+        m_image.draw_polygon(points, colour.data());
+        m_image.draw_polygon(points, black.data(), 1.0, ~0U);
+    }
 }
 
 void ImageImpl::draw_note_sustain(const ImageBuilder& builder,
@@ -885,7 +715,7 @@ void ImageImpl::draw_ghl_note_sustain(const ImageBuilder& builder,
                                       const DrawnNote<GHLNoteColour>& note)
 {
     constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
-    constexpr Colour SUST_COLOUR {0.588, 0.588, 0.588};
+    constexpr std::array<unsigned char, 3> SUST_COLOUR {150, 150, 150};
 
     std::tuple<double, double> x_range {note.beat, note.beat + note.length};
     auto offset = note_colour_to_offset(note.colour);
@@ -899,7 +729,7 @@ void ImageImpl::draw_ghl_note_sustain(const ImageBuilder& builder,
 }
 
 void ImageImpl::colour_beat_range(const ImageBuilder& builder,
-                                  const Colour& colour,
+                                  std::array<unsigned char, 3> colour,
                                   const std::tuple<double, double>& x_range,
                                   const std::tuple<int, int>& y_range,
                                   float opacity)
@@ -918,20 +748,17 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
     const auto& [y_min, y_max] = y_range;
 
     while (start < end) {
-        const auto block_end = std::min(row_iter->end, end);
-        const auto x_min = LEFT_MARGIN
+        auto block_end = std::min(row_iter->end, end);
+        auto x_min = LEFT_MARGIN
             + static_cast<int>(BEAT_WIDTH * (start - row_iter->start));
         // -1 is so regions that cross rows do not go over the ending line of a
         // row.
-        const auto x_max = LEFT_MARGIN
-            + static_cast<int>(BEAT_WIDTH * (block_end - row_iter->start));
+        auto x_max = LEFT_MARGIN
+            + static_cast<int>(BEAT_WIDTH * (block_end - row_iter->start)) - 1;
         if (x_min <= x_max) {
-            const auto y = TOP_MARGIN + MARGIN + DIST_BETWEEN_MEASURES * row;
-            cairo_rectangle(m_cr, x_min, y + y_min, x_max - x_min,
-                            y_max - y_min);
-            cairo_set_source_rgba(m_cr, colour.red, colour.green, colour.blue,
-                                  opacity);
-            cairo_fill(m_cr);
+            auto y = TOP_MARGIN + MARGIN + DIST_BETWEEN_MEASURES * row;
+            m_image.draw_rectangle(x_min, y + y_min, x_max, y + y_max,
+                                   colour.data(), opacity);
         }
         start = block_end;
         ++row_iter;
@@ -941,21 +768,22 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
 
 Image::Image(const ImageBuilder& builder)
 {
-    constexpr Colour green {0.0, 1.0, 0.0};
-    constexpr Colour blue {0.0, 0.0, 1.0};
-    constexpr Colour yellow {1.0, 1.0, 0};
-    constexpr Colour red {1.0, 0, 0};
-    constexpr Colour solo_blue {0, 0.2, 0.5};
-    constexpr Colour pink {0.5, 0, 0};
+    constexpr std::array<unsigned char, 3> green {0, 255, 0};
+    constexpr std::array<unsigned char, 3> blue {0, 0, 255};
+    constexpr std::array<unsigned char, 3> yellow {255, 255, 0};
+    constexpr std::array<unsigned char, 3> red {255, 0, 0};
+    constexpr std::array<unsigned char, 3> solo_blue {0, 51, 128};
+    constexpr std::array<unsigned char, 3> pink {127, 0, 0};
 
     constexpr unsigned int IMAGE_WIDTH = 1024;
     constexpr float RANGE_OPACITY = 0.33333F;
     constexpr int SOLO_HEIGHT = 10;
+    constexpr unsigned char WHITE = 255;
 
     const auto height = static_cast<unsigned int>(
         TOP_MARGIN + MARGIN + DIST_BETWEEN_MEASURES * builder.rows().size());
 
-    m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height);
+    m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
     m_impl->draw_header(builder);
     m_impl->draw_measures(builder);
     m_impl->draw_tempos(builder);
@@ -1025,4 +853,4 @@ Image::Image(Image&& image) noexcept = default;
 
 Image& Image::operator=(Image&& image) noexcept = default;
 
-void Image::save(const std::string& filename) const { m_impl->save(filename); }
+void Image::save(const char* filename) const { m_impl->save(filename); }

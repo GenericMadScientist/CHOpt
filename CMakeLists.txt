@@ -16,8 +16,8 @@ function(set_cpp_standard target)
   set_target_properties(
     ${target}
     PROPERTIES CXX_STANDARD 17
-               CXX_STANDARD_REQUIRED ON
-               CXX_EXTENSIONS OFF)
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF)
 endfunction()
 
 # Set warning flags
@@ -25,14 +25,14 @@ function(set_warnings target)
   target_compile_options(
     ${target}
     PRIVATE $<$<CXX_COMPILER_ID:Clang,AppleClang,GNU>:
-            -Wall
-            -Wextra
-            -Werror
-            -Wno-c++98-compat
-            -Wno-unknown-warning-option>
-            $<$<CXX_COMPILER_ID:MSVC>:
-            /W4
-            /WX>)
+    -Wall
+    -Wextra
+    -Werror
+    -Wno-c++98-compat
+    -Wno-unknown-warning-option>
+    $<$<CXX_COMPILER_ID:MSVC>:
+    /W4
+    /WX>)
 endfunction()
 
 find_package(PNG REQUIRED)
@@ -40,15 +40,14 @@ find_package(
   Boost 1.77 REQUIRED
   COMPONENTS nowide program_options
   OPTIONAL_COMPONENTS json unit_test_framework)
-find_package(Cairo REQUIRED)
-find_package(Pango REQUIRED)
 
 cmake_policy(SET CMP0083 NEW)
 include(CheckPIESupported)
 check_pie_supported(OUTPUT_VARIABLE output LANGUAGES CXX)
+
 if(NOT CMAKE_CXX_LINK_NO_PIE_SUPPORTED)
   message(VERBOSE "No PIE is not supported at link time: ${output}.\n"
-          "PIE link options will not be passed to linker.")
+    "PIE link options will not be passed to linker.")
 endif()
 
 add_executable(
@@ -70,11 +69,10 @@ add_executable(
   resources/chopt.exe.manifest
   resources/resources.rc)
 target_include_directories(
-  chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" ${PNG_INCLUDE_DIRS}
-                ${Cairo_INCLUDE_DIR} ${Pango_INCLUDE_DIRS})
+  chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
 target_link_directories(chopt PRIVATE ${Boost_LIBRARY_DIRS})
 target_link_libraries(chopt PRIVATE Boost::nowide Boost::program_options
-                                    ${PNG_LIBRARIES} ${Cairo_LIBRARIES} ${Pango_LIBRARIES})
+  ${PNG_LIBRARIES})
 
 set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 set_cpp_standard(chopt)
@@ -82,6 +80,7 @@ set_warnings(chopt)
 enable_sanitisers(chopt)
 
 option(BUILD_GUI "Build the GUI version" ON)
+
 if(BUILD_GUI)
   if(NOT Boost_json_FOUND)
     message(FATAL_ERROR "GUI version needs Boost::JSON in order to be built")
@@ -119,23 +118,25 @@ if(BUILD_GUI)
     resources/resources.qrc
     resources/resources.rc)
   target_include_directories(
-    choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include" ${PNG_INCLUDE_DIRS}
-                     ${Cairo_INCLUDE_DIR} ${Pango_INCLUDE_DIRS})
+    choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
   target_link_directories(choptgui PRIVATE ${Boost_LIBRARY_DIRS})
   target_link_libraries(
     choptgui PRIVATE Boost::json Boost::nowide ${PNG_LIBRARIES}
-                     ${Cairo_LIBRARIES} ${Pango_LIBRARIES} Qt6::Widgets)
+    Qt6::Widgets)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
+
   if(APPLE)
     set_property(TARGET choptgui PROPERTY MACOSX_BUNDLE TRUE)
   endif()
+
   set_cpp_standard(choptgui)
 endif()
 
 include(CTest)
 
 option(PACKAGE_TESTS "Build the tests" ON)
+
 if(PACKAGE_TESTS)
   if(NOT Boost_unit_test_framework_FOUND)
     message(FATAL_ERROR "Tests need Boost::Test in order to be built")
@@ -171,10 +172,10 @@ if(PACKAGE_TESTS)
     src/timeconverter.cpp)
 
   target_include_directories(chopt_tests
-                             PRIVATE "${PROJECT_SOURCE_DIR}/include")
+    PRIVATE "${PROJECT_SOURCE_DIR}/include")
   target_link_directories(chopt_tests PRIVATE ${Boost_LIBRARY_DIRS})
   target_link_libraries(chopt_tests PRIVATE Boost::nowide
-                                            Boost::unit_test_framework)
+    Boost::unit_test_framework)
   add_test(NAME chopt_tests COMMAND chopt_tests)
   set_cpp_standard(chopt_tests)
   set_warnings(chopt_tests)
@@ -182,11 +183,13 @@ if(PACKAGE_TESTS)
 endif()
 
 option(BUILD_FUZZ_TARGETS "Build the fuzzing targets" OFF)
+
 if(BUILD_FUZZ_TARGETS)
   add_subdirectory(fuzzing_targets)
 endif()
 
 option(ENABLE_LTO "Enable Link Time Optimisation" OFF)
+
 if(ENABLE_LTO)
   cmake_policy(SET CMP0069 NEW)
 
@@ -195,8 +198,10 @@ if(ENABLE_LTO)
     RESULT supported
     OUTPUT output
     LANGUAGES CXX)
+
   if(supported)
     set_property(TARGET chopt PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+
     if(BUILD_GUI)
       set_property(TARGET choptgui PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
     endif()
