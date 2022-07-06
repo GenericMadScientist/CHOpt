@@ -102,14 +102,13 @@ for:
 
     build_script:
     - sh: sudo apt update
-    - sh: sudo apt -y install libgl1-mesa-dev
+    - sh: sudo apt -y install g++-10 libgl1-mesa-dev
     - sh: chmod +x ../appveyor_files/install_boost.sh
     - sh: ../appveyor_files/install_boost.sh
     - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_79_0 -DQt6_DIR=$HOME/Qt/6.1.3/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.1.3/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.1.3/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.1.3/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
     before_deploy:
-    - sh: sudo apt -y install g++-10
     - sh: rm -rf *
     - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_79_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=$HOME/Qt/6.1.3/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.1.3/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.1.3/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.1.3/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config Release
