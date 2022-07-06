@@ -226,12 +226,11 @@ public:
     {
     }
 
-    ~ImageImpl() {}
-
     ImageImpl(const ImageImpl&) = delete;
     ImageImpl& operator=(const ImageImpl&) = delete;
     ImageImpl(ImageImpl&&) = delete;
     ImageImpl& operator=(ImageImpl&&) = delete;
+    ~ImageImpl() = default;
 
     void colour_beat_range(const ImageBuilder& builder,
                            std::array<unsigned char, 3> colour,
