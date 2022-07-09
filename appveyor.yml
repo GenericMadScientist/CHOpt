@@ -35,11 +35,7 @@ for:
     build_script:
     - ps: if (-Not (Test-Path C:\Tools\vcpkg\archives)) { mkdir C:\Tools\vcpkg\archives }
     - ps: vcpkg --triplet x64-windows install libpng
-    - ps: ls C:\Qt\6.4.0\
-    - ps: ls C:\Qt\6.4.0\msvc2019_64\
-    - ps: ls C:\Qt\6.4.0\msvc2019_64\lib\
-    - ps: ls C:\Qt\6.4.0\msvc2019_64\lib\cmake
-    - ps: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=C:\Libraries\boost_1_77_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
+    - ps: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=C:\Libraries\boost_1_77_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
     - ps: cmake --build . --verbose --config $env:CONFIGURATION
 
     test_script:
@@ -53,7 +49,7 @@ for:
 
     before_deploy:
     - ps: cd build
-    - ps: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DQt6_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
+    - ps: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DQt6_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
     - ps: cmake --build . --verbose --config Release
     - ps: cd Release
     - ps: Rename-Item chopt.exe CHOpt.exe
@@ -62,7 +58,7 @@ for:
     - ps: del CHOpt.exe
     - ps: Move-Item ..\choptgui.exe CHOpt.exe
     - ps: $env:VCINSTALLDIR = "C:\Program Files\Microsoft Visual Studio\2022\Community\VC"
-    - ps: C:\Qt\6.4\msvc2019_64\bin\windeployqt.exe --release --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations CHOpt.exe
+    - ps: C:\Qt\6.3\msvc2019_64\bin\windeployqt.exe --release --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations CHOpt.exe
     - ps: 7z a "..\artifacts\CHOpt GUI (x64 Windows).zip" *
     - ps: Push-AppveyorArtifact "..\artifacts\CHOpt CLI (x64 Windows).zip"
     - ps: Push-AppveyorArtifact "..\artifacts\CHOpt GUI (x64 Windows).zip"
