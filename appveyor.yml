@@ -35,6 +35,10 @@ for:
     build_script:
     - ps: if (-Not (Test-Path C:\Tools\vcpkg\archives)) { mkdir C:\Tools\vcpkg\archives }
     - ps: vcpkg --triplet x64-windows install libpng
+    - ps: ls C:\Qt\6.4\
+    - ps: C:\Qt\6.4\msvc2019_64\
+    - ps: C:\Qt\6.4\msvc2019_64\lib\
+    - ps: C:\Qt\6.4\msvc2019_64\lib\cmake
     - ps: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=C:\Libraries\boost_1_77_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
     - ps: cmake --build . --verbose --config $env:CONFIGURATION
 
