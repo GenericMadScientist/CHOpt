@@ -111,12 +111,12 @@ for:
     - sh: ls $HOME/Qt/6.4/gcc_64/lib
     - sh: ls $HOME/Qt/6.4/gcc_64/lib/cmake
     - sh: ls $HOME/Qt/6.4/gcc_64/lib/cmake/Qt6
-    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_79_0 -DQt6_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6WidgetsTools ..
+    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_79_0 -DQt6_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
     before_deploy:
     - sh: rm -rf *
-    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_79_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6CoreTools -DQt6GuiTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6WidgetsTools ..
+    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_79_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.3/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config Release
     - sh: strip -s chopt
     - sh: strip -s choptgui
