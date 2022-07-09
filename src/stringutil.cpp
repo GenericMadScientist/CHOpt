@@ -42,7 +42,8 @@ std::string_view break_off_newline(std::string_view& input)
         throw ParseError("No lines left");
     }
 
-    const auto newline_location = input.find_first_of("\r\n");
+    const auto newline_location
+        = std::min(input.find("\n"), input.find("\r\n"));
     if (newline_location == std::string_view::npos) {
         const auto line = input;
         input.remove_prefix(input.size());

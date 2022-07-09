@@ -119,6 +119,16 @@ BOOST_AUTO_TEST_CASE(parser_does_not_infinite_loop_due_to_unfinished_section)
     BOOST_CHECK_THROW([&] { return parse_chart(text); }(), ParseError);
 }
 
+BOOST_AUTO_TEST_CASE(lone_carriage_return_does_not_break_line)
+{
+    const char* text = "[Section]\r\n{\r\nKey = Value\rOops\r\n}";
+
+    const auto section = parse_chart(text).sections[0];
+
+    BOOST_CHECK_EQUAL(section.key_value_pairs.size(), 1);
+    BOOST_CHECK_EQUAL(section.key_value_pairs.at("Key"), "Value\rOops");
+}
+
 BOOST_AUTO_TEST_CASE(key_value_pairs_are_read)
 {
     const char* text = "[Section]\n{\nKey = Value\nKey2 = Value2\n}";

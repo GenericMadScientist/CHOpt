@@ -24,11 +24,11 @@
 
 BOOST_AUTO_TEST_CASE(break_off_newline_works_correctly)
 {
-    std::string_view data = "Hello\nThere\r\nWorld!";
+    std::string_view data = "Hello\nThe\rre\r\nWorld!";
 
     BOOST_CHECK_EQUAL(break_off_newline(data), "Hello");
-    BOOST_CHECK_EQUAL(data, "There\r\nWorld!");
-    BOOST_CHECK_EQUAL(break_off_newline(data), "There");
+    BOOST_CHECK_EQUAL(data, "The\rre\r\nWorld!");
+    BOOST_CHECK_EQUAL(break_off_newline(data), "The\rre");
     BOOST_CHECK_EQUAL(data, "World!");
 }
 
