@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_SUITE(track_type_is_stored_correctly)
 BOOST_AUTO_TEST_CASE(five_fret_gets_the_right_track_type)
 {
     NoteTrack<NoteColour> track {{}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
 
     BOOST_CHECK_EQUAL(builder.track_type(), TrackType::FiveFret);
 }
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(five_fret_gets_the_right_track_type)
 BOOST_AUTO_TEST_CASE(six_fret_gets_the_right_track_type)
 {
     NoteTrack<GHLNoteColour> track {{}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
 
     BOOST_CHECK_EQUAL(builder.track_type(), TrackType::SixFret);
 }
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(six_fret_gets_the_right_track_type)
 BOOST_AUTO_TEST_CASE(drums_gets_the_right_track_type)
 {
     NoteTrack<DrumNoteColour> track {{}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, DrumSettings::default_settings()};
+    ImageBuilder builder {track, {}, DrumSettings::default_settings(), false};
 
     BOOST_CHECK_EQUAL(builder.track_type(), TrackType::Drums);
 }
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(non_sp_non_sustains_are_handled_correctly)
 {
     NoteTrack<NoteColour> track {
         {{0}, {768, 0, NoteColour::Red}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     std::vector<DrawnNote<NoteColour>> expected_notes {
         {0.0, 0.0, NoteColour::Green, false},
         {4.0, 0.0, NoteColour::Red, false}};
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(non_sp_non_sustains_are_handled_correctly)
 BOOST_AUTO_TEST_CASE(sustains_are_handled_correctly)
 {
     NoteTrack<NoteColour> track {{{0, 96}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     std::vector<DrawnNote<NoteColour>> expected_notes {
         {0.0, 0.5, NoteColour::Green, false}};
 
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(sp_notes_are_recorded)
 {
     NoteTrack<NoteColour> track {{{0}, {768}}, {{768, 100}}, {}, {},
                                  {},           {},           192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     std::vector<DrawnNote<NoteColour>> expected_notes {
         {0.0, 0.0, NoteColour::Green, false},
         {4.0, 0.0, NoteColour::Green, true}};
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(six_fret_notes_are_handled_correctly)
 {
     NoteTrack<GHLNoteColour> track {
         {{0}, {768, 0, GHLNoteColour::BlackHigh}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     std::vector<DrawnNote<GHLNoteColour>> expected_notes {
         {0.0, 0.0, GHLNoteColour::WhiteLow, false},
         {4.0, 0.0, GHLNoteColour::BlackHigh, false}};
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(drum_notes_are_handled_correctly)
 {
     NoteTrack<DrumNoteColour> track {
         {{0}, {768, 0, DrumNoteColour::YellowCymbal}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, DrumSettings::default_settings()};
+    ImageBuilder builder {track, {}, DrumSettings::default_settings(), false};
     std::vector<DrawnNote<DrumNoteColour>> expected_notes {
         {0.0, 0.0, DrumNoteColour::Red, false},
         {4.0, 0.0, DrumNoteColour::YellowCymbal, false}};
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_SUITE(drawn_rows_are_handled_correctly)
 BOOST_AUTO_TEST_CASE(simple_four_four_is_handled_correctly)
 {
     NoteTrack<NoteColour> track {{{2880}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     std::vector<DrawnRow> expected_rows {{0.0, 16.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
     NoteTrack<NoteColour> track {{{2450}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}, {768, 3, 4}, {1344, 3, 8}, {1632, 4, 4}},
                           {}};
-    ImageBuilder builder {track, sync_track};
+    ImageBuilder builder {track, sync_track, false};
     std::vector<DrawnRow> expected_rows {{0.0, 12.5}, {12.5, 16.5}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
 {
     NoteTrack<NoteColour> track {{{768}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}, {767, 3, 4}, {1344, 3, 8}}, {}};
-    ImageBuilder builder {track, sync_track};
+    ImageBuilder builder {track, sync_track, false};
     std::vector<DrawnRow> expected_rows {{0.0, 7.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
 {
     NoteTrack<NoteColour> track {{{0}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 17, 4}}, {}};
-    ImageBuilder builder {track, sync_track};
+    ImageBuilder builder {track, sync_track, false};
     std::vector<DrawnRow> expected_rows {{0.0, 16.0}, {16.0, 17.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
 BOOST_AUTO_TEST_CASE(enough_rows_are_drawn_for_end_of_song_sustains)
 {
     NoteTrack<NoteColour> track {{{0, 3840}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
 
     BOOST_CHECK_EQUAL(builder.rows().size(), 2);
 }
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_SUITE(beat_lines_are_correct)
 BOOST_AUTO_TEST_CASE(four_four_works_fine)
 {
     NoteTrack<NoteColour> track {{{767}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     std::vector<double> expected_half_beat_lines {0.5, 1.5, 2.5, 3.5};
     std::vector<double> expected_beat_lines {1.0, 2.0, 3.0};
     std::vector<double> expected_measure_lines {0.0, 4.0};
@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
 {
     NoteTrack<NoteColour> track {{{767}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 8}}, {}};
-    ImageBuilder builder {track, sync_track};
+    ImageBuilder builder {track, sync_track, false};
     std::vector<double> expected_half_beat_lines {0.25, 0.75, 1.25, 1.75,
                                                   2.25, 2.75, 3.25, 3.75};
     std::vector<double> expected_beat_lines {0.5, 1.0, 1.5, 2.5, 3.0, 3.5};
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
 {
     NoteTrack<NoteColour> track {{{1151}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
-    ImageBuilder builder {track, sync_track};
+    ImageBuilder builder {track, sync_track, false};
     std::vector<double> expected_half_beat_lines {0.5,  1.5,  2.5,  3.5,
                                                   4.25, 4.75, 5.25, 5.75};
     std::vector<double> expected_beat_lines {1.0, 2.0, 3.0, 4.5, 5.0, 5.5};
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
 {
     NoteTrack<NoteColour> track {{{1920}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
-    ImageBuilder builder {track, sync_track};
+    ImageBuilder builder {track, sync_track, false};
     builder.add_time_sigs(sync_track, 192);
     std::vector<std::tuple<double, int, int>> expected_time_sigs {{0.0, 4, 4},
                                                                   {4.0, 4, 8}};
@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
 {
     NoteTrack<NoteColour> track {{{768}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}, {1920, 3, 4}}, {}};
-    ImageBuilder builder {track, sync_track};
+    ImageBuilder builder {track, sync_track, false};
     builder.add_time_sigs(sync_track, 192);
 
     BOOST_CHECK_EQUAL(builder.time_sigs().size(), 1);
@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
 {
     NoteTrack<NoteColour> track {{{1920}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{}, {{0, 150000}, {384, 120000}, {768, 200000}}};
-    ImageBuilder builder {track, sync_track};
+    ImageBuilder builder {track, sync_track, false};
     builder.add_bpms(sync_track, 192);
     std::vector<std::tuple<double, double>> expected_bpms {
         {0.0, 150.0}, {2.0, 120.0}, {4.0, 200.0}};
@@ -351,7 +351,7 @@ BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
 {
     NoteTrack<NoteColour> track {{{768}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{}, {{0, 120000}, {1920, 200000}}};
-    ImageBuilder builder {track, sync_track};
+    ImageBuilder builder {track, sync_track, false};
     builder.add_bpms(sync_track, 192);
 
     BOOST_CHECK_EQUAL(builder.bpms().size(), 1);
@@ -364,7 +364,7 @@ BOOST_AUTO_TEST_SUITE(song_header_information_is_added)
 BOOST_AUTO_TEST_CASE(normal_speed)
 {
     NoteTrack<NoteColour> track {{{0}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_song_header("TestName", "GMS", "NotGMS", 100);
 
     BOOST_CHECK_EQUAL(builder.song_name(), "TestName");
@@ -375,7 +375,7 @@ BOOST_AUTO_TEST_CASE(normal_speed)
 BOOST_AUTO_TEST_CASE(double_speed)
 {
     NoteTrack<NoteColour> track {{{0}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_song_header("TestName", "GMS", "NotGMS", 200);
 
     BOOST_CHECK_EQUAL(builder.song_name(), "TestName (200%)");
@@ -389,7 +389,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
 {
     NoteTrack<NoteColour> track {
         {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
@@ -845,3 +845,13 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
     BOOST_CHECK_EQUAL(builder.total_score(), 250);
 }
 */
+
+BOOST_AUTO_TEST_CASE(lefty_flip_is_handled)
+{
+    NoteTrack<NoteColour> track {{{0}}, {}, {}, {}, {}, {}, 192};
+    ImageBuilder lefty_builder {track, {}, true};
+    ImageBuilder righty_builder {track, {}, false};
+
+    BOOST_TEST(lefty_builder.is_lefty_flip());
+    BOOST_TEST(!righty_builder.is_lefty_flip());
+}

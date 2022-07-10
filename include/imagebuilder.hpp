@@ -50,6 +50,7 @@ enum class TrackType { FiveFret, SixFret, Drums };
 class ImageBuilder {
 private:
     const TrackType m_track_type;
+    const bool m_is_lefty_flip;
     std::vector<DrawnRow> m_rows;
     std::vector<double> m_half_beat_lines;
     std::vector<double> m_beat_lines;
@@ -78,12 +79,12 @@ private:
 
 public:
     ImageBuilder(const NoteTrack<NoteColour>& track,
-                 const SyncTrack& sync_track);
+                 const SyncTrack& sync_track, bool is_lefty_flip);
     ImageBuilder(const NoteTrack<GHLNoteColour>& track,
-                 const SyncTrack& sync_track);
+                 const SyncTrack& sync_track, bool is_lefty_flip);
     ImageBuilder(const NoteTrack<DrumNoteColour>& track,
-                 const SyncTrack& sync_track,
-                 const DrumSettings& drum_settings);
+                 const SyncTrack& sync_track, const DrumSettings& drum_settings,
+                 bool is_lefty_flip);
     void add_bpms(const SyncTrack& sync_track, int resolution);
     void add_bre(const BigRockEnding& bre, int resolution,
                  const TimeConverter& converter);
@@ -203,6 +204,7 @@ public:
     }
     float& activation_opacity() { return m_activation_opacity; }
     [[nodiscard]] int total_score() const { return m_total_score; }
+    [[nodiscard]] bool is_lefty_flip() const { return m_is_lefty_flip; }
 };
 
 ImageBuilder make_builder(const Song& song, const Settings& settings,

@@ -42,6 +42,7 @@ by passing -h or --help to CHOpt, or by consulting the table below.
 | --delay, --whammy-delay | Amount of ms after each activation before whammy can be obtained |
 | --lag, --video-lag      | Video calibration, in ms                                         |
 | -s, --speed             | Set speed the song is played at                                  |
+| -l, --lefty-flip        | Draw with lefty flip                                             |
 | --no-double-kick        | Disable 2x kick (drums only)                                     |
 | --no-kick               | Disable non-2x kicks (drums only)                                |
 | --no-pro-drums          | Disable pro drums (drums only)                                   |

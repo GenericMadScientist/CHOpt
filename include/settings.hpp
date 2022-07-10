@@ -77,6 +77,7 @@ struct Settings {
     Instrument instrument;
     SqueezeSettings squeeze_settings;
     int speed;
+    bool is_lefty_flip;
     std::unique_ptr<Engine> engine;
     DrumSettings drum_settings;
     float opacity;

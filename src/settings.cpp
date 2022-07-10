@@ -156,6 +156,7 @@ std::optional<Settings> from_args(int argc, char** argv)
                "video lag calibration setting in milliseconds");
     add_option("speed,s", po::value<int>()->default_value(DEFAULT_SPEED),
                "speed in %");
+    add_option("lefty-flip,l", "draw with lefty flip");
     add_option("no-double-kick", "disable 2x kick for drum charts");
     add_option("no-kick", "disable single kicks for drum charts");
     add_option("no-pro-drums", "disable pro drums");
@@ -199,6 +200,7 @@ std::optional<Settings> from_args(int argc, char** argv)
             "Image output must be a bitmap or png (.bmp / .png)");
     }
 
+    settings.is_lefty_flip = vm.count("lefty-flip") != 0;
     settings.draw_image = vm.count("no-image") == 0;
     settings.draw_bpms = vm.count("no-bpms") == 0;
     settings.draw_solos = vm.count("no-solos") == 0;
