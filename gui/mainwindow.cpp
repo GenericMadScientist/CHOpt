@@ -146,6 +146,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->lazyWhammyLineEdit->setText(QString::number(settings.lazy_whammy));
     m_ui->whammyDelayLineEdit->setText(QString::number(settings.whammy_delay));
     m_ui->videoLagSlider->setValue(settings.video_lag);
+    m_ui->leftyCheckBox->setChecked(settings.is_lefty_flip);
 
     setAcceptDrops(true);
 }
@@ -156,6 +157,7 @@ MainWindow::~MainWindow()
     settings.squeeze = m_ui->squeezeSlider->value();
     settings.early_whammy = m_ui->earlyWhammySlider->value();
     settings.video_lag = m_ui->videoLagSlider->value();
+    settings.is_lefty_flip = m_ui->leftyCheckBox->isChecked();
 
     bool ok;
     const auto lazy_whammy_text = m_ui->lazyWhammyLineEdit->text();
@@ -269,6 +271,7 @@ Settings MainWindow::get_settings() const
         }
         break;
     }
+    settings.is_lefty_flip = m_ui->leftyCheckBox->isChecked();
     settings.opacity = m_ui->opacitySlider->value() / 100.0F;
 
     const auto lazy_whammy_text = m_ui->lazyWhammyLineEdit->text();

@@ -27,6 +27,7 @@ struct JsonSettings {
     int lazy_whammy;
     int whammy_delay;
     int video_lag;
+    bool is_lefty_flip;
 };
 
 JsonSettings load_saved_settings(std::string_view application_dir);

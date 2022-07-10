@@ -28,6 +28,16 @@ std::filesystem::path settings_path(std::string_view application_dir)
     return std::filesystem::path(application_dir) / "settings.json";
 }
 
+static bool read_json_bool(const boost::json::object& settings,
+                           const char* name, bool default_value)
+{
+    const auto* it = settings.find(name);
+    if (it != settings.cend() && it->value().is_bool()) {
+        return it->value().get_bool();
+    }
+    return default_value;
+}
+
 static int read_value(const boost::json::object& settings, const char* name,
                       int min_value, int max_value, int default_value)
 {
@@ -54,6 +64,7 @@ JsonSettings load_saved_settings(std::string_view application_dir)
     settings.lazy_whammy = 0;
     settings.whammy_delay = 0;
     settings.video_lag = 0;
+    settings.is_lefty_flip = false;
 
     const auto path = settings_path(application_dir);
     boost::nowide::ifstream settings_file {path};
@@ -80,6 +91,7 @@ JsonSettings load_saved_settings(std::string_view application_dir)
         = read_value(obj, "whammy_delay", 0, MAX_LINE_EDIT_INT, 0);
     settings.video_lag
         = read_value(obj, "video_lag", MIN_VIDEO_LAG, MAX_VIDEO_LAG, 0);
+    settings.is_lefty_flip = read_json_bool(obj, "lefty_flip", false);
 
     return settings;
 }
@@ -91,7 +103,8 @@ void save_settings(const JsonSettings& settings,
                                      {"early_whammy", settings.early_whammy},
                                      {"lazy_whammy", settings.lazy_whammy},
                                      {"whammy_delay", settings.whammy_delay},
-                                     {"video_lag", settings.video_lag}};
+                                     {"video_lag", settings.video_lag},
+                                     {"lefty_flip", settings.is_lefty_flip}};
     const auto path = settings_path(application_dir);
     boost::nowide::ofstream settings_file {path};
     settings_file << obj;
