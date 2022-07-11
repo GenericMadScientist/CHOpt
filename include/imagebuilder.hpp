@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,6 +62,7 @@ private:
     std::vector<DrawnNote<DrumNoteColour>> m_drum_notes;
     std::vector<int> m_base_values;
     std::vector<int> m_score_values;
+    std::vector<double> m_sp_percent_values;
     std::vector<double> m_sp_values;
     std::string m_song_name;
     std::string m_artist;
@@ -96,6 +97,9 @@ public:
                          std::string charter, int speed);
     void add_sp_acts(const PointSet& points, const TimeConverter& converter,
                      const Path& path);
+    void add_sp_percent_values(const SpData& sp_data,
+                               const TimeConverter& converter,
+                               const PointSet& points, const Path& path);
     void add_sp_phrases(const NoteTrack<NoteColour>& track,
                         const std::vector<int>& unison_phrases);
     void add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
@@ -178,6 +182,10 @@ public:
         return m_solo_ranges;
     }
     [[nodiscard]] const std::string& song_name() const { return m_song_name; }
+    [[nodiscard]] const std::vector<double>& sp_percent_values() const
+    {
+        return m_sp_percent_values;
+    }
     [[nodiscard]] const std::vector<double>& sp_values() const
     {
         return m_sp_values;

@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+#include <iostream>
 
 #include <iterator>
 #include <stdexcept>
@@ -601,6 +603,52 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
             != unison_phrases.cend()) {
             m_unison_ranges.emplace_back(start, end);
         }
+    }
+}
+
+void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
+                                         const TimeConverter& converter,
+                                         const PointSet& points,
+                                         const Path& path)
+{
+    (void)sp_data;
+    (void)path;
+
+    m_sp_percent_values.clear();
+    m_sp_percent_values.resize(m_measure_lines.size() - 1);
+
+    double total_sp = 0.0;
+    for (std::size_t i = 0; i < m_measure_lines.size() - 1; ++i) {
+        Beat start {m_measure_lines[i]};
+        Beat end {std::numeric_limits<double>::infinity()};
+        if (i < m_measure_lines.size() - 1) {
+            end = Beat {m_measure_lines[i + 1]};
+        }
+        for (auto p = points.cbegin(); p < points.cend(); ++p) {
+            if (p->is_sp_granting_note && p->position.beat >= start
+                && p->position.beat < end) {
+                total_sp += 0.25;
+            }
+        }
+        for (auto act : path.activations) {
+            if (act.sp_start >= end || act.sp_end < start) {
+                continue;
+            }
+            Measure meas_diff {0.0};
+            if (act.sp_start >= start) {
+                meas_diff = converter.beats_to_measures(end)
+                    - converter.beats_to_measures(act.sp_start);
+            } else if (act.sp_end < end) {
+                meas_diff = converter.beats_to_measures(act.sp_end)
+                    - converter.beats_to_measures(start);
+            } else {
+                meas_diff = converter.beats_to_measures(end)
+                    - converter.beats_to_measures(start);
+            }
+            total_sp -= meas_diff.value() / 8.0;
+        }
+        total_sp = std::min(total_sp, 1.0);
+        m_sp_percent_values[i] = total_sp;
     }
 }
 
