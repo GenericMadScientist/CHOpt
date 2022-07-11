@@ -612,7 +612,8 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                                          const Path& path)
 {
     (void)sp_data;
-    (void)path;
+    constexpr double MEASURES_PER_BAR = 8.0;
+    constexpr double SP_PHRASE_AMOUNT = 0.25;
 
     m_sp_percent_values.clear();
     m_sp_percent_values.resize(m_measure_lines.size() - 1);
@@ -627,7 +628,7 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
         for (auto p = points.cbegin(); p < points.cend(); ++p) {
             if (p->is_sp_granting_note && p->position.beat >= start
                 && p->position.beat < end) {
-                total_sp += 0.25;
+                total_sp += SP_PHRASE_AMOUNT;
             }
         }
         for (auto act : path.activations) {
@@ -645,7 +646,7 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                 meas_diff = converter.beats_to_measures(end)
                     - converter.beats_to_measures(start);
             }
-            total_sp -= meas_diff.value() / 8.0;
+            total_sp -= meas_diff.value() / MEASURES_PER_BAR;
         }
         total_sp = std::min(total_sp, 1.0);
         m_sp_percent_values[i] = total_sp;
