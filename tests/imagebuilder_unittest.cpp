@@ -58,6 +58,12 @@ static std::ostream& operator<<(std::ostream& stream, TrackType track_type)
     return stream;
 }
 
+static std::ostream& operator<<(std::ostream& stream, DrumNoteColour colour)
+{
+    stream << static_cast<int>(colour);
+    return stream;
+}
+
 namespace boost::test_tools::tt_detail {
 template <> struct print_log_value<std::tuple<double, double>> {
     void operator()(std::ostream& stream,
@@ -398,11 +404,11 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
         builder.green_ranges().cbegin(), builder.green_ranges().cend(),
         expected_green_ranges.cbegin(), expected_green_ranges.cend());
 }
-/*
+
 BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
 {
     NoteTrack<NoteColour> track {{{768}}, {{768, 384}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_sp_phrases(track, {});
 
     std::vector<std::tuple<double, double>> expected_green_ranges {{4.0, 4.1}};
@@ -416,7 +422,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
 {
     NoteTrack<GHLNoteColour> track {
         {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
@@ -430,7 +436,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
 {
     NoteTrack<DrumNoteColour> track {
         {{960}, {1344}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, DrumSettings::default_settings()};
+    ImageBuilder builder {track, {}, DrumSettings::default_settings(), false};
     builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.1}};
@@ -444,7 +450,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)
 {
     NoteTrack<DrumNoteColour> track {
         {{288, 0, DrumNoteColour::Red}}, {}, {}, {{192, 96}}, {}, {}, 192};
-    ImageBuilder builder {track, {}, DrumSettings::default_settings()};
+    ImageBuilder builder {track, {}, DrumSettings::default_settings(), false};
     builder.add_drum_fills(track);
 
     std::vector<std::tuple<double, double>> expected_fill_ranges {{1.0, 1.5}};
@@ -458,13 +464,13 @@ BOOST_AUTO_TEST_CASE(drum_fills_cancelled_by_a_kick_are_not_drawn)
 {
     NoteTrack<DrumNoteColour> track {
         {{288, 0, DrumNoteColour::Kick}}, {}, {}, {{192, 96}}, {}, {}, 192};
-    ImageBuilder builder {track, {}, DrumSettings::default_settings()};
+    ImageBuilder builder {track, {}, DrumSettings::default_settings(), false};
     builder.add_drum_fills(track);
 
     BOOST_TEST(builder.fill_ranges().empty());
 }
 
-BOOST_AUTO_TEST_CASE(double_kicks_only_appear_with_enable_double_kick)
+BOOST_AUTO_TEST_CASE(double_kicks_only_drawn_with_enable_double_kick)
 {
     NoteTrack<DrumNoteColour> track {
         {{0, 0, DrumNoteColour::Kick}, {192, 0, DrumNoteColour::DoubleKick}},
@@ -474,8 +480,9 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_appear_with_enable_double_kick)
         {},
         {},
         192};
-    ImageBuilder no_double_builder {track, {}, {false, false, false, false}};
-    ImageBuilder double_builder {track, {}, {true, false, false, false}};
+    ImageBuilder no_double_builder {
+        track, {}, {false, false, false, false}, false};
+    ImageBuilder double_builder {track, {}, {true, false, false, false}, false};
 
     BOOST_CHECK_EQUAL(no_double_builder.drum_notes().size(), 1);
     BOOST_CHECK_EQUAL(double_builder.drum_notes().size(), 2);
@@ -491,7 +498,7 @@ BOOST_AUTO_TEST_CASE(single_kicks_disappear_with_disable_kick)
         {},
         {},
         192};
-    ImageBuilder builder {track, {}, {true, true, false, false}};
+    ImageBuilder builder {track, {}, {true, true, false, false}, false};
 
     BOOST_CHECK_EQUAL(builder.drum_notes().size(), 1);
 }
@@ -500,7 +507,7 @@ BOOST_AUTO_TEST_CASE(cymbals_become_toms_with_pro_drums_off)
 {
     NoteTrack<DrumNoteColour> track {
         {{0, 0, DrumNoteColour::YellowCymbal}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, {true, false, false, false}};
+    ImageBuilder builder {track, {}, {true, false, false, false}, false};
 
     BOOST_CHECK_EQUAL(builder.drum_notes().size(), 1);
     BOOST_CHECK_EQUAL(builder.drum_notes()[0].colour, DrumNoteColour::Yellow);
@@ -516,8 +523,9 @@ BOOST_AUTO_TEST_CASE(disco_flip_matters_only_with_pro_drums_on)
                                      {{192, 192}},
                                      {},
                                      192};
-    ImageBuilder normal_builder {track, {}, {true, false, false, false}};
-    ImageBuilder pro_builder {track, {}, DrumSettings::default_settings()};
+    ImageBuilder normal_builder {track, {}, {true, false, false, false}, false};
+    ImageBuilder pro_builder {
+        track, {}, DrumSettings::default_settings(), false};
 
     BOOST_CHECK_EQUAL(normal_builder.drum_notes().size(), 2);
     BOOST_CHECK_EQUAL(normal_builder.drum_notes()[0].colour,
@@ -532,7 +540,7 @@ BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
 {
     NoteTrack<NoteColour> track {
         {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_sp_phrases(track, {{768, 384}});
     std::vector<std::tuple<double, double>> expected_unison_ranges {{5.0, 5.1}};
 
@@ -554,7 +562,7 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},
                0};
@@ -588,7 +596,7 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25}, Beat {0.1},
                  Beat {1.1}},
                 {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
@@ -614,7 +622,7 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                  Beat {0.0}, Beat {5.0}}},
                0};
@@ -636,7 +644,7 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                  Beat {16.0}}},
                0};
@@ -659,7 +667,7 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                      {1.0, 1.0, Second(0.0), Second(0.05), Second(0.0)},
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25}, Beat {0.1},
                  Beat {1.1}},
                 {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
@@ -686,7 +694,7 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_CASE(add_solo_sections_add_correct_ranges)
 {
     NoteTrack<NoteColour> track {{{0}}, {}, {{192, 384, 0}}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_solo_sections(track.solos(DrumSettings::default_settings()),
                               192);
     std::vector<std::tuple<double, double>> expected_solo_ranges {{1.0, 2.0}};
@@ -708,7 +716,7 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {50, 100};
@@ -732,7 +740,7 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_score_values {100, 250};
 
@@ -753,7 +761,7 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_score_values {100};
 
@@ -775,7 +783,7 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
     Path path {
         {{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}},
         100};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_score_values {200, 300};
 
@@ -796,7 +804,7 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
     Path path {
         {{points.cbegin() + 1, points.cbegin() + 1, Beat {0.0}, Beat {0.0}}},
         50};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {50, 150};
@@ -817,7 +825,7 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
         {{0}, {192, 768}}, {{192, 50}}, {}, {}, {}, {}, 192};
     SpData sp_data {
         track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     builder.add_sp_values(sp_data, ChGuitarEngine());
     std::vector<double> expected_sp_values {3.14, 1.0};
 
@@ -836,7 +844,7 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}};
+    ImageBuilder builder {track, {}, false};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},
                50};
@@ -844,7 +852,6 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
 
     BOOST_CHECK_EQUAL(builder.total_score(), 250);
 }
-*/
 
 BOOST_AUTO_TEST_CASE(lefty_flip_is_handled)
 {
