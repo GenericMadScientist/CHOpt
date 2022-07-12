@@ -606,9 +606,9 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
     }
 }
 
-enum class SpDrainEventType { Measure, SpPhrase, ActStart, ActEnd };
+enum class SpDrainEventType { Measure, SpPhrase, ActStart, ActEnd, WhammyEnd };
 
-static std::tuple<std::vector<std::tuple<Beat, SpDrainEventType>>, bool>
+static std::tuple<std::vector<std::tuple<Beat, SpDrainEventType>>, bool, Beat>
 form_events(Beat start, Beat end, const PointSet& points, const Path& path)
 {
     std::vector<std::tuple<Beat, SpDrainEventType>> events;
@@ -621,8 +621,13 @@ form_events(Beat start, Beat end, const PointSet& points, const Path& path)
         }
     }
     auto is_sp_active = false;
+    Beat whammy_end {std::numeric_limits<double>::infinity()};
     for (auto act : path.activations) {
-        if (act.sp_start >= end || act.sp_end < start) {
+        if (act.sp_end < start) {
+            continue;
+        }
+        whammy_end = act.whammy_end;
+        if (act.sp_start >= end) {
             continue;
         }
         if (act.sp_start >= start) {
@@ -635,7 +640,7 @@ form_events(Beat start, Beat end, const PointSet& points, const Path& path)
         }
     }
     std::stable_sort(events.begin(), events.end());
-    return {events, is_sp_active};
+    return {events, is_sp_active, whammy_end};
 }
 
 void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
@@ -643,8 +648,6 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                                          const PointSet& points,
                                          const Path& path)
 {
-    (void)sp_data;
-    constexpr double MEASURES_PER_BAR = 8.0;
     constexpr double SP_PHRASE_AMOUNT = 0.25;
 
     m_sp_percent_values.clear();
@@ -657,13 +660,23 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
         if (i < m_measure_lines.size() - 1) {
             end = Beat {m_measure_lines[i + 1]};
         }
-        auto [events, is_sp_active] = form_events(start, end, points, path);
+        auto [events, is_sp_active, whammy_end]
+            = form_events(start, end, points, path);
         for (std::size_t j = 0; j < events.size() - 1; ++j) {
+            const auto start_beat = std::get<0>(events[j]);
+            const auto end_beat = std::get<0>(events[j + 1]);
             if (is_sp_active) {
-                const auto meas_diff
-                    = converter.beats_to_measures(std::get<0>(events[j + 1]))
-                    - converter.beats_to_measures(std::get<0>(events[j]));
-                total_sp -= meas_diff.value() / MEASURES_PER_BAR;
+                Position start_pos {start_beat,
+                                    converter.beats_to_measures(start_beat)};
+                Position end_pos {end_beat,
+                                  converter.beats_to_measures(end_beat)};
+                Position whammy_pos {whammy_end,
+                                     converter.beats_to_measures(whammy_end)};
+                total_sp = sp_data.propagate_sp_over_whammy_min(
+                    start_pos, end_pos, total_sp, whammy_pos);
+            } else if (whammy_end > start_beat) {
+                total_sp += sp_data.available_whammy(
+                    start_beat, std::min(end_beat, whammy_end));
             }
             switch (std::get<1>(events[j + 1])) {
             case SpDrainEventType::ActStart:
