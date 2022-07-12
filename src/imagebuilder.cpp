@@ -606,13 +606,37 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
     }
 }
 
-enum class SpDrainEventType {
-    MeasureStart,
-    MeasureEnd,
-    SpPhrase,
-    ActStart,
-    ActEnd
-};
+enum class SpDrainEventType { Measure, SpPhrase, ActStart, ActEnd };
+
+static std::tuple<std::vector<std::tuple<Beat, SpDrainEventType>>, bool>
+form_events(Beat start, Beat end, const PointSet& points, const Path& path)
+{
+    std::vector<std::tuple<Beat, SpDrainEventType>> events;
+    events.emplace_back(start, SpDrainEventType::Measure);
+    events.emplace_back(end, SpDrainEventType::Measure);
+    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+        if (p->is_sp_granting_note && p->position.beat >= start
+            && p->position.beat < end) {
+            events.emplace_back(p->position.beat, SpDrainEventType::SpPhrase);
+        }
+    }
+    auto is_sp_active = false;
+    for (auto act : path.activations) {
+        if (act.sp_start >= end || act.sp_end < start) {
+            continue;
+        }
+        if (act.sp_start >= start) {
+            events.emplace_back(act.sp_start, SpDrainEventType::ActStart);
+        } else if (act.sp_end < end) {
+            is_sp_active = true;
+            events.emplace_back(act.sp_end, SpDrainEventType::ActEnd);
+        } else {
+            is_sp_active = true;
+        }
+    }
+    std::stable_sort(events.begin(), events.end());
+    return {events, is_sp_active};
+}
 
 void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                                          const TimeConverter& converter,
@@ -633,32 +657,7 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
         if (i < m_measure_lines.size() - 1) {
             end = Beat {m_measure_lines[i + 1]};
         }
-        std::vector<std::tuple<Beat, SpDrainEventType>> events;
-        events.emplace_back(start, SpDrainEventType::MeasureStart);
-        events.emplace_back(end, SpDrainEventType::MeasureEnd);
-        for (auto p = points.cbegin(); p < points.cend(); ++p) {
-            if (p->is_sp_granting_note && p->position.beat >= start
-                && p->position.beat < end) {
-                events.emplace_back(p->position.beat,
-                                    SpDrainEventType::SpPhrase);
-            }
-        }
-
-        bool is_sp_active = false;
-        for (auto act : path.activations) {
-            if (act.sp_start >= end || act.sp_end < start) {
-                continue;
-            }
-            if (act.sp_start >= start) {
-                events.emplace_back(act.sp_start, SpDrainEventType::ActStart);
-            } else if (act.sp_end < end) {
-                is_sp_active = true;
-                events.emplace_back(act.sp_end, SpDrainEventType::ActEnd);
-            } else {
-                is_sp_active = true;
-            }
-        }
-        std::stable_sort(events.begin(), events.end());
+        auto [events, is_sp_active] = form_events(start, end, points, path);
         for (std::size_t j = 0; j < events.size() - 1; ++j) {
             if (is_sp_active) {
                 const auto meas_diff
@@ -675,6 +674,8 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                 break;
             case SpDrainEventType::SpPhrase:
                 total_sp += SP_PHRASE_AMOUNT;
+                break;
+            case SpDrainEventType::Measure:
                 break;
             }
             total_sp = std::clamp(total_sp, 0.0, 1.0);
