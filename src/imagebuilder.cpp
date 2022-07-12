@@ -606,7 +606,12 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
     }
 }
 
-enum class SpDrainEventType { Measure, SpPhrase, ActStart, ActEnd, WhammyEnd };
+enum class SpDrainEventType {
+    Measure,
+    SpPhrase,
+    ActStart,
+    ActEnd,
+};
 
 static std::tuple<std::vector<std::tuple<Beat, SpDrainEventType>>, bool, Beat>
 form_events(Beat start, Beat end, const PointSet& points, const Path& path)
