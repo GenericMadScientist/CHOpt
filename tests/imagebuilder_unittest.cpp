@@ -901,4 +901,45 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                                   expected_percents.cend());
 }
 
+BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
+{
+    NoteTrack<NoteColour> track {
+        {{960}, {1080}, {1920}, {3840}, {4050}, {19200}},
+        {{960, 10},
+         {1080, 10},
+         {1920, 10},
+         {3840, 10},
+         {4050, 10},
+         {19200, 10}},
+        {},
+        {},
+        {},
+        {},
+        192};
+    TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
+    PointSet points {track,
+                     converter,
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     ChGuitarEngine()};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+    Path path {{{points.cbegin() + 5, points.cend(), Beat {1000.0}, Beat {98.0},
+                 Beat {132.0}}},
+               0};
+
+    ImageBuilder builder {track, {}, false};
+    builder.add_sp_percent_values(sp_data, converter, points, path);
+    std::vector<double> expected_percents {
+        0.0, 0.5, 0.75, 0.75, 0.75, 1.0, 1.0,    1.0,  1.0,
+        1.0, 1.0, 1.0,  1.0,  1.0,  1.0, 1.0,    1.0,  1.0,
+        1.0, 1.0, 1.0,  1.0,  1.0,  1.0, 0.9375, 0.875};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(builder.sp_percent_values().cbegin(),
+                                  builder.sp_percent_values().cend(),
+                                  expected_percents.cbegin(),
+                                  expected_percents.cend());
+}
+
 BOOST_AUTO_TEST_SUITE_END()

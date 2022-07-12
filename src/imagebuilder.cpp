@@ -606,6 +606,14 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
     }
 }
 
+enum class SpDrainEventType {
+    MeasureStart,
+    MeasureEnd,
+    SpPhrase,
+    ActStart,
+    ActEnd
+};
+
 void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                                          const TimeConverter& converter,
                                          const PointSet& points,
@@ -625,30 +633,53 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
         if (i < m_measure_lines.size() - 1) {
             end = Beat {m_measure_lines[i + 1]};
         }
+        std::vector<std::tuple<Beat, SpDrainEventType>> events;
+        events.emplace_back(start, SpDrainEventType::MeasureStart);
+        events.emplace_back(end, SpDrainEventType::MeasureEnd);
         for (auto p = points.cbegin(); p < points.cend(); ++p) {
             if (p->is_sp_granting_note && p->position.beat >= start
                 && p->position.beat < end) {
-                total_sp += SP_PHRASE_AMOUNT;
+                events.emplace_back(p->position.beat,
+                                    SpDrainEventType::SpPhrase);
             }
         }
+
+        bool is_sp_active = false;
         for (auto act : path.activations) {
             if (act.sp_start >= end || act.sp_end < start) {
                 continue;
             }
-            Measure meas_diff {0.0};
             if (act.sp_start >= start) {
-                meas_diff = converter.beats_to_measures(end)
-                    - converter.beats_to_measures(act.sp_start);
+                events.emplace_back(act.sp_start, SpDrainEventType::ActStart);
             } else if (act.sp_end < end) {
-                meas_diff = converter.beats_to_measures(act.sp_end)
-                    - converter.beats_to_measures(start);
+                is_sp_active = true;
+                events.emplace_back(act.sp_end, SpDrainEventType::ActEnd);
             } else {
-                meas_diff = converter.beats_to_measures(end)
-                    - converter.beats_to_measures(start);
+                is_sp_active = true;
             }
-            total_sp -= meas_diff.value() / MEASURES_PER_BAR;
         }
-        total_sp = std::min(total_sp, 1.0);
+        std::stable_sort(events.begin(), events.end());
+        for (std::size_t j = 0; j < events.size() - 1; ++j) {
+            if (is_sp_active) {
+                const auto meas_diff
+                    = converter.beats_to_measures(std::get<0>(events[j + 1]))
+                    - converter.beats_to_measures(std::get<0>(events[j]));
+                total_sp -= meas_diff.value() / MEASURES_PER_BAR;
+            }
+            switch (std::get<1>(events[j + 1])) {
+            case SpDrainEventType::ActStart:
+                is_sp_active = true;
+                break;
+            case SpDrainEventType::ActEnd:
+                is_sp_active = false;
+                break;
+            case SpDrainEventType::SpPhrase:
+                total_sp += SP_PHRASE_AMOUNT;
+                break;
+            }
+            total_sp = std::clamp(total_sp, 0.0, 1.0);
+        }
+
         m_sp_percent_values[i] = total_sp;
     }
 }
