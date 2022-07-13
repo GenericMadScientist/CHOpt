@@ -438,6 +438,7 @@ void ImageImpl::draw_score_totals(const ImageBuilder& builder)
     // digits, then "SP").
     constexpr std::size_t BUFFER_SIZE = 315;
     constexpr int VALUE_GAP = 13;
+    constexpr double PERCENT_MULT = 100.0;
 
     const auto& base_values = builder.base_values();
     const auto& score_values = builder.score_values();
@@ -462,7 +463,7 @@ void ImageImpl::draw_score_totals(const ImageBuilder& builder)
         if (!sp_percent_values.empty()) {
             y += VALUE_GAP;
             std::snprintf(buffer.data(), BUFFER_SIZE, "%.2f%%%%",
-                          100 * sp_percent_values[i]);
+                          PERCENT_MULT * sp_percent_values[i]);
             draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
                                 FONT_HEIGHT);
         } else if (sp_values[i] > 0) {

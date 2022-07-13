@@ -689,6 +689,7 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                 break;
             case SpDrainEventType::ActEnd:
                 is_sp_active = false;
+                total_sp = 0.0;
                 break;
             case SpDrainEventType::SpPhrase:
                 total_sp += SP_PHRASE_AMOUNT;
