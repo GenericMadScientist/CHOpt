@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
+
 #include <climits>
 #include <cmath>
 #include <cstdio>
@@ -440,6 +442,7 @@ void ImageImpl::draw_score_totals(const ImageBuilder& builder)
     const auto& base_values = builder.base_values();
     const auto& score_values = builder.score_values();
     const auto& sp_values = builder.sp_values();
+    const auto& sp_percent_values = builder.sp_percent_values();
     const auto& measures = builder.measure_lines();
 
     std::array<char, BUFFER_SIZE> buffer {};
@@ -456,7 +459,13 @@ void ImageImpl::draw_score_totals(const ImageBuilder& builder)
         y += VALUE_GAP;
         draw_text_backwards(x, y, text.c_str(), GREEN.data(), 1.0F,
                             FONT_HEIGHT);
-        if (sp_values[i] > 0) {
+        if (!sp_percent_values.empty()) {
+            y += VALUE_GAP;
+            std::snprintf(buffer.data(), BUFFER_SIZE, "%.2f%%%%",
+                          100 * sp_percent_values[i]);
+            draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
+                                FONT_HEIGHT);
+        } else if (sp_values[i] > 0) {
             y += VALUE_GAP;
             std::snprintf(buffer.data(), BUFFER_SIZE, "%.2fSP", sp_values[i]);
             draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,

@@ -871,7 +871,13 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
 
     builder.add_measure_values(processed_track.points(),
                                processed_track.converter(), path);
-    builder.add_sp_values(processed_track.sp_data(), *settings.engine);
+    if (settings.blank) {
+        builder.add_sp_values(processed_track.sp_data(), *settings.engine);
+    } else {
+        builder.add_sp_percent_values(processed_track.sp_data(),
+                                      processed_track.converter(),
+                                      processed_track.points(), path);
+    }
     builder.set_total_score(processed_track.points(), solos, path);
     if (settings.engine->has_bres() && new_track.bre().has_value()) {
         builder.add_bre(*(new_track.bre()), new_track.resolution(),
