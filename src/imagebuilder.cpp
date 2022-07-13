@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-
 #include <iterator>
 #include <stdexcept>
 
@@ -627,23 +625,25 @@ form_events(Beat start, Beat end, const PointSet& points, const Path& path)
     }
     auto is_sp_active = false;
     Beat whammy_end {std::numeric_limits<double>::infinity()};
-    for (auto act : path.activations) {
-        if (act.sp_end < start) {
-            continue;
-        }
+    auto act_iter = path.activations.cbegin();
+    for (; act_iter < path.activations.cend() && act_iter->sp_end < start;
+         ++act_iter) {
+    }
+    if (act_iter != path.activations.cend()) {
+        const auto& act = *act_iter;
         whammy_end = act.whammy_end;
-        if (act.sp_start >= end) {
-            continue;
-        }
-        if (act.sp_start >= start) {
-            events.emplace_back(act.sp_start, SpDrainEventType::ActStart);
-        } else if (act.sp_end < end) {
-            is_sp_active = true;
-            events.emplace_back(act.sp_end, SpDrainEventType::ActEnd);
-        } else {
-            is_sp_active = true;
+        if (act.sp_start < end) {
+            if (act.sp_start >= start) {
+                events.emplace_back(act.sp_start, SpDrainEventType::ActStart);
+            } else if (act.sp_end < end) {
+                is_sp_active = true;
+                events.emplace_back(act.sp_end, SpDrainEventType::ActEnd);
+            } else {
+                is_sp_active = true;
+            }
         }
     }
+
     std::stable_sort(events.begin(), events.end());
     return {events, is_sp_active, whammy_end};
 }
@@ -689,6 +689,7 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                 break;
             case SpDrainEventType::ActEnd:
                 is_sp_active = false;
+                whammy_end = Beat {std::numeric_limits<double>::infinity()};
                 total_sp = 0.0;
                 break;
             case SpDrainEventType::SpPhrase:

@@ -1002,4 +1002,43 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
     }
 }
 
+BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
+{
+    NoteTrack<NoteColour> track {
+        {{960}, {1632, 1920}, {6336}, {6528}, {7104}},
+        {{960, 10}, {1632, 10}, {6336, 10}, {6528, 10}},
+        {},
+        {},
+        {},
+        {},
+        192};
+    TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
+    PointSet points {track,
+                     converter,
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     ChGuitarEngine()};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+    Path path {{{points.cbegin() + 5, points.cend() - 3, Beat {12.0},
+                 Beat {9.0}, Beat {28.8827}},
+                {points.cend() - 1, points.cend(), Beat {1000.0}, Beat {37.0},
+                 Beat {53.0}}},
+               0};
+
+    ImageBuilder builder {track, {}, false};
+    builder.add_sp_percent_values(sp_data, converter, points, path);
+    std::vector<double> expected_percents {
+        0.0,          0.25,         0.5275833333, 0.4025833333, 0.2775833333,
+        0.1525833333, 0.0275833333, 0.0,          0.5,          0.40625};
+
+    BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
+                        expected_percents.size());
+    for (std::size_t i = 0; i < expected_percents.size(); ++i) {
+        BOOST_CHECK_CLOSE(builder.sp_percent_values()[i], expected_percents[i],
+                          0.0001);
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
