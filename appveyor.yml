@@ -59,6 +59,7 @@ for:
     - ps: Move-Item ..\choptgui.exe CHOpt.exe
     - ps: $env:VCINSTALLDIR = "C:\Program Files\Microsoft Visual Studio\2022\Community\VC"
     - ps: C:\Qt\6.3\msvc2019_64\bin\windeployqt.exe --release --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations CHOpt.exe
+    - ps: rm vc_redist.x64.exe
     - ps: 7z a "..\artifacts\CHOpt GUI (x64 Windows).zip" *
     - ps: Push-AppveyorArtifact "..\artifacts\CHOpt CLI (x64 Windows).zip"
     - ps: Push-AppveyorArtifact "..\artifacts\CHOpt GUI (x64 Windows).zip"
