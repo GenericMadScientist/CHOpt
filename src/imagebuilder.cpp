@@ -604,48 +604,30 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
     }
 }
 
-enum class SpDrainEventType {
-    Measure,
-    SpPhrase,
-    ActStart,
-    ActEnd,
-};
+enum class SpDrainEventType { Measure, SpPhrase, ActStart, ActEnd, WhammyEnd };
 
-static std::tuple<std::vector<std::tuple<Beat, SpDrainEventType>>, bool, Beat>
-form_events(Beat start, Beat end, const PointSet& points, const Path& path)
+static std::vector<std::tuple<Beat, SpDrainEventType>>
+form_events(const std::vector<double>& measure_lines, const PointSet& points,
+            const Path& path)
 {
     std::vector<std::tuple<Beat, SpDrainEventType>> events;
-    events.emplace_back(start, SpDrainEventType::Measure);
-    events.emplace_back(end, SpDrainEventType::Measure);
+    for (std::size_t i = 1; i < measure_lines.size(); ++i) {
+        events.emplace_back(Beat {measure_lines[i]}, SpDrainEventType::Measure);
+    }
     for (auto p = points.cbegin(); p < points.cend(); ++p) {
-        if (p->is_sp_granting_note && p->position.beat >= start
-            && p->position.beat < end) {
+        if (p->is_sp_granting_note) {
             events.emplace_back(p->position.beat, SpDrainEventType::SpPhrase);
         }
     }
-    auto is_sp_active = false;
-    Beat whammy_end {std::numeric_limits<double>::infinity()};
-    auto act_iter = path.activations.cbegin();
-    for (; act_iter < path.activations.cend() && act_iter->sp_end < start;
-         ++act_iter) {
-    }
-    if (act_iter != path.activations.cend()) {
-        const auto& act = *act_iter;
-        whammy_end = act.whammy_end;
-        if (act.sp_start < end) {
-            if (act.sp_start >= start) {
-                events.emplace_back(act.sp_start, SpDrainEventType::ActStart);
-            } else if (act.sp_end < end) {
-                is_sp_active = true;
-                events.emplace_back(act.sp_end, SpDrainEventType::ActEnd);
-            } else {
-                is_sp_active = true;
-            }
+    for (auto act : path.activations) {
+        if (act.whammy_end < act.sp_end) {
+            events.emplace_back(act.whammy_end, SpDrainEventType::WhammyEnd);
         }
+        events.emplace_back(act.sp_start, SpDrainEventType::ActStart);
+        events.emplace_back(act.sp_end, SpDrainEventType::ActEnd);
     }
-
     std::stable_sort(events.begin(), events.end());
-    return {events, is_sp_active, whammy_end};
+    return events;
 }
 
 void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
@@ -656,53 +638,52 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
     constexpr double SP_PHRASE_AMOUNT = 0.25;
 
     m_sp_percent_values.clear();
-    m_sp_percent_values.resize(m_measure_lines.size() - 1);
+    m_sp_percent_values.reserve(m_measure_lines.size() - 1);
+
+    const auto events = form_events(m_measure_lines, points, path);
+    auto is_sp_active = false;
+    Beat whammy_end {std::numeric_limits<double>::infinity()};
+    Beat position {0.0};
 
     double total_sp = 0.0;
-    for (std::size_t i = 0; i < m_measure_lines.size() - 1; ++i) {
-        Beat start {m_measure_lines[i]};
-        Beat end {std::numeric_limits<double>::infinity()};
-        if (i < m_measure_lines.size() - 1) {
-            end = Beat {m_measure_lines[i + 1]};
+    for (auto [event_pos, event_type] : events) {
+        if (is_sp_active) {
+            Position start_pos {position,
+                                converter.beats_to_measures(position)};
+            Position end_pos {event_pos,
+                              converter.beats_to_measures(event_pos)};
+            Position whammy_pos {whammy_end,
+                                 converter.beats_to_measures(whammy_end)};
+            total_sp = sp_data.propagate_sp_over_whammy_min(
+                start_pos, end_pos, total_sp, whammy_pos);
+        } else if (whammy_end > position) {
+            total_sp += sp_data.available_whammy(
+                position, std::min(event_pos, whammy_end));
         }
-        auto [events, is_sp_active, whammy_end]
-            = form_events(start, end, points, path);
-        for (std::size_t j = 0; j < events.size() - 1; ++j) {
-            const auto start_beat = std::get<0>(events[j]);
-            const auto end_beat = std::get<0>(events[j + 1]);
-            if (is_sp_active) {
-                Position start_pos {start_beat,
-                                    converter.beats_to_measures(start_beat)};
-                Position end_pos {end_beat,
-                                  converter.beats_to_measures(end_beat)};
-                Position whammy_pos {whammy_end,
-                                     converter.beats_to_measures(whammy_end)};
-                total_sp = sp_data.propagate_sp_over_whammy_min(
-                    start_pos, end_pos, total_sp, whammy_pos);
-            } else if (whammy_end > start_beat) {
-                total_sp += sp_data.available_whammy(
-                    start_beat, std::min(end_beat, whammy_end));
-            }
-            switch (std::get<1>(events[j + 1])) {
-            case SpDrainEventType::ActStart:
-                is_sp_active = true;
-                break;
-            case SpDrainEventType::ActEnd:
-                is_sp_active = false;
-                whammy_end = Beat {std::numeric_limits<double>::infinity()};
-                total_sp = 0.0;
-                break;
-            case SpDrainEventType::SpPhrase:
-                total_sp += SP_PHRASE_AMOUNT;
-                break;
-            case SpDrainEventType::Measure:
-                break;
-            }
-            total_sp = std::clamp(total_sp, 0.0, 1.0);
+        switch (event_type) {
+        case SpDrainEventType::ActStart:
+            is_sp_active = true;
+            break;
+        case SpDrainEventType::ActEnd:
+            is_sp_active = false;
+            whammy_end = Beat {std::numeric_limits<double>::infinity()};
+            total_sp = 0.0;
+            break;
+        case SpDrainEventType::SpPhrase:
+            total_sp += SP_PHRASE_AMOUNT;
+            break;
+        case SpDrainEventType::Measure:
+            m_sp_percent_values.push_back(std::clamp(total_sp, 0.0, 1.0));
+            break;
+        case SpDrainEventType::WhammyEnd:
+            whammy_end = event_pos;
+            break;
         }
-
-        m_sp_percent_values[i] = total_sp;
+        position = event_pos;
+        total_sp = std::clamp(total_sp, 0.0, 1.0);
     }
+
+    assert(m_sp_percent_values.size() == m_measure_lines.size() - 1); // NOLINT
 }
 
 void ImageBuilder::add_sp_values(const SpData& sp_data, const Engine& engine)
