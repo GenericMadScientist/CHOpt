@@ -69,10 +69,10 @@ in cmd then enter to open a command prompt in that folder, then run the command
 ## Dependencies
 
 * [Boost](https://www.boost.org) for JSON, Nowide, Program Options and Test
-* [CImg](https://cimg.eu) 2.9.9 to produce images
+* [CImg](https://cimg.eu) to produce images
 * [libpng](http://libpng.org/pub/png/libpng.html) to save pngs
 * [Qt 6](https://www.qt.io) for the GUI
-* [zlib](https://zlib.net) 1.2.11 is a dependency of libpng
+* [zlib](https://zlib.net) is a dependency of libpng
 
 CImg is vendored in the repo. Boost, libpng, Qt, and zlib will need to be
 provided by anyone compiling CHOpt for themselves, although Qt is only required
