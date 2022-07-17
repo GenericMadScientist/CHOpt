@@ -840,9 +840,9 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
 void ImageImpl::draw_version()
 {
     for (auto i = 0; i < CHAR_BIT; ++i) {
-        m_image(i, 0, 0) ^= (VERSION_MAJOR >> (7 - i)) & 1;
-        m_image(i, 0, 1) ^= (VERSION_MINOR >> (7 - i)) & 1;
-        m_image(i, 0, 2) ^= (VERSION_PATCH >> (7 - i)) & 1;
+        m_image(i, 0, 0) ^= (VERSION_MAJOR >> (CHAR_BIT - i - 1)) & 1;
+        m_image(i, 0, 1) ^= (VERSION_MINOR >> (CHAR_BIT - i - 1)) & 1;
+        m_image(i, 0, 2) ^= (VERSION_PATCH >> (CHAR_BIT - i - 1)) & 1;
     }
 }
 
