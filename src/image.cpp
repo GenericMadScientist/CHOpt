@@ -36,8 +36,24 @@ constexpr int LEFT_MARGIN = 31;
 constexpr int MARGIN = 80;
 constexpr int MEASURE_HEIGHT = 61;
 constexpr float OPEN_NOTE_OPACITY = 0.5F;
-constexpr int TOP_MARGIN = 100;
+constexpr int TOP_MARGIN = 125;
 constexpr int DIST_BETWEEN_MEASURES = MEASURE_HEIGHT + MARGIN;
+
+static const char* diff_to_str(Difficulty difficulty)
+{
+    switch (difficulty) {
+    case Difficulty::Easy:
+        return "Easy";
+    case Difficulty::Medium:
+        return "Medium";
+    case Difficulty::Hard:
+        return "Hard";
+    case Difficulty::Expert:
+        return "Expert";
+    default:
+        throw std::runtime_error("Invalid difficulty to diff_to_str");
+    }
+}
 
 static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
 {
@@ -302,10 +318,10 @@ void ImageImpl::draw_header(const ImageBuilder& builder)
 
     const auto x = LEFT_MARGIN;
     const auto y = LEFT_MARGIN;
-    m_image.draw_text(x, y, "%s\n%s\n%s\nTotal score = %d", BLACK.data(), 0,
+    m_image.draw_text(x, y, "%s\n%s\n%s\n%s\nTotal score = %d", BLACK.data(), 0,
                       1.0, HEADER_FONT_HEIGHT, builder.song_name().c_str(),
                       builder.artist().c_str(), builder.charter().c_str(),
-                      builder.total_score());
+                      diff_to_str(builder.difficulty()), builder.total_score());
 }
 
 static int numb_of_fret_lines(TrackType track_type)
