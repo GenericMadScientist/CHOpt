@@ -30,6 +30,10 @@
 
 using namespace cimg_library;
 
+constexpr int VERSION_MAJOR = 1;
+constexpr int VERSION_MINOR = 5;
+constexpr int VERSION_PATCH = 1;
+
 constexpr int BEAT_WIDTH = 60;
 constexpr int FONT_HEIGHT = 13;
 constexpr int LEFT_MARGIN = 31;
@@ -296,6 +300,7 @@ public:
     void draw_score_totals(const ImageBuilder& builder);
     void draw_tempos(const ImageBuilder& builder);
     void draw_time_sigs(const ImageBuilder& builder);
+    void draw_version();
 
     void save(const char* filename) const { m_image.save(filename); }
 };
@@ -832,6 +837,15 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
     }
 }
 
+void ImageImpl::draw_version()
+{
+    for (auto i = 0; i < 8; ++i) {
+        m_image(i, 0, 0) ^= (VERSION_MAJOR >> (7 - i)) & 1;
+        m_image(i, 0, 1) ^= (VERSION_MINOR >> (7 - i)) & 1;
+        m_image(i, 0, 2) ^= (VERSION_PATCH >> (7 - i)) & 1;
+    }
+}
+
 Image::Image(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> green {0, 255, 0};
@@ -850,6 +864,7 @@ Image::Image(const ImageBuilder& builder)
         TOP_MARGIN + MARGIN + DIST_BETWEEN_MEASURES * builder.rows().size());
 
     m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
+    m_impl->draw_version();
     m_impl->draw_header(builder);
     m_impl->draw_measures(builder);
     m_impl->draw_tempos(builder);
