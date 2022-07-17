@@ -202,8 +202,10 @@ static std::vector<DrawnRow> drawn_rows(const NoteTrack<T>& track,
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
-                           const SyncTrack& sync_track, bool is_lefty_flip)
+                           const SyncTrack& sync_track, Difficulty difficulty,
+                           bool is_lefty_flip)
     : m_track_type {TrackType::FiveFret}
+    , m_difficulty {difficulty}
     , m_is_lefty_flip {is_lefty_flip}
     , m_rows {drawn_rows(track, sync_track)}
     , m_notes {drawn_notes(track)}
@@ -231,8 +233,10 @@ ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
-                           const SyncTrack& sync_track, bool is_lefty_flip)
+                           const SyncTrack& sync_track, Difficulty difficulty,
+                           bool is_lefty_flip)
     : m_track_type {TrackType::SixFret}
+    , m_difficulty {difficulty}
     , m_is_lefty_flip {is_lefty_flip}
     , m_rows {drawn_rows(track, sync_track)}
     , m_ghl_notes {drawn_notes(track)}
@@ -259,10 +263,11 @@ ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<DrumNoteColour>& track,
-                           const SyncTrack& sync_track,
+                           const SyncTrack& sync_track, Difficulty difficulty,
                            const DrumSettings& drum_settings,
                            bool is_lefty_flip)
     : m_track_type {TrackType::Drums}
+    , m_difficulty {difficulty}
     , m_is_lefty_flip {is_lefty_flip}
     , m_rows {drawn_rows(track, sync_track)}
     , m_drum_notes {drawn_notes(track, drum_settings)}
@@ -758,10 +763,10 @@ static ImageBuilder build_with_drum_params(const NoteTrack<T>& track,
                                            const Settings& settings)
 {
     if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        return {track, sync_track, settings.drum_settings,
+        return {track, sync_track, settings.difficulty, settings.drum_settings,
                 settings.is_lefty_flip};
     } else {
-        return {track, sync_track, settings.is_lefty_flip};
+        return {track, sync_track, settings.difficulty, settings.is_lefty_flip};
     }
 }
 
