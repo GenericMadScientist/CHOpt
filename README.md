@@ -91,8 +91,8 @@ getting an initial idea of Clone Hero's parsing behaviour.
 machines.
 * Various users for feedback and testing, including 3-UP, ArchWK, Bromik,
 CyclopsDragon, DNelson, GHNerd, Haggis, Jdsmitty1, Joel, Jrh, Kyleruth,
-LightlessWalk, Littlejth, Lucretio, RandomDays, RileyTheFox, Taka, Venxm, and
-Zantor.
+LightlessWalk, Littlejth, Lucretio, NicoBrenChan, RandomDays, RileyTheFox, Taka,
+Venxm, and Zantor.
 
 ## Contact
 
