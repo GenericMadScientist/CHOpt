@@ -38,6 +38,7 @@ public:
                                       double late_gap) const = 0;
     virtual int max_multiplier() const = 0;
     virtual bool merge_uneven_sustains() const = 0;
+    virtual bool overlaps() const = 0;
     virtual int snap_gap() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
@@ -57,6 +58,7 @@ public:
     bool is_rock_band() const override { return false; }
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return false; }
+    bool overlaps() const override { return true; }
     int snap_gap() const override { return 0; }
     double sp_gain_rate() const override { return 1 / 30.0; }
     int sust_points_per_beat() const override { return 25; }
@@ -141,6 +143,38 @@ public:
     }
 };
 
+class Gh1Engine : public Engine {
+public:
+    int base_note_value() const override { return 50; }
+    double burst_size() const override { return 0.0; }
+    bool chords_multiply_sustains() const override { return true; }
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)late_gap;
+        return std::min(0.1, early_gap / 2);
+    }
+    bool has_bres() const override { return false; }
+    bool has_unison_bonuses() const override { return false; }
+    bool ignore_average_multiplier() const override { return true; }
+    bool is_rock_band() const override { return false; }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        return std::min(0.1, late_gap / 2);
+    }
+    int max_multiplier() const override { return 4; }
+    bool merge_uneven_sustains() const override { return true; }
+    bool overlaps() const override { return false; }
+    int snap_gap() const override { return 2; }
+    double sp_gain_rate() const override { return 0.034; }
+    int sust_points_per_beat() const override { return 25; }
+    SustainRoundingPolicy sustain_rounding() const override
+    {
+        return SustainRoundingPolicy::RoundToNearest;
+    }
+    bool uses_beat_track() const override { return false; }
+};
+
 class BaseRbEngine : public Engine {
 public:
     int base_note_value() const override { return 25; }
@@ -150,6 +184,7 @@ public:
     bool ignore_average_multiplier() const override { return true; }
     bool is_rock_band() const override { return true; }
     bool merge_uneven_sustains() const override { return true; }
+    bool overlaps() const override { return true; }
     int snap_gap() const override { return 2; }
     double sp_gain_rate() const override { return 0.034; }
     int sust_points_per_beat() const override { return 12; }

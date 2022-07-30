@@ -105,7 +105,7 @@ signals:
     void write_text(const QString& text);
 };
 
-enum class EngineType { CloneHero, RockBand, RockBand3 };
+enum class EngineType { CloneHero, GuitarHeroOne, RockBand, RockBand3 };
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -121,6 +121,8 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->engineComboBox->setEnabled(false);
     m_ui->engineComboBox->addItem("Clone Hero",
                                   QVariant::fromValue(EngineType::CloneHero));
+    m_ui->engineComboBox->addItem(
+        "Guitar Hero 1", QVariant::fromValue(EngineType::GuitarHeroOne));
     m_ui->engineComboBox->addItem("Rock Band",
                                   QVariant::fromValue(EngineType::RockBand));
     m_ui->engineComboBox->addItem("Rock Band 3",
@@ -255,6 +257,9 @@ Settings MainWindow::get_settings() const
         } else {
             settings.engine = std::make_unique<ChGuitarEngine>();
         }
+        break;
+    case EngineType::GuitarHeroOne:
+        settings.engine = std::make_unique<Gh1Engine>();
         break;
     case EngineType::RockBand:
         if (settings.instrument == Instrument::Bass) {

@@ -105,6 +105,9 @@ static std::unique_ptr<Engine> string_to_engine(std::string_view engine,
         }
         return std::make_unique<ChGuitarEngine>();
     }
+    if (engine == "gh1") {
+        return std::make_unique<Gh1Engine>();
+    }
     if (engine == "rb") {
         if (instrument == Instrument::Bass) {
             return std::make_unique<RbBassEngine>();
@@ -163,7 +166,7 @@ std::optional<Settings> from_args(int argc, char** argv)
     add_option("enable-dynamics",
                "enable double points for ghost and accented notes");
     add_option("engine", po::value<std::string>()->default_value("ch"),
-               "engine, options are ch, rb, and rb3");
+               "engine, options are ch, gh1, rb, and rb3");
     add_option("precision-mode,p", "turn on precision mode for CH");
     add_option("blank,b", "give a blank chart image");
     add_option("no-image", "do not create an image");
