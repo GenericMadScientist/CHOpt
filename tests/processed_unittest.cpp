@@ -975,6 +975,28 @@ BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
                       ActValidity::success);
 }
 
+BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
+{
+    std::vector<Note<NoteColour>> notes {{0, 1920}, {3456}};
+    std::vector<StarPower> phrases {{0, 50}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    ProcessedSong track {note_track,
+                         {},
+                         SqueezeSettings::default_settings(),
+                         DrumSettings::default_settings(),
+                         Gh1Engine(),
+                         {},
+                         {}};
+    const auto& points = track.points();
+    ActivationCandidate candidate {points.cbegin(),
+                                   points.cend() - 1,
+                                   {Beat(0.0), Measure(0.0)},
+                                   {0.5, 0.5}};
+
+    BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
+                      ActValidity::insufficient_sp);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)

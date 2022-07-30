@@ -149,6 +149,7 @@ class SpStatus {
 private:
     Position m_position;
     double m_sp;
+    static constexpr double MEASURES_PER_BAR = 8.0;
 
 public:
     SpStatus(Position position, double sp)
@@ -168,10 +169,16 @@ public:
         m_sp = std::min(m_sp, 1.0);
     }
 
-    void advance_whammy_max(Position end_position, const SpData& sp_data)
+    void advance_whammy_max(Position end_position, const SpData& sp_data,
+                            bool does_overlap)
     {
-        m_sp = sp_data.propagate_sp_over_whammy_max(m_position, end_position,
-                                                    m_sp);
+        if (does_overlap) {
+            m_sp = sp_data.propagate_sp_over_whammy_max(m_position,
+                                                        end_position, m_sp);
+        } else {
+            m_sp -= (end_position.measure - m_position.measure).value()
+                / MEASURES_PER_BAR;
+        }
         m_position = end_position;
     }
 
@@ -186,13 +193,13 @@ public:
     }
 
     void update_late_end(Position sp_note_start, Position sp_note_end,
-                         const SpData& sp_data)
+                         const SpData& sp_data, bool does_overlap)
     {
         if (sp_note_start.beat < m_position.beat) {
             sp_note_start = m_position;
         }
 
-        advance_whammy_max(sp_note_start, sp_data);
+        advance_whammy_max(sp_note_start, sp_data, does_overlap);
         if (m_sp < 0.0) {
             return;
         }
@@ -254,7 +261,8 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
         if (p_end.beat > ending_pos.beat) {
             p_end = ending_pos;
         }
-        status_for_late_end.update_late_end(p_start, p_end, m_sp_data);
+        status_for_late_end.update_late_end(p_start, p_end, m_sp_data,
+                                            m_overlaps);
         if (status_for_late_end.sp() < 0.0) {
             return {null_position, ActValidity::insufficient_sp};
         }
@@ -270,7 +278,7 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
         }
     }
 
-    status_for_late_end.advance_whammy_max(ending_pos, m_sp_data);
+    status_for_late_end.advance_whammy_max(ending_pos, m_sp_data, m_overlaps);
     if (status_for_late_end.sp() < 0.0) {
         return {null_position, ActValidity::insufficient_sp};
     }
