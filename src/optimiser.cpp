@@ -60,7 +60,7 @@ Optimiser::Optimiser(const ProcessedSong* song,
 
 PointPtr Optimiser::next_candidate_point(PointPtr point) const
 {
-    auto index = std::distance(m_song->points().cbegin(), point);
+    const auto index = std::distance(m_song->points().cbegin(), point);
     return m_next_candidate_points[static_cast<std::size_t>(index)];
 }
 
@@ -208,7 +208,8 @@ void Optimiser::complete_subpath(
         }
 
         const auto act_score = m_song->points().range_score(p, std::next(q));
-        CacheKey next_key {std::next(q), candidate_result.ending_position};
+        CacheKey next_key {m_song->points().first_after_current_phrase(q),
+                           candidate_result.ending_position};
         next_key = advance_cache_key(next_key);
         const auto rest_of_path_score_boost = get_partial_path(next_key, cache);
         const auto score = act_score + rest_of_path_score_boost;

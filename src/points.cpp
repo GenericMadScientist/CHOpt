@@ -435,6 +435,43 @@ next_matching_vector(const std::vector<Point>& points, P predicate)
     return next_matching_points;
 }
 
+template <typename T>
+static std::vector<PointPtr>
+first_after_current_sp_vector(const std::vector<Point>& points,
+                              const NoteTrack<T>& track, const Engine& engine)
+{
+    std::vector<PointPtr> results;
+    auto current_sp = track.sp_phrases().cbegin();
+    for (auto p = points.cbegin(); p < points.cend();) {
+        current_sp
+            = std::find_if(current_sp, track.sp_phrases().cend(), [&](auto sp) {
+                  return Beat((sp.position + sp.length)
+                              / static_cast<double>(track.resolution()))
+                      > p->position.beat;
+              });
+        Beat sp_start {std::numeric_limits<double>::infinity()};
+        Beat sp_end {std::numeric_limits<double>::infinity()};
+        if (current_sp != track.sp_phrases().cend()) {
+            sp_start = Beat {current_sp->position
+                             / static_cast<double>(track.resolution())};
+            sp_end = Beat {(current_sp->position + current_sp->length)
+                           / static_cast<double>(track.resolution())};
+        }
+        if (p->position.beat < sp_start || engine.overlaps()) {
+            results.push_back(++p);
+            continue;
+        }
+        const auto q = std::find_if(std::next(p), points.cend(), [&](auto pt) {
+            return pt.position.beat >= sp_end;
+        });
+        while (p < q) {
+            results.push_back(q);
+            ++p;
+        }
+    }
+    return results;
+}
+
 static std::vector<PointPtr>
 next_non_hold_vector(const std::vector<Point>& points)
 {
@@ -586,6 +623,8 @@ PointSet::PointSet(const NoteTrack<NoteColour>& track,
                    const DrumSettings& drum_settings, const Engine& engine)
     : m_points {points_from_track(track, converter, unison_phrases,
                                   squeeze_settings, engine)}
+    , m_first_after_current_sp {first_after_current_sp_vector(m_points, track,
+                                                              engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(
@@ -605,6 +644,8 @@ PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
                    const DrumSettings& drum_settings, const Engine& engine)
     : m_points {points_from_track(track, converter, unison_phrases,
                                   squeeze_settings, engine)}
+    , m_first_after_current_sp {first_after_current_sp_vector(m_points, track,
+                                                              engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(
@@ -624,6 +665,8 @@ PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
                    const DrumSettings& drum_settings, const Engine& engine)
     : m_points {points_from_track(track, converter, unison_phrases,
                                   squeeze_settings, drum_settings, engine)}
+    , m_first_after_current_sp {first_after_current_sp_vector(m_points, track,
+                                                              engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(track.solos(drum_settings),
@@ -632,6 +675,13 @@ PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
     , m_video_lag {squeeze_settings.video_lag}
     , m_colours {note_colours(track.notes(), m_points)}
 {
+}
+
+PointPtr PointSet::first_after_current_phrase(PointPtr point) const
+{
+    const auto index
+        = static_cast<std::size_t>(std::distance(m_points.cbegin(), point));
+    return m_first_after_current_sp[index];
 }
 
 PointPtr PointSet::next_non_hold_point(PointPtr point) const

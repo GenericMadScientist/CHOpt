@@ -49,6 +49,7 @@ using PointPtr = std::vector<Point>::const_iterator;
 class PointSet {
 private:
     const std::vector<Point> m_points;
+    const std::vector<PointPtr> m_first_after_current_sp;
     const std::vector<PointPtr> m_next_non_hold_point;
     const std::vector<PointPtr> m_next_sp_granting_note;
     const std::vector<std::tuple<Position, int>> m_solo_boosts;
@@ -73,6 +74,10 @@ public:
              const DrumSettings& drum_settings, const Engine& engine);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
+    // Designed for engines without SP overlap, so the next activation is not
+    // using part of the given phrase. If the point is not part of a phrase, or
+    // the engine supports overlap, then this just returns the next point.
+    [[nodiscard]] PointPtr first_after_current_phrase(PointPtr point) const;
     [[nodiscard]] PointPtr next_non_hold_point(PointPtr point) const;
     [[nodiscard]] PointPtr next_sp_granting_note(PointPtr point) const;
     [[nodiscard]] std::string colour_set(PointPtr point) const

@@ -670,4 +670,42 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_overlap_matters)
                                   optimal_acts.cbegin(), optimal_acts.cend());
 }
 
+BOOST_AUTO_TEST_CASE(partial_overlap_doesnt_work)
+{
+    std::vector<Note<NoteColour>> notes {{0},
+                                         {192},
+                                         {384},
+                                         {384, 0, NoteColour::Red},
+                                         {384, 0, NoteColour::Yellow},
+                                         {3456},
+                                         {3648},
+                                         {4224},
+                                         {4416},
+                                         {4416, 0, NoteColour::Red},
+                                         {4416, 0, NoteColour::Yellow}};
+    std::vector<StarPower> phrases {
+        {0, 50}, {192, 50}, {3456, 200}, {4224, 50}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    ProcessedSong track {note_track,
+                         {},
+                         SqueezeSettings::default_settings(),
+                         DrumSettings::default_settings(),
+                         Gh1Engine(),
+                         {},
+                         {}};
+    Optimiser optimiser {&track, &term_bool, 100, Second(0.0)};
+    const auto& points = track.points();
+    std::vector<Activation> optimal_acts {
+        {points.cbegin() + 2, points.cbegin() + 2, Beat {0.0}, Beat {2.0},
+         Beat {18.0}},
+        {points.cbegin() + 6, points.cbegin() + 6, Beat {0.0}, Beat {23.0},
+         Beat {39.0}}};
+    const auto opt_path = optimiser.optimal_path();
+
+    BOOST_CHECK_EQUAL(opt_path.score_boost, 300);
+    BOOST_CHECK_EQUAL_COLLECTIONS(opt_path.activations.cbegin(),
+                                  opt_path.activations.cend(),
+                                  optimal_acts.cbegin(), optimal_acts.cend());
+}
+
 BOOST_AUTO_TEST_SUITE_END()

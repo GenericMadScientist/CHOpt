@@ -1043,3 +1043,55 @@ BOOST_AUTO_TEST_CASE(dynamics_get_double_points)
     BOOST_CHECK_EQUAL((begin + 1)->value, 100);
     BOOST_CHECK_EQUAL((begin + 2)->value, 50);
 }
+
+BOOST_AUTO_TEST_SUITE(first_after_current_phrase_works_correctly)
+
+BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
+{
+    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}};
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    PointSet points {track,
+                     {{}, 192, Gh1Engine(), {}},
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     Gh1Engine()};
+    const auto begin = points.cbegin();
+
+    BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin),
+                      std::next(begin));
+}
+
+BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
+{
+    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}};
+    std::vector<StarPower> phrases {{0, 200}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    PointSet points {track,
+                     {{}, 192, Gh1Engine(), {}},
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     Gh1Engine()};
+    const auto begin = points.cbegin();
+
+    BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin), begin + 2);
+}
+
+BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
+{
+    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}};
+    std::vector<StarPower> phrases {{0, 200}};
+    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    PointSet points {track,
+                     {{}, 192, ChGuitarEngine(), {}},
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     ChGuitarEngine()};
+    const auto begin = points.cbegin();
+
+    BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin), begin + 1);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
