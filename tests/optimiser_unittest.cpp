@@ -45,6 +45,8 @@ static std::ostream& operator<<(std::ostream& stream, const Activation& act)
 
 const std::atomic<bool> term_bool {false};
 
+BOOST_AUTO_TEST_SUITE(overlap_guitar_paths)
+
 BOOST_AUTO_TEST_CASE(simplest_song_with_a_non_empty_path)
 {
     std::vector<Note<NoteColour>> notes {{0}, {192}, {384}};
@@ -521,6 +523,8 @@ BOOST_AUTO_TEST_CASE(whammy_delay_is_handled_correctly)
     BOOST_CHECK_EQUAL(opt_path.score_boost, 550);
 }
 
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE(drum_paths)
 
 BOOST_AUTO_TEST_CASE(drum_paths_can_only_activate_on_activation_notes)
@@ -634,6 +638,36 @@ BOOST_AUTO_TEST_CASE(drum_activation_delay_is_affected_by_speed)
 
     const auto opt_path = optimiser.optimal_path();
     BOOST_CHECK_EQUAL(opt_path.score_boost, 50);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(no_overlap_guitar_paths)
+
+BOOST_AUTO_TEST_CASE(simplest_song_where_overlap_matters)
+{
+    std::vector<Note<NoteColour>> notes {
+        {0}, {192}, {384}, {384, 0, NoteColour::Red}, {3456}, {4224}};
+    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {3456, 50}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    ProcessedSong track {note_track,
+                         {},
+                         SqueezeSettings::default_settings(),
+                         DrumSettings::default_settings(),
+                         Gh1Engine(),
+                         {},
+                         {}};
+    Optimiser optimiser {&track, &term_bool, 100, Second(0.0)};
+    const auto& points = track.points();
+    std::vector<Activation> optimal_acts {{points.cbegin() + 2,
+                                           points.cbegin() + 3, Beat {0.0},
+                                           Beat {2.0}, Beat {18.0}}};
+    const auto opt_path = optimiser.optimal_path();
+
+    BOOST_CHECK_EQUAL(opt_path.score_boost, 150);
+    BOOST_CHECK_EQUAL_COLLECTIONS(opt_path.activations.cbegin(),
+                                  opt_path.activations.cend(),
+                                  optimal_acts.cbegin(), optimal_acts.cend());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

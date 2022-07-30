@@ -37,7 +37,7 @@ Optimiser::Optimiser(const ProcessedSong* song,
     const auto& points = m_song->points();
     const auto& sp_data = m_song->sp_data();
 
-    auto capacity = std::distance(points.cbegin(), points.cend()) + 1;
+    const auto capacity = std::distance(points.cbegin(), points.cend()) + 1;
     m_next_candidate_points.reserve(static_cast<std::size_t>(capacity));
     int count = 0;
     for (auto p = points.cbegin(); p < points.cend(); ++p) {

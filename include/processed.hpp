@@ -85,6 +85,7 @@ private:
     int m_base_score;
     bool m_ignore_average_multiplier;
     bool m_is_drums;
+    bool m_overlaps;
 
     template <typename T>
     static int bre_boost(const NoteTrack<T>& track, const Engine& engine,
@@ -123,6 +124,7 @@ public:
         , m_base_score {track.base_score()}
         , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
         , m_is_drums {false}
+        , m_overlaps {engine.overlaps()}
     {
         const auto solos = track.solos(drum_settings);
         m_total_solo_boost = std::accumulate(
@@ -145,6 +147,7 @@ public:
         , m_base_score {track.base_score(drum_settings)}
         , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
         , m_is_drums {true}
+        , m_overlaps {engine.overlaps()}
     {
         const auto solos = track.solos(drum_settings);
         m_total_solo_boost = std::accumulate(

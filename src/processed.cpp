@@ -260,11 +260,13 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
         }
         status_for_early_end.update_early_end(p_start, m_sp_data,
                                               required_whammy_end);
-        status_for_early_end.add_phrase();
-        status_for_late_end.add_phrase();
-        if (p->is_unison_sp_granting_note) {
+        if (m_overlaps) {
             status_for_early_end.add_phrase();
             status_for_late_end.add_phrase();
+            if (p->is_unison_sp_granting_note) {
+                status_for_early_end.add_phrase();
+                status_for_late_end.add_phrase();
+            }
         }
     }
 
@@ -275,7 +277,7 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
 
     status_for_early_end.update_early_end(ending_pos, m_sp_data,
                                           required_whammy_end);
-    if (activation.act_end->is_sp_granting_note) {
+    if (m_overlaps && activation.act_end->is_sp_granting_note) {
         status_for_early_end.add_phrase();
         if (activation.act_end->is_unison_sp_granting_note) {
             status_for_early_end.add_phrase();
