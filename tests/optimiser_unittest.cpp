@@ -708,4 +708,45 @@ BOOST_AUTO_TEST_CASE(partial_overlap_doesnt_work)
                                   optimal_acts.cbegin(), optimal_acts.cend());
 }
 
+BOOST_AUTO_TEST_CASE(compressed_whammy_considered_even_with_maxable_sp)
+{
+    std::vector<Note<NoteColour>> notes {{0, 3072},
+                                         {9600},
+                                         {10368},
+                                         {11136},
+                                         {11136, 0, NoteColour::Red},
+                                         {11136, 0, NoteColour::Yellow},
+                                         {15744},
+                                         {15744, 0, NoteColour::Red},
+                                         {15744, 0, NoteColour::Yellow},
+                                         {15936},
+                                         {23616},
+                                         {24384},
+                                         {24384, 0, NoteColour::Red},
+                                         {24384, 0, NoteColour::Yellow}};
+    std::vector<StarPower> phrases {
+        {0, 50}, {9600, 800}, {15936, 50}, {23616, 50}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    ProcessedSong track {note_track,
+                         {},
+                         SqueezeSettings::default_settings(),
+                         DrumSettings::default_settings(),
+                         Gh1Engine(),
+                         {},
+                         {}};
+    Optimiser optimiser {&track, &term_bool, 100, Second(0.0)};
+    const auto& points = track.points();
+    std::vector<Activation> optimal_acts {
+        {points.cend() - 5, points.cend() - 4, Beat {0.0}, Beat {54.0},
+         Beat {83.0}},
+        {points.cend() - 1, points.cend() - 1, Beat {0.0}, Beat {127.0},
+         Beat {143.0}}};
+    const auto opt_path = optimiser.optimal_path();
+
+    BOOST_CHECK_EQUAL(opt_path.score_boost, 450);
+    BOOST_CHECK_EQUAL_COLLECTIONS(opt_path.activations.cbegin(),
+                                  opt_path.activations.cend(),
+                                  optimal_acts.cbegin(), optimal_acts.cend());
+}
+
 BOOST_AUTO_TEST_SUITE_END()

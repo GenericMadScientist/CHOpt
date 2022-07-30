@@ -287,7 +287,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         if (!sp_bar.full_enough_to_activate()) {
             continue;
         }
-        if (p != key.point && sp_bar.max() == 1.0
+        if (p != key.point && sp_bar.min() == 1.0
             && std::prev(p)->is_sp_granting_note) {
             get_partial_full_sp_path(p, cache);
             auto cache_value = cache.full_sp_paths.at(p);
