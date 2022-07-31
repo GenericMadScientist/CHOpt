@@ -510,6 +510,24 @@ BOOST_AUTO_TEST_CASE(drum_notes_have_the_multiplier_handled_correctly)
     BOOST_CHECK_EQUAL(std::prev(points.cend(), 1)->value, 100);
 }
 
+BOOST_AUTO_TEST_CASE(gh1_multiplier_delay_accounted_for)
+{
+    std::vector<Note<NoteColour>> notes {{0},   {100},     {200}, {300},
+                                         {400}, {500},     {600}, {700},
+                                         {800}, {900, 100}};
+    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    TimeConverter converter {{}, 192, Gh1Engine(), {}};
+    PointSet points {track,
+                     converter,
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     Gh1Engine()};
+
+    BOOST_CHECK_EQUAL((points.cbegin() + 9)->value, 50);
+    BOOST_CHECK_EQUAL((points.cbegin() + 10)->value, 2);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(hit_window_start_and_hit_window_end_are_set_correctly)

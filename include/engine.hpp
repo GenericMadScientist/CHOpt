@@ -28,6 +28,7 @@ public:
     virtual int base_note_value() const = 0;
     virtual double burst_size() const = 0;
     virtual bool chords_multiply_sustains() const = 0;
+    virtual bool delayed_multiplier() const = 0;
     virtual double early_timing_window(double early_gap,
                                        double late_gap) const = 0;
     virtual bool has_bres() const = 0;
@@ -52,6 +53,7 @@ public:
     int base_note_value() const override { return 50; }
     double burst_size() const override { return 0.25; }
     bool chords_multiply_sustains() const override { return false; }
+    bool delayed_multiplier() const override { return false; }
     bool has_bres() const override { return false; }
     bool has_unison_bonuses() const override { return false; }
     bool ignore_average_multiplier() const override { return false; }
@@ -148,6 +150,7 @@ public:
     int base_note_value() const override { return 50; }
     double burst_size() const override { return 0.0; }
     bool chords_multiply_sustains() const override { return true; }
+    bool delayed_multiplier() const override { return true; }
     double early_timing_window(double early_gap, double late_gap) const override
     {
         (void)late_gap;
@@ -180,6 +183,7 @@ public:
     int base_note_value() const override { return 25; }
     double burst_size() const override { return 0.0; }
     bool chords_multiply_sustains() const override { return true; }
+    bool delayed_multiplier() const override { return false; }
     bool has_bres() const override { return true; }
     bool ignore_average_multiplier() const override { return true; }
     bool is_rock_band() const override { return true; }
