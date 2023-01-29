@@ -1,4 +1,4 @@
-Checks: 'bugprone-*,-clang-analyzer-optin.cplusplus.VirtualCall,cppcoreguidelines-*,-cppcoreguidelines-pro-type-vararg,misc-*,-misc-no-recursion,modernize-*,-modernize-use-trailing-return-type,performance-*,readability-*'
+Checks: 'bugprone-*,-clang-analyzer-optin.cplusplus.VirtualCall,cppcoreguidelines-*,-cppcoreguidelines-pro-type-vararg,misc-*,-misc-no-recursion,modernize-*,-modernize-use-trailing-return-type,performance-*,readability-*,-readability-identifier-length'
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle: none
