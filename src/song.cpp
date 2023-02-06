@@ -849,10 +849,12 @@ InstrumentMidiTrack<T> read_instrument_midi_track(const MidiTrack& midi_track)
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
-    const bool from_five_lane = std::is_same_v<T, DrumNoteColour>
-        && has_five_lane_green_notes(midi_track);
-    const bool parse_dynamics = std::is_same_v<T, DrumNoteColour>
-        && has_enable_chart_dynamics(midi_track);
+    const bool from_five_lane
+        = std::is_same_v<
+              T, DrumNoteColour> && has_five_lane_green_notes(midi_track);
+    const bool parse_dynamics
+        = std::is_same_v<
+              T, DrumNoteColour> && has_enable_chart_dynamics(midi_track);
 
     InstrumentMidiTrack<T> event_track;
     event_track.disco_flip_on_events[Difficulty::Easy] = {};
