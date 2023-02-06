@@ -2,3 +2,6 @@ Checks: 'bugprone-*,-bugprone-easily-swappable-parameters,-clang-analyzer-optin.
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle: none
+CheckOptions:
+  - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: true
