@@ -5,12 +5,12 @@ platform: x64
 
 environment:
   matrix:
+    - job_name: Linux (GCC and tests)
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
     - job_name: Windows (MSVC, tests, and static analysis)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     - job_name: Mac OSX (Clang)
       APPVEYOR_BUILD_WORKER_IMAGE: macOS-BigSur
-    - job_name: Linux (GCC)
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
 
 matrix:
   fast_finish: true
@@ -21,6 +21,53 @@ before_build:
   - ps: cd build
 
 for:
+  -
+    matrix:
+      only:
+        - job_name: Linux (GCC and tests)
+
+    cache: $HOME/boost_1_79_0 -> appveyor_files/install_boost.sh
+
+    build_script:
+    - sh: sudo apt update
+    - sh: sudo apt -y install g++-10 libgl1-mesa-dev
+    - sh: chmod +x ../appveyor_files/install_boost.sh
+    - sh: ../appveyor_files/install_boost.sh
+    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_79_0 -DQt6_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6WidgetsTools ..
+    - sh: cmake --build . --verbose --config ${CONFIGURATION}
+
+    test_script:
+    - sh: ctest --verbose -C ${CONFIGURATION}
+    - ps: cd ..
+    - ps: python integration_tests\run_integration_tests.py
+
+    before_deploy:
+    - sh: cd build
+    - sh: rm -rf *
+    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_79_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6WidgetsTools ..
+    - sh: cmake --build . --verbose --config Release
+    - sh: strip -s chopt
+    - sh: strip -s choptgui
+    - sh: mv chopt CHOpt
+    - sh: zip "../artifacts/CHOpt CLI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip" CHOpt
+    - sh: mv choptgui CHOpt
+    - sh: mkdir libs
+    - sh: mkdir platforms
+    - sh: cp ../resources/CHOpt.sh CHOpt.sh
+    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libicudata.so.56 libs/libicudata.so.56
+    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libicui18n.so.56 libs/libicui18n.so.56
+    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libicuuc.so.56 libs/libicuuc.so.56
+    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6Core.so.6 libs/libQt6Core.so.6
+    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6DBus.so.6 libs/libQt6DBus.so.6
+    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6Gui.so.6 libs/libQt6Gui.so.6
+    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6OpenGL.so.6 libs/libQt6OpenGL.so.6
+    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6Widgets.so.6 libs/libQt6Widgets.so.6
+    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6XcbQpa.so.6 libs/libQt6XcbQpa.so.6
+    - sh: cp $HOME/Qt/6.4/gcc_64/plugins/platforms/libqxcb.so platforms/libqxcb.so
+    - sh: zip -r "../artifacts/CHOpt GUI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip" CHOpt CHOpt.sh libs platforms
+    - sh: appveyor PushArtifact "../artifacts/CHOpt CLI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip"
+    - sh: appveyor PushArtifact "../artifacts/CHOpt GUI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip"
+
   -
     matrix:
       only:
@@ -93,47 +140,6 @@ for:
     - sh: zip -r "../artifacts/CHOpt GUI ${APPVEYOR_BUILD_VERSION} (x64 Mac).zip" CHOpt.app
     - sh: appveyor PushArtifact "../artifacts/CHOpt CLI ${APPVEYOR_BUILD_VERSION} (x64 Mac).zip"
     - sh: appveyor PushArtifact "../artifacts/CHOpt GUI ${APPVEYOR_BUILD_VERSION} (x64 Mac).zip"
-
-  -
-    matrix:
-      only:
-        - job_name: Linux (GCC)
-
-    cache: $HOME/boost_1_79_0 -> appveyor_files/install_boost.sh
-
-    build_script:
-    - sh: sudo apt update
-    - sh: sudo apt -y install g++-10 libgl1-mesa-dev
-    - sh: chmod +x ../appveyor_files/install_boost.sh
-    - sh: ../appveyor_files/install_boost.sh
-    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_79_0 -DQt6_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6WidgetsTools ..
-    - sh: cmake --build . --verbose --config ${CONFIGURATION}
-
-    before_deploy:
-    - sh: rm -rf *
-    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_79_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6WidgetsTools ..
-    - sh: cmake --build . --verbose --config Release
-    - sh: strip -s chopt
-    - sh: strip -s choptgui
-    - sh: mv chopt CHOpt
-    - sh: zip "../artifacts/CHOpt CLI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip" CHOpt
-    - sh: mv choptgui CHOpt
-    - sh: mkdir libs
-    - sh: mkdir platforms
-    - sh: cp ../resources/CHOpt.sh CHOpt.sh
-    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libicudata.so.56 libs/libicudata.so.56
-    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libicui18n.so.56 libs/libicui18n.so.56
-    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libicuuc.so.56 libs/libicuuc.so.56
-    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6Core.so.6 libs/libQt6Core.so.6
-    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6DBus.so.6 libs/libQt6DBus.so.6
-    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6Gui.so.6 libs/libQt6Gui.so.6
-    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6OpenGL.so.6 libs/libQt6OpenGL.so.6
-    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6Widgets.so.6 libs/libQt6Widgets.so.6
-    - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6XcbQpa.so.6 libs/libQt6XcbQpa.so.6
-    - sh: cp $HOME/Qt/6.4/gcc_64/plugins/platforms/libqxcb.so platforms/libqxcb.so
-    - sh: zip -r "../artifacts/CHOpt GUI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip" CHOpt CHOpt.sh libs platforms
-    - sh: appveyor PushArtifact "../artifacts/CHOpt CLI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip"
-    - sh: appveyor PushArtifact "../artifacts/CHOpt GUI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip"
 
 deploy:
   provider: Environment
