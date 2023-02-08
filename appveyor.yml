@@ -38,8 +38,10 @@ for:
 
     test_script:
     - sh: ctest --verbose -C ${CONFIGURATION}
-    - ps: cd ..
-    - ps: python3 integration_tests/run_integration_tests.py
+    - sh: cd ..
+    - sh: python3 integration_tests/run_integration_tests.py
+    - sh: clang-format -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp
+    - sh: git diff --color --exit-code
 
     before_deploy:
     - sh: cd build
