@@ -39,7 +39,7 @@ for:
     test_script:
     - sh: ctest --verbose -C ${CONFIGURATION}
     - ps: cd ..
-    - ps: python integration_tests/run_integration_tests.py
+    - ps: python3 integration_tests/run_integration_tests.py
 
     before_deploy:
     - sh: cd build
