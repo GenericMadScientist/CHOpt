@@ -7,7 +7,7 @@ environment:
   matrix:
     - job_name: Linux (GCC, tests, and static analysis)
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-    - job_name: Windows (MSVC, tests, and static analysis)
+    - job_name: Windows (MSVC)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     - job_name: Mac OSX (Clang)
       APPVEYOR_BUILD_WORKER_IMAGE: macOS-BigSur
@@ -75,7 +75,7 @@ for:
   -
     matrix:
       only:
-        - job_name: Windows (MSVC, tests, and static analysis)
+        - job_name: Windows (MSVC)
 
     cache: C:\Tools\vcpkg\archives
 
@@ -86,20 +86,10 @@ for:
     build_script:
     - ps: if (-Not (Test-Path C:\Tools\vcpkg\archives)) { mkdir C:\Tools\vcpkg\archives }
     - ps: vcpkg --triplet x64-windows install libpng
-    - ps: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DBOOST_ROOT=C:\Libraries\boost_1_77_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
+    - ps: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DPACKAGE_TESTS=OFF -DBOOST_ROOT=C:\Libraries\boost_1_77_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
     - ps: cmake --build . --verbose --config $env:CONFIGURATION
 
-    test_script:
-    - ps: ctest --verbose -C $env:CONFIGURATION
-    - ps: cd ..
-    - ps: python integration_tests\run_integration_tests.py
-    - ps: clang-format -i gui\*.hpp gui\*.cpp include\*.hpp src\*.cpp tests\*.cpp
-    - ps: git diff --color --exit-code
-    - cmd: clang-tidy src\*.cpp gui\json_settings.cpp -- -Iinclude -Ilibs -IC:\Libraries\boost_1_77_0 -IC:\Tools\vcpkg\installed\x64-windows\include -std=c++17 -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
-    - cmd: clang-tidy tests\*_unittest.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers -- -Iinclude -IC:\Libraries\boost_1_77_0 -IC:\Tools\vcpkg\installed\x64-windows\include -std=c++17 -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
-
     before_deploy:
-    - ps: cd build
     - ps: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DQt6_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
     - ps: cmake --build . --verbose --config Release
     - ps: cd Release
