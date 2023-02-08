@@ -5,7 +5,7 @@ platform: x64
 
 environment:
   matrix:
-    - job_name: Linux (GCC and tests)
+    - job_name: Linux (GCC, tests, and static analysis)
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
     - job_name: Windows (MSVC, tests, and static analysis)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
@@ -24,13 +24,13 @@ for:
   -
     matrix:
       only:
-        - job_name: Linux (GCC and tests)
+        - job_name: Linux (GCC, tests, and static analysis)
 
     cache: $HOME/boost_1_79_0 -> appveyor_files/install_boost.sh
 
     build_script:
     - sh: sudo apt update
-    - sh: sudo apt -y install clang-format-12 g++-10 libgl1-mesa-dev
+    - sh: sudo apt -y install clang-format-12 clang-tidy-12 g++-10 libgl1-mesa-dev
     - sh: chmod +x ../appveyor_files/install_boost.sh
     - sh: ../appveyor_files/install_boost.sh
     - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_79_0 -DQt6_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6WidgetsTools ..
@@ -42,6 +42,8 @@ for:
     - sh: python3 integration_tests/run_integration_tests.py
     - sh: clang-format-12 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp
     - sh: git diff --color --exit-code
+    - sh: clang-tidy-12 src/*.cpp gui/json_settings.cpp -- -Iinclude -Ilibs -I$HOME/boost_1_79_0 -std=c++17
+    - sh: clang-tidy-12 tests/*_unittest.cpp -checks=-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers -- -Iinclude -I$HOME/boost_1_79_0 -std=c++17
 
     before_deploy:
     - sh: cd build
