@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,120 +20,121 @@
 
 #include "song.hpp"
 
-static bool operator!=(const BPM& lhs, const BPM& rhs)
+namespace {
+bool operator!=(const BPM& lhs, const BPM& rhs)
 {
     return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
 }
 
-static std::ostream& operator<<(std::ostream& stream, const BPM& bpm)
+std::ostream& operator<<(std::ostream& stream, const BPM& bpm)
 {
     stream << "{Pos " << bpm.position << ", BPM " << bpm.bpm << '}';
     return stream;
 }
 
-template <typename T>
-static bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
+template <typename T> bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
 {
     return std::tie(lhs.position, lhs.length, lhs.colour)
         != std::tie(rhs.position, rhs.length, rhs.colour);
 }
 
 template <typename T>
-static std::ostream& operator<<(std::ostream& stream, const Note<T>& note)
+std::ostream& operator<<(std::ostream& stream, const Note<T>& note)
 {
     stream << "{Pos " << note.position << ", Length " << note.length
            << ", Colour " << static_cast<int>(note.colour) << '}';
     return stream;
 }
 
-static bool operator!=(const Solo& lhs, const Solo& rhs)
+bool operator!=(const Solo& lhs, const Solo& rhs)
 {
     return std::tie(lhs.start, lhs.end, lhs.value)
         != std::tie(rhs.start, rhs.end, rhs.value);
 }
 
-static std::ostream& operator<<(std::ostream& stream, const Solo& solo)
+std::ostream& operator<<(std::ostream& stream, const Solo& solo)
 {
     stream << "{Start " << solo.start << ", End " << solo.end << ", Value "
            << solo.value << '}';
     return stream;
 }
 
-static bool operator!=(const StarPower& lhs, const StarPower& rhs)
+bool operator!=(const StarPower& lhs, const StarPower& rhs)
 {
     return std::tie(lhs.position, lhs.length)
         != std::tie(rhs.position, rhs.length);
 }
 
-static std::ostream& operator<<(std::ostream& stream, const StarPower& sp)
+std::ostream& operator<<(std::ostream& stream, const StarPower& sp)
 {
     stream << "{Pos " << sp.position << ", Length " << sp.length << '}';
     return stream;
 }
 
-static bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
+bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
 {
     return std::tie(lhs.position, lhs.numerator, lhs.denominator)
         != std::tie(rhs.position, rhs.numerator, rhs.denominator);
 }
 
-static std::ostream& operator<<(std::ostream& stream, const TimeSignature& ts)
+std::ostream& operator<<(std::ostream& stream, const TimeSignature& ts)
 {
     stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
            << ts.denominator << '}';
     return stream;
 }
 
-static bool operator==(const DrumFill& lhs, const DrumFill& rhs)
+bool operator==(const DrumFill& lhs, const DrumFill& rhs)
 {
     return std::tie(lhs.position, lhs.length)
         == std::tie(rhs.position, rhs.length);
 }
 
-static bool operator!=(const DrumFill& lhs, const DrumFill& rhs)
+bool operator!=(const DrumFill& lhs, const DrumFill& rhs)
 {
     return !(lhs == rhs);
 }
 
-static std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
+std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
 {
     stream << "{Pos " << fill.position << ", Length " << fill.length << '}';
     return stream;
 }
 
-static bool operator==(const DiscoFlip& lhs, const DiscoFlip& rhs)
+bool operator==(const DiscoFlip& lhs, const DiscoFlip& rhs)
 {
     return std::tie(lhs.position, lhs.length)
         == std::tie(rhs.position, rhs.length);
 }
 
-static bool operator!=(const DiscoFlip& lhs, const DiscoFlip& rhs)
+bool operator!=(const DiscoFlip& lhs, const DiscoFlip& rhs)
 {
     return !(lhs == rhs);
 }
 
-static std::ostream& operator<<(std::ostream& stream, const DiscoFlip& flip)
+std::ostream& operator<<(std::ostream& stream, const DiscoFlip& flip)
 {
     stream << "{Pos " << flip.position << ", Length " << flip.length << '}';
     return stream;
 }
 
-static std::ostream& operator<<(std::ostream& stream, Difficulty diff)
+std::ostream& operator<<(std::ostream& stream, Difficulty diff)
 {
     stream << static_cast<int>(diff);
     return stream;
 }
 
-static std::ostream& operator<<(std::ostream& stream, Instrument inst)
+std::ostream& operator<<(std::ostream& stream, Instrument inst)
 {
     stream << static_cast<int>(inst);
     return stream;
 }
 
-static std::ostream& operator<<(std::ostream& stream, NoteColour colour)
+std::ostream& operator<<(std::ostream& stream, NoteColour colour)
 {
     stream << static_cast<int>(colour);
     return stream;
+}
 }
 
 BOOST_AUTO_TEST_CASE(chart_to_song_has_correct_value_for_is_from_midi)

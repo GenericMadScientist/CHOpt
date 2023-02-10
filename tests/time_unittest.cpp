@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,22 +20,24 @@
 
 #include "time.hpp"
 
-static std::ostream& operator<<(std::ostream& stream, Beat beat)
+namespace {
+std::ostream& operator<<(std::ostream& stream, Beat beat)
 {
     stream << beat.value() << 'b';
     return stream;
 }
 
-static std::ostream& operator<<(std::ostream& stream, Measure measure)
+std::ostream& operator<<(std::ostream& stream, Measure measure)
 {
     stream << measure.value() << 'm';
     return stream;
 }
 
-static std::ostream& operator<<(std::ostream& stream, Second second)
+std::ostream& operator<<(std::ostream& stream, Second second)
 {
     stream << second.value() << 's';
     return stream;
+}
 }
 
 BOOST_AUTO_TEST_SUITE(beat_operations)

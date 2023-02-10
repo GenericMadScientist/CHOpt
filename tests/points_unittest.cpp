@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,59 +24,57 @@
 
 #include "points.hpp"
 
-static bool operator==(const Beat& lhs, const Beat& rhs)
+namespace {
+bool operator==(const Beat& lhs, const Beat& rhs)
 {
     return std::abs(lhs.value() - rhs.value()) < 0.00001;
 }
 
-static bool operator!=(const Beat& lhs, const Beat& rhs)
-{
-    return !(lhs == rhs);
-}
+bool operator!=(const Beat& lhs, const Beat& rhs) { return !(lhs == rhs); }
 
-static std::ostream& operator<<(std::ostream& stream, Beat beat)
+std::ostream& operator<<(std::ostream& stream, Beat beat)
 {
     stream << beat.value() << 'b';
     return stream;
 }
 
-static bool operator==(const Measure& lhs, const Measure& rhs)
+bool operator==(const Measure& lhs, const Measure& rhs)
 {
     return std::abs(lhs.value() - rhs.value()) < 0.000001;
 }
 
-static std::ostream& operator<<(std::ostream& stream, Measure measure)
+std::ostream& operator<<(std::ostream& stream, Measure measure)
 {
     stream << measure.value() << 'm';
     return stream;
 }
 
-static bool operator==(const Position& lhs, const Position& rhs)
+bool operator==(const Position& lhs, const Position& rhs)
 {
     return std::tie(lhs.beat, lhs.measure) == std::tie(rhs.beat, rhs.measure);
 }
 
-static std::ostream& operator<<(std::ostream& stream, const Position& position)
+std::ostream& operator<<(std::ostream& stream, const Position& position)
 {
     stream << "{Beat " << position.beat << ", Measure" << position.measure
            << '}';
     return stream;
 }
 
-static std::ostream& operator<<(std::ostream& stream,
-                                const std::tuple<Position, int>& tuple)
+std::ostream& operator<<(std::ostream& stream,
+                         const std::tuple<Position, int>& tuple)
 {
     stream << '{' << std::get<0>(tuple) << ", " << std::get<1>(tuple) << '}';
     return stream;
 }
 
-static std::ostream& operator<<(std::ostream& stream, PointPtr addr)
+std::ostream& operator<<(std::ostream& stream, PointPtr addr)
 {
     stream << "Point @ " << &(*addr);
     return stream;
 }
 
-static std::vector<int> set_values(const PointSet& points)
+std::vector<int> set_values(const PointSet& points)
 {
     std::vector<int> values;
     values.reserve(static_cast<std::size_t>(
@@ -87,7 +85,7 @@ static std::vector<int> set_values(const PointSet& points)
     return values;
 }
 
-static std::vector<int> set_base_values(const PointSet& points)
+std::vector<int> set_base_values(const PointSet& points)
 {
     std::vector<int> base_values;
     base_values.reserve(static_cast<std::size_t>(
@@ -98,7 +96,7 @@ static std::vector<int> set_base_values(const PointSet& points)
     return base_values;
 }
 
-static std::vector<Beat> set_position_beats(const PointSet& points)
+std::vector<Beat> set_position_beats(const PointSet& points)
 {
     std::vector<Beat> values;
     values.reserve(static_cast<std::size_t>(
@@ -107,6 +105,7 @@ static std::vector<Beat> set_position_beats(const PointSet& points)
         values.push_back(p->position.beat);
     }
     return values;
+}
 }
 
 BOOST_AUTO_TEST_SUITE(non_sustain_notes)

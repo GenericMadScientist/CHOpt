@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,9 @@
 
 #include "imagebuilder.hpp"
 
+namespace {
 template <typename T>
-static bool operator!=(const DrawnNote<T>& lhs, const DrawnNote<T>& rhs)
+bool operator!=(const DrawnNote<T>& lhs, const DrawnNote<T>& rhs)
 {
     return std::abs(lhs.beat - rhs.beat) >= 0.000001
         || std::abs(lhs.length - rhs.length) >= 0.000001
@@ -32,7 +33,7 @@ static bool operator!=(const DrawnNote<T>& lhs, const DrawnNote<T>& rhs)
 }
 
 template <typename T>
-static std::ostream& operator<<(std::ostream& stream, const DrawnNote<T>& note)
+std::ostream& operator<<(std::ostream& stream, const DrawnNote<T>& note)
 {
     stream << '{' << note.beat << "b, Length " << note.length << ", Colour "
            << static_cast<int>(note.colour) << ", Is SP Note "
@@ -40,34 +41,35 @@ static std::ostream& operator<<(std::ostream& stream, const DrawnNote<T>& note)
     return stream;
 }
 
-static bool operator!=(const DrawnRow& lhs, const DrawnRow& rhs)
+bool operator!=(const DrawnRow& lhs, const DrawnRow& rhs)
 {
     return std::abs(lhs.start - rhs.start) >= 0.000001
         || std::abs(lhs.end - rhs.end) >= 0.000001;
 }
 
-static std::ostream& operator<<(std::ostream& stream, const DrawnRow& row)
+std::ostream& operator<<(std::ostream& stream, const DrawnRow& row)
 {
     stream << '{' << row.start << ", " << row.end << '}';
     return stream;
 }
 
-static std::ostream& operator<<(std::ostream& stream, Difficulty difficulty)
+std::ostream& operator<<(std::ostream& stream, Difficulty difficulty)
 {
     stream << static_cast<int>(difficulty);
     return stream;
 }
 
-static std::ostream& operator<<(std::ostream& stream, TrackType track_type)
+std::ostream& operator<<(std::ostream& stream, TrackType track_type)
 {
     stream << static_cast<int>(track_type);
     return stream;
 }
 
-static std::ostream& operator<<(std::ostream& stream, DrumNoteColour colour)
+std::ostream& operator<<(std::ostream& stream, DrumNoteColour colour)
 {
     stream << static_cast<int>(colour);
     return stream;
+}
 }
 
 namespace boost::test_tools::tt_detail {
