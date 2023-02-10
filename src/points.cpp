@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@
 
 #include "points.hpp"
 
-static bool phrase_contains_pos(const StarPower& phrase, int position)
+namespace {
+bool phrase_contains_pos(const StarPower& phrase, int position)
 {
     if (position < phrase.position) {
         return false;
@@ -35,10 +36,9 @@ static bool phrase_contains_pos(const StarPower& phrase, int position)
 }
 
 template <typename OutputIt>
-static void
-append_sustain_points(OutputIt points, int position, int sust_length,
-                      int resolution, int chord_size,
-                      const TimeConverter& converter, const Engine& engine)
+void append_sustain_points(OutputIt points, int position, int sust_length,
+                           int resolution, int chord_size,
+                           const TimeConverter& converter, const Engine& engine)
 {
     constexpr double HALF_RES_OFFSET = 0.5;
 
@@ -79,7 +79,7 @@ append_sustain_points(OutputIt points, int position, int sust_length,
     }
 }
 
-static bool skip_kick(DrumNoteColour colour, const DrumSettings& drum_settings)
+bool skip_kick(DrumNoteColour colour, const DrumSettings& drum_settings)
 {
     if (colour == DrumNoteColour::Kick) {
         return drum_settings.disable_kick;
@@ -91,8 +91,8 @@ static bool skip_kick(DrumNoteColour colour, const DrumSettings& drum_settings)
 }
 
 template <typename InputIt>
-static int get_chord_size(InputIt first, InputIt last,
-                          const DrumSettings& drum_settings)
+int get_chord_size(InputIt first, InputIt last,
+                   const DrumSettings& drum_settings)
 {
     int note_count = 0;
     using T = decltype(first->colour);
@@ -109,7 +109,7 @@ static int get_chord_size(InputIt first, InputIt last,
     return note_count;
 }
 
-static bool is_dynamics_colour(DrumNoteColour colour)
+bool is_dynamics_colour(DrumNoteColour colour)
 {
     constexpr std::array NORMAL_COLOURS {
         DrumNoteColour::Red,          DrumNoteColour::Yellow,
@@ -122,12 +122,11 @@ static bool is_dynamics_colour(DrumNoteColour colour)
 }
 
 template <typename InputIt, typename OutputIt>
-static void
-append_note_points(InputIt first, InputIt last, InputIt note_start,
-                   InputIt note_end, OutputIt points, int resolution,
-                   bool is_note_sp_ender, bool is_unison_sp_ender,
-                   const TimeConverter& converter, double squeeze,
-                   const Engine& engine, const DrumSettings& drum_settings)
+void append_note_points(InputIt first, InputIt last, InputIt note_start,
+                        InputIt note_end, OutputIt points, int resolution,
+                        bool is_note_sp_ender, bool is_unison_sp_ender,
+                        const TimeConverter& converter, double squeeze,
+                        const Engine& engine, const DrumSettings& drum_settings)
 {
     assert(first != last); // NOLINT
 
@@ -192,8 +191,8 @@ append_note_points(InputIt first, InputIt last, InputIt note_start,
     }
 }
 
-static std::vector<Point>::iterator closest_point(std::vector<Point>& points,
-                                                  Beat fill_end)
+std::vector<Point>::iterator closest_point(std::vector<Point>& points,
+                                           Beat fill_end)
 {
     assert(!points.empty()); // NOLINT
     auto nearest = points.begin();
@@ -212,15 +211,15 @@ static std::vector<Point>::iterator closest_point(std::vector<Point>& points,
     return nearest;
 }
 
-static bool is_kick_colour(DrumNoteColour colour)
+bool is_kick_colour(DrumNoteColour colour)
 {
     return colour == DrumNoteColour::Kick
         || colour == DrumNoteColour::DoubleKick;
 }
 
-static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
-                                       const TimeConverter& converter,
-                                       std::vector<Point>& points)
+void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
+                                const TimeConverter& converter,
+                                std::vector<Point>& points)
 {
     if (points.empty()) {
         return;
@@ -253,12 +252,12 @@ static void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
     }
 }
 
-static std::vector<Point>
-points_from_track(const NoteTrack<DrumNoteColour>& track,
-                  const TimeConverter& converter,
-                  const std::vector<int>& unison_phrases,
-                  const SqueezeSettings& squeeze_settings,
-                  const DrumSettings& drum_settings, const Engine& engine)
+std::vector<Point> points_from_track(const NoteTrack<DrumNoteColour>& track,
+                                     const TimeConverter& converter,
+                                     const std::vector<int>& unison_phrases,
+                                     const SqueezeSettings& squeeze_settings,
+                                     const DrumSettings& drum_settings,
+                                     const Engine& engine)
 {
     const auto& notes = track.notes();
     std::vector<Point> points;
@@ -336,7 +335,7 @@ points_from_track(const NoteTrack<DrumNoteColour>& track,
 }
 
 template <typename T>
-static std::vector<Point>
+std::vector<Point>
 points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
                   const std::vector<int>& unison_phrases,
                   const SqueezeSettings& squeeze_settings, const Engine& engine)
@@ -412,8 +411,8 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
 }
 
 template <typename P>
-static std::vector<PointPtr>
-next_matching_vector(const std::vector<Point>& points, P predicate)
+std::vector<PointPtr> next_matching_vector(const std::vector<Point>& points,
+                                           P predicate)
 {
     if (points.empty()) {
         return {};
@@ -435,21 +434,19 @@ next_matching_vector(const std::vector<Point>& points, P predicate)
     return next_matching_points;
 }
 
-static std::vector<PointPtr>
-next_non_hold_vector(const std::vector<Point>& points)
+std::vector<PointPtr> next_non_hold_vector(const std::vector<Point>& points)
 {
     return next_matching_vector(points,
                                 [](const auto& p) { return !p.is_hold_point; });
 }
 
-static std::vector<PointPtr>
-next_sp_note_vector(const std::vector<Point>& points)
+std::vector<PointPtr> next_sp_note_vector(const std::vector<Point>& points)
 {
     return next_matching_vector(
         points, [](const auto& p) { return p.is_sp_granting_note; });
 }
 
-static std::vector<std::tuple<Position, int>>
+std::vector<std::tuple<Position, int>>
 solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
                        const TimeConverter& converter)
 {
@@ -464,7 +461,7 @@ solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
     return solo_boosts;
 }
 
-static std::vector<int> score_totals(const std::vector<Point>& points)
+std::vector<int> score_totals(const std::vector<Point>& points)
 {
     std::vector<int> scores;
     scores.reserve(points.size() + 1);
@@ -477,7 +474,7 @@ static std::vector<int> score_totals(const std::vector<Point>& points)
     return scores;
 }
 
-static std::string to_colour_string(const std::vector<NoteColour>& colours)
+std::string to_colour_string(const std::vector<NoteColour>& colours)
 {
     const std::vector<std::tuple<NoteColour, std::string>> COLOUR_NAMES {
         {NoteColour::Green, "G"},  {NoteColour::Red, "R"},
@@ -495,7 +492,7 @@ static std::string to_colour_string(const std::vector<NoteColour>& colours)
     return colour_string;
 }
 
-static std::string to_colour_string(const std::vector<GHLNoteColour>& colours)
+std::string to_colour_string(const std::vector<GHLNoteColour>& colours)
 {
     const std::vector<std::tuple<GHLNoteColour, std::string>> COLOUR_NAMES {
         {GHLNoteColour::WhiteLow, "W1"},  {GHLNoteColour::WhiteMid, "W2"},
@@ -514,7 +511,7 @@ static std::string to_colour_string(const std::vector<GHLNoteColour>& colours)
     return colour_string;
 }
 
-static std::string to_colour_string(DrumNoteColour colour)
+std::string to_colour_string(DrumNoteColour colour)
 {
     const std::array<std::tuple<DrumNoteColour, std::string>, 23> COLOUR_NAMES {
         {{DrumNoteColour::Red, "R"},
@@ -551,8 +548,8 @@ static std::string to_colour_string(DrumNoteColour colour)
 }
 
 template <typename T>
-static std::vector<std::string> note_colours(const std::vector<Note<T>>& notes,
-                                             const std::vector<Point>& points)
+std::vector<std::string> note_colours(const std::vector<Note<T>>& notes,
+                                      const std::vector<Point>& points)
 {
     std::vector<std::string> colours;
     colours.reserve(points.size());
@@ -577,6 +574,7 @@ static std::vector<std::string> note_colours(const std::vector<Note<T>>& notes,
         }
     }
     return colours;
+}
 }
 
 PointSet::PointSet(const NoteTrack<NoteColour>& track,
