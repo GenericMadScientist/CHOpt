@@ -6,6 +6,7 @@ Checks: >
   cppcoreguidelines-*,
   -cppcoreguidelines-pro-type-vararg,
   misc-*,
+  -misc-const-correctness,
   -misc-no-recursion,
   modernize-*,
   -modernize-use-trailing-return-type,
