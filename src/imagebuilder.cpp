@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 
 constexpr int MAX_BEATS_PER_LINE = 16;
 
-static double get_beat_rate(const SyncTrack& sync_track, int resolution,
-                            double beat)
+namespace {
+double get_beat_rate(const SyncTrack& sync_track, int resolution, double beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
@@ -39,7 +39,7 @@ static double get_beat_rate(const SyncTrack& sync_track, int resolution,
     return BASE_BEAT_RATE * ts->numerator / ts->denominator;
 }
 
-static int get_numer(const SyncTrack& sync_track, int resolution, double beat)
+int get_numer(const SyncTrack& sync_track, int resolution, double beat)
 {
     constexpr int BASE_NUMERATOR = 4;
 
@@ -53,8 +53,7 @@ static int get_numer(const SyncTrack& sync_track, int resolution, double beat)
     return ts->numerator;
 }
 
-static double get_denom(const SyncTrack& sync_track, int resolution,
-                        double beat)
+double get_denom(const SyncTrack& sync_track, int resolution, double beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
@@ -68,7 +67,7 @@ static double get_denom(const SyncTrack& sync_track, int resolution,
     return BASE_BEAT_RATE / ts->denominator;
 }
 
-static DrumNoteColour cymbal_to_tom(DrumNoteColour colour)
+DrumNoteColour cymbal_to_tom(DrumNoteColour colour)
 {
     if (colour == DrumNoteColour::YellowCymbal) {
         return DrumNoteColour::Yellow;
@@ -82,8 +81,8 @@ static DrumNoteColour cymbal_to_tom(DrumNoteColour colour)
     return colour;
 }
 
-static DrumNoteColour disco_flip(DrumNoteColour colour, int position,
-                                 const std::vector<DiscoFlip>& disco_flips)
+DrumNoteColour disco_flip(DrumNoteColour colour, int position,
+                          const std::vector<DiscoFlip>& disco_flips)
 {
     for (const auto& flip : disco_flips) {
         if (flip.position > position
@@ -101,7 +100,7 @@ static DrumNoteColour disco_flip(DrumNoteColour colour, int position,
     return colour;
 }
 
-static std::vector<DrawnNote<DrumNoteColour>>
+std::vector<DrawnNote<DrumNoteColour>>
 drawn_notes(const NoteTrack<DrumNoteColour>& track,
             const DrumSettings& drum_settings)
 {
@@ -136,7 +135,7 @@ drawn_notes(const NoteTrack<DrumNoteColour>& track,
 }
 
 template <typename T>
-static std::vector<DrawnNote<T>> drawn_notes(const NoteTrack<T>& track)
+std::vector<DrawnNote<T>> drawn_notes(const NoteTrack<T>& track)
 {
     std::vector<DrawnNote<T>> notes;
 
@@ -157,8 +156,8 @@ static std::vector<DrawnNote<T>> drawn_notes(const NoteTrack<T>& track)
 }
 
 template <typename T>
-static std::vector<DrawnRow> drawn_rows(const NoteTrack<T>& track,
-                                        const SyncTrack& sync_track)
+std::vector<DrawnRow> drawn_rows(const NoteTrack<T>& track,
+                                 const SyncTrack& sync_track)
 {
     int max_pos = 0;
     for (const auto& note : track.notes()) {
@@ -199,6 +198,205 @@ static std::vector<DrawnRow> drawn_rows(const NoteTrack<T>& track,
     }
 
     return rows;
+}
+
+bool is_kick_colour(DrumNoteColour colour)
+{
+    return colour == DrumNoteColour::Kick
+        || colour == DrumNoteColour::DoubleKick;
+}
+
+bool is_fill_active(const std::vector<Note<DrumNoteColour>>& notes,
+                    DrumFill fill)
+{
+    if (notes.empty()) {
+        return false;
+    }
+    const auto fill_end = fill.position + fill.length;
+    auto best_position = notes.front().position;
+    auto has_non_kick = !is_kick_colour(notes.front().colour);
+    for (auto i = 1U; i < notes.size(); ++i) {
+        if (std::abs(fill_end - notes[i].position)
+            > std::abs(fill_end - best_position)) {
+            break;
+        }
+        if (notes[i].position == best_position) {
+            has_non_kick |= !is_kick_colour(notes[i].colour);
+        } else {
+            best_position = notes[i].position;
+            has_non_kick = !is_kick_colour(notes[i].colour);
+        }
+    }
+    return has_non_kick;
+}
+
+enum class SpDrainEventType { Measure, SpPhrase, ActStart, ActEnd, WhammyEnd };
+
+std::vector<std::tuple<Beat, SpDrainEventType>>
+form_events(const std::vector<double>& measure_lines, const PointSet& points,
+            const Path& path)
+{
+    std::vector<std::tuple<Beat, SpDrainEventType>> events;
+    for (std::size_t i = 1; i < measure_lines.size(); ++i) {
+        events.emplace_back(Beat {measure_lines[i]}, SpDrainEventType::Measure);
+    }
+    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+        if (p->is_sp_granting_note) {
+            events.emplace_back(p->position.beat, SpDrainEventType::SpPhrase);
+        }
+    }
+    for (auto act : path.activations) {
+        if (act.whammy_end < act.sp_end) {
+            events.emplace_back(act.whammy_end, SpDrainEventType::WhammyEnd);
+        }
+        events.emplace_back(act.sp_start, SpDrainEventType::ActStart);
+        events.emplace_back(act.sp_end, SpDrainEventType::ActEnd);
+    }
+    std::stable_sort(events.begin(), events.end());
+    return events;
+}
+
+const NoteTrack<NoteColour>& track_from_inst_diff(const Settings& settings,
+                                                  const Song& song)
+{
+    switch (settings.instrument) {
+    case Instrument::Guitar:
+        return song.guitar_note_track(settings.difficulty);
+    case Instrument::GuitarCoop:
+        return song.guitar_coop_note_track(settings.difficulty);
+    case Instrument::Bass:
+        return song.bass_note_track(settings.difficulty);
+    case Instrument::Rhythm:
+        return song.rhythm_note_track(settings.difficulty);
+    case Instrument::Keys:
+        return song.keys_note_track(settings.difficulty);
+    case Instrument::GHLGuitar:
+        throw std::invalid_argument("GHL Guitar is not 5 fret");
+    case Instrument::GHLBass:
+        throw std::invalid_argument("GHL Bass is not 5 fret");
+    case Instrument::Drums:
+        throw std::invalid_argument("Drums is not 5 fret");
+    }
+
+    throw std::invalid_argument("Invalid instrument");
+}
+
+template <typename T>
+ImageBuilder build_with_drum_params(const NoteTrack<T>& track,
+                                    const SyncTrack& sync_track,
+                                    const Settings& settings)
+{
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        return {track, sync_track, settings.difficulty, settings.drum_settings,
+                settings.is_lefty_flip};
+    } else {
+        return {track, sync_track, settings.difficulty, settings.is_lefty_flip};
+    }
+}
+
+template <typename T>
+ImageBuilder
+make_builder_from_track(const Song& song, const NoteTrack<T>& track,
+                        const Settings& settings,
+                        const std::function<void(const char*)>& write,
+                        const std::atomic<bool>* terminate)
+{
+    auto new_track = track;
+    if (song.is_from_midi()) {
+        new_track = track.trim_sustains();
+    }
+    new_track = new_track.snap_chords(settings.engine->snap_gap());
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        if (!settings.engine->is_rock_band()
+            && new_track.drum_fills().empty()) {
+            new_track.generate_drum_fills({song.sync_track(),
+                                           new_track.resolution(),
+                                           *settings.engine,
+                                           {}});
+        }
+        if (!settings.drum_settings.enable_dynamics) {
+            new_track.disable_dynamics();
+        }
+    }
+    const auto sync_track = song.sync_track().speedup(settings.speed);
+
+    auto builder = build_with_drum_params(new_track, sync_track, settings);
+    builder.add_song_header(song.name(), song.artist(), song.charter(),
+                            settings.speed);
+    if (settings.engine->has_unison_bonuses()) {
+        builder.add_sp_phrases(new_track, song.unison_phrase_positions());
+    } else {
+        builder.add_sp_phrases(new_track, {});
+    }
+
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        builder.add_drum_fills(new_track);
+    }
+
+    if (settings.draw_bpms) {
+        builder.add_bpms(sync_track, new_track.resolution());
+    }
+
+    const auto solos = new_track.solos(settings.drum_settings);
+    if (settings.draw_solos) {
+        builder.add_solo_sections(solos, new_track.resolution());
+    }
+
+    if (settings.draw_time_sigs) {
+        builder.add_time_sigs(sync_track, new_track.resolution());
+    }
+
+    // The 0.1% squeeze minimum is to get around dumb floating point rounding
+    // issues that visibly affect the path at 0% squeeze.
+    auto squeeze_settings = settings.squeeze_settings;
+    constexpr double SQUEEZE_EPSILON = 0.001;
+    squeeze_settings.squeeze
+        = std::max(squeeze_settings.squeeze, SQUEEZE_EPSILON);
+    const ProcessedSong processed_track {new_track,
+                                         sync_track,
+                                         settings.squeeze_settings,
+                                         settings.drum_settings,
+                                         *settings.engine,
+                                         song.od_beats(),
+                                         song.unison_phrase_positions()};
+    Path path;
+
+    if (!settings.blank) {
+        const auto is_rb_drums = std::is_same_v<T, DrumNoteColour>
+            && settings.engine->is_rock_band();
+        if (is_rb_drums) {
+            write("Optimisation disabled for Rock Band drums, planned for a "
+                  "future release");
+        } else {
+            write("Optimising, please wait...");
+            const Optimiser optimiser {&processed_track, terminate,
+                                       settings.speed,
+                                       squeeze_settings.whammy_delay};
+            path = optimiser.optimal_path();
+            write(processed_track.path_summary(path).c_str());
+            builder.add_sp_acts(processed_track.points(),
+                                processed_track.converter(), path);
+            builder.activation_opacity() = settings.opacity;
+        }
+    }
+
+    builder.add_measure_values(processed_track.points(),
+                               processed_track.converter(), path);
+    if (settings.blank) {
+        builder.add_sp_values(processed_track.sp_data(), *settings.engine);
+    } else {
+        builder.add_sp_percent_values(processed_track.sp_data(),
+                                      processed_track.converter(),
+                                      processed_track.points(), path);
+    }
+    builder.set_total_score(processed_track.points(), solos, path);
+    if (settings.engine->has_bres() && new_track.bre().has_value()) {
+        builder.add_bre(*(new_track.bre()), new_track.resolution(),
+                        processed_track.converter());
+    }
+
+    return builder;
+}
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
@@ -323,36 +521,6 @@ void ImageBuilder::add_bre(const BigRockEnding& bre, int resolution,
 
     m_bre_ranges.emplace_back(bre.start / static_cast<double>(resolution),
                               bre.end / static_cast<double>(resolution));
-}
-
-static bool is_kick_colour(DrumNoteColour colour)
-{
-    return colour == DrumNoteColour::Kick
-        || colour == DrumNoteColour::DoubleKick;
-}
-
-static bool is_fill_active(const std::vector<Note<DrumNoteColour>>& notes,
-                           DrumFill fill)
-{
-    if (notes.empty()) {
-        return false;
-    }
-    const auto fill_end = fill.position + fill.length;
-    auto best_position = notes.front().position;
-    auto has_non_kick = !is_kick_colour(notes.front().colour);
-    for (auto i = 1U; i < notes.size(); ++i) {
-        if (std::abs(fill_end - notes[i].position)
-            > std::abs(fill_end - best_position)) {
-            break;
-        }
-        if (notes[i].position == best_position) {
-            has_non_kick |= !is_kick_colour(notes[i].colour);
-        } else {
-            best_position = notes[i].position;
-            has_non_kick = !is_kick_colour(notes[i].colour);
-        }
-    }
-    return has_non_kick;
 }
 
 void ImageBuilder::add_drum_fills(const NoteTrack<DrumNoteColour>& track)
@@ -609,32 +777,6 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
     }
 }
 
-enum class SpDrainEventType { Measure, SpPhrase, ActStart, ActEnd, WhammyEnd };
-
-static std::vector<std::tuple<Beat, SpDrainEventType>>
-form_events(const std::vector<double>& measure_lines, const PointSet& points,
-            const Path& path)
-{
-    std::vector<std::tuple<Beat, SpDrainEventType>> events;
-    for (std::size_t i = 1; i < measure_lines.size(); ++i) {
-        events.emplace_back(Beat {measure_lines[i]}, SpDrainEventType::Measure);
-    }
-    for (auto p = points.cbegin(); p < points.cend(); ++p) {
-        if (p->is_sp_granting_note) {
-            events.emplace_back(p->position.beat, SpDrainEventType::SpPhrase);
-        }
-    }
-    for (auto act : path.activations) {
-        if (act.whammy_end < act.sp_end) {
-            events.emplace_back(act.whammy_end, SpDrainEventType::WhammyEnd);
-        }
-        events.emplace_back(act.sp_start, SpDrainEventType::ActStart);
-        events.emplace_back(act.sp_end, SpDrainEventType::ActEnd);
-    }
-    std::stable_sort(events.begin(), events.end());
-    return events;
-}
-
 void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                                          const TimeConverter& converter,
                                          const PointSet& points,
@@ -730,148 +872,6 @@ void ImageBuilder::set_total_score(const PointSet& points,
         solos.cbegin(), solos.cend(), 0,
         [](const auto x, const auto& y) { return x + y.value; });
     m_total_score = no_sp_score + path.score_boost;
-}
-
-const static NoteTrack<NoteColour>&
-track_from_inst_diff(const Settings& settings, const Song& song)
-{
-    switch (settings.instrument) {
-    case Instrument::Guitar:
-        return song.guitar_note_track(settings.difficulty);
-    case Instrument::GuitarCoop:
-        return song.guitar_coop_note_track(settings.difficulty);
-    case Instrument::Bass:
-        return song.bass_note_track(settings.difficulty);
-    case Instrument::Rhythm:
-        return song.rhythm_note_track(settings.difficulty);
-    case Instrument::Keys:
-        return song.keys_note_track(settings.difficulty);
-    case Instrument::GHLGuitar:
-        throw std::invalid_argument("GHL Guitar is not 5 fret");
-    case Instrument::GHLBass:
-        throw std::invalid_argument("GHL Bass is not 5 fret");
-    case Instrument::Drums:
-        throw std::invalid_argument("Drums is not 5 fret");
-    }
-
-    throw std::invalid_argument("Invalid instrument");
-}
-
-template <typename T>
-static ImageBuilder build_with_drum_params(const NoteTrack<T>& track,
-                                           const SyncTrack& sync_track,
-                                           const Settings& settings)
-{
-    if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        return {track, sync_track, settings.difficulty, settings.drum_settings,
-                settings.is_lefty_flip};
-    } else {
-        return {track, sync_track, settings.difficulty, settings.is_lefty_flip};
-    }
-}
-
-template <typename T>
-static ImageBuilder
-make_builder_from_track(const Song& song, const NoteTrack<T>& track,
-                        const Settings& settings,
-                        const std::function<void(const char*)>& write,
-                        const std::atomic<bool>* terminate)
-{
-    auto new_track = track;
-    if (song.is_from_midi()) {
-        new_track = track.trim_sustains();
-    }
-    new_track = new_track.snap_chords(settings.engine->snap_gap());
-    if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        if (!settings.engine->is_rock_band()
-            && new_track.drum_fills().empty()) {
-            new_track.generate_drum_fills({song.sync_track(),
-                                           new_track.resolution(),
-                                           *settings.engine,
-                                           {}});
-        }
-        if (!settings.drum_settings.enable_dynamics) {
-            new_track.disable_dynamics();
-        }
-    }
-    const auto sync_track = song.sync_track().speedup(settings.speed);
-
-    auto builder = build_with_drum_params(new_track, sync_track, settings);
-    builder.add_song_header(song.name(), song.artist(), song.charter(),
-                            settings.speed);
-    if (settings.engine->has_unison_bonuses()) {
-        builder.add_sp_phrases(new_track, song.unison_phrase_positions());
-    } else {
-        builder.add_sp_phrases(new_track, {});
-    }
-
-    if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        builder.add_drum_fills(new_track);
-    }
-
-    if (settings.draw_bpms) {
-        builder.add_bpms(sync_track, new_track.resolution());
-    }
-
-    const auto solos = new_track.solos(settings.drum_settings);
-    if (settings.draw_solos) {
-        builder.add_solo_sections(solos, new_track.resolution());
-    }
-
-    if (settings.draw_time_sigs) {
-        builder.add_time_sigs(sync_track, new_track.resolution());
-    }
-
-    // The 0.1% squeeze minimum is to get around dumb floating point rounding
-    // issues that visibly affect the path at 0% squeeze.
-    auto squeeze_settings = settings.squeeze_settings;
-    constexpr double SQUEEZE_EPSILON = 0.001;
-    squeeze_settings.squeeze
-        = std::max(squeeze_settings.squeeze, SQUEEZE_EPSILON);
-    const ProcessedSong processed_track {new_track,
-                                         sync_track,
-                                         settings.squeeze_settings,
-                                         settings.drum_settings,
-                                         *settings.engine,
-                                         song.od_beats(),
-                                         song.unison_phrase_positions()};
-    Path path;
-
-    if (!settings.blank) {
-        const auto is_rb_drums = std::is_same_v<T, DrumNoteColour>
-            && settings.engine->is_rock_band();
-        if (is_rb_drums) {
-            write("Optimisation disabled for Rock Band drums, planned for a "
-                  "future release");
-        } else {
-            write("Optimising, please wait...");
-            const Optimiser optimiser {&processed_track, terminate,
-                                       settings.speed,
-                                       squeeze_settings.whammy_delay};
-            path = optimiser.optimal_path();
-            write(processed_track.path_summary(path).c_str());
-            builder.add_sp_acts(processed_track.points(),
-                                processed_track.converter(), path);
-            builder.activation_opacity() = settings.opacity;
-        }
-    }
-
-    builder.add_measure_values(processed_track.points(),
-                               processed_track.converter(), path);
-    if (settings.blank) {
-        builder.add_sp_values(processed_track.sp_data(), *settings.engine);
-    } else {
-        builder.add_sp_percent_values(processed_track.sp_data(),
-                                      processed_track.converter(),
-                                      processed_track.points(), path);
-    }
-    builder.set_total_score(processed_track.points(), solos, path);
-    if (settings.engine->has_bres() && new_track.bre().has_value()) {
-        builder.add_bre(*(new_track.bre()), new_track.resolution(),
-                        processed_track.converter());
-    }
-
-    return builder;
 }
 
 ImageBuilder make_builder(const Song& song, const Settings& settings,
