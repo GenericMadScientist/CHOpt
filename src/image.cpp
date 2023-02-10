@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,8 @@ constexpr float OPEN_NOTE_OPACITY = 0.5F;
 constexpr int TOP_MARGIN = 125;
 constexpr int DIST_BETWEEN_MEASURES = MEASURE_HEIGHT + MARGIN;
 
-static const char* diff_to_str(Difficulty difficulty)
+namespace {
+const char* diff_to_str(Difficulty difficulty)
 {
     switch (difficulty) {
     case Difficulty::Easy:
@@ -59,7 +60,7 @@ static const char* diff_to_str(Difficulty difficulty)
     }
 }
 
-static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
+std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
 {
     constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
     constexpr std::array<unsigned char, 3> RED {255, 0, 0};
@@ -86,7 +87,7 @@ static std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_colour");
 }
 
-static std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
+std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
 {
     constexpr std::array<unsigned char, 3> RED {255, 0, 0};
     constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
@@ -128,7 +129,7 @@ static std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_colour");
 }
 
-static int note_colour_to_offset(NoteColour colour, bool is_lefty_flip)
+int note_colour_to_offset(NoteColour colour, bool is_lefty_flip)
 {
     constexpr int GREEN_OFFSET = 0;
     constexpr int RED_OFFSET = 15;
@@ -166,7 +167,7 @@ static int note_colour_to_offset(NoteColour colour, bool is_lefty_flip)
     return offset;
 }
 
-static int note_colour_to_offset(GHLNoteColour colour, bool is_lefty_flip)
+int note_colour_to_offset(GHLNoteColour colour, bool is_lefty_flip)
 {
     constexpr int LOW_OFFSET = 0;
     constexpr int MID_OFFSET = 30;
@@ -197,7 +198,7 @@ static int note_colour_to_offset(GHLNoteColour colour, bool is_lefty_flip)
     return offset;
 }
 
-static int note_colour_to_offset(DrumNoteColour colour, bool is_lefty_flip)
+int note_colour_to_offset(DrumNoteColour colour, bool is_lefty_flip)
 {
     constexpr int RED_OFFSET = 0;
     constexpr int YELLOW_OFFSET = 20;
@@ -248,6 +249,104 @@ static int note_colour_to_offset(DrumNoteColour colour, bool is_lefty_flip)
         offset = GREEN_OFFSET - offset;
     }
     return offset;
+}
+
+std::tuple<int, int> get_xy(const ImageBuilder& builder, double pos)
+{
+    auto row = std::find_if(builder.rows().cbegin(), builder.rows().cend(),
+                            [=](const auto x) { return x.end > pos; });
+    auto x = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
+    auto y = TOP_MARGIN + MARGIN
+        + DIST_BETWEEN_MEASURES
+            * static_cast<int>(std::distance(builder.rows().cbegin(), row));
+    return {x, y};
+}
+
+int numb_of_fret_lines(TrackType track_type)
+{
+    switch (track_type) {
+    case TrackType::FiveFret:
+        return 4;
+    case TrackType::SixFret:
+        return 2;
+    case TrackType::Drums:
+        return 3;
+    }
+
+    throw std::invalid_argument("Invalid TrackType");
+}
+
+enum class DrumSpriteShape { Kick, Cymbal, Tom };
+
+DrumSpriteShape drum_colour_to_shape(DrumNoteColour colour)
+{
+    switch (colour) {
+    case DrumNoteColour::Kick:
+    case DrumNoteColour::DoubleKick:
+        return DrumSpriteShape::Kick;
+    case DrumNoteColour::YellowCymbal:
+    case DrumNoteColour::BlueCymbal:
+    case DrumNoteColour::GreenCymbal:
+    case DrumNoteColour::YellowCymbalGhost:
+    case DrumNoteColour::BlueCymbalGhost:
+    case DrumNoteColour::GreenCymbalGhost:
+    case DrumNoteColour::YellowCymbalAccent:
+    case DrumNoteColour::BlueCymbalAccent:
+    case DrumNoteColour::GreenCymbalAccent:
+        return DrumSpriteShape::Cymbal;
+    case DrumNoteColour::Red:
+    case DrumNoteColour::Yellow:
+    case DrumNoteColour::Blue:
+    case DrumNoteColour::Green:
+    case DrumNoteColour::RedGhost:
+    case DrumNoteColour::YellowGhost:
+    case DrumNoteColour::BlueGhost:
+    case DrumNoteColour::GreenGhost:
+    case DrumNoteColour::RedAccent:
+    case DrumNoteColour::YellowAccent:
+    case DrumNoteColour::BlueAccent:
+    case DrumNoteColour::GreenAccent:
+        return DrumSpriteShape::Tom;
+    }
+
+    throw std::invalid_argument("Invalid DrumNoteColour");
+}
+
+// Codes are
+// 0 - No note
+// 1 - White note
+// 2 - Black note
+// 3 - White and black note
+std::array<int, 3>
+ghl_note_colour_codes(const std::set<GHLNoteColour>& note_colours)
+{
+    std::array<int, 3> codes {0, 0, 0};
+    for (const auto& colour : note_colours) {
+        switch (colour) {
+        case GHLNoteColour::Open:
+            return {0, 0, 0};
+        case GHLNoteColour::WhiteLow:
+            codes[0] |= 1;
+            break;
+        case GHLNoteColour::WhiteMid:
+            codes[1] |= 1;
+            break;
+        case GHLNoteColour::WhiteHigh:
+            codes[2] |= 1;
+            break;
+        case GHLNoteColour::BlackLow:
+            codes[0] |= 2;
+            break;
+        case GHLNoteColour::BlackMid:
+            codes[1] |= 2;
+            break;
+        case GHLNoteColour::BlackHigh:
+            codes[2] |= 2;
+            break;
+        }
+    }
+    return codes;
+}
 }
 
 class ImageImpl {
@@ -305,17 +404,6 @@ public:
     void save(const char* filename) const { m_image.save(filename); }
 };
 
-static std::tuple<int, int> get_xy(const ImageBuilder& builder, double pos)
-{
-    auto row = std::find_if(builder.rows().cbegin(), builder.rows().cend(),
-                            [=](const auto x) { return x.end > pos; });
-    auto x = LEFT_MARGIN + static_cast<int>(BEAT_WIDTH * (pos - row->start));
-    auto y = TOP_MARGIN + MARGIN
-        + DIST_BETWEEN_MEASURES
-            * static_cast<int>(std::distance(builder.rows().cbegin(), row));
-    return {x, y};
-}
-
 void ImageImpl::draw_header(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
@@ -327,20 +415,6 @@ void ImageImpl::draw_header(const ImageBuilder& builder)
                       1.0, HEADER_FONT_HEIGHT, builder.song_name().c_str(),
                       builder.artist().c_str(), builder.charter().c_str(),
                       diff_to_str(builder.difficulty()), builder.total_score());
-}
-
-static int numb_of_fret_lines(TrackType track_type)
-{
-    switch (track_type) {
-    case TrackType::FiveFret:
-        return 4;
-    case TrackType::SixFret:
-        return 2;
-    case TrackType::Drums:
-        return 3;
-    }
-
-    throw std::invalid_argument("Invalid TrackType");
 }
 
 void ImageImpl::draw_measures(const ImageBuilder& builder)
@@ -549,42 +623,6 @@ void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
     }
 }
 
-enum class DrumSpriteShape { Kick, Cymbal, Tom };
-
-static DrumSpriteShape drum_colour_to_shape(DrumNoteColour colour)
-{
-    switch (colour) {
-    case DrumNoteColour::Kick:
-    case DrumNoteColour::DoubleKick:
-        return DrumSpriteShape::Kick;
-    case DrumNoteColour::YellowCymbal:
-    case DrumNoteColour::BlueCymbal:
-    case DrumNoteColour::GreenCymbal:
-    case DrumNoteColour::YellowCymbalGhost:
-    case DrumNoteColour::BlueCymbalGhost:
-    case DrumNoteColour::GreenCymbalGhost:
-    case DrumNoteColour::YellowCymbalAccent:
-    case DrumNoteColour::BlueCymbalAccent:
-    case DrumNoteColour::GreenCymbalAccent:
-        return DrumSpriteShape::Cymbal;
-    case DrumNoteColour::Red:
-    case DrumNoteColour::Yellow:
-    case DrumNoteColour::Blue:
-    case DrumNoteColour::Green:
-    case DrumNoteColour::RedGhost:
-    case DrumNoteColour::YellowGhost:
-    case DrumNoteColour::BlueGhost:
-    case DrumNoteColour::GreenGhost:
-    case DrumNoteColour::RedAccent:
-    case DrumNoteColour::YellowAccent:
-    case DrumNoteColour::BlueAccent:
-    case DrumNoteColour::GreenAccent:
-        return DrumSpriteShape::Tom;
-    }
-
-    throw std::invalid_argument("Invalid DrumNoteColour");
-}
-
 void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
 {
     // We draw all the kicks first because we want RYBG to lie on top of the
@@ -604,42 +642,6 @@ void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
         const auto [x, y] = get_xy(builder, note.beat);
         draw_drum_note(x, y, note.colour, builder.is_lefty_flip());
     }
-}
-
-// Codes are
-// 0 - No note
-// 1 - White note
-// 2 - Black note
-// 3 - White and black note
-static std::array<int, 3>
-ghl_note_colour_codes(const std::set<GHLNoteColour>& note_colours)
-{
-    std::array<int, 3> codes {0, 0, 0};
-    for (const auto& colour : note_colours) {
-        switch (colour) {
-        case GHLNoteColour::Open:
-            return {0, 0, 0};
-        case GHLNoteColour::WhiteLow:
-            codes[0] |= 1;
-            break;
-        case GHLNoteColour::WhiteMid:
-            codes[1] |= 1;
-            break;
-        case GHLNoteColour::WhiteHigh:
-            codes[2] |= 1;
-            break;
-        case GHLNoteColour::BlackLow:
-            codes[0] |= 2;
-            break;
-        case GHLNoteColour::BlackMid:
-            codes[1] |= 2;
-            break;
-        case GHLNoteColour::BlackHigh:
-            codes[2] |= 2;
-            break;
-        }
-    }
-    return codes;
 }
 
 void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour,
