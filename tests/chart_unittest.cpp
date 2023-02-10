@@ -29,7 +29,7 @@ bool operator!=(const BpmEvent& lhs, const BpmEvent& rhs)
     return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
 }
 
-= std::ostream & operator<<(std::ostream& stream, const BpmEvent& event)
+std::ostream& operator<<(std::ostream& stream, const BpmEvent& event)
 {
     stream << "{Pos " << event.position << ", BPM " << event.bpm << '}';
     return stream;
