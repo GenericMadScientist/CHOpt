@@ -24,7 +24,6 @@
 #include "midi.hpp"
 #include "songparts.hpp"
 
-namespace {
 std::vector<std::uint8_t>
 midi_from_tracks(const std::vector<std::vector<std::uint8_t>>& track_sections)
 {
@@ -120,7 +119,6 @@ std::ostream& operator<<(std::ostream& stream, const TimedEvent& event)
     }
     stream << '}';
     return stream;
-}
 }
 
 BOOST_AUTO_TEST_CASE(parse_midi_reads_header_correctly)

@@ -19,8 +19,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include "songparts.hpp"
+#include "test_helpers.hpp"
 
-namespace {
 template <typename T> bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
 {
     return std::tie(lhs.position, lhs.length, lhs.colour)
@@ -33,44 +33,6 @@ std::ostream& operator<<(std::ostream& stream, const Note<T>& note)
     stream << "{Pos " << note.position << ", Length " << note.length
            << ", Colour " << static_cast<int>(note.colour) << '}';
     return stream;
-}
-
-bool operator!=(const Solo& lhs, const Solo& rhs)
-{
-    return std::tie(lhs.start, lhs.end, lhs.value)
-        != std::tie(rhs.start, rhs.end, rhs.value);
-}
-
-std::ostream& operator<<(std::ostream& stream, const Solo& solo)
-{
-    stream << "{Start " << solo.start << ", End " << solo.end << ", Value "
-           << solo.value << '}';
-    return stream;
-}
-
-bool operator!=(const DrumFill& lhs, const DrumFill& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        != std::tie(rhs.position, rhs.length);
-}
-
-std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
-{
-    stream << "{Pos " << fill.position << ", Length " << fill.length << '}';
-    return stream;
-}
-
-bool operator!=(const StarPower& lhs, const StarPower& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        != std::tie(rhs.position, rhs.length);
-}
-
-std::ostream& operator<<(std::ostream& stream, const StarPower& sp)
-{
-    stream << "{Pos " << sp.position << ", Length " << sp.length << '}';
-    return stream;
-}
 }
 
 BOOST_AUTO_TEST_SUITE(note_track_ctor_maintains_invariants)

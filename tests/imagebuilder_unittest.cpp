@@ -21,8 +21,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include "imagebuilder.hpp"
+#include "test_helpers.hpp"
 
-namespace {
 template <typename T>
 bool operator!=(const DrawnNote<T>& lhs, const DrawnNote<T>& rhs)
 {
@@ -53,12 +53,6 @@ std::ostream& operator<<(std::ostream& stream, const DrawnRow& row)
     return stream;
 }
 
-std::ostream& operator<<(std::ostream& stream, Difficulty difficulty)
-{
-    stream << static_cast<int>(difficulty);
-    return stream;
-}
-
 std::ostream& operator<<(std::ostream& stream, TrackType track_type)
 {
     stream << static_cast<int>(track_type);
@@ -69,7 +63,6 @@ std::ostream& operator<<(std::ostream& stream, DrumNoteColour colour)
 {
     stream << static_cast<int>(colour);
     return stream;
-}
 }
 
 namespace boost::test_tools::tt_detail {

@@ -23,7 +23,6 @@
 #include "chart.hpp"
 #include "songparts.hpp"
 
-namespace {
 bool operator!=(const BpmEvent& lhs, const BpmEvent& rhs)
 {
     return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
@@ -83,7 +82,6 @@ std::ostream& operator<<(std::ostream& stream, const TimeSigEvent& ts)
     stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
            << ts.denominator << '}';
     return stream;
-}
 }
 
 BOOST_AUTO_TEST_CASE(section_names_are_read)

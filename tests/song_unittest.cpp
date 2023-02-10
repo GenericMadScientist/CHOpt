@@ -19,18 +19,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "song.hpp"
-
-namespace {
-bool operator!=(const BPM& lhs, const BPM& rhs)
-{
-    return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
-}
-
-std::ostream& operator<<(std::ostream& stream, const BPM& bpm)
-{
-    stream << "{Pos " << bpm.position << ", BPM " << bpm.bpm << '}';
-    return stream;
-}
+#include "test_helpers.hpp"
 
 template <typename T> bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
 {
@@ -43,61 +32,6 @@ std::ostream& operator<<(std::ostream& stream, const Note<T>& note)
 {
     stream << "{Pos " << note.position << ", Length " << note.length
            << ", Colour " << static_cast<int>(note.colour) << '}';
-    return stream;
-}
-
-bool operator!=(const Solo& lhs, const Solo& rhs)
-{
-    return std::tie(lhs.start, lhs.end, lhs.value)
-        != std::tie(rhs.start, rhs.end, rhs.value);
-}
-
-std::ostream& operator<<(std::ostream& stream, const Solo& solo)
-{
-    stream << "{Start " << solo.start << ", End " << solo.end << ", Value "
-           << solo.value << '}';
-    return stream;
-}
-
-bool operator!=(const StarPower& lhs, const StarPower& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        != std::tie(rhs.position, rhs.length);
-}
-
-std::ostream& operator<<(std::ostream& stream, const StarPower& sp)
-{
-    stream << "{Pos " << sp.position << ", Length " << sp.length << '}';
-    return stream;
-}
-
-bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
-{
-    return std::tie(lhs.position, lhs.numerator, lhs.denominator)
-        != std::tie(rhs.position, rhs.numerator, rhs.denominator);
-}
-
-std::ostream& operator<<(std::ostream& stream, const TimeSignature& ts)
-{
-    stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
-           << ts.denominator << '}';
-    return stream;
-}
-
-bool operator==(const DrumFill& lhs, const DrumFill& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        == std::tie(rhs.position, rhs.length);
-}
-
-bool operator!=(const DrumFill& lhs, const DrumFill& rhs)
-{
-    return !(lhs == rhs);
-}
-
-std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
-{
-    stream << "{Pos " << fill.position << ", Length " << fill.length << '}';
     return stream;
 }
 
@@ -118,12 +52,6 @@ std::ostream& operator<<(std::ostream& stream, const DiscoFlip& flip)
     return stream;
 }
 
-std::ostream& operator<<(std::ostream& stream, Difficulty diff)
-{
-    stream << static_cast<int>(diff);
-    return stream;
-}
-
 std::ostream& operator<<(std::ostream& stream, Instrument inst)
 {
     stream << static_cast<int>(inst);
@@ -134,7 +62,6 @@ std::ostream& operator<<(std::ostream& stream, NoteColour colour)
 {
     stream << static_cast<int>(colour);
     return stream;
-}
 }
 
 BOOST_AUTO_TEST_CASE(chart_to_song_has_correct_value_for_is_from_midi)

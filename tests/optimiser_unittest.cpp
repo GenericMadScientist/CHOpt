@@ -23,12 +23,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "optimiser.hpp"
-
-namespace {
-bool operator==(const Beat& lhs, const Beat& rhs)
-{
-    return std::abs(lhs.value() - rhs.value()) < 0.01;
-}
+#include "test_helpers.hpp"
 
 bool operator!=(const Activation& lhs, const Activation& rhs)
 {
@@ -42,7 +37,6 @@ std::ostream& operator<<(std::ostream& stream, const Activation& act)
            << ", SPStart " << act.sp_start.value() << "b, SPEnd "
            << act.sp_end.value() << "b}";
     return stream;
-}
 }
 
 const std::atomic<bool> term_bool {false};
