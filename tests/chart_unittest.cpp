@@ -20,69 +20,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "chart.hpp"
-#include "songparts.hpp"
-
-bool operator!=(const BpmEvent& lhs, const BpmEvent& rhs)
-{
-    return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
-}
-
-std::ostream& operator<<(std::ostream& stream, const BpmEvent& event)
-{
-    stream << "{Pos " << event.position << ", BPM " << event.bpm << '}';
-    return stream;
-}
-
-bool operator!=(const Event& lhs, const Event& rhs)
-{
-    return std::tie(lhs.position, lhs.data) != std::tie(rhs.position, rhs.data);
-}
-
-std::ostream& operator<<(std::ostream& stream, const Event& event)
-{
-    stream << "{Pos " << event.position << ", Data " << event.data << '}';
-    return stream;
-}
-
-bool operator!=(const NoteEvent& lhs, const NoteEvent& rhs)
-{
-    return std::tie(lhs.position, lhs.fret, lhs.length)
-        != std::tie(rhs.position, rhs.fret, rhs.length);
-}
-
-std::ostream& operator<<(std::ostream& stream, const NoteEvent& event)
-{
-    stream << "{Pos " << event.position << ", Fret " << event.fret << ", Length"
-           << event.length << '}';
-    return stream;
-}
-
-bool operator!=(const SpecialEvent& lhs, const SpecialEvent& rhs)
-{
-    return std::tie(lhs.position, lhs.key, lhs.length)
-        != std::tie(rhs.position, rhs.key, rhs.length);
-}
-
-std::ostream& operator<<(std::ostream& stream, const SpecialEvent& event)
-{
-    stream << "{Pos " << event.position << ", Key " << event.key << ", Length"
-           << event.length << '}';
-    return stream;
-}
-
-bool operator!=(const TimeSigEvent& lhs, const TimeSigEvent& rhs)
-{
-    return std::tie(lhs.position, lhs.numerator, lhs.denominator)
-        != std::tie(rhs.position, rhs.numerator, rhs.denominator);
-}
-
-std::ostream& operator<<(std::ostream& stream, const TimeSigEvent& ts)
-{
-    stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
-           << ts.denominator << '}';
-    return stream;
-}
+#include "test_helpers.hpp"
 
 BOOST_AUTO_TEST_CASE(section_names_are_read)
 {

@@ -21,9 +21,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "midi.hpp"
-#include "songparts.hpp"
+#include "test_helpers.hpp"
 
+namespace {
 std::vector<std::uint8_t>
 midi_from_tracks(const std::vector<std::vector<std::uint8_t>>& track_sections)
 {
@@ -40,85 +40,6 @@ midi_from_tracks(const std::vector<std::vector<std::uint8_t>>& track_sections)
     }
     return data;
 }
-
-template <typename T>
-std::ostream& operator<<(std::ostream& stream, const std::vector<T>& values)
-{
-    stream << '{';
-    if (!values.empty()) {
-        stream << values[0];
-    }
-    for (auto i = 1U; i < values.size(); ++i) {
-        stream << ", " << values.at(i);
-    }
-    stream << '}';
-    return stream;
-}
-
-template <typename T, std::size_t N>
-std::ostream& operator<<(std::ostream& stream, const std::array<T, N>& values)
-{
-    stream << '{';
-    if (!values.empty()) {
-        stream << values[0];
-    }
-    for (auto i = 1U; i < values.size(); ++i) {
-        stream << ", " << values.at(i);
-    }
-    stream << '}';
-    return stream;
-}
-
-bool operator==(const MetaEvent& lhs, const MetaEvent& rhs)
-{
-    return std::tie(lhs.type, lhs.data) == std::tie(rhs.type, rhs.data);
-}
-
-std::ostream& operator<<(std::ostream& stream, const MetaEvent& event)
-{
-    stream << "{Type " << event.type << ", Data " << event.data << '}';
-    return stream;
-}
-
-bool operator==(const MidiEvent& lhs, const MidiEvent& rhs)
-{
-    return std::tie(lhs.status, lhs.data) == std::tie(rhs.status, rhs.data);
-}
-
-std::ostream& operator<<(std::ostream& stream, const MidiEvent& event)
-{
-    stream << "{Status " << event.status << ", Data " << event.data << '}';
-    return stream;
-}
-
-bool operator==(const SysexEvent& lhs, const SysexEvent& rhs)
-{
-    return lhs.data == rhs.data;
-}
-
-std::ostream& operator<<(std::ostream& stream, const SysexEvent& event)
-{
-    stream << "{Data " << event.data << '}';
-    return stream;
-}
-
-bool operator!=(const TimedEvent& lhs, const TimedEvent& rhs)
-{
-    return std::tie(lhs.time, lhs.event) != std::tie(rhs.time, rhs.event);
-}
-
-std::ostream& operator<<(std::ostream& stream, const TimedEvent& event)
-{
-    stream << "{Time " << event.time << ", ";
-    if (std::holds_alternative<MetaEvent>(event.event)) {
-        stream << "MetaEvent " << std::get<MetaEvent>(event.event);
-    } else if (std::holds_alternative<MidiEvent>(event.event)) {
-        stream << "MidiEvent " << std::get<MidiEvent>(event.event);
-    } else {
-        stream << "SysexEvent " << std::get<SysexEvent>(event.event);
-    }
-    stream << '}';
-    return stream;
 }
 
 BOOST_AUTO_TEST_CASE(parse_midi_reads_header_correctly)

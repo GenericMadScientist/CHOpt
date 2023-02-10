@@ -16,13 +16,48 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <array>
 #include <cmath>
 #include <ostream>
 #include <tuple>
+#include <vector>
 
+#include "chart.hpp"
+#include "imagebuilder.hpp"
+#include "midi.hpp"
 #include "settings.hpp"
 #include "songparts.hpp"
 #include "time.hpp"
+
+template <typename T>
+inline std::ostream& operator<<(std::ostream& stream,
+                                const std::vector<T>& values)
+{
+    stream << '{';
+    if (!values.empty()) {
+        stream << values[0];
+    }
+    for (auto i = 1U; i < values.size(); ++i) {
+        stream << ", " << values.at(i);
+    }
+    stream << '}';
+    return stream;
+}
+
+template <typename T, std::size_t N>
+inline std::ostream& operator<<(std::ostream& stream,
+                                const std::array<T, N>& values)
+{
+    stream << '{';
+    if (!values.empty()) {
+        stream << values[0];
+    }
+    for (auto i = 1U; i < values.size(); ++i) {
+        stream << ", " << values.at(i);
+    }
+    stream << '}';
+    return stream;
+}
 
 inline bool operator==(const Beat& lhs, const Beat& rhs)
 {
@@ -51,9 +86,50 @@ inline std::ostream& operator<<(std::ostream& stream, const BPM& bpm)
     return stream;
 }
 
+inline bool operator!=(const BpmEvent& lhs, const BpmEvent& rhs)
+{
+    return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const BpmEvent& event)
+{
+    stream << "{Pos " << event.position << ", BPM " << event.bpm << '}';
+    return stream;
+}
+
 inline std::ostream& operator<<(std::ostream& stream, Difficulty difficulty)
 {
     stream << static_cast<int>(difficulty);
+    return stream;
+}
+
+template <typename T>
+inline bool operator!=(const DrawnNote<T>& lhs, const DrawnNote<T>& rhs)
+{
+    return std::abs(lhs.beat - rhs.beat) >= 0.000001
+        || std::abs(lhs.length - rhs.length) >= 0.000001
+        || std::tie(lhs.colour, lhs.is_sp_note)
+        != std::tie(rhs.colour, rhs.is_sp_note);
+}
+
+template <typename T>
+inline std::ostream& operator<<(std::ostream& stream, const DrawnNote<T>& note)
+{
+    stream << '{' << note.beat << "b, Length " << note.length << ", Colour "
+           << static_cast<int>(note.colour) << ", Is SP Note "
+           << note.is_sp_note << '}';
+    return stream;
+}
+
+inline bool operator!=(const DrawnRow& lhs, const DrawnRow& rhs)
+{
+    return std::abs(lhs.start - rhs.start) >= 0.000001
+        || std::abs(lhs.end - rhs.end) >= 0.000001;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const DrawnRow& row)
+{
+    stream << '{' << row.start << ", " << row.end << '}';
     return stream;
 }
 
@@ -74,9 +150,61 @@ inline std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
     return stream;
 }
 
+inline std::ostream& operator<<(std::ostream& stream, DrumNoteColour colour)
+{
+    stream << static_cast<int>(colour);
+    return stream;
+}
+
+inline bool operator!=(const Event& lhs, const Event& rhs)
+{
+    return std::tie(lhs.position, lhs.data) != std::tie(rhs.position, rhs.data);
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const Event& event)
+{
+    stream << "{Pos " << event.position << ", Data " << event.data << '}';
+    return stream;
+}
+
 inline std::ostream& operator<<(std::ostream& stream, Measure measure)
 {
     stream << measure.value() << 'm';
+    return stream;
+}
+
+inline bool operator==(const MetaEvent& lhs, const MetaEvent& rhs)
+{
+    return std::tie(lhs.type, lhs.data) == std::tie(rhs.type, rhs.data);
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const MetaEvent& event)
+{
+    stream << "{Type " << event.type << ", Data " << event.data << '}';
+    return stream;
+}
+
+inline bool operator==(const MidiEvent& lhs, const MidiEvent& rhs)
+{
+    return std::tie(lhs.status, lhs.data) == std::tie(rhs.status, rhs.data);
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const MidiEvent& event)
+{
+    stream << "{Status " << event.status << ", Data " << event.data << '}';
+    return stream;
+}
+
+inline bool operator!=(const NoteEvent& lhs, const NoteEvent& rhs)
+{
+    return std::tie(lhs.position, lhs.fret, lhs.length)
+        != std::tie(rhs.position, rhs.fret, rhs.length);
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const NoteEvent& event)
+{
+    stream << "{Pos " << event.position << ", Fret " << event.fret << ", Length"
+           << event.length << '}';
     return stream;
 }
 
@@ -93,6 +221,19 @@ inline std::ostream& operator<<(std::ostream& stream, const Solo& solo)
     return stream;
 }
 
+inline bool operator!=(const SpecialEvent& lhs, const SpecialEvent& rhs)
+{
+    return std::tie(lhs.position, lhs.key, lhs.length)
+        != std::tie(rhs.position, rhs.key, rhs.length);
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const SpecialEvent& event)
+{
+    stream << "{Pos " << event.position << ", Key " << event.key << ", Length"
+           << event.length << '}';
+    return stream;
+}
+
 inline bool operator!=(const StarPower& lhs, const StarPower& rhs)
 {
     return std::tie(lhs.position, lhs.length)
@@ -102,6 +243,49 @@ inline bool operator!=(const StarPower& lhs, const StarPower& rhs)
 inline std::ostream& operator<<(std::ostream& stream, const StarPower& sp)
 {
     stream << "{Pos " << sp.position << ", Length " << sp.length << '}';
+    return stream;
+}
+
+inline bool operator==(const SysexEvent& lhs, const SysexEvent& rhs)
+{
+    return lhs.data == rhs.data;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const SysexEvent& event)
+{
+    stream << "{Data " << event.data << '}';
+    return stream;
+}
+
+inline bool operator!=(const TimedEvent& lhs, const TimedEvent& rhs)
+{
+    return std::tie(lhs.time, lhs.event) != std::tie(rhs.time, rhs.event);
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const TimedEvent& event)
+{
+    stream << "{Time " << event.time << ", ";
+    if (std::holds_alternative<MetaEvent>(event.event)) {
+        stream << "MetaEvent " << std::get<MetaEvent>(event.event);
+    } else if (std::holds_alternative<MidiEvent>(event.event)) {
+        stream << "MidiEvent " << std::get<MidiEvent>(event.event);
+    } else {
+        stream << "SysexEvent " << std::get<SysexEvent>(event.event);
+    }
+    stream << '}';
+    return stream;
+}
+
+inline bool operator!=(const TimeSigEvent& lhs, const TimeSigEvent& rhs)
+{
+    return std::tie(lhs.position, lhs.numerator, lhs.denominator)
+        != std::tie(rhs.position, rhs.numerator, rhs.denominator);
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const TimeSigEvent& ts)
+{
+    stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
+           << ts.denominator << '}';
     return stream;
 }
 
@@ -115,5 +299,11 @@ inline std::ostream& operator<<(std::ostream& stream, const TimeSignature& ts)
 {
     stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
            << ts.denominator << '}';
+    return stream;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, TrackType track_type)
+{
+    stream << static_cast<int>(track_type);
     return stream;
 }

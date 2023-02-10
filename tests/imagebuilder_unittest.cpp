@@ -20,50 +20,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "imagebuilder.hpp"
 #include "test_helpers.hpp"
-
-template <typename T>
-bool operator!=(const DrawnNote<T>& lhs, const DrawnNote<T>& rhs)
-{
-    return std::abs(lhs.beat - rhs.beat) >= 0.000001
-        || std::abs(lhs.length - rhs.length) >= 0.000001
-        || std::tie(lhs.colour, lhs.is_sp_note)
-        != std::tie(rhs.colour, rhs.is_sp_note);
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& stream, const DrawnNote<T>& note)
-{
-    stream << '{' << note.beat << "b, Length " << note.length << ", Colour "
-           << static_cast<int>(note.colour) << ", Is SP Note "
-           << note.is_sp_note << '}';
-    return stream;
-}
-
-bool operator!=(const DrawnRow& lhs, const DrawnRow& rhs)
-{
-    return std::abs(lhs.start - rhs.start) >= 0.000001
-        || std::abs(lhs.end - rhs.end) >= 0.000001;
-}
-
-std::ostream& operator<<(std::ostream& stream, const DrawnRow& row)
-{
-    stream << '{' << row.start << ", " << row.end << '}';
-    return stream;
-}
-
-std::ostream& operator<<(std::ostream& stream, TrackType track_type)
-{
-    stream << static_cast<int>(track_type);
-    return stream;
-}
-
-std::ostream& operator<<(std::ostream& stream, DrumNoteColour colour)
-{
-    stream << static_cast<int>(colour);
-    return stream;
-}
 
 namespace boost::test_tools::tt_detail {
 template <> struct print_log_value<std::tuple<double, double>> {
