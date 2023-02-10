@@ -22,39 +22,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "points.hpp"
 #include "test_helpers.hpp"
 
-bool operator==(const Measure& lhs, const Measure& rhs)
-{
-    return std::abs(lhs.value() - rhs.value()) < 0.000001;
-}
-
-bool operator==(const Position& lhs, const Position& rhs)
-{
-    return std::tie(lhs.beat, lhs.measure) == std::tie(rhs.beat, rhs.measure);
-}
-
-std::ostream& operator<<(std::ostream& stream, const Position& position)
-{
-    stream << "{Beat " << position.beat << ", Measure" << position.measure
-           << '}';
-    return stream;
-}
-
-std::ostream& operator<<(std::ostream& stream,
-                         const std::tuple<Position, int>& tuple)
-{
-    stream << '{' << std::get<0>(tuple) << ", " << std::get<1>(tuple) << '}';
-    return stream;
-}
-
-std::ostream& operator<<(std::ostream& stream, PointPtr addr)
-{
-    stream << "Point @ " << &(*addr);
-    return stream;
-}
-
+namespace {
 std::vector<int> set_values(const PointSet& points)
 {
     std::vector<int> values;
@@ -86,6 +56,7 @@ std::vector<Beat> set_position_beats(const PointSet& points)
         values.push_back(p->position.beat);
     }
     return values;
+}
 }
 
 BOOST_AUTO_TEST_SUITE(non_sustain_notes)

@@ -25,8 +25,11 @@
 #include "chart.hpp"
 #include "imagebuilder.hpp"
 #include "midi.hpp"
+#include "points.hpp"
+#include "processed.hpp"
 #include "settings.hpp"
 #include "songparts.hpp"
+#include "sp.hpp"
 #include "time.hpp"
 
 template <typename T>
@@ -59,6 +62,12 @@ inline std::ostream& operator<<(std::ostream& stream,
     return stream;
 }
 
+inline std::ostream& operator<<(std::ostream& stream, ActValidity validity)
+{
+    stream << static_cast<int>(validity);
+    return stream;
+}
+
 inline bool operator==(const Beat& lhs, const Beat& rhs)
 {
     return std::abs(lhs.value() - rhs.value()) < 0.01;
@@ -72,6 +81,20 @@ inline bool operator!=(const Beat& lhs, const Beat& rhs)
 inline std::ostream& operator<<(std::ostream& stream, Beat beat)
 {
     stream << beat.value() << 'b';
+    return stream;
+}
+
+inline bool operator!=(const Activation& lhs, const Activation& rhs)
+{
+    return std::tie(lhs.act_start, lhs.act_end, lhs.sp_start, lhs.sp_end)
+        != std::tie(rhs.act_start, rhs.act_end, rhs.sp_start, rhs.sp_end);
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const Activation& act)
+{
+    stream << "{Start " << &(*act.act_start) << ", End " << &(*act.act_end)
+           << ", SPStart " << act.sp_start.value() << "b, SPEnd "
+           << act.sp_end.value() << "b}";
     return stream;
 }
 
@@ -100,6 +123,23 @@ inline std::ostream& operator<<(std::ostream& stream, const BpmEvent& event)
 inline std::ostream& operator<<(std::ostream& stream, Difficulty difficulty)
 {
     stream << static_cast<int>(difficulty);
+    return stream;
+}
+
+inline bool operator==(const DiscoFlip& lhs, const DiscoFlip& rhs)
+{
+    return std::tie(lhs.position, lhs.length)
+        == std::tie(rhs.position, rhs.length);
+}
+
+inline bool operator!=(const DiscoFlip& lhs, const DiscoFlip& rhs)
+{
+    return !(lhs == rhs);
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const DiscoFlip& flip)
+{
+    stream << "{Pos " << flip.position << ", Length " << flip.length << '}';
     return stream;
 }
 
@@ -167,6 +207,17 @@ inline std::ostream& operator<<(std::ostream& stream, const Event& event)
     return stream;
 }
 
+inline std::ostream& operator<<(std::ostream& stream, Instrument instrument)
+{
+    stream << static_cast<int>(instrument);
+    return stream;
+}
+
+inline bool operator==(const Measure& lhs, const Measure& rhs)
+{
+    return std::abs(lhs.value() - rhs.value()) < 0.000001;
+}
+
 inline std::ostream& operator<<(std::ostream& stream, Measure measure)
 {
     stream << measure.value() << 'm';
@@ -195,6 +246,27 @@ inline std::ostream& operator<<(std::ostream& stream, const MidiEvent& event)
     return stream;
 }
 
+template <typename T>
+inline bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
+{
+    return std::tie(lhs.position, lhs.length, lhs.colour)
+        != std::tie(rhs.position, rhs.length, rhs.colour);
+}
+
+template <typename T>
+inline std::ostream& operator<<(std::ostream& stream, const Note<T>& note)
+{
+    stream << "{Pos " << note.position << ", Length " << note.length
+           << ", Colour " << static_cast<int>(note.colour) << '}';
+    return stream;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, NoteColour colour)
+{
+    stream << static_cast<int>(colour);
+    return stream;
+}
+
 inline bool operator!=(const NoteEvent& lhs, const NoteEvent& rhs)
 {
     return std::tie(lhs.position, lhs.fret, lhs.length)
@@ -208,6 +280,37 @@ inline std::ostream& operator<<(std::ostream& stream, const NoteEvent& event)
     return stream;
 }
 
+inline std::ostream& operator<<(std::ostream& stream, PointPtr addr)
+{
+    stream << "Point @ " << &(*addr);
+    return stream;
+}
+
+inline bool operator==(const Position& lhs, const Position& rhs)
+{
+    return std::tie(lhs.beat, lhs.measure) == std::tie(rhs.beat, rhs.measure);
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const Position& position)
+{
+    stream << "{Beat " << position.beat << ", Measure" << position.measure
+           << '}';
+    return stream;
+}
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const std::tuple<Position, int>& tuple)
+{
+    stream << '{' << std::get<0>(tuple) << ", " << std::get<1>(tuple) << '}';
+    return stream;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, Second second)
+{
+    stream << second.value() << 's';
+    return stream;
+}
+
 inline bool operator!=(const Solo& lhs, const Solo& rhs)
 {
     return std::tie(lhs.start, lhs.end, lhs.value)
@@ -218,6 +321,18 @@ inline std::ostream& operator<<(std::ostream& stream, const Solo& solo)
 {
     stream << "{Start " << solo.start << ", End " << solo.end << ", Value "
            << solo.value << '}';
+    return stream;
+}
+
+inline bool operator==(const SpBar& lhs, const SpBar& rhs)
+{
+    return std::abs(lhs.min() - rhs.min()) < 0.000001
+        && std::abs(lhs.max() - rhs.max()) < 0.000001;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const SpBar& sp)
+{
+    stream << "{Min " << sp.min() << ", Max " << sp.max() << '}';
     return stream;
 }
 

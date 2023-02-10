@@ -18,22 +18,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "songparts.hpp"
 #include "test_helpers.hpp"
-
-template <typename T> bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
-{
-    return std::tie(lhs.position, lhs.length, lhs.colour)
-        != std::tie(rhs.position, rhs.length, rhs.colour);
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& stream, const Note<T>& note)
-{
-    stream << "{Pos " << note.position << ", Length " << note.length
-           << ", Colour " << static_cast<int>(note.colour) << '}';
-    return stream;
-}
 
 BOOST_AUTO_TEST_SUITE(note_track_ctor_maintains_invariants)
 

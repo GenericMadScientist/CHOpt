@@ -19,13 +19,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include "test_helpers.hpp"
-#include "time.hpp"
-
-std::ostream& operator<<(std::ostream& stream, Second second)
-{
-    stream << second.value() << 's';
-    return stream;
-}
 
 BOOST_AUTO_TEST_SUITE(beat_operations)
 

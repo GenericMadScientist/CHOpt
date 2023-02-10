@@ -21,49 +21,6 @@
 #include "song.hpp"
 #include "test_helpers.hpp"
 
-template <typename T> bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
-{
-    return std::tie(lhs.position, lhs.length, lhs.colour)
-        != std::tie(rhs.position, rhs.length, rhs.colour);
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& stream, const Note<T>& note)
-{
-    stream << "{Pos " << note.position << ", Length " << note.length
-           << ", Colour " << static_cast<int>(note.colour) << '}';
-    return stream;
-}
-
-bool operator==(const DiscoFlip& lhs, const DiscoFlip& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        == std::tie(rhs.position, rhs.length);
-}
-
-bool operator!=(const DiscoFlip& lhs, const DiscoFlip& rhs)
-{
-    return !(lhs == rhs);
-}
-
-std::ostream& operator<<(std::ostream& stream, const DiscoFlip& flip)
-{
-    stream << "{Pos " << flip.position << ", Length " << flip.length << '}';
-    return stream;
-}
-
-std::ostream& operator<<(std::ostream& stream, Instrument inst)
-{
-    stream << static_cast<int>(inst);
-    return stream;
-}
-
-std::ostream& operator<<(std::ostream& stream, NoteColour colour)
-{
-    stream << static_cast<int>(colour);
-    return stream;
-}
-
 BOOST_AUTO_TEST_CASE(chart_to_song_has_correct_value_for_is_from_midi)
 {
     ChartSection expert_single {"ExpertSingle", {}, {}, {},

@@ -25,21 +25,9 @@
 #include "optimiser.hpp"
 #include "test_helpers.hpp"
 
-bool operator!=(const Activation& lhs, const Activation& rhs)
-{
-    return std::tie(lhs.act_start, lhs.act_end, lhs.sp_start, lhs.sp_end)
-        != std::tie(rhs.act_start, rhs.act_end, rhs.sp_start, rhs.sp_end);
-}
-
-std::ostream& operator<<(std::ostream& stream, const Activation& act)
-{
-    stream << "{Start " << &(*act.act_start) << ", End " << &(*act.act_end)
-           << ", SPStart " << act.sp_start.value() << "b, SPEnd "
-           << act.sp_end.value() << "b}";
-    return stream;
-}
-
+namespace {
 const std::atomic<bool> term_bool {false};
+}
 
 BOOST_AUTO_TEST_CASE(simplest_song_with_a_non_empty_path)
 {
