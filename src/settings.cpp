@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,8 @@
 
 namespace po = boost::program_options;
 
-static bool is_valid_image_path(std::string_view path)
+namespace {
+bool is_valid_image_path(std::string_view path)
 {
     if (path.size() < 4) {
         return false;
@@ -43,7 +44,7 @@ static bool is_valid_image_path(std::string_view path)
     return false;
 }
 
-static Difficulty string_to_diff(std::string_view text)
+Difficulty string_to_diff(std::string_view text)
 {
     if (text == "expert") {
         return Difficulty::Expert;
@@ -60,7 +61,7 @@ static Difficulty string_to_diff(std::string_view text)
     throw std::invalid_argument("Unrecognised difficulty");
 }
 
-static Instrument string_to_inst(std::string_view text)
+Instrument string_to_inst(std::string_view text)
 {
     if (text == "guitar") {
         return Instrument::Guitar;
@@ -89,9 +90,9 @@ static Instrument string_to_inst(std::string_view text)
     throw std::invalid_argument("Unrecognised instrument");
 }
 
-static std::unique_ptr<Engine> string_to_engine(std::string_view engine,
-                                                Instrument instrument,
-                                                bool precision_mode)
+std::unique_ptr<Engine> string_to_engine(std::string_view engine,
+                                         Instrument instrument,
+                                         bool precision_mode)
 {
     if (engine == "ch") {
         if (instrument == Instrument::Drums) {
@@ -119,6 +120,7 @@ static std::unique_ptr<Engine> string_to_engine(std::string_view engine,
     }
 
     throw std::invalid_argument("Invalid engine specified");
+}
 }
 
 std::optional<Settings> from_args(int argc, char** argv)
