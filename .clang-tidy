@@ -8,6 +8,7 @@ Checks: >
   concurrency-*,
   cppcoreguidelines-*,
   -cppcoreguidelines-pro-type-vararg,
+  hicpp-*,
   misc-*,
   -misc-const-correctness,
   -misc-no-recursion,
