@@ -3,6 +3,7 @@ Checks: >
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   -bugprone-unchecked-optional-access,
+  cert-*,
   -clang-analyzer-optin.cplusplus.VirtualCall,
   concurrency-*,
   cppcoreguidelines-*,
