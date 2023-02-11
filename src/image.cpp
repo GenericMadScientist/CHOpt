@@ -347,6 +347,13 @@ ghl_note_colour_codes(const std::set<GHLNoteColour>& note_colours)
     }
     return codes;
 }
+
+void validate_snprintf_rc(int snprintf_rc)
+{
+    if (snprintf_rc < 0) {
+        throw std::runtime_error("Failure with snprintf");
+    }
+}
 }
 
 class ImageImpl {
@@ -553,18 +560,22 @@ void ImageImpl::draw_score_totals(const ImageBuilder& builder)
         y += VALUE_GAP;
         draw_text_backwards(x, y, text.c_str(), GREEN.data(), 1.0F,
                             FONT_HEIGHT);
-        if (!sp_percent_values.empty()) {
-            y += VALUE_GAP;
-            std::snprintf(buffer.data(), BUFFER_SIZE, "%.2f%%%%",
-                          PERCENT_MULT * sp_percent_values[i]);
-            draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
-                                FONT_HEIGHT);
-        } else if (sp_values[i] > 0) {
-            y += VALUE_GAP;
-            std::snprintf(buffer.data(), BUFFER_SIZE, "%.2fSP", sp_values[i]);
-            draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
-                                FONT_HEIGHT);
+        if (sp_percent_values.empty() && sp_values[i] == 0) {
+            continue;
         }
+        y += VALUE_GAP;
+        if (sp_percent_values.empty()) {
+            const auto print_rc = std::snprintf(buffer.data(), BUFFER_SIZE,
+                                                "%.2fSP", sp_values[i]);
+            validate_snprintf_rc(print_rc);
+        } else {
+            const auto print_rc
+                = std::snprintf(buffer.data(), BUFFER_SIZE, "%.2f%%%%",
+                                PERCENT_MULT * sp_percent_values[i]);
+            validate_snprintf_rc(print_rc);
+        }
+        draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
+                            FONT_HEIGHT);
     }
 }
 
