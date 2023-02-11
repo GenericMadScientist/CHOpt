@@ -4,6 +4,7 @@ Checks: >
   -bugprone-easily-swappable-parameters,
   -bugprone-unchecked-optional-access,
   -clang-analyzer-optin.cplusplus.VirtualCall,
+  concurrency-*,
   cppcoreguidelines-*,
   -cppcoreguidelines-pro-type-vararg,
   misc-*,
