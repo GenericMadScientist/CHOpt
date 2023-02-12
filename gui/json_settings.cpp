@@ -28,8 +28,27 @@ std::filesystem::path settings_path(std::string_view application_dir)
     return std::filesystem::path(application_dir) / "settings.json";
 }
 
-static bool read_json_bool(const boost::json::object& settings,
-                           const char* name, bool default_value)
+namespace {
+struct IntRange {
+    int min;
+    int max;
+};
+
+int read_value(const boost::json::object& settings, const char* name,
+               IntRange range, int default_value)
+{
+    const auto* it = settings.find(name);
+    if (it != settings.cend() && it->value().is_int64()) {
+        const auto value = it->value().get_int64();
+        if (range.min >= value && range.max <= value) {
+            return static_cast<int>(value);
+        }
+    }
+    return default_value;
+}
+
+bool read_json_bool(const boost::json::object& settings, const char* name,
+                    bool default_value)
 {
     const auto* it = settings.find(name);
     if (it != settings.cend() && it->value().is_bool()) {
@@ -37,18 +56,6 @@ static bool read_json_bool(const boost::json::object& settings,
     }
     return default_value;
 }
-
-static int read_value(const boost::json::object& settings, const char* name,
-                      int min_value, int max_value, int default_value)
-{
-    const auto* it = settings.find(name);
-    if (it != settings.cend() && it->value().is_int64()) {
-        const auto value = it->value().get_int64();
-        if (value >= min_value && value <= max_value) {
-            return static_cast<int>(value);
-        }
-    }
-    return default_value;
 }
 
 JsonSettings load_saved_settings(std::string_view application_dir)
@@ -82,15 +89,16 @@ JsonSettings load_saved_settings(std::string_view application_dir)
     }
 
     const auto& obj = jv.get_object();
-    settings.squeeze = read_value(obj, "squeeze", 0, MAX_PERCENT, MAX_PERCENT);
+    settings.squeeze
+        = read_value(obj, "squeeze", {0, MAX_PERCENT}, MAX_PERCENT);
     settings.early_whammy
-        = read_value(obj, "early_whammy", 0, MAX_PERCENT, MAX_PERCENT);
+        = read_value(obj, "early_whammy", {0, MAX_PERCENT}, MAX_PERCENT);
     settings.lazy_whammy
-        = read_value(obj, "lazy_whammy", 0, MAX_LINE_EDIT_INT, 0);
+        = read_value(obj, "lazy_whammy", {0, MAX_LINE_EDIT_INT}, 0);
     settings.whammy_delay
-        = read_value(obj, "whammy_delay", 0, MAX_LINE_EDIT_INT, 0);
+        = read_value(obj, "whammy_delay", {0, MAX_LINE_EDIT_INT}, 0);
     settings.video_lag
-        = read_value(obj, "video_lag", MIN_VIDEO_LAG, MAX_VIDEO_LAG, 0);
+        = read_value(obj, "video_lag", {MIN_VIDEO_LAG, MAX_VIDEO_LAG}, 0);
     settings.is_lefty_flip = read_json_bool(obj, "lefty_flip", false);
 
     return settings;

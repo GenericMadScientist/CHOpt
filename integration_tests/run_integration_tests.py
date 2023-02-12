@@ -1,7 +1,8 @@
+import os
 import sqlite3
 import subprocess
 
-program = "./build/Debug/chopt.exe"
+program = "build/chopt"
 song_dir = "integration_tests/songs"
 
 conn = sqlite3.connect("integration_tests/tests.db")
@@ -36,7 +37,7 @@ for song in songs:
         else:
             output_lines.append(f"{activation}: {description} ({act_end})")
     output_lines.append("")
-    outputs.append("\r\n".join(output_lines).encode("utf-8"))
+    outputs.append(os.linesep.join(output_lines).encode("utf-8"))
 
 conn.close()
 

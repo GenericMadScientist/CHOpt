@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,8 @@ std::string_view skip_whitespace(std::string_view input)
     return input;
 }
 
-static std::string utf16_to_utf8_string(std::string_view input)
+namespace {
+std::string utf16_to_utf8_string(std::string_view input)
 {
     if (input.size() % 2 != 0) {
         throw std::invalid_argument("UTF-16 strings must have even length");
@@ -101,13 +102,14 @@ static std::string utf16_to_utf8_string(std::string_view input)
 #endif
 }
 
-static bool string_starts_with(std::string_view input, std::string_view pattern)
+bool string_starts_with(std::string_view input, std::string_view pattern)
 {
     if (input.size() < pattern.size()) {
         return false;
     }
 
     return input.substr(0, pattern.size()) == pattern;
+}
 }
 
 std::string to_ordinal(int ordinal)

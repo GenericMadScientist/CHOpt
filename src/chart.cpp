@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@
 #include "songparts.hpp"
 #include "stringutil.hpp"
 
-static std::string_view strip_square_brackets(std::string_view input)
+namespace {
+std::string_view strip_square_brackets(std::string_view input)
 {
     if (input.empty()) {
         throw ParseError("Header string empty");
@@ -33,7 +34,7 @@ static std::string_view strip_square_brackets(std::string_view input)
 
 // Convert a string_view to an int. If there are any problems with the input,
 // this function returns std::nullopt.
-static std::optional<int> string_view_to_int(std::string_view input)
+std::optional<int> string_view_to_int(std::string_view input)
 {
     int result = 0;
     const char* last = input.data() + input.size();
@@ -47,7 +48,7 @@ static std::optional<int> string_view_to_int(std::string_view input)
 // Split input by space characters, similar to .Split(' ') in C#. Note that
 // the lifetime of the string_views in the output is the same as that of the
 // input.
-static std::vector<std::string_view> split_by_space(std::string_view input)
+std::vector<std::string_view> split_by_space(std::string_view input)
 {
     std::vector<std::string_view> substrings;
 
@@ -64,9 +65,8 @@ static std::vector<std::string_view> split_by_space(std::string_view input)
     return substrings;
 }
 
-static NoteEvent
-convert_line_to_note(int position,
-                     const std::vector<std::string_view>& split_line)
+NoteEvent convert_line_to_note(int position,
+                               const std::vector<std::string_view>& split_line)
 {
     constexpr int MAX_NORMAL_EVENT_SIZE = 5;
 
@@ -81,7 +81,7 @@ convert_line_to_note(int position,
     return {position, *fret, *length};
 }
 
-static SpecialEvent
+SpecialEvent
 convert_line_to_special(int position,
                         const std::vector<std::string_view>& split_line)
 {
@@ -98,9 +98,8 @@ convert_line_to_special(int position,
     return {position, *sp_key, *length};
 }
 
-static BpmEvent
-convert_line_to_bpm(int position,
-                    const std::vector<std::string_view>& split_line)
+BpmEvent convert_line_to_bpm(int position,
+                             const std::vector<std::string_view>& split_line)
 {
     if (split_line.size() < 4) {
         throw ParseError("Line incomplete");
@@ -112,7 +111,7 @@ convert_line_to_bpm(int position,
     return {position, *bpm};
 }
 
-static TimeSigEvent
+TimeSigEvent
 convert_line_to_timesig(int position,
                         const std::vector<std::string_view>& split_line)
 {
@@ -132,9 +131,8 @@ convert_line_to_timesig(int position,
     return {position, *numer, *denom};
 }
 
-static Event
-convert_line_to_event(int position,
-                      const std::vector<std::string_view>& split_line)
+Event convert_line_to_event(int position,
+                            const std::vector<std::string_view>& split_line)
 {
     if (split_line.size() < 4) {
         throw ParseError("Line incomplete");
@@ -142,7 +140,7 @@ convert_line_to_event(int position,
     return {position, std::string {split_line[3]}};
 }
 
-static ChartSection read_section(std::string_view& input)
+ChartSection read_section(std::string_view& input)
 {
     ChartSection section;
     section.name = strip_square_brackets(break_off_newline(input));
@@ -190,6 +188,7 @@ static ChartSection read_section(std::string_view& input)
     }
 
     return section;
+}
 }
 
 Chart parse_chart(std::string_view data)

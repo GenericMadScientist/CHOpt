@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,27 +23,11 @@
 #include <boost/test/unit_test.hpp>
 
 #include "optimiser.hpp"
+#include "test_helpers.hpp"
 
-static bool operator==(const Beat& lhs, const Beat& rhs)
-{
-    return std::abs(lhs.value() - rhs.value()) < 0.01;
-}
-
-static bool operator!=(const Activation& lhs, const Activation& rhs)
-{
-    return std::tie(lhs.act_start, lhs.act_end, lhs.sp_start, lhs.sp_end)
-        != std::tie(rhs.act_start, rhs.act_end, rhs.sp_start, rhs.sp_end);
-}
-
-static std::ostream& operator<<(std::ostream& stream, const Activation& act)
-{
-    stream << "{Start " << &(*act.act_start) << ", End " << &(*act.act_end)
-           << ", SPStart " << act.sp_start.value() << "b, SPEnd "
-           << act.sp_end.value() << "b}";
-    return stream;
-}
-
+namespace {
 const std::atomic<bool> term_bool {false};
+}
 
 BOOST_AUTO_TEST_SUITE(overlap_guitar_paths)
 

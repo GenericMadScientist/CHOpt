@@ -29,14 +29,14 @@ public:
     virtual double burst_size() const = 0;
     virtual bool chords_multiply_sustains() const = 0;
     virtual bool delayed_multiplier() const = 0;
-    virtual double early_timing_window(double early_gap,
-                                       double late_gap) const = 0;
+    virtual double early_timing_window(double early_gap, double late_gap) const
+        = 0;
     virtual bool has_bres() const = 0;
     virtual bool has_unison_bonuses() const = 0;
     virtual bool is_rock_band() const = 0;
     virtual bool ignore_average_multiplier() const = 0;
-    virtual double late_timing_window(double early_gap,
-                                      double late_gap) const = 0;
+    virtual double late_timing_window(double early_gap, double late_gap) const
+        = 0;
     virtual int max_multiplier() const = 0;
     virtual bool merge_uneven_sustains() const = 0;
     virtual bool overlaps() const = 0;

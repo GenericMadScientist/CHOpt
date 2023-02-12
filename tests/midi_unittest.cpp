@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "midi.hpp"
-#include "songparts.hpp"
+#include "test_helpers.hpp"
 
-static std::vector<std::uint8_t>
+namespace {
+std::vector<std::uint8_t>
 midi_from_tracks(const std::vector<std::vector<std::uint8_t>>& track_sections)
 {
     std::vector<std::uint8_t> data {0x4D, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1};
@@ -40,87 +40,6 @@ midi_from_tracks(const std::vector<std::vector<std::uint8_t>>& track_sections)
     }
     return data;
 }
-
-template <typename T>
-static std::ostream& operator<<(std::ostream& stream,
-                                const std::vector<T>& values)
-{
-    stream << '{';
-    if (!values.empty()) {
-        stream << values[0];
-    }
-    for (auto i = 1U; i < values.size(); ++i) {
-        stream << ", " << values.at(i);
-    }
-    stream << '}';
-    return stream;
-}
-
-template <typename T, std::size_t N>
-static std::ostream& operator<<(std::ostream& stream,
-                                const std::array<T, N>& values)
-{
-    stream << '{';
-    if (!values.empty()) {
-        stream << values[0];
-    }
-    for (auto i = 1U; i < values.size(); ++i) {
-        stream << ", " << values.at(i);
-    }
-    stream << '}';
-    return stream;
-}
-
-static bool operator==(const MetaEvent& lhs, const MetaEvent& rhs)
-{
-    return std::tie(lhs.type, lhs.data) == std::tie(rhs.type, rhs.data);
-}
-
-static std::ostream& operator<<(std::ostream& stream, const MetaEvent& event)
-{
-    stream << "{Type " << event.type << ", Data " << event.data << '}';
-    return stream;
-}
-
-static bool operator==(const MidiEvent& lhs, const MidiEvent& rhs)
-{
-    return std::tie(lhs.status, lhs.data) == std::tie(rhs.status, rhs.data);
-}
-
-static std::ostream& operator<<(std::ostream& stream, const MidiEvent& event)
-{
-    stream << "{Status " << event.status << ", Data " << event.data << '}';
-    return stream;
-}
-
-static bool operator==(const SysexEvent& lhs, const SysexEvent& rhs)
-{
-    return lhs.data == rhs.data;
-}
-
-static std::ostream& operator<<(std::ostream& stream, const SysexEvent& event)
-{
-    stream << "{Data " << event.data << '}';
-    return stream;
-}
-
-static bool operator!=(const TimedEvent& lhs, const TimedEvent& rhs)
-{
-    return std::tie(lhs.time, lhs.event) != std::tie(rhs.time, rhs.event);
-}
-
-static std::ostream& operator<<(std::ostream& stream, const TimedEvent& event)
-{
-    stream << "{Time " << event.time << ", ";
-    if (std::holds_alternative<MetaEvent>(event.event)) {
-        stream << "MetaEvent " << std::get<MetaEvent>(event.event);
-    } else if (std::holds_alternative<MidiEvent>(event.event)) {
-        stream << "MidiEvent " << std::get<MidiEvent>(event.event);
-    } else {
-        stream << "SysexEvent " << std::get<SysexEvent>(event.event);
-    }
-    stream << '}';
-    return stream;
 }
 
 BOOST_AUTO_TEST_CASE(parse_midi_reads_header_correctly)

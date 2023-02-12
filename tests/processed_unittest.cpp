@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,25 +20,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "processed.hpp"
-
-static bool operator==(const SpBar& lhs, const SpBar& rhs)
-{
-    return std::abs(lhs.min() - rhs.min()) < 0.000001
-        && std::abs(lhs.max() - rhs.max()) < 0.000001;
-}
-
-static std::ostream& operator<<(std::ostream& stream, const SpBar& sp)
-{
-    stream << "{Min " << sp.min() << ", Max " << sp.max() << '}';
-    return stream;
-}
-
-static std::ostream& operator<<(std::ostream& stream, ActValidity validity)
-{
-    stream << static_cast<int>(validity);
-    return stream;
-}
+#include "test_helpers.hpp"
 
 BOOST_AUTO_TEST_SUITE(three_arg_total_available_sp_counts_sp_correctly)
 

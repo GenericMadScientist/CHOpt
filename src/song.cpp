@@ -29,13 +29,13 @@
 
 #include "song.hpp"
 
-static bool starts_with_prefix(const std::string& string,
-                               std::string_view prefix)
+namespace {
+bool starts_with_prefix(const std::string& string, std::string_view prefix)
 {
     return string.substr(0, prefix.size()) == prefix;
 }
 
-static bool ends_with_suffix(const std::string& string, std::string_view suffix)
+bool ends_with_suffix(const std::string& string, std::string_view suffix)
 {
     if (string.size() < suffix.size()) {
         return false;
@@ -43,44 +43,10 @@ static bool ends_with_suffix(const std::string& string, std::string_view suffix)
     return string.substr(string.size() - suffix.size()) == suffix;
 }
 
-Song Song::from_filename(const std::string& filename)
-{
-    std::string ini_file;
-    const std::filesystem::path song_path {filename};
-    const auto song_directory = song_path.parent_path();
-    const auto ini_path = song_directory / "song.ini";
-    boost::nowide::ifstream ini_in {ini_path.string()};
-    if (ini_in.is_open()) {
-        ini_file = std::string {std::istreambuf_iterator<char>(ini_in),
-                                std::istreambuf_iterator<char>()};
-    }
-    const auto ini = parse_ini(ini_file);
-
-    if (ends_with_suffix(filename, ".chart")) {
-        boost::nowide::ifstream in {filename};
-        if (!in.is_open()) {
-            throw std::invalid_argument("File did not open");
-        }
-        std::string contents {std::istreambuf_iterator<char>(in),
-                              std::istreambuf_iterator<char>()};
-        return Song::from_chart(parse_chart(contents), ini);
-    }
-    if (ends_with_suffix(filename, ".mid")) {
-        boost::nowide::ifstream in {filename, std::ios::binary};
-        if (!in.is_open()) {
-            throw std::invalid_argument("File did not open");
-        }
-        std::vector<std::uint8_t> buffer {std::istreambuf_iterator<char>(in),
-                                          std::istreambuf_iterator<char>()};
-        return Song::from_midi(parse_midi(buffer), ini);
-    }
-    throw std::invalid_argument("file should be .chart or .mid");
-}
-
 // Takes a sequence of points where some note type/event is turned on, and a
 // sequence where said type is turned off, and returns a tuple of intervals
 // where the event is on.
-static std::vector<std::tuple<int, int>>
+std::vector<std::tuple<int, int>>
 combine_solo_events(const std::vector<int>& on_events,
                     const std::vector<int>& off_events)
 {
@@ -104,10 +70,10 @@ combine_solo_events(const std::vector<int>& on_events,
 }
 
 template <typename T>
-static std::vector<Solo>
-form_solo_vector(const std::vector<int>& solo_on_events,
-                 const std::vector<int>& solo_off_events,
-                 const std::vector<Note<T>>& notes, bool is_midi)
+std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
+                                   const std::vector<int>& solo_off_events,
+                                   const std::vector<Note<T>>& notes,
+                                   bool is_midi)
 {
     constexpr int SOLO_NOTE_VALUE = 100;
 
@@ -137,8 +103,8 @@ form_solo_vector(const std::vector<int>& solo_on_events,
 }
 
 template <typename T>
-static std::optional<Note<T>> note_from_note_colour(int position, int length,
-                                                    int fret_type)
+std::optional<Note<T>> note_from_note_colour(int position, int length,
+                                             int fret_type)
 {
     if constexpr (std::is_same_v<T, NoteColour>) {
         static const std::array<std::optional<NoteColour>, 8> COLOURS {
@@ -192,9 +158,8 @@ static std::optional<Note<T>> note_from_note_colour(int position, int length,
     }
 }
 
-static std::string
-get_with_default(const std::map<std::string, std::string>& map,
-                 const std::string& key, std::string default_value)
+std::string get_with_default(const std::map<std::string, std::string>& map,
+                             const std::string& key, std::string default_value)
 {
     const auto iter = map.find(key);
     if (iter == map.end()) {
@@ -203,7 +168,7 @@ get_with_default(const std::map<std::string, std::string>& map,
     return iter->second;
 }
 
-static std::optional<std::tuple<Difficulty, Instrument>>
+std::optional<std::tuple<Difficulty, Instrument>>
 diff_inst_from_header(const std::string& header)
 {
     using namespace std::literals;
@@ -241,7 +206,7 @@ diff_inst_from_header(const std::string& header)
     return std::tuple {std::get<1>(*diff_iter), std::get<1>(*inst_iter)};
 }
 
-static std::vector<Note<DrumNoteColour>>
+std::vector<Note<DrumNoteColour>>
 add_fifth_lane_greens(std::vector<Note<DrumNoteColour>> notes,
                       const std::vector<NoteEvent>& note_events)
 {
@@ -266,7 +231,7 @@ add_fifth_lane_greens(std::vector<Note<DrumNoteColour>> notes,
     return notes;
 }
 
-static std::vector<Note<DrumNoteColour>>
+std::vector<Note<DrumNoteColour>>
 apply_cymbal_events(const std::vector<Note<DrumNoteColour>>& notes)
 {
     std::set<unsigned int> deletion_spots;
@@ -343,8 +308,8 @@ apply_cymbal_events(const std::vector<Note<DrumNoteColour>>& notes)
 }
 
 template <typename T>
-static NoteTrack<T> note_track_from_section(const ChartSection& section,
-                                            int resolution)
+NoteTrack<T> note_track_from_section(const ChartSection& section,
+                                     int resolution)
 {
     constexpr int DISCO_FLIP_START_SIZE = 13;
     constexpr int DISCO_FLIP_END_SIZE = 12;
@@ -421,58 +386,16 @@ static NoteTrack<T> note_track_from_section(const ChartSection& section,
         resolution};
 }
 
-std::vector<Instrument> Song::instruments() const
-{
-    std::set<Instrument> instrument_set;
-    for (const auto& [key, val] : m_five_fret_tracks) {
-        instrument_set.insert(std::get<0>(key));
-    }
-    for (const auto& [key, val] : m_six_fret_tracks) {
-        instrument_set.insert(std::get<0>(key));
-    }
-    if (!m_drum_note_tracks.empty()) {
-        instrument_set.insert(Instrument::Drums);
-    }
-
-    std::vector<Instrument> instruments {instrument_set.cbegin(),
-                                         instrument_set.cend()};
-    std::sort(instruments.begin(), instruments.end());
-    return instruments;
-}
-
-static bool is_six_fret_instrument(Instrument instrument)
+bool is_six_fret_instrument(Instrument instrument)
 {
     return instrument == Instrument::GHLGuitar
         || instrument == Instrument::GHLBass;
 }
 
-std::vector<Difficulty> Song::difficulties(Instrument instrument) const
-{
-    std::vector<Difficulty> difficulties;
-    if (instrument == Instrument::Drums) {
-        for (const auto& [key, val] : m_drum_note_tracks) {
-            difficulties.push_back(key);
-        }
-    } else if (is_six_fret_instrument(instrument)) {
-        for (const auto& [key, val] : m_six_fret_tracks) {
-            if (std::get<0>(key) == instrument) {
-                difficulties.push_back(std::get<1>(key));
-            }
-        }
-    } else {
-        for (const auto& [key, val] : m_five_fret_tracks) {
-            if (std::get<0>(key) == instrument) {
-                difficulties.push_back(std::get<1>(key));
-            }
-        }
-    }
-    std::sort(difficulties.begin(), difficulties.end());
-    return difficulties;
-}
-
-static SyncTrack sync_track_from_section(const ChartSection& section)
+SyncTrack sync_track_from_section(const ChartSection& section)
 {
     std::vector<BPM> bpms;
+    bpms.reserve(section.bpm_events.size());
     for (const auto& bpm : section.bpm_events) {
         bpms.push_back({bpm.position, bpm.bpm});
     }
@@ -487,74 +410,12 @@ static SyncTrack sync_track_from_section(const ChartSection& section)
     return {std::move(tses), std::move(bpms)};
 }
 
-void Song::append_instrument_track(Instrument inst, Difficulty diff,
-                                   const ChartSection& section)
-{
-    if (is_six_fret_instrument(inst)) {
-        auto note_track
-            = note_track_from_section<GHLNoteColour>(section, m_resolution);
-        if (!note_track.notes().empty()) {
-            m_six_fret_tracks.insert({{inst, diff}, note_track});
-        }
-    } else if (inst == Instrument::Drums) {
-        auto note_track
-            = note_track_from_section<DrumNoteColour>(section, m_resolution);
-        if (!note_track.notes().empty()) {
-            m_drum_note_tracks.insert({diff, note_track});
-        }
-    } else {
-        auto note_track
-            = note_track_from_section<NoteColour>(section, m_resolution);
-        if (!note_track.notes().empty()) {
-            m_five_fret_tracks.insert({{inst, diff}, note_track});
-        }
-    }
-}
-
-Song Song::from_chart(const Chart& chart, const IniValues& ini)
-{
-    Song song;
-
-    song.m_name = ini.name;
-    song.m_artist = ini.artist;
-    song.m_charter = ini.charter;
-
-    for (const auto& section : chart.sections) {
-        if (section.name == "Song") {
-            try {
-                song.m_resolution = std::stoi(get_with_default(
-                    section.key_value_pairs, "Resolution", "192"));
-            } catch (const std::invalid_argument&) {
-                // CH just ignores this kind of parsing mistake.
-                // TODO: Use from_chars instead to avoid having to use
-                // exceptions as control flow.
-            }
-        } else if (section.name == "SyncTrack") {
-            song.m_sync_track = sync_track_from_section(section);
-        } else {
-            auto pair = diff_inst_from_header(section.name);
-            if (!pair.has_value()) {
-                continue;
-            }
-            auto [diff, inst] = *pair;
-            song.append_instrument_track(inst, diff, section);
-        }
-    }
-
-    if (song.m_five_fret_tracks.empty() && song.m_six_fret_tracks.empty()
-        && song.m_drum_note_tracks.empty()) {
-        throw ParseError("Chart has no notes");
-    }
-
-    return song;
-}
-
 // Like combine_solo_events, but never skips on events to suit Midi parsing and
 // checks if there is an unmatched on event.
 // The tuples are a pair of the form (position, rank), where events later in the
 // file have a higher rank. This is in case of the Note Off event being right
 // after the corresponding Note On event in the file, but at the same tick.
-static std::vector<std::tuple<int, int>>
+std::vector<std::tuple<int, int>>
 combine_note_on_off_events(const std::vector<std::tuple<int, int>>& on_events,
                            const std::vector<std::tuple<int, int>>& off_events)
 {
@@ -581,7 +442,7 @@ combine_note_on_off_events(const std::vector<std::tuple<int, int>>& on_events,
 }
 
 template <typename T>
-static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
+std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
 {
     if constexpr (std::is_same_v<T, NoteColour>) {
         constexpr std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges {
@@ -625,10 +486,9 @@ static std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
 }
 
 template <typename T, std::size_t N>
-static T
-colour_from_key_and_bounds(std::uint8_t key,
-                           const std::array<unsigned int, 4>& diff_ranges,
-                           const std::array<T, N>& colours)
+T colour_from_key_and_bounds(std::uint8_t key,
+                             const std::array<unsigned int, 4>& diff_ranges,
+                             const std::array<T, N>& colours)
 {
     for (auto min : diff_ranges) {
         if (key >= min && (key - min) < colours.size()) {
@@ -639,8 +499,7 @@ colour_from_key_and_bounds(std::uint8_t key,
     throw ParseError("Invalid key for note");
 }
 
-template <typename T>
-static T colour_from_key(std::uint8_t key, bool from_five_lane)
+template <typename T> T colour_from_key(std::uint8_t key, bool from_five_lane)
 {
     if constexpr (std::is_same_v<T, NoteColour>) {
         constexpr std::array<unsigned int, 4> diff_ranges {96, 84, 72, 60};
@@ -675,7 +534,7 @@ static T colour_from_key(std::uint8_t key, bool from_five_lane)
     }
 }
 
-static bool is_open_event_sysex(const SysexEvent& event)
+bool is_open_event_sysex(const SysexEvent& event)
 {
     constexpr std::array<std::tuple<std::size_t, int>, 6> REQUIRED_BYTES {
         std::tuple {0, 0x50}, {1, 0x53}, {2, 0}, {3, 0}, {5, 1}, {7, 0xF7}};
@@ -699,7 +558,7 @@ static bool is_open_event_sysex(const SysexEvent& event)
         });
 }
 
-static SyncTrack read_first_midi_track(const MidiTrack& track)
+SyncTrack read_first_midi_track(const MidiTrack& track)
 {
     constexpr int SET_TEMPO_ID = 0x51;
     constexpr int TIME_SIG_ID = 0x58;
@@ -739,6 +598,7 @@ static SyncTrack read_first_midi_track(const MidiTrack& track)
 }
 
 template <typename T> struct InstrumentMidiTrack {
+public:
     std::map<std::tuple<Difficulty, T>, std::vector<std::tuple<int, int>>>
         note_on_events;
     std::map<std::tuple<Difficulty, T>, std::vector<std::tuple<int, int>>>
@@ -761,11 +621,13 @@ template <typename T> struct InstrumentMidiTrack {
         disco_flip_on_events;
     std::map<Difficulty, std::vector<std::tuple<int, int>>>
         disco_flip_off_events;
+
+    InstrumentMidiTrack<T>() = default;
 };
 
 template <typename T>
-static void add_sysex_event(InstrumentMidiTrack<T>& track,
-                            const SysexEvent& event, int time, int rank)
+void add_sysex_event(InstrumentMidiTrack<T>& track, const SysexEvent& event,
+                     int time, int rank)
 {
     constexpr std::array<Difficulty, 4> OPEN_EVENT_DIFFS {
         Difficulty::Easy, Difficulty::Medium, Difficulty::Hard,
@@ -775,7 +637,7 @@ static void add_sysex_event(InstrumentMidiTrack<T>& track,
     if (!is_open_event_sysex(event)) {
         return;
     }
-    Difficulty diff = OPEN_EVENT_DIFFS.at(event.data[4]);
+    const Difficulty diff = OPEN_EVENT_DIFFS.at(event.data[4]);
     if (event.data[SYSEX_ON_INDEX] == 0) {
         track.open_off_events[diff].push_back({time, rank});
     } else {
@@ -784,9 +646,9 @@ static void add_sysex_event(InstrumentMidiTrack<T>& track,
 }
 
 template <typename T>
-static void add_note_off_event(InstrumentMidiTrack<T>& track,
-                               const std::array<std::uint8_t, 2>& data,
-                               int time, int rank, bool from_five_lane)
+void add_note_off_event(InstrumentMidiTrack<T>& track,
+                        const std::array<std::uint8_t, 2>& data, int time,
+                        int rank, bool from_five_lane)
 {
     constexpr int YELLOW_TOM_ID = 110;
     constexpr int BLUE_TOM_ID = 111;
@@ -814,8 +676,8 @@ static void add_note_off_event(InstrumentMidiTrack<T>& track,
     }
 }
 
-static DrumNoteColour add_dynamics(DrumNoteColour colour, std::uint8_t velocity,
-                                   bool parse_dynamics)
+DrumNoteColour add_dynamics(DrumNoteColour colour, std::uint8_t velocity,
+                            bool parse_dynamics)
 {
     constexpr std::uint8_t MIN_ACCENT_VELOCITY = 127;
     const std::map<DrumNoteColour, DrumNoteColour> ghosts {
@@ -852,10 +714,9 @@ static DrumNoteColour add_dynamics(DrumNoteColour colour, std::uint8_t velocity,
 }
 
 template <typename T>
-static void add_note_on_event(InstrumentMidiTrack<T>& track,
-                              const std::array<std::uint8_t, 2>& data, int time,
-                              int rank, bool from_five_lane,
-                              bool parse_dynamics)
+void add_note_on_event(InstrumentMidiTrack<T>& track,
+                       const std::array<std::uint8_t, 2>& data, int time,
+                       int rank, bool from_five_lane, bool parse_dynamics)
 {
     constexpr int YELLOW_TOM_ID = 110;
     constexpr int BLUE_TOM_ID = 111;
@@ -895,8 +756,8 @@ static void add_note_on_event(InstrumentMidiTrack<T>& track,
     }
 }
 
-static void append_disco_flip(InstrumentMidiTrack<DrumNoteColour>& event_track,
-                              const MetaEvent& meta_event, int time, int rank)
+void append_disco_flip(InstrumentMidiTrack<DrumNoteColour>& event_track,
+                       const MetaEvent& meta_event, int time, int rank)
 {
     constexpr int FLIP_START_SIZE = 15;
     constexpr int FLIP_END_SIZE = 14;
@@ -923,15 +784,15 @@ static void append_disco_flip(InstrumentMidiTrack<DrumNoteColour>& event_track,
         = static_cast<Difficulty>(meta_event.data[MIX.size()] - '0');
     if (meta_event.data.size() == FLIP_END_SIZE
         && meta_event.data[FLIP_END_SIZE - 1] == ']') {
-        event_track.disco_flip_off_events[diff].push_back({time, rank});
+        event_track.disco_flip_off_events[diff].emplace_back(time, rank);
     } else if (meta_event.data.size() == FLIP_START_SIZE
                && meta_event.data[FLIP_START_SIZE - 2] == 'd'
                && meta_event.data[FLIP_START_SIZE - 1] == ']') {
-        event_track.disco_flip_on_events[diff].push_back({time, rank});
+        event_track.disco_flip_on_events[diff].emplace_back(time, rank);
     }
 }
 
-static bool is_five_lane_green_note(const TimedEvent& event)
+bool is_five_lane_green_note(const TimedEvent& event)
 {
     constexpr std::array<std::uint8_t, 4> GREEN_LANE_KEYS {65, 77, 89, 101};
     constexpr int NOTE_OFF_ID = 0x80;
@@ -951,7 +812,7 @@ static bool is_five_lane_green_note(const TimedEvent& event)
         != GREEN_LANE_KEYS.cend();
 }
 
-static bool is_enable_chart_dynamics(const TimedEvent& event)
+bool is_enable_chart_dynamics(const TimedEvent& event)
 {
     using namespace std::literals;
     constexpr auto ENABLE_DYNAMICS = "[ENABLE_CHART_DYNAMICS]"sv;
@@ -967,28 +828,31 @@ static bool is_enable_chart_dynamics(const TimedEvent& event)
                       ENABLE_DYNAMICS.cbegin(), ENABLE_DYNAMICS.cend());
 }
 
+bool has_five_lane_green_notes(const MidiTrack& midi_track)
+{
+    return std::find_if(midi_track.events.cbegin(), midi_track.events.cend(),
+                        is_five_lane_green_note)
+        != midi_track.events.cend();
+}
+
+bool has_enable_chart_dynamics(const MidiTrack& midi_track)
+{
+    return std::find_if(midi_track.events.cbegin(), midi_track.events.cend(),
+                        is_enable_chart_dynamics)
+        != midi_track.events.cend();
+}
+
 template <typename T>
-static InstrumentMidiTrack<T>
-read_instrument_midi_track(const MidiTrack& midi_track)
+InstrumentMidiTrack<T> read_instrument_midi_track(const MidiTrack& midi_track)
 {
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
-    bool from_five_lane = false;
-    if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        from_five_lane
-            = std::find_if(midi_track.events.cbegin(), midi_track.events.cend(),
-                           is_five_lane_green_note)
-            != midi_track.events.cend();
-    }
-    bool parse_dynamics = false;
-    if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        parse_dynamics
-            = std::find_if(midi_track.events.cbegin(), midi_track.events.cend(),
-                           is_enable_chart_dynamics)
-            != midi_track.events.cend();
-    }
+    const bool from_five_lane = std::is_same_v<T, DrumNoteColour>
+        && has_five_lane_green_notes(midi_track);
+    const bool parse_dynamics = std::is_same_v<T, DrumNoteColour>
+        && has_enable_chart_dynamics(midi_track);
 
     InstrumentMidiTrack<T> event_track;
     event_track.disco_flip_on_events[Difficulty::Easy] = {};
@@ -1050,7 +914,7 @@ read_instrument_midi_track(const MidiTrack& midi_track)
     return event_track;
 }
 
-static std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
+std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
 {
     constexpr int BRE_KEY = 120;
     constexpr int NOTE_OFF_ID = 0x80;
@@ -1087,7 +951,7 @@ static std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
     return {{bre_start, bre_end}};
 }
 
-static std::map<Difficulty, NoteTrack<NoteColour>>
+std::map<Difficulty, NoteTrack<NoteColour>>
 note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
     const auto event_track = read_instrument_midi_track<NoteColour>(midi_track);
@@ -1154,7 +1018,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     return note_tracks;
 }
 
-static std::map<Difficulty, NoteTrack<GHLNoteColour>>
+std::map<Difficulty, NoteTrack<GHLNoteColour>>
 ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
     const auto event_track
@@ -1206,6 +1070,28 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     return note_tracks;
 }
 
+// This is to deal with G cymbal + G tom from five lane being turned into G
+// cymbal + B tom. This combination cannot happen from a four lane chart.
+void fix_double_greens(std::vector<Note<DrumNoteColour>>& notes)
+{
+    std::set<int> green_cymbal_positions;
+
+    for (const auto& note : notes) {
+        if (note.colour == DrumNoteColour::GreenCymbal) {
+            green_cymbal_positions.insert(note.position);
+        }
+    }
+
+    for (auto& note : notes) {
+        if (note.colour != DrumNoteColour::Green) {
+            continue;
+        }
+        if (green_cymbal_positions.count(note.position) != 0) {
+            note.colour = DrumNoteColour::Blue;
+        }
+    }
+}
+
 class TomEvents {
 private:
     std::vector<std::tuple<int, int>> m_yellow_tom_events;
@@ -1214,9 +1100,9 @@ private:
 
 public:
     TomEvents(const InstrumentMidiTrack<DrumNoteColour>& events)
+        : m_yellow_tom_events {combine_note_on_off_events(
+            events.yellow_tom_on_events, events.yellow_tom_off_events)}
     {
-        m_yellow_tom_events = combine_note_on_off_events(
-            events.yellow_tom_on_events, events.yellow_tom_off_events);
         m_blue_tom_events = combine_note_on_off_events(
             events.blue_tom_on_events, events.blue_tom_off_events);
         m_green_tom_events = combine_note_on_off_events(
@@ -1249,29 +1135,7 @@ public:
     }
 };
 
-// This is to deal with G cymbal + G tom from five lane being turned into G
-// cymbal + B tom. This combination cannot happen from a four lane chart.
-static void fix_double_greens(std::vector<Note<DrumNoteColour>>& notes)
-{
-    std::set<int> green_cymbal_positions;
-
-    for (const auto& note : notes) {
-        if (note.colour == DrumNoteColour::GreenCymbal) {
-            green_cymbal_positions.insert(note.position);
-        }
-    }
-
-    for (auto& note : notes) {
-        if (note.colour != DrumNoteColour::Green) {
-            continue;
-        }
-        if (green_cymbal_positions.count(note.position) != 0) {
-            note.colour = DrumNoteColour::Blue;
-        }
-    }
-}
-
-static std::map<Difficulty, NoteTrack<DrumNoteColour>>
+std::map<Difficulty, NoteTrack<DrumNoteColour>>
 drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
     const auto event_track
@@ -1340,7 +1204,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     return note_tracks;
 }
 
-static std::optional<std::string> midi_track_name(const MidiTrack& track)
+std::optional<std::string> midi_track_name(const MidiTrack& track)
 {
     if (track.events.empty()) {
         return std::nullopt;
@@ -1358,8 +1222,7 @@ static std::optional<std::string> midi_track_name(const MidiTrack& track)
     return std::nullopt;
 }
 
-static std::optional<Instrument>
-midi_section_instrument(const std::string& track_name)
+std::optional<Instrument> midi_section_instrument(const std::string& track_name)
 {
     const std::map<std::string, Instrument> INSTRUMENTS {
         {"PART GUITAR", Instrument::Guitar},
@@ -1379,7 +1242,7 @@ midi_section_instrument(const std::string& track_name)
     return iter->second;
 }
 
-static std::vector<int> od_beats_from_track(const MidiTrack& track)
+std::vector<int> od_beats_from_track(const MidiTrack& track)
 {
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
@@ -1406,6 +1269,147 @@ static std::vector<int> od_beats_from_track(const MidiTrack& track)
     }
 
     return od_beats;
+}
+}
+
+Song Song::from_filename(const std::string& filename)
+{
+    std::string ini_file;
+    const std::filesystem::path song_path {filename};
+    const auto song_directory = song_path.parent_path();
+    const auto ini_path = song_directory / "song.ini";
+    boost::nowide::ifstream ini_in {ini_path.string()};
+    if (ini_in.is_open()) {
+        ini_file = std::string {std::istreambuf_iterator<char>(ini_in),
+                                std::istreambuf_iterator<char>()};
+    }
+    const auto ini = parse_ini(ini_file);
+
+    if (ends_with_suffix(filename, ".chart")) {
+        boost::nowide::ifstream in {filename};
+        if (!in.is_open()) {
+            throw std::invalid_argument("File did not open");
+        }
+        const std::string contents {std::istreambuf_iterator<char>(in),
+                                    std::istreambuf_iterator<char>()};
+        return Song::from_chart(parse_chart(contents), ini);
+    }
+    if (ends_with_suffix(filename, ".mid")) {
+        boost::nowide::ifstream in {filename, std::ios::binary};
+        if (!in.is_open()) {
+            throw std::invalid_argument("File did not open");
+        }
+        const std::vector<std::uint8_t> buffer {
+            std::istreambuf_iterator<char>(in),
+            std::istreambuf_iterator<char>()};
+        return Song::from_midi(parse_midi(buffer), ini);
+    }
+    throw std::invalid_argument("file should be .chart or .mid");
+}
+
+std::vector<Instrument> Song::instruments() const
+{
+    std::set<Instrument> instrument_set;
+    for (const auto& [key, val] : m_five_fret_tracks) {
+        instrument_set.insert(std::get<0>(key));
+    }
+    for (const auto& [key, val] : m_six_fret_tracks) {
+        instrument_set.insert(std::get<0>(key));
+    }
+    if (!m_drum_note_tracks.empty()) {
+        instrument_set.insert(Instrument::Drums);
+    }
+
+    std::vector<Instrument> instruments {instrument_set.cbegin(),
+                                         instrument_set.cend()};
+    std::sort(instruments.begin(), instruments.end());
+    return instruments;
+}
+
+std::vector<Difficulty> Song::difficulties(Instrument instrument) const
+{
+    std::vector<Difficulty> difficulties;
+    if (instrument == Instrument::Drums) {
+        for (const auto& [key, val] : m_drum_note_tracks) {
+            difficulties.push_back(key);
+        }
+    } else if (is_six_fret_instrument(instrument)) {
+        for (const auto& [key, val] : m_six_fret_tracks) {
+            if (std::get<0>(key) == instrument) {
+                difficulties.push_back(std::get<1>(key));
+            }
+        }
+    } else {
+        for (const auto& [key, val] : m_five_fret_tracks) {
+            if (std::get<0>(key) == instrument) {
+                difficulties.push_back(std::get<1>(key));
+            }
+        }
+    }
+    std::sort(difficulties.begin(), difficulties.end());
+    return difficulties;
+}
+
+void Song::append_instrument_track(Instrument inst, Difficulty diff,
+                                   const ChartSection& section)
+{
+    if (is_six_fret_instrument(inst)) {
+        auto note_track
+            = note_track_from_section<GHLNoteColour>(section, m_resolution);
+        if (!note_track.notes().empty()) {
+            m_six_fret_tracks.insert({{inst, diff}, note_track});
+        }
+    } else if (inst == Instrument::Drums) {
+        auto note_track
+            = note_track_from_section<DrumNoteColour>(section, m_resolution);
+        if (!note_track.notes().empty()) {
+            m_drum_note_tracks.insert({diff, note_track});
+        }
+    } else {
+        auto note_track
+            = note_track_from_section<NoteColour>(section, m_resolution);
+        if (!note_track.notes().empty()) {
+            m_five_fret_tracks.insert({{inst, diff}, note_track});
+        }
+    }
+}
+
+Song Song::from_chart(const Chart& chart, const IniValues& ini)
+{
+    Song song;
+
+    song.m_name = ini.name;
+    song.m_artist = ini.artist;
+    song.m_charter = ini.charter;
+
+    for (const auto& section : chart.sections) {
+        if (section.name == "Song") {
+            try {
+                song.m_resolution = std::stoi(get_with_default(
+                    section.key_value_pairs, "Resolution", "192"));
+            } catch (const std::invalid_argument&) {
+                // CH just ignores this kind of parsing mistake.
+                // TODO: Use from_chars instead to avoid having to use
+                // exceptions as control flow.
+            }
+        } else if (section.name == "SyncTrack") {
+            song.m_sync_track = sync_track_from_section(section);
+        } else {
+            auto pair = diff_inst_from_header(section.name);
+            if (!pair.has_value()) {
+                continue;
+            }
+            auto [diff, inst] = *pair;
+            song.append_instrument_track(inst, diff, section);
+        }
+    }
+
+    if (song.m_five_fret_tracks.empty() && song.m_six_fret_tracks.empty()
+        && song.m_drum_note_tracks.empty()) {
+        throw ParseError("Chart has no notes");
+    }
+
+    return song;
 }
 
 Song Song::from_midi(const Midi& midi, const IniValues& ini)

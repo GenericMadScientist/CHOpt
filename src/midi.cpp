@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,7 @@
 #include "midi.hpp"
 #include "songparts.hpp"
 
-// This is a version of string_view for uint8_t. Once C++20 is ratified we can
-// replace this with span<uint8_t>.
+namespace {
 class ByteSpan {
 private:
     using Iter = std::vector<std::uint8_t>::const_iterator;
@@ -87,13 +86,13 @@ public:
 };
 
 // Read a two byte big endian number from the specified offset.
-static int read_two_byte_be(ByteSpan span, std::size_t offset)
+int read_two_byte_be(ByteSpan span, std::size_t offset)
 {
     return span[offset] << CHAR_BIT | span[offset + 1];
 }
 
 // Read a four byte big endian number from the specified offset.
-static int read_four_byte_be(ByteSpan span, std::size_t offset)
+int read_four_byte_be(ByteSpan span, std::size_t offset)
 {
     return span[offset] << (3 * CHAR_BIT) | span[offset + 1] << (2 * CHAR_BIT)
         | span[offset + 2] << CHAR_BIT | span[offset + 3];
@@ -104,7 +103,7 @@ struct MidiHeader {
     int num_of_tracks;
 };
 
-static ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
+ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
 {
     constexpr std::array<std::uint8_t, 10> MAGIC_NUMBER {
         0x4D, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1};
@@ -127,7 +126,7 @@ static ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
     return span.subspan(FIRST_TRACK_OFFSET);
 }
 
-static ByteSpan read_variable_length_num(ByteSpan span, int& number)
+ByteSpan read_variable_length_num(ByteSpan span, int& number)
 {
     constexpr int VARIABLE_LENGTH_DATA_MASK = 0x7F;
     constexpr int VARIABLE_LENGTH_DATA_SIZE = 7;
@@ -149,7 +148,7 @@ static ByteSpan read_variable_length_num(ByteSpan span, int& number)
     return span.subspan(1);
 }
 
-static ByteSpan read_meta_event(ByteSpan span, MetaEvent& event)
+ByteSpan read_meta_event(ByteSpan span, MetaEvent& event)
 {
     event.type = span[0];
     span = span.subspan(1);
@@ -163,8 +162,7 @@ static ByteSpan read_meta_event(ByteSpan span, MetaEvent& event)
     return span.subspan(static_cast<std::size_t>(data_length));
 }
 
-static ByteSpan read_midi_event(ByteSpan span, MidiEvent& event,
-                                int prev_status_byte)
+ByteSpan read_midi_event(ByteSpan span, MidiEvent& event, int prev_status_byte)
 {
     constexpr int CHANNEL_PRESSURE_ID = 0xD0;
     constexpr int IS_STATUS_BYTE_MASK = 0x80;
@@ -198,7 +196,7 @@ static ByteSpan read_midi_event(ByteSpan span, MidiEvent& event,
     return span;
 }
 
-static ByteSpan read_sysex_event(ByteSpan span, SysexEvent& event)
+ByteSpan read_sysex_event(ByteSpan span, SysexEvent& event)
 {
     int data_length = 0;
     span = read_variable_length_num(span, data_length);
@@ -210,7 +208,7 @@ static ByteSpan read_sysex_event(ByteSpan span, SysexEvent& event)
     return span.subspan(static_cast<std::size_t>(data_length));
 }
 
-static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
+ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
 {
     constexpr int META_EVENT_ID = 0xFF;
     constexpr int SYSEX_EVENT_ID = 0xF0;
@@ -251,6 +249,7 @@ static ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
         track.events.push_back(event);
     }
     return span;
+}
 }
 
 Midi parse_midi(const std::vector<std::uint8_t>& data)

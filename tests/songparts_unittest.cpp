@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,59 +18,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "songparts.hpp"
-
-template <typename T>
-static bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
-{
-    return std::tie(lhs.position, lhs.length, lhs.colour)
-        != std::tie(rhs.position, rhs.length, rhs.colour);
-}
-
-template <typename T>
-static std::ostream& operator<<(std::ostream& stream, const Note<T>& note)
-{
-    stream << "{Pos " << note.position << ", Length " << note.length
-           << ", Colour " << static_cast<int>(note.colour) << '}';
-    return stream;
-}
-
-static bool operator!=(const Solo& lhs, const Solo& rhs)
-{
-    return std::tie(lhs.start, lhs.end, lhs.value)
-        != std::tie(rhs.start, rhs.end, rhs.value);
-}
-
-static std::ostream& operator<<(std::ostream& stream, const Solo& solo)
-{
-    stream << "{Start " << solo.start << ", End " << solo.end << ", Value "
-           << solo.value << '}';
-    return stream;
-}
-
-static bool operator!=(const DrumFill& lhs, const DrumFill& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        != std::tie(rhs.position, rhs.length);
-}
-
-static std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
-{
-    stream << "{Pos " << fill.position << ", Length " << fill.length << '}';
-    return stream;
-}
-
-static bool operator!=(const StarPower& lhs, const StarPower& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        != std::tie(rhs.position, rhs.length);
-}
-
-static std::ostream& operator<<(std::ostream& stream, const StarPower& sp)
-{
-    stream << "{Pos " << sp.position << ", Length " << sp.length << '}';
-    return stream;
-}
+#include "test_helpers.hpp"
 
 BOOST_AUTO_TEST_SUITE(note_track_ctor_maintains_invariants)
 

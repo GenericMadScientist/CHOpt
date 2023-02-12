@@ -1,12 +1,12 @@
 #!/bin/bash
-if [[ ! -d $HOME/boost_1_79_0 ]]
+if [[ ! -d $HOME/boost_1_81_0 ]]
 then
-    wget -O $HOME/boost_1_79_0.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.tar.bz2
-    tar --bzip2 -xf $HOME/boost_1_79_0.tar.bz2 -C $HOME
-    cd $HOME/boost_1_79_0
+    wget -O $HOME/boost_1_81_0.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.bz2
+    tar --bzip2 -xf $HOME/boost_1_81_0.tar.bz2 -C $HOME
+    cd $HOME/boost_1_81_0
     export CC=gcc-10
     export CXX=g++-10
-    ./bootstrap.sh --with-libraries=json,nowide,program_options --prefix=.
+    ./bootstrap.sh --with-libraries=json,nowide,program_options,test --prefix=.
     ./b2 install > /dev/null
     cd $HOME/projects/CHOpt/build
 fi
