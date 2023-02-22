@@ -40,6 +40,7 @@ public:
     virtual int max_multiplier() const = 0;
     virtual bool merge_uneven_sustains() const = 0;
     virtual bool overlaps() const = 0;
+    virtual bool round_tick_gap() const = 0;
     virtual int snap_gap() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
@@ -61,6 +62,7 @@ public:
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return false; }
     bool overlaps() const override { return true; }
+    bool round_tick_gap() const override { return true; }
     int snap_gap() const override { return 0; }
     double sp_gain_rate() const override { return 1 / 30.0; }
     int sust_points_per_beat() const override { return 25; }
@@ -168,6 +170,7 @@ public:
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return true; }
     bool overlaps() const override { return false; }
+    bool round_tick_gap() const override { return false; }
     int snap_gap() const override { return 2; }
     double sp_gain_rate() const override { return 0.034; }
     int sust_points_per_beat() const override { return 25; }
@@ -189,6 +192,7 @@ public:
     bool is_rock_band() const override { return true; }
     bool merge_uneven_sustains() const override { return true; }
     bool overlaps() const override { return true; }
+    bool round_tick_gap() const override { return false; }
     int snap_gap() const override { return 2; }
     double sp_gain_rate() const override { return 0.034; }
     int sust_points_per_beat() const override { return 12; }

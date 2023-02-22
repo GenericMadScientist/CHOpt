@@ -35,6 +35,16 @@ bool phrase_contains_pos(const StarPower& phrase, int position)
     return position < (phrase.position + phrase.length);
 }
 
+double song_tick_gap(int resolution, const Engine& engine)
+{
+    double quotient
+        = resolution / static_cast<double>(engine.sust_points_per_beat());
+    if (engine.round_tick_gap()) {
+        quotient = std::floor(quotient);
+    }
+    return std::max(quotient, 1.0);
+}
+
 template <typename OutputIt>
 void append_sustain_points(OutputIt points, int position, int sust_length,
                            int resolution, int chord_size,
@@ -45,7 +55,7 @@ void append_sustain_points(OutputIt points, int position, int sust_length,
     const double float_res = resolution;
     double float_pos = position;
     double float_sust_len = sust_length;
-    double tick_gap = std::max(resolution / engine.sust_points_per_beat(), 1);
+    double tick_gap = song_tick_gap(resolution, engine);
     auto float_sust_ticks = sust_length / tick_gap;
     switch (engine.sustain_rounding()) {
     case SustainRoundingPolicy::RoundUp:
