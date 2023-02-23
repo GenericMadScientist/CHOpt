@@ -326,12 +326,32 @@ BOOST_AUTO_TEST_CASE(gh1_one_beat_sustain_is_handled_correctly)
     BOOST_CHECK_EQUAL(total_score, 150);
 }
 
+// GH1 Ace of Spades m96 O sustain
+BOOST_AUTO_TEST_CASE(
+    rounding_from_fractional_length_in_gh1_is_handled_correctly)
+{
+    NoteTrack<NoteColour> track {
+        {{0, 1560, NoteColour::Orange}}, {}, {}, {}, {}, {}, 480};
+    TimeConverter converter {{}, 480, Gh1Engine(), {}};
+    PointSet points {track,
+                     converter,
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     Gh1Engine()};
+    const auto total_score = std::accumulate(
+        points.cbegin(), points.cend(), 0,
+        [](const auto& a, const auto& b) { return a + b.value; });
+
+    BOOST_CHECK_EQUAL(total_score, 131);
+}
+
 // GH1 Ace of Spades m15 BO sustain
 BOOST_AUTO_TEST_CASE(
     rounding_from_length_in_gh1_for_chords_is_handled_correctly)
 {
     NoteTrack<NoteColour> track {
-        {{0, 354, NoteColour::Blue}, {0, 354, NoteColour::Orange}},
+        {{0, 360, NoteColour::Blue}, {0, 360, NoteColour::Orange}},
         {},
         {},
         {},

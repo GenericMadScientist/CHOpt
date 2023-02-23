@@ -176,7 +176,7 @@ public:
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
     {
-        return SustainRoundingPolicy::RoundUp;
+        return SustainRoundingPolicy::RoundToNearest;
     }
     bool uses_beat_track() const override { return false; }
 };
