@@ -684,6 +684,32 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
         expected_green_ranges.cbegin(), expected_green_ranges.cend());
 }
 
+BOOST_AUTO_TEST_CASE(
+    extra_green_ranges_are_not_discarded_for_no_overlap_engines)
+{
+    NoteTrack<NoteColour> track {
+        {{0, 96}, {192}, {3840}}, {{0, 50}, {3840, 192}}, {}, {}, {}, {}, 192};
+    TimeConverter converter {{}, 192, Gh1Engine(), {}};
+    PointSet points {track,
+                     converter,
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     Gh1Engine()};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
+    Path path {{{points.cbegin(), points.cend() - 1, Beat {0.05}, Beat {0.1},
+                 Beat {0.9}}},
+               0};
+    builder.add_sp_phrases(track, {});
+    builder.add_sp_acts(points, converter, path);
+    std::vector<std::tuple<double, double>> expected_green_ranges {
+        {0.0, 0.1}, {20.0, 20.1}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        builder.green_ranges().cbegin(), builder.green_ranges().cend(),
+        expected_green_ranges.cbegin(), expected_green_ranges.cend());
+}
+
 BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
 {
     NoteTrack<NoteColour> track {

@@ -429,6 +429,7 @@ relative_complement(const std::vector<std::tuple<double, double>>& parent_set,
         }
         ++p;
     }
+    std::copy(p, parent_set.cend(), std::back_inserter(result));
     return result;
 }
 }
