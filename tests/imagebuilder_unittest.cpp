@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_SUITE(track_type_is_stored_correctly)
 BOOST_AUTO_TEST_CASE(five_fret_gets_the_right_track_type)
 {
     NoteTrack<NoteColour> track {{}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
 
     BOOST_CHECK_EQUAL(builder.track_type(), TrackType::FiveFret);
 }
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(non_sp_non_sustains_are_handled_correctly)
 {
     NoteTrack<NoteColour> track {
         {{0}, {768, 0, NoteColour::Red}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     std::vector<DrawnNote<NoteColour>> expected_notes {
         {0.0, 0.0, NoteColour::Green, false},
         {4.0, 0.0, NoteColour::Red, false}};
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(non_sp_non_sustains_are_handled_correctly)
 BOOST_AUTO_TEST_CASE(sustains_are_handled_correctly)
 {
     NoteTrack<NoteColour> track {{{0, 96}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     std::vector<DrawnNote<NoteColour>> expected_notes {
         {0.0, 0.5, NoteColour::Green, false}};
 
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(sp_notes_are_recorded)
 {
     NoteTrack<NoteColour> track {{{0}, {768}}, {{768, 100}}, {}, {},
                                  {},           {},           192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     std::vector<DrawnNote<NoteColour>> expected_notes {
         {0.0, 0.0, NoteColour::Green, false},
         {4.0, 0.0, NoteColour::Green, true}};
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_SUITE(drawn_rows_are_handled_correctly)
 BOOST_AUTO_TEST_CASE(simple_four_four_is_handled_correctly)
 {
     NoteTrack<NoteColour> track {{{2880}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     std::vector<DrawnRow> expected_rows {{0.0, 16.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
     NoteTrack<NoteColour> track {{{2450}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}, {768, 3, 4}, {1344, 3, 8}, {1632, 4, 4}},
                           {}};
-    ImageBuilder builder {track, sync_track, Difficulty::Expert, false};
+    ImageBuilder builder {track, sync_track, Difficulty::Expert, false, true};
     std::vector<DrawnRow> expected_rows {{0.0, 12.5}, {12.5, 16.5}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
 {
     NoteTrack<NoteColour> track {{{768}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}, {767, 3, 4}, {1344, 3, 8}}, {}};
-    ImageBuilder builder {track, sync_track, Difficulty::Expert, false};
+    ImageBuilder builder {track, sync_track, Difficulty::Expert, false, true};
     std::vector<DrawnRow> expected_rows {{0.0, 7.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
 {
     NoteTrack<NoteColour> track {{{0}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 17, 4}}, {}};
-    ImageBuilder builder {track, sync_track, Difficulty::Expert, false};
+    ImageBuilder builder {track, sync_track, Difficulty::Expert, false, true};
     std::vector<DrawnRow> expected_rows {{0.0, 16.0}, {16.0, 17.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
 BOOST_AUTO_TEST_CASE(enough_rows_are_drawn_for_end_of_song_sustains)
 {
     NoteTrack<NoteColour> track {{{0, 3840}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
 
     BOOST_CHECK_EQUAL(builder.rows().size(), 2);
 }
@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_SUITE(beat_lines_are_correct)
 BOOST_AUTO_TEST_CASE(four_four_works_fine)
 {
     NoteTrack<NoteColour> track {{{767}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     std::vector<double> expected_half_beat_lines {0.5, 1.5, 2.5, 3.5};
     std::vector<double> expected_beat_lines {1.0, 2.0, 3.0};
     std::vector<double> expected_measure_lines {0.0, 4.0};
@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
 {
     NoteTrack<NoteColour> track {{{767}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 8}}, {}};
-    ImageBuilder builder {track, sync_track, Difficulty::Expert, false};
+    ImageBuilder builder {track, sync_track, Difficulty::Expert, false, true};
     std::vector<double> expected_half_beat_lines {0.25, 0.75, 1.25, 1.75,
                                                   2.25, 2.75, 3.25, 3.75};
     std::vector<double> expected_beat_lines {0.5, 1.0, 1.5, 2.5, 3.0, 3.5};
@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
 {
     NoteTrack<NoteColour> track {{{1151}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
-    ImageBuilder builder {track, sync_track, Difficulty::Expert, false};
+    ImageBuilder builder {track, sync_track, Difficulty::Expert, false, true};
     std::vector<double> expected_half_beat_lines {0.5,  1.5,  2.5,  3.5,
                                                   4.25, 4.75, 5.25, 5.75};
     std::vector<double> expected_beat_lines {1.0, 2.0, 3.0, 4.5, 5.0, 5.5};
@@ -275,7 +275,7 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
 {
     NoteTrack<NoteColour> track {{{1920}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
-    ImageBuilder builder {track, sync_track, Difficulty::Expert, false};
+    ImageBuilder builder {track, sync_track, Difficulty::Expert, false, true};
     builder.add_time_sigs(sync_track, 192);
     std::vector<std::tuple<double, int, int>> expected_time_sigs {{0.0, 4, 4},
                                                                   {4.0, 4, 8}};
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
 {
     NoteTrack<NoteColour> track {{{768}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}, {1920, 3, 4}}, {}};
-    ImageBuilder builder {track, sync_track, Difficulty::Expert, false};
+    ImageBuilder builder {track, sync_track, Difficulty::Expert, false, true};
     builder.add_time_sigs(sync_track, 192);
 
     BOOST_CHECK_EQUAL(builder.time_sigs().size(), 1);
@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
 {
     NoteTrack<NoteColour> track {{{1920}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{}, {{0, 150000}, {384, 120000}, {768, 200000}}};
-    ImageBuilder builder {track, sync_track, Difficulty::Expert, false};
+    ImageBuilder builder {track, sync_track, Difficulty::Expert, false, true};
     builder.add_bpms(sync_track, 192);
     std::vector<std::tuple<double, double>> expected_bpms {
         {0.0, 150.0}, {2.0, 120.0}, {4.0, 200.0}};
@@ -317,7 +317,7 @@ BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
 {
     NoteTrack<NoteColour> track {{{768}}, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{}, {{0, 120000}, {1920, 200000}}};
-    ImageBuilder builder {track, sync_track, Difficulty::Expert, false};
+    ImageBuilder builder {track, sync_track, Difficulty::Expert, false, true};
     builder.add_bpms(sync_track, 192);
 
     BOOST_CHECK_EQUAL(builder.bpms().size(), 1);
@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_SUITE(song_header_information_is_added)
 BOOST_AUTO_TEST_CASE(normal_speed)
 {
     NoteTrack<NoteColour> track {{{0}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_song_header("TestName", "GMS", "NotGMS", 100);
 
     BOOST_CHECK_EQUAL(builder.song_name(), "TestName");
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE(normal_speed)
 BOOST_AUTO_TEST_CASE(double_speed)
 {
     NoteTrack<NoteColour> track {{{0}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_song_header("TestName", "GMS", "NotGMS", 200);
 
     BOOST_CHECK_EQUAL(builder.song_name(), "TestName (200%)");
@@ -351,11 +351,13 @@ BOOST_AUTO_TEST_CASE(double_speed)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(green_sp_ranges)
+
 BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
 {
     NoteTrack<NoteColour> track {
         {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_sp_phrases(track, {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
@@ -368,7 +370,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
 BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
 {
     NoteTrack<NoteColour> track {{{768}}, {{768, 384}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_sp_phrases(track, {});
 
     std::vector<std::tuple<double, double>> expected_green_ranges {{4.0, 4.1}};
@@ -406,6 +408,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
         builder.green_ranges().cbegin(), builder.green_ranges().cend(),
         expected_green_ranges.cbegin(), expected_green_ranges.cend());
 }
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)
 {
@@ -507,7 +511,7 @@ BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
 {
     NoteTrack<NoteColour> track {
         {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_sp_phrases(track, {{768, 384}});
     std::vector<std::tuple<double, double>> expected_unison_ranges {{5.0, 5.1}};
 
@@ -529,7 +533,7 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},
                0};
@@ -563,7 +567,7 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25}, Beat {0.1},
                  Beat {1.1}},
                 {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
@@ -589,7 +593,7 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                  Beat {0.0}, Beat {5.0}}},
                0};
@@ -611,7 +615,7 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                  Beat {16.0}}},
                0};
@@ -634,7 +638,7 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                      {1.0, 1.0, Second(0.0), Second(0.05), Second(0.0)},
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25}, Beat {0.1},
                  Beat {1.1}},
                 {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
@@ -656,12 +660,61 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
         expected_red_ranges.cbegin(), expected_red_ranges.cend());
 }
 
+BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
+{
+    NoteTrack<NoteColour> track {
+        {{0, 96}, {192}}, {{0, 50}}, {}, {}, {}, {}, 192};
+    TimeConverter converter {{}, 192, Gh1Engine(), {}};
+    PointSet points {track,
+                     converter,
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     Gh1Engine()};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
+    Path path {{{points.cbegin(), points.cend() - 1, Beat {0.05}, Beat {0.1},
+                 Beat {0.9}}},
+               0};
+    builder.add_sp_phrases(track, {});
+    builder.add_sp_acts(points, converter, path);
+    std::vector<std::tuple<double, double>> expected_green_ranges {{0.0, 0.1}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        builder.green_ranges().cbegin(), builder.green_ranges().cend(),
+        expected_green_ranges.cbegin(), expected_green_ranges.cend());
+}
+
+BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
+{
+    NoteTrack<NoteColour> track {
+        {{0, 96}, {192}}, {{0, 50}}, {}, {}, {}, {}, 192};
+    TimeConverter converter {{}, 192, Gh1Engine(), {}};
+    PointSet points {track,
+                     converter,
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     Gh1Engine()};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
+    Path path {{{points.cbegin(), points.cend() - 1, Beat {0.05}, Beat {0.1},
+                 Beat {0.9}}},
+               0};
+    builder.add_sp_phrases(track, {});
+    builder.add_sp_acts(points, converter, path);
+    std::vector<std::tuple<double, double>> expected_yellow_ranges {
+        {0.05, 0.1}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        builder.yellow_ranges().cbegin(), builder.yellow_ranges().cend(),
+        expected_yellow_ranges.cbegin(), expected_yellow_ranges.cend());
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(add_solo_sections_add_correct_ranges)
 {
     NoteTrack<NoteColour> track {{{0}}, {}, {{192, 384, 0}}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_solo_sections(track.solos(DrumSettings::default_settings()),
                               192);
     std::vector<std::tuple<double, double>> expected_solo_ranges {{1.0, 2.0}};
@@ -683,7 +736,7 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {50, 100};
@@ -707,7 +760,7 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_score_values {100, 250};
 
@@ -728,7 +781,7 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_score_values {100};
 
@@ -750,7 +803,7 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
     Path path {
         {{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}},
         100};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_score_values {200, 300};
 
@@ -771,7 +824,7 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
     Path path {
         {{points.cbegin() + 1, points.cbegin() + 1, Beat {0.0}, Beat {0.0}}},
         50};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {50, 150};
@@ -792,7 +845,7 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
         {{0}, {192, 768}}, {{192, 50}}, {}, {}, {}, {}, 192};
     SpData sp_data {
         track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_sp_values(sp_data, ChGuitarEngine());
     std::vector<double> expected_sp_values {3.14, 1.0};
 
@@ -811,7 +864,7 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},
                50};
@@ -823,8 +876,8 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
 BOOST_AUTO_TEST_CASE(difficulty_is_handled)
 {
     NoteTrack<NoteColour> track {{{0}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder hard_builder {track, {}, Difficulty::Hard, false};
-    ImageBuilder expert_builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder hard_builder {track, {}, Difficulty::Hard, false, true};
+    ImageBuilder expert_builder {track, {}, Difficulty::Expert, false, true};
 
     BOOST_CHECK_EQUAL(hard_builder.difficulty(), Difficulty::Hard);
     BOOST_CHECK_EQUAL(expert_builder.difficulty(), Difficulty::Expert);
@@ -833,8 +886,8 @@ BOOST_AUTO_TEST_CASE(difficulty_is_handled)
 BOOST_AUTO_TEST_CASE(lefty_flip_is_handled)
 {
     NoteTrack<NoteColour> track {{{0}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder lefty_builder {track, {}, Difficulty::Expert, true};
-    ImageBuilder righty_builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder lefty_builder {track, {}, Difficulty::Expert, true, true};
+    ImageBuilder righty_builder {track, {}, Difficulty::Expert, false, true};
 
     BOOST_TEST(lefty_builder.is_lefty_flip());
     BOOST_TEST(!righty_builder.is_lefty_flip());
@@ -865,7 +918,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                  Beat {102.0}}},
                0};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {
         0.0,    0.5,    0.75,   0.75,   0.75,   1.0,    1.0,    1.0, 1.0,
@@ -906,7 +959,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                  Beat {132.0}}},
                0};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {
         0.0, 0.5, 0.75, 0.75, 0.75, 1.0, 1.0,    1.0,  1.0,
@@ -936,7 +989,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                  Beat {22.0}}},
                0};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.5359166667, 0.49425};
@@ -966,7 +1019,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                  Beat {22.0}}},
                0};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.4025833333, 0.2775833333};
@@ -1004,7 +1057,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                  Beat {53.0}}},
                0};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {
         0.0,          0.25,         0.5275833333, 0.4025833333, 0.2775833333,
@@ -1041,7 +1094,7 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                  Beat {0.8958}, Beat {16.8958}}},
                50};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {0.40299375, 0.27799375, 0.15299375,
                                            0.02799375, 0.25};

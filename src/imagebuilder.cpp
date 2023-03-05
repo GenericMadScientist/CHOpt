@@ -292,13 +292,16 @@ const NoteTrack<NoteColour>& track_from_inst_diff(const Settings& settings,
 }
 
 template <typename T>
-ImageBuilder build_with_drum_params(const NoteTrack<T>& track,
-                                    const SyncTrack& sync_track,
-                                    const Settings& settings)
+ImageBuilder build_with_engine_params(const NoteTrack<T>& track,
+                                      const SyncTrack& sync_track,
+                                      const Settings& settings)
 {
     if constexpr (std::is_same_v<T, DrumNoteColour>) {
         return {track, sync_track, settings.difficulty, settings.drum_settings,
                 settings.is_lefty_flip};
+    } else if constexpr (std::is_same_v<T, NoteColour>) {
+        return {track, sync_track, settings.difficulty, settings.is_lefty_flip,
+                settings.engine->overlaps()};
     } else {
         return {track, sync_track, settings.difficulty, settings.is_lefty_flip};
     }
@@ -330,7 +333,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     }
     const auto sync_track = song.sync_track().speedup(settings.speed);
 
-    auto builder = build_with_drum_params(new_track, sync_track, settings);
+    auto builder = build_with_engine_params(new_track, sync_track, settings);
     builder.add_song_header(song.name(), song.artist(), song.charter(),
                             settings.speed);
     if (settings.engine->has_unison_bonuses()) {
@@ -411,12 +414,13 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
 
 ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
                            const SyncTrack& sync_track, Difficulty difficulty,
-                           bool is_lefty_flip)
+                           bool is_lefty_flip, bool is_overlap_engine)
     : m_track_type {TrackType::FiveFret}
     , m_difficulty {difficulty}
     , m_is_lefty_flip {is_lefty_flip}
     , m_rows {drawn_rows(track, sync_track)}
     , m_notes {drawn_notes(track)}
+    , m_overlap_engine {is_overlap_engine}
 
 {
     constexpr double HALF_BEAT = 0.5;
@@ -696,6 +700,44 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
             ++p;
         } else {
             ++q;
+        }
+    }
+
+    if (!m_overlap_engine) {
+        using std::swap;
+
+        std::vector<std::tuple<double, double>> overlap_yellow_ranges;
+        std::swap(overlap_yellow_ranges, m_yellow_ranges);
+        auto p = overlap_yellow_ranges.cbegin();
+        auto q = m_blue_ranges.cbegin();
+        while (p < overlap_yellow_ranges.cend() && q < m_blue_ranges.cend()) {
+            if (std::get<1>(*q) < std::get<0>(*p)) {
+                ++q;
+                continue;
+            }
+            if (std::get<0>(*q) > std::get<0>(*p)) {
+                m_yellow_ranges.emplace_back(
+                    std::get<0>(*p),
+                    std::min(std::get<1>(*p), std::get<0>(*q)));
+            }
+            ++p;
+        }
+
+        std::vector<std::tuple<double, double>> overlap_green_ranges;
+        std::swap(overlap_green_ranges, m_green_ranges);
+        p = overlap_green_ranges.cbegin();
+        q = m_blue_ranges.cbegin();
+        while (p < overlap_green_ranges.cend() && q < m_blue_ranges.cend()) {
+            if (std::get<1>(*q) < std::get<0>(*p)) {
+                ++q;
+                continue;
+            }
+            if (std::get<0>(*q) > std::get<0>(*p)) {
+                m_green_ranges.emplace_back(
+                    std::get<0>(*p),
+                    std::min(std::get<1>(*p), std::get<0>(*q)));
+            }
+            ++p;
         }
     }
 }

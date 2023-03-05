@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,11 +78,12 @@ private:
     std::vector<std::tuple<double, double>> m_unison_ranges;
     float m_activation_opacity {0.33F};
     int m_total_score {0};
+    bool m_overlap_engine {true};
 
 public:
     ImageBuilder(const NoteTrack<NoteColour>& track,
                  const SyncTrack& sync_track, Difficulty difficulty,
-                 bool is_lefty_flip);
+                 bool is_lefty_flip, bool is_overlap_engine);
     ImageBuilder(const NoteTrack<GHLNoteColour>& track,
                  const SyncTrack& sync_track, Difficulty difficulty,
                  bool is_lefty_flip);
