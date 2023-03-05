@@ -410,6 +410,27 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
 
     return builder;
 }
+
+std::vector<std::tuple<double, double>>
+relative_complement(const std::vector<std::tuple<double, double>>& parent_set,
+                    const std::vector<std::tuple<double, double>>& excluded_set)
+{
+    std::vector<std::tuple<double, double>> result;
+    auto p = parent_set.cbegin();
+    auto q = excluded_set.cbegin();
+    while (p < parent_set.cend() && q < excluded_set.cend()) {
+        if (std::get<1>(*q) < std::get<0>(*p)) {
+            ++q;
+            continue;
+        }
+        if (std::get<0>(*q) > std::get<0>(*p)) {
+            result.emplace_back(std::get<0>(*p),
+                                std::min(std::get<1>(*p), std::get<0>(*q)));
+        }
+        ++p;
+    }
+    return result;
+}
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
@@ -704,41 +725,8 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
     }
 
     if (!m_overlap_engine) {
-        using std::swap;
-
-        std::vector<std::tuple<double, double>> overlap_yellow_ranges;
-        std::swap(overlap_yellow_ranges, m_yellow_ranges);
-        auto p = overlap_yellow_ranges.cbegin();
-        auto q = m_blue_ranges.cbegin();
-        while (p < overlap_yellow_ranges.cend() && q < m_blue_ranges.cend()) {
-            if (std::get<1>(*q) < std::get<0>(*p)) {
-                ++q;
-                continue;
-            }
-            if (std::get<0>(*q) > std::get<0>(*p)) {
-                m_yellow_ranges.emplace_back(
-                    std::get<0>(*p),
-                    std::min(std::get<1>(*p), std::get<0>(*q)));
-            }
-            ++p;
-        }
-
-        std::vector<std::tuple<double, double>> overlap_green_ranges;
-        std::swap(overlap_green_ranges, m_green_ranges);
-        p = overlap_green_ranges.cbegin();
-        q = m_blue_ranges.cbegin();
-        while (p < overlap_green_ranges.cend() && q < m_blue_ranges.cend()) {
-            if (std::get<1>(*q) < std::get<0>(*p)) {
-                ++q;
-                continue;
-            }
-            if (std::get<0>(*q) > std::get<0>(*p)) {
-                m_green_ranges.emplace_back(
-                    std::get<0>(*p),
-                    std::min(std::get<1>(*p), std::get<0>(*q)));
-            }
-            ++p;
-        }
+        m_yellow_ranges = relative_complement(m_yellow_ranges, m_blue_ranges);
+        m_green_ranges = relative_complement(m_green_ranges, m_blue_ranges);
     }
 }
 
