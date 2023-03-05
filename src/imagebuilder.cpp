@@ -412,14 +412,15 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
 }
 
 std::vector<std::tuple<double, double>>
-relative_complement(const std::vector<std::tuple<double, double>>& parent_set,
+relative_complement(std::vector<std::tuple<double, double>> parent_set,
                     const std::vector<std::tuple<double, double>>& excluded_set)
 {
     std::vector<std::tuple<double, double>> result;
-    auto p = parent_set.cbegin();
+    auto p = parent_set.begin();
     auto q = excluded_set.cbegin();
-    while (p < parent_set.cend() && q < excluded_set.cend()) {
-        if (std::get<1>(*q) < std::get<0>(*p)) {
+    while (p < parent_set.end() && q < excluded_set.cend()) {
+        if (std::get<0>(*q) < std::get<0>(*p)) {
+            std::get<0>(*p) = std::max(std::get<0>(*p), std::get<1>(*q));
             ++q;
             continue;
         }
@@ -429,7 +430,7 @@ relative_complement(const std::vector<std::tuple<double, double>>& parent_set,
         }
         ++p;
     }
-    std::copy(p, parent_set.cend(), std::back_inserter(result));
+    std::copy(p, parent_set.end(), std::back_inserter(result));
     return result;
 }
 }
