@@ -148,6 +148,9 @@ public:
 };
 
 class Gh1Engine : public Engine {
+private:
+    static constexpr double FUDGE_EPSILON = 0.0001;
+
 public:
     int base_note_value() const override { return 50; }
     double burst_size() const override { return 0.0; }
@@ -156,7 +159,9 @@ public:
     double early_timing_window(double early_gap, double late_gap) const override
     {
         (void)late_gap;
-        return std::min(0.1, early_gap / 2);
+        // The division by a number greater than 2 is a fudge so standard
+        // doubles are not shown as possible without EHW.
+        return std::min(0.1, early_gap / (2.0 + FUDGE_EPSILON));
     }
     bool has_bres() const override { return false; }
     bool has_unison_bonuses() const override { return false; }
@@ -165,7 +170,7 @@ public:
     double late_timing_window(double early_gap, double late_gap) const override
     {
         (void)early_gap;
-        return std::min(0.1, late_gap / 2);
+        return std::min(0.1, late_gap / (2.0 + FUDGE_EPSILON));
     }
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return true; }
