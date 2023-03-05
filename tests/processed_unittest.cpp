@@ -1247,6 +1247,32 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
     BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
 }
 
+BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
+{
+    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};
+    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
+    std::vector<Solo> solos {{0, 50, 50}};
+    NoteTrack<NoteColour> note_track {notes, phrases, solos, {}, {}, {}, 192};
+    ProcessedSong track {note_track,
+                         {},
+                         SqueezeSettings::default_settings(),
+                         DrumSettings::default_settings(),
+                         Gh1Engine(),
+                         {},
+                         {}};
+    const auto& points = track.points();
+    Path path {
+        {{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}},
+        100};
+
+    const char* desired_path_output = "Path: 2-S1-ES1\n"
+                                      "No SP score: 300\n"
+                                      "Total score: 400\n"
+                                      "2: NN (G)";
+
+    BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
+}
+
 BOOST_AUTO_TEST_CASE(no_overlap_is_denoted_correctly)
 {
     std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};

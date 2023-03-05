@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -310,7 +310,7 @@ void ProcessedSong::append_activation(std::stringstream& stream,
                                       const Activation& activation,
                                       const std::string& act_summary) const
 {
-    stream << '\n' << act_summary << ": ";
+    stream << '\n' << act_summary.substr(0, act_summary.find("-")) << ": ";
     if (act_summary[0] == '0') {
         stream << "See image";
         return;
@@ -364,6 +364,8 @@ void ProcessedSong::append_activation(std::stringstream& stream,
 
 std::vector<std::string> ProcessedSong::act_summaries(const Path& path) const
 {
+    using namespace std::literals::string_literals;
+
     std::vector<std::string> activation_summaries;
     auto start_point = m_points.cbegin();
     for (const auto& act : path.activations) {
@@ -376,9 +378,11 @@ std::vector<std::string> ProcessedSong::act_summaries(const Path& path) const
             [](const auto& p) { return p.is_sp_granting_note; });
         auto summary = std::to_string(sp_before);
         if (sp_during != 0) {
-            summary += "(+";
-            summary += std::to_string(sp_during);
-            summary += ")";
+            if (m_overlaps) {
+                summary += "(+"s + std::to_string(sp_during) + ')';
+            } else {
+                summary += "-S"s + std::to_string(sp_during);
+            }
         }
         activation_summaries.push_back(summary);
         start_point = std::next(act.act_end);
