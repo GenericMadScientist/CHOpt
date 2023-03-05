@@ -1018,4 +1018,40 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
     }
 }
 
+// See /issues/4, Triathlon m662 on 100%/100%.
+BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
+{
+    NoteTrack<NoteColour> track {{{0}, {192}, {384}, {3224}, {3456}},
+                                 {{0, 10}, {192, 10}, {3224, 10}},
+                                 {},
+                                 {},
+                                 {},
+                                 {},
+                                 192};
+    TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
+    PointSet points {track,
+                     converter,
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     ChGuitarEngine()};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+    Path path {{{points.cbegin() + 2, points.cbegin() + 2, Beat {17.0},
+                 Beat {0.8958}, Beat {16.8958}}},
+               50};
+
+    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    builder.add_sp_percent_values(sp_data, converter, points, path);
+    std::vector<double> expected_percents {0.40299375, 0.27799375, 0.15299375,
+                                           0.02799375, 0.25};
+
+    BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
+                        expected_percents.size());
+    for (std::size_t i = 0; i < expected_percents.size(); ++i) {
+        BOOST_CHECK_CLOSE(builder.sp_percent_values()[i], expected_percents[i],
+                          0.0001);
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()

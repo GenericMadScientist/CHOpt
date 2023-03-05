@@ -230,7 +230,10 @@ bool is_fill_active(const std::vector<Note<DrumNoteColour>>& notes,
     return has_non_kick;
 }
 
-enum class SpDrainEventType { Measure, SpPhrase, ActStart, ActEnd, WhammyEnd };
+// It is important that SpPhrase has a higher value than ActEnd. This is because
+// in form_events we want to push the event for getting a phrase to the end of
+// the activation if the activation is not an overlap.
+enum class SpDrainEventType { Measure, ActStart, ActEnd, WhammyEnd, SpPhrase };
 
 std::vector<std::tuple<Beat, SpDrainEventType>>
 form_events(const std::vector<double>& measure_lines, const PointSet& points,
@@ -241,9 +244,16 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
         events.emplace_back(Beat {measure_lines[i]}, SpDrainEventType::Measure);
     }
     for (auto p = points.cbegin(); p < points.cend(); ++p) {
-        if (p->is_sp_granting_note) {
-            events.emplace_back(p->position.beat, SpDrainEventType::SpPhrase);
+        if (!p->is_sp_granting_note) {
+            continue;
         }
+        auto position = p->position.beat;
+        for (auto act : path.activations) {
+            if (p > act.act_end) {
+                position = std::max(position, act.sp_end);
+            }
+        }
+        events.emplace_back(position, SpDrainEventType::SpPhrase);
     }
     for (auto act : path.activations) {
         if (act.whammy_end < act.sp_end) {
@@ -252,7 +262,7 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
         events.emplace_back(act.sp_start, SpDrainEventType::ActStart);
         events.emplace_back(act.sp_end, SpDrainEventType::ActEnd);
     }
-    std::stable_sort(events.begin(), events.end());
+    std::sort(events.begin(), events.end());
     return events;
 }
 
