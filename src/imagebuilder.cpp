@@ -840,8 +840,11 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                                 converter.beats_to_measures(position)};
             Position end_pos {event_pos,
                               converter.beats_to_measures(event_pos)};
-            Position whammy_pos {whammy_end,
-                                 converter.beats_to_measures(whammy_end)};
+            Position whammy_pos {Beat {0.0}, Measure {0.0}};
+            if (m_overlap_engine) {
+                whammy_pos
+                    = {whammy_end, converter.beats_to_measures(whammy_end)};
+            }
             total_sp = sp_data.propagate_sp_over_whammy_min(
                 start_pos, end_pos, total_sp, whammy_pos);
         } else if (whammy_end > position) {

@@ -1133,4 +1133,34 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
     }
 }
 
+BOOST_AUTO_TEST_CASE(whammy_is_not_added_during_overlap_for_non_overlap_games)
+{
+    NoteTrack<NoteColour> track {
+        {{768, 3060}}, {{768, 10}}, {}, {}, {}, {}, 192};
+    TimeConverter converter {{}, 192, Gh1Engine(), {}};
+    PointSet points {track,
+                     converter,
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     Gh1Engine()};
+    SpData sp_data {
+        track, {}, {}, SqueezeSettings::default_settings(), Gh1Engine()};
+    Path path {{{points.cbegin() + 200, points.cend() - 1, Beat {1000.0},
+                 Beat {12.0}, Beat {28.0}}},
+               0};
+
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
+    builder.add_sp_percent_values(sp_data, converter, points, path);
+    std::vector<double> expected_percents {0.0068, 0.3928, 0.5288, 0.4038,
+                                           0.2788};
+
+    BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
+                        expected_percents.size());
+    for (std::size_t i = 0; i < expected_percents.size(); ++i) {
+        BOOST_CHECK_CLOSE(builder.sp_percent_values()[i], expected_percents[i],
+                          0.0001);
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
