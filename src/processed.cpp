@@ -149,12 +149,14 @@ class SpStatus {
 private:
     Position m_position;
     double m_sp;
+    bool m_overlap_engine;
     static constexpr double MEASURES_PER_BAR = 8.0;
 
 public:
-    SpStatus(Position position, double sp)
+    SpStatus(Position position, double sp, bool overlap_engine)
         : m_position {position}
         , m_sp {sp}
+        , m_overlap_engine {overlap_engine}
     {
     }
 
@@ -185,6 +187,9 @@ public:
     void update_early_end(Position sp_note_start, const SpData& sp_data,
                           Position required_whammy_end)
     {
+        if (!m_overlap_engine) {
+            required_whammy_end = {Beat {0.0}, Measure {0.0}};
+        }
         m_sp = sp_data.propagate_sp_over_whammy_min(m_position, sp_note_start,
                                                     m_sp, required_whammy_end);
         if (sp_note_start.beat > m_position.beat) {
@@ -249,8 +254,8 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
 
     SpStatus status_for_early_end {
         activation.earliest_activation_point,
-        std::max(activation.sp_bar.min(), MINIMUM_SP_AMOUNT)};
-    SpStatus status_for_late_end {late_end_position, late_end_sp};
+        std::max(activation.sp_bar.min(), MINIMUM_SP_AMOUNT), m_overlaps};
+    SpStatus status_for_late_end {late_end_position, late_end_sp, m_overlaps};
 
     for (auto p = m_points.next_sp_granting_note(activation.act_start);
          p < activation.act_end;

@@ -979,6 +979,30 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
                       ActValidity::insufficient_sp);
 }
 
+BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
+{
+    std::vector<Note<NoteColour>> notes {{0, 2304}};
+    std::vector<StarPower> phrases {{0, 50}};
+    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    ProcessedSong track {note_track,
+                         {},
+                         SqueezeSettings::default_settings(),
+                         DrumSettings::default_settings(),
+                         Gh1Engine(),
+                         {},
+                         {}};
+    const auto& points = track.points();
+    ActivationCandidate candidate {points.cbegin(),
+                                   points.cend() - 1,
+                                   {Beat(0.0), Measure(0.0)},
+                                   {0.5, 0.5}};
+
+    BOOST_CHECK_EQUAL(
+        track.is_candidate_valid(candidate, 0.0, {Beat {1.0}, Measure {0.25}})
+            .ending_position.beat,
+        Beat {16.0});
+}
+
 // This happened in GH1 Cheat on the Church second act, causing CHOpt to think
 // you could go all the way back to the yellow.
 BOOST_AUTO_TEST_CASE(mid_act_whammy_around_sp_granting_note_doesnt_get_added)
