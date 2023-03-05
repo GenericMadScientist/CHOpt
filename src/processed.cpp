@@ -315,7 +315,7 @@ void ProcessedSong::append_activation(std::stringstream& stream,
                                       const Activation& activation,
                                       const std::string& act_summary) const
 {
-    stream << '\n' << act_summary.substr(0, act_summary.find("-")) << ": ";
+    stream << '\n' << act_summary.substr(0, act_summary.find('-')) << ": ";
     if (act_summary[0] == '0') {
         stream << "See image";
         return;
