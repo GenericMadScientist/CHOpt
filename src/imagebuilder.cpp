@@ -336,11 +336,6 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     auto builder = build_with_engine_params(new_track, sync_track, settings);
     builder.add_song_header(song.name(), song.artist(), song.charter(),
                             settings.speed);
-    if (settings.engine->has_unison_bonuses()) {
-        builder.add_sp_phrases(new_track, song.unison_phrase_positions());
-    } else {
-        builder.add_sp_phrases(new_track, {});
-    }
 
     if constexpr (std::is_same_v<T, DrumNoteColour>) {
         builder.add_drum_fills(new_track);
@@ -393,6 +388,12 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         }
     }
 
+    if (settings.engine->has_unison_bonuses()) {
+        builder.add_sp_phrases(new_track, song.unison_phrase_positions(), path);
+    } else {
+        builder.add_sp_phrases(new_track, {}, path);
+    }
+
     builder.add_measure_values(processed_track.points(),
                                processed_track.converter(), path);
     if (settings.blank) {
@@ -432,6 +433,19 @@ relative_complement(std::vector<std::tuple<double, double>> parent_set,
     }
     std::copy(p, parent_set.end(), std::back_inserter(result));
     return result;
+}
+
+bool is_neutralised_phrase(Beat note_pos, const Path& path)
+{
+    for (const auto& act : path.activations) {
+        if (act.act_start->position.beat > note_pos) {
+            return false;
+        }
+        if (act.act_end->position.beat >= note_pos) {
+            return true;
+        }
+    }
+    return false;
 }
 }
 
@@ -733,7 +747,8 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
 }
 
 void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
-                                  const std::vector<int>& unison_phrases)
+                                  const std::vector<int>& unison_phrases,
+                                  const Path& path)
 {
     constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
 
@@ -742,7 +757,11 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
         while (p->position < phrase.position) {
             ++p;
         }
-        auto start = p->position / static_cast<double>(track.resolution());
+        const auto start
+            = p->position / static_cast<double>(track.resolution());
+        if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
+            continue;
+        }
         auto phrase_end = phrase.position + phrase.length;
         auto end = start;
         while (p < track.notes().cend() && p->position < phrase_end) {
@@ -762,7 +781,8 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
 }
 
 void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
-                                  const std::vector<int>& unison_phrases)
+                                  const std::vector<int>& unison_phrases,
+                                  const Path& path)
 {
     constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
 
@@ -771,7 +791,11 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
         while (p->position < phrase.position) {
             ++p;
         }
-        auto start = p->position / static_cast<double>(track.resolution());
+        const auto start
+            = p->position / static_cast<double>(track.resolution());
+        if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
+            continue;
+        }
         auto phrase_end = phrase.position + phrase.length;
         auto end = start;
         while (p < track.notes().cend() && p->position < phrase_end) {
@@ -791,7 +815,8 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
 }
 
 void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
-                                  const std::vector<int>& unison_phrases)
+                                  const std::vector<int>& unison_phrases,
+                                  const Path& path)
 {
     constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
 
@@ -800,7 +825,11 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
         while (p->position < phrase.position) {
             ++p;
         }
-        auto start = p->position / static_cast<double>(track.resolution());
+        const auto start
+            = p->position / static_cast<double>(track.resolution());
+        if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
+            continue;
+        }
         auto phrase_end = phrase.position + phrase.length;
         auto end = start;
         while (p < track.notes().cend() && p->position < phrase_end) {

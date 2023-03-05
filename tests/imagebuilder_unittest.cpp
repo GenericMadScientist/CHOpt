@@ -358,7 +358,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
     NoteTrack<NoteColour> track {
         {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
     ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    builder.add_sp_phrases(track, {});
+    builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
 
@@ -371,7 +371,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
 {
     NoteTrack<NoteColour> track {{{768}}, {{768, 384}}, {}, {}, {}, {}, 192};
     ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    builder.add_sp_phrases(track, {});
+    builder.add_sp_phrases(track, {}, Path {});
 
     std::vector<std::tuple<double, double>> expected_green_ranges {{4.0, 4.1}};
 
@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
     NoteTrack<GHLNoteColour> track {
         {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
     ImageBuilder builder {track, {}, Difficulty::Expert, false};
-    builder.add_sp_phrases(track, {});
+    builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
 
@@ -400,13 +400,33 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
         {{960}, {1344}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
     ImageBuilder builder {
         track, {}, Difficulty::Expert, DrumSettings::default_settings(), false};
-    builder.add_sp_phrases(track, {});
+    builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.1}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.green_ranges().cbegin(), builder.green_ranges().cend(),
         expected_green_ranges.cbegin(), expected_green_ranges.cend());
+}
+
+BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
+{
+    NoteTrack<NoteColour> track {
+        {{0}, {768}, {3840}}, {{3840, 192}}, {}, {}, {}, {}, 192};
+    TimeConverter converter {{}, 192, Gh1Engine(), {}};
+    PointSet points {track,
+                     converter,
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     Gh1Engine()};
+    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
+    Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {0.05},
+                 Beat {4.01}, Beat {20.01}}},
+               100};
+    builder.add_sp_phrases(track, {}, path);
+
+    BOOST_TEST(builder.green_ranges().empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -512,7 +532,7 @@ BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
     NoteTrack<NoteColour> track {
         {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
     ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    builder.add_sp_phrases(track, {{768, 384}});
+    builder.add_sp_phrases(track, {{768, 384}}, Path {});
     std::vector<std::tuple<double, double>> expected_unison_ranges {{5.0, 5.1}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -537,7 +557,7 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},
                0};
-    builder.add_sp_phrases(track, {});
+    builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, converter, path);
     std::vector<std::tuple<double, double>> expected_blue_ranges {{0.1, 0.9}};
     std::vector<std::tuple<double, double>> expected_red_ranges {{0.0, 0.1},
@@ -672,10 +692,10 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      DrumSettings::default_settings(),
                      Gh1Engine()};
     ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
-    Path path {{{points.cbegin(), points.cend() - 1, Beat {0.05}, Beat {0.1},
-                 Beat {0.9}}},
+    Path path {{{points.cbegin() + 1, points.cend() - 1, Beat {0.05},
+                 Beat {0.1}, Beat {0.9}}},
                0};
-    builder.add_sp_phrases(track, {});
+    builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, converter, path);
     std::vector<std::tuple<double, double>> expected_green_ranges {{0.0, 0.1}};
 
@@ -687,7 +707,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
 BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
 {
     NoteTrack<NoteColour> track {
-        {{0}, {192}, {3840}}, {{3840, 192}}, {}, {}, {}, {}, 192};
+        {{0}, {768}, {3840}}, {{3840, 192}}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -696,10 +716,10 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
                      DrumSettings::default_settings(),
                      Gh1Engine()};
     ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
-    Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.05}, Beat {4.01},
-                 Beat {20.01}}},
-               100};
-    builder.add_sp_phrases(track, {});
+    Path path {{{points.cbegin() + 1, points.cbegin() + 1, Beat {0.05},
+                 Beat {4.01}, Beat {20.01}}},
+               50};
+    builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, converter, path);
     std::vector<std::tuple<double, double>> expected_green_ranges {
         {20.0, 20.1}};
@@ -722,10 +742,10 @@ BOOST_AUTO_TEST_CASE(
                      DrumSettings::default_settings(),
                      Gh1Engine()};
     ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
-    Path path {{{points.cbegin(), points.cend() - 1, Beat {0.05}, Beat {0.1},
-                 Beat {0.9}}},
+    Path path {{{points.cbegin() + 1, points.cend() - 2, Beat {0.05},
+                 Beat {0.1}, Beat {0.9}}},
                0};
-    builder.add_sp_phrases(track, {});
+    builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, converter, path);
     std::vector<std::tuple<double, double>> expected_green_ranges {
         {0.0, 0.1}, {20.0, 20.1}};
@@ -747,10 +767,10 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      DrumSettings::default_settings(),
                      Gh1Engine()};
     ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
-    Path path {{{points.cbegin(), points.cend() - 1, Beat {0.05}, Beat {0.1},
-                 Beat {0.9}}},
+    Path path {{{points.cbegin() + 1, points.cend() - 1, Beat {0.05},
+                 Beat {0.1}, Beat {0.9}}},
                0};
-    builder.add_sp_phrases(track, {});
+    builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, converter, path);
     std::vector<std::tuple<double, double>> expected_yellow_ranges {
         {0.05, 0.1}};
