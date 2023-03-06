@@ -367,6 +367,10 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         builder.add_time_sigs(sync_track, new_track.resolution());
     }
 
+    const auto unison_positions = (settings.engine->has_unison_bonuses())
+        ? song.unison_phrase_positions()
+        : std::vector<int> {};
+
     // The 0.1% squeeze minimum is to get around dumb floating point rounding
     // issues that visibly affect the path at 0% squeeze.
     auto squeeze_settings = settings.squeeze_settings;
@@ -379,7 +383,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                                          settings.drum_settings,
                                          *settings.engine,
                                          song.od_beats(),
-                                         song.unison_phrase_positions()};
+                                         unison_positions};
     Path path;
 
     if (!settings.blank) {
@@ -388,6 +392,7 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
         if (is_rb_drums) {
             write("Optimisation disabled for Rock Band drums, planned for a "
                   "future release");
+            builder.add_sp_phrases(new_track, unison_positions, path);
         } else {
             write("Optimising, please wait...");
             const Optimiser optimiser {&processed_track, terminate,
@@ -395,16 +400,13 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
                                        squeeze_settings.whammy_delay};
             path = optimiser.optimal_path();
             write(processed_track.path_summary(path).c_str());
+            builder.add_sp_phrases(new_track, unison_positions, path);
             builder.add_sp_acts(processed_track.points(),
                                 processed_track.converter(), path);
             builder.activation_opacity() = settings.opacity;
         }
-    }
-
-    if (settings.engine->has_unison_bonuses()) {
-        builder.add_sp_phrases(new_track, song.unison_phrase_positions(), path);
     } else {
-        builder.add_sp_phrases(new_track, {}, path);
+        builder.add_sp_phrases(new_track, unison_positions, path);
     }
 
     builder.add_measure_values(processed_track.points(),
