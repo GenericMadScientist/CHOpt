@@ -230,6 +230,19 @@ bool is_fill_active(const std::vector<Note<DrumNoteColour>>& notes,
     return has_non_kick;
 }
 
+bool is_neutralised_phrase(Beat note_pos, const Path& path)
+{
+    for (const auto& act : path.activations) {
+        if (act.act_start->position.beat > note_pos) {
+            return false;
+        }
+        if (act.act_end->position.beat >= note_pos) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // It is important that SpPhrase has a higher value than ActEnd. This is because
 // in form_events we want to push the event for getting a phrase to the end of
 // the activation if the activation is not an overlap.
@@ -237,12 +250,14 @@ enum class SpDrainEventType { Measure, ActStart, ActEnd, WhammyEnd, SpPhrase };
 
 std::vector<std::tuple<Beat, SpDrainEventType>>
 form_events(const std::vector<double>& measure_lines, const PointSet& points,
-            const Path& path)
+            const Path& path, bool is_overlap_engine,
+            const std::vector<StarPower>& phrases, int resolution)
 {
     std::vector<std::tuple<Beat, SpDrainEventType>> events;
     for (std::size_t i = 1; i < measure_lines.size(); ++i) {
         events.emplace_back(Beat {measure_lines[i]}, SpDrainEventType::Measure);
     }
+    auto sp_iter = phrases.cbegin();
     for (auto p = points.cbegin(); p < points.cend(); ++p) {
         if (!p->is_sp_granting_note) {
             continue;
@@ -253,7 +268,21 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
                 position = std::max(position, act.sp_end);
             }
         }
+        if (!is_overlap_engine) {
+            const Beat range_start {sp_iter->position
+                                    / static_cast<double>(resolution)};
+            const auto first_sp_note
+                = std::find_if(points.cbegin(), points.cend(), [&](auto& p) {
+                      return p.position.beat >= range_start && !p.is_hold_point;
+                  });
+            if (first_sp_note != points.cend()
+                && is_neutralised_phrase(first_sp_note->position.beat, path)) {
+                ++sp_iter;
+                continue;
+            }
+        }
         events.emplace_back(position, SpDrainEventType::SpPhrase);
+        ++sp_iter;
     }
     for (auto act : path.activations) {
         if (act.whammy_end < act.sp_end) {
@@ -401,7 +430,8 @@ make_builder_from_track(const Song& song, const NoteTrack<T>& track,
     } else {
         builder.add_sp_percent_values(processed_track.sp_data(),
                                       processed_track.converter(),
-                                      processed_track.points(), path);
+                                      processed_track.points(), path,
+                                      track.sp_phrases(), track.resolution());
     }
     builder.set_total_score(processed_track.points(), solos, path);
     if (settings.engine->has_bres() && new_track.bre().has_value()) {
@@ -434,19 +464,6 @@ relative_complement(std::vector<std::tuple<double, double>> parent_set,
     std::copy(p, parent_set.end(), std::back_inserter(result));
     return result;
 }
-
-bool is_neutralised_phrase(Beat note_pos, const Path& path)
-{
-    for (const auto& act : path.activations) {
-        if (act.act_start->position.beat > note_pos) {
-            return false;
-        }
-        if (act.act_end->position.beat >= note_pos) {
-            return true;
-        }
-    }
-    return false;
-}
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
@@ -458,7 +475,6 @@ ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
     , m_rows {drawn_rows(track, sync_track)}
     , m_notes {drawn_notes(track)}
     , m_overlap_engine {is_overlap_engine}
-
 {
     constexpr double HALF_BEAT = 0.5;
 
@@ -851,14 +867,17 @@ void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
 void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                                          const TimeConverter& converter,
                                          const PointSet& points,
-                                         const Path& path)
+                                         const Path& path,
+                                         const std::vector<StarPower>& phrases,
+                                         int resolution)
 {
     constexpr double SP_PHRASE_AMOUNT = 0.25;
 
     m_sp_percent_values.clear();
     m_sp_percent_values.reserve(m_measure_lines.size() - 1);
 
-    const auto events = form_events(m_measure_lines, points, path);
+    const auto events = form_events(m_measure_lines, points, path,
+                                    m_overlap_engine, phrases, resolution);
     auto is_sp_active = false;
     Beat whammy_end {std::numeric_limits<double>::infinity()};
     Beat position {0.0};
