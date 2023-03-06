@@ -968,11 +968,9 @@ BOOST_AUTO_TEST_SUITE(add_sp_percent_values_adds_correct_values)
 
 BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
 {
-    std::vector<StarPower> phrases {
-        {960, 10}, {1080, 10}, {1920, 10}, {3840, 10}, {4050, 10}};
     NoteTrack<NoteColour> track {
         {{960}, {1080}, {1920}, {3840}, {4050}, {19200}},
-        phrases,
+        {{960, 10}, {1080, 10}, {1920, 10}, {3840, 10}, {4050, 10}},
         {},
         {},
         {},
@@ -992,8 +990,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                0};
 
     ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path, phrases,
-                                  192);
+    builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {
         0.0,    0.5,    0.75,   0.75,   0.75,   1.0,    1.0,    1.0, 1.0,
         1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0, 0.9375,
@@ -1007,11 +1004,14 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
 
 BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
 {
-    std::vector<StarPower> phrases {{960, 10},  {1080, 10}, {1920, 10},
-                                    {3840, 10}, {4050, 10}, {19200, 10}};
     NoteTrack<NoteColour> track {
         {{960}, {1080}, {1920}, {3840}, {4050}, {19200}},
-        phrases,
+        {{960, 10},
+         {1080, 10},
+         {1920, 10},
+         {3840, 10},
+         {4050, 10},
+         {19200, 10}},
         {},
         {},
         {},
@@ -1031,8 +1031,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                0};
 
     ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path, phrases,
-                                  192);
+    builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {
         0.0, 0.5, 0.75, 0.75, 0.75, 1.0, 1.0,    1.0,  1.0,
         1.0, 1.0, 1.0,  1.0,  1.0,  1.0, 1.0,    1.0,  1.0,
@@ -1046,9 +1045,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
 
 BOOST_AUTO_TEST_CASE(whammy_is_added)
 {
-    std::vector<StarPower> phrases {{960, 10}, {1632, 10}};
     NoteTrack<NoteColour> track {
-        {{960}, {1632, 1920}}, phrases, {}, {}, {}, {}, 192};
+        {{960}, {1632, 1920}}, {{960, 10}, {1632, 10}}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1063,8 +1061,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                0};
 
     ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path, phrases,
-                                  192);
+    builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.5359166667, 0.49425};
 
@@ -1078,9 +1075,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
 
 BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
 {
-    std::vector<StarPower> phrases {{960, 10}, {1632, 10}};
     NoteTrack<NoteColour> track {
-        {{960}, {1632, 1920}}, phrases, {}, {}, {}, {}, 192};
+        {{960}, {1632, 1920}}, {{960, 10}, {1632, 10}}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1095,8 +1091,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                0};
 
     ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path, phrases,
-                                  192);
+    builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.4025833333, 0.2775833333};
 
@@ -1110,15 +1105,14 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
 
 BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
 {
-    std::vector<StarPower> phrases {
-        {960, 10}, {1632, 10}, {6336, 10}, {6528, 10}};
-    NoteTrack<NoteColour> track {{{960}, {1632, 1920}, {6336}, {6528}, {7104}},
-                                 phrases,
-                                 {},
-                                 {},
-                                 {},
-                                 {},
-                                 192};
+    NoteTrack<NoteColour> track {
+        {{960}, {1632, 1920}, {6336}, {6528}, {7104}},
+        {{960, 10}, {1632, 10}, {6336, 10}, {6528, 10}},
+        {},
+        {},
+        {},
+        {},
+        192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1135,8 +1129,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                0};
 
     ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path, phrases,
-                                  192);
+    builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {
         0.0,          0.25,         0.5275833333, 0.4025833333, 0.2775833333,
         0.1525833333, 0.0275833333, 0.0,          0.5,          0.40625};
@@ -1152,9 +1145,13 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
 // See /issues/4, Triathlon m662 on 100%/100%.
 BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
 {
-    std::vector<StarPower> phrases {{0, 10}, {192, 10}, {3224, 10}};
-    NoteTrack<NoteColour> track {
-        {{0}, {192}, {384}, {3224}, {3456}}, phrases, {}, {}, {}, {}, 192};
+    NoteTrack<NoteColour> track {{{0}, {192}, {384}, {3224}, {3456}},
+                                 {{0, 10}, {192, 10}, {3224, 10}},
+                                 {},
+                                 {},
+                                 {},
+                                 {},
+                                 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1169,73 +1166,9 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                50};
 
     ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path, phrases,
-                                  192);
+    builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {0.40299375, 0.27799375, 0.15299375,
                                            0.02799375, 0.25};
-
-    BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
-                        expected_percents.size());
-    for (std::size_t i = 0; i < expected_percents.size(); ++i) {
-        BOOST_CHECK_CLOSE(builder.sp_percent_values()[i], expected_percents[i],
-                          0.0001);
-    }
-}
-
-BOOST_AUTO_TEST_CASE(whammy_is_not_added_during_overlap_for_non_overlap_games)
-{
-    std::vector<StarPower> phrases {{768, 10}};
-    NoteTrack<NoteColour> track {{{768, 3060}}, phrases, {}, {}, {}, {}, 192};
-    TimeConverter converter {{}, 192, Gh1Engine(), {}};
-    PointSet points {track,
-                     converter,
-                     {},
-                     SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
-                     Gh1Engine()};
-    SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), Gh1Engine()};
-    Path path {{{points.cbegin() + 200, points.cend() - 1, Beat {1000.0},
-                 Beat {12.0}, Beat {28.0}}},
-               0};
-
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
-    builder.add_sp_percent_values(sp_data, converter, points, path, phrases,
-                                  192);
-    std::vector<double> expected_percents {0.0068, 0.3928, 0.5288, 0.4038,
-                                           0.2788};
-
-    BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
-                        expected_percents.size());
-    for (std::size_t i = 0; i < expected_percents.size(); ++i) {
-        BOOST_CHECK_CLOSE(builder.sp_percent_values()[i], expected_percents[i],
-                          0.0001);
-    }
-}
-
-BOOST_AUTO_TEST_CASE(sp_from_neutralised_phraes_not_added_for_non_overlap_games)
-{
-    std::vector<StarPower> phrases {{0, 10}, {192, 10}, {384, 6000}};
-    NoteTrack<NoteColour> track {
-        {{0}, {192}, {384}, {6144}}, phrases, {}, {}, {}, {}, 192};
-    TimeConverter converter {{}, 192, Gh1Engine(), {}};
-    PointSet points {track,
-                     converter,
-                     {},
-                     SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
-                     Gh1Engine()};
-    SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), Gh1Engine()};
-    Path path {{{points.cbegin() + 2, points.cbegin() + 2, Beat {1000.0},
-                 Beat {2.0}, Beat {18.0}}},
-               50};
-
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
-    builder.add_sp_percent_values(sp_data, converter, points, path, phrases,
-                                  192);
-    std::vector<double> expected_percents {0.4375, 0.3125, 0.1875, 0.0625, 0.0,
-                                           0.0,    0.0,    0.0,    0.0};
 
     BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
                         expected_percents.size());

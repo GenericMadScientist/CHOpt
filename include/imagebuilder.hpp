@@ -103,9 +103,7 @@ public:
                      const Path& path);
     void add_sp_percent_values(const SpData& sp_data,
                                const TimeConverter& converter,
-                               const PointSet& points, const Path& path,
-                               const std::vector<StarPower>& phrases,
-                               int resolution);
+                               const PointSet& points, const Path& path);
     void add_sp_phrases(const NoteTrack<NoteColour>& track,
                         const std::vector<int>& unison_phrases,
                         const Path& path);
