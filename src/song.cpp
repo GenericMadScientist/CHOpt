@@ -307,6 +307,93 @@ apply_cymbal_events(const std::vector<Note<DrumNoteColour>>& notes)
     return new_notes;
 }
 
+int no_dynamics_lane_colour(DrumNoteColour colour)
+{
+    switch (colour) {
+    case DrumNoteColour::Red:
+        return 0;
+    case DrumNoteColour::Yellow:
+    case DrumNoteColour::YellowCymbal:
+        return 1;
+    case DrumNoteColour::Blue:
+    case DrumNoteColour::BlueCymbal:
+        return 2;
+    case DrumNoteColour::Green:
+    case DrumNoteColour::GreenCymbal:
+        return 3;
+    default:
+        return -1;
+    }
+}
+
+DrumNoteColour add_accent(DrumNoteColour colour)
+{
+    const std::map<DrumNoteColour, DrumNoteColour> accents {
+        {DrumNoteColour::Red, DrumNoteColour::RedAccent},
+        {DrumNoteColour::Yellow, DrumNoteColour::YellowAccent},
+        {DrumNoteColour::Blue, DrumNoteColour::BlueAccent},
+        {DrumNoteColour::Green, DrumNoteColour::GreenAccent},
+        {DrumNoteColour::YellowCymbal, DrumNoteColour::YellowCymbalAccent},
+        {DrumNoteColour::BlueCymbal, DrumNoteColour::BlueCymbalAccent},
+        {DrumNoteColour::GreenCymbal, DrumNoteColour::GreenCymbalAccent},
+        {DrumNoteColour::Kick, DrumNoteColour::Kick},
+        {DrumNoteColour::DoubleKick, DrumNoteColour::DoubleKick}};
+
+    return accents.at(colour);
+}
+
+DrumNoteColour add_ghost(DrumNoteColour colour)
+{
+    const std::map<DrumNoteColour, DrumNoteColour> ghosts {
+        {DrumNoteColour::Red, DrumNoteColour::RedGhost},
+        {DrumNoteColour::Yellow, DrumNoteColour::YellowGhost},
+        {DrumNoteColour::Blue, DrumNoteColour::BlueGhost},
+        {DrumNoteColour::Green, DrumNoteColour::GreenGhost},
+        {DrumNoteColour::YellowCymbal, DrumNoteColour::YellowCymbalGhost},
+        {DrumNoteColour::BlueCymbal, DrumNoteColour::BlueCymbalGhost},
+        {DrumNoteColour::GreenCymbal, DrumNoteColour::GreenCymbalGhost},
+        {DrumNoteColour::Kick, DrumNoteColour::Kick},
+        {DrumNoteColour::DoubleKick, DrumNoteColour::DoubleKick}};
+
+    return ghosts.at(colour);
+}
+
+std::vector<Note<DrumNoteColour>>
+apply_dynamics_events(std::vector<Note<DrumNoteColour>> notes,
+                      const std::vector<NoteEvent>& note_events)
+{
+    constexpr int GHOST_BASE = 34;
+    constexpr int ACCENT_BASE = 40;
+    constexpr int LANE_COUNT = 4;
+
+    std::set<std::tuple<int, int>> accent_events;
+    std::set<std::tuple<int, int>> ghost_events;
+
+    for (const auto& event : note_events) {
+        if (event.fret > ACCENT_BASE + LANE_COUNT || event.fret < GHOST_BASE) {
+            continue;
+        }
+        if (event.fret < GHOST_BASE + LANE_COUNT) {
+            accent_events.emplace(event.position, event.fret - GHOST_BASE);
+        }
+        if (event.fret >= ACCENT_BASE) {
+            ghost_events.emplace(event.position, event.fret - ACCENT_BASE);
+        }
+    }
+    for (auto& note : notes) {
+        auto lane = no_dynamics_lane_colour(note.colour);
+        if (lane == -1) {
+            continue;
+        }
+        if (accent_events.count({note.position, lane}) > 0) {
+            note.colour = add_accent(note.colour);
+        } else if (ghost_events.count({note.position, lane}) > 0) {
+            note.colour = add_ghost(note.colour);
+        }
+    }
+    return notes;
+}
+
 template <typename T>
 NoteTrack<T> note_track_from_section(const ChartSection& section,
                                      int resolution)
@@ -329,6 +416,7 @@ NoteTrack<T> note_track_from_section(const ChartSection& section,
     if constexpr (std::is_same_v<T, DrumNoteColour>) {
         notes = add_fifth_lane_greens(std::move(notes), section.note_events);
         notes = apply_cymbal_events(notes);
+        notes = apply_dynamics_events(notes, section.note_events);
     }
 
     std::vector<DrumFill> fills;
@@ -680,35 +768,15 @@ DrumNoteColour add_dynamics(DrumNoteColour colour, std::uint8_t velocity,
                             bool parse_dynamics)
 {
     constexpr std::uint8_t MIN_ACCENT_VELOCITY = 127;
-    const std::map<DrumNoteColour, DrumNoteColour> ghosts {
-        {DrumNoteColour::Red, DrumNoteColour::RedGhost},
-        {DrumNoteColour::Yellow, DrumNoteColour::YellowGhost},
-        {DrumNoteColour::Blue, DrumNoteColour::BlueGhost},
-        {DrumNoteColour::Green, DrumNoteColour::GreenGhost},
-        {DrumNoteColour::YellowCymbal, DrumNoteColour::YellowCymbalGhost},
-        {DrumNoteColour::BlueCymbal, DrumNoteColour::BlueCymbalGhost},
-        {DrumNoteColour::GreenCymbal, DrumNoteColour::GreenCymbalGhost},
-        {DrumNoteColour::Kick, DrumNoteColour::Kick},
-        {DrumNoteColour::DoubleKick, DrumNoteColour::DoubleKick}};
-    const std::map<DrumNoteColour, DrumNoteColour> accents {
-        {DrumNoteColour::Red, DrumNoteColour::RedAccent},
-        {DrumNoteColour::Yellow, DrumNoteColour::YellowAccent},
-        {DrumNoteColour::Blue, DrumNoteColour::BlueAccent},
-        {DrumNoteColour::Green, DrumNoteColour::GreenAccent},
-        {DrumNoteColour::YellowCymbal, DrumNoteColour::YellowCymbalAccent},
-        {DrumNoteColour::BlueCymbal, DrumNoteColour::BlueCymbalAccent},
-        {DrumNoteColour::GreenCymbal, DrumNoteColour::GreenCymbalAccent},
-        {DrumNoteColour::Kick, DrumNoteColour::Kick},
-        {DrumNoteColour::DoubleKick, DrumNoteColour::DoubleKick}};
 
     if (!parse_dynamics) {
         return colour;
     }
     if (velocity == 1) {
-        return ghosts.at(colour);
+        return add_ghost(colour);
     }
     if (velocity >= MIN_ACCENT_VELOCITY) {
-        return accents.at(colour);
+        return add_accent(colour);
     }
     return colour;
 }

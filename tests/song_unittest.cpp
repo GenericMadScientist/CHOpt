@@ -559,6 +559,29 @@ BOOST_AUTO_TEST_CASE(drum_notes_are_read_correctly_from_chart)
                                   notes.cbegin(), notes.cend());
 }
 
+BOOST_AUTO_TEST_CASE(dynamics_are_read_correctly_from_chart)
+{
+    ChartSection expert_drums {
+        "ExpertDrums",
+        {},
+        {},
+        {},
+        {{192, 1, 0}, {192, 34, 0}, {384, 1, 0}, {384, 40, 0}},
+        {},
+        {}};
+    std::vector<ChartSection> sections {expert_drums};
+    const Chart chart {sections};
+    std::vector<Note<DrumNoteColour>> notes {
+        {192, 0, DrumNoteColour::RedAccent},
+        {384, 0, DrumNoteColour::RedGhost}};
+
+    const auto song = Song::from_chart(chart, {});
+    const auto& track = song.drum_note_track(Difficulty::Expert);
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
+                                  notes.cbegin(), notes.cend());
+}
+
 BOOST_AUTO_TEST_CASE(drum_solos_are_read_correctly_from_chart)
 {
     ChartSection expert_drums {"ExpertDrums",
