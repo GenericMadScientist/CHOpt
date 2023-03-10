@@ -10,8 +10,8 @@ c = conn.cursor()
 
 c.execute(
     (
-        "select ID, File, Difficulty, Instrument, Path, BaseScore, TotalScore, "
-        "AvgMultiplier from Songs"
+        "select song_id, file, difficulty, instrument, path, base_score, total_score, "
+        "avg_mult from Songs"
     )
 )
 songs = list(c.fetchall())
@@ -26,8 +26,8 @@ for song in songs:
     output_lines.append(f"Average multiplier: {avg_mult}x")
     c.execute(
         (
-            "select Description, ActivationEnd from Activations "
-            "where SongID = ? order by ActivationNumber"
+            "select description, activation_end from activations "
+            "where song_id = ? order by activation_number"
         ),
         (song_id,),
     )
