@@ -131,6 +131,19 @@ bool is_dynamics_colour(DrumNoteColour colour)
         == NORMAL_COLOURS.cend();
 }
 
+bool is_cymbal_colour(DrumNoteColour colour)
+{
+    constexpr std::array CYMBAL_COLOURS {
+        DrumNoteColour::YellowCymbal,      DrumNoteColour::YellowCymbalAccent,
+        DrumNoteColour::YellowCymbalGhost, DrumNoteColour::BlueCymbal,
+        DrumNoteColour::BlueCymbalAccent,  DrumNoteColour::BlueCymbalGhost,
+        DrumNoteColour::GreenCymbal,       DrumNoteColour::GreenCymbalAccent,
+        DrumNoteColour::GreenCymbalGhost,
+    };
+    return std::find(CYMBAL_COLOURS.cbegin(), CYMBAL_COLOURS.cend(), colour)
+        != CYMBAL_COLOURS.cend();
+}
+
 template <typename InputIt, typename OutputIt>
 void append_note_points(InputIt first, InputIt last, InputIt note_start,
                         InputIt note_end, OutputIt points, int resolution,
@@ -142,6 +155,9 @@ void append_note_points(InputIt first, InputIt last, InputIt note_start,
 
     auto note_value = engine.base_note_value();
     if constexpr (std::is_same_v<decltype(first->colour), DrumNoteColour>) {
+        if (is_cymbal_colour(first->colour)) {
+            note_value = engine.base_cymbal_value();
+        }
         if (is_dynamics_colour(first->colour)) {
             note_value *= 2;
         }

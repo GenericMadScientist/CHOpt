@@ -26,6 +26,7 @@ enum class SustainRoundingPolicy { RoundUp, RoundToNearest };
 class Engine {
 public:
     virtual int base_note_value() const = 0;
+    virtual int base_cymbal_value() const { return base_note_value(); }
     virtual double burst_size() const = 0;
     virtual bool chords_multiply_sustains() const = 0;
     virtual bool delayed_multiplier() const = 0;
@@ -51,6 +52,7 @@ public:
 
 class BaseChEngine : public Engine {
 public:
+    int base_cymbal_value() const override { return 65; }
     int base_note_value() const override { return 50; }
     double burst_size() const override { return 0.25; }
     bool chords_multiply_sustains() const override { return false; }

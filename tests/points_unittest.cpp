@@ -1057,12 +1057,31 @@ BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
     BOOST_TEST((begin + 1)->fill_start.has_value());
 }
 
+BOOST_AUTO_TEST_CASE(cymbals_get_extra_points)
+{
+    std::vector<Note<DrumNoteColour>> notes {
+        {0, 0, DrumNoteColour::YellowCymbal}};
+    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    PointSet points {track,
+                     {{}, 192, ChDrumEngine(), {}},
+                     {},
+                     SqueezeSettings::default_settings(),
+                     DrumSettings::default_settings(),
+                     ChDrumEngine()};
+    const auto begin = points.cbegin();
+
+    BOOST_CHECK_EQUAL(begin->value, 65);
+}
+
 BOOST_AUTO_TEST_CASE(dynamics_get_double_points)
 {
     std::vector<Note<DrumNoteColour>> notes {
         {0, 0, DrumNoteColour::RedGhost},
         {192, 0, DrumNoteColour::RedAccent},
-        {384, 0, DrumNoteColour::Red}};
+        {384, 0, DrumNoteColour::Red},
+        {576, 0, DrumNoteColour::YellowCymbalGhost},
+        {768, 0, DrumNoteColour::YellowCymbalAccent},
+        {960, 0, DrumNoteColour::YellowCymbal}};
     NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
@@ -1075,6 +1094,9 @@ BOOST_AUTO_TEST_CASE(dynamics_get_double_points)
     BOOST_CHECK_EQUAL(begin->value, 100);
     BOOST_CHECK_EQUAL((begin + 1)->value, 100);
     BOOST_CHECK_EQUAL((begin + 2)->value, 50);
+    BOOST_CHECK_EQUAL((begin + 3)->value, 130);
+    BOOST_CHECK_EQUAL((begin + 4)->value, 130);
+    BOOST_CHECK_EQUAL((begin + 5)->value, 65);
 }
 
 BOOST_AUTO_TEST_SUITE(first_after_current_phrase_works_correctly)
