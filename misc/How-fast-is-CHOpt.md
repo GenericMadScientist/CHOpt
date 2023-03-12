@@ -115,33 +115,33 @@ song, with the top 1% combined as outliers.
 
 The 25 slowest songs are as follows:
 
-| Song                                    | Setlist                        | Time (s) |
-| --------------------------------------- | ------------------------------ | -------- |
-| The Forever Saga                        | Marathon Hero 2                | 62.726   |
-| CHARTS 2: Endless Setlist               | CHARTS 2                       | 48.987   |
-| CHARTS: The (almost) Endless Setlist    | CHARTS                         | 32.175   |
-| CTP5 Overture                           | Community Track Packs          | 27.341   |
-| Way Too Damn Much Anti Hero 2           | Anti Hero 2 Charity Drive      | 21.736   |
-| Endless Setlist: The Fall of Troy Hero  | The Fall of Troy Hero          | 19.268   |
-| FIRECORE 4: Burned To Ashes             | Community Track Packs          | 13.895   |
-| Vector/Virus                            | Marathon Hero 2                | 13.575   |
-| Uranoid                                 | CHARTS                         | 12.933   |
-| Chezy's Ultimate Solo Experience        | CHARTS 2                       | 12.152   |
-| The Dark Tower (Full Album)             | Marathon Hero 2                | 9.082    |
-| The Human Equation                      | Marathon Hero                  | 9.054    |
-| The Olympian                            | Community Track Packs          | 8.945    |
-| The Tale of Iso Subject 5               | Marathon Hero 2                | 8.151    |
-| Reincarnation (Full Album)              | Marathon Hero 2                | 7.926    |
-| Iconoclast (Full Album)                 | Symphony X Discography Setlist | 7.900    |
-| Catch Thirtythree                       | Djent Hero Collection          | 7.800    |
-| Operation: Mindcrime (Full Album)       | Marathon Hero 2                | 7.619    |
-| Under the Force of Courage [FULL ALBUM] | Anti Hero 2 Charity Drive      | 7.570    |
-| The Odyssey (Full Album)                | Symphony X Discography Setlist | 7.308    |
-| Ascendancy [FULL ALBUM]                 | Anti Hero 2 Charity Drive      | 6.957    |
-| Stillworld (Full Album)                 | Djent Hero Collection          | 6.830    |
-| Eskapist                                | CHARTS                         | 6.776    |
-| Eskapist                                | Marathon Hero                  | 6.598    |
-| Death of a Dead Day (Full Album)        | Djent Hero Collection          | 6.578    |
+| Song                                      | Setlist                        | Time (s) |
+| ----------------------------------------- | ------------------------------ | -------- |
+| The Forever Saga                          | Marathon Hero 2                | 62.726   |
+| CHARTS 2: Endless Setlist                 | CHARTS 2                       | 48.987   |
+| CHARTS: The (almost) Endless Setlist      | CHARTS                         | 32.175   |
+| CTP5 Overture                             | Community Track Packs          | 27.341   |
+| Way Too Damn Much Anti Hero 2             | Anti Hero 2 Charity Drive      | 21.736   |
+| Endless Setlist: The Fall of Troy Hero    | The Fall of Troy Hero          | 19.268   |
+| FIRECORE 4: Burned To Ashes               | Community Track Packs          | 13.895   |
+| Vector/Virus                              | Marathon Hero 2                | 13.575   |
+| Uranoid                                   | CHARTS                         | 12.933   |
+| Chezy's Ultimate Solo Experience          | CHARTS 2                       | 12.152   |
+| The Dark Tower (Full Album)               | Marathon Hero 2                | 9.082    |
+| The Human Equation                        | Marathon Hero                  | 9.054    |
+| The Olympian                              | Community Track Packs          | 8.945    |
+| The Tale of Iso Subject 5                 | Marathon Hero 2                | 8.151    |
+| Reincarnation (Full Album)                | Marathon Hero 2                | 7.926    |
+| Iconoclast (Full Album)                   | Symphony X Discography Setlist | 7.900    |
+| Catch Thirtythree                         | Djent Hero Collection          | 7.800    |
+| Operation: Mindcrime (Full Album)         | Marathon Hero 2                | 7.619    |
+| Under the Force of Courage \[FULL ALBUM\] | Anti Hero 2 Charity Drive      | 7.570    |
+| The Odyssey (Full Album)                  | Symphony X Discography Setlist | 7.308    |
+| Ascendancy \[FULL ALBUM\]                 | Anti Hero 2 Charity Drive      | 6.957    |
+| Stillworld (Full Album)                   | Djent Hero Collection          | 6.830    |
+| Eskapist                                  | CHARTS                         | 6.776    |
+| Eskapist                                  | Marathon Hero                  | 6.598    |
+| Death of a Dead Day (Full Album)          | Djent Hero Collection          | 6.578    |
 
 ### By Setlist
 
