@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ private:
     QString m_file_name;
 
 public:
-    ParserThread(QObject* parent = nullptr)
+    explicit ParserThread(QObject* parent = nullptr)
         : QThread(parent)
     {
     }
@@ -69,7 +69,7 @@ private:
     QString m_file_name;
 
 public:
-    OptimiserThread(QObject* parent = nullptr)
+    explicit OptimiserThread(QObject* parent = nullptr)
         : QThread(parent)
     {
     }

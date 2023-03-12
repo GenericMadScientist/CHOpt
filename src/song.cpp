@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1167,7 +1167,7 @@ private:
     std::vector<std::tuple<int, int>> m_green_tom_events;
 
 public:
-    TomEvents(const InstrumentMidiTrack<DrumNoteColour>& events)
+    explicit TomEvents(const InstrumentMidiTrack<DrumNoteColour>& events)
         : m_yellow_tom_events {combine_note_on_off_events(
             events.yellow_tom_on_events, events.yellow_tom_off_events)}
     {
