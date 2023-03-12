@@ -1170,11 +1170,11 @@ public:
     explicit TomEvents(const InstrumentMidiTrack<DrumNoteColour>& events)
         : m_yellow_tom_events {combine_note_on_off_events(
             events.yellow_tom_on_events, events.yellow_tom_off_events)}
+        , m_blue_tom_events {combine_note_on_off_events(
+              events.blue_tom_on_events, events.blue_tom_off_events)}
+        , m_green_tom_events {combine_note_on_off_events(
+              events.green_tom_on_events, events.green_tom_off_events)}
     {
-        m_blue_tom_events = combine_note_on_off_events(
-            events.blue_tom_on_events, events.blue_tom_off_events);
-        m_green_tom_events = combine_note_on_off_events(
-            events.green_tom_on_events, events.green_tom_off_events);
     }
 
     [[nodiscard]] DrumNoteColour apply_tom_events(DrumNoteColour colour,
