@@ -125,7 +125,7 @@ for:
     - sh: strip -x chopt
     - sh: mv chopt CHOpt
     - sh: install_name_tool -change /usr/local/opt/libpng/lib/libpng16.16.dylib @executable_path/libpng16.16.dylib CHOpt
-    - sh: cp /usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib libpng16.16.dylib
+    - sh: cp /usr/local/Cellar/libpng/1.6.39/lib/libpng16.16.dylib libpng16.16.dylib
     - sh: zip -r "../artifacts/CHOpt CLI ${APPVEYOR_BUILD_VERSION} (x64 Mac).zip" CHOpt libpng16.16.dylib
     - sh: mv choptgui.app CHOpt.app
     - sh: mv CHOpt.app/Contents/MacOS/choptgui CHOpt.app/Contents/MacOS/CHOpt
