@@ -32,34 +32,32 @@
 #include "sp.hpp"
 #include "time.hpp"
 
+template <typename Iter>
+inline std::ostream& print_container(std::ostream& stream, Iter begin, Iter end)
+{
+    stream << '{';
+    if (begin != end) {
+        stream << *begin++;
+    }
+    while (begin != end) {
+        stream << ", " << *begin++;
+    }
+    stream << '}';
+    return stream;
+}
+
 template <typename T>
 inline std::ostream& operator<<(std::ostream& stream,
                                 const std::vector<T>& values)
 {
-    stream << '{';
-    if (!values.empty()) {
-        stream << values[0];
-    }
-    for (auto i = 1U; i < values.size(); ++i) {
-        stream << ", " << values.at(i);
-    }
-    stream << '}';
-    return stream;
+    print_container(stream, values.cbegin(), values.cend());
 }
 
 template <typename T, std::size_t N>
 inline std::ostream& operator<<(std::ostream& stream,
                                 const std::array<T, N>& values)
 {
-    stream << '{';
-    if (!values.empty()) {
-        stream << values[0];
-    }
-    for (auto i = 1U; i < values.size(); ++i) {
-        stream << ", " << values.at(i);
-    }
-    stream << '}';
-    return stream;
+    print_container(stream, values.cbegin(), values.cend());
 }
 
 inline std::ostream& operator<<(std::ostream& stream, ActValidity validity)
