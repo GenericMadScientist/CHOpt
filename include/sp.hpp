@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,6 +141,8 @@ private:
         }
         return spans;
     }
+
+    Position sp_drain_end_point(Position start, double sp_bar_amount) const;
 
     void initialise(const std::vector<std::tuple<int, int, Second>>& note_spans,
                     const std::vector<StarPower>& phrases, int resolution,

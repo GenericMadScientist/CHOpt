@@ -29,6 +29,14 @@ bool phrase_contains_pos(const StarPower& phrase, int position)
     }
     return position < (phrase.position + phrase.length);
 }
+
+double sp_deduction(Position start, Position end)
+{
+    constexpr double MEASURES_PER_BAR = 8.0;
+
+    const auto meas_diff = end.measure - start.measure;
+    return meas_diff.value() / MEASURES_PER_BAR;
+}
 }
 
 std::vector<SpData::BeatRate>
@@ -276,30 +284,34 @@ double SpData::available_whammy(Beat start, Beat end, Beat note_pos) const
     return total_whammy;
 }
 
+Position SpData::sp_drain_end_point(Position start, double sp_bar_amount) const
+{
+    const auto end_meas
+        = start.measure + Measure(sp_bar_amount * MEASURES_PER_BAR);
+    const auto end_beat = m_converter.measures_to_beats(end_meas);
+    return {end_beat, end_meas};
+}
+
 Position SpData::activation_end_point(Position start, Position end,
                                       double sp_bar_amount) const
 {
     auto p = first_whammy_range_after(start.beat);
     while ((p != m_whammy_ranges.cend()) && (p->start.beat < end.beat)) {
         if (p->start.beat > start.beat) {
-            auto meas_diff = p->start.measure - start.measure;
-            auto sp_deduction = meas_diff.value() / MEASURES_PER_BAR;
-            if (sp_bar_amount < sp_deduction) {
-                auto end_meas
-                    = start.measure + Measure(sp_bar_amount * MEASURES_PER_BAR);
-                auto end_beat = m_converter.measures_to_beats(end_meas);
-                return {end_beat, end_meas};
+            const auto sp_drop = sp_deduction(start, p->start);
+            if (sp_bar_amount < sp_drop) {
+                return sp_drain_end_point(start, sp_bar_amount);
             }
-            sp_bar_amount -= sp_deduction;
+            sp_bar_amount -= sp_drop;
             start = p->start;
         }
-        auto range_end = std::min(end.beat, p->end.beat);
-        auto new_sp_bar_amount
+        const auto range_end = std::min(end.beat, p->end.beat);
+        const auto new_sp_bar_amount
             = propagate_over_whammy_range(start.beat, range_end, sp_bar_amount);
         if (new_sp_bar_amount < 0.0) {
-            auto end_beat = whammy_propagation_endpoint(start.beat, end.beat,
-                                                        sp_bar_amount);
-            auto end_meas = m_converter.beats_to_measures(end_beat);
+            const auto end_beat = whammy_propagation_endpoint(
+                start.beat, end.beat, sp_bar_amount);
+            const auto end_meas = m_converter.beats_to_measures(end_beat);
             return {end_beat, end_meas};
         }
         sp_bar_amount = new_sp_bar_amount;
@@ -310,13 +322,9 @@ Position SpData::activation_end_point(Position start, Position end,
         ++p;
     }
 
-    auto meas_diff = end.measure - start.measure;
-    auto sp_deduction = meas_diff.value() / MEASURES_PER_BAR;
-    if (sp_bar_amount < sp_deduction) {
-        auto end_meas
-            = start.measure + Measure(sp_bar_amount * MEASURES_PER_BAR);
-        auto end_beat = m_converter.measures_to_beats(end_meas);
-        return {end_beat, end_meas};
+    const auto sp_drop = sp_deduction(start, end);
+    if (sp_bar_amount < sp_drop) {
+        return sp_drain_end_point(start, sp_bar_amount);
     }
     return end;
 }
