@@ -51,16 +51,27 @@ public:
 };
 
 class BaseChEngine : public Engine {
+protected:
+    virtual double timing_window(double early_gap, double late_gap) const = 0;
+
 public:
     int base_cymbal_value() const override { return 65; }
     int base_note_value() const override { return 50; }
     double burst_size() const override { return 0.25; }
     bool chords_multiply_sustains() const override { return false; }
     bool delayed_multiplier() const override { return false; }
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        return timing_window(early_gap, late_gap);
+    }
     bool has_bres() const override { return false; }
     bool has_unison_bonuses() const override { return false; }
     bool ignore_average_multiplier() const override { return false; }
     bool is_rock_band() const override { return false; }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        return timing_window(early_gap, late_gap);
+    }
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return false; }
     bool overlaps() const override { return true; }
@@ -76,14 +87,8 @@ public:
 };
 
 class ChGuitarEngine final : public BaseChEngine {
-public:
-    double early_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)early_gap;
-        (void)late_gap;
-        return 0.07;
-    }
-    double late_timing_window(double early_gap, double late_gap) const override
+protected:
+    double timing_window(double early_gap, double late_gap) const override
     {
         (void)early_gap;
         (void)late_gap;
@@ -92,15 +97,8 @@ public:
 };
 
 class ChPrecisionGuitarEngine final : public BaseChEngine {
-public:
-    double early_timing_window(double early_gap, double late_gap) const override
-    {
-        early_gap = std::clamp(early_gap, 0.0, 0.0525);
-        late_gap = std::clamp(late_gap, 0.0, 0.0525);
-        const auto total_gap = early_gap + late_gap;
-        return 0.27619 * total_gap + 0.021;
-    }
-    double late_timing_window(double early_gap, double late_gap) const override
+protected:
+    double timing_window(double early_gap, double late_gap) const override
     {
         early_gap = std::clamp(early_gap, 0.0, 0.0525);
         late_gap = std::clamp(late_gap, 0.0, 0.0525);
@@ -110,16 +108,8 @@ public:
 };
 
 class ChDrumEngine final : public BaseChEngine {
-public:
-    double early_timing_window(double early_gap, double late_gap) const override
-    {
-        early_gap = std::clamp(early_gap, 0.0375, 0.085);
-        late_gap = std::clamp(late_gap, 0.0375, 0.085);
-        const auto total_gap = early_gap + late_gap;
-        return -2.23425815 * total_gap * total_gap
-            + 0.9428571428571415 * total_gap - 0.01;
-    }
-    double late_timing_window(double early_gap, double late_gap) const override
+protected:
+    double timing_window(double early_gap, double late_gap) const override
     {
         early_gap = std::clamp(early_gap, 0.0375, 0.085);
         late_gap = std::clamp(late_gap, 0.0375, 0.085);
@@ -130,16 +120,8 @@ public:
 };
 
 class ChPrecisionDrumEngine final : public BaseChEngine {
-public:
-    double early_timing_window(double early_gap, double late_gap) const override
-    {
-        early_gap = std::clamp(early_gap, 0.025, 0.04);
-        late_gap = std::clamp(late_gap, 0.025, 0.04);
-        const auto total_gap = early_gap + late_gap;
-        return 2.4961183 * total_gap * total_gap + 0.24961183 * total_gap
-            + 0.0065;
-    }
-    double late_timing_window(double early_gap, double late_gap) const override
+protected:
+    double timing_window(double early_gap, double late_gap) const override
     {
         early_gap = std::clamp(early_gap, 0.025, 0.04);
         late_gap = std::clamp(late_gap, 0.025, 0.04);
@@ -189,14 +171,28 @@ public:
 };
 
 class BaseRbEngine : public Engine {
+protected:
+    virtual double base_timing_window() const = 0;
+
 public:
     int base_note_value() const override { return 25; }
     double burst_size() const override { return 0.0; }
     bool chords_multiply_sustains() const override { return true; }
     bool delayed_multiplier() const override { return false; }
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return base_timing_window();
+    }
     bool has_bres() const override { return true; }
     bool ignore_average_multiplier() const override { return true; }
     bool is_rock_band() const override { return true; }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        return std::min(base_timing_window(), late_gap / 2);
+    }
     bool merge_uneven_sustains() const override { return true; }
     bool overlaps() const override { return true; }
     bool round_tick_gap() const override { return false; }
@@ -211,70 +207,38 @@ public:
 };
 
 class RbEngine final : public BaseRbEngine {
+protected:
+    double base_timing_window() const override { return 0.1; }
+
 public:
-    double early_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)early_gap;
-        (void)late_gap;
-        return 0.1;
-    }
     bool has_unison_bonuses() const override { return false; }
-    double late_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)early_gap;
-        return std::min(0.1, late_gap / 2);
-    }
     int max_multiplier() const override { return 4; }
 };
 
 class RbBassEngine final : public BaseRbEngine {
+protected:
+    double base_timing_window() const override { return 0.1; }
+
 public:
-    double early_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)early_gap;
-        (void)late_gap;
-        return 0.1;
-    }
     bool has_unison_bonuses() const override { return false; }
-    double late_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)early_gap;
-        return std::min(0.1, late_gap / 2);
-    }
     int max_multiplier() const override { return 6; }
 };
 
 class Rb3Engine final : public BaseRbEngine {
+protected:
+    double base_timing_window() const override { return 0.105; }
+
 public:
-    double early_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)early_gap;
-        (void)late_gap;
-        return 0.105;
-    }
     bool has_unison_bonuses() const override { return true; }
-    double late_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)early_gap;
-        return std::min(0.105, late_gap / 2);
-    }
     int max_multiplier() const override { return 4; }
 };
 
 class Rb3BassEngine final : public BaseRbEngine {
+protected:
+    double base_timing_window() const override { return 0.105; }
+
 public:
-    double early_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)early_gap;
-        (void)late_gap;
-        return 0.105;
-    }
     bool has_unison_bonuses() const override { return true; }
-    double late_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)early_gap;
-        return std::min(0.105, late_gap / 2);
-    }
     int max_multiplier() const override { return 6; }
 };
 
