@@ -102,6 +102,7 @@ private:
         return static_cast<int>(750 + 500 * seconds_gap.value());
     }
 
+    SpBar sp_from_phrases(PointPtr begin, PointPtr end) const;
     std::vector<std::string> act_summaries(const Path& path) const;
     std::vector<std::string> drum_act_summaries(const Path& path) const;
     void append_activation(std::stringstream& stream,

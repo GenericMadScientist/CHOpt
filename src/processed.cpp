@@ -24,18 +24,25 @@
 #include "processed.hpp"
 #include "stringutil.hpp"
 
-SpBar ProcessedSong::total_available_sp(Beat start, PointPtr first_point,
-                                        PointPtr act_start,
-                                        Beat required_whammy_end) const
+SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
 {
     SpBar sp_bar {0.0, 0.0};
-    for (auto p = m_points.next_sp_granting_note(first_point); p < act_start;
+    for (auto p = m_points.next_sp_granting_note(begin); p < end;
          p = m_points.next_sp_granting_note(std::next(p))) {
         sp_bar.add_phrase();
         if (p->is_unison_sp_granting_note) {
             sp_bar.add_phrase();
         }
     }
+
+    return sp_bar;
+}
+
+SpBar ProcessedSong::total_available_sp(Beat start, PointPtr first_point,
+                                        PointPtr act_start,
+                                        Beat required_whammy_end) const
+{
+    auto sp_bar = sp_from_phrases(first_point, act_start);
 
     if (start >= required_whammy_end) {
         sp_bar.max()
@@ -64,14 +71,7 @@ std::tuple<SpBar, Position> ProcessedSong::total_available_sp_with_earliest_pos(
 {
     const Beat BEAT_EPSILON {0.0001};
 
-    SpBar sp_bar {0.0, 0.0};
-    for (auto p = m_points.next_sp_granting_note(first_point); p < act_start;
-         p = m_points.next_sp_granting_note(std::next(p))) {
-        sp_bar.add_phrase();
-        if (p->is_unison_sp_granting_note) {
-            sp_bar.add_phrase();
-        }
-    }
+    auto sp_bar = sp_from_phrases(first_point, act_start);
 
     sp_bar.max() += m_sp_data.available_whammy(
         start, earliest_potential_pos.beat, act_start->position.beat);
