@@ -80,6 +80,8 @@ private:
     int m_total_score {0};
     bool m_overlap_engine {true};
 
+    void form_beat_lines(const SyncTrack& sync_track, int resolution);
+
 public:
     ImageBuilder(const NoteTrack<NoteColour>& track,
                  const SyncTrack& sync_track, Difficulty difficulty,

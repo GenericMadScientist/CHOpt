@@ -451,25 +451,16 @@ relative_complement(std::vector<std::tuple<double, double>> parent_set,
 }
 }
 
-ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
-                           const SyncTrack& sync_track, Difficulty difficulty,
-                           bool is_lefty_flip, bool is_overlap_engine)
-    : m_track_type {TrackType::FiveFret}
-    , m_difficulty {difficulty}
-    , m_is_lefty_flip {is_lefty_flip}
-    , m_rows {drawn_rows(track, sync_track)}
-    , m_notes {drawn_notes(track)}
-    , m_overlap_engine {is_overlap_engine}
+void ImageBuilder::form_beat_lines(const SyncTrack& sync_track, int resolution)
 {
     constexpr double HALF_BEAT = 0.5;
 
     for (const auto& row : m_rows) {
         auto start = row.start;
         while (start < row.end) {
-            auto meas_length
-                = get_beat_rate(sync_track, track.resolution(), start);
-            auto numer = get_numer(sync_track, track.resolution(), start);
-            auto denom = get_denom(sync_track, track.resolution(), start);
+            auto meas_length = get_beat_rate(sync_track, resolution, start);
+            auto numer = get_numer(sync_track, resolution, start);
+            auto denom = get_denom(sync_track, resolution, start);
             m_measure_lines.push_back(start);
             m_half_beat_lines.push_back(start + HALF_BEAT * denom);
             for (int i = 1; i < numer; ++i) {
@@ -482,6 +473,19 @@ ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
     m_measure_lines.push_back(m_rows.back().end);
 }
 
+ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
+                           const SyncTrack& sync_track, Difficulty difficulty,
+                           bool is_lefty_flip, bool is_overlap_engine)
+    : m_track_type {TrackType::FiveFret}
+    , m_difficulty {difficulty}
+    , m_is_lefty_flip {is_lefty_flip}
+    , m_rows {drawn_rows(track, sync_track)}
+    , m_notes {drawn_notes(track)}
+    , m_overlap_engine {is_overlap_engine}
+{
+    form_beat_lines(sync_track, track.resolution());
+}
+
 ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
                            const SyncTrack& sync_track, Difficulty difficulty,
                            bool is_lefty_flip)
@@ -491,25 +495,7 @@ ImageBuilder::ImageBuilder(const NoteTrack<GHLNoteColour>& track,
     , m_rows {drawn_rows(track, sync_track)}
     , m_ghl_notes {drawn_notes(track)}
 {
-    constexpr double HALF_BEAT = 0.5;
-
-    for (const auto& row : m_rows) {
-        auto start = row.start;
-        while (start < row.end) {
-            auto meas_length
-                = get_beat_rate(sync_track, track.resolution(), start);
-            auto numer = get_numer(sync_track, track.resolution(), start);
-            auto denom = get_denom(sync_track, track.resolution(), start);
-            m_measure_lines.push_back(start);
-            m_half_beat_lines.push_back(start + HALF_BEAT * denom);
-            for (int i = 1; i < numer; ++i) {
-                m_beat_lines.push_back(start + i * denom);
-                m_half_beat_lines.push_back(start + (i + HALF_BEAT) * denom);
-            }
-            start += meas_length;
-        }
-    }
-    m_measure_lines.push_back(m_rows.back().end);
+    form_beat_lines(sync_track, track.resolution());
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack<DrumNoteColour>& track,
@@ -522,25 +508,7 @@ ImageBuilder::ImageBuilder(const NoteTrack<DrumNoteColour>& track,
     , m_rows {drawn_rows(track, sync_track)}
     , m_drum_notes {drawn_notes(track, drum_settings)}
 {
-    constexpr double HALF_BEAT = 0.5;
-
-    for (const auto& row : m_rows) {
-        auto start = row.start;
-        while (start < row.end) {
-            auto meas_length
-                = get_beat_rate(sync_track, track.resolution(), start);
-            auto numer = get_numer(sync_track, track.resolution(), start);
-            auto denom = get_denom(sync_track, track.resolution(), start);
-            m_measure_lines.push_back(start);
-            m_half_beat_lines.push_back(start + HALF_BEAT * denom);
-            for (int i = 1; i < numer; ++i) {
-                m_beat_lines.push_back(start + i * denom);
-                m_half_beat_lines.push_back(start + (i + HALF_BEAT) * denom);
-            }
-            start += meas_length;
-        }
-    }
-    m_measure_lines.push_back(m_rows.back().end);
+    form_beat_lines(sync_track, track.resolution());
 }
 
 void ImageBuilder::add_bpms(const SyncTrack& sync_track, int resolution)
