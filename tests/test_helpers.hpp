@@ -50,14 +50,14 @@ template <typename T>
 inline std::ostream& operator<<(std::ostream& stream,
                                 const std::vector<T>& values)
 {
-    print_container(stream, values.cbegin(), values.cend());
+    return print_container(stream, values.cbegin(), values.cend());
 }
 
 template <typename T, std::size_t N>
 inline std::ostream& operator<<(std::ostream& stream,
                                 const std::array<T, N>& values)
 {
-    print_container(stream, values.cbegin(), values.cend());
+    return print_container(stream, values.cbegin(), values.cend());
 }
 
 inline std::ostream& operator<<(std::ostream& stream, ActValidity validity)
