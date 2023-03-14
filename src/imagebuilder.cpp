@@ -100,6 +100,25 @@ DrumNoteColour disco_flip(DrumNoteColour colour, int position,
     return colour;
 }
 
+template <typename T>
+DrawnNote<T> note_to_drawn_note(const Note<T>& note, T colour,
+                                const NoteTrack<T>& track)
+{
+    const auto beat = note.position / static_cast<double>(track.resolution());
+    const auto length = note.length / static_cast<double>(track.resolution());
+
+    auto is_sp_note = false;
+    for (const auto& phrase : track.sp_phrases()) {
+        if (note.position >= phrase.position
+            && note.position < phrase.position + phrase.length) {
+            is_sp_note = true;
+            break;
+        }
+    }
+
+    return {beat, length, colour, is_sp_note};
+}
+
 std::vector<DrawnNote<DrumNoteColour>>
 drawn_notes(const NoteTrack<DrumNoteColour>& track,
             const DrumSettings& drum_settings)
@@ -117,18 +136,7 @@ drawn_notes(const NoteTrack<DrumNoteColour>& track,
         const auto note_colour = drum_settings.pro_drums
             ? disco_flip(note.colour, note.position, track.disco_flips())
             : cymbal_to_tom(note.colour);
-        const auto beat
-            = note.position / static_cast<double>(track.resolution());
-        const auto length
-            = note.length / static_cast<double>(track.resolution());
-        auto is_sp_note = false;
-        for (const auto& phrase : track.sp_phrases()) {
-            if (note.position >= phrase.position
-                && note.position < phrase.position + phrase.length) {
-                is_sp_note = true;
-            }
-        }
-        notes.push_back({beat, length, note_colour, is_sp_note});
+        notes.push_back(note_to_drawn_note(note, note_colour, track));
     }
 
     return notes;
@@ -140,16 +148,7 @@ std::vector<DrawnNote<T>> drawn_notes(const NoteTrack<T>& track)
     std::vector<DrawnNote<T>> notes;
 
     for (const auto& note : track.notes()) {
-        auto beat = note.position / static_cast<double>(track.resolution());
-        auto length = note.length / static_cast<double>(track.resolution());
-        auto is_sp_note = false;
-        for (const auto& phrase : track.sp_phrases()) {
-            if (note.position >= phrase.position
-                && note.position < phrase.position + phrase.length) {
-                is_sp_note = true;
-            }
-        }
-        notes.push_back({beat, length, note.colour, is_sp_note});
+        notes.push_back(note_to_drawn_note(note, note.colour, track));
     }
 
     return notes;
