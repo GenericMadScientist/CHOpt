@@ -534,15 +534,14 @@ std::vector<int> score_totals(const std::vector<Point>& points)
     return scores;
 }
 
-std::string to_colour_string(const std::vector<NoteColour>& colours)
+template <typename T>
+std::string to_guitar_colour_string(
+    const std::vector<T>& colours,
+    const std::vector<std::tuple<T, std::string>>& colour_names)
 {
-    const std::vector<std::tuple<NoteColour, std::string>> COLOUR_NAMES {
-        {NoteColour::Green, "G"},  {NoteColour::Red, "R"},
-        {NoteColour::Yellow, "Y"}, {NoteColour::Blue, "B"},
-        {NoteColour::Orange, "O"}, {NoteColour::Open, "open"}};
-
     std::string colour_string;
-    for (const auto& [colour, string] : COLOUR_NAMES) {
+
+    for (const auto& [colour, string] : colour_names) {
         if (std::find(colours.cbegin(), colours.cend(), colour)
             != colours.cend()) {
             colour_string += string;
@@ -550,6 +549,16 @@ std::string to_colour_string(const std::vector<NoteColour>& colours)
     }
 
     return colour_string;
+}
+
+std::string to_colour_string(const std::vector<NoteColour>& colours)
+{
+    const std::vector<std::tuple<NoteColour, std::string>> COLOUR_NAMES {
+        {NoteColour::Green, "G"},  {NoteColour::Red, "R"},
+        {NoteColour::Yellow, "Y"}, {NoteColour::Blue, "B"},
+        {NoteColour::Orange, "O"}, {NoteColour::Open, "open"}};
+
+    return to_guitar_colour_string(colours, COLOUR_NAMES);
 }
 
 std::string to_colour_string(const std::vector<GHLNoteColour>& colours)
@@ -560,15 +569,7 @@ std::string to_colour_string(const std::vector<GHLNoteColour>& colours)
         {GHLNoteColour::BlackMid, "B2"},  {GHLNoteColour::BlackHigh, "B3"},
         {GHLNoteColour::Open, "open"}};
 
-    std::string colour_string;
-    for (const auto& [colour, string] : COLOUR_NAMES) {
-        if (std::find(colours.cbegin(), colours.cend(), colour)
-            != colours.cend()) {
-            colour_string += string;
-        }
-    }
-
-    return colour_string;
+    return to_guitar_colour_string(colours, COLOUR_NAMES);
 }
 
 std::string to_colour_string(DrumNoteColour colour)
