@@ -278,6 +278,26 @@ void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
     }
 }
 
+void shift_points_by_video_lag(std::vector<Point>& points,
+                               const TimeConverter& converter, Second video_lag)
+{
+    const auto add_video_lag = [&](auto& position) {
+        auto seconds = converter.beats_to_seconds(position.beat);
+        seconds += video_lag;
+        position.beat = converter.seconds_to_beats(seconds);
+        position.measure = converter.beats_to_measures(position.beat);
+    };
+
+    for (auto& point : points) {
+        if (point.is_hold_point) {
+            continue;
+        }
+        add_video_lag(point.position);
+        add_video_lag(point.hit_window_start);
+        add_video_lag(point.hit_window_end);
+    }
+}
+
 std::vector<Point> points_from_track(const NoteTrack<DrumNoteColour>& track,
                                      const TimeConverter& converter,
                                      const std::vector<int>& unison_phrases,
@@ -341,21 +361,7 @@ std::vector<Point> points_from_track(const NoteTrack<DrumNoteColour>& track,
         point.value *= multiplier;
     }
 
-    const auto add_video_lag = [&](auto& position) {
-        auto seconds = converter.beats_to_seconds(position.beat);
-        seconds += squeeze_settings.video_lag;
-        position.beat = converter.seconds_to_beats(seconds);
-        position.measure = converter.beats_to_measures(position.beat);
-    };
-
-    for (auto& point : points) {
-        if (point.is_hold_point) {
-            continue;
-        }
-        add_video_lag(point.position);
-        add_video_lag(point.hit_window_start);
-        add_video_lag(point.hit_window_end);
-    }
+    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
 
     return points;
 }
@@ -422,21 +428,7 @@ points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
         point.value *= multiplier;
     }
 
-    const auto add_video_lag = [&](auto& position) {
-        auto seconds = converter.beats_to_seconds(position.beat);
-        seconds += squeeze_settings.video_lag;
-        position.beat = converter.seconds_to_beats(seconds);
-        position.measure = converter.beats_to_measures(position.beat);
-    };
-
-    for (auto& point : points) {
-        if (point.is_hold_point) {
-            continue;
-        }
-        add_video_lag(point.position);
-        add_video_lag(point.hit_window_start);
-        add_video_lag(point.hit_window_end);
-    }
+    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
 
     return points;
 }
