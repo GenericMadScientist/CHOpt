@@ -448,6 +448,16 @@ relative_complement(std::vector<std::tuple<double, double>> parent_set,
     std::copy(p, parent_set.end(), std::back_inserter(result));
     return result;
 }
+
+Beat subtract_video_lag(Beat beat, Second video_lag,
+                        const TimeConverter& converter)
+{
+    const auto seconds = converter.beats_to_seconds(beat) - video_lag;
+    if (seconds.value() < 0.0) {
+        return Beat {0.0};
+    }
+    return converter.seconds_to_beats(seconds);
+}
 }
 
 void ImageBuilder::form_beat_lines(const SyncTrack& sync_track, int resolution)
@@ -568,19 +578,14 @@ void ImageBuilder::add_measure_values(const PointSet& points,
     m_score_values.clear();
     m_score_values.resize(m_measure_lines.size() - 1);
 
-    const auto subtract_video_lag = [&](auto beat) {
-        const auto seconds
-            = converter.beats_to_seconds(beat) - points.video_lag();
-        return (seconds.value() < 0.0) ? Beat(0.0)
-                                       : converter.seconds_to_beats(seconds);
-    };
-
     auto base_value_iter = m_base_values.begin();
     auto meas_iter = std::next(m_measure_lines.cbegin());
     auto score_value_iter = m_score_values.begin();
     for (auto p = points.cbegin(); p < points.cend(); ++p) {
         const auto adjusted_p_pos
-            = subtract_video_lag(p->position.beat).value();
+            = subtract_video_lag(p->position.beat, points.video_lag(),
+                                 converter)
+                  .value();
         while (meas_iter != m_measure_lines.cend()
                && (*meas_iter - MEAS_EPSILON) <= adjusted_p_pos) {
             ++meas_iter;
@@ -613,8 +618,10 @@ void ImageBuilder::add_measure_values(const PointSet& points,
         score_value_iter = m_score_values.begin();
         for (auto p = act.act_start; p <= act.act_end; ++p) {
             while (meas_iter != m_measure_lines.cend()
-                   && *meas_iter
-                       <= subtract_video_lag(p->position.beat).value()) {
+                   && *meas_iter <= subtract_video_lag(p->position.beat,
+                                                       points.video_lag(),
+                                                       converter)
+                                        .value()) {
                 ++meas_iter;
                 ++score_value_iter;
             }
@@ -657,11 +664,8 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
 {
     std::vector<std::tuple<double, double>> no_whammy_ranges;
 
-    const auto subtract_video_lag = [&](auto beat) {
-        const auto seconds
-            = converter.beats_to_seconds(beat) - points.video_lag();
-        return (seconds.value() < 0.0) ? Beat(0.0)
-                                       : converter.seconds_to_beats(seconds);
+    const auto shifted_beat = [&](auto beat) {
+        return subtract_video_lag(beat, points.video_lag(), converter);
     };
 
     for (const auto& act : path.activations) {
@@ -675,19 +679,18 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
             blue_end
                 = std::min(blue_end, std::next(act.act_end)->position.beat);
         }
-        blue_end
-            = std::min(subtract_video_lag(blue_end), Beat {m_rows.back().end});
-        m_blue_ranges.emplace_back(subtract_video_lag(blue_start).value(),
+        blue_end = std::min(shifted_beat(blue_end), Beat {m_rows.back().end});
+        m_blue_ranges.emplace_back(shifted_beat(blue_start).value(),
                                    blue_end.value());
         if (act.sp_start > act.act_start->position.beat) {
             m_red_ranges.emplace_back(
-                subtract_video_lag(act.act_start->position.beat).value(),
-                subtract_video_lag(act.sp_start).value());
+                shifted_beat(act.act_start->position.beat).value(),
+                shifted_beat(act.sp_start).value());
         }
         if (act.sp_end < act.act_end->position.beat) {
             m_red_ranges.emplace_back(
-                subtract_video_lag(act.sp_end).value(),
-                subtract_video_lag(act.act_end->position.beat).value());
+                shifted_beat(act.sp_end).value(),
+                shifted_beat(act.act_end->position.beat).value());
         }
         no_whammy_ranges.emplace_back(act.whammy_end.value(),
                                       act.sp_end.value());
