@@ -81,6 +81,35 @@ private:
     bool m_overlap_engine {true};
 
     void form_beat_lines(const SyncTrack& sync_track, int resolution);
+    static bool is_neutralised_phrase(Beat note_pos, const Path& path);
+
+    template <typename T>
+    std::tuple<double, double> sp_phrase_bounds(const StarPower& phrase,
+                                                const NoteTrack<T>& track,
+                                                const Path& path) const
+    {
+        constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
+
+        auto p = track.notes().cbegin();
+        while (p->position < phrase.position) {
+            ++p;
+        }
+        const auto start
+            = p->position / static_cast<double>(track.resolution());
+        if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
+            return {-1, -1};
+        }
+        const auto phrase_end = phrase.position + phrase.length;
+        auto end = start;
+        while (p < track.notes().cend() && p->position < phrase_end) {
+            auto current_end = (p->position + p->length)
+                / static_cast<double>(track.resolution());
+            end = std::max(end, current_end);
+            ++p;
+        }
+        end = std::max(end, start + MINIMUM_GREEN_RANGE_SIZE);
+        return {start, end};
+    }
 
 public:
     ImageBuilder(const NoteTrack<NoteColour>& track,
@@ -106,15 +135,26 @@ public:
     void add_sp_percent_values(const SpData& sp_data,
                                const TimeConverter& converter,
                                const PointSet& points, const Path& path);
-    void add_sp_phrases(const NoteTrack<NoteColour>& track,
+
+    template <typename T>
+    void add_sp_phrases(const NoteTrack<T>& track,
                         const std::vector<int>& unison_phrases,
-                        const Path& path);
-    void add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
-                        const std::vector<int>& unison_phrases,
-                        const Path& path);
-    void add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
-                        const std::vector<int>& unison_phrases,
-                        const Path& path);
+                        const Path& path)
+    {
+        for (const auto& phrase : track.sp_phrases()) {
+            const auto range = sp_phrase_bounds(phrase, track, path);
+            if (std::get<0>(range) == -1) {
+                continue;
+            }
+            m_green_ranges.push_back(range);
+            if (std::find(unison_phrases.cbegin(), unison_phrases.cend(),
+                          phrase.position)
+                != unison_phrases.cend()) {
+                m_unison_ranges.push_back(range);
+            }
+        }
+    }
+
     void add_sp_values(const SpData& sp_data, const Engine& engine);
     void add_time_sigs(const SyncTrack& sync_track, int resolution);
     void set_total_score(const PointSet& points, const std::vector<Solo>& solos,

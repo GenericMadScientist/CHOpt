@@ -229,19 +229,6 @@ bool is_fill_active(const std::vector<Note<DrumNoteColour>>& notes,
     return has_non_kick;
 }
 
-bool is_neutralised_phrase(Beat note_pos, const Path& path)
-{
-    for (const auto& act : path.activations) {
-        if (act.act_start->position.beat > note_pos) {
-            return false;
-        }
-        if (act.act_end->position.beat >= note_pos) {
-            return true;
-        }
-    }
-    return false;
-}
-
 // It is important that SpPhrase has a higher value than ActEnd. This is because
 // in form_events we want to push the event for getting a phrase to the end of
 // the activation if the activation is not an overlap.
@@ -482,6 +469,19 @@ void ImageBuilder::form_beat_lines(const SyncTrack& sync_track, int resolution)
     m_measure_lines.push_back(m_rows.back().end);
 }
 
+bool ImageBuilder::is_neutralised_phrase(Beat note_pos, const Path& path)
+{
+    for (const auto& act : path.activations) {
+        if (act.act_start->position.beat > note_pos) {
+            return false;
+        }
+        if (act.act_end->position.beat >= note_pos) {
+            return true;
+        }
+    }
+    return false;
+}
+
 ImageBuilder::ImageBuilder(const NoteTrack<NoteColour>& track,
                            const SyncTrack& sync_track, Difficulty difficulty,
                            bool is_lefty_flip, bool is_overlap_engine)
@@ -714,108 +714,6 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
     if (!m_overlap_engine) {
         m_yellow_ranges = relative_complement(m_yellow_ranges, m_blue_ranges);
         m_green_ranges = relative_complement(m_green_ranges, m_blue_ranges);
-    }
-}
-
-void ImageBuilder::add_sp_phrases(const NoteTrack<NoteColour>& track,
-                                  const std::vector<int>& unison_phrases,
-                                  const Path& path)
-{
-    constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
-
-    for (const auto& phrase : track.sp_phrases()) {
-        auto p = track.notes().cbegin();
-        while (p->position < phrase.position) {
-            ++p;
-        }
-        const auto start
-            = p->position / static_cast<double>(track.resolution());
-        if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
-            continue;
-        }
-        auto phrase_end = phrase.position + phrase.length;
-        auto end = start;
-        while (p < track.notes().cend() && p->position < phrase_end) {
-            auto current_end = (p->position + p->length)
-                / static_cast<double>(track.resolution());
-            end = std::max(end, current_end);
-            ++p;
-        }
-        end = std::max(end, start + MINIMUM_GREEN_RANGE_SIZE);
-        m_green_ranges.emplace_back(start, end);
-        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(),
-                      phrase.position)
-            != unison_phrases.cend()) {
-            m_unison_ranges.emplace_back(start, end);
-        }
-    }
-}
-
-void ImageBuilder::add_sp_phrases(const NoteTrack<GHLNoteColour>& track,
-                                  const std::vector<int>& unison_phrases,
-                                  const Path& path)
-{
-    constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
-
-    for (const auto& phrase : track.sp_phrases()) {
-        auto p = track.notes().cbegin();
-        while (p->position < phrase.position) {
-            ++p;
-        }
-        const auto start
-            = p->position / static_cast<double>(track.resolution());
-        if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
-            continue;
-        }
-        auto phrase_end = phrase.position + phrase.length;
-        auto end = start;
-        while (p < track.notes().cend() && p->position < phrase_end) {
-            auto current_end = (p->position + p->length)
-                / static_cast<double>(track.resolution());
-            end = std::max(end, current_end);
-            ++p;
-        }
-        end = std::max(end, start + MINIMUM_GREEN_RANGE_SIZE);
-        m_green_ranges.emplace_back(start, end);
-        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(),
-                      phrase.position)
-            != unison_phrases.cend()) {
-            m_unison_ranges.emplace_back(start, end);
-        }
-    }
-}
-
-void ImageBuilder::add_sp_phrases(const NoteTrack<DrumNoteColour>& track,
-                                  const std::vector<int>& unison_phrases,
-                                  const Path& path)
-{
-    constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
-
-    for (const auto& phrase : track.sp_phrases()) {
-        auto p = track.notes().cbegin();
-        while (p->position < phrase.position) {
-            ++p;
-        }
-        const auto start
-            = p->position / static_cast<double>(track.resolution());
-        if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
-            continue;
-        }
-        auto phrase_end = phrase.position + phrase.length;
-        auto end = start;
-        while (p < track.notes().cend() && p->position < phrase_end) {
-            auto current_end = (p->position + p->length)
-                / static_cast<double>(track.resolution());
-            end = std::max(end, current_end);
-            ++p;
-        }
-        end = std::max(end, start + MINIMUM_GREEN_RANGE_SIZE);
-        m_green_ranges.emplace_back(start, end);
-        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(),
-                      phrase.position)
-            != unison_phrases.cend()) {
-            m_unison_ranges.emplace_back(start, end);
-        }
     }
 }
 
