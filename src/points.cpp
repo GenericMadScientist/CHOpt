@@ -387,8 +387,9 @@ unmultiplied_points(const NoteTrack<T>& track, const TimeConverter& converter,
             search_start, notes.cend(), [=](const auto& note) {
                 if constexpr (std::is_same_v<T, DrumNoteColour>) {
                     return skip_kick(note.colour, drum_settings);
+                } else {
+                    return note.position == p->position;
                 }
-                return note.position == p->position;
             });
         auto is_note_sp_ender = false;
         auto is_unison_sp_ender = false;
