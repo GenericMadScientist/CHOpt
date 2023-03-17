@@ -19,6 +19,7 @@
 #ifndef CHOPT_POINTS_HPP
 #define CHOPT_POINTS_HPP
 
+#include <limits>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -48,30 +49,141 @@ using PointPtr = std::vector<Point>::const_iterator;
 
 class PointSet {
 private:
-    const std::vector<Point> m_points;
-    const std::vector<PointPtr> m_first_after_current_sp;
-    const std::vector<PointPtr> m_next_non_hold_point;
-    const std::vector<PointPtr> m_next_sp_granting_note;
-    const std::vector<std::tuple<Position, int>> m_solo_boosts;
-    const std::vector<int> m_cumulative_score_totals;
-    const Second m_video_lag;
-    const std::vector<std::string> m_colours;
+    std::vector<Point> m_points;
+    std::vector<PointPtr> m_first_after_current_sp;
+    std::vector<PointPtr> m_next_non_hold_point;
+    std::vector<PointPtr> m_next_sp_granting_note;
+    std::vector<std::tuple<Position, int>> m_solo_boosts;
+    std::vector<int> m_cumulative_score_totals;
+    Second m_video_lag;
+    std::vector<std::string> m_colours;
+
+    static std::vector<Point> points_from_track(
+        const NoteTrack<NoteColour>& track, const TimeConverter& converter,
+        const std::vector<int>& unison_phrases,
+        const SqueezeSettings& squeeze_settings, const Engine& engine);
+    static std::vector<Point> points_from_track(
+        const NoteTrack<GHLNoteColour>& track, const TimeConverter& converter,
+        const std::vector<int>& unison_phrases,
+        const SqueezeSettings& squeeze_settings, const Engine& engine);
+    static std::vector<Point>
+    points_from_track(const NoteTrack<DrumNoteColour>& track,
+                      const TimeConverter& converter,
+                      const std::vector<int>& unison_phrases,
+                      const SqueezeSettings& squeeze_settings,
+                      const DrumSettings& drum_settings, const Engine& engine);
+
+    static std::vector<PointPtr>
+    next_non_hold_vector(const std::vector<Point>& points);
+    static std::vector<PointPtr>
+    next_sp_note_vector(const std::vector<Point>& points);
+    static std::vector<int> score_totals(const std::vector<Point>& points);
+    static std::vector<std::tuple<Position, int>>
+    solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
+                           const TimeConverter& converter);
+
+    static std::string to_colour_string(const std::vector<NoteColour>& colours);
+    static std::string
+    to_colour_string(const std::vector<GHLNoteColour>& colours);
+    static std::string to_colour_string(DrumNoteColour colour);
+
+    template <typename T>
+    static std::vector<PointPtr>
+    first_after_current_sp_vector(const std::vector<Point>& points,
+                                  const NoteTrack<T>& track,
+                                  const Engine& engine)
+    {
+        std::vector<PointPtr> results;
+        auto current_sp = track.sp_phrases().cbegin();
+        for (auto p = points.cbegin(); p < points.cend();) {
+            current_sp = std::find_if(
+                current_sp, track.sp_phrases().cend(), [&](auto sp) {
+                    return Beat((sp.position + sp.length)
+                                / static_cast<double>(track.resolution()))
+                        > p->position.beat;
+                });
+            Beat sp_start {std::numeric_limits<double>::infinity()};
+            Beat sp_end {std::numeric_limits<double>::infinity()};
+            if (current_sp != track.sp_phrases().cend()) {
+                sp_start = Beat {current_sp->position
+                                 / static_cast<double>(track.resolution())};
+                sp_end = Beat {(current_sp->position + current_sp->length)
+                               / static_cast<double>(track.resolution())};
+            }
+            if (p->position.beat < sp_start || engine.overlaps()) {
+                results.push_back(++p);
+                continue;
+            }
+            const auto q
+                = std::find_if(std::next(p), points.cend(), [&](auto pt) {
+                      return pt.position.beat >= sp_end;
+                  });
+            while (p < q) {
+                results.push_back(q);
+                ++p;
+            }
+        }
+        return results;
+    }
+
+    template <typename T>
+    static std::vector<std::string>
+    note_colours(const std::vector<Note<T>>& notes,
+                 const std::vector<Point>& points)
+    {
+        std::vector<std::string> colours;
+        colours.reserve(points.size());
+        auto note_ptr = notes.cbegin();
+        for (const auto& p : points) {
+            if (p.is_hold_point) {
+                colours.emplace_back("");
+                continue;
+            }
+            if constexpr (std::is_same_v<T, DrumNoteColour>) {
+                colours.push_back(to_colour_string(note_ptr->colour));
+                ++note_ptr;
+            } else {
+                std::vector<T> current_colours;
+                const auto position = note_ptr->position;
+                while ((note_ptr != notes.cend())
+                       && (note_ptr->position == position)) {
+                    current_colours.push_back(note_ptr->colour);
+                    ++note_ptr;
+                }
+                colours.push_back(to_colour_string(current_colours));
+            }
+        }
+        return colours;
+    }
 
 public:
-    PointSet(const NoteTrack<NoteColour>& track, const TimeConverter& converter,
+    template <typename T>
+    PointSet(const NoteTrack<T>& track, const TimeConverter& converter,
              const std::vector<int>& unison_phrases,
              const SqueezeSettings& squeeze_settings,
-             const DrumSettings& drum_settings, const Engine& engine);
-    PointSet(const NoteTrack<GHLNoteColour>& track,
-             const TimeConverter& converter,
-             const std::vector<int>& unison_phrases,
-             const SqueezeSettings& squeeze_settings,
-             const DrumSettings& drum_settings, const Engine& engine);
-    PointSet(const NoteTrack<DrumNoteColour>& track,
-             const TimeConverter& converter,
-             const std::vector<int>& unison_phrases,
-             const SqueezeSettings& squeeze_settings,
-             const DrumSettings& drum_settings, const Engine& engine);
+             const DrumSettings& drum_settings, const Engine& engine)
+        : m_video_lag {squeeze_settings.video_lag}
+    {
+        if constexpr (std::is_same_v<T, DrumNoteColour>) {
+            m_points
+                = points_from_track(track, converter, unison_phrases,
+                                    squeeze_settings, drum_settings, engine);
+            m_solo_boosts = solo_boosts_from_solos(
+                track.solos(drum_settings), track.resolution(), converter);
+        } else {
+            m_points = points_from_track(track, converter, unison_phrases,
+                                         squeeze_settings, engine);
+            m_solo_boosts = solo_boosts_from_solos(
+                track.solos(DrumSettings::default_settings()),
+                track.resolution(), converter);
+        }
+        m_first_after_current_sp
+            = first_after_current_sp_vector(m_points, track, engine);
+        m_next_non_hold_point = next_non_hold_vector(m_points);
+        m_next_sp_granting_note = next_sp_note_vector(m_points);
+        m_cumulative_score_totals = score_totals(m_points);
+        m_colours = note_colours(track.notes(), m_points);
+    }
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
     // Designed for engines without SP overlap, so the next activation is not

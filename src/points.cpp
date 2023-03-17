@@ -298,12 +298,183 @@ void shift_points_by_video_lag(std::vector<Point>& points,
     }
 }
 
-std::vector<Point> points_from_track(const NoteTrack<DrumNoteColour>& track,
-                                     const TimeConverter& converter,
-                                     const std::vector<int>& unison_phrases,
-                                     const SqueezeSettings& squeeze_settings,
-                                     const DrumSettings& drum_settings,
-                                     const Engine& engine)
+template <typename P>
+std::vector<PointPtr> next_matching_vector(const std::vector<Point>& points,
+                                           P predicate)
+{
+    if (points.empty()) {
+        return {};
+    }
+    std::vector<PointPtr> next_matching_points;
+    auto next_matching_point = points.cend();
+    for (auto p = std::prev(points.cend());; --p) {
+        if (predicate(*p)) {
+            next_matching_point = p;
+        }
+        next_matching_points.push_back(next_matching_point);
+        // We can't have the loop condition be p >= points.cbegin() because
+        // decrementing past .begin() is undefined behaviour.
+        if (p == points.cbegin()) {
+            break;
+        }
+    }
+    std::reverse(next_matching_points.begin(), next_matching_points.end());
+    return next_matching_points;
+}
+
+template <typename T>
+std::string to_guitar_colour_string(
+    const std::vector<T>& colours,
+    const std::vector<std::tuple<T, std::string>>& colour_names)
+{
+    std::string colour_string;
+
+    for (const auto& [colour, string] : colour_names) {
+        if (std::find(colours.cbegin(), colours.cend(), colour)
+            != colours.cend()) {
+            colour_string += string;
+        }
+    }
+
+    return colour_string;
+}
+}
+
+std::vector<Point> PointSet::points_from_track(
+    const NoteTrack<NoteColour>& track, const TimeConverter& converter,
+    const std::vector<int>& unison_phrases,
+    const SqueezeSettings& squeeze_settings, const Engine& engine)
+{
+    constexpr int COMBO_PER_MULTIPLIER_LEVEL = 10;
+
+    const auto& notes = track.notes();
+    std::vector<Point> points;
+
+    const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
+    auto current_phrase = track.sp_phrases().cbegin();
+    for (auto p = notes.cbegin(); p != notes.cend();) {
+        if (has_relevant_bre && p->position >= track.bre()->start) {
+            break;
+        }
+        const auto q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
+            return x.position == p->position;
+        });
+        auto is_note_sp_ender = false;
+        auto is_unison_sp_ender = false;
+        if (current_phrase != track.sp_phrases().cend()
+            && phrase_contains_pos(*current_phrase, p->position)
+            && ((q == notes.cend())
+                || !phrase_contains_pos(*current_phrase, q->position))) {
+            is_note_sp_ender = true;
+            if (engine.has_unison_bonuses()
+                && std::find(unison_phrases.cbegin(), unison_phrases.cend(),
+                             current_phrase->position)
+                    != unison_phrases.cend()) {
+                is_unison_sp_ender = true;
+            }
+            ++current_phrase;
+        }
+        append_note_points(
+            p, q, notes.cbegin(), notes.cend(), std::back_inserter(points),
+            track.resolution(), is_note_sp_ender, is_unison_sp_ender, converter,
+            squeeze_settings.squeeze, engine, DrumSettings::default_settings());
+        p = q;
+    }
+
+    std::stable_sort(points.begin(), points.end(),
+                     [](const auto& x, const auto& y) {
+                         return x.position.beat < y.position.beat;
+                     });
+
+    auto combo = 0;
+    for (auto& point : points) {
+        if (!point.is_hold_point) {
+            ++combo;
+        }
+        auto multiplier = std::min(combo / COMBO_PER_MULTIPLIER_LEVEL + 1,
+                                   engine.max_multiplier());
+        if (!point.is_hold_point && engine.delayed_multiplier()) {
+            multiplier = std::min((combo - 1) / COMBO_PER_MULTIPLIER_LEVEL + 1,
+                                  engine.max_multiplier());
+        }
+        point.value *= multiplier;
+    }
+
+    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
+
+    return points;
+}
+
+std::vector<Point> PointSet::points_from_track(
+    const NoteTrack<GHLNoteColour>& track, const TimeConverter& converter,
+    const std::vector<int>& unison_phrases,
+    const SqueezeSettings& squeeze_settings, const Engine& engine)
+{
+    constexpr int COMBO_PER_MULTIPLIER_LEVEL = 10;
+
+    const auto& notes = track.notes();
+    std::vector<Point> points;
+
+    const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
+    auto current_phrase = track.sp_phrases().cbegin();
+    for (auto p = notes.cbegin(); p != notes.cend();) {
+        if (has_relevant_bre && p->position >= track.bre()->start) {
+            break;
+        }
+        const auto q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
+            return x.position == p->position;
+        });
+        auto is_note_sp_ender = false;
+        auto is_unison_sp_ender = false;
+        if (current_phrase != track.sp_phrases().cend()
+            && phrase_contains_pos(*current_phrase, p->position)
+            && ((q == notes.cend())
+                || !phrase_contains_pos(*current_phrase, q->position))) {
+            is_note_sp_ender = true;
+            if (engine.has_unison_bonuses()
+                && std::find(unison_phrases.cbegin(), unison_phrases.cend(),
+                             current_phrase->position)
+                    != unison_phrases.cend()) {
+                is_unison_sp_ender = true;
+            }
+            ++current_phrase;
+        }
+        append_note_points(
+            p, q, notes.cbegin(), notes.cend(), std::back_inserter(points),
+            track.resolution(), is_note_sp_ender, is_unison_sp_ender, converter,
+            squeeze_settings.squeeze, engine, DrumSettings::default_settings());
+        p = q;
+    }
+
+    std::stable_sort(points.begin(), points.end(),
+                     [](const auto& x, const auto& y) {
+                         return x.position.beat < y.position.beat;
+                     });
+
+    auto combo = 0;
+    for (auto& point : points) {
+        if (!point.is_hold_point) {
+            ++combo;
+        }
+        auto multiplier = std::min(combo / COMBO_PER_MULTIPLIER_LEVEL + 1,
+                                   engine.max_multiplier());
+        if (!point.is_hold_point && engine.delayed_multiplier()) {
+            multiplier = std::min((combo - 1) / COMBO_PER_MULTIPLIER_LEVEL + 1,
+                                  engine.max_multiplier());
+        }
+        point.value *= multiplier;
+    }
+
+    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
+
+    return points;
+}
+
+std::vector<Point> PointSet::points_from_track(
+    const NoteTrack<DrumNoteColour>& track, const TimeConverter& converter,
+    const std::vector<int>& unison_phrases,
+    const SqueezeSettings& squeeze_settings, const DrumSettings& drum_settings,
+    const Engine& engine)
 {
     const auto& notes = track.notes();
     std::vector<Point> points;
@@ -366,162 +537,21 @@ std::vector<Point> points_from_track(const NoteTrack<DrumNoteColour>& track,
     return points;
 }
 
-template <typename T>
-std::vector<Point>
-points_from_track(const NoteTrack<T>& track, const TimeConverter& converter,
-                  const std::vector<int>& unison_phrases,
-                  const SqueezeSettings& squeeze_settings, const Engine& engine)
-{
-    static_assert(!std::is_same_v<T, DrumNoteColour>);
-    constexpr int COMBO_PER_MULTIPLIER_LEVEL = 10;
-
-    const auto& notes = track.notes();
-    std::vector<Point> points;
-
-    const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
-    auto current_phrase = track.sp_phrases().cbegin();
-    for (auto p = notes.cbegin(); p != notes.cend();) {
-        if (has_relevant_bre && p->position >= track.bre()->start) {
-            break;
-        }
-        const auto q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
-            return x.position == p->position;
-        });
-        auto is_note_sp_ender = false;
-        auto is_unison_sp_ender = false;
-        if (current_phrase != track.sp_phrases().cend()
-            && phrase_contains_pos(*current_phrase, p->position)
-            && ((q == notes.cend())
-                || !phrase_contains_pos(*current_phrase, q->position))) {
-            is_note_sp_ender = true;
-            if (engine.has_unison_bonuses()
-                && std::find(unison_phrases.cbegin(), unison_phrases.cend(),
-                             current_phrase->position)
-                    != unison_phrases.cend()) {
-                is_unison_sp_ender = true;
-            }
-            ++current_phrase;
-        }
-        append_note_points(
-            p, q, notes.cbegin(), notes.cend(), std::back_inserter(points),
-            track.resolution(), is_note_sp_ender, is_unison_sp_ender, converter,
-            squeeze_settings.squeeze, engine, DrumSettings::default_settings());
-        p = q;
-    }
-
-    std::stable_sort(points.begin(), points.end(),
-                     [](const auto& x, const auto& y) {
-                         return x.position.beat < y.position.beat;
-                     });
-
-    auto combo = 0;
-    for (auto& point : points) {
-        if (!point.is_hold_point) {
-            ++combo;
-        }
-        auto multiplier = std::min(combo / COMBO_PER_MULTIPLIER_LEVEL + 1,
-                                   engine.max_multiplier());
-        if (!point.is_hold_point && engine.delayed_multiplier()) {
-            multiplier = std::min((combo - 1) / COMBO_PER_MULTIPLIER_LEVEL + 1,
-                                  engine.max_multiplier());
-        }
-        point.value *= multiplier;
-    }
-
-    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
-
-    return points;
-}
-
-template <typename P>
-std::vector<PointPtr> next_matching_vector(const std::vector<Point>& points,
-                                           P predicate)
-{
-    if (points.empty()) {
-        return {};
-    }
-    std::vector<PointPtr> next_matching_points;
-    auto next_matching_point = points.cend();
-    for (auto p = std::prev(points.cend());; --p) {
-        if (predicate(*p)) {
-            next_matching_point = p;
-        }
-        next_matching_points.push_back(next_matching_point);
-        // We can't have the loop condition be p >= points.cbegin() because
-        // decrementing past .begin() is undefined behaviour.
-        if (p == points.cbegin()) {
-            break;
-        }
-    }
-    std::reverse(next_matching_points.begin(), next_matching_points.end());
-    return next_matching_points;
-}
-
-template <typename T>
 std::vector<PointPtr>
-first_after_current_sp_vector(const std::vector<Point>& points,
-                              const NoteTrack<T>& track, const Engine& engine)
-{
-    std::vector<PointPtr> results;
-    auto current_sp = track.sp_phrases().cbegin();
-    for (auto p = points.cbegin(); p < points.cend();) {
-        current_sp
-            = std::find_if(current_sp, track.sp_phrases().cend(), [&](auto sp) {
-                  return Beat((sp.position + sp.length)
-                              / static_cast<double>(track.resolution()))
-                      > p->position.beat;
-              });
-        Beat sp_start {std::numeric_limits<double>::infinity()};
-        Beat sp_end {std::numeric_limits<double>::infinity()};
-        if (current_sp != track.sp_phrases().cend()) {
-            sp_start = Beat {current_sp->position
-                             / static_cast<double>(track.resolution())};
-            sp_end = Beat {(current_sp->position + current_sp->length)
-                           / static_cast<double>(track.resolution())};
-        }
-        if (p->position.beat < sp_start || engine.overlaps()) {
-            results.push_back(++p);
-            continue;
-        }
-        const auto q = std::find_if(std::next(p), points.cend(), [&](auto pt) {
-            return pt.position.beat >= sp_end;
-        });
-        while (p < q) {
-            results.push_back(q);
-            ++p;
-        }
-    }
-    return results;
-}
-
-std::vector<PointPtr> next_non_hold_vector(const std::vector<Point>& points)
+PointSet::next_non_hold_vector(const std::vector<Point>& points)
 {
     return next_matching_vector(points,
                                 [](const auto& p) { return !p.is_hold_point; });
 }
 
-std::vector<PointPtr> next_sp_note_vector(const std::vector<Point>& points)
+std::vector<PointPtr>
+PointSet::next_sp_note_vector(const std::vector<Point>& points)
 {
     return next_matching_vector(
         points, [](const auto& p) { return p.is_sp_granting_note; });
 }
 
-std::vector<std::tuple<Position, int>>
-solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
-                       const TimeConverter& converter)
-{
-    std::vector<std::tuple<Position, int>> solo_boosts;
-    solo_boosts.reserve(solos.size());
-    for (const auto& solo : solos) {
-        Beat end_beat {solo.end / static_cast<double>(resolution)};
-        Measure end_meas = converter.beats_to_measures(end_beat);
-        Position end_pos {end_beat, end_meas};
-        solo_boosts.emplace_back(end_pos, solo.value);
-    }
-    return solo_boosts;
-}
-
-std::vector<int> score_totals(const std::vector<Point>& points)
+std::vector<int> PointSet::score_totals(const std::vector<Point>& points)
 {
     std::vector<int> scores;
     scores.reserve(points.size() + 1);
@@ -534,24 +564,22 @@ std::vector<int> score_totals(const std::vector<Point>& points)
     return scores;
 }
 
-template <typename T>
-std::string to_guitar_colour_string(
-    const std::vector<T>& colours,
-    const std::vector<std::tuple<T, std::string>>& colour_names)
+std::vector<std::tuple<Position, int>>
+PointSet::solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
+                                 const TimeConverter& converter)
 {
-    std::string colour_string;
-
-    for (const auto& [colour, string] : colour_names) {
-        if (std::find(colours.cbegin(), colours.cend(), colour)
-            != colours.cend()) {
-            colour_string += string;
-        }
+    std::vector<std::tuple<Position, int>> solo_boosts;
+    solo_boosts.reserve(solos.size());
+    for (const auto& solo : solos) {
+        Beat end_beat {solo.end / static_cast<double>(resolution)};
+        Measure end_meas = converter.beats_to_measures(end_beat);
+        Position end_pos {end_beat, end_meas};
+        solo_boosts.emplace_back(end_pos, solo.value);
     }
-
-    return colour_string;
+    return solo_boosts;
 }
 
-std::string to_colour_string(const std::vector<NoteColour>& colours)
+std::string PointSet::to_colour_string(const std::vector<NoteColour>& colours)
 {
     const std::vector<std::tuple<NoteColour, std::string>> COLOUR_NAMES {
         {NoteColour::Green, "G"},  {NoteColour::Red, "R"},
@@ -561,7 +589,8 @@ std::string to_colour_string(const std::vector<NoteColour>& colours)
     return to_guitar_colour_string(colours, COLOUR_NAMES);
 }
 
-std::string to_colour_string(const std::vector<GHLNoteColour>& colours)
+std::string
+PointSet::to_colour_string(const std::vector<GHLNoteColour>& colours)
 {
     const std::vector<std::tuple<GHLNoteColour, std::string>> COLOUR_NAMES {
         {GHLNoteColour::WhiteLow, "W1"},  {GHLNoteColour::WhiteMid, "W2"},
@@ -572,7 +601,7 @@ std::string to_colour_string(const std::vector<GHLNoteColour>& colours)
     return to_guitar_colour_string(colours, COLOUR_NAMES);
 }
 
-std::string to_colour_string(DrumNoteColour colour)
+std::string PointSet::to_colour_string(DrumNoteColour colour)
 {
     const std::array<std::tuple<DrumNoteColour, std::string>, 23> COLOUR_NAMES {
         {{DrumNoteColour::Red, "R"},
@@ -606,97 +635,6 @@ std::string to_colour_string(DrumNoteColour colour)
     }
 
     throw std::invalid_argument("Invalid drum colour");
-}
-
-template <typename T>
-std::vector<std::string> note_colours(const std::vector<Note<T>>& notes,
-                                      const std::vector<Point>& points)
-{
-    std::vector<std::string> colours;
-    colours.reserve(points.size());
-    auto note_ptr = notes.cbegin();
-    for (const auto& p : points) {
-        if (p.is_hold_point) {
-            colours.emplace_back("");
-            continue;
-        }
-        if constexpr (std::is_same_v<T, DrumNoteColour>) {
-            colours.push_back(to_colour_string(note_ptr->colour));
-            ++note_ptr;
-        } else {
-            std::vector<T> current_colours;
-            const auto position = note_ptr->position;
-            while ((note_ptr != notes.cend())
-                   && (note_ptr->position == position)) {
-                current_colours.push_back(note_ptr->colour);
-                ++note_ptr;
-            }
-            colours.push_back(to_colour_string(current_colours));
-        }
-    }
-    return colours;
-}
-}
-
-PointSet::PointSet(const NoteTrack<NoteColour>& track,
-                   const TimeConverter& converter,
-                   const std::vector<int>& unison_phrases,
-                   const SqueezeSettings& squeeze_settings,
-                   const DrumSettings& drum_settings, const Engine& engine)
-    : m_points {points_from_track(track, converter, unison_phrases,
-                                  squeeze_settings, engine)}
-    , m_first_after_current_sp {first_after_current_sp_vector(m_points, track,
-                                                              engine)}
-    , m_next_non_hold_point {next_non_hold_vector(m_points)}
-    , m_next_sp_granting_note {next_sp_note_vector(m_points)}
-    , m_solo_boosts {solo_boosts_from_solos(
-          track.solos(DrumSettings::default_settings()), track.resolution(),
-          converter)}
-    , m_cumulative_score_totals {score_totals(m_points)}
-    , m_video_lag {squeeze_settings.video_lag}
-    , m_colours {note_colours(track.notes(), m_points)}
-{
-    (void)drum_settings;
-}
-
-PointSet::PointSet(const NoteTrack<GHLNoteColour>& track,
-                   const TimeConverter& converter,
-                   const std::vector<int>& unison_phrases,
-                   const SqueezeSettings& squeeze_settings,
-                   const DrumSettings& drum_settings, const Engine& engine)
-    : m_points {points_from_track(track, converter, unison_phrases,
-                                  squeeze_settings, engine)}
-    , m_first_after_current_sp {first_after_current_sp_vector(m_points, track,
-                                                              engine)}
-    , m_next_non_hold_point {next_non_hold_vector(m_points)}
-    , m_next_sp_granting_note {next_sp_note_vector(m_points)}
-    , m_solo_boosts {solo_boosts_from_solos(
-          track.solos(DrumSettings::default_settings()), track.resolution(),
-          converter)}
-    , m_cumulative_score_totals {score_totals(m_points)}
-    , m_video_lag {squeeze_settings.video_lag}
-    , m_colours {note_colours(track.notes(), m_points)}
-{
-    (void)drum_settings;
-}
-
-PointSet::PointSet(const NoteTrack<DrumNoteColour>& track,
-                   const TimeConverter& converter,
-                   const std::vector<int>& unison_phrases,
-                   const SqueezeSettings& squeeze_settings,
-                   const DrumSettings& drum_settings, const Engine& engine)
-    : m_points {points_from_track(track, converter, unison_phrases,
-                                  squeeze_settings, drum_settings, engine)}
-    , m_first_after_current_sp {first_after_current_sp_vector(m_points, track,
-                                                              engine)}
-    , m_next_non_hold_point {next_non_hold_vector(m_points)}
-    , m_next_sp_granting_note {next_sp_note_vector(m_points)}
-    , m_solo_boosts {solo_boosts_from_solos(track.solos(drum_settings),
-                                            track.resolution(), converter)}
-    , m_cumulative_score_totals {score_totals(m_points)}
-    , m_video_lag {squeeze_settings.video_lag}
-    , m_colours {note_colours(track.notes(), m_points)}
-{
 }
 
 PointPtr PointSet::first_after_current_phrase(PointPtr point) const
