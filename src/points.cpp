@@ -338,6 +338,25 @@ std::string to_guitar_colour_string(
 
     return colour_string;
 }
+
+void apply_multiplier(std::vector<Point>& points, const Engine& engine)
+{
+    constexpr int COMBO_PER_MULTIPLIER_LEVEL = 10;
+
+    auto combo = 0;
+    for (auto& point : points) {
+        if (!point.is_hold_point) {
+            ++combo;
+        }
+        auto multiplier = std::min(combo / COMBO_PER_MULTIPLIER_LEVEL + 1,
+                                   engine.max_multiplier());
+        if (!point.is_hold_point && engine.delayed_multiplier()) {
+            multiplier = std::min((combo - 1) / COMBO_PER_MULTIPLIER_LEVEL + 1,
+                                  engine.max_multiplier());
+        }
+        point.value *= multiplier;
+    }
+}
 }
 
 std::vector<Point> PointSet::points_from_track(
@@ -345,8 +364,6 @@ std::vector<Point> PointSet::points_from_track(
     const std::vector<int>& unison_phrases,
     const SqueezeSettings& squeeze_settings, const Engine& engine)
 {
-    constexpr int COMBO_PER_MULTIPLIER_LEVEL = 10;
-
     const auto& notes = track.notes();
     std::vector<Point> points;
 
@@ -385,21 +402,7 @@ std::vector<Point> PointSet::points_from_track(
                      [](const auto& x, const auto& y) {
                          return x.position.beat < y.position.beat;
                      });
-
-    auto combo = 0;
-    for (auto& point : points) {
-        if (!point.is_hold_point) {
-            ++combo;
-        }
-        auto multiplier = std::min(combo / COMBO_PER_MULTIPLIER_LEVEL + 1,
-                                   engine.max_multiplier());
-        if (!point.is_hold_point && engine.delayed_multiplier()) {
-            multiplier = std::min((combo - 1) / COMBO_PER_MULTIPLIER_LEVEL + 1,
-                                  engine.max_multiplier());
-        }
-        point.value *= multiplier;
-    }
-
+    apply_multiplier(points, engine);
     shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
 
     return points;
@@ -410,8 +413,6 @@ std::vector<Point> PointSet::points_from_track(
     const std::vector<int>& unison_phrases,
     const SqueezeSettings& squeeze_settings, const Engine& engine)
 {
-    constexpr int COMBO_PER_MULTIPLIER_LEVEL = 10;
-
     const auto& notes = track.notes();
     std::vector<Point> points;
 
@@ -450,21 +451,7 @@ std::vector<Point> PointSet::points_from_track(
                      [](const auto& x, const auto& y) {
                          return x.position.beat < y.position.beat;
                      });
-
-    auto combo = 0;
-    for (auto& point : points) {
-        if (!point.is_hold_point) {
-            ++combo;
-        }
-        auto multiplier = std::min(combo / COMBO_PER_MULTIPLIER_LEVEL + 1,
-                                   engine.max_multiplier());
-        if (!point.is_hold_point && engine.delayed_multiplier()) {
-            multiplier = std::min((combo - 1) / COMBO_PER_MULTIPLIER_LEVEL + 1,
-                                  engine.max_multiplier());
-        }
-        point.value *= multiplier;
-    }
-
+    apply_multiplier(points, engine);
     shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
 
     return points;
@@ -519,19 +506,8 @@ std::vector<Point> PointSet::points_from_track(
                      [](const auto& x, const auto& y) {
                          return x.position.beat < y.position.beat;
                      });
-
     add_drum_activation_points(track, converter, points);
-
-    auto combo = 0;
-    for (auto& point : points) {
-        if (!point.is_hold_point) {
-            ++combo;
-        }
-        const auto multiplier
-            = std::min(combo / 10 + 1, engine.max_multiplier());
-        point.value *= multiplier;
-    }
-
+    apply_multiplier(points, engine);
     shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
 
     return points;
