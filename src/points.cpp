@@ -419,6 +419,20 @@ unmultiplied_points(const NoteTrack<T>& track, const TimeConverter& converter,
 
     return points;
 }
+
+template <typename T>
+std::vector<Point>
+non_drum_points(const NoteTrack<T>& track, const TimeConverter& converter,
+                const std::vector<int>& unison_phrases,
+                const SqueezeSettings& squeeze_settings, const Engine& engine)
+{
+    auto points = unmultiplied_points(track, converter, unison_phrases,
+                                      squeeze_settings,
+                                      DrumSettings::default_settings(), engine);
+    apply_multiplier(points, engine);
+    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
+    return points;
+}
 }
 
 std::vector<Point> PointSet::points_from_track(
@@ -426,12 +440,8 @@ std::vector<Point> PointSet::points_from_track(
     const std::vector<int>& unison_phrases,
     const SqueezeSettings& squeeze_settings, const Engine& engine)
 {
-    auto points = unmultiplied_points(track, converter, unison_phrases,
-                                      squeeze_settings,
-                                      DrumSettings::default_settings(), engine);
-    apply_multiplier(points, engine);
-    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
-    return points;
+    return non_drum_points(track, converter, unison_phrases, squeeze_settings,
+                           engine);
 }
 
 std::vector<Point> PointSet::points_from_track(
@@ -439,12 +449,8 @@ std::vector<Point> PointSet::points_from_track(
     const std::vector<int>& unison_phrases,
     const SqueezeSettings& squeeze_settings, const Engine& engine)
 {
-    auto points = unmultiplied_points(track, converter, unison_phrases,
-                                      squeeze_settings,
-                                      DrumSettings::default_settings(), engine);
-    apply_multiplier(points, engine);
-    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
-    return points;
+    return non_drum_points(track, converter, unison_phrases, squeeze_settings,
+                           engine);
 }
 
 std::vector<Point> PointSet::points_from_track(
