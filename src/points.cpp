@@ -357,129 +357,39 @@ void apply_multiplier(std::vector<Point>& points, const Engine& engine)
         point.value *= multiplier;
     }
 }
-}
 
-std::vector<Point> PointSet::points_from_track(
-    const NoteTrack<NoteColour>& track, const TimeConverter& converter,
-    const std::vector<int>& unison_phrases,
-    const SqueezeSettings& squeeze_settings, const Engine& engine)
+template <typename T>
+std::vector<Point>
+unmultiplied_points(const NoteTrack<T>& track, const TimeConverter& converter,
+                    const std::vector<int>& unison_phrases,
+                    const SqueezeSettings& squeeze_settings,
+                    const DrumSettings& drum_settings, const Engine& engine)
 {
     const auto& notes = track.notes();
-    std::vector<Point> points;
-
     const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
+
+    std::vector<Point> points;
     auto current_phrase = track.sp_phrases().cbegin();
+
     for (auto p = notes.cbegin(); p != notes.cend();) {
-        if (has_relevant_bre && p->position >= track.bre()->start) {
-            break;
-        }
-        const auto q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
-            return x.position == p->position;
-        });
-        auto is_note_sp_ender = false;
-        auto is_unison_sp_ender = false;
-        if (current_phrase != track.sp_phrases().cend()
-            && phrase_contains_pos(*current_phrase, p->position)
-            && ((q == notes.cend())
-                || !phrase_contains_pos(*current_phrase, q->position))) {
-            is_note_sp_ender = true;
-            if (engine.has_unison_bonuses()
-                && std::find(unison_phrases.cbegin(), unison_phrases.cend(),
-                             current_phrase->position)
-                    != unison_phrases.cend()) {
-                is_unison_sp_ender = true;
+        if constexpr (std::is_same_v<T, DrumNoteColour>) {
+            if (skip_kick(p->colour, drum_settings)) {
+                ++p;
+                continue;
             }
-            ++current_phrase;
-        }
-        append_note_points(
-            p, q, notes.cbegin(), notes.cend(), std::back_inserter(points),
-            track.resolution(), is_note_sp_ender, is_unison_sp_ender, converter,
-            squeeze_settings.squeeze, engine, DrumSettings::default_settings());
-        p = q;
-    }
-
-    std::stable_sort(points.begin(), points.end(),
-                     [](const auto& x, const auto& y) {
-                         return x.position.beat < y.position.beat;
-                     });
-    apply_multiplier(points, engine);
-    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
-
-    return points;
-}
-
-std::vector<Point> PointSet::points_from_track(
-    const NoteTrack<GHLNoteColour>& track, const TimeConverter& converter,
-    const std::vector<int>& unison_phrases,
-    const SqueezeSettings& squeeze_settings, const Engine& engine)
-{
-    const auto& notes = track.notes();
-    std::vector<Point> points;
-
-    const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
-    auto current_phrase = track.sp_phrases().cbegin();
-    for (auto p = notes.cbegin(); p != notes.cend();) {
-        if (has_relevant_bre && p->position >= track.bre()->start) {
-            break;
-        }
-        const auto q = std::find_if_not(p, notes.cend(), [=](const auto& x) {
-            return x.position == p->position;
-        });
-        auto is_note_sp_ender = false;
-        auto is_unison_sp_ender = false;
-        if (current_phrase != track.sp_phrases().cend()
-            && phrase_contains_pos(*current_phrase, p->position)
-            && ((q == notes.cend())
-                || !phrase_contains_pos(*current_phrase, q->position))) {
-            is_note_sp_ender = true;
-            if (engine.has_unison_bonuses()
-                && std::find(unison_phrases.cbegin(), unison_phrases.cend(),
-                             current_phrase->position)
-                    != unison_phrases.cend()) {
-                is_unison_sp_ender = true;
-            }
-            ++current_phrase;
-        }
-        append_note_points(
-            p, q, notes.cbegin(), notes.cend(), std::back_inserter(points),
-            track.resolution(), is_note_sp_ender, is_unison_sp_ender, converter,
-            squeeze_settings.squeeze, engine, DrumSettings::default_settings());
-        p = q;
-    }
-
-    std::stable_sort(points.begin(), points.end(),
-                     [](const auto& x, const auto& y) {
-                         return x.position.beat < y.position.beat;
-                     });
-    apply_multiplier(points, engine);
-    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
-
-    return points;
-}
-
-std::vector<Point> PointSet::points_from_track(
-    const NoteTrack<DrumNoteColour>& track, const TimeConverter& converter,
-    const std::vector<int>& unison_phrases,
-    const SqueezeSettings& squeeze_settings, const DrumSettings& drum_settings,
-    const Engine& engine)
-{
-    const auto& notes = track.notes();
-    std::vector<Point> points;
-
-    const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
-    auto current_phrase = track.sp_phrases().cbegin();
-    for (auto p = notes.cbegin(); p != notes.cend();) {
-        if (skip_kick(p->colour, drum_settings)) {
-            ++p;
-            continue;
         }
         if (has_relevant_bre && p->position >= track.bre()->start) {
             break;
         }
-        const auto q
-            = std::find_if_not(std::next(p), notes.cend(), [&](auto note) {
-                  return skip_kick(note.colour, drum_settings);
-              });
+        const auto search_start
+            = (std::is_same_v<T, DrumNoteColour>) ? std::next(p) : p;
+        const auto q = std::find_if_not(
+            search_start, notes.cend(), [=](const auto& note) {
+                if constexpr (std::is_same_v<T, DrumNoteColour>) {
+                    return skip_kick(note.colour, drum_settings);
+                }
+                return note.position == p->position;
+            });
         auto is_note_sp_ender = false;
         auto is_unison_sp_ender = false;
         if (current_phrase != track.sp_phrases().cend()
@@ -506,10 +416,48 @@ std::vector<Point> PointSet::points_from_track(
                      [](const auto& x, const auto& y) {
                          return x.position.beat < y.position.beat;
                      });
+
+    return points;
+}
+}
+
+std::vector<Point> PointSet::points_from_track(
+    const NoteTrack<NoteColour>& track, const TimeConverter& converter,
+    const std::vector<int>& unison_phrases,
+    const SqueezeSettings& squeeze_settings, const Engine& engine)
+{
+    auto points = unmultiplied_points(track, converter, unison_phrases,
+                                      squeeze_settings,
+                                      DrumSettings::default_settings(), engine);
+    apply_multiplier(points, engine);
+    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
+    return points;
+}
+
+std::vector<Point> PointSet::points_from_track(
+    const NoteTrack<GHLNoteColour>& track, const TimeConverter& converter,
+    const std::vector<int>& unison_phrases,
+    const SqueezeSettings& squeeze_settings, const Engine& engine)
+{
+    auto points = unmultiplied_points(track, converter, unison_phrases,
+                                      squeeze_settings,
+                                      DrumSettings::default_settings(), engine);
+    apply_multiplier(points, engine);
+    shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
+    return points;
+}
+
+std::vector<Point> PointSet::points_from_track(
+    const NoteTrack<DrumNoteColour>& track, const TimeConverter& converter,
+    const std::vector<int>& unison_phrases,
+    const SqueezeSettings& squeeze_settings, const DrumSettings& drum_settings,
+    const Engine& engine)
+{
+    auto points = unmultiplied_points(track, converter, unison_phrases,
+                                      squeeze_settings, drum_settings, engine);
     add_drum_activation_points(track, converter, points);
     apply_multiplier(points, engine);
     shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
-
     return points;
 }
 
