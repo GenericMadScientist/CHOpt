@@ -560,9 +560,9 @@ std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
              {59, 65, Difficulty::Easy}}};
 
         return look_up_difficulty(diff_ranges, key);
+    } else {
+        return std::nullopt;
     }
-
-    return std::nullopt;
 }
 
 template <typename T, std::size_t N>
