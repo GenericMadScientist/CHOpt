@@ -103,41 +103,37 @@ std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
 }
 
 template <typename T>
+std::optional<Note<T>>
+note_from_colour_key_map(const std::map<int, T>& colour_map, int position,
+                         int length, int fret_type)
+{
+    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+        length = 0;
+    }
+    const auto colour_iter = colour_map.find(fret_type);
+    if (colour_iter == colour_map.end()) {
+        return std::nullopt;
+    }
+    return Note<T> {position, length, colour_iter->second};
+}
+
+template <typename T>
 std::optional<Note<T>> note_from_note_colour(int position, int length,
                                              int fret_type)
 {
     if constexpr (std::is_same_v<T, NoteColour>) {
-        static const std::array<std::optional<NoteColour>, 8> COLOURS {
-            NoteColour::Green, NoteColour::Red,    NoteColour::Yellow,
-            NoteColour::Blue,  NoteColour::Orange, std::nullopt,
-            std::nullopt,      NoteColour::Open};
-        if (static_cast<std::size_t>(fret_type) >= COLOURS.size()) {
-            return std::nullopt;
-        }
-        const auto colour = COLOURS.at(static_cast<std::size_t>(fret_type));
-        if (!colour.has_value()) {
-            return std::nullopt;
-        }
-        return Note<NoteColour> {position, length, *colour};
+        const std::map<int, NoteColour> COLOURS {
+            {0, NoteColour::Green},  {1, NoteColour::Red},
+            {2, NoteColour::Yellow}, {3, NoteColour::Blue},
+            {4, NoteColour::Orange}, {7, NoteColour::Open}};
+        return note_from_colour_key_map(COLOURS, position, length, fret_type);
     } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
-        static const std::array<std::optional<GHLNoteColour>, 9> COLOURS {
-            GHLNoteColour::WhiteLow,
-            GHLNoteColour::WhiteMid,
-            GHLNoteColour::WhiteHigh,
-            GHLNoteColour::BlackLow,
-            GHLNoteColour::BlackMid,
-            std::nullopt,
-            std::nullopt,
-            GHLNoteColour::Open,
-            GHLNoteColour::BlackHigh};
-        if (static_cast<std::size_t>(fret_type) >= COLOURS.size()) {
-            return std::nullopt;
-        }
-        const auto colour = COLOURS.at(static_cast<std::size_t>(fret_type));
-        if (!colour.has_value()) {
-            return std::nullopt;
-        }
-        return Note<GHLNoteColour> {position, length, *colour};
+        const std::map<int, GHLNoteColour> COLOURS {
+            {0, GHLNoteColour::WhiteLow},  {1, GHLNoteColour::WhiteMid},
+            {2, GHLNoteColour::WhiteHigh}, {3, GHLNoteColour::BlackLow},
+            {4, GHLNoteColour::BlackMid},  {7, GHLNoteColour::Open},
+            {8, GHLNoteColour::BlackHigh}};
+        return note_from_colour_key_map(COLOURS, position, length, fret_type);
     } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
         const std::map<int, DrumNoteColour> COLOURS {
             {0, DrumNoteColour::Kick},
@@ -149,12 +145,7 @@ std::optional<Note<T>> note_from_note_colour(int position, int length,
             {66, DrumNoteColour::YellowCymbal},
             {67, DrumNoteColour::BlueCymbal},
             {68, DrumNoteColour::GreenCymbal}};
-        (void)length;
-        const auto colour_iter = COLOURS.find(fret_type);
-        if (colour_iter == COLOURS.end()) {
-            return std::nullopt;
-        }
-        return Note<DrumNoteColour> {position, 0, colour_iter->second};
+        return note_from_colour_key_map(COLOURS, position, length, fret_type);
     }
 }
 
