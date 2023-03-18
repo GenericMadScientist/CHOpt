@@ -79,6 +79,12 @@ private:
         Beat note;
     };
 
+    struct WhammyPropagationState {
+        std::vector<BeatRate>::const_iterator current_beat_rate;
+        Beat current_position;
+        double current_sp;
+    };
+
     static constexpr double DEFAULT_BEATS_PER_BAR = 32.0;
     static constexpr double MEASURES_PER_BAR = 8.0;
 
@@ -97,6 +103,8 @@ private:
                                                    double sp_bar_amount) const;
     [[nodiscard]] std::vector<WhammyRange>::const_iterator
     first_whammy_range_after(Beat pos) const;
+    [[nodiscard]] WhammyPropagationState
+    initial_whammy_prop_state(Beat start, Beat end, double sp_bar_amount) const;
 
     static std::vector<BeatRate>
     form_beat_rates(int resolution, const SyncTrack& sync_track,

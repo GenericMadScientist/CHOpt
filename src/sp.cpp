@@ -159,6 +159,26 @@ SpData::first_whammy_range_after(Beat pos) const
                             [=](const auto& x) { return x.end.beat <= pos; });
 }
 
+SpData::WhammyPropagationState
+SpData::initial_whammy_prop_state(Beat start, Beat end,
+                                  double sp_bar_amount) const
+{
+    auto p = std::lower_bound(
+        m_beat_rates.cbegin(), m_beat_rates.cend(), start,
+        [](const auto& ts, const auto& y) { return ts.position < y; });
+    if (p != m_beat_rates.cbegin()) {
+        --p;
+    } else {
+        const auto subrange_end = std::min(end, p->position);
+        const auto sp_gain
+            = (subrange_end - start).value() * m_default_net_sp_gain_rate;
+        sp_bar_amount += sp_gain;
+        sp_bar_amount = std::min(sp_bar_amount, 1.0);
+        start = subrange_end;
+    }
+    return {p, start, sp_bar_amount};
+}
+
 double SpData::propagate_sp_over_whammy_max(Position start, Position end,
                                             double sp) const
 {
@@ -212,33 +232,24 @@ double SpData::propagate_sp_over_whammy_min(Position start, Position end,
 double SpData::propagate_over_whammy_range(Beat start, Beat end,
                                            double sp_bar_amount) const
 {
-    auto p = std::lower_bound(
-        m_beat_rates.cbegin(), m_beat_rates.cend(), start,
-        [](const auto& ts, const auto& y) { return ts.position < y; });
-    if (p != m_beat_rates.cbegin()) {
-        --p;
-    } else {
-        auto subrange_end = std::min(end, p->position);
-        sp_bar_amount
-            += (subrange_end - start).value() * m_default_net_sp_gain_rate;
-        sp_bar_amount = std::min(sp_bar_amount, 1.0);
-        start = subrange_end;
-    }
-    while (start < end) {
+    auto state = initial_whammy_prop_state(start, end, sp_bar_amount);
+    while (state.current_position < end) {
         auto subrange_end = end;
-        if (std::next(p) != m_beat_rates.cend()) {
-            subrange_end = std::min(end, std::next(p)->position);
+        if (std::next(state.current_beat_rate) != m_beat_rates.cend()) {
+            subrange_end
+                = std::min(end, std::next(state.current_beat_rate)->position);
         }
-        sp_bar_amount += (subrange_end - start).value() * p->net_sp_gain_rate;
-        if (sp_bar_amount < 0.0) {
+        state.current_sp += (subrange_end - state.current_position).value()
+            * state.current_beat_rate->net_sp_gain_rate;
+        if (state.current_sp < 0.0) {
             return -1.0;
         }
-        sp_bar_amount = std::min(sp_bar_amount, 1.0);
-        start = subrange_end;
-        ++p;
+        state.current_sp = std::min(state.current_sp, 1.0);
+        state.current_position = subrange_end;
+        ++state.current_beat_rate;
     }
 
-    return sp_bar_amount;
+    return state.current_sp;
 }
 
 bool SpData::is_in_whammy_ranges(Beat beat) const
@@ -334,32 +345,24 @@ Position SpData::activation_end_point(Position start, Position end,
 Beat SpData::whammy_propagation_endpoint(Beat start, Beat end,
                                          double sp_bar_amount) const
 {
-    auto p = std::lower_bound(
-        m_beat_rates.cbegin(), m_beat_rates.cend(), start,
-        [](const auto& ts, const auto& y) { return ts.position < y; });
-    if (p != m_beat_rates.cbegin()) {
-        --p;
-    } else {
-        auto subrange_end = std::min(end, p->position);
-        auto sp_gain
-            = (subrange_end - start).value() * m_default_net_sp_gain_rate;
-        sp_bar_amount += sp_gain;
-        sp_bar_amount = std::min(sp_bar_amount, 1.0);
-        start = subrange_end;
-    }
-    while (start < end) {
+    auto state = initial_whammy_prop_state(start, end, sp_bar_amount);
+    while (state.current_position < end) {
         auto subrange_end = end;
-        if (std::next(p) != m_beat_rates.cend()) {
-            subrange_end = std::min(end, std::next(p)->position);
+        if (std::next(state.current_beat_rate) != m_beat_rates.cend()) {
+            subrange_end
+                = std::min(end, std::next(state.current_beat_rate)->position);
         }
-        auto sp_gain = (subrange_end - start).value() * p->net_sp_gain_rate;
-        if (sp_bar_amount + sp_gain < 0.0) {
-            return start + Beat(-sp_bar_amount / p->net_sp_gain_rate);
+        auto sp_gain = (subrange_end - state.current_position).value()
+            * state.current_beat_rate->net_sp_gain_rate;
+        if (state.current_sp + sp_gain < 0.0) {
+            return state.current_position
+                + Beat(-state.current_sp
+                       / state.current_beat_rate->net_sp_gain_rate);
         }
-        sp_bar_amount += sp_gain;
-        sp_bar_amount = std::min(sp_bar_amount, 1.0);
-        start = subrange_end;
-        ++p;
+        state.current_sp += sp_gain;
+        state.current_sp = std::min(state.current_sp, 1.0);
+        state.current_position = subrange_end;
+        ++state.current_beat_rate;
     }
 
     return end;
