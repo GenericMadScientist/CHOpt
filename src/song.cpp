@@ -529,6 +529,19 @@ combine_note_on_off_events(const std::vector<std::tuple<int, int>>& on_events,
     return ranges;
 }
 
+std::optional<Difficulty> look_up_difficulty(
+    const std::array<std::tuple<int, int, Difficulty>, 4>& diff_ranges,
+    std::uint8_t key)
+{
+    for (const auto& [min, max, diff] : diff_ranges) {
+        if (key >= min && key <= max) {
+            return {diff};
+        }
+    }
+
+    return std::nullopt;
+}
+
 template <typename T>
 std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
 {
@@ -539,11 +552,7 @@ std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
              {72, 76, Difficulty::Medium},
              {60, 64, Difficulty::Easy}}};
 
-        for (const auto& [min, max, diff] : diff_ranges) {
-            if (key >= min && key <= max) {
-                return {diff};
-            }
-        }
+        return look_up_difficulty(diff_ranges, key);
     } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
         constexpr std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges {
             {{94, 100, Difficulty::Expert},
@@ -551,11 +560,7 @@ std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
              {70, 76, Difficulty::Medium},
              {58, 64, Difficulty::Easy}}};
 
-        for (const auto& [min, max, diff] : diff_ranges) {
-            if (key >= min && key <= max) {
-                return {diff};
-            }
-        }
+        return look_up_difficulty(diff_ranges, key);
     } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
         constexpr std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges {
             {{95, 101, Difficulty::Expert},
@@ -563,11 +568,7 @@ std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
              {71, 77, Difficulty::Medium},
              {59, 65, Difficulty::Easy}}};
 
-        for (const auto& [min, max, diff] : diff_ranges) {
-            if (key >= min && key <= max) {
-                return {diff};
-            }
-        }
+        return look_up_difficulty(diff_ranges, key);
     }
 
     return std::nullopt;
