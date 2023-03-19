@@ -8,9 +8,8 @@ A program to generate optimal Star Power paths for Clone Hero.
 ## Install
 
 Download the latest version from the [Releases page](../../releases). If you're
-on Windows, you will need to have installed the latest Visual Studio
-Redistributable whose installer can be obtained
-[here](https://aka.ms/vs/17/release/vc_redist.x64.exe).
+on Windows, you will need to have installed the latest
+[Visual Studio Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe).
 
 ## Usage
 
@@ -84,7 +83,7 @@ them, and the same is true for Boost and Qt (see
 [this](https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html) page for
 details).
 
-## Acknowledgements
+## Acknowledgements@
 
 * FireFox2000000's Moonscraper .chart and .mid parsers were very helpful for
 getting an initial idea of Clone Hero's parsing behaviour.
