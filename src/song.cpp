@@ -1011,6 +1011,40 @@ std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
     return {{bre_start, bre_end}};
 }
 
+template <typename T>
+std::map<Difficulty, std::vector<Note<T>>> notes_from_event_track(
+    const InstrumentMidiTrack<T>& event_track,
+    const std::map<Difficulty, std::vector<std::tuple<int, int>>>& open_events)
+{
+    std::map<Difficulty, std::vector<Note<T>>> notes;
+    for (const auto& [key, note_ons] : event_track.note_on_events) {
+        const auto& [diff, colour] = key;
+        if (event_track.note_off_events.count(key) == 0) {
+            throw ParseError("No corresponding Note Off events");
+        }
+        const auto& note_offs = event_track.note_off_events.at(key);
+        for (const auto& [pos, end] :
+             combine_note_on_off_events(note_ons, note_offs)) {
+            const auto note_length = end - pos;
+            auto note_colour = colour;
+            if constexpr (std::is_same_v<T, NoteColour>) {
+                const auto open_events_iter = open_events.find(diff);
+                if (open_events_iter != open_events.cend()) {
+                    for (const auto& [open_start, open_end] :
+                         open_events_iter->second) {
+                        if (pos >= open_start && pos < open_end) {
+                            note_colour = NoteColour::Open;
+                        }
+                    }
+                }
+            }
+            notes[diff].push_back({pos, note_length, note_colour});
+        }
+    }
+
+    return notes;
+}
+
 std::map<Difficulty, NoteTrack<NoteColour>>
 note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
@@ -1026,25 +1060,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         open_events[diff] = combine_note_on_off_events(open_ons, open_offs);
     }
 
-    std::map<Difficulty, std::vector<Note<NoteColour>>> notes;
-    for (const auto& [key, note_ons] : event_track.note_on_events) {
-        const auto& [diff, colour] = key;
-        if (event_track.note_off_events.count(key) == 0) {
-            throw ParseError("No corresponding Note Off events");
-        }
-        const auto& note_offs = event_track.note_off_events.at(key);
-        for (const auto& [pos, end] :
-             combine_note_on_off_events(note_ons, note_offs)) {
-            const auto note_length = end - pos;
-            auto note_colour = colour;
-            for (const auto& [open_start, open_end] : open_events[diff]) {
-                if (pos >= open_start && pos < open_end) {
-                    note_colour = NoteColour::Open;
-                }
-            }
-            notes[diff].push_back({pos, note_length, note_colour});
-        }
-    }
+    const auto notes = notes_from_event_track(event_track, open_events);
 
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
@@ -1084,19 +1100,7 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
     const auto event_track
         = read_instrument_midi_track<GHLNoteColour>(midi_track);
 
-    std::map<Difficulty, std::vector<Note<GHLNoteColour>>> notes;
-    for (const auto& [key, note_ons] : event_track.note_on_events) {
-        const auto& [diff, colour] = key;
-        if (event_track.note_off_events.count(key) == 0) {
-            throw ParseError("No corresponding Note Off events");
-        }
-        const auto& note_offs = event_track.note_off_events.at(key);
-        for (const auto& [pos, end] :
-             combine_note_on_off_events(note_ons, note_offs)) {
-            const auto note_length = end - pos;
-            notes[diff].push_back({pos, note_length, colour});
-        }
-    }
+    const auto notes = notes_from_event_track(event_track, {});
 
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
