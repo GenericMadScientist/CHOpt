@@ -200,6 +200,15 @@ private:
         return base_score;
     }
 
+    static bool is_open_note(NoteColour colour)
+    {
+        return colour == NoteColour::Open;
+    }
+    static bool is_open_note(GHLNoteColour colour)
+    {
+        return colour == GHLNoteColour::Open;
+    }
+
 public:
     NoteTrack(std::vector<Note<T>> notes,
               const std::vector<StarPower>& sp_phrases, std::vector<Solo> solos,
@@ -280,68 +289,35 @@ public:
         // We handle open note merging at the end because in v23 the removed
         // notes still affect the base score.
         std::vector<Note<T>> merged_notes;
-        if constexpr (std::is_same_v<T, NoteColour>) {
-            for (auto p = m_notes.cbegin(); p < m_notes.cend();) {
-                auto q = std::next(p);
-                while (q < m_notes.cend() && p->position == q->position) {
-                    q = std::next(q);
-                }
-                for (auto r = p; r < q; ++r) {
-                    if (r->colour == NoteColour::Open) {
-                        merged_notes.push_back(*r);
-                        continue;
-                    }
-                    bool discarded = false;
-                    for (auto s = p; s < q; ++s) {
-                        if (s == r) {
-                            continue;
-                        }
-                        if (s->colour != NoteColour::Open) {
-                            continue;
-                        }
-                        if (s->length == r->length) {
-                            discarded = true;
-                            break;
-                        }
-                    }
-                    if (!discarded) {
-                        merged_notes.push_back(*r);
-                    }
-                }
-                p = q;
-            }
-        } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
-            for (auto p = m_notes.cbegin(); p < m_notes.cend();) {
-                auto q = std::next(p);
-                while (q < m_notes.cend() && p->position == q->position) {
-                    q = std::next(q);
-                }
-                for (auto r = p; r < q; ++r) {
-                    if (r->colour == GHLNoteColour::Open) {
-                        merged_notes.push_back(*r);
-                        continue;
-                    }
-                    bool discarded = false;
-                    for (auto s = p; s < q; ++s) {
-                        if (s == r) {
-                            continue;
-                        }
-                        if (s->colour != GHLNoteColour::Open) {
-                            continue;
-                        }
-                        if (s->length == r->length) {
-                            discarded = true;
-                            break;
-                        }
-                    }
-                    if (!discarded) {
-                        merged_notes.push_back(*r);
-                    }
-                }
-                p = q;
-            }
-        } else {
+        if constexpr (std::is_same_v<T, DrumNoteColour>) {
             merged_notes = m_notes;
+        } else {
+            for (auto p = m_notes.cbegin(); p < m_notes.cend();) {
+                auto q = std::next(p);
+                while (q < m_notes.cend() && p->position == q->position) {
+                    q = std::next(q);
+                }
+                for (auto r = p; r < q; ++r) {
+                    if (is_open_note(r->colour)) {
+                        merged_notes.push_back(*r);
+                        continue;
+                    }
+                    bool discarded = false;
+                    for (auto s = p; s < q; ++s) {
+                        if (s == r || !is_open_note(s->colour)) {
+                            continue;
+                        }
+                        if (s->length == r->length) {
+                            discarded = true;
+                            break;
+                        }
+                    }
+                    if (!discarded) {
+                        merged_notes.push_back(*r);
+                    }
+                }
+                p = q;
+            }
         }
         m_notes = std::move(merged_notes);
     }
