@@ -3,6 +3,7 @@
 A program to generate optimal Star Power paths for Clone Hero.
 
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/GenericMadScientist/CHOpt?branch=main&svg=true)](https://ci.appveyor.com/project/GenericMadScientist/CHOpt)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3e82e23473fc48779a486d9099d52e21)](https://app.codacy.com/gh/GenericMadScientist/CHOpt/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 ## Install
 
