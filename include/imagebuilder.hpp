@@ -83,9 +83,8 @@ private:
     void form_beat_lines(const SyncTrack& sync_track, int resolution);
     static bool is_neutralised_phrase(Beat note_pos, const Path& path);
 
-    template <typename T>
     std::tuple<double, double> sp_phrase_bounds(const StarPower& phrase,
-                                                const NoteTrack<T>& track,
+                                                const NoteTrack& track,
                                                 const Path& path) const
     {
         constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
@@ -102,7 +101,11 @@ private:
         const auto phrase_end = phrase.position + phrase.length;
         auto end = start;
         while (p < track.notes().cend() && p->position < phrase_end) {
-            auto current_end = (p->position + p->length)
+            auto max_length = 0;
+            for (auto length : p->lengths) {
+                max_length = std::max(max_length, length);
+            }
+            auto current_end = (p->position + max_length)
                 / static_cast<double>(track.resolution());
             end = std::max(end, current_end);
             ++p;
@@ -112,19 +115,13 @@ private:
     }
 
 public:
-    ImageBuilder(const NoteTrack<NoteColour>& track,
-                 const SyncTrack& sync_track, Difficulty difficulty,
+    ImageBuilder(const NoteTrack& track, const SyncTrack& sync_track,
+                 Difficulty difficulty, const DrumSettings& drum_settings,
                  bool is_lefty_flip, bool is_overlap_engine);
-    ImageBuilder(const NoteTrack<GHLNoteColour>& track,
-                 const SyncTrack& sync_track, Difficulty difficulty,
-                 bool is_lefty_flip);
-    ImageBuilder(const NoteTrack<DrumNoteColour>& track,
-                 const SyncTrack& sync_track, Difficulty difficulty,
-                 const DrumSettings& drum_settings, bool is_lefty_flip);
     void add_bpms(const SyncTrack& sync_track, int resolution);
     void add_bre(const BigRockEnding& bre, int resolution,
                  const TimeConverter& converter);
-    void add_drum_fills(const NoteTrack<DrumNoteColour>& track);
+    void add_drum_fills(const NoteTrack& track);
     void add_measure_values(const PointSet& points,
                             const TimeConverter& converter, const Path& path);
     void add_solo_sections(const std::vector<Solo>& solos, int resolution);
@@ -136,8 +133,7 @@ public:
                                const TimeConverter& converter,
                                const PointSet& points, const Path& path);
 
-    template <typename T>
-    void add_sp_phrases(const NoteTrack<T>& track,
+    void add_sp_phrases(const NoteTrack& track,
                         const std::vector<int>& unison_phrases,
                         const Path& path)
     {
