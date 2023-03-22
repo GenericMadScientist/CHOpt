@@ -87,8 +87,7 @@ private:
     bool m_is_drums;
     bool m_overlaps;
 
-    template <typename T>
-    static int bre_boost(const NoteTrack<T>& track, const Engine& engine,
+    static int bre_boost(const NoteTrack& track, const Engine& engine,
                          const TimeConverter& converter)
     {
         if (!engine.has_bres() || !track.bre().has_value()) {
@@ -110,8 +109,7 @@ private:
                            const std::string& act_summary) const;
 
 public:
-    template <typename T>
-    ProcessedSong(const NoteTrack<T>& track, const SyncTrack& sync_track,
+    ProcessedSong(const NoteTrack& track, const SyncTrack& sync_track,
                   const SqueezeSettings& squeeze_settings,
                   const DrumSettings& drum_settings, const Engine& engine,
                   const std::vector<int>& od_beats,
@@ -123,14 +121,10 @@ public:
         , m_sp_data {track, sync_track, od_beats, squeeze_settings, engine}
         , m_total_bre_boost {bre_boost(track, engine, m_converter)}
         , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
-        , m_is_drums {std::is_same_v<T, DrumNoteColour>}
+        , m_is_drums {track.is_drums_track()}
         , m_overlaps {engine.overlaps()}
     {
-        if constexpr (std::is_same_v<T, DrumNoteColour>) {
-            m_base_score = track.base_score(drum_settings);
-        } else {
-            m_base_score = track.base_score();
-        }
+        m_base_score = track.base_score(drum_settings);
         const auto solos = track.solos(drum_settings);
         m_total_solo_boost = std::accumulate(
             solos.cbegin(), solos.cend(), 0,

@@ -482,6 +482,10 @@ public:
         }
         return new_track;
     }
+    [[nodiscard]] bool is_drums_track() const
+    {
+        return m_notes.front().flags & drums;
+    }
 };
 
 #endif
