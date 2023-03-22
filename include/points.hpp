@@ -58,17 +58,8 @@ private:
     Second m_video_lag;
     std::vector<std::string> m_colours;
 
-    static std::vector<Point> points_from_track(
-        const NoteTrack<NoteColour>& track, const TimeConverter& converter,
-        const std::vector<int>& unison_phrases,
-        const SqueezeSettings& squeeze_settings, const Engine& engine);
-    static std::vector<Point> points_from_track(
-        const NoteTrack<GHLNoteColour>& track, const TimeConverter& converter,
-        const std::vector<int>& unison_phrases,
-        const SqueezeSettings& squeeze_settings, const Engine& engine);
     static std::vector<Point>
-    points_from_track(const NoteTrack<DrumNoteColour>& track,
-                      const TimeConverter& converter,
+    points_from_track(const NoteTrack& track, const TimeConverter& converter,
                       const std::vector<int>& unison_phrases,
                       const SqueezeSettings& squeeze_settings,
                       const DrumSettings& drum_settings, const Engine& engine);
@@ -82,16 +73,11 @@ private:
     solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
                            const TimeConverter& converter);
 
-    static std::string to_colour_string(const std::vector<NoteColour>& colours);
-    static std::string
-    to_colour_string(const std::vector<GHLNoteColour>& colours);
-    static std::string to_colour_string(DrumNoteColour colour);
+    static std::string colours_string(const Note& note);
 
-    template <typename T>
     static std::vector<PointPtr>
     first_after_current_sp_vector(const std::vector<Point>& points,
-                                  const NoteTrack<T>& track,
-                                  const Engine& engine)
+                                  const NoteTrack& track, const Engine& engine)
     {
         std::vector<PointPtr> results;
         auto current_sp = track.sp_phrases().cbegin();
@@ -126,9 +112,8 @@ private:
         return results;
     }
 
-    template <typename T>
     static std::vector<std::string>
-    note_colours(const std::vector<Note<T>>& notes,
+    note_colours(const std::vector<Note>& notes,
                  const std::vector<Point>& points)
     {
         std::vector<std::string> colours;
@@ -139,44 +124,23 @@ private:
                 colours.emplace_back("");
                 continue;
             }
-            if constexpr (std::is_same_v<T, DrumNoteColour>) {
-                colours.push_back(to_colour_string(note_ptr->colour));
-                ++note_ptr;
-            } else {
-                std::vector<T> current_colours;
-                const auto position = note_ptr->position;
-                while ((note_ptr != notes.cend())
-                       && (note_ptr->position == position)) {
-                    current_colours.push_back(note_ptr->colour);
-                    ++note_ptr;
-                }
-                colours.push_back(to_colour_string(current_colours));
-            }
+            colours.push_back(colours_string(*note_ptr));
+            ++note_ptr;
         }
         return colours;
     }
 
 public:
-    template <typename T>
-    PointSet(const NoteTrack<T>& track, const TimeConverter& converter,
+    PointSet(const NoteTrack& track, const TimeConverter& converter,
              const std::vector<int>& unison_phrases,
              const SqueezeSettings& squeeze_settings,
              const DrumSettings& drum_settings, const Engine& engine)
         : m_video_lag {squeeze_settings.video_lag}
     {
-        if constexpr (std::is_same_v<T, DrumNoteColour>) {
-            m_points
-                = points_from_track(track, converter, unison_phrases,
-                                    squeeze_settings, drum_settings, engine);
-            m_solo_boosts = solo_boosts_from_solos(
-                track.solos(drum_settings), track.resolution(), converter);
-        } else {
-            m_points = points_from_track(track, converter, unison_phrases,
-                                         squeeze_settings, engine);
-            m_solo_boosts = solo_boosts_from_solos(
-                track.solos(DrumSettings::default_settings()),
-                track.resolution(), converter);
-        }
+        m_points = points_from_track(track, converter, unison_phrases,
+                                     squeeze_settings, drum_settings, engine);
+        m_solo_boosts = solo_boosts_from_solos(track.solos(drum_settings),
+                                               track.resolution(), converter);
         m_first_after_current_sp
             = first_after_current_sp_vector(m_points, track, engine);
         m_next_non_hold_point = next_non_hold_vector(m_points);
