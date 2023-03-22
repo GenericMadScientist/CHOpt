@@ -44,11 +44,7 @@ private:
     std::string m_charter;
     SyncTrack m_sync_track;
     std::vector<int> m_od_beats;
-    std::map<std::tuple<Instrument, Difficulty>, NoteTrack<NoteColour>>
-        m_five_fret_tracks;
-    std::map<std::tuple<Instrument, Difficulty>, NoteTrack<GHLNoteColour>>
-        m_six_fret_tracks;
-    std::map<Difficulty, NoteTrack<DrumNoteColour>> m_drum_note_tracks;
+    std::map<std::tuple<Instrument, Difficulty>, NoteTrack> m_tracks;
     Song() = default;
     void append_instrument_track(Instrument inst, Difficulty diff,
                                  const ChartSection& section);
@@ -67,45 +63,37 @@ public:
     [[nodiscard]] std::vector<Instrument> instruments() const;
     [[nodiscard]] std::vector<Difficulty>
     difficulties(Instrument instrument) const;
-    [[nodiscard]] const NoteTrack<NoteColour>&
-    guitar_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack& guitar_note_track(Difficulty diff) const
     {
-        return m_five_fret_tracks.at({Instrument::Guitar, diff});
+        return m_tracks.at({Instrument::Guitar, diff});
     }
-    [[nodiscard]] const NoteTrack<NoteColour>&
-    guitar_coop_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack& guitar_coop_note_track(Difficulty diff) const
     {
-        return m_five_fret_tracks.at({Instrument::GuitarCoop, diff});
+        return m_tracks.at({Instrument::GuitarCoop, diff});
     }
-    [[nodiscard]] const NoteTrack<NoteColour>&
-    bass_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack& bass_note_track(Difficulty diff) const
     {
-        return m_five_fret_tracks.at({Instrument::Bass, diff});
+        return m_tracks.at({Instrument::Bass, diff});
     }
-    [[nodiscard]] const NoteTrack<NoteColour>&
-    rhythm_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack& rhythm_note_track(Difficulty diff) const
     {
-        return m_five_fret_tracks.at({Instrument::Rhythm, diff});
+        return m_tracks.at({Instrument::Rhythm, diff});
     }
-    [[nodiscard]] const NoteTrack<NoteColour>&
-    keys_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack& keys_note_track(Difficulty diff) const
     {
-        return m_five_fret_tracks.at({Instrument::Keys, diff});
+        return m_tracks.at({Instrument::Keys, diff});
     }
-    [[nodiscard]] const NoteTrack<GHLNoteColour>&
-    ghl_guitar_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack& ghl_guitar_note_track(Difficulty diff) const
     {
-        return m_six_fret_tracks.at({Instrument::GHLGuitar, diff});
+        return m_tracks.at({Instrument::GHLGuitar, diff});
     }
-    [[nodiscard]] const NoteTrack<GHLNoteColour>&
-    ghl_bass_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack& ghl_bass_note_track(Difficulty diff) const
     {
-        return m_six_fret_tracks.at({Instrument::GHLBass, diff});
+        return m_tracks.at({Instrument::GHLBass, diff});
     }
-    [[nodiscard]] const NoteTrack<DrumNoteColour>&
-    drum_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack& drum_note_track(Difficulty diff) const
     {
-        return m_drum_note_tracks.at(diff);
+        return m_tracks.at({Instrument::Drums, diff});
     }
     [[nodiscard]] std::vector<int> unison_phrase_positions() const;
 };
