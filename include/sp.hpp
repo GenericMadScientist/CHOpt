@@ -110,10 +110,9 @@ private:
     form_beat_rates(int resolution, const SyncTrack& sync_track,
                     const std::vector<int>& od_beats, const Engine& engine);
 
-    template <typename T>
-    std::vector<std::tuple<int, int, Second>>
-    note_spans(const NoteTrack<T>& track, double early_whammy,
-               const Engine& engine)
+    std::vector<std::tuple<int, int, Second>> note_spans(const NoteTrack& track,
+                                                         double early_whammy,
+                                                         const Engine& engine)
     {
         std::vector<std::tuple<int, int, Second>> spans;
         for (auto note = track.notes().cbegin(); note < track.notes().cend();
@@ -142,10 +141,14 @@ private:
                                .value()
                     - current_note_time;
             }
-            spans.push_back(
-                {note->position, note->length,
-                 Second {engine.early_timing_window(early_gap, late_gap)}
-                     * early_whammy});
+            for (auto length : note->lengths) {
+                if (length != -1) {
+                    spans.push_back({note->position, length,
+                                     Second {engine.early_timing_window(
+                                         early_gap, late_gap)}
+                                         * early_whammy});
+                }
+            }
         }
         return spans;
     }
@@ -157,8 +160,7 @@ private:
                     const SqueezeSettings& squeeze_settings);
 
 public:
-    template <typename T>
-    SpData(const NoteTrack<T>& track, const SyncTrack& sync_track,
+    SpData(const NoteTrack& track, const SyncTrack& sync_track,
            const std::vector<int>& od_beats,
            const SqueezeSettings& squeeze_settings, const Engine& engine)
         : m_converter {sync_track, track.resolution(), engine, od_beats}
