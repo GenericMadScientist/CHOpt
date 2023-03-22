@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 #define CHOPT_SONGPARTS_HPP
 
 #include <algorithm>
+#include <array>
+#include <cstdint>
 #include <cstdlib>
 #include <optional>
 #include <stdexcept>
@@ -108,10 +110,61 @@ constexpr DrumNoteColour strip_dynamics(DrumNoteColour colour)
     throw std::invalid_argument("Invalid DrumNoteColour");
 }
 
-template <typename T> struct Note {
+enum NoteFlags : std::uint32_t {
+    cymbal = 1U << 0,
+    ghost = 1U << 1,
+    accent = 1U << 2,
+    drums = 1U << 29,
+    six_fret_guitar = 1U << 30,
+    five_fret_guitar = 1U << 31
+};
+
+struct Note {
+private:
+    int open_index() const
+    {
+        if (flags & five_fret_guitar) {
+            return 5;
+        }
+        if (flags & six_fret_guitar) {
+            return 6;
+        }
+        return -1;
+    }
+
+public:
     int position {0};
-    int length {0};
-    T colour = {};
+    std::array<int, 7> lengths {-1};
+    NoteFlags flags {0};
+
+    [[nodiscard]] int colours() const
+    {
+        auto colour_flags = 0;
+        for (auto i = 0U; i < lengths.size(); ++i) {
+            if (lengths[i] != -1) {
+                colour_flags |= 1 << i;
+            }
+        }
+        return colour_flags;
+    }
+
+    void merge_non_opens_into_open()
+    {
+        const auto index = open_index();
+        if (index == -1 || lengths[index] == -1) {
+            return;
+        }
+        for (auto i = 0; i < 7; ++i) {
+            if (i != index) {
+                lengths[i] = -1;
+            }
+        }
+    }
+
+    void disable_dynamics()
+    {
+        flags = static_cast<NoteFlags>(flags & ~(ghost | accent));
+    }
 };
 
 struct StarPower {
@@ -149,9 +202,9 @@ struct BigRockEnding {
 // sp_phrases() will only return phrases with a note in their range.
 // sp_phrases() will return non-overlapping phrases.
 // solos() will always return a vector of sorted solos.
-template <typename T> class NoteTrack {
+class NoteTrack {
 private:
-    std::vector<Note<T>> m_notes;
+    std::vector<Note> m_notes;
     std::vector<StarPower> m_sp_phrases;
     std::vector<Solo> m_solos;
     std::vector<DrumFill> m_drum_fills;
@@ -167,32 +220,21 @@ private:
 
         auto base_score = static_cast<int>(BASE_NOTE_VALUE * m_notes.size());
         auto total_ticks = 0;
-        auto current_pos = -1;
-        auto first_note_length = 0;
-        auto current_total_ticks = 0;
-        auto is_disjoint_chord = false;
         for (const auto& note : m_notes) {
-            if (note.position != current_pos) {
-                if (is_disjoint_chord) {
-                    total_ticks += current_total_ticks;
-                } else {
-                    total_ticks += first_note_length;
+            std::vector<int> constituent_lengths;
+            for (auto length : note.lengths) {
+                if (length != -1) {
+                    constituent_lengths.push_back(length);
                 }
-                first_note_length = note.length;
-                current_total_ticks = note.length;
-                current_pos = note.position;
-                is_disjoint_chord = false;
-            } else {
-                if (note.length != first_note_length) {
-                    is_disjoint_chord = true;
-                }
-                current_total_ticks += note.length;
             }
-        }
-        if (is_disjoint_chord) {
-            total_ticks += current_total_ticks;
-        } else {
-            total_ticks += first_note_length;
+            std::sort(constituent_lengths.begin(), constituent_lengths.end());
+            if (constituent_lengths.front() == constituent_lengths.back()) {
+                total_ticks += constituent_lengths.front();
+            } else {
+                for (auto length : constituent_lengths) {
+                    total_ticks += length;
+                }
+            }
         }
 
         base_score += (total_ticks * BASE_SUSTAIN_DENSITY + m_resolution - 1)
@@ -200,19 +242,9 @@ private:
         return base_score;
     }
 
-    static bool is_open_note(NoteColour colour)
-    {
-        return colour == NoteColour::Open;
-    }
-    static bool is_open_note(GHLNoteColour colour)
-    {
-        return colour == GHLNoteColour::Open;
-    }
-
 public:
-    NoteTrack(std::vector<Note<T>> notes,
-              const std::vector<StarPower>& sp_phrases, std::vector<Solo> solos,
-              std::vector<DrumFill> drum_fills,
+    NoteTrack(std::vector<Note> notes, const std::vector<StarPower>& sp_phrases,
+              std::vector<Solo> solos, std::vector<DrumFill> drum_fills,
               std::vector<DiscoFlip> disco_flips,
               std::optional<BigRockEnding> bre, int resolution)
         : m_drum_fills {std::move(drum_fills)}
@@ -226,15 +258,14 @@ public:
 
         std::stable_sort(notes.begin(), notes.end(),
                          [](const auto& lhs, const auto& rhs) {
-                             return std::tie(lhs.position, lhs.colour)
-                                 < std::tie(rhs.position, rhs.colour);
+                             return lhs.position < rhs.position;
                          });
 
         if (!notes.empty()) {
             auto prev_note = notes.cbegin();
             for (auto p = notes.cbegin() + 1; p < notes.cend(); ++p) {
                 if (p->position != prev_note->position
-                    || p->colour != prev_note->colour) {
+                    || p->colours() != prev_note->colours()) {
                     m_notes.push_back(*prev_note);
                 }
                 prev_note = p;
@@ -288,38 +319,9 @@ public:
 
         // We handle open note merging at the end because in v23 the removed
         // notes still affect the base score.
-        std::vector<Note<T>> merged_notes;
-        if constexpr (std::is_same_v<T, DrumNoteColour>) {
-            merged_notes = m_notes;
-        } else {
-            for (auto p = m_notes.cbegin(); p < m_notes.cend();) {
-                auto q = std::next(p);
-                while (q < m_notes.cend() && p->position == q->position) {
-                    q = std::next(q);
-                }
-                for (auto r = p; r < q; ++r) {
-                    if (is_open_note(r->colour)) {
-                        merged_notes.push_back(*r);
-                        continue;
-                    }
-                    bool discarded = false;
-                    for (auto s = p; s < q; ++s) {
-                        if (s == r || !is_open_note(s->colour)) {
-                            continue;
-                        }
-                        if (s->length == r->length) {
-                            discarded = true;
-                            break;
-                        }
-                    }
-                    if (!discarded) {
-                        merged_notes.push_back(*r);
-                    }
-                }
-                p = q;
-            }
+        for (auto& note : m_notes) {
+            note.merge_non_opens_into_open();
         }
-        m_notes = std::move(merged_notes);
     }
 
     void generate_drum_fills(const TimeConverter& converter)
@@ -380,14 +382,12 @@ public:
 
     void disable_dynamics()
     {
-        if constexpr (std::is_same_v<T, DrumNoteColour>) {
-            for (auto& n : m_notes) {
-                n.colour = strip_dynamics(n.colour);
-            }
+        for (auto& n : m_notes) {
+            n.disable_dynamics();
         }
     }
 
-    [[nodiscard]] const std::vector<Note<T>>& notes() const { return m_notes; }
+    [[nodiscard]] const std::vector<Note>& notes() const { return m_notes; }
     [[nodiscard]] const std::vector<StarPower>& sp_phrases() const
     {
         return m_sp_phrases;
@@ -395,35 +395,32 @@ public:
     [[nodiscard]] std::vector<Solo>
     solos(const DrumSettings& drum_settings) const
     {
-        if constexpr (std::is_same_v<T, DrumNoteColour>) {
-            auto solos = m_solos;
-            auto p = m_notes.cbegin();
-            auto q = solos.begin();
-            while (p < m_notes.cend() && q < solos.end()) {
-                if (p->position < q->start) {
-                    ++p;
-                    continue;
-                }
-                if (p->position > q->end) {
-                    ++q;
-                    continue;
-                }
-                if (p->colour == DrumNoteColour::DoubleKick
-                    && !drum_settings.enable_double_kick) {
-                    q->value -= 100;
-                } else if (p->colour == DrumNoteColour::Kick
-                           && drum_settings.disable_kick) {
-                    q->value -= 100;
-                }
-                ++p;
-            }
-            auto it = std::remove_if(solos.begin(), solos.end(),
-                                     [](auto solo) { return solo.value == 0; });
-            solos.erase(it, solos.end());
-            return solos;
-        } else {
+        if (!(m_notes.front().flags & drums)) {
             return m_solos;
         }
+        auto solos = m_solos;
+        auto p = m_notes.cbegin();
+        auto q = solos.begin();
+        while (p < m_notes.cend() && q < solos.end()) {
+            if (p->position < q->start) {
+                ++p;
+                continue;
+            }
+            if (p->position > q->end) {
+                ++q;
+                continue;
+            }
+            if ((p->colours() & 5) && !drum_settings.enable_double_kick) {
+                q->value -= 100;
+            } else if ((p->colours() & 4) && drum_settings.disable_kick) {
+                q->value -= 100;
+            }
+            ++p;
+        }
+        auto it = std::remove_if(solos.begin(), solos.end(),
+                                 [](auto solo) { return solo.value == 0; });
+        solos.erase(it, solos.end());
+        return solos;
     }
     [[nodiscard]] const std::vector<DrumFill>& drum_fills() const
     {
@@ -441,10 +438,10 @@ public:
         constexpr int BASE_NOTE_VALUE = 50;
 
         auto count_note = [&](auto& note) {
-            if (note.colour == DrumNoteColour::Kick) {
+            if (note.colours() & 4) {
                 return !drum_settings.disable_kick;
             }
-            if (note.colour == DrumNoteColour::DoubleKick) {
+            if (note.colours() & 5) {
                 return drum_settings.enable_double_kick;
             }
             return true;
@@ -453,7 +450,7 @@ public:
             * static_cast<int>(
                    std::count_if(m_notes.cbegin(), m_notes.cend(), count_note));
     }
-    [[nodiscard]] NoteTrack<T> trim_sustains() const
+    [[nodiscard]] NoteTrack trim_sustains() const
     {
         constexpr int DEFAULT_RESOLUTION = 192;
         constexpr int DEFAULT_SUST_CUTOFF = 64;
@@ -463,8 +460,10 @@ public:
             = (DEFAULT_SUST_CUTOFF * m_resolution) / DEFAULT_RESOLUTION;
 
         for (auto& note : trimmed_track.m_notes) {
-            if (note.length <= sust_cutoff) {
-                note.length = 0;
+            for (auto& length : note.lengths) {
+                if (length <= sust_cutoff) {
+                    length = 0;
+                }
             }
         }
 
@@ -472,7 +471,7 @@ public:
 
         return trimmed_track;
     }
-    [[nodiscard]] NoteTrack<T> snap_chords(int snap_gap) const
+    [[nodiscard]] NoteTrack snap_chords(int snap_gap) const
     {
         auto new_track = *this;
         auto& new_notes = new_track.m_notes;
