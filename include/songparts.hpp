@@ -165,6 +165,11 @@ public:
     {
         flags = static_cast<NoteFlags>(flags & ~(ghost | accent));
     }
+
+    [[nodiscard]] bool is_kick_note() const
+    {
+        return flags & drums & (lengths[4] != -1 || lengths[5] != -1);
+    }
 };
 
 struct StarPower {

@@ -89,96 +89,62 @@ void append_sustain_points(OutputIt points, int position, int sust_length,
     }
 }
 
-bool skip_kick(DrumNoteColour colour, const DrumSettings& drum_settings)
+bool skip_kick(const Note& note, const DrumSettings& drum_settings)
 {
-    if (colour == DrumNoteColour::Kick) {
+    if (!note.is_kick_note()) {
+        return false;
+    }
+    if (note.lengths[4] != -1) {
         return drum_settings.disable_kick;
     }
-    if (colour == DrumNoteColour::DoubleKick) {
-        return !drum_settings.enable_double_kick;
-    }
-    return false;
+    return !drum_settings.enable_double_kick;
 }
 
-template <typename InputIt>
-int get_chord_size(InputIt first, InputIt last,
-                   const DrumSettings& drum_settings)
+int get_chord_size(const Note& note, const DrumSettings& drum_settings)
 {
     int note_count = 0;
-    using T = decltype(first->colour);
-    for (; first < last; ++first) {
-        if constexpr (std::is_same_v<T, DrumNoteColour>) {
-            if (!skip_kick(first->colour, drum_settings)) {
-                ++note_count;
-            }
-        } else {
-            (void)drum_settings;
+    for (auto i = 0; i < 7; ++i) {
+        if (note.lengths[i] != -1 && !skip_kick(note, drum_settings)) {
             ++note_count;
         }
     }
     return note_count;
 }
 
-bool is_dynamics_colour(DrumNoteColour colour)
+template <typename OutputIt>
+void append_note_points(std::vector<Note>::const_iterator note,
+                        const std::vector<Note>& notes, OutputIt points,
+                        int resolution, bool is_note_sp_ender,
+                        bool is_unison_sp_ender, const TimeConverter& converter,
+                        double squeeze, const Engine& engine,
+                        const DrumSettings& drum_settings)
 {
-    constexpr std::array NORMAL_COLOURS {
-        DrumNoteColour::Red,          DrumNoteColour::Yellow,
-        DrumNoteColour::Blue,         DrumNoteColour::Green,
-        DrumNoteColour::YellowCymbal, DrumNoteColour::BlueCymbal,
-        DrumNoteColour::GreenCymbal,  DrumNoteColour::Kick,
-        DrumNoteColour::DoubleKick};
-    return std::find(NORMAL_COLOURS.cbegin(), NORMAL_COLOURS.cend(), colour)
-        == NORMAL_COLOURS.cend();
-}
-
-bool is_cymbal_colour(DrumNoteColour colour)
-{
-    constexpr std::array CYMBAL_COLOURS {
-        DrumNoteColour::YellowCymbal,      DrumNoteColour::YellowCymbalAccent,
-        DrumNoteColour::YellowCymbalGhost, DrumNoteColour::BlueCymbal,
-        DrumNoteColour::BlueCymbalAccent,  DrumNoteColour::BlueCymbalGhost,
-        DrumNoteColour::GreenCymbal,       DrumNoteColour::GreenCymbalAccent,
-        DrumNoteColour::GreenCymbalGhost,
-    };
-    return std::find(CYMBAL_COLOURS.cbegin(), CYMBAL_COLOURS.cend(), colour)
-        != CYMBAL_COLOURS.cend();
-}
-
-template <typename InputIt, typename OutputIt>
-void append_note_points(InputIt first, InputIt last, InputIt note_start,
-                        InputIt note_end, OutputIt points, int resolution,
-                        bool is_note_sp_ender, bool is_unison_sp_ender,
-                        const TimeConverter& converter, double squeeze,
-                        const Engine& engine, const DrumSettings& drum_settings)
-{
-    assert(first != last); // NOLINT
-
     auto note_value = engine.base_note_value();
-    if constexpr (std::is_same_v<decltype(first->colour), DrumNoteColour>) {
-        if (is_cymbal_colour(first->colour)) {
+    if (note->flags & drums) {
+        if (note->flags & cymbal) {
             note_value = engine.base_cymbal_value();
         }
-        if (is_dynamics_colour(first->colour)) {
+        if (note->flags & (ghost | accent)) {
             note_value *= 2;
         }
     }
-    const auto chord_size = get_chord_size(first, last, drum_settings);
-    const auto pos = first->position;
+    const auto chord_size = get_chord_size(*note, drum_settings);
+    const auto pos = note->position;
     const Beat beat {pos / static_cast<double>(resolution)};
     const auto meas = converter.beats_to_measures(beat);
     const auto note_seconds = converter.beats_to_seconds(beat);
 
     auto early_gap = std::numeric_limits<double>::infinity();
-    if (first != note_start) {
-        const Beat prev_note_beat {std::prev(first)->position
+    if (note != notes.cbegin()) {
+        const Beat prev_note_beat {std::prev(note)->position
                                    / static_cast<double>(resolution)};
         const auto prev_note_seconds
             = converter.beats_to_seconds(prev_note_beat);
         early_gap = (note_seconds - prev_note_seconds).value();
     }
     auto late_gap = std::numeric_limits<double>::infinity();
-    if (last != note_end) {
-        const Beat next_note_beat {last->position
+    if (std::next(note) != notes.cend()) {
+        const Beat next_note_beat {std::next(note)->position
                                    / static_cast<double>(resolution)};
         const auto next_note_seconds
             = converter.beats_to_seconds(next_note_beat);
@@ -201,18 +167,25 @@ void append_note_points(InputIt first, InputIt last, InputIt note_start,
            {},           note_value * chord_size,  note_value * chord_size,
            false,        is_note_sp_ender,         is_unison_sp_ender};
 
-    auto [min_iter, max_iter]
-        = std::minmax_element(first, last, [](const auto& x, const auto& y) {
-              return x.length < y.length;
-          });
-    if (min_iter->length == max_iter->length
-        || engine.merge_uneven_sustains()) {
-        append_sustain_points(points, pos, min_iter->length, resolution,
-                              chord_size, converter, engine);
+    auto min_length = std::numeric_limits<int>::max();
+    auto max_length = 0;
+    for (auto length : note->lengths) {
+        if (length == -1) {
+            continue;
+        }
+        min_length = std::min(length, min_length);
+        max_length = std::max(length, max_length);
+    }
+
+    if (min_length == max_length || engine.merge_uneven_sustains()) {
+        append_sustain_points(points, pos, min_length, resolution, chord_size,
+                              converter, engine);
     } else {
-        for (auto p = first; p < last; ++p) {
-            append_sustain_points(points, pos, p->length, resolution,
-                                  chord_size, converter, engine);
+        for (auto length : note->lengths) {
+            if (length != -1) {
+                append_sustain_points(points, pos, length, resolution,
+                                      chord_size, converter, engine);
+            }
         }
     }
 }
@@ -237,13 +210,7 @@ std::vector<Point>::iterator closest_point(std::vector<Point>& points,
     return nearest;
 }
 
-bool is_kick_colour(DrumNoteColour colour)
-{
-    return colour == DrumNoteColour::Kick
-        || colour == DrumNoteColour::DoubleKick;
-}
-
-void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
+void add_drum_activation_points(const NoteTrack& track,
                                 const TimeConverter& converter,
                                 std::vector<Point>& points)
 {
@@ -258,7 +225,7 @@ void add_drum_activation_points(const NoteTrack<DrumNoteColour>& track,
         const auto best_point = closest_point(points, fill_end);
         bool has_non_kick = false;
         for (const auto& note : track.notes()) {
-            if (is_kick_colour(note.colour)) {
+            if (note.is_kick_note()) {
                 continue;
             }
             const Beat note_position {
@@ -358,12 +325,12 @@ void apply_multiplier(std::vector<Point>& points, const Engine& engine)
     }
 }
 
-template <typename T>
-std::vector<Point>
-unmultiplied_points(const NoteTrack<T>& track, const TimeConverter& converter,
-                    const std::vector<int>& unison_phrases,
-                    const SqueezeSettings& squeeze_settings,
-                    const DrumSettings& drum_settings, const Engine& engine)
+std::vector<Point> unmultiplied_points(const NoteTrack& track,
+                                       const TimeConverter& converter,
+                                       const std::vector<int>& unison_phrases,
+                                       const SqueezeSettings& squeeze_settings,
+                                       const DrumSettings& drum_settings,
+                                       const Engine& engine)
 {
     const auto& notes = track.notes();
     const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
@@ -372,8 +339,8 @@ unmultiplied_points(const NoteTrack<T>& track, const TimeConverter& converter,
     auto current_phrase = track.sp_phrases().cbegin();
 
     for (auto p = notes.cbegin(); p != notes.cend();) {
-        if constexpr (std::is_same_v<T, DrumNoteColour>) {
-            if (skip_kick(p->colour, drum_settings)) {
+        if (track.is_drums_track()) {
+            if (skip_kick(*p, drum_settings)) {
                 ++p;
                 continue;
             }
@@ -381,12 +348,11 @@ unmultiplied_points(const NoteTrack<T>& track, const TimeConverter& converter,
         if (has_relevant_bre && p->position >= track.bre()->start) {
             break;
         }
-        const auto search_start
-            = (std::is_same_v<T, DrumNoteColour>) ? std::next(p) : p;
+        const auto search_start = track.is_drums_track() ? std::next(p) : p;
         const auto q = std::find_if_not(
             search_start, notes.cend(), [=](const auto& note) {
-                if constexpr (std::is_same_v<T, DrumNoteColour>) {
-                    return skip_kick(note.colour, drum_settings);
+                if (track.is_drums_track()) {
+                    return skip_kick(note, drum_settings);
                 } else {
                     return note.position == p->position;
                 }
@@ -406,9 +372,9 @@ unmultiplied_points(const NoteTrack<T>& track, const TimeConverter& converter,
             }
             ++current_phrase;
         }
-        append_note_points(p, q, notes.cbegin(), notes.cend(),
-                           std::back_inserter(points), track.resolution(),
-                           is_note_sp_ender, is_unison_sp_ender, converter,
+        append_note_points(p, notes, std::back_inserter(points),
+                           track.resolution(), is_note_sp_ender,
+                           is_unison_sp_ender, converter,
                            squeeze_settings.squeeze, engine, drum_settings);
         p = q;
     }
@@ -421,11 +387,11 @@ unmultiplied_points(const NoteTrack<T>& track, const TimeConverter& converter,
     return points;
 }
 
-template <typename T>
-std::vector<Point>
-non_drum_points(const NoteTrack<T>& track, const TimeConverter& converter,
-                const std::vector<int>& unison_phrases,
-                const SqueezeSettings& squeeze_settings, const Engine& engine)
+std::vector<Point> non_drum_points(const NoteTrack& track,
+                                   const TimeConverter& converter,
+                                   const std::vector<int>& unison_phrases,
+                                   const SqueezeSettings& squeeze_settings,
+                                   const Engine& engine)
 {
     auto points = unmultiplied_points(track, converter, unison_phrases,
                                       squeeze_settings,
@@ -437,29 +403,15 @@ non_drum_points(const NoteTrack<T>& track, const TimeConverter& converter,
 }
 
 std::vector<Point> PointSet::points_from_track(
-    const NoteTrack<NoteColour>& track, const TimeConverter& converter,
-    const std::vector<int>& unison_phrases,
-    const SqueezeSettings& squeeze_settings, const Engine& engine)
-{
-    return non_drum_points(track, converter, unison_phrases, squeeze_settings,
-                           engine);
-}
-
-std::vector<Point> PointSet::points_from_track(
-    const NoteTrack<GHLNoteColour>& track, const TimeConverter& converter,
-    const std::vector<int>& unison_phrases,
-    const SqueezeSettings& squeeze_settings, const Engine& engine)
-{
-    return non_drum_points(track, converter, unison_phrases, squeeze_settings,
-                           engine);
-}
-
-std::vector<Point> PointSet::points_from_track(
-    const NoteTrack<DrumNoteColour>& track, const TimeConverter& converter,
+    const NoteTrack& track, const TimeConverter& converter,
     const std::vector<int>& unison_phrases,
     const SqueezeSettings& squeeze_settings, const DrumSettings& drum_settings,
     const Engine& engine)
 {
+    if (!track.is_drums_track()) {
+        return non_drum_points(track, converter, unison_phrases,
+                               squeeze_settings, engine);
+    }
     auto points = unmultiplied_points(track, converter, unison_phrases,
                                       squeeze_settings, drum_settings, engine);
     add_drum_activation_points(track, converter, points);
@@ -510,62 +462,49 @@ PointSet::solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
     return solo_boosts;
 }
 
-std::string PointSet::to_colour_string(const std::vector<NoteColour>& colours)
+std::string PointSet::colours_string(const Note& note)
 {
-    const std::vector<std::tuple<NoteColour, std::string>> COLOUR_NAMES {
-        {NoteColour::Green, "G"},  {NoteColour::Red, "R"},
-        {NoteColour::Yellow, "Y"}, {NoteColour::Blue, "B"},
-        {NoteColour::Orange, "O"}, {NoteColour::Open, "open"}};
+    std::string colours;
 
-    return to_guitar_colour_string(colours, COLOUR_NAMES);
-}
+    if (note.flags & five_fret_guitar) {
+        const std::array<std::string, 6> COLOUR_NAMES {"G", "R", "Y",
+                                                       "B", "O", "open"};
+        for (auto i = 0; i < 6; ++i) {
+            if (note.lengths[i] != -1) {
+                colours += COLOUR_NAMES[i];
+            }
+        }
+        return colours;
+    } else if (note.flags & six_fret_guitar) {
+        const std::array<std::string, 7> COLOUR_NAMES {"W1", "W2", "W3",  "B1",
+                                                       "B2", "B3", "open"};
+        for (auto i = 0; i < 7; ++i) {
+            if (note.lengths[i] != -1) {
+                colours += COLOUR_NAMES[i];
+            }
+        }
+    } else if (note.flags & drums) {
+        const std::array<std::string, 6> COLOUR_NAMES {"R", "Y",    "B",
+                                                       "G", "kick", "kick"};
 
-std::string
-PointSet::to_colour_string(const std::vector<GHLNoteColour>& colours)
-{
-    const std::vector<std::tuple<GHLNoteColour, std::string>> COLOUR_NAMES {
-        {GHLNoteColour::WhiteLow, "W1"},  {GHLNoteColour::WhiteMid, "W2"},
-        {GHLNoteColour::WhiteHigh, "W3"}, {GHLNoteColour::BlackLow, "B1"},
-        {GHLNoteColour::BlackMid, "B2"},  {GHLNoteColour::BlackHigh, "B3"},
-        {GHLNoteColour::Open, "open"}};
-
-    return to_guitar_colour_string(colours, COLOUR_NAMES);
-}
-
-std::string PointSet::to_colour_string(DrumNoteColour colour)
-{
-    const std::array<std::tuple<DrumNoteColour, std::string>, 23> COLOUR_NAMES {
-        {{DrumNoteColour::Red, "R"},
-         {DrumNoteColour::Yellow, "Y"},
-         {DrumNoteColour::Blue, "B"},
-         {DrumNoteColour::Green, "G"},
-         {DrumNoteColour::YellowCymbal, "Y cymbal"},
-         {DrumNoteColour::BlueCymbal, "B cymbal"},
-         {DrumNoteColour::GreenCymbal, "G cymbal"},
-         {DrumNoteColour::RedGhost, "R ghost"},
-         {DrumNoteColour::YellowGhost, "Y ghost"},
-         {DrumNoteColour::BlueGhost, "B ghost"},
-         {DrumNoteColour::GreenGhost, "G ghost"},
-         {DrumNoteColour::YellowCymbalGhost, "Y ghost cymbal"},
-         {DrumNoteColour::BlueCymbalGhost, "B ghost cymbal"},
-         {DrumNoteColour::GreenCymbalGhost, "G ghost cymbal"},
-         {DrumNoteColour::RedAccent, "R accent"},
-         {DrumNoteColour::YellowAccent, "Y accent"},
-         {DrumNoteColour::BlueAccent, "B accent"},
-         {DrumNoteColour::GreenAccent, "G accent"},
-         {DrumNoteColour::YellowCymbalAccent, "Y accent cymbal"},
-         {DrumNoteColour::BlueCymbalAccent, "B accent cymbal"},
-         {DrumNoteColour::GreenCymbalAccent, "G accent cymbal"},
-         {DrumNoteColour::Kick, "kick"},
-         {DrumNoteColour::DoubleKick, "kick"}}};
-
-    for (const auto& [colour_key, string] : COLOUR_NAMES) {
-        if (colour_key == colour) {
-            return string;
+        std::string colours;
+        for (auto i = 0; i < 7; ++i) {
+            if (note.lengths[i] != -1) {
+                colours += COLOUR_NAMES[i];
+            }
+        }
+        if (note.flags & ghost) {
+            colours += " ghost";
+        }
+        if (note.flags & accent) {
+            colours += " accent";
+        }
+        if (note.flags & cymbal) {
+            colours += " cymbal";
         }
     }
 
-    throw std::invalid_argument("Invalid drum colour");
+    return colours;
 }
 
 PointPtr PointSet::first_after_current_phrase(PointPtr point) const
