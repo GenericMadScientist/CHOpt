@@ -125,11 +125,7 @@ std::vector<DrawnNote> drawn_notes(const NoteTrack<DrumNoteColour>& track,
     std::vector<DrawnNote> notes;
 
     for (const auto& note : track.notes()) {
-        if (note.colour == DrumNoteColour::DoubleKick
-            && !drum_settings.enable_double_kick) {
-            continue;
-        }
-        if (note.colour == DrumNoteColour::Kick && drum_settings.disable_kick) {
+        if (note.is_skipped_kick(drum_settings)) {
             continue;
         }
         const auto note_colour = drum_settings.pro_drums

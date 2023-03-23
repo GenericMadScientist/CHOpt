@@ -89,22 +89,11 @@ void append_sustain_points(OutputIt points, int position, int sust_length,
     }
 }
 
-bool skip_kick(const Note& note, const DrumSettings& drum_settings)
-{
-    if (!note.is_kick_note()) {
-        return false;
-    }
-    if (note.lengths[4] != -1) {
-        return drum_settings.disable_kick;
-    }
-    return !drum_settings.enable_double_kick;
-}
-
 int get_chord_size(const Note& note, const DrumSettings& drum_settings)
 {
     int note_count = 0;
     for (auto i = 0; i < 7; ++i) {
-        if (note.lengths[i] != -1 && !skip_kick(note, drum_settings)) {
+        if (note.lengths[i] != -1 && !note.is_skipped_kick(drum_settings)) {
             ++note_count;
         }
     }
@@ -340,7 +329,7 @@ std::vector<Point> unmultiplied_points(const NoteTrack& track,
 
     for (auto p = notes.cbegin(); p != notes.cend();) {
         if (track.is_drums_track()) {
-            if (skip_kick(*p, drum_settings)) {
+            if (p->is_skipped_kick(drum_settings)) {
                 ++p;
                 continue;
             }
@@ -352,7 +341,7 @@ std::vector<Point> unmultiplied_points(const NoteTrack& track,
         const auto q = std::find_if_not(
             search_start, notes.cend(), [=](const auto& note) {
                 if (track.is_drums_track()) {
-                    return skip_kick(note, drum_settings);
+                    return note.is_skipped_kick(drum_settings);
                 } else {
                     return note.position == p->position;
                 }

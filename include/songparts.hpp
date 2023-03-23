@@ -170,6 +170,17 @@ public:
     {
         return flags & drums & (lengths[4] != -1 || lengths[5] != -1);
     }
+
+    [[nodiscard]] bool is_skipped_kick(const DrumSettings& settings) const
+    {
+        if (!is_kick_note()) {
+            return false;
+        }
+        if (lengths[4] != -1) {
+            return settings.disable_kick;
+        }
+        return !settings.enable_double_kick;
+    }
 };
 
 struct StarPower {
