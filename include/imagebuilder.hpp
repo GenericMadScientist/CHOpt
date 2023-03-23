@@ -40,8 +40,7 @@ struct DrawnRow {
 
 struct DrawnNote {
     double beat;
-    double length;
-    int lane_flags;
+    std::array<double, 7> lengths;
     NoteFlags note_flags;
     bool is_sp_note;
 };
@@ -50,9 +49,9 @@ enum class TrackType { FiveFret, SixFret, Drums };
 
 class ImageBuilder {
 private:
-    const TrackType m_track_type;
-    const Difficulty m_difficulty;
-    const bool m_is_lefty_flip;
+    TrackType m_track_type;
+    Difficulty m_difficulty;
+    bool m_is_lefty_flip;
     std::vector<DrawnRow> m_rows;
     std::vector<double> m_half_beat_lines;
     std::vector<double> m_beat_lines;
