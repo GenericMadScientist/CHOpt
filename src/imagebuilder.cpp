@@ -101,8 +101,8 @@ DrumNoteColour disco_flip(DrumNoteColour colour, int position,
 }
 
 template <typename T>
-DrawnNote<T> note_to_drawn_note(const Note<T>& note, T colour,
-                                const NoteTrack<T>& track)
+DrawnNote note_to_drawn_note(const Note<T>& note, T colour,
+                             const NoteTrack<T>& track)
 {
     const auto beat = note.position / static_cast<double>(track.resolution());
     const auto length = note.length / static_cast<double>(track.resolution());
@@ -119,11 +119,10 @@ DrawnNote<T> note_to_drawn_note(const Note<T>& note, T colour,
     return {beat, length, colour, is_sp_note};
 }
 
-std::vector<DrawnNote<DrumNoteColour>>
-drawn_notes(const NoteTrack<DrumNoteColour>& track,
-            const DrumSettings& drum_settings)
+std::vector<DrawnNote> drawn_notes(const NoteTrack<DrumNoteColour>& track,
+                                   const DrumSettings& drum_settings)
 {
-    std::vector<DrawnNote<DrumNoteColour>> notes;
+    std::vector<DrawnNote> notes;
 
     for (const auto& note : track.notes()) {
         if (note.colour == DrumNoteColour::DoubleKick
@@ -143,9 +142,9 @@ drawn_notes(const NoteTrack<DrumNoteColour>& track,
 }
 
 template <typename T>
-std::vector<DrawnNote<T>> drawn_notes(const NoteTrack<T>& track)
+std::vector<DrawnNote> drawn_notes(const NoteTrack<T>& track)
 {
-    std::vector<DrawnNote<T>> notes;
+    std::vector<DrawnNote> notes;
 
     for (const auto& note : track.notes()) {
         notes.push_back(note_to_drawn_note(note, note.colour, track));

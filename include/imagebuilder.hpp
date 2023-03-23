@@ -38,10 +38,11 @@ struct DrawnRow {
     double end;
 };
 
-template <typename T> struct DrawnNote {
+struct DrawnNote {
     double beat;
     double length;
-    T colour;
+    int lane_flags;
+    NoteFlags note_flags;
     bool is_sp_note;
 };
 
@@ -58,9 +59,7 @@ private:
     std::vector<double> m_measure_lines;
     std::vector<std::tuple<double, double>> m_bpms;
     std::vector<std::tuple<double, int, int>> m_time_sigs;
-    std::vector<DrawnNote<NoteColour>> m_notes;
-    std::vector<DrawnNote<GHLNoteColour>> m_ghl_notes;
-    std::vector<DrawnNote<DrumNoteColour>> m_drum_notes;
+    std::vector<DrawnNote> m_notes;
     std::vector<int> m_base_values;
     std::vector<int> m_score_values;
     std::vector<double> m_sp_percent_values;
@@ -198,18 +197,9 @@ public:
     {
         return m_measure_lines;
     }
-    [[nodiscard]] const std::vector<DrawnNote<NoteColour>>& notes() const
+    [[nodiscard]] const std::vector<DrawnNote>& notes() const
     {
         return m_notes;
-    }
-    [[nodiscard]] const std::vector<DrawnNote<GHLNoteColour>>& ghl_notes() const
-    {
-        return m_ghl_notes;
-    }
-    [[nodiscard]] const std::vector<DrawnNote<DrumNoteColour>>&
-    drum_notes() const
-    {
-        return m_drum_notes;
     }
     [[nodiscard]] const std::vector<std::tuple<double, double>>&
     red_ranges() const
