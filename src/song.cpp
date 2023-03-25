@@ -245,23 +245,21 @@ std::vector<Note> apply_cymbal_events(const std::vector<Note>& notes)
     return new_notes;
 }
 
-int no_dynamics_lane_colour(DrumNoteColour colour)
+int no_dynamics_lane_colour(const Note& note)
 {
-    switch (colour) {
-    case DrumNoteColour::Red:
+    if (note.lengths[DRUM_RED] != -1) {
         return 0;
-    case DrumNoteColour::Yellow:
-    case DrumNoteColour::YellowCymbal:
-        return 1;
-    case DrumNoteColour::Blue:
-    case DrumNoteColour::BlueCymbal:
-        return 2;
-    case DrumNoteColour::Green:
-    case DrumNoteColour::GreenCymbal:
-        return 3;
-    default:
-        return -1;
     }
+    if (note.lengths[DRUM_YELLOW] != -1) {
+        return 1;
+    }
+    if (note.lengths[DRUM_BLUE] != -1) {
+        return 2;
+    }
+    if (note.lengths[DRUM_GREEN] != -1) {
+        return 3;
+    }
+    return -1;
 }
 
 DrumNoteColour add_accent(DrumNoteColour colour)
@@ -296,8 +294,8 @@ DrumNoteColour add_ghost(DrumNoteColour colour)
     return ghosts.at(colour);
 }
 
-std::vector<Note<DrumNoteColour>>
-apply_dynamics_events(std::vector<Note<DrumNoteColour>> notes,
+std::vector<Note>
+apply_dynamics_events(std::vector<Note> notes,
                       const std::vector<NoteEvent>& note_events)
 {
     constexpr int GHOST_BASE = 34;
@@ -319,22 +317,21 @@ apply_dynamics_events(std::vector<Note<DrumNoteColour>> notes,
         }
     }
     for (auto& note : notes) {
-        auto lane = no_dynamics_lane_colour(note.colour);
-        if (lane == -1) {
+        if (note.is_kick_note()) {
             continue;
         }
+        const auto lane = no_dynamics_lane_colour(note);
         if (accent_events.count({note.position, lane}) > 0) {
-            note.colour = add_accent(note.colour);
+            note.flags = static_cast<NoteFlags>(note.flags | FLAGS_ACCENT);
         } else if (ghost_events.count({note.position, lane}) > 0) {
-            note.colour = add_ghost(note.colour);
+            note.flags = static_cast<NoteFlags>(note.flags | FLAGS_GHOST);
         }
     }
     return notes;
 }
 
-template <typename T>
-NoteTrack<T> note_track_from_section(const ChartSection& section,
-                                     int resolution)
+NoteTrack note_track_from_section(const ChartSection& section, int resolution,
+                                  TrackType track_type)
 {
     constexpr int DISCO_FLIP_START_SIZE = 13;
     constexpr int DISCO_FLIP_END_SIZE = 12;
@@ -343,15 +340,16 @@ NoteTrack<T> note_track_from_section(const ChartSection& section,
     constexpr std::array<std::uint8_t, 6> DRUMS {
         {'_', 'd', 'r', 'u', 'm', 's'}};
 
-    std::vector<Note<T>> notes;
+    std::vector<Note> notes;
     for (const auto& note_event : section.note_events) {
-        const auto note = note_from_note_colour<T>(
-            note_event.position, note_event.length, note_event.fret);
+        const auto note
+            = note_from_note_colour(note_event.position, note_event.length,
+                                    note_event.fret, track_type);
         if (note.has_value()) {
             notes.push_back(*note);
         }
     }
-    if constexpr (std::is_same_v<T, DrumNoteColour>) {
+    if (track_type == TrackType::Drums) {
         notes = add_fifth_lane_greens(std::move(notes), section.note_events);
         notes = apply_cymbal_events(notes);
         notes = apply_dynamics_events(notes, section.note_events);
@@ -366,7 +364,7 @@ NoteTrack<T> note_track_from_section(const ChartSection& section,
             fills.push_back(DrumFill {phrase.position, phrase.length});
         }
     }
-    if constexpr (!std::is_same_v<T, DrumNoteColour>) {
+    if (track_type != TrackType::Drums) {
         fills.clear();
         fills.shrink_to_fit();
     }
@@ -406,10 +404,9 @@ NoteTrack<T> note_track_from_section(const ChartSection& section,
         disco_flips.push_back({start, end - start});
     }
 
-    return NoteTrack<T> {
-        std::move(notes), std::move(sp),          std::move(solos),
-        std::move(fills), std::move(disco_flips), {},
-        resolution};
+    return {std::move(notes), std::move(sp),          std::move(solos),
+            std::move(fills), std::move(disco_flips), {},
+            resolution};
 }
 
 bool is_six_fret_instrument(Instrument instrument)
