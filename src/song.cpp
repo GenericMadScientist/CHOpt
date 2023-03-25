@@ -415,6 +415,23 @@ bool is_six_fret_instrument(Instrument instrument)
         || instrument == Instrument::GHLBass;
 }
 
+TrackType track_type_from_instrument(Instrument instrument)
+{
+    switch (instrument) {
+    case Instrument::Guitar:
+    case Instrument::GuitarCoop:
+    case Instrument::Bass:
+    case Instrument::Rhythm:
+    case Instrument::Keys:
+        return TrackType::FiveFret;
+    case Instrument::GHLGuitar:
+    case Instrument::GHLBass:
+        return TrackType::SixFret;
+    case Instrument::Drums:
+        return TrackType::Drums;
+    }
+}
+
 SyncTrack sync_track_from_section(const ChartSection& section)
 {
     std::vector<BPM> bpms;
@@ -1318,14 +1335,8 @@ Song Song::from_filename(const std::string& filename)
 std::vector<Instrument> Song::instruments() const
 {
     std::set<Instrument> instrument_set;
-    for (const auto& [key, val] : m_five_fret_tracks) {
+    for (const auto& [key, val] : m_tracks) {
         instrument_set.insert(std::get<0>(key));
-    }
-    for (const auto& [key, val] : m_six_fret_tracks) {
-        instrument_set.insert(std::get<0>(key));
-    }
-    if (!m_drum_note_tracks.empty()) {
-        instrument_set.insert(Instrument::Drums);
     }
 
     std::vector<Instrument> instruments {instrument_set.cbegin(),
@@ -1337,21 +1348,9 @@ std::vector<Instrument> Song::instruments() const
 std::vector<Difficulty> Song::difficulties(Instrument instrument) const
 {
     std::vector<Difficulty> difficulties;
-    if (instrument == Instrument::Drums) {
-        for (const auto& [key, val] : m_drum_note_tracks) {
-            difficulties.push_back(key);
-        }
-    } else if (is_six_fret_instrument(instrument)) {
-        for (const auto& [key, val] : m_six_fret_tracks) {
-            if (std::get<0>(key) == instrument) {
-                difficulties.push_back(std::get<1>(key));
-            }
-        }
-    } else {
-        for (const auto& [key, val] : m_five_fret_tracks) {
-            if (std::get<0>(key) == instrument) {
-                difficulties.push_back(std::get<1>(key));
-            }
+    for (const auto& [key, val] : m_tracks) {
+        if (std::get<0>(key) == instrument) {
+            difficulties.push_back(std::get<1>(key));
         }
     }
     std::sort(difficulties.begin(), difficulties.end());
@@ -1361,24 +1360,10 @@ std::vector<Difficulty> Song::difficulties(Instrument instrument) const
 void Song::append_instrument_track(Instrument inst, Difficulty diff,
                                    const ChartSection& section)
 {
-    if (is_six_fret_instrument(inst)) {
-        auto note_track
-            = note_track_from_section<GHLNoteColour>(section, m_resolution);
-        if (!note_track.notes().empty()) {
-            m_six_fret_tracks.insert({{inst, diff}, note_track});
-        }
-    } else if (inst == Instrument::Drums) {
-        auto note_track
-            = note_track_from_section<DrumNoteColour>(section, m_resolution);
-        if (!note_track.notes().empty()) {
-            m_drum_note_tracks.insert({diff, note_track});
-        }
-    } else {
-        auto note_track
-            = note_track_from_section<NoteColour>(section, m_resolution);
-        if (!note_track.notes().empty()) {
-            m_five_fret_tracks.insert({{inst, diff}, note_track});
-        }
+    auto note_track = note_track_from_section(section, m_resolution,
+                                              track_type_from_instrument(inst));
+    if (!note_track.notes().empty()) {
+        m_tracks.insert({{inst, diff}, note_track});
     }
 }
 
@@ -1412,8 +1397,7 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
         }
     }
 
-    if (song.m_five_fret_tracks.empty() && song.m_six_fret_tracks.empty()
-        && song.m_drum_note_tracks.empty()) {
+    if (song.m_tracks.empty()) {
         throw ParseError("Chart has no notes");
     }
 
