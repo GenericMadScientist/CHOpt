@@ -69,11 +69,9 @@ combine_solo_events(const std::vector<int>& on_events,
     return ranges;
 }
 
-template <typename T>
 std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
                                    const std::vector<int>& solo_off_events,
-                                   const std::vector<Note<T>>& notes,
-                                   bool is_midi)
+                                   const std::vector<Note>& notes, bool is_midi)
 {
     constexpr int SOLO_NOTE_VALUE = 100;
 
@@ -81,20 +79,12 @@ std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
 
     for (auto [start, end] :
          combine_solo_events(solo_on_events, solo_off_events)) {
-        std::set<int> positions_in_solo;
         auto note_count = 0;
         for (const auto& note : notes) {
             if ((note.position >= start && note.position < end)
                 || (note.position == end && !is_midi)) {
-                positions_in_solo.insert(note.position);
                 ++note_count;
             }
-        }
-        if (positions_in_solo.empty()) {
-            continue;
-        }
-        if constexpr (!std::is_same_v<T, DrumNoteColour>) {
-            note_count = static_cast<int>(positions_in_solo.size());
         }
         solos.push_back({start, end, SOLO_NOTE_VALUE * note_count});
     }
@@ -102,50 +92,46 @@ std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
     return solos;
 }
 
-template <typename T>
-std::optional<Note<T>>
-note_from_colour_key_map(const std::map<int, T>& colour_map, int position,
+std::optional<Note>
+note_from_colour_key_map(const std::map<int, int>& colour_map, int position,
                          int length, int fret_type)
 {
-    if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        length = 0;
-    }
     const auto colour_iter = colour_map.find(fret_type);
     if (colour_iter == colour_map.end()) {
         return std::nullopt;
     }
-    return Note<T> {position, length, colour_iter->second};
+    Note note;
+    note.position = position;
+    note.lengths[colour_iter->second] = length;
+    return note;
 }
 
-template <typename T>
-std::optional<Note<T>> note_from_note_colour(int position, int length,
-                                             int fret_type)
+std::optional<Note> note_from_note_colour(int position, int length,
+                                          int fret_type, TrackType track_type)
 {
-    if constexpr (std::is_same_v<T, NoteColour>) {
-        const std::map<int, NoteColour> COLOURS {
-            {0, NoteColour::Green},  {1, NoteColour::Red},
-            {2, NoteColour::Yellow}, {3, NoteColour::Blue},
-            {4, NoteColour::Orange}, {7, NoteColour::Open}};
-        return note_from_colour_key_map(COLOURS, position, length, fret_type);
-    } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
-        const std::map<int, GHLNoteColour> COLOURS {
-            {0, GHLNoteColour::WhiteLow},  {1, GHLNoteColour::WhiteMid},
-            {2, GHLNoteColour::WhiteHigh}, {3, GHLNoteColour::BlackLow},
-            {4, GHLNoteColour::BlackMid},  {7, GHLNoteColour::Open},
-            {8, GHLNoteColour::BlackHigh}};
-        return note_from_colour_key_map(COLOURS, position, length, fret_type);
-    } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        const std::map<int, DrumNoteColour> COLOURS {
-            {0, DrumNoteColour::Kick},
-            {1, DrumNoteColour::Red},
-            {2, DrumNoteColour::Yellow},
-            {3, DrumNoteColour::Blue},
-            {4, DrumNoteColour::Green},
-            {32, DrumNoteColour::DoubleKick},
-            {66, DrumNoteColour::YellowCymbal},
-            {67, DrumNoteColour::BlueCymbal},
-            {68, DrumNoteColour::GreenCymbal}};
-        return note_from_colour_key_map(COLOURS, position, length, fret_type);
+    std::map<int, int> colours;
+    switch (track_type) {
+    case TrackType::FiveFret:
+        colours = {{0, FIVE_FRET_GREEN},  {1, FIVE_FRET_RED},
+                   {2, FIVE_FRET_YELLOW}, {3, FIVE_FRET_BLUE},
+                   {4, FIVE_FRET_ORANGE}, {7, FIVE_FRET_OPEN}};
+        return note_from_colour_key_map(colours, position, length, fret_type);
+    case TrackType::SixFret:
+        colours = {{0, SIX_FRET_WHITE_LOW},  {1, SIX_FRET_WHITE_MID},
+                   {2, SIX_FRET_WHITE_HIGH}, {3, SIX_FRET_BLACK_LOW},
+                   {4, SIX_FRET_BLACK_MID},  {7, SIX_FRET_OPEN},
+                   {8, SIX_FRET_BLACK_HIGH}};
+        return note_from_colour_key_map(colours, position, length, fret_type);
+    case TrackType::Drums:
+        colours = {{0, DRUM_KICK},    {1, DRUM_RED},   {2, DRUM_YELLOW},
+                   {3, DRUM_BLUE},    {4, DRUM_GREEN}, {32, DRUM_DOUBLE_KICK},
+                   {66, DRUM_YELLOW}, {67, DRUM_BLUE}, {68, DRUM_GREEN}};
+        auto note
+            = note_from_colour_key_map(colours, position, length, fret_type);
+        if (note.has_value() && fret_type >= 64) {
+            note->flags = static_cast<NoteFlags>(note->flags | FLAGS_CYMBAL);
+        }
+        return note;
     }
 }
 
@@ -197,15 +183,15 @@ diff_inst_from_header(const std::string& header)
     return std::tuple {std::get<1>(*diff_iter), std::get<1>(*inst_iter)};
 }
 
-std::vector<Note<DrumNoteColour>>
-add_fifth_lane_greens(std::vector<Note<DrumNoteColour>> notes,
+std::vector<Note>
+add_fifth_lane_greens(std::vector<Note> notes,
                       const std::vector<NoteEvent>& note_events)
 {
     constexpr int FIVE_LANE_GREEN = 5;
 
     std::set<int> green_positions;
     for (const auto& note : notes) {
-        if (note.colour == DrumNoteColour::Green) {
+        if (note.lengths[3] != -1) {
             green_positions.insert(note.position);
         }
     }
@@ -213,64 +199,24 @@ add_fifth_lane_greens(std::vector<Note<DrumNoteColour>> notes,
         if (note_event.fret != FIVE_LANE_GREEN) {
             continue;
         }
+        Note note;
+        note.position = note_event.position;
         if (green_positions.count(note_event.position) != 0) {
-            notes.push_back({note_event.position, 0, DrumNoteColour::Blue});
+            note.lengths[DRUM_BLUE] = 0;
         } else {
-            notes.push_back({note_event.position, 0, DrumNoteColour::Green});
+            note.lengths[DRUM_GREEN] = 0;
         }
+        notes.push_back(note);
     }
     return notes;
 }
 
-std::vector<Note<DrumNoteColour>>
-apply_cymbal_events(const std::vector<Note<DrumNoteColour>>& notes)
+std::vector<Note> apply_cymbal_events(const std::vector<Note>& notes)
 {
     std::set<unsigned int> deletion_spots;
     for (auto i = 0U; i < notes.size(); ++i) {
         const auto& cymbal_note = notes[i];
-        DrumNoteColour non_cymbal_colour = DrumNoteColour::Kick;
-        switch (cymbal_note.colour) {
-        case DrumNoteColour::YellowCymbal:
-            non_cymbal_colour = DrumNoteColour::Yellow;
-            break;
-        case DrumNoteColour::YellowCymbalGhost:
-            non_cymbal_colour = DrumNoteColour::YellowGhost;
-            break;
-        case DrumNoteColour::YellowCymbalAccent:
-            non_cymbal_colour = DrumNoteColour::YellowAccent;
-            break;
-        case DrumNoteColour::BlueCymbal:
-            non_cymbal_colour = DrumNoteColour::Blue;
-            break;
-        case DrumNoteColour::BlueCymbalGhost:
-            non_cymbal_colour = DrumNoteColour::BlueGhost;
-            break;
-        case DrumNoteColour::BlueCymbalAccent:
-            non_cymbal_colour = DrumNoteColour::BlueAccent;
-            break;
-        case DrumNoteColour::GreenCymbal:
-            non_cymbal_colour = DrumNoteColour::Green;
-            break;
-        case DrumNoteColour::GreenCymbalGhost:
-            non_cymbal_colour = DrumNoteColour::GreenGhost;
-            break;
-        case DrumNoteColour::GreenCymbalAccent:
-            non_cymbal_colour = DrumNoteColour::GreenAccent;
-            break;
-        case DrumNoteColour::Red:
-        case DrumNoteColour::RedGhost:
-        case DrumNoteColour::RedAccent:
-        case DrumNoteColour::Yellow:
-        case DrumNoteColour::YellowGhost:
-        case DrumNoteColour::YellowAccent:
-        case DrumNoteColour::Blue:
-        case DrumNoteColour::BlueGhost:
-        case DrumNoteColour::BlueAccent:
-        case DrumNoteColour::Green:
-        case DrumNoteColour::GreenGhost:
-        case DrumNoteColour::GreenAccent:
-        case DrumNoteColour::Kick:
-        case DrumNoteColour::DoubleKick:
+        if (!(cymbal_note.flags & FLAGS_CYMBAL)) {
             continue;
         }
         bool delete_cymbal = true;
@@ -279,7 +225,7 @@ apply_cymbal_events(const std::vector<Note<DrumNoteColour>>& notes)
             if (non_cymbal_note.position != cymbal_note.position) {
                 continue;
             }
-            if (non_cymbal_note.colour != non_cymbal_colour) {
+            if (cymbal_note.colours() != non_cymbal_note.colours()) {
                 continue;
             }
             delete_cymbal = false;
@@ -289,7 +235,8 @@ apply_cymbal_events(const std::vector<Note<DrumNoteColour>>& notes)
             deletion_spots.insert(i);
         }
     }
-    std::vector<Note<DrumNoteColour>> new_notes;
+
+    std::vector<Note> new_notes;
     for (auto i = 0U; i < notes.size(); ++i) {
         if (deletion_spots.count(i) == 0) {
             new_notes.push_back(notes[i]);

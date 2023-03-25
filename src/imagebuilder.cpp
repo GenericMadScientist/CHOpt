@@ -435,9 +435,9 @@ ImageBuilder::ImageBuilder(const NoteTrack& track, const SyncTrack& sync_track,
     form_beat_lines(sync_track, track.resolution());
 
     const auto first_flags = track.notes().front().flags;
-    if (first_flags & five_fret_guitar) {
+    if (first_flags & FLAGS_FIVE_FRET_GUITAR) {
         m_track_type = TrackType::FiveFret;
-    } else if (first_flags & six_fret_guitar) {
+    } else if (first_flags & FLAGS_SIX_FRET_GUITAR) {
         m_track_type = TrackType::SixFret;
     } else {
         m_track_type = TrackType::Drums;

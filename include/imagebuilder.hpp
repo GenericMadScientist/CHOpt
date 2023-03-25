@@ -45,8 +45,6 @@ struct DrawnNote {
     bool is_sp_note;
 };
 
-enum class TrackType { FiveFret, SixFret, Drums };
-
 class ImageBuilder {
 private:
     TrackType m_track_type;

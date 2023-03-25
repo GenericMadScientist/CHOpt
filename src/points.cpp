@@ -109,11 +109,11 @@ void append_note_points(std::vector<Note>::const_iterator note,
                         const DrumSettings& drum_settings)
 {
     auto note_value = engine.base_note_value();
-    if (note->flags & drums) {
-        if (note->flags & cymbal) {
+    if (note->flags & FLAGS_DRUMS) {
+        if (note->flags & FLAGS_CYMBAL) {
             note_value = engine.base_cymbal_value();
         }
-        if (note->flags & (ghost | accent)) {
+        if (note->flags & (FLAGS_GHOST | FLAGS_ACCENT)) {
             note_value *= 2;
         }
     }
@@ -455,7 +455,7 @@ std::string PointSet::colours_string(const Note& note)
 {
     std::string colours;
 
-    if (note.flags & five_fret_guitar) {
+    if (note.flags & FLAGS_FIVE_FRET_GUITAR) {
         const std::array<std::string, 6> COLOUR_NAMES {"G", "R", "Y",
                                                        "B", "O", "open"};
         for (auto i = 0; i < 6; ++i) {
@@ -464,7 +464,7 @@ std::string PointSet::colours_string(const Note& note)
             }
         }
         return colours;
-    } else if (note.flags & six_fret_guitar) {
+    } else if (note.flags & FLAGS_SIX_FRET_GUITAR) {
         const std::array<std::string, 7> COLOUR_NAMES {"W1", "W2", "W3",  "B1",
                                                        "B2", "B3", "open"};
         for (auto i = 0; i < 7; ++i) {
@@ -472,7 +472,7 @@ std::string PointSet::colours_string(const Note& note)
                 colours += COLOUR_NAMES[i];
             }
         }
-    } else if (note.flags & drums) {
+    } else if (note.flags & FLAGS_DRUMS) {
         const std::array<std::string, 6> COLOUR_NAMES {"R", "Y",    "B",
                                                        "G", "kick", "kick"};
 
@@ -482,13 +482,13 @@ std::string PointSet::colours_string(const Note& note)
                 colours += COLOUR_NAMES[i];
             }
         }
-        if (note.flags & ghost) {
+        if (note.flags & FLAGS_GHOST) {
             colours += " ghost";
         }
-        if (note.flags & accent) {
+        if (note.flags & FLAGS_ACCENT) {
             colours += " accent";
         }
-        if (note.flags & cymbal) {
+        if (note.flags & FLAGS_CYMBAL) {
             colours += " cymbal";
         }
     }

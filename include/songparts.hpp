@@ -110,24 +110,54 @@ constexpr DrumNoteColour strip_dynamics(DrumNoteColour colour)
     throw std::invalid_argument("Invalid DrumNoteColour");
 }
 
+enum class TrackType { FiveFret, SixFret, Drums };
+
 enum NoteFlags : std::uint32_t {
-    cymbal = 1U << 0,
-    ghost = 1U << 1,
-    accent = 1U << 2,
-    drums = 1U << 29,
-    six_fret_guitar = 1U << 30,
-    five_fret_guitar = 1U << 31
+    FLAGS_CYMBAL = 1U << 0,
+    FLAGS_GHOST = 1U << 1,
+    FLAGS_ACCENT = 1U << 2,
+    FLAGS_DRUMS = 1U << 29,
+    FLAGS_SIX_FRET_GUITAR = 1U << 30,
+    FLAGS_FIVE_FRET_GUITAR = 1U << 31
+};
+
+enum FiveFretNotes {
+    FIVE_FRET_GREEN = 0,
+    FIVE_FRET_RED = 1,
+    FIVE_FRET_YELLOW = 2,
+    FIVE_FRET_BLUE = 3,
+    FIVE_FRET_ORANGE = 4,
+    FIVE_FRET_OPEN = 5
+};
+
+enum SixFretNotes {
+    SIX_FRET_WHITE_LOW = 0,
+    SIX_FRET_WHITE_MID = 1,
+    SIX_FRET_WHITE_HIGH = 2,
+    SIX_FRET_BLACK_LOW = 3,
+    SIX_FRET_BLACK_MID = 4,
+    SIX_FRET_BLACK_HIGH = 5,
+    SIX_FRET_OPEN = 6
+};
+
+enum DrunNotes {
+    DRUM_RED = 0,
+    DRUM_YELLOW = 1,
+    DRUM_BLUE = 2,
+    DRUM_GREEN = 3,
+    DRUM_KICK = 4,
+    DRUM_DOUBLE_KICK = 5
 };
 
 struct Note {
 private:
     int open_index() const
     {
-        if (flags & five_fret_guitar) {
-            return 5;
+        if (flags & FLAGS_FIVE_FRET_GUITAR) {
+            return FIVE_FRET_OPEN;
         }
-        if (flags & six_fret_guitar) {
-            return 6;
+        if (flags & FLAGS_SIX_FRET_GUITAR) {
+            return SIX_FRET_OPEN;
         }
         return -1;
     }
@@ -163,12 +193,13 @@ public:
 
     void disable_dynamics()
     {
-        flags = static_cast<NoteFlags>(flags & ~(ghost | accent));
+        flags = static_cast<NoteFlags>(flags & ~(FLAGS_GHOST | FLAGS_ACCENT));
     }
 
     [[nodiscard]] bool is_kick_note() const
     {
-        return flags & drums & (lengths[4] != -1 || lengths[5] != -1);
+        return flags & FLAGS_DRUMS
+            & (lengths[DRUM_KICK] != -1 || lengths[DRUM_DOUBLE_KICK] != -1);
     }
 
     [[nodiscard]] bool is_skipped_kick(const DrumSettings& settings) const
@@ -176,7 +207,7 @@ public:
         if (!is_kick_note()) {
             return false;
         }
-        if (lengths[4] != -1) {
+        if (lengths[DRUM_KICK] != -1) {
             return settings.disable_kick;
         }
         return !settings.enable_double_kick;
@@ -411,7 +442,7 @@ public:
     [[nodiscard]] std::vector<Solo>
     solos(const DrumSettings& drum_settings) const
     {
-        if (!(m_notes.front().flags & drums)) {
+        if (!(m_notes.front().flags & FLAGS_DRUMS)) {
             return m_solos;
         }
         auto solos = m_solos;
@@ -500,7 +531,7 @@ public:
     }
     [[nodiscard]] bool is_drums_track() const
     {
-        return m_notes.front().flags & drums;
+        return m_notes.front().flags & FLAGS_DRUMS;
     }
 };
 
