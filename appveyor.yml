@@ -1,4 +1,4 @@
-version: 1.6.0.{build}-{branch}
+version: 1.6.1.{build}-{branch}
 
 configuration: Debug
 platform: x64
@@ -46,6 +46,7 @@ for:
     - sh: clang-tidy-16 tests/*_unittest.cpp -checks=-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers -- -Iinclude -I$HOME/boost_1_81_0 -std=c++17
 
     before_deploy:
+    - sh: export RELEASE_NAME=${APPVEYOR_REPO_TAG_NAME#v}
     - sh: cd build
     - sh: rm -rf *
     - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_81_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6WidgetsTools ..
@@ -53,7 +54,7 @@ for:
     - sh: strip -s chopt
     - sh: strip -s choptgui
     - sh: mv chopt CHOpt
-    - sh: zip "../artifacts/CHOpt CLI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip" CHOpt
+    - sh: zip "../artifacts/CHOpt CLI ${RELEASE_NAME} (x64 Linux).zip" CHOpt
     - sh: mv choptgui CHOpt
     - sh: mkdir libs
     - sh: mkdir platforms
@@ -68,9 +69,9 @@ for:
     - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6Widgets.so.6 libs/libQt6Widgets.so.6
     - sh: cp $HOME/Qt/6.4/gcc_64/lib/libQt6XcbQpa.so.6 libs/libQt6XcbQpa.so.6
     - sh: cp $HOME/Qt/6.4/gcc_64/plugins/platforms/libqxcb.so platforms/libqxcb.so
-    - sh: zip -r "../artifacts/CHOpt GUI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip" CHOpt CHOpt.sh libs platforms
-    - sh: appveyor PushArtifact "../artifacts/CHOpt CLI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip"
-    - sh: appveyor PushArtifact "../artifacts/CHOpt GUI ${APPVEYOR_BUILD_VERSION} (x64 Linux).zip"
+    - sh: zip -r "../artifacts/CHOpt ${RELEASE_NAME} (x64 Linux).zip" CHOpt CHOpt.sh libs platforms
+    - sh: appveyor PushArtifact "../artifacts/CHOpt CLI ${RELEASE_NAME} (x64 Linux).zip"
+    - sh: appveyor PushArtifact "../artifacts/CHOpt ${RELEASE_NAME} (x64 Linux).zip"
 
   -
     matrix:
@@ -90,20 +91,21 @@ for:
     - ps: cmake --build . --verbose --config $env:CONFIGURATION
 
     before_deploy:
+    - ps: $RELEASE_NAME = $env:APPVEYOR_REPO_TAG_NAME.TrimStart("v")
     - ps: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DQt6_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.3\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
     - ps: cmake --build . --verbose --config Release
     - ps: cd Release
     - ps: Rename-Item chopt.exe CHOpt.exe
     - ps: Move-Item choptgui.exe ..\choptgui.exe
-    - ps: 7z a "..\artifacts\CHOpt CLI (x64 Windows).zip" *
+    - ps: 7z a "..\artifacts\CHOpt CLI ${RELEASE_NAME} (x64 Windows).zip" *
     - ps: del CHOpt.exe
     - ps: Move-Item ..\choptgui.exe CHOpt.exe
     - ps: $env:VCINSTALLDIR = "C:\Program Files\Microsoft Visual Studio\2022\Community\VC"
     - ps: C:\Qt\6.3\msvc2019_64\bin\windeployqt.exe --release --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations CHOpt.exe
     - ps: rm vc_redist.x64.exe
-    - ps: 7z a "..\artifacts\CHOpt GUI (x64 Windows).zip" *
-    - ps: Push-AppveyorArtifact "..\artifacts\CHOpt CLI (x64 Windows).zip"
-    - ps: Push-AppveyorArtifact "..\artifacts\CHOpt GUI (x64 Windows).zip"
+    - ps: 7z a "..\artifacts\CHOpt ${RELEASE_NAME} (x64 Windows).zip" *
+    - ps: Push-AppveyorArtifact "..\artifacts\CHOpt CLI ${RELEASE_NAME} (x64 Windows).zip"
+    - ps: Push-AppveyorArtifact "..\artifacts\CHOpt ${RELEASE_NAME} (x64 Windows).zip"
 
     on_finish:
     - ps: if (Test-Path -Path $env:LOG_DIR) { Get-ChildItem $env:LOG_DIR\*.log | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } }
@@ -119,6 +121,7 @@ for:
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
 
     before_deploy:
+    - sh: export RELEASE_NAME=${APPVEYOR_REPO_TAG_NAME#v}
     - sh: rm -rf *
     - sh: cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_FIND_FRAMEWORK=LAST -DQt6_DIR=$HOME/Qt/6.2/macos/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.2/macos/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.2/macos/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.2/macos/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.2/macos/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config Release
@@ -126,14 +129,14 @@ for:
     - sh: mv chopt CHOpt
     - sh: install_name_tool -change /usr/local/opt/libpng/lib/libpng16.16.dylib @executable_path/libpng16.16.dylib CHOpt
     - sh: cp /usr/local/Cellar/libpng/1.6.39/lib/libpng16.16.dylib libpng16.16.dylib
-    - sh: zip -r "../artifacts/CHOpt CLI ${APPVEYOR_BUILD_VERSION} (x64 Mac).zip" CHOpt libpng16.16.dylib
+    - sh: zip -r "../artifacts/CHOpt CLI ${RELEASE_NAME} (x64 Mac).zip" CHOpt libpng16.16.dylib
     - sh: mv choptgui.app CHOpt.app
     - sh: mv CHOpt.app/Contents/MacOS/choptgui CHOpt.app/Contents/MacOS/CHOpt
     - sh: sed -i '' 's/choptgui/CHOpt/g' CHOpt.app/Contents/Info.plist
     - sh: $HOME/Qt/6.2/macos/bin/macdeployqt CHOpt.app
-    - sh: zip -r "../artifacts/CHOpt GUI ${APPVEYOR_BUILD_VERSION} (x64 Mac).zip" CHOpt.app
-    - sh: appveyor PushArtifact "../artifacts/CHOpt CLI ${APPVEYOR_BUILD_VERSION} (x64 Mac).zip"
-    - sh: appveyor PushArtifact "../artifacts/CHOpt GUI ${APPVEYOR_BUILD_VERSION} (x64 Mac).zip"
+    - sh: zip -r "../artifacts/CHOpt ${RELEASE_NAME} (x64 Mac).zip" CHOpt.app
+    - sh: appveyor PushArtifact "../artifacts/CHOpt CLI ${RELEASE_NAME} (x64 Mac).zip"
+    - sh: appveyor PushArtifact "../artifacts/CHOpt ${RELEASE_NAME} (x64 Mac).zip"
 
 deploy:
   provider: Environment
