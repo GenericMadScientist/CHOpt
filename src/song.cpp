@@ -494,36 +494,31 @@ std::optional<Difficulty> look_up_difficulty(
     return std::nullopt;
 }
 
-template <typename T>
-std::optional<Difficulty> difficulty_from_key(std::uint8_t key)
+std::optional<Difficulty> difficulty_from_key(std::uint8_t key,
+                                              TrackType track_type)
 {
-    if constexpr (std::is_same_v<T, NoteColour>) {
-        constexpr std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges {
-            {{96, 100, Difficulty::Expert},
-             {84, 88, Difficulty::Hard},
-             {72, 76, Difficulty::Medium},
-             {60, 64, Difficulty::Easy}}};
-
-        return look_up_difficulty(diff_ranges, key);
-    } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
-        constexpr std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges {
-            {{94, 100, Difficulty::Expert},
-             {82, 88, Difficulty::Hard},
-             {70, 76, Difficulty::Medium},
-             {58, 64, Difficulty::Easy}}};
-
-        return look_up_difficulty(diff_ranges, key);
-    } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        constexpr std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges {
-            {{95, 101, Difficulty::Expert},
-             {83, 89, Difficulty::Hard},
-             {71, 77, Difficulty::Medium},
-             {59, 65, Difficulty::Easy}}};
-
-        return look_up_difficulty(diff_ranges, key);
-    } else {
-        return std::nullopt;
+    std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges;
+    switch (track_type) {
+    case TrackType::FiveFret:
+        diff_ranges = {{{96, 100, Difficulty::Expert},
+                        {84, 88, Difficulty::Hard},
+                        {72, 76, Difficulty::Medium},
+                        {60, 64, Difficulty::Easy}}};
+        break;
+    case TrackType::SixFret:
+        diff_ranges = {{{94, 100, Difficulty::Expert},
+                        {82, 88, Difficulty::Hard},
+                        {70, 76, Difficulty::Medium},
+                        {58, 64, Difficulty::Easy}}};
+        break;
+    case TrackType::Drums:
+        diff_ranges = {{{95, 101, Difficulty::Expert},
+                        {83, 89, Difficulty::Hard},
+                        {71, 77, Difficulty::Medium},
+                        {59, 65, Difficulty::Easy}}};
+        break;
     }
+    return look_up_difficulty(diff_ranges, key);
 }
 
 template <typename T, std::size_t N>
@@ -540,38 +535,39 @@ T colour_from_key_and_bounds(std::uint8_t key,
     throw ParseError("Invalid key for note");
 }
 
-template <typename T> T colour_from_key(std::uint8_t key, bool from_five_lane)
+int colour_from_key(std::uint8_t key, TrackType track_type, bool from_five_lane)
 {
-    if constexpr (std::is_same_v<T, NoteColour>) {
-        constexpr std::array<unsigned int, 4> diff_ranges {96, 84, 72, 60};
-        constexpr std::array NOTE_COLOURS {NoteColour::Green, NoteColour::Red,
-                                           NoteColour::Yellow, NoteColour::Blue,
-                                           NoteColour::Orange};
+    std::array<unsigned int, 4> diff_ranges;
+    switch (track_type) {
+    case TrackType::FiveFret: {
+        diff_ranges = {96, 84, 72, 60};
+        constexpr std::array NOTE_COLOURS {FIVE_FRET_GREEN, FIVE_FRET_RED,
+                                           FIVE_FRET_YELLOW, FIVE_FRET_BLUE,
+                                           FIVE_FRET_ORANGE};
         return colour_from_key_and_bounds(key, diff_ranges, NOTE_COLOURS);
-    } else if constexpr (std::is_same_v<T, GHLNoteColour>) {
-        constexpr std::array<unsigned int, 4> diff_ranges {94, 82, 70, 58};
+    }
+    case TrackType::SixFret: {
+        diff_ranges = {94, 82, 70, 58};
         constexpr std::array GHL_NOTE_COLOURS {
-            GHLNoteColour::Open,     GHLNoteColour::WhiteLow,
-            GHLNoteColour::WhiteMid, GHLNoteColour::WhiteHigh,
-            GHLNoteColour::BlackLow, GHLNoteColour::BlackMid,
-            GHLNoteColour::BlackHigh};
+            SIX_FRET_OPEN,       SIX_FRET_WHITE_LOW, SIX_FRET_WHITE_MID,
+            SIX_FRET_WHITE_HIGH, SIX_FRET_BLACK_LOW, SIX_FRET_BLACK_MID,
+            SIX_FRET_BLACK_HIGH};
         return colour_from_key_and_bounds(key, diff_ranges, GHL_NOTE_COLOURS);
-    } else if constexpr (std::is_same_v<T, DrumNoteColour>) {
-        constexpr std::array<unsigned int, 4> diff_ranges {95, 83, 71, 59};
-        constexpr std::array DRUM_NOTE_COLOURS {
-            DrumNoteColour::DoubleKick, DrumNoteColour::Kick,
-            DrumNoteColour::Red,        DrumNoteColour::YellowCymbal,
-            DrumNoteColour::BlueCymbal, DrumNoteColour::GreenCymbal};
+    }
+    case TrackType::Drums: {
+        diff_ranges = {95, 83, 71, 59};
+        constexpr std::array DRUM_NOTE_COLOURS {DRUM_DOUBLE_KICK, DRUM_KICK,
+                                                DRUM_RED,         DRUM_YELLOW,
+                                                DRUM_BLUE,        DRUM_GREEN};
         constexpr std::array FIVE_LANE_COLOURS {
-            DrumNoteColour::DoubleKick, DrumNoteColour::Kick,
-            DrumNoteColour::Red,        DrumNoteColour::YellowCymbal,
-            DrumNoteColour::Blue,       DrumNoteColour::GreenCymbal,
-            DrumNoteColour::Green};
+            DRUM_DOUBLE_KICK, DRUM_KICK,  DRUM_RED,  DRUM_YELLOW,
+            DRUM_BLUE,        DRUM_GREEN, DRUM_GREEN};
         if (from_five_lane) {
             return colour_from_key_and_bounds(key, diff_ranges,
                                               FIVE_LANE_COLOURS);
         }
         return colour_from_key_and_bounds(key, diff_ranges, DRUM_NOTE_COLOURS);
+    }
     }
 }
 
@@ -638,11 +634,12 @@ SyncTrack read_first_midi_track(const MidiTrack& track)
     return {std::move(time_sigs), std::move(tempos)};
 }
 
-template <typename T> struct InstrumentMidiTrack {
+struct InstrumentMidiTrack {
 public:
-    std::map<std::tuple<Difficulty, T>, std::vector<std::tuple<int, int>>>
+    std::map<std::tuple<Difficulty, int, NoteFlags>,
+             std::vector<std::tuple<int, int>>>
         note_on_events;
-    std::map<std::tuple<Difficulty, T>, std::vector<std::tuple<int, int>>>
+    std::map<std::tuple<Difficulty, int>, std::vector<std::tuple<int, int>>>
         note_off_events;
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_on_events;
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_off_events;
@@ -663,11 +660,10 @@ public:
     std::map<Difficulty, std::vector<std::tuple<int, int>>>
         disco_flip_off_events;
 
-    InstrumentMidiTrack<T>() = default;
+    InstrumentMidiTrack() = default;
 };
 
-template <typename T>
-void add_sysex_event(InstrumentMidiTrack<T>& track, const SysexEvent& event,
+void add_sysex_event(InstrumentMidiTrack& track, const SysexEvent& event,
                      int time, int rank)
 {
     constexpr std::array<Difficulty, 4> OPEN_EVENT_DIFFS {
@@ -686,10 +682,9 @@ void add_sysex_event(InstrumentMidiTrack<T>& track, const SysexEvent& event,
     }
 }
 
-template <typename T>
-void add_note_off_event(InstrumentMidiTrack<T>& track,
+void add_note_off_event(InstrumentMidiTrack& track,
                         const std::array<std::uint8_t, 2>& data, int time,
-                        int rank, bool from_five_lane)
+                        int rank, bool from_five_lane, TrackType track_type)
 {
     constexpr int YELLOW_TOM_ID = 110;
     constexpr int BLUE_TOM_ID = 111;
@@ -698,9 +693,10 @@ void add_note_off_event(InstrumentMidiTrack<T>& track,
     constexpr int SP_NOTE_ID = 116;
     constexpr int DRUM_FILL_ID = 120;
 
-    const auto diff = difficulty_from_key<T>(data[0]);
+    const auto diff = difficulty_from_key(data[0], track_type);
     if (diff.has_value()) {
-        const auto colour = colour_from_key<T>(data[0], from_five_lane);
+        const auto colour
+            = colour_from_key(data[0], track_type, from_five_lane);
         track.note_off_events[{*diff, colour}].push_back({time, rank});
     } else if (data[0] == YELLOW_TOM_ID) {
         track.yellow_tom_off_events.push_back({time, rank});
@@ -717,27 +713,23 @@ void add_note_off_event(InstrumentMidiTrack<T>& track,
     }
 }
 
-DrumNoteColour add_dynamics(DrumNoteColour colour, std::uint8_t velocity,
-                            bool parse_dynamics)
+NoteFlags dynamics_flags_from_velocity(std::uint8_t velocity)
 {
     constexpr std::uint8_t MIN_ACCENT_VELOCITY = 127;
 
-    if (!parse_dynamics) {
-        return colour;
-    }
     if (velocity == 1) {
-        return add_ghost(colour);
+        return FLAGS_GHOST;
     }
     if (velocity >= MIN_ACCENT_VELOCITY) {
-        return add_accent(colour);
+        return FLAGS_ACCENT;
     }
-    return colour;
+    return static_cast<NoteFlags>(0);
 }
 
-template <typename T>
-void add_note_on_event(InstrumentMidiTrack<T>& track,
+void add_note_on_event(InstrumentMidiTrack& track,
                        const std::array<std::uint8_t, 2>& data, int time,
-                       int rank, bool from_five_lane, bool parse_dynamics)
+                       int rank, bool from_five_lane, bool parse_dynamics,
+                       TrackType track_type)
 {
     constexpr int YELLOW_TOM_ID = 110;
     constexpr int BLUE_TOM_ID = 111;
@@ -748,20 +740,18 @@ void add_note_on_event(InstrumentMidiTrack<T>& track,
 
     // Velocity 0 Note On events are counted as Note Off events.
     if (data[1] == 0) {
-        add_note_off_event(track, data, time, rank, from_five_lane);
+        add_note_off_event(track, data, time, rank, from_five_lane, track_type);
         return;
     }
 
-    const auto diff = difficulty_from_key<T>(data[0]);
+    const auto diff = difficulty_from_key(data[0], track_type);
     if (diff.has_value()) {
-        auto colour = colour_from_key<T>(data[0], from_five_lane);
-        if constexpr (std::is_same_v<T, DrumNoteColour>) {
-            colour = add_dynamics(colour, data[1], parse_dynamics);
-        } else {
-            // Needed because of a GCC warning.
-            (void)parse_dynamics;
+        auto colour = colour_from_key(data[0], track_type, from_five_lane);
+        auto flags = static_cast<NoteFlags>(0);
+        if (track_type == TrackType::Drums && parse_dynamics) {
+            flags = dynamics_flags_from_velocity(data[1]);
         }
-        track.note_on_events[{*diff, colour}].push_back({time, rank});
+        track.note_on_events[{*diff, colour, flags}].push_back({time, rank});
     } else if (data[0] == YELLOW_TOM_ID) {
         track.yellow_tom_on_events.push_back({time, rank});
     } else if (data[0] == BLUE_TOM_ID) {
@@ -777,7 +767,7 @@ void add_note_on_event(InstrumentMidiTrack<T>& track,
     }
 }
 
-void append_disco_flip(InstrumentMidiTrack<DrumNoteColour>& event_track,
+void append_disco_flip(InstrumentMidiTrack& event_track,
                        const MetaEvent& meta_event, int time, int rank)
 {
     constexpr int FLIP_START_SIZE = 15;
@@ -863,19 +853,19 @@ bool has_enable_chart_dynamics(const MidiTrack& midi_track)
         != midi_track.events.cend();
 }
 
-template <typename T>
-InstrumentMidiTrack<T> read_instrument_midi_track(const MidiTrack& midi_track)
+InstrumentMidiTrack read_instrument_midi_track(const MidiTrack& midi_track,
+                                               TrackType track_type)
 {
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
-    const bool from_five_lane = std::is_same_v<T, DrumNoteColour>
+    const bool from_five_lane = track_type == TrackType::Drums
         && has_five_lane_green_notes(midi_track);
-    const bool parse_dynamics = std::is_same_v<T, DrumNoteColour>
+    const bool parse_dynamics = track_type == TrackType::Drums
         && has_enable_chart_dynamics(midi_track);
 
-    InstrumentMidiTrack<T> event_track;
+    InstrumentMidiTrack event_track;
     event_track.disco_flip_on_events[Difficulty::Easy] = {};
     event_track.disco_flip_off_events[Difficulty::Easy] = {};
     event_track.disco_flip_on_events[Difficulty::Medium] = {};
@@ -895,7 +885,7 @@ InstrumentMidiTrack<T> read_instrument_midi_track(const MidiTrack& midi_track)
                 add_sysex_event(event_track, *sysex_event, event.time, rank);
                 continue;
             }
-            if constexpr (std::is_same_v<T, DrumNoteColour>) {
+            if (track_type == TrackType::Drums) {
                 const auto* meta_event = std::get_if<MetaEvent>(&event.event);
                 if (meta_event != nullptr) {
                     append_disco_flip(event_track, *meta_event, event.time,
@@ -908,11 +898,11 @@ InstrumentMidiTrack<T> read_instrument_midi_track(const MidiTrack& midi_track)
         switch (midi_event->status & UPPER_NIBBLE_MASK) {
         case NOTE_OFF_ID:
             add_note_off_event(event_track, midi_event->data, event.time, rank,
-                               from_five_lane);
+                               from_five_lane, track_type);
             break;
         case NOTE_ON_ID:
             add_note_on_event(event_track, midi_event->data, event.time, rank,
-                              from_five_lane, parse_dynamics);
+                              from_five_lane, parse_dynamics, track_type);
             break;
         }
     }
@@ -972,34 +962,37 @@ std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
     return {{bre_start, bre_end}};
 }
 
-template <typename T>
-std::map<Difficulty, std::vector<Note<T>>> notes_from_event_track(
-    const InstrumentMidiTrack<T>& event_track,
-    const std::map<Difficulty, std::vector<std::tuple<int, int>>>& open_events)
+std::map<Difficulty, std::vector<Note>> notes_from_event_track(
+    const InstrumentMidiTrack& event_track,
+    const std::map<Difficulty, std::vector<std::tuple<int, int>>>& open_events,
+    TrackType track_type)
 {
-    std::map<Difficulty, std::vector<Note<T>>> notes;
+    std::map<Difficulty, std::vector<Note>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
-        const auto& [diff, colour] = key;
-        if (event_track.note_off_events.count(key) == 0) {
+        const auto& [diff, colour, flags] = key;
+        if (event_track.note_off_events.count({diff, colour}) == 0) {
             throw ParseError("No corresponding Note Off events");
         }
-        const auto& note_offs = event_track.note_off_events.at(key);
+        const auto& note_offs = event_track.note_off_events.at({diff, colour});
         for (const auto& [pos, end] :
              combine_note_on_off_events(note_ons, note_offs)) {
             const auto note_length = end - pos;
             auto note_colour = colour;
-            if constexpr (std::is_same_v<T, NoteColour>) {
+            if (track_type == TrackType::FiveFret) {
                 const auto open_events_iter = open_events.find(diff);
                 if (open_events_iter != open_events.cend()) {
                     for (const auto& [open_start, open_end] :
                          open_events_iter->second) {
                         if (pos >= open_start && pos < open_end) {
-                            note_colour = NoteColour::Open;
+                            note_colour = FIVE_FRET_OPEN;
                         }
                     }
                 }
             }
-            notes[diff].push_back({pos, note_length, note_colour});
+            Note note;
+            note.position = pos;
+            note.lengths[note_colour] = note_length;
+            notes[diff].push_back(note);
         }
     }
 
@@ -1124,7 +1117,7 @@ private:
     std::vector<std::tuple<int, int>> m_green_tom_events;
 
 public:
-    explicit TomEvents(const InstrumentMidiTrack<DrumNoteColour>& events)
+    explicit TomEvents(const InstrumentMidiTrack& events)
         : m_yellow_tom_events {combine_note_on_off_events(
             events.yellow_tom_on_events, events.yellow_tom_off_events)}
         , m_blue_tom_events {combine_note_on_off_events(
