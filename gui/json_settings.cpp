@@ -40,7 +40,7 @@ int read_value(const boost::json::object& settings, const char* name,
     const auto* it = settings.find(name);
     if (it != settings.cend() && it->value().is_int64()) {
         const auto value = it->value().get_int64();
-        if (range.min >= value && range.max <= value) {
+        if (value >= range.min && value <= range.max) {
             return static_cast<int>(value);
         }
     }
