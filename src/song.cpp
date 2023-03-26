@@ -262,38 +262,6 @@ int no_dynamics_lane_colour(const Note& note)
     return -1;
 }
 
-DrumNoteColour add_accent(DrumNoteColour colour)
-{
-    const std::map<DrumNoteColour, DrumNoteColour> accents {
-        {DrumNoteColour::Red, DrumNoteColour::RedAccent},
-        {DrumNoteColour::Yellow, DrumNoteColour::YellowAccent},
-        {DrumNoteColour::Blue, DrumNoteColour::BlueAccent},
-        {DrumNoteColour::Green, DrumNoteColour::GreenAccent},
-        {DrumNoteColour::YellowCymbal, DrumNoteColour::YellowCymbalAccent},
-        {DrumNoteColour::BlueCymbal, DrumNoteColour::BlueCymbalAccent},
-        {DrumNoteColour::GreenCymbal, DrumNoteColour::GreenCymbalAccent},
-        {DrumNoteColour::Kick, DrumNoteColour::Kick},
-        {DrumNoteColour::DoubleKick, DrumNoteColour::DoubleKick}};
-
-    return accents.at(colour);
-}
-
-DrumNoteColour add_ghost(DrumNoteColour colour)
-{
-    const std::map<DrumNoteColour, DrumNoteColour> ghosts {
-        {DrumNoteColour::Red, DrumNoteColour::RedGhost},
-        {DrumNoteColour::Yellow, DrumNoteColour::YellowGhost},
-        {DrumNoteColour::Blue, DrumNoteColour::BlueGhost},
-        {DrumNoteColour::Green, DrumNoteColour::GreenGhost},
-        {DrumNoteColour::YellowCymbal, DrumNoteColour::YellowCymbalGhost},
-        {DrumNoteColour::BlueCymbal, DrumNoteColour::BlueCymbalGhost},
-        {DrumNoteColour::GreenCymbal, DrumNoteColour::GreenCymbalGhost},
-        {DrumNoteColour::Kick, DrumNoteColour::Kick},
-        {DrumNoteColour::DoubleKick, DrumNoteColour::DoubleKick}};
-
-    return ghosts.at(colour);
-}
-
 std::vector<Note>
 apply_dynamics_events(std::vector<Note> notes,
                       const std::vector<NoteEvent>& note_events)
@@ -999,10 +967,11 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
     return notes;
 }
 
-std::map<Difficulty, NoteTrack<NoteColour>>
+std::map<Difficulty, NoteTrack>
 note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
-    const auto event_track = read_instrument_midi_track<NoteColour>(midi_track);
+    const auto event_track
+        = read_instrument_midi_track(midi_track, TrackType::FiveFret);
     const auto bre = read_bre(midi_track);
 
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
@@ -1014,7 +983,8 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         open_events[diff] = combine_note_on_off_events(open_ons, open_offs);
     }
 
-    const auto notes = notes_from_event_track(event_track, open_events);
+    const auto notes
+        = notes_from_event_track(event_track, open_events, TrackType::FiveFret);
 
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
@@ -1022,7 +992,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         sp_phrases.push_back({start, end - start});
     }
 
-    std::map<Difficulty, NoteTrack<NoteColour>> note_tracks;
+    std::map<Difficulty, NoteTrack> note_tracks;
     for (const auto& [diff, note_set] : notes) {
         std::vector<int> solo_ons;
         std::vector<int> solo_offs;
@@ -1036,25 +1006,26 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
         note_tracks.emplace(diff,
-                            NoteTrack<NoteColour> {note_set,
-                                                   sp_phrases,
-                                                   std::move(solos),
-                                                   {},
-                                                   {},
-                                                   bre,
-                                                   resolution});
+                            NoteTrack {note_set,
+                                       sp_phrases,
+                                       std::move(solos),
+                                       {},
+                                       {},
+                                       bre,
+                                       resolution});
     }
 
     return note_tracks;
 }
 
-std::map<Difficulty, NoteTrack<GHLNoteColour>>
+std::map<Difficulty, NoteTrack>
 ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
     const auto event_track
-        = read_instrument_midi_track<GHLNoteColour>(midi_track);
+        = read_instrument_midi_track(midi_track, TrackType::SixFret);
 
-    const auto notes = notes_from_event_track(event_track, {});
+    const auto notes
+        = notes_from_event_track(event_track, {}, TrackType::SixFret);
 
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
@@ -1062,7 +1033,7 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         sp_phrases.push_back({start, end - start});
     }
 
-    std::map<Difficulty, NoteTrack<GHLNoteColour>> note_tracks;
+    std::map<Difficulty, NoteTrack> note_tracks;
     for (const auto& [diff, note_set] : notes) {
         std::vector<int> solo_ons;
         std::vector<int> solo_offs;
@@ -1076,13 +1047,13 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
         note_tracks.emplace(diff,
-                            NoteTrack<GHLNoteColour> {note_set,
-                                                      sp_phrases,
-                                                      std::move(solos),
-                                                      {},
-                                                      {},
-                                                      {},
-                                                      resolution});
+                            NoteTrack {note_set,
+                                       sp_phrases,
+                                       std::move(solos),
+                                       {},
+                                       {},
+                                       {},
+                                       resolution});
     }
 
     return note_tracks;
@@ -1090,22 +1061,22 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 
 // This is to deal with G cymbal + G tom from five lane being turned into G
 // cymbal + B tom. This combination cannot happen from a four lane chart.
-void fix_double_greens(std::vector<Note<DrumNoteColour>>& notes)
+void fix_double_greens(std::vector<Note>& notes)
 {
     std::set<int> green_cymbal_positions;
 
     for (const auto& note : notes) {
-        if (note.colour == DrumNoteColour::GreenCymbal) {
+        if ((note.lengths[DRUM_GREEN] != 1) && (note.flags & FLAGS_CYMBAL)) {
             green_cymbal_positions.insert(note.position);
         }
     }
 
     for (auto& note : notes) {
-        if (note.colour != DrumNoteColour::Green) {
+        if ((note.lengths[DRUM_GREEN] == 1) || (note.flags & FLAGS_CYMBAL)) {
             continue;
         }
         if (green_cymbal_positions.count(note.position) != 0) {
-            note.colour = DrumNoteColour::Blue;
+            std::swap(note.lengths[DRUM_BLUE], note.lengths[DRUM_GREEN]);
         }
     }
 }
@@ -1127,53 +1098,57 @@ public:
     {
     }
 
-    [[nodiscard]] DrumNoteColour apply_tom_events(DrumNoteColour colour,
-                                                  int pos) const
+    [[nodiscard]] bool force_tom(int colour, int pos) const
     {
-        if (colour == DrumNoteColour::YellowCymbal) {
+        if (colour == DRUM_YELLOW) {
             for (const auto& [open_start, open_end] : m_yellow_tom_events) {
                 if (pos >= open_start && pos < open_end) {
-                    return DrumNoteColour::Yellow;
+                    return true;
                 }
             }
-        } else if (colour == DrumNoteColour::BlueCymbal) {
+        } else if (colour == DRUM_BLUE) {
             for (const auto& [open_start, open_end] : m_blue_tom_events) {
                 if (pos >= open_start && pos < open_end) {
-                    return DrumNoteColour::Blue;
+                    return true;
                 }
             }
-        } else if (colour == DrumNoteColour::GreenCymbal) {
+        } else if (colour == DRUM_GREEN) {
             for (const auto& [open_start, open_end] : m_green_tom_events) {
                 if (pos >= open_start && pos < open_end) {
-                    return DrumNoteColour::Green;
+                    return true;
                 }
             }
         }
-        return colour;
+        return false;
     }
 };
 
-std::map<Difficulty, NoteTrack<DrumNoteColour>>
+std::map<Difficulty, NoteTrack>
 drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
 {
     const auto event_track
-        = read_instrument_midi_track<DrumNoteColour>(midi_track);
+        = read_instrument_midi_track(midi_track, TrackType::Drums);
 
     const TomEvents tom_events {event_track};
 
-    std::map<Difficulty, std::vector<Note<DrumNoteColour>>> notes;
+    std::map<Difficulty, std::vector<Note>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
-        const auto& [diff, colour] = key;
-        const std::tuple<Difficulty, DrumNoteColour> dedynamic_key {
-            diff, strip_dynamics(colour)};
-        if (event_track.note_off_events.count(dedynamic_key) == 0) {
+        const auto& [diff, colour, flags] = key;
+        const std::tuple<Difficulty, int> no_flags_key {diff, colour};
+        if (event_track.note_off_events.count(no_flags_key) == 0) {
             throw ParseError("No corresponding Note Off events");
         }
-        const auto& note_offs = event_track.note_off_events.at(dedynamic_key);
+        const auto& note_offs = event_track.note_off_events.at(no_flags_key);
         for (const auto& [pos, end] :
              combine_note_on_off_events(note_ons, note_offs)) {
-            notes[diff].push_back(
-                {pos, 0, tom_events.apply_tom_events(colour, pos)});
+            Note note;
+            note.position = pos;
+            note.lengths[colour] = 0;
+            note.flags = flags;
+            if (tom_events.force_tom(colour, pos)) {
+                note.flags = static_cast<NoteFlags>(note.flags & ~FLAGS_CYMBAL);
+            }
+            notes[diff].push_back(note);
         }
         fix_double_greens(notes[diff]);
     }
@@ -1190,7 +1165,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         drum_fills.push_back({start, end - start});
     }
 
-    std::map<Difficulty, NoteTrack<DrumNoteColour>> note_tracks;
+    std::map<Difficulty, NoteTrack> note_tracks;
     for (const auto& [diff, note_set] : notes) {
         std::vector<int> solo_ons;
         std::vector<int> solo_offs;
@@ -1210,13 +1185,13 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
         note_tracks.emplace(diff,
-                            NoteTrack<DrumNoteColour> {note_set,
-                                                       sp_phrases,
-                                                       std::move(solos),
-                                                       drum_fills,
-                                                       std::move(disco_flips),
-                                                       {},
-                                                       resolution});
+                            NoteTrack {note_set,
+                                       sp_phrases,
+                                       std::move(solos),
+                                       drum_fills,
+                                       std::move(disco_flips),
+                                       {},
+                                       resolution});
     }
 
     return note_tracks;
@@ -1431,17 +1406,20 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
         if (is_six_fret_instrument(*inst)) {
             auto tracks = ghl_note_tracks_from_midi(track, song.m_resolution);
             for (auto& [diff, note_track] : tracks) {
-                song.m_six_fret_tracks.emplace(std::tuple {*inst, diff},
-                                               std::move(note_track));
+                song.m_tracks.emplace(std::tuple {*inst, diff},
+                                      std::move(note_track));
             }
         } else if (*inst == Instrument::Drums) {
-            song.m_drum_note_tracks
-                = drum_note_tracks_from_midi(track, song.m_resolution);
+            auto tracks = drum_note_tracks_from_midi(track, song.m_resolution);
+            for (auto& [diff, note_track] : tracks) {
+                song.m_tracks.emplace(std::tuple {Instrument::Drums, diff},
+                                      std::move(note_track));
+            }
         } else {
             auto tracks = note_tracks_from_midi(track, song.m_resolution);
             for (auto& [diff, note_track] : tracks) {
-                song.m_five_fret_tracks.emplace(std::tuple {*inst, diff},
-                                                std::move(note_track));
+                song.m_tracks.emplace(std::tuple {*inst, diff},
+                                      std::move(note_track));
             }
         }
     }
@@ -1452,17 +1430,16 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
 std::vector<int> Song::unison_phrase_positions() const
 {
     std::map<int, std::set<Instrument>> phrase_by_instrument;
-    for (const auto& [key, value] : m_five_fret_tracks) {
+    for (const auto& [key, value] : m_tracks) {
         const auto instrument = std::get<0>(key);
+        if (is_six_fret_instrument(instrument)) {
+            continue;
+        }
         for (const auto& phrase : value.sp_phrases()) {
             phrase_by_instrument[phrase.position].insert(instrument);
         }
     }
-    for (const auto& [key, value] : m_drum_note_tracks) {
-        for (const auto& phrase : value.sp_phrases()) {
-            phrase_by_instrument[phrase.position].insert(Instrument::Drums);
-        }
-    }
+
     std::vector<int> unison_starts;
     for (const auto& [key, value] : phrase_by_instrument) {
         if (value.size() > 1) {
