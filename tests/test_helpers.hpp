@@ -432,12 +432,38 @@ inline std::ostream& operator<<(std::ostream& stream, TrackType track_type)
     return stream;
 }
 
-inline Note make_note(int position, int length = 0)
+inline Note make_note(int position, int length = 0,
+                      FiveFretNotes colour = FIVE_FRET_GREEN)
 {
     Note note;
     note.position = position;
     note.flags = FLAGS_FIVE_FRET_GUITAR;
-    note.lengths[0] = length;
+    note.lengths[colour] = length;
+
+    return note;
+}
+
+inline Note
+make_chord(int position,
+           const std::vector<std::tuple<FiveFretNotes, int>> lengths)
+{
+    Note note;
+    note.position = position;
+    note.flags = FLAGS_FIVE_FRET_GUITAR;
+    for (auto& [lane, length] : lengths) {
+        note.lengths[lane] = length;
+    }
+
+    return note;
+}
+
+inline Note make_drum_note(int position, DrumNotes colour = DRUM_RED,
+                           NoteFlags flags = FLAGS_NONE)
+{
+    Note note;
+    note.position = position;
+    note.flags = static_cast<NoteFlags>(flags | FLAGS_DRUMS);
+    note.lengths[colour] = 0;
 
     return note;
 }

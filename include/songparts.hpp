@@ -113,6 +113,7 @@ constexpr DrumNoteColour strip_dynamics(DrumNoteColour colour)
 enum class TrackType { FiveFret, SixFret, Drums };
 
 enum NoteFlags : std::uint32_t {
+    FLAGS_NONE = 0,
     FLAGS_CYMBAL = 1U << 0,
     FLAGS_GHOST = 1U << 1,
     FLAGS_ACCENT = 1U << 2,
