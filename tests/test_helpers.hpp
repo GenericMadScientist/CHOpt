@@ -141,21 +141,28 @@ inline std::ostream& operator<<(std::ostream& stream, const DiscoFlip& flip)
     return stream;
 }
 
-template <typename T>
-inline bool operator!=(const DrawnNote<T>& lhs, const DrawnNote<T>& rhs)
+inline bool operator!=(const DrawnNote& lhs, const DrawnNote& rhs)
 {
+    for (auto i = 0; i < 7; ++i) {
+        if (std::abs(lhs.lengths[i] - rhs.lengths[i]) >= 0.000001) {
+            return true;
+        }
+    }
     return std::abs(lhs.beat - rhs.beat) >= 0.000001
-        || std::abs(lhs.length - rhs.length) >= 0.000001
-        || std::tie(lhs.colour, lhs.is_sp_note)
-        != std::tie(rhs.colour, rhs.is_sp_note);
+        || std::tie(lhs.note_flags, lhs.is_sp_note)
+        != std::tie(rhs.note_flags, rhs.is_sp_note);
 }
 
-template <typename T>
-inline std::ostream& operator<<(std::ostream& stream, const DrawnNote<T>& note)
+inline std::ostream& operator<<(std::ostream& stream, const DrawnNote& note)
 {
-    stream << '{' << note.beat << "b, Length " << note.length << ", Colour "
-           << static_cast<int>(note.colour) << ", Is SP Note "
-           << note.is_sp_note << '}';
+    stream << '{' << note.beat << "b, ";
+    for (auto i = 0; i < 7; ++i) {
+        if (note.lengths[i] != -1) {
+            stream << "Colour " << i << " with Length " << note.lengths[i]
+                   << ", ";
+        }
+    }
+    stream << ", Is SP Note " << note.is_sp_note << '}';
     return stream;
 }
 
@@ -244,18 +251,22 @@ inline std::ostream& operator<<(std::ostream& stream, const MidiEvent& event)
     return stream;
 }
 
-template <typename T>
-inline bool operator!=(const Note<T>& lhs, const Note<T>& rhs)
+inline bool operator!=(const Note& lhs, const Note& rhs)
 {
-    return std::tie(lhs.position, lhs.length, lhs.colour)
-        != std::tie(rhs.position, rhs.length, rhs.colour);
+    return std::tie(lhs.position, lhs.lengths, lhs.flags)
+        != std::tie(rhs.position, rhs.lengths, rhs.flags);
 }
 
-template <typename T>
-inline std::ostream& operator<<(std::ostream& stream, const Note<T>& note)
+inline std::ostream& operator<<(std::ostream& stream, const Note& note)
 {
-    stream << "{Pos " << note.position << ", Length " << note.length
-           << ", Colour " << static_cast<int>(note.colour) << '}';
+    stream << "{Pos " << note.position << ", ";
+    for (auto i = 0; i < 7; ++i) {
+        if (note.lengths[i] != -1) {
+            stream << "Colour " << i << " with Length " << note.lengths[i]
+                   << ", ";
+        }
+    }
+    stream << '}';
     return stream;
 }
 
