@@ -87,7 +87,7 @@ std::array<unsigned char, 3> note_colour_to_colour(FiveFretNotes colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_colour");
 }
 
-std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
+std::array<unsigned char, 3> note_colour_to_colour(DrumNotes colour)
 {
     constexpr std::array<unsigned char, 3> RED {255, 0, 0};
     constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
@@ -96,33 +96,16 @@ std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
     constexpr std::array<unsigned char, 3> ORANGE {255, 165, 0};
 
     switch (colour) {
-    case DrumNoteColour::Red:
-    case DrumNoteColour::RedGhost:
-    case DrumNoteColour::RedAccent:
+    case DRUM_RED:
         return RED;
-    case DrumNoteColour::Yellow:
-    case DrumNoteColour::YellowCymbal:
-    case DrumNoteColour::YellowGhost:
-    case DrumNoteColour::YellowCymbalGhost:
-    case DrumNoteColour::YellowAccent:
-    case DrumNoteColour::YellowCymbalAccent:
+    case DRUM_YELLOW:
         return YELLOW;
-    case DrumNoteColour::Blue:
-    case DrumNoteColour::BlueCymbal:
-    case DrumNoteColour::BlueGhost:
-    case DrumNoteColour::BlueCymbalGhost:
-    case DrumNoteColour::BlueAccent:
-    case DrumNoteColour::BlueCymbalAccent:
+    case DRUM_BLUE:
         return BLUE;
-    case DrumNoteColour::Green:
-    case DrumNoteColour::GreenCymbal:
-    case DrumNoteColour::GreenGhost:
-    case DrumNoteColour::GreenCymbalGhost:
-    case DrumNoteColour::GreenAccent:
-    case DrumNoteColour::GreenCymbalAccent:
+    case DRUM_GREEN:
         return GREEN;
-    case DrumNoteColour::Kick:
-    case DrumNoteColour::DoubleKick:
+    case DRUM_KICK:
+    case DRUM_DOUBLE_KICK:
         return ORANGE;
     }
 
@@ -198,7 +181,7 @@ int note_colour_to_offset(SixFretNotes colour, bool is_lefty_flip)
     return offset;
 }
 
-int note_colour_to_offset(DrumNoteColour colour, bool is_lefty_flip)
+int note_colour_to_offset(DrumNotes colour, bool is_lefty_flip)
 {
     constexpr int RED_OFFSET = 0;
     constexpr int YELLOW_OFFSET = 20;
@@ -208,37 +191,20 @@ int note_colour_to_offset(DrumNoteColour colour, bool is_lefty_flip)
 
     int offset = 0;
     switch (colour) {
-    case DrumNoteColour::Red:
-    case DrumNoteColour::RedGhost:
-    case DrumNoteColour::RedAccent:
+    case DRUM_RED:
         offset = RED_OFFSET;
         break;
-    case DrumNoteColour::Yellow:
-    case DrumNoteColour::YellowCymbal:
-    case DrumNoteColour::YellowGhost:
-    case DrumNoteColour::YellowCymbalGhost:
-    case DrumNoteColour::YellowAccent:
-    case DrumNoteColour::YellowCymbalAccent:
+    case DRUM_YELLOW:
         offset = YELLOW_OFFSET;
         break;
-    case DrumNoteColour::Blue:
-    case DrumNoteColour::BlueCymbal:
-    case DrumNoteColour::BlueGhost:
-    case DrumNoteColour::BlueCymbalGhost:
-    case DrumNoteColour::BlueAccent:
-    case DrumNoteColour::BlueCymbalAccent:
+    case DRUM_BLUE:
         offset = BLUE_OFFSET;
         break;
-    case DrumNoteColour::Green:
-    case DrumNoteColour::GreenCymbal:
-    case DrumNoteColour::GreenGhost:
-    case DrumNoteColour::GreenCymbalGhost:
-    case DrumNoteColour::GreenAccent:
-    case DrumNoteColour::GreenCymbalAccent:
+    case DRUM_GREEN:
         offset = GREEN_OFFSET;
         break;
-    case DrumNoteColour::Kick:
-    case DrumNoteColour::DoubleKick:
+    case DRUM_KICK:
+    case DRUM_DOUBLE_KICK:
         offset = KICK_OFFSET;
         break;
     default:
@@ -276,71 +242,35 @@ int numb_of_fret_lines(TrackType track_type)
     throw std::invalid_argument("Invalid TrackType");
 }
 
-enum class DrumSpriteShape { Kick, Cymbal, Tom };
-
-DrumSpriteShape drum_colour_to_shape(DrumNoteColour colour)
-{
-    switch (colour) {
-    case DrumNoteColour::Kick:
-    case DrumNoteColour::DoubleKick:
-        return DrumSpriteShape::Kick;
-    case DrumNoteColour::YellowCymbal:
-    case DrumNoteColour::BlueCymbal:
-    case DrumNoteColour::GreenCymbal:
-    case DrumNoteColour::YellowCymbalGhost:
-    case DrumNoteColour::BlueCymbalGhost:
-    case DrumNoteColour::GreenCymbalGhost:
-    case DrumNoteColour::YellowCymbalAccent:
-    case DrumNoteColour::BlueCymbalAccent:
-    case DrumNoteColour::GreenCymbalAccent:
-        return DrumSpriteShape::Cymbal;
-    case DrumNoteColour::Red:
-    case DrumNoteColour::Yellow:
-    case DrumNoteColour::Blue:
-    case DrumNoteColour::Green:
-    case DrumNoteColour::RedGhost:
-    case DrumNoteColour::YellowGhost:
-    case DrumNoteColour::BlueGhost:
-    case DrumNoteColour::GreenGhost:
-    case DrumNoteColour::RedAccent:
-    case DrumNoteColour::YellowAccent:
-    case DrumNoteColour::BlueAccent:
-    case DrumNoteColour::GreenAccent:
-        return DrumSpriteShape::Tom;
-    }
-
-    throw std::invalid_argument("Invalid DrumNoteColour");
-}
-
 // Codes are
 // 0 - No note
 // 1 - White note
 // 2 - Black note
 // 3 - White and black note
 std::array<int, 3>
-ghl_note_colour_codes(const std::set<GHLNoteColour>& note_colours)
+ghl_note_colour_codes(const std::set<SixFretNotes>& note_colours)
 {
     std::array<int, 3> codes {0, 0, 0};
     for (const auto& colour : note_colours) {
         switch (colour) {
-        case GHLNoteColour::Open:
+        case SIX_FRET_OPEN:
             return {0, 0, 0};
-        case GHLNoteColour::WhiteLow:
+        case SIX_FRET_WHITE_LOW:
             codes[0] |= 1;
             break;
-        case GHLNoteColour::WhiteMid:
+        case SIX_FRET_WHITE_MID:
             codes[1] |= 1;
             break;
-        case GHLNoteColour::WhiteHigh:
+        case SIX_FRET_WHITE_HIGH:
             codes[2] |= 1;
             break;
-        case GHLNoteColour::BlackLow:
+        case SIX_FRET_BLACK_LOW:
             codes[0] |= 2;
             break;
-        case GHLNoteColour::BlackMid:
+        case SIX_FRET_BLACK_MID:
             codes[1] |= 2;
             break;
-        case GHLNoteColour::BlackHigh:
+        case SIX_FRET_BLACK_HIGH:
             codes[2] |= 2;
             break;
         }
@@ -354,23 +284,27 @@ void validate_snprintf_rc(int snprintf_rc)
         throw std::runtime_error("Failure with snprintf");
     }
 }
+
+bool is_kick_note(const DrawnNote& note)
+{
+    return note.lengths[DRUM_KICK] != -1
+        || note.lengths[DRUM_DOUBLE_KICK] != -1;
+}
 }
 
 class ImageImpl {
 private:
     CImg<unsigned char> m_image;
 
-    void draw_note_circle(int x, int y, NoteColour note_colour,
+    void draw_note_circle(int x, int y, FiveFretNotes note_colour,
                           bool is_lefty_flip);
-    void draw_note_star(int x, int y, NoteColour note_colour,
-                        bool is_lefty_flip);
+    void draw_note_star(int x, int y, FiveFretNotes colour, bool is_lefty_flip);
     void draw_note_sustain(const ImageBuilder& builder, const DrawnNote& note);
-    void draw_ghl_note(int x, int y,
-                       const std::set<GHLNoteColour>& note_colours,
+    void draw_ghl_note(int x, int y, const std::set<SixFretNotes>& note_colours,
                        bool is_lefty_flip);
     void draw_ghl_note_sustain(const ImageBuilder& builder,
                                const DrawnNote& note);
-    void draw_drum_note(int x, int y, DrumNoteColour note_colour,
+    void draw_drum_note(int x, int y, DrumNotes note_colour, NoteFlags flags,
                         bool is_lefty_flip);
     void draw_quarter_note(int x, int y);
     void draw_text_backwards(int x, int y, const char* text,
@@ -596,39 +530,43 @@ void ImageImpl::draw_text_backwards(int x, int y, const char* text,
 void ImageImpl::draw_notes(const ImageBuilder& builder)
 {
     for (const auto& note : builder.notes()) {
-        if (note.length > 0.0) {
+        const auto max_length
+            = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
+        if (max_length > 0.0) {
             draw_note_sustain(builder, note);
         }
 
         const auto [x, y] = get_xy(builder, note.beat);
-        if (note.is_sp_note) {
-            draw_note_star(x, y, note.colour, builder.is_lefty_flip());
-        } else {
-            draw_note_circle(x, y, note.colour, builder.is_lefty_flip());
+        for (auto i = 0; i < 6; ++i) {
+            if (note.lengths[i] == -1) {
+                continue;
+            }
+            const auto colour = static_cast<FiveFretNotes>(i);
+            if (note.is_sp_note) {
+                draw_note_star(x, y, colour, builder.is_lefty_flip());
+            } else {
+                draw_note_circle(x, y, colour, builder.is_lefty_flip());
+            }
         }
     }
 }
 
 void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
 {
-    for (const auto& note : builder.ghl_notes()) {
-        if (note.length > 0.0) {
+    for (const auto& note : builder.notes()) {
+        const auto max_length
+            = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
+        if (max_length > 0.0) {
             draw_ghl_note_sustain(builder, note);
         }
-    }
 
-    // double is beat, std::set is colours of note
-    std::vector<std::tuple<double, std::set<GHLNoteColour>>> note_groups;
-    for (const auto& note : builder.ghl_notes()) {
-        if (note_groups.empty()
-            || std::get<0>(note_groups.back()) < note.beat) {
-            note_groups.push_back({note.beat, {note.colour}});
+        const auto [x, y] = get_xy(builder, note.beat);
+        std::set<SixFretNotes> colours;
+        for (auto i = 0; i < 7; ++i) {
+            if (note.lengths[i] != -1) {
+                colours.insert(static_cast<SixFretNotes>(i));
+            }
         }
-        std::get<1>(note_groups.back()).insert(note.colour);
-    }
-
-    for (const auto& [pos, colours] : note_groups) {
-        const auto [x, y] = get_xy(builder, pos);
         draw_ghl_note(x, y, colours, builder.is_lefty_flip());
     }
 }
@@ -637,24 +575,38 @@ void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
 {
     // We draw all the kicks first because we want RYBG to lie on top of the
     // kicks, not underneath.
-    for (const auto& note : builder.drum_notes()) {
-        if (drum_colour_to_shape(note.colour) != DrumSpriteShape::Kick) {
+    for (const auto& note : builder.notes()) {
+        if (!is_kick_note(note)) {
             continue;
         }
         const auto [x, y] = get_xy(builder, note.beat);
-        draw_drum_note(x, y, note.colour, builder.is_lefty_flip());
+        for (auto i = 0; i < 6; ++i) {
+            if (note.lengths[i] == -1) {
+                continue;
+            }
+            const auto colour = static_cast<DrumNotes>(i);
+            draw_drum_note(x, y, colour, note.note_flags,
+                           builder.is_lefty_flip());
+        }
     }
 
-    for (const auto& note : builder.drum_notes()) {
-        if (drum_colour_to_shape(note.colour) == DrumSpriteShape::Kick) {
+    for (const auto& note : builder.notes()) {
+        if (is_kick_note(note)) {
             continue;
         }
         const auto [x, y] = get_xy(builder, note.beat);
-        draw_drum_note(x, y, note.colour, builder.is_lefty_flip());
+        for (auto i = 0; i < 6; ++i) {
+            if (note.lengths[i] == -1) {
+                continue;
+            }
+            const auto colour = static_cast<DrumNotes>(i);
+            draw_drum_note(x, y, colour, note.note_flags,
+                           builder.is_lefty_flip());
+        }
     }
 }
 
-void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour,
+void ImageImpl::draw_note_circle(int x, int y, FiveFretNotes note_colour,
                                  bool is_lefty_flip)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
@@ -663,7 +615,7 @@ void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour,
     auto colour = note_colour_to_colour(note_colour);
     auto offset = note_colour_to_offset(note_colour, is_lefty_flip);
 
-    if (note_colour == NoteColour::Open) {
+    if (note_colour == FIVE_FRET_OPEN) {
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                colour.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
@@ -675,7 +627,7 @@ void ImageImpl::draw_note_circle(int x, int y, NoteColour note_colour,
 }
 
 void ImageImpl::draw_ghl_note(int x, int y,
-                              const std::set<GHLNoteColour>& note_colours,
+                              const std::set<SixFretNotes>& note_colours,
                               bool is_lefty_flip)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
@@ -684,7 +636,7 @@ void ImageImpl::draw_ghl_note(int x, int y,
     constexpr int FRET_GAP = 30;
     constexpr int RADIUS = 5;
 
-    if (note_colours.count(GHLNoteColour::Open) != 0) {
+    if (note_colours.count(SIX_FRET_OPEN) != 0) {
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                white.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
@@ -719,8 +671,8 @@ void ImageImpl::draw_ghl_note(int x, int y,
     }
 }
 
-void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour,
-                               bool is_lefty_flip)
+void ImageImpl::draw_drum_note(int x, int y, DrumNotes note_colour,
+                               NoteFlags flags, bool is_lefty_flip)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr int RADIUS = 5;
@@ -728,28 +680,25 @@ void ImageImpl::draw_drum_note(int x, int y, DrumNoteColour note_colour,
     auto colour = note_colour_to_colour(note_colour);
     auto offset = note_colour_to_offset(note_colour, is_lefty_flip);
 
-    switch (drum_colour_to_shape(note_colour)) {
-    case DrumSpriteShape::Kick:
+    if (note_colour == DRUM_KICK || note_colour == DRUM_DOUBLE_KICK) {
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                colour.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                black.data(), 1.0, ~0U);
-        break;
-    case DrumSpriteShape::Cymbal:
+    } else if (flags & FLAGS_CYMBAL) {
         m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
                               y + offset + RADIUS, x + RADIUS,
                               y + offset + RADIUS, colour.data());
         m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
                               y + offset + RADIUS, x + RADIUS,
                               y + offset + RADIUS, black.data(), 1.0, ~0U);
-        break;
-    case DrumSpriteShape::Tom:
+    } else {
         m_image.draw_circle(x, y + offset, RADIUS, colour.data());
         m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
     }
 }
 
-void ImageImpl::draw_note_star(int x, int y, NoteColour note_colour,
+void ImageImpl::draw_note_star(int x, int y, FiveFretNotes note_colour,
                                bool is_lefty_flip)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
@@ -766,7 +715,7 @@ void ImageImpl::draw_note_star(int x, int y, NoteColour note_colour,
         points(i, 1) = coords[2 * i + 1] + y + offset; // NOLINT
     }
 
-    if (note_colour == NoteColour::Open) {
+    if (note_colour == FIVE_FRET_OPEN) {
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                colour.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,

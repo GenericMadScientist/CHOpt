@@ -140,7 +140,7 @@ enum SixFretNotes {
     SIX_FRET_OPEN = 6
 };
 
-enum DrunNotes {
+enum DrumNotes {
     DRUM_RED = 0,
     DRUM_YELLOW = 1,
     DRUM_BLUE = 2,
