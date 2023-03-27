@@ -60,7 +60,7 @@ const char* diff_to_str(Difficulty difficulty)
     }
 }
 
-std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
+std::array<unsigned char, 3> note_colour_to_colour(FiveFretNotes colour)
 {
     constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
     constexpr std::array<unsigned char, 3> RED {255, 0, 0};
@@ -70,17 +70,17 @@ std::array<unsigned char, 3> note_colour_to_colour(NoteColour colour)
     constexpr std::array<unsigned char, 3> PURPLE {128, 0, 128};
 
     switch (colour) {
-    case NoteColour::Green:
+    case FIVE_FRET_GREEN:
         return GREEN;
-    case NoteColour::Red:
+    case FIVE_FRET_RED:
         return RED;
-    case NoteColour::Yellow:
+    case FIVE_FRET_YELLOW:
         return YELLOW;
-    case NoteColour::Blue:
+    case FIVE_FRET_BLUE:
         return BLUE;
-    case NoteColour::Orange:
+    case FIVE_FRET_ORANGE:
         return ORANGE;
-    case NoteColour::Open:
+    case FIVE_FRET_OPEN:
         return PURPLE;
     }
 
@@ -129,7 +129,7 @@ std::array<unsigned char, 3> note_colour_to_colour(DrumNoteColour colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_colour");
 }
 
-int note_colour_to_offset(NoteColour colour, bool is_lefty_flip)
+int note_colour_to_offset(FiveFretNotes colour, bool is_lefty_flip)
 {
     constexpr int GREEN_OFFSET = 0;
     constexpr int RED_OFFSET = 15;
@@ -139,22 +139,22 @@ int note_colour_to_offset(NoteColour colour, bool is_lefty_flip)
 
     int offset = 0;
     switch (colour) {
-    case NoteColour::Green:
+    case FIVE_FRET_GREEN:
         offset = GREEN_OFFSET;
         break;
-    case NoteColour::Red:
+    case FIVE_FRET_RED:
         offset = RED_OFFSET;
         break;
-    case NoteColour::Yellow:
+    case FIVE_FRET_YELLOW:
         offset = YELLOW_OFFSET;
         break;
-    case NoteColour::Blue:
+    case FIVE_FRET_BLUE:
         offset = BLUE_OFFSET;
         break;
-    case NoteColour::Orange:
+    case FIVE_FRET_ORANGE:
         offset = ORANGE_OFFSET;
         break;
-    case NoteColour::Open:
+    case FIVE_FRET_OPEN:
         offset = YELLOW_OFFSET;
         break;
     default:
@@ -167,7 +167,7 @@ int note_colour_to_offset(NoteColour colour, bool is_lefty_flip)
     return offset;
 }
 
-int note_colour_to_offset(GHLNoteColour colour, bool is_lefty_flip)
+int note_colour_to_offset(SixFretNotes colour, bool is_lefty_flip)
 {
     constexpr int LOW_OFFSET = 0;
     constexpr int MID_OFFSET = 30;
@@ -175,17 +175,17 @@ int note_colour_to_offset(GHLNoteColour colour, bool is_lefty_flip)
 
     int offset = 0;
     switch (colour) {
-    case GHLNoteColour::BlackLow:
-    case GHLNoteColour::WhiteLow:
+    case SIX_FRET_BLACK_LOW:
+    case SIX_FRET_WHITE_LOW:
         offset = LOW_OFFSET;
         break;
-    case GHLNoteColour::BlackMid:
-    case GHLNoteColour::WhiteMid:
-    case GHLNoteColour::Open:
+    case SIX_FRET_BLACK_MID:
+    case SIX_FRET_WHITE_MID:
+    case SIX_FRET_OPEN:
         offset = MID_OFFSET;
         break;
-    case GHLNoteColour::BlackHigh:
-    case GHLNoteColour::WhiteHigh:
+    case SIX_FRET_BLACK_HIGH:
+    case SIX_FRET_WHITE_HIGH:
         offset = HIGH_OFFSET;
         break;
     default:
@@ -364,13 +364,12 @@ private:
                           bool is_lefty_flip);
     void draw_note_star(int x, int y, NoteColour note_colour,
                         bool is_lefty_flip);
-    void draw_note_sustain(const ImageBuilder& builder,
-                           const DrawnNote<NoteColour>& note);
+    void draw_note_sustain(const ImageBuilder& builder, const DrawnNote& note);
     void draw_ghl_note(int x, int y,
                        const std::set<GHLNoteColour>& note_colours,
                        bool is_lefty_flip);
     void draw_ghl_note_sustain(const ImageBuilder& builder,
-                               const DrawnNote<GHLNoteColour>& note);
+                               const DrawnNote& note);
     void draw_drum_note(int x, int y, DrumNoteColour note_colour,
                         bool is_lefty_flip);
     void draw_quarter_note(int x, int y);
@@ -779,37 +778,53 @@ void ImageImpl::draw_note_star(int x, int y, NoteColour note_colour,
 }
 
 void ImageImpl::draw_note_sustain(const ImageBuilder& builder,
-                                  const DrawnNote<NoteColour>& note)
+                                  const DrawnNote& note)
 {
     constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
 
-    auto colour = note_colour_to_colour(note.colour);
-    std::tuple<double, double> x_range {note.beat, note.beat + note.length};
-    auto offset = note_colour_to_offset(note.colour, builder.is_lefty_flip());
-    std::tuple<int, int> y_range {offset - 3, offset + 3};
-    float opacity = 1.0F;
-    if (note.colour == NoteColour::Open) {
-        y_range = OPEN_NOTE_Y_RANGE;
-        opacity = OPEN_NOTE_OPACITY;
+    for (auto i = 0; i < 6; ++i) {
+        if (note.lengths[i] == -1) {
+            continue;
+        }
+        const auto note_colour = static_cast<FiveFretNotes>(i);
+        auto colour = note_colour_to_colour(note_colour);
+        std::tuple<double, double> x_range {note.beat,
+                                            note.beat + note.lengths[i]};
+        auto offset
+            = note_colour_to_offset(note_colour, builder.is_lefty_flip());
+        std::tuple<int, int> y_range {offset - 3, offset + 3};
+        float opacity = 1.0F;
+        if (note_colour == FIVE_FRET_OPEN) {
+            y_range = OPEN_NOTE_Y_RANGE;
+            opacity = OPEN_NOTE_OPACITY;
+        }
+        colour_beat_range(builder, colour, x_range, y_range, opacity);
     }
-    colour_beat_range(builder, colour, x_range, y_range, opacity);
 }
 
 void ImageImpl::draw_ghl_note_sustain(const ImageBuilder& builder,
-                                      const DrawnNote<GHLNoteColour>& note)
+                                      const DrawnNote& note)
 {
     constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
     constexpr std::array<unsigned char, 3> SUST_COLOUR {150, 150, 150};
 
-    std::tuple<double, double> x_range {note.beat, note.beat + note.length};
-    auto offset = note_colour_to_offset(note.colour, builder.is_lefty_flip());
-    std::tuple<int, int> y_range {offset - 3, offset + 3};
-    float opacity = 1.0F;
-    if (note.colour == GHLNoteColour::Open) {
-        y_range = OPEN_NOTE_Y_RANGE;
-        opacity = OPEN_NOTE_OPACITY;
+    for (auto i = 0; i < 7; ++i) {
+        if (note.lengths[i] == -1) {
+            continue;
+        }
+        std::tuple<double, double> x_range {note.beat,
+                                            note.beat + note.lengths[i]};
+        const auto note_colour = static_cast<SixFretNotes>(i);
+        auto offset
+            = note_colour_to_offset(note_colour, builder.is_lefty_flip());
+        std::tuple<int, int> y_range {offset - 3, offset + 3};
+        float opacity = 1.0F;
+        if (note_colour == SIX_FRET_OPEN) {
+            y_range = OPEN_NOTE_Y_RANGE;
+            opacity = OPEN_NOTE_OPACITY;
+        }
+        colour_beat_range(builder, SUST_COLOUR, x_range, y_range, opacity);
     }
-    colour_beat_range(builder, SUST_COLOUR, x_range, y_range, opacity);
 }
 
 void ImageImpl::colour_beat_range(const ImageBuilder& builder,
