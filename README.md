@@ -83,7 +83,7 @@ them, and the same is true for Boost and Qt (see
 [this](https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html) page for
 details).
 
-## Acknowledgements@
+## Acknowledgements
 
 * FireFox2000000's Moonscraper .chart and .mid parsers were very helpful for
 getting an initial idea of Clone Hero's parsing behaviour.
