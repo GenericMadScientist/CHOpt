@@ -431,3 +431,13 @@ inline std::ostream& operator<<(std::ostream& stream, TrackType track_type)
     stream << static_cast<int>(track_type);
     return stream;
 }
+
+inline Note make_note(int position, int length = 0)
+{
+    Note note;
+    note.position = position;
+    note.flags = FLAGS_FIVE_FRET_GUITAR;
+    note.lengths[0] = length;
+
+    return note;
+}

@@ -24,9 +24,9 @@ BOOST_AUTO_TEST_SUITE(note_track_ctor_maintains_invariants)
 
 BOOST_AUTO_TEST_CASE(notes_are_sorted)
 {
-    std::vector<Note<NoteColour>> notes {{768}, {384}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-    std::vector<Note<NoteColour>> sorted_notes {{384}, {768}};
+    std::vector<Note> notes {make_note(768), make_note(384)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> sorted_notes {make_note(384), make_note(768)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   sorted_notes.cbegin(), sorted_notes.cend());
@@ -34,17 +34,17 @@ BOOST_AUTO_TEST_CASE(notes_are_sorted)
 
 BOOST_AUTO_TEST_CASE(notes_of_the_same_colour_and_position_are_merged)
 {
-    std::vector<Note<NoteColour>> notes {{768, 0}, {768, 768}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
-    std::vector<Note<NoteColour>> required_notes {{768, 768}};
+    std::vector<Note> notes {make_note(768, 0), make_note(768, 768)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> required_notes {make_note(768, 768)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   required_notes.cbegin(),
                                   required_notes.cend());
 
-    std::vector<Note<NoteColour>> second_notes {{768, 768}, {768, 0}};
-    NoteTrack<NoteColour> second_track {second_notes, {}, {}, {}, {}, {}, 192};
-    std::vector<Note<NoteColour>> second_required_notes {{768, 0}};
+    std::vector<Note> second_notes {make_note(768, 768), make_note(768, 0)};
+    NoteTrack second_track {second_notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> second_required_notes {make_note(768, 0)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         second_track.notes().cbegin(), second_track.notes().cend(),
@@ -81,17 +81,16 @@ BOOST_AUTO_TEST_CASE(open_and_non_open_notes_of_same_pos_and_length_are_merged)
 
 BOOST_AUTO_TEST_CASE(resolution_is_positive)
 {
-    std::vector<Note<NoteColour>> notes {{768}};
-    BOOST_CHECK_THROW(
-        [&] { return NoteTrack<NoteColour>(notes, {}, {}, {}, {}, {}, 0); }(),
-        ParseError);
+    std::vector<Note> notes {make_note(768)};
+    BOOST_CHECK_THROW([&] { return NoteTrack(notes, {}, {}, {}, {}, {}, 0); }(),
+                      ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(empty_sp_phrases_are_culled)
 {
-    std::vector<Note<NoteColour>> notes {{768}};
+    std::vector<Note> notes {make_note(768)};
     std::vector<StarPower> phrases {{0, 100}, {700, 100}, {1000, 100}};
-    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, phrases, {}, {}, {}, {}, 192};
     std::vector<StarPower> required_phrases {{700, 100}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -101,9 +100,9 @@ BOOST_AUTO_TEST_CASE(empty_sp_phrases_are_culled)
 
 BOOST_AUTO_TEST_CASE(sp_phrases_are_sorted)
 {
-    std::vector<Note<NoteColour>> notes {{768}, {1000}};
+    std::vector<Note> notes {make_note(768), make_note(1000)};
     std::vector<StarPower> phrases {{1000, 1}, {768, 1}};
-    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, phrases, {}, {}, {}, {}, 192};
     std::vector<StarPower> required_phrases {{768, 1}, {1000, 1}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -113,9 +112,9 @@ BOOST_AUTO_TEST_CASE(sp_phrases_are_sorted)
 
 BOOST_AUTO_TEST_CASE(sp_phrases_do_not_overlap)
 {
-    std::vector<Note<NoteColour>> notes {{768}, {1000}, {1500}};
+    std::vector<Note> notes {make_note(768), make_note(1000), make_note(1500)};
     std::vector<StarPower> phrases {{768, 1000}, {900, 150}};
-    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, phrases, {}, {}, {}, {}, 192};
     std::vector<StarPower> required_phrases {{768, 282}, {1050, 718}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -125,9 +124,9 @@ BOOST_AUTO_TEST_CASE(sp_phrases_do_not_overlap)
 
 BOOST_AUTO_TEST_CASE(solos_are_sorted)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {768}};
+    std::vector<Note> notes {make_note(0), make_note(768)};
     std::vector<Solo> solos {{768, 868, 100}, {0, 100, 100}};
-    NoteTrack<NoteColour> track {notes, {}, solos, {}, {}, {}, 192};
+    NoteTrack track {notes, {}, solos, {}, {}, {}, 192};
     std::vector<Solo> required_solos {{0, 100, 100}, {768, 868, 100}};
     std::vector<Solo> solo_output
         = track.solos(DrumSettings::default_settings());
