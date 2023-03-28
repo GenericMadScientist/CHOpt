@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(chart_reads_easy_note_track_correctly)
                               {{768, 2, 100}}, {}};
     std::vector<ChartSection> sections {easy_single};
     const Chart chart {sections};
-    std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green}};
+    std::vector<Note> notes {make_note(768, 0, FIVE_FRET_GREEN)};
     std::vector<StarPower> sp_phrases {{768, 100}};
 
     const auto song = Song::from_chart(chart, {});
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(invalid_note_values_are_ignored)
         "ExpertSingle", {}, {}, {}, {{768, 0, 0}, {768, 13, 0}}, {}, {}};
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
-    std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green}};
+    std::vector<Note> notes {make_note(768, 0, FIVE_FRET_GREEN)};
 
     const auto song = Song::from_chart(chart, {});
     const auto& parsed_notes
@@ -189,8 +189,13 @@ BOOST_AUTO_TEST_CASE(sp_phrases_are_read_correctly_from_chart)
                                 {{768, 1, 100}}, {}};
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
-    NoteTrack<NoteColour> note_track {
-        {{768, 0, NoteColour::Green}}, {{768, 100}}, {}, {}, {}, {}, 192};
+    NoteTrack note_track {{make_note(768, 0, FIVE_FRET_GREEN)},
+                          {{768, 100}},
+                          {},
+                          {},
+                          {},
+                          {},
+                          192};
 
     const auto song = Song::from_chart(chart, {});
 
@@ -229,7 +234,7 @@ BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
     ChartSection header {"Song", {{"Resolution", "200"}}, {}, {}, {}, {}, {}};
     std::vector<ChartSection> sections {sync_track, expert_single, header};
     const Chart chart {sections};
-    std::vector<Note<NoteColour>> notes {{768}};
+    std::vector<Note> notes {make_note(768)};
     std::vector<BPM> bpms {{0, 200000}};
 
     const auto song = Song::from_chart(chart, {});
@@ -256,7 +261,7 @@ BOOST_AUTO_TEST_CASE(later_nonempty_sections_are_ignored)
                                     {{768, 1, 0}},  {}, {}};
     std::vector<ChartSection> sections {expert_single_one, expert_single_two};
     const Chart chart {sections};
-    std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Green}};
+    std::vector<Note> notes {make_note(768, 0, FIVE_FRET_GREEN)};
 
     const auto song = Song::from_chart(chart, {});
     const auto& parsed_notes
@@ -273,7 +278,7 @@ BOOST_AUTO_TEST_CASE(leading_empty_sections_are_ignored)
                                     {{768, 1, 0}},  {}, {}};
     std::vector<ChartSection> sections {expert_single_one, expert_single_two};
     const Chart chart {sections};
-    std::vector<Note<NoteColour>> notes {{768, 0, NoteColour::Red}};
+    std::vector<Note> notes {make_note(768, 0, FIVE_FRET_RED)};
 
     const auto song = Song::from_chart(chart, {});
     const auto& parsed_notes
@@ -507,8 +512,8 @@ BOOST_AUTO_TEST_CASE(six_fret_guitar_is_read_correctly)
                                 {{192, 0, 0}, {384, 3, 0}}, {}, {}};
     std::vector<ChartSection> sections {expert_double};
     const Chart chart {sections};
-    std::vector<Note<GHLNoteColour>> notes {{192, 0, GHLNoteColour::WhiteLow},
-                                            {384, 0, GHLNoteColour::BlackLow}};
+    std::vector<Note> notes {make_ghl_note(192, 0, SIX_FRET_WHITE_LOW),
+                             make_ghl_note(384, 0, SIX_FRET_BLACK_LOW)};
 
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.ghl_guitar_note_track(Difficulty::Expert);
@@ -523,8 +528,8 @@ BOOST_AUTO_TEST_CASE(six_fret_bass_is_read_correctly)
         "ExpertGHLBass", {}, {}, {}, {{192, 0, 0}, {384, 3, 0}}, {}, {}};
     std::vector<ChartSection> sections {expert_double};
     const Chart chart {sections};
-    std::vector<Note<GHLNoteColour>> notes {{192, 0, GHLNoteColour::WhiteLow},
-                                            {384, 0, GHLNoteColour::BlackLow}};
+    std::vector<Note> notes {make_ghl_note(192, 0, SIX_FRET_WHITE_LOW),
+                             make_ghl_note(384, 0, SIX_FRET_BLACK_LOW)};
 
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.ghl_bass_note_track(Difficulty::Expert);
@@ -547,10 +552,9 @@ BOOST_AUTO_TEST_CASE(drum_notes_are_read_correctly_from_chart)
         {}};
     std::vector<ChartSection> sections {expert_drums};
     const Chart chart {sections};
-    std::vector<Note<DrumNoteColour>> notes {
-        {192, 0, DrumNoteColour::Red},
-        {384, 0, DrumNoteColour::YellowCymbal},
-        {768, 0, DrumNoteColour::DoubleKick}};
+    std::vector<Note> notes {make_drum_note(192, DRUM_RED),
+                             make_drum_note(384, DRUM_YELLOW, FLAGS_CYMBAL),
+                             make_drum_note(768, DRUM_DOUBLE_KICK)};
 
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
@@ -571,9 +575,8 @@ BOOST_AUTO_TEST_CASE(dynamics_are_read_correctly_from_chart)
         {}};
     std::vector<ChartSection> sections {expert_drums};
     const Chart chart {sections};
-    std::vector<Note<DrumNoteColour>> notes {
-        {192, 0, DrumNoteColour::RedAccent},
-        {384, 0, DrumNoteColour::RedGhost}};
+    std::vector<Note> notes {make_drum_note(192, DRUM_RED, FLAGS_ACCENT),
+                             make_drum_note(384, DRUM_RED, FLAGS_GHOST)};
 
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
@@ -612,9 +615,9 @@ BOOST_AUTO_TEST_CASE(fifth_lane_notes_are_read_correctly_from_chart)
                                {}};
     std::vector<ChartSection> sections {expert_drums};
     const Chart chart {sections};
-    std::vector<Note<DrumNoteColour>> notes {{192, 0, DrumNoteColour::Green},
-                                             {384, 0, DrumNoteColour::Blue},
-                                             {384, 0, DrumNoteColour::Green}};
+    std::vector<Note> notes {make_drum_note(192, DRUM_GREEN),
+                             make_drum_note(384, DRUM_BLUE),
+                             make_drum_note(384, DRUM_GREEN)};
 
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);

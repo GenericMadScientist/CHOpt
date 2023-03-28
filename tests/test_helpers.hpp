@@ -457,6 +457,17 @@ make_chord(int position,
     return note;
 }
 
+inline Note make_ghl_note(int position, int length = 0,
+                          SixFretNotes colour = SIX_FRET_WHITE_LOW)
+{
+    Note note;
+    note.position = position;
+    note.flags = FLAGS_SIX_FRET_GUITAR;
+    note.lengths[colour] = length;
+
+    return note;
+}
+
 inline Note make_drum_note(int position, DrumNotes colour = DRUM_RED,
                            NoteFlags flags = FLAGS_NONE)
 {
