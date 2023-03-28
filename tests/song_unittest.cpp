@@ -802,8 +802,7 @@ BOOST_AUTO_TEST_CASE(notes_of_every_difficulty_are_read)
                            {960, {MidiEvent {0x80, {72, 0}}}},
                            {960, {MidiEvent {0x80, {60, 0}}}}}};
     const Midi midi {192, {note_track}};
-    const std::vector<Note<NoteColour>> green_note {
-        {768, 192, NoteColour::Green}};
+    const std::vector<Note> green_note {make_note(768, 192, FIVE_FRET_GREEN)};
     const std::array<Difficulty, 4> diffs {Difficulty::Easy, Difficulty::Medium,
                                            Difficulty::Hard,
                                            Difficulty::Expert};
@@ -832,8 +831,8 @@ BOOST_AUTO_TEST_CASE(notes_are_read_from_part_guitar)
     const auto song = Song::from_midi(midi, {});
 
     BOOST_CHECK_EQUAL(
-        song.guitar_note_track(Difficulty::Expert).notes()[0].colour,
-        NoteColour::Red);
+        song.guitar_note_track(Difficulty::Expert).notes()[0].colours(),
+        1 << FIVE_FRET_RED);
 }
 
 BOOST_AUTO_TEST_CASE(part_guitar_event_need_not_be_the_first_event)
@@ -851,8 +850,8 @@ BOOST_AUTO_TEST_CASE(part_guitar_event_need_not_be_the_first_event)
     const auto song = Song::from_midi(midi, {});
 
     BOOST_CHECK_EQUAL(
-        song.guitar_note_track(Difficulty::Expert).notes()[0].colour,
-        NoteColour::Red);
+        song.guitar_note_track(Difficulty::Expert).notes()[0].colours(),
+        1 << FIVE_FRET_RED);
 }
 
 BOOST_AUTO_TEST_CASE(guitar_notes_are_also_read_from_t1_gems)
@@ -868,8 +867,8 @@ BOOST_AUTO_TEST_CASE(guitar_notes_are_also_read_from_t1_gems)
     const auto song = Song::from_midi(midi, {});
 
     BOOST_CHECK_EQUAL(
-        song.guitar_note_track(Difficulty::Expert).notes()[0].colour,
-        NoteColour::Red);
+        song.guitar_note_track(Difficulty::Expert).notes()[0].colours(),
+        1 << FIVE_FRET_RED);
 }
 
 BOOST_AUTO_TEST_CASE(note_on_events_must_have_a_corresponding_note_off_event)
@@ -905,7 +904,7 @@ BOOST_AUTO_TEST_CASE(corresponding_note_off_events_are_after_note_on_events)
     const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(notes.size(), 2);
-    BOOST_CHECK_EQUAL(notes[0].length, 480);
+    BOOST_CHECK_EQUAL(notes[0].lengths[0], 480);
 }
 
 BOOST_AUTO_TEST_CASE(note_on_events_with_velocity_zero_count_as_note_off_events)
@@ -956,7 +955,7 @@ BOOST_AUTO_TEST_CASE(each_note_on_event_consumes_the_following_note_off_event)
     const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(notes.size(), 2);
-    BOOST_CHECK_GT(notes[1].length, 0);
+    BOOST_CHECK_GT(notes[1].lengths[0], 0);
 }
 
 BOOST_AUTO_TEST_CASE(note_off_events_can_be_zero_ticks_after_the_note_on_events)
@@ -1004,8 +1003,8 @@ BOOST_AUTO_TEST_CASE(open_notes_are_read_correctly)
     const auto song = Song::from_midi(midi, {});
 
     BOOST_CHECK_EQUAL(
-        song.guitar_note_track(Difficulty::Expert).notes()[0].colour,
-        NoteColour::Open);
+        song.guitar_note_track(Difficulty::Expert).notes()[0].colours(),
+        1 << FIVE_FRET_OPEN);
 }
 
 BOOST_AUTO_TEST_CASE(parseerror_thrown_if_open_note_ons_have_no_note_offs)
@@ -1127,8 +1126,8 @@ BOOST_AUTO_TEST_CASE(short_midi_sustains_are_not_trimmed)
     const auto song = Song::from_midi(midi, {});
     const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
 
-    BOOST_CHECK_EQUAL(notes[0].length, 65);
-    BOOST_CHECK_EQUAL(notes[1].length, 70);
+    BOOST_CHECK_EQUAL(notes[0].lengths[0], 0);
+    BOOST_CHECK_EQUAL(notes[1].lengths[0], 0);
 }
 
 BOOST_AUTO_TEST_SUITE(other_five_fret_instruments_are_read_from_mid)
@@ -1211,7 +1210,7 @@ BOOST_AUTO_TEST_CASE(six_fret_guitar_is_read_correctly)
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.ghl_guitar_note_track(Difficulty::Expert);
 
-    std::vector<Note<GHLNoteColour>> notes {{0, 65, GHLNoteColour::Open}};
+    std::vector<Note> notes {make_ghl_note(0, 65, SIX_FRET_OPEN)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
@@ -1230,7 +1229,7 @@ BOOST_AUTO_TEST_CASE(six_fret_bass_is_read_correctly)
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.ghl_bass_note_track(Difficulty::Expert);
 
-    std::vector<Note<GHLNoteColour>> notes {{0, 65, GHLNoteColour::Open}};
+    std::vector<Note> notes {make_ghl_note(0, 65, SIX_FRET_OPEN)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
@@ -1252,7 +1251,7 @@ BOOST_AUTO_TEST_CASE(drums_are_read_correctly_from_mid)
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
-    std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::Yellow}};
+    std::vector<Note> notes {make_drum_note(0, DRUM_YELLOW)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
@@ -1270,8 +1269,7 @@ BOOST_AUTO_TEST_CASE(double_kicks_are_read_correctly_from_mid)
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
-    std::vector<Note<DrumNoteColour>> notes {
-        {0, 0, DrumNoteColour::DoubleKick}};
+    std::vector<Note> notes {make_drum_note(0, DRUM_DOUBLE_KICK)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
@@ -1368,11 +1366,10 @@ BOOST_AUTO_TEST_CASE(drum_five_lane_to_four_lane_conversion_is_done_from_mid)
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
-    std::vector<Note<DrumNoteColour>> notes {
-        {0, 0, DrumNoteColour::Green},
-        {2, 0, DrumNoteColour::GreenCymbal},
-        {4, 0, DrumNoteColour::Blue},
-        {4, 0, DrumNoteColour::GreenCymbal}};
+    std::vector<Note> notes {make_drum_note(0, DRUM_GREEN),
+                             make_drum_note(2, DRUM_GREEN, FLAGS_CYMBAL),
+                             make_drum_note(4, DRUM_BLUE),
+                             make_drum_note(4, DRUM_GREEN, FLAGS_CYMBAL)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
@@ -1398,9 +1395,9 @@ BOOST_AUTO_TEST_CASE(dynamics_are_parsed_from_mid)
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
-    std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::RedGhost},
-                                             {2, 0, DrumNoteColour::Red},
-                                             {4, 0, DrumNoteColour::RedAccent}};
+    std::vector<Note> notes {make_drum_note(0, DRUM_RED, FLAGS_GHOST),
+                             make_drum_note(2, DRUM_RED),
+                             make_drum_note(4, DRUM_RED, FLAGS_ACCENT)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
@@ -1422,9 +1419,9 @@ BOOST_AUTO_TEST_CASE(dynamics_not_parsed_from_mid_without_ENABLE_CHART_DYNAMICS)
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);
 
-    std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::Red},
-                                             {2, 0, DrumNoteColour::Red},
-                                             {4, 0, DrumNoteColour::Red}};
+    std::vector<Note> notes {make_drum_note(0, DRUM_RED),
+                             make_drum_note(2, DRUM_RED),
+                             make_drum_note(4, DRUM_RED)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
