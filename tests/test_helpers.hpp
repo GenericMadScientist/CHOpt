@@ -468,6 +468,20 @@ inline Note make_ghl_note(int position, int length = 0,
     return note;
 }
 
+inline Note
+make_ghl_chord(int position,
+               const std::vector<std::tuple<SixFretNotes, int>> lengths)
+{
+    Note note;
+    note.position = position;
+    note.flags = FLAGS_SIX_FRET_GUITAR;
+    for (auto& [lane, length] : lengths) {
+        note.lengths[lane] = length;
+    }
+
+    return note;
+}
+
 inline Note make_drum_note(int position, DrumNotes colour = DRUM_RED,
                            NoteFlags flags = FLAGS_NONE)
 {

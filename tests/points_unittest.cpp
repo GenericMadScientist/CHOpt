@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_SUITE(non_sustain_notes)
 
 BOOST_AUTO_TEST_CASE(single_notes_give_fifty_points)
 {
-    NoteTrack<NoteColour> track {{{768}, {960}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(768), make_note(960)}, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -79,10 +79,10 @@ BOOST_AUTO_TEST_CASE(single_notes_give_fifty_points)
                                   expected_values.cend());
 }
 
-BOOST_AUTO_TEST_CASE(dhords_give_multiples_of_fifty_points)
+BOOST_AUTO_TEST_CASE(chords_give_multiples_of_fifty_points)
 {
-    NoteTrack<NoteColour> track {
-        {{768, 0, NoteColour::Green}, {768, 0, NoteColour::Red}},
+    NoteTrack track {
+        {make_chord(768, {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}})},
         {},
         {},
         {},
@@ -106,7 +106,8 @@ BOOST_AUTO_TEST_CASE(dhords_give_multiples_of_fifty_points)
 
 BOOST_AUTO_TEST_CASE(ghl_notes_behave_the_same_as_five_fret_notes)
 {
-    NoteTrack<GHLNoteColour> track {{{768}, {960}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_ghl_note(768), make_ghl_note(960)}, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -128,7 +129,7 @@ BOOST_AUTO_TEST_SUITE(sustain_notes)
 
 BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
 {
-    NoteTrack<NoteColour> track {{{768, 15}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(768, 15)}, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet first_points {track,
                            converter,
@@ -138,7 +139,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
                            ChGuitarEngine()};
     std::vector<int> first_expected_values {50, 3};
     std::vector<Beat> first_expected_beats {Beat(4.0), Beat(4.0026)};
-    NoteTrack<NoteColour> second_track {{{768, 15}}, {}, {}, {}, {}, {}, 200};
+    NoteTrack second_track {{make_note(768, 15)}, {}, {}, {}, {}, {}, 200};
     TimeConverter second_converter {{}, 200, ChGuitarEngine(), {}};
     PointSet second_points {second_track,
                             second_converter,
@@ -170,8 +171,8 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
 
 BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
 {
-    NoteTrack<NoteColour> track {
-        {{768, 8, NoteColour::Green}, {768, 8, NoteColour::Red}},
+    NoteTrack track {
+        {make_chord(768, {{FIVE_FRET_GREEN, 8}, {FIVE_FRET_RED, 8}})},
         {},
         {},
         {},
@@ -200,7 +201,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
 
 BOOST_AUTO_TEST_CASE(resolutions_below_25_do_not_enter_an_infinite_loop)
 {
-    NoteTrack<NoteColour> track {{{768, 2}}, {}, {}, {}, {}, {}, 1};
+    NoteTrack track {{make_note(768, 2)}, {}, {}, {}, {}, {}, 1};
     TimeConverter converter {{}, 1, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -214,15 +215,16 @@ BOOST_AUTO_TEST_CASE(resolutions_below_25_do_not_enter_an_infinite_loop)
 
 BOOST_AUTO_TEST_CASE(sustains_of_uneven_length_are_handled_correctly)
 {
-    NoteTrack<NoteColour> track {{{0, 1504, NoteColour::Green},
-                                  {0, 1504, NoteColour::Red},
-                                  {0, 736, NoteColour::Yellow}},
-                                 {},
-                                 {},
-                                 {},
-                                 {},
-                                 {},
-                                 192};
+    NoteTrack track {{make_chord(0,
+                                 {{FIVE_FRET_GREEN, 1504},
+                                  {FIVE_FRET_RED, 1504},
+                                  {FIVE_FRET_YELLOW, 736}})},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -240,15 +242,16 @@ BOOST_AUTO_TEST_CASE(sustains_of_uneven_length_are_handled_correctly)
 // RB1 Here It Goes Again m20 GRB sustain
 BOOST_AUTO_TEST_CASE(chord_sustains_in_rb_are_handled_correctly)
 {
-    NoteTrack<NoteColour> track {{{0, 1800, NoteColour::Green},
-                                  {0, 1800, NoteColour::Red},
-                                  {0, 1800, NoteColour::Blue}},
-                                 {},
-                                 {},
-                                 {},
-                                 {},
-                                 {},
-                                 480};
+    NoteTrack track {{make_chord(0,
+                                 {{FIVE_FRET_GREEN, 1800},
+                                  {FIVE_FRET_RED, 1800},
+                                  {FIVE_FRET_BLUE, 1800}})},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     480};
     TimeConverter converter {{}, 480, RbEngine(), {}};
     PointSet points {track,
                      converter,
@@ -267,7 +270,7 @@ BOOST_AUTO_TEST_CASE(chord_sustains_in_rb_are_handled_correctly)
 BOOST_AUTO_TEST_CASE(
     rounding_from_length_in_rb_for_single_notes_is_handled_correctly)
 {
-    NoteTrack<NoteColour> track {{{0, 419}}, {}, {}, {}, {}, {}, 480};
+    NoteTrack track {{make_note(0, 419)}, {}, {}, {}, {}, {}, 480};
     TimeConverter converter {{}, 480, RbEngine(), {}};
     PointSet points {track,
                      converter,
@@ -285,8 +288,8 @@ BOOST_AUTO_TEST_CASE(
 // RB1 Cherub Rock m65 RO sustain
 BOOST_AUTO_TEST_CASE(rounding_from_length_in_rb_for_chords_is_handled_correctly)
 {
-    NoteTrack<NoteColour> track {
-        {{0, 419, NoteColour::Red}, {0, 419, NoteColour::Orange}},
+    NoteTrack track {
+        {make_chord(0, {{FIVE_FRET_RED, 419}, {FIVE_FRET_ORANGE, 419}})},
         {},
         {},
         {},
@@ -310,8 +313,8 @@ BOOST_AUTO_TEST_CASE(rounding_from_length_in_rb_for_chords_is_handled_correctly)
 // GH1 Ace of Spades m6 Y sustain
 BOOST_AUTO_TEST_CASE(gh1_one_beat_sustain_is_handled_correctly)
 {
-    NoteTrack<NoteColour> track {
-        {{0, 1917, NoteColour::Yellow}}, {}, {}, {}, {}, {}, 480};
+    NoteTrack track {
+        {make_note(0, 1917, FIVE_FRET_YELLOW)}, {}, {}, {}, {}, {}, 480};
     TimeConverter converter {{}, 480, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -330,8 +333,8 @@ BOOST_AUTO_TEST_CASE(gh1_one_beat_sustain_is_handled_correctly)
 BOOST_AUTO_TEST_CASE(
     rounding_from_fractional_length_in_gh1_is_handled_correctly)
 {
-    NoteTrack<NoteColour> track {
-        {{0, 1560, NoteColour::Orange}}, {}, {}, {}, {}, {}, 480};
+    NoteTrack track {
+        {make_note(0, 1560, FIVE_FRET_ORANGE)}, {}, {}, {}, {}, {}, 480};
     TimeConverter converter {{}, 480, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -350,8 +353,8 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(
     rounding_from_length_in_gh1_for_chords_is_handled_correctly)
 {
-    NoteTrack<NoteColour> track {
-        {{0, 360, NoteColour::Blue}, {0, 360, NoteColour::Orange}},
+    NoteTrack track {
+        {make_chord(0, {{FIVE_FRET_BLUE, 360}, {FIVE_FRET_ORANGE, 360}})},
         {},
         {},
         {},
@@ -376,8 +379,8 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(points_are_sorted)
 {
-    NoteTrack<NoteColour> track {
-        {{768, 15}, {770, 0}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_note(768, 15), make_note(770, 0)}, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -392,13 +395,13 @@ BOOST_AUTO_TEST_CASE(points_are_sorted)
 
 BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)
 {
-    NoteTrack<NoteColour> track {{{768}, {960}, {1152}},
-                                 {{768, 1}, {900, 50}, {1100, 53}},
-                                 {},
-                                 {},
-                                 {},
-                                 {},
-                                 192};
+    NoteTrack track {{make_note(768), make_note(960), make_note(1152)},
+                     {{768, 1}, {900, 50}, {1100, 53}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -427,12 +430,12 @@ BOOST_AUTO_TEST_SUITE(combo_multiplier_is_taken_into_account)
 
 BOOST_AUTO_TEST_CASE(multiplier_applies_to_non_sustains)
 {
-    std::vector<Note<NoteColour>> notes;
+    std::vector<Note> notes;
     notes.reserve(50);
     for (int i = 0; i < 50; ++i) {
-        notes.push_back({192 * i});
+        notes.push_back(make_note(192 * i));
     }
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -462,14 +465,14 @@ BOOST_AUTO_TEST_CASE(multiplier_applies_to_non_sustains)
 
 BOOST_AUTO_TEST_CASE(sustain_points_are_multiplied)
 {
-    std::vector<Note<NoteColour>> notes;
+    std::vector<Note> notes;
     notes.reserve(50);
     for (int i = 0; i < 50; ++i) {
-        notes.push_back({192 * i});
+        notes.push_back(make_note(192 * i));
     }
-    notes.push_back({9600, 192});
+    notes.push_back(make_note(9600, 192));
 
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -484,14 +487,14 @@ BOOST_AUTO_TEST_CASE(sustain_points_are_multiplied)
 
 BOOST_AUTO_TEST_CASE(later_sustain_points_in_extended_sustains_are_multiplied)
 {
-    std::vector<Note<NoteColour>> notes;
+    std::vector<Note> notes;
     notes.reserve(10);
     for (int i = 0; i < 10; ++i) {
-        notes.push_back({192 * i});
+        notes.push_back(make_note(192 * i));
     }
-    notes[0].length = 2000;
+    notes[0].lengths[0] = 2000;
 
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -506,14 +509,14 @@ BOOST_AUTO_TEST_CASE(later_sustain_points_in_extended_sustains_are_multiplied)
 
 BOOST_AUTO_TEST_CASE(drum_notes_have_the_multiplier_handled_correctly)
 {
-    std::vector<Note<DrumNoteColour>> notes;
+    std::vector<Note> notes;
     notes.reserve(10);
     for (int i = 0; i < 9; ++i) {
-        notes.push_back({192 * i, 0, DrumNoteColour::Red});
+        notes.push_back(make_drum_note(192 * i, DRUM_RED));
     }
-    notes.push_back({192 * 7, 0, DrumNoteColour::Yellow});
+    notes.push_back(make_drum_note(192 * 7, DRUM_YELLOW));
 
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChDrumEngine(), {}};
     PointSet points {track,
                      converter,
@@ -527,10 +530,11 @@ BOOST_AUTO_TEST_CASE(drum_notes_have_the_multiplier_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(gh1_multiplier_delay_accounted_for)
 {
-    std::vector<Note<NoteColour>> notes {{0},   {100},     {200}, {300},
-                                         {400}, {500},     {600}, {700},
-                                         {800}, {900, 100}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0),       make_note(100), make_note(200),
+                             make_note(300),     make_note(400), make_note(500),
+                             make_note(600),     make_note(700), make_note(800),
+                             make_note(900, 100)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -551,8 +555,8 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
 {
     TimeConverter converter {
         {{}, {{0, 150000}, {768, 200000}}}, 192, ChGuitarEngine(), {}};
-    std::vector<Note<NoteColour>> notes {{192}, {787}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(192), make_note(787)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      converter,
                      {},
@@ -570,8 +574,8 @@ BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
 {
     TimeConverter converter {
         {{}, {{0, 150000}, {768, 200000}}}, 192, ChGuitarEngine(), {}};
-    std::vector<Note<NoteColour>> notes {{192}, {749}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(192), make_note(749)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      converter,
                      {},
@@ -589,8 +593,8 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
 {
     TimeConverter converter {
         {{}, {{0, 150000}, {768, 200000}}}, 192, ChGuitarEngine(), {}};
-    std::vector<Note<NoteColour>> notes {{672, 192}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(672, 192)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      converter,
                      {},
@@ -608,8 +612,8 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
 {
     TimeConverter converter {
         {{}, {{0, 150000}, {768, 200000}}}, 192, ChGuitarEngine(), {}};
-    std::vector<Note<NoteColour>> notes {{192}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(192)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      converter,
                      {},
@@ -627,8 +631,8 @@ BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
 {
     TimeConverter converter {
         {{}, {{0, 150000}, {768, 200000}}}, 192, ChGuitarEngine(), {}};
-    std::vector<Note<NoteColour>> notes {{192}, {240}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(192), make_note(240)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      converter,
                      {},
@@ -653,12 +657,12 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(rb_bass_multiplier_is_taken_into_account)
 {
-    std::vector<Note<NoteColour>> notes;
+    std::vector<Note> notes;
     notes.reserve(60);
     for (auto i = 0; i < 60; ++i) {
-        notes.push_back({192 * i});
+        notes.push_back(make_note(192 * i));
     }
-    const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    const NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     const TimeConverter converter {{}, 192, RbBassEngine(), {}};
     const PointSet points {track,
                            converter,
@@ -678,8 +682,8 @@ BOOST_AUTO_TEST_SUITE(video_lag_is_taken_into_account)
 
 BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
 {
-    const std::vector<Note<NoteColour>> notes {{192, 0}, {384, 192}};
-    const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    const std::vector<Note> notes {make_note(192, 0), make_note(384, 192)};
+    const NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     const TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -699,8 +703,8 @@ BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
 {
-    const std::vector<Note<NoteColour>> notes {{192, 0}, {384, 192}};
-    const NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    const std::vector<Note> notes {make_note(192, 0), make_note(384, 192)};
+    const NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     const TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -720,10 +724,11 @@ BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(tick_points_are_not_multiplied_prematurely)
 {
-    std::vector<Note<NoteColour>> notes {{192},      {193}, {194}, {195},
-                                         {196},      {197}, {198}, {199},
-                                         {200, 200}, {400}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {
+        make_note(192),      make_note(193), make_note(194), make_note(195),
+        make_note(196),      make_note(197), make_note(198), make_note(199),
+        make_note(200, 200), make_note(400)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     const TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -740,8 +745,8 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(next_non_hold_point_is_correct)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192, 192}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(192, 192)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
 
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
@@ -758,9 +763,10 @@ BOOST_AUTO_TEST_CASE(next_non_hold_point_is_correct)
 
 BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
 {
-    std::vector<Note<NoteColour>> notes {{100, 0}, {200, 100}, {400, 0}};
+    std::vector<Note> notes {make_note(100, 0), make_note(200, 100),
+                             make_note(400, 0)};
     std::vector<StarPower> phrases {{200, 1}, {400, 1}};
-    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, phrases, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
 
     PointSet points {track,
@@ -782,7 +788,7 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
 BOOST_AUTO_TEST_CASE(solo_sections_are_added)
 {
     std::vector<Solo> solos {{0, 576, 100}, {768, 1152, 200}};
-    NoteTrack<NoteColour> track {{}, {}, solos, {}, {}, {}, 192};
+    NoteTrack track {{}, {}, solos, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -799,7 +805,8 @@ BOOST_AUTO_TEST_CASE(solo_sections_are_added)
 
 BOOST_AUTO_TEST_CASE(range_score_is_correct)
 {
-    NoteTrack<NoteColour> track {{{0, 192}, {386}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_note(0, 192), make_note(386)}, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -816,11 +823,11 @@ BOOST_AUTO_TEST_CASE(range_score_is_correct)
 
 BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_five_fret)
 {
-    std::vector<Note<NoteColour>> notes {{0},
-                                         {0, 0, NoteColour::Red},
-                                         {176, 100, NoteColour::Yellow},
-                                         {500, 0, NoteColour::Blue}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {
+        make_chord(0, {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}}),
+        make_note(176, 100, FIVE_FRET_YELLOW),
+        make_note(500, 0, FIVE_FRET_BLUE)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -837,12 +844,11 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_five_fret)
 
 BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_six_fret)
 {
-    std::vector<Note<GHLNoteColour>> notes {
-        {0},
-        {0, 0, GHLNoteColour::WhiteMid},
-        {176, 100, GHLNoteColour::BlackHigh},
-        {500, 0, GHLNoteColour::Open}};
-    NoteTrack<GHLNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {
+        make_ghl_chord(0, {{SIX_FRET_WHITE_LOW, 0}, {SIX_FRET_WHITE_MID, 0}}),
+        make_ghl_note(176, 100, SIX_FRET_BLACK_HIGH),
+        make_ghl_note(500, 0, SIX_FRET_OPEN)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -859,12 +865,11 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_six_fret)
 
 BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_drums)
 {
-    std::vector<Note<DrumNoteColour>> notes {
-        {0},
-        {0, 0, DrumNoteColour::YellowCymbal},
-        {176, 0, DrumNoteColour::BlueCymbal},
-        {500, 0, DrumNoteColour::Kick}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_drum_note(0, DRUM_RED),
+                             make_drum_note(0, DRUM_YELLOW, FLAGS_CYMBAL),
+                             make_drum_note(176, DRUM_BLUE, FLAGS_CYMBAL),
+                             make_drum_note(500, DRUM_KICK)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -881,9 +886,9 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_drums)
 
 BOOST_AUTO_TEST_CASE(double_kicks_only_appear_with_enable_double_kick)
 {
-    std::vector<Note<DrumNoteColour>> notes {
-        {0, 0, DrumNoteColour::Kick}, {192, 0, DrumNoteColour::DoubleKick}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_drum_note(0, DRUM_KICK),
+                             make_drum_note(192, DRUM_DOUBLE_KICK)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet single_points {track,
                             {{}, 192, ChDrumEngine(), {}},
                             {},
@@ -903,9 +908,9 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_appear_with_enable_double_kick)
 
 BOOST_AUTO_TEST_CASE(single_kicks_are_removed_with_disable_kick)
 {
-    std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::DoubleKick},
-                                             {192, 0, DrumNoteColour::Kick}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_drum_note(0, DRUM_DOUBLE_KICK),
+                             make_drum_note(192, DRUM_KICK)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -919,10 +924,10 @@ BOOST_AUTO_TEST_CASE(single_kicks_are_removed_with_disable_kick)
 
 BOOST_AUTO_TEST_CASE(disable_kick_doesnt_kill_sp_phrases)
 {
-    std::vector<Note<DrumNoteColour>> notes {{0, 0, DrumNoteColour::Red},
-                                             {192, 0, DrumNoteColour::Kick}};
+    std::vector<Note> notes {make_drum_note(0, DRUM_RED),
+                             make_drum_note(192, DRUM_KICK)};
     std::vector<StarPower> phrases {{0, 200}};
-    NoteTrack<DrumNoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, phrases, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -935,10 +940,10 @@ BOOST_AUTO_TEST_CASE(disable_kick_doesnt_kill_sp_phrases)
 
 BOOST_AUTO_TEST_CASE(double_kicks_dont_kill_phrases)
 {
-    std::vector<Note<DrumNoteColour>> notes {
-        {0, 0, DrumNoteColour::Red}, {192, 0, DrumNoteColour::DoubleKick}};
+    std::vector<Note> notes {make_drum_note(0, DRUM_RED),
+                             make_drum_note(192, DRUM_DOUBLE_KICK)};
     std::vector<StarPower> phrases {{0, 200}};
-    NoteTrack<DrumNoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, phrases, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -951,9 +956,10 @@ BOOST_AUTO_TEST_CASE(double_kicks_dont_kill_phrases)
 
 BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
 {
-    std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {385}, {576}};
+    std::vector<Note> notes {make_drum_note(0), make_drum_note(192),
+                             make_drum_note(385), make_drum_note(576)};
     std::vector<DrumFill> fills {{384, 5}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
+    NoteTrack track {notes, {}, {}, fills, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -970,9 +976,9 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
 
 BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_killed)
 {
-    std::vector<Note<DrumNoteColour>> notes {{0}, {1, 0, DrumNoteColour::Kick}};
+    std::vector<Note> notes {make_drum_note(0), make_drum_note(1, DRUM_KICK)};
     std::vector<DrumFill> fills {{0, 2}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
+    NoteTrack track {notes, {}, {}, fills, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -987,10 +993,10 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_killed)
 
 BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_killed)
 {
-    std::vector<Note<DrumNoteColour>> notes {
-        {0}, {1, 0, DrumNoteColour::DoubleKick}};
+    std::vector<Note> notes {make_drum_note(0),
+                             make_drum_note(1, DRUM_DOUBLE_KICK)};
     std::vector<DrumFill> fills {{0, 2}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
+    NoteTrack track {notes, {}, {}, fills, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -1006,9 +1012,9 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_killed)
 BOOST_AUTO_TEST_CASE(
     fills_ending_in_a_multi_note_have_the_activation_attached_to_the_first_note)
 {
-    std::vector<Note<DrumNoteColour>> notes {{0}, {0, 0, DrumNoteColour::Kick}};
+    std::vector<Note> notes {make_drum_note(0), make_drum_note(0, DRUM_KICK)};
     std::vector<DrumFill> fills {{0, 2}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
+    NoteTrack track {notes, {}, {}, fills, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -1023,9 +1029,10 @@ BOOST_AUTO_TEST_CASE(
 
 BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
 {
-    std::vector<Note<DrumNoteColour>> notes {{0}, {192}, {370}, {384}};
+    std::vector<Note> notes {make_drum_note(0), make_drum_note(192),
+                             make_drum_note(370), make_drum_note(384)};
     std::vector<DrumFill> fills {{0, 2}, {193, 5}, {377, 4}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
+    NoteTrack track {notes, {}, {}, fills, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -1042,9 +1049,9 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
 
 BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
 {
-    std::vector<Note<DrumNoteColour>> notes {{0}, {192}};
+    std::vector<Note> notes {make_drum_note(0), make_drum_note(192)};
     std::vector<DrumFill> fills {{0, 96}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, fills, {}, {}, 192};
+    NoteTrack track {notes, {}, {}, fills, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -1059,9 +1066,8 @@ BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
 
 BOOST_AUTO_TEST_CASE(cymbals_get_extra_points)
 {
-    std::vector<Note<DrumNoteColour>> notes {
-        {0, 0, DrumNoteColour::YellowCymbal}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_drum_note(0, DRUM_YELLOW, FLAGS_CYMBAL)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -1075,14 +1081,16 @@ BOOST_AUTO_TEST_CASE(cymbals_get_extra_points)
 
 BOOST_AUTO_TEST_CASE(dynamics_get_double_points)
 {
-    std::vector<Note<DrumNoteColour>> notes {
-        {0, 0, DrumNoteColour::RedGhost},
-        {192, 0, DrumNoteColour::RedAccent},
-        {384, 0, DrumNoteColour::Red},
-        {576, 0, DrumNoteColour::YellowCymbalGhost},
-        {768, 0, DrumNoteColour::YellowCymbalAccent},
-        {960, 0, DrumNoteColour::YellowCymbal}};
-    NoteTrack<DrumNoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {
+        make_drum_note(0, DRUM_RED, FLAGS_GHOST),
+        make_drum_note(192, DRUM_RED, FLAGS_ACCENT),
+        make_drum_note(384, DRUM_RED),
+        make_drum_note(576, DRUM_YELLOW,
+                       static_cast<NoteFlags>(FLAGS_CYMBAL | FLAGS_GHOST)),
+        make_drum_note(768, DRUM_YELLOW,
+                       static_cast<NoteFlags>(FLAGS_CYMBAL | FLAGS_ACCENT)),
+        make_drum_note(960, DRUM_YELLOW, FLAGS_CYMBAL)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChDrumEngine(), {}},
                      {},
@@ -1103,8 +1111,8 @@ BOOST_AUTO_TEST_SUITE(first_after_current_phrase_works_correctly)
 
 BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(384)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, Gh1Engine(), {}},
                      {},
@@ -1119,9 +1127,9 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
 
 BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(384)};
     std::vector<StarPower> phrases {{0, 200}};
-    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, phrases, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, Gh1Engine(), {}},
                      {},
@@ -1135,9 +1143,9 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
 
 BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(384)};
     std::vector<StarPower> phrases {{0, 200}};
-    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, phrases, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
