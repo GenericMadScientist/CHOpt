@@ -26,10 +26,11 @@ BOOST_AUTO_TEST_SUITE(three_arg_total_available_sp_counts_sp_correctly)
 
 BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)
 {
-    std::vector<Note<NoteColour>> notes {{0},        {192},  {384},  {576},
-                                         {768, 192}, {1152}, {1344}, {1536}};
+    std::vector<Note> notes {
+        make_note(0),        make_note(192),  make_note(384),  make_note(576),
+        make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -52,10 +53,11 @@ BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)
 
 BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly)
 {
-    std::vector<Note<NoteColour>> notes {{0},        {192},  {384},  {576},
-                                         {768, 192}, {1152}, {1344}, {1536}};
+    std::vector<Note> notes {
+        make_note(0),        make_note(192),  make_note(384),  make_note(576),
+        make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -73,10 +75,11 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly)
 
 BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_even_started_mid_hold)
 {
-    std::vector<Note<NoteColour>> notes {{0},        {192},  {384},  {576},
-                                         {768, 192}, {1152}, {1344}, {1536}};
+    std::vector<Note> notes {
+        make_note(0),        make_note(192),  make_note(384),  make_note(576),
+        make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -94,10 +97,11 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_even_started_mid_hold)
 
 BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
 {
-    std::vector<Note<NoteColour>> notes {{0},        {192},  {384},  {576},
-                                         {768, 192}, {1152}, {1344}, {1536}};
+    std::vector<Note> notes {
+        make_note(0),        make_note(192),  make_note(384),  make_note(576),
+        make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -121,10 +125,11 @@ BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
 
 BOOST_AUTO_TEST_CASE(sp_does_not_exceed_full_bar)
 {
-    std::vector<Note<NoteColour>> notes {{0},        {192},  {384},  {576},
-                                         {768, 192}, {1152}, {1344}, {1536}};
+    std::vector<Note> notes {
+        make_note(0),        make_note(192),  make_note(384),  make_note(576),
+        make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -142,10 +147,11 @@ BOOST_AUTO_TEST_CASE(sp_does_not_exceed_full_bar)
 BOOST_AUTO_TEST_CASE(
     sp_notes_are_counted_from_first_point_when_start_is_past_middle)
 {
-    std::vector<Note<NoteColour>> notes {{0},        {192},  {384},  {576},
-                                         {768, 192}, {1152}, {1344}, {1536}};
+    std::vector<Note> notes {
+        make_note(0),        make_note(192),  make_note(384),  make_note(576),
+        make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -162,10 +168,11 @@ BOOST_AUTO_TEST_CASE(
 
 BOOST_AUTO_TEST_CASE(unison_bonuses_are_taken_account_of)
 {
-    std::vector<Note<NoteColour>> notes {{0},        {192},  {384},  {576},
-                                         {768, 192}, {1152}, {1344}, {1536}};
+    std::vector<Note> notes {
+        make_note(0),        make_note(192),  make_note(384),  make_note(576),
+        make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -185,9 +192,9 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_CASE(
     total_available_sp_with_earliest_pos_counts_sp_correctly_and_gives_earliest_posiiton)
 {
-    std::vector<Note<NoteColour>> notes {{0, 1459}, {1459}};
+    std::vector<Note> notes {make_note(0, 1459), make_note(1459)};
     std::vector<StarPower> phrases {{0, 100}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -207,9 +214,9 @@ BOOST_AUTO_TEST_CASE(
 
 BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}};
+    std::vector<Note> notes {make_note(0), make_note(192)};
     std::vector<StarPower> phrases {{0, 100}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -230,8 +237,9 @@ BOOST_AUTO_TEST_SUITE(is_candidate_valid_works_with_no_whammy)
 
 BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {1536}, {3072}, {6144}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
+                             make_note(6144)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -266,8 +274,9 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
 
 BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {1536}, {3072}, {6144}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
+                             make_note(6144)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -302,8 +311,9 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
 
 BOOST_AUTO_TEST_CASE(below_half_bar_never_works)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {1536}, {3072}, {6144}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
+                             make_note(6144)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -323,8 +333,9 @@ BOOST_AUTO_TEST_CASE(below_half_bar_never_works)
 
 BOOST_AUTO_TEST_CASE(check_next_point_needs_to_not_lie_in_activation)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {1536}, {3072}, {6144}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
+                             make_note(6144)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -344,9 +355,10 @@ BOOST_AUTO_TEST_CASE(check_next_point_needs_to_not_lie_in_activation)
 
 BOOST_AUTO_TEST_CASE(check_intermediate_sp_is_accounted_for)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {1536}, {3072}, {6144}};
+    std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
+                             make_note(6144)};
     std::vector<StarPower> phrases {{3000, 100}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -366,9 +378,10 @@ BOOST_AUTO_TEST_CASE(check_intermediate_sp_is_accounted_for)
 
 BOOST_AUTO_TEST_CASE(check_only_reached_intermediate_sp_is_accounted_for)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {1536}, {6000}, {6144}};
+    std::vector<Note> notes {make_note(0), make_note(1536), make_note(6000),
+                             make_note(6144)};
     std::vector<StarPower> phrases {{6000, 100}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -388,9 +401,10 @@ BOOST_AUTO_TEST_CASE(check_only_reached_intermediate_sp_is_accounted_for)
 
 BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {1536}, {3072}, {4000}};
+    std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
+                             make_note(4000)};
     std::vector<StarPower> phrases {{3072, 100}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -410,9 +424,9 @@ BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
 
 BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {2}, {7000}};
+    std::vector<Note> notes {make_note(0), make_note(2), make_note(7000)};
     std::vector<StarPower> phrases {{0, 1}, {2, 1}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -432,8 +446,9 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
 
 BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {1536}, {3072}, {6144}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
+                             make_note(6144)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -458,10 +473,11 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
 BOOST_AUTO_TEST_CASE(
     activations_starting_on_an_sp_granting_note_have_the_correct_end)
 {
-    std::vector<Note<NoteColour>> notes {
-        {384}, {384, 0, NoteColour::Red}, {5088}, {5136}};
+    std::vector<Note> notes {
+        make_chord(384, {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}}),
+        make_note(5088), make_note(5136)};
     std::vector<StarPower> phrases {{384, 1}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}}, {{0, 300000}}};
     ProcessedSong track {note_track,
                          sync_track,
@@ -489,9 +505,9 @@ BOOST_AUTO_TEST_SUITE(is_candidate_valid_acknowledges_unison_bonuses)
 
 BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
 {
-    std::vector<Note<NoteColour>> notes {{192}, {5376}};
+    std::vector<Note> notes {make_note(192), make_note(5376)};
     std::vector<StarPower> phrases {{192, 1}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -512,9 +528,9 @@ BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
 
 BOOST_AUTO_TEST_CASE(last_note_unison_bonus_accounted_for_excess_sp)
 {
-    std::vector<Note<NoteColour>> notes {{192}, {5376}};
+    std::vector<Note> notes {make_note(192), make_note(5376)};
     std::vector<StarPower> phrases {{192, 1}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -539,9 +555,10 @@ BOOST_AUTO_TEST_SUITE(is_candidate_valid_works_with_whammy)
 
 BOOST_AUTO_TEST_CASE(check_whammy_is_counted)
 {
-    std::vector<Note<NoteColour>> notes {{0, 960}, {3840}, {6144}};
+    std::vector<Note> notes {make_note(0, 960), make_note(3840),
+                             make_note(6144)};
     std::vector<StarPower> phrases {{0, 7000}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -562,9 +579,10 @@ BOOST_AUTO_TEST_CASE(check_whammy_is_counted)
 // the G after the B in the Robotic Buildup activation.
 BOOST_AUTO_TEST_CASE(check_whammy_from_end_of_sp_sustain_before_note_is_counted)
 {
-    std::vector<Note<NoteColour>> notes {{0, 960}, {2880}, {6144}};
+    std::vector<Note> notes {make_note(0, 960), make_note(2880),
+                             make_note(6144)};
     std::vector<StarPower> phrases {{0, 7000}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -588,9 +606,10 @@ BOOST_AUTO_TEST_CASE(check_whammy_from_end_of_sp_sustain_before_note_is_counted)
 BOOST_AUTO_TEST_CASE(
     whammy_around_the_start_of_an_sp_sustain_is_not_doubled_counted)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {384, 192}, {5260}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(384, 192),
+                             make_note(5260)};
     std::vector<StarPower> phrases {{384, 1}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -610,9 +629,10 @@ BOOST_AUTO_TEST_CASE(
 
 BOOST_AUTO_TEST_CASE(check_compressed_activations_are_counted)
 {
-    std::vector<Note<NoteColour>> notes {{0, 960}, {3840}, {6144}};
+    std::vector<Note> notes {make_note(0, 960), make_note(3840),
+                             make_note(6144)};
     std::vector<StarPower> phrases {{0, 7000}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -636,8 +656,9 @@ BOOST_AUTO_TEST_SUITE(is_candidate_valid_takes_into_account_minimum_sp)
 
 BOOST_AUTO_TEST_CASE(lower_sp_is_considered)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {1536}, {2304}, {3072}, {4608}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(1536), make_note(2304),
+                             make_note(3072), make_note(4608)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -656,8 +677,9 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_considered)
 
 BOOST_AUTO_TEST_CASE(lower_sp_is_only_considered_down_to_a_half_bar)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {1536}, {2304}, {3072}, {4608}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(1536), make_note(2304),
+                             make_note(3072), make_note(4608)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -682,8 +704,8 @@ BOOST_AUTO_TEST_SUITE(is_candidate_valid_takes_into_account_squeezing)
 BOOST_AUTO_TEST_CASE(
     front_end_and_back_end_of_the_activation_endpoints_are_considered)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {3110}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(3110)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -703,8 +725,8 @@ BOOST_AUTO_TEST_CASE(
 
 BOOST_AUTO_TEST_CASE(next_note_can_be_squeezed_late_to_avoid_going_too_far)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {3034}, {3053}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(3034), make_note(3053)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -724,9 +746,9 @@ BOOST_AUTO_TEST_CASE(next_note_can_be_squeezed_late_to_avoid_going_too_far)
 
 BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {3102}, {4608}};
+    std::vector<Note> notes {make_note(0), make_note(3102), make_note(4608)};
     std::vector<StarPower> phrases {{3100, 100}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -746,9 +768,9 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
 
 BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_late)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {768}, {6942}};
+    std::vector<Note> notes {make_note(0), make_note(768), make_note(6942)};
     std::vector<StarPower> phrases {{768, 100}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -770,9 +792,10 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {768}, {4608}, {5376}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(768),
+                             make_note(4608), make_note(5376)};
     std::vector<StarPower> phrases {{4608, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{}, {{3840, 4000000}}};
     ProcessedSong track {note_track,
                          sync_track,
@@ -795,8 +818,8 @@ BOOST_AUTO_TEST_SUITE(is_candidate_valid_takes_into_account_squeeze_param)
 
 BOOST_AUTO_TEST_CASE(front_end_and_back_end_are_restricted)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {3110}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(3110)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -818,9 +841,9 @@ BOOST_AUTO_TEST_CASE(front_end_and_back_end_are_restricted)
 
 BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {3102}, {4608}};
+    std::vector<Note> notes {make_note(0), make_note(3102), make_note(4608)};
     std::vector<StarPower> phrases {{3100, 100}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -842,9 +865,9 @@ BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
 
 BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {768}, {6942}};
+    std::vector<Note> notes {make_note(0), make_note(768), make_note(6942)};
     std::vector<StarPower> phrases {{768, 100}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -866,8 +889,8 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
 
 BOOST_AUTO_TEST_CASE(next_note_back_end_is_restricted)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {3034}, {3053}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0), make_note(3034), make_note(3053)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -889,8 +912,8 @@ BOOST_AUTO_TEST_CASE(next_note_back_end_is_restricted)
 
 BOOST_AUTO_TEST_CASE(end_position_is_finite_if_activation_goes_past_last_note)
 {
-    std::vector<Note<NoteColour>> notes {{0}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -915,9 +938,10 @@ BOOST_AUTO_TEST_SUITE(is_candidate_valid_takes_into_account_no_overlap)
 
 BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {2688}, {3072}, {3840}};
+    std::vector<Note> notes {make_note(0), make_note(2688), make_note(3072),
+                             make_note(3840)};
     std::vector<StarPower> phrases {{2688, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -937,9 +961,9 @@ BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
 
 BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {3072}, {3840}};
+    std::vector<Note> notes {make_note(0), make_note(3072), make_note(3840)};
     std::vector<StarPower> phrases {{3072, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -959,9 +983,9 @@ BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
 
 BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
 {
-    std::vector<Note<NoteColour>> notes {{0, 1920}, {3456}};
+    std::vector<Note> notes {make_note(0, 1920), make_note(3456)};
     std::vector<StarPower> phrases {{0, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -981,9 +1005,9 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
 
 BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
 {
-    std::vector<Note<NoteColour>> notes {{0, 2304}};
+    std::vector<Note> notes {make_note(0, 2304)};
     std::vector<StarPower> phrases {{0, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1007,9 +1031,10 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
 // you could go all the way back to the yellow.
 BOOST_AUTO_TEST_CASE(mid_act_whammy_around_sp_granting_note_doesnt_get_added)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {768, 192}, {3168}};
+    std::vector<Note> notes {make_note(0), make_note(768, 192),
+                             make_note(3168)};
     std::vector<StarPower> phrases {{768, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1031,9 +1056,10 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)
 {
-    std::vector<Note<NoteColour>> notes {{0, 768}, {3072}, {3264}};
+    std::vector<Note> notes {make_note(0, 768), make_note(3072),
+                             make_note(3264)};
     std::vector<StarPower> phrases {{0, 3300}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1060,9 +1086,10 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)
 BOOST_AUTO_TEST_CASE(
     is_candidate_valid_also_takes_account_of_whammy_from_end_of_sp_sustain_before_note_is_counted)
 {
-    std::vector<Note<NoteColour>> notes {{0, 960}, {2880}, {6144}};
+    std::vector<Note> notes {make_note(0, 960), make_note(2880),
+                             make_note(6144)};
     std::vector<StarPower> phrases {{0, 7000}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1086,9 +1113,10 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(
     is_candidate_valid_takes_account_of_overlapped_phrase_at_end_if_last_note_is_whammy)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {3456, 192}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
+                             make_note(3456, 192)};
     std::vector<StarPower> phrases {{0, 1}, {192, 1}, {3456, 1}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1114,9 +1142,9 @@ BOOST_AUTO_TEST_CASE(
 // caused the endpoint to be too early.
 BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
 {
-    std::vector<Note<NoteColour>> notes {{0, 6720}};
+    std::vector<Note> notes {make_note(0, 6720)};
     std::vector<StarPower> phrases {{0, 1}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 1, 4}}, {}};
     ProcessedSong track {note_track,
                          sync_track,
@@ -1138,8 +1166,8 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
 
 BOOST_AUTO_TEST_CASE(adjusted_hit_window_functions_return_correct_values)
 {
-    std::vector<Note<NoteColour>> notes {{0}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(0)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1167,9 +1195,10 @@ BOOST_AUTO_TEST_SUITE(video_lag_is_taken_account_of)
 
 BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
 {
-    std::vector<Note<NoteColour>> notes {{192}, {384, 192}, {768}};
+    std::vector<Note> notes {make_note(192), make_note(384, 192),
+                             make_note(768)};
     std::vector<StarPower> phrases {{384, 1}};
-    NoteTrack<NoteColour> track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong song {track,
                         {},
                         {0.0, 0.0, Second {0.0}, Second {-0.1}, Second {0.0}},
@@ -1187,8 +1216,8 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
 
 BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
 {
-    std::vector<Note<NoteColour>> notes {{768}, {3840}};
-    NoteTrack<NoteColour> track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_note(768), make_note(3840)};
+    NoteTrack track {notes, {}, {}, {}, {}, {}, 192};
     SyncTrack sync_track {{{0, 4, 4}, {3840, 2, 4}}, {}};
     ProcessedSong song {track,
                         sync_track,
@@ -1214,7 +1243,7 @@ BOOST_AUTO_TEST_SUITE(is_drums_returns_the_correct_value)
 
 BOOST_AUTO_TEST_CASE(false_for_guitar)
 {
-    NoteTrack<NoteColour> note_track {{}, {}, {}, {}, {}, {}, 192};
+    NoteTrack note_track {{}, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1228,7 +1257,7 @@ BOOST_AUTO_TEST_CASE(false_for_guitar)
 
 BOOST_AUTO_TEST_CASE(true_for_drums)
 {
-    NoteTrack<DrumNoteColour> note_track {{}, {}, {}, {}, {}, {}, 192};
+    NoteTrack note_track {{}, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1246,10 +1275,11 @@ BOOST_AUTO_TEST_SUITE(path_summary_produces_the_correct_output)
 
 BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
+                             make_note(576), make_note(6144)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
     std::vector<Solo> solos {{0, 50, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, solos, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, solos, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1273,10 +1303,11 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
 
 BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
+                             make_note(576), make_note(6144)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
     std::vector<Solo> solos {{0, 50, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, solos, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, solos, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1299,9 +1330,10 @@ BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
 
 BOOST_AUTO_TEST_CASE(no_overlap_is_denoted_correctly)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
+                             make_note(576), make_note(6144)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1325,9 +1357,10 @@ BOOST_AUTO_TEST_CASE(no_overlap_is_denoted_correctly)
 
 BOOST_AUTO_TEST_CASE(no_es_is_denoted_correctly)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
+                             make_note(576), make_note(6144)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1351,9 +1384,10 @@ BOOST_AUTO_TEST_CASE(no_es_is_denoted_correctly)
 
 BOOST_AUTO_TEST_CASE(no_sp_is_denoted_correctly)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
+                             make_note(576), make_note(6144)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
-    NoteTrack<NoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1373,9 +1407,9 @@ BOOST_AUTO_TEST_CASE(no_sp_is_denoted_correctly)
 
 BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192, 192}, {768}};
+    std::vector<Note> notes {make_note(0), make_note(192, 192), make_note(768)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1398,9 +1432,9 @@ BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
 
 BOOST_AUTO_TEST_CASE(mid_sustain_activations_noted_correctly)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {768, 192}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(768, 192)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1423,10 +1457,10 @@ BOOST_AUTO_TEST_CASE(mid_sustain_activations_noted_correctly)
 
 BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_counted_correctly)
 {
-    std::vector<Note<NoteColour>> notes {
-        {0}, {192}, {768}, {960, 0, NoteColour::Red}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(768),
+                             make_note(960, 0, FIVE_FRET_RED)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1450,10 +1484,10 @@ BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_counted_correctly)
 BOOST_AUTO_TEST_CASE(
     note_counting_is_done_correctly_when_intermediate_sustains_exist)
 {
-    std::vector<Note<NoteColour>> notes {
-        {0}, {192}, {768, 96}, {960, 0, NoteColour::Red}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(768, 96),
+                             make_note(960, 0, FIVE_FRET_RED)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1476,9 +1510,9 @@ BOOST_AUTO_TEST_CASE(
 
 BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192, 192}};
+    std::vector<Note> notes {make_note(0), make_note(192, 192)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1501,9 +1535,9 @@ BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
 
 BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
 {
-    std::vector<Note<NoteColour>> notes {{0, 3072}, {3264}};
+    std::vector<Note> notes {make_note(0, 3072), make_note(3264)};
     std::vector<StarPower> phrases {{0, 3300}};
-    NoteTrack<NoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1526,9 +1560,9 @@ BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
 
 BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_drums)
 {
-    std::vector<Note<DrumNoteColour>> notes {
-        {0, 0, DrumNoteColour::Red}, {192, 0, DrumNoteColour::DoubleKick}};
-    NoteTrack<DrumNoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_drum_note(0, DRUM_RED),
+                             make_drum_note(192, DRUM_DOUBLE_KICK)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1548,9 +1582,8 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_drums)
 
 BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_zero_notes)
 {
-    std::vector<Note<DrumNoteColour>> notes {
-        {192, 0, DrumNoteColour::DoubleKick}};
-    NoteTrack<DrumNoteColour> note_track {notes, {}, {}, {}, {}, {}, 192};
+    std::vector<Note> notes {make_drum_note(192, DRUM_DOUBLE_KICK)};
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1570,10 +1603,12 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_zero_notes)
 
 BOOST_AUTO_TEST_CASE(alternative_path_notation_is_used_for_drums)
 {
-    std::vector<Note<DrumNoteColour>> notes {{0},    {192},  {1536}, {6336},
-                                             {6528}, {6912}, {9984}, {13056}};
+    std::vector<Note> notes {make_drum_note(0),    make_drum_note(192),
+                             make_drum_note(1536), make_drum_note(6336),
+                             make_drum_note(6528), make_drum_note(6912),
+                             make_drum_note(9984), make_drum_note(13056)};
     std::vector<StarPower> phrases {{0, 1}, {192, 1}, {6336, 1}, {6528, 1}};
-    NoteTrack<DrumNoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     note_track.generate_drum_fills({{}, 192, ChDrumEngine(), {}});
     ProcessedSong track {note_track,
                          {},
@@ -1598,10 +1633,12 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_is_used_for_drums)
 
 BOOST_AUTO_TEST_CASE(alternative_path_notation_l_and_e_are_used_for_drums)
 {
-    std::vector<Note<DrumNoteColour>> notes {{0},    {390},  {1536}, {5568},
-                                             {5755}, {6912}, {9984}, {13056}};
+    std::vector<Note> notes {make_drum_note(0),    make_drum_note(390),
+                             make_drum_note(1536), make_drum_note(5568),
+                             make_drum_note(5755), make_drum_note(6912),
+                             make_drum_note(9984), make_drum_note(13056)};
     std::vector<StarPower> phrases {{0, 1}, {390, 1}, {5568, 1}, {5755, 1}};
-    NoteTrack<DrumNoteColour> note_track {notes, phrases, {}, {}, {}, {}, 192};
+    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, 192};
     note_track.generate_drum_fills({{}, 192, ChDrumEngine(), {}});
     ProcessedSong track {note_track,
                          {},
@@ -1626,9 +1663,10 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_l_and_e_are_used_for_drums)
 
 BOOST_AUTO_TEST_CASE(average_multiplier_is_ignored_with_rb)
 {
-    std::vector<Note<NoteColour>> notes {{0}, {192}, {384}, {576}, {6144}};
+    std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
+                             make_note(576), make_note(6144)};
     std::vector<Solo> solos {{0, 50, 100}};
-    NoteTrack<NoteColour> note_track {notes, {}, solos, {}, {}, {}, 192};
+    NoteTrack note_track {notes, {}, solos, {}, {}, {}, 192};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
