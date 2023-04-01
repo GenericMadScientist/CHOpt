@@ -445,7 +445,7 @@ inline Note make_note(int position, int length = 0,
 
 inline Note
 make_chord(int position,
-           const std::vector<std::tuple<FiveFretNotes, int>> lengths)
+           const std::vector<std::tuple<FiveFretNotes, int>>& lengths)
 {
     Note note;
     note.position = position;
@@ -470,7 +470,7 @@ inline Note make_ghl_note(int position, int length = 0,
 
 inline Note
 make_ghl_chord(int position,
-               const std::vector<std::tuple<SixFretNotes, int>> lengths)
+               const std::vector<std::tuple<SixFretNotes, int>>& lengths)
 {
     Note note;
     note.position = position;
