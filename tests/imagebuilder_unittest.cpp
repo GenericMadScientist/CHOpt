@@ -42,29 +42,84 @@ template <> struct print_log_value<std::tuple<double, int, int>> {
 };
 }
 
+namespace {
+DrawnNote make_drawn_note(double position, double length = 0,
+                          FiveFretNotes colour = FIVE_FRET_GREEN)
+{
+    DrawnNote note;
+    note.beat = position;
+    note.note_flags = FLAGS_FIVE_FRET_GUITAR;
+    note.lengths[colour] = length;
+    note.is_sp_note = false;
+
+    return note;
+}
+
+DrawnNote make_drawn_sp_note(double position, double length = 0,
+                             FiveFretNotes colour = FIVE_FRET_GREEN)
+{
+    DrawnNote note;
+    note.beat = position;
+    note.note_flags = FLAGS_FIVE_FRET_GUITAR;
+    note.lengths[colour] = length;
+    note.is_sp_note = true;
+
+    return note;
+}
+
+DrawnNote make_drawn_ghl_note(double position, double length = 0,
+                              SixFretNotes colour = SIX_FRET_WHITE_LOW)
+{
+    DrawnNote note;
+    note.beat = position;
+    note.note_flags = FLAGS_SIX_FRET_GUITAR;
+    note.lengths[colour] = length;
+    note.is_sp_note = false;
+
+    return note;
+}
+
+DrawnNote make_drawn_drum_note(double position, DrumNotes colour = DRUM_RED,
+                               NoteFlags flags = FLAGS_NONE)
+{
+    DrawnNote note;
+    note.beat = position;
+    note.note_flags = static_cast<NoteFlags>(flags | FLAGS_DRUMS);
+    note.lengths[colour] = 0;
+    note.is_sp_note = false;
+
+    return note;
+}
+}
+
 BOOST_AUTO_TEST_SUITE(track_type_is_stored_correctly)
 
 BOOST_AUTO_TEST_CASE(five_fret_gets_the_right_track_type)
 {
-    NoteTrack<NoteColour> track {{}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    NoteTrack track {{}, {}, {}, {}, {}, {}, 192};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
 
     BOOST_CHECK_EQUAL(builder.track_type(), TrackType::FiveFret);
 }
 
 BOOST_AUTO_TEST_CASE(six_fret_gets_the_right_track_type)
 {
-    NoteTrack<GHLNoteColour> track {{}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    NoteTrack track {{}, {}, {}, {}, {}, {}, 192};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
 
     BOOST_CHECK_EQUAL(builder.track_type(), TrackType::SixFret);
 }
 
 BOOST_AUTO_TEST_CASE(drums_gets_the_right_track_type)
 {
-    NoteTrack<DrumNoteColour> track {{}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {{}, {}, {}, {}, {}, {}, 192};
     ImageBuilder builder {
-        track, {}, Difficulty::Expert, DrumSettings::default_settings(), false};
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
 
     BOOST_CHECK_EQUAL(builder.track_type(), TrackType::Drums);
 }
@@ -75,12 +130,18 @@ BOOST_AUTO_TEST_SUITE(notes_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(non_sp_non_sustains_are_handled_correctly)
 {
-    NoteTrack<NoteColour> track {
-        {{0}, {768, 0, NoteColour::Red}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    std::vector<DrawnNote<NoteColour>> expected_notes {
-        {0.0, 0.0, NoteColour::Green, false},
-        {4.0, 0.0, NoteColour::Red, false}};
+    NoteTrack track {{make_note(0), make_note(768, 0, FIVE_FRET_RED)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
+    std::vector<DrawnNote> expected_notes {
+        make_drawn_note(0), make_drawn_note(4, 0, FIVE_FRET_RED)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.notes().cbegin(), builder.notes().cend(),
@@ -89,10 +150,11 @@ BOOST_AUTO_TEST_CASE(non_sp_non_sustains_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(sustains_are_handled_correctly)
 {
-    NoteTrack<NoteColour> track {{{0, 96}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    std::vector<DrawnNote<NoteColour>> expected_notes {
-        {0.0, 0.5, NoteColour::Green, false}};
+    NoteTrack track {{make_note(0, 96)}, {}, {}, {}, {}, {}, 192};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
+    std::vector<DrawnNote> expected_notes {make_drawn_note(0, 0.5)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.notes().cbegin(), builder.notes().cend(),
@@ -101,12 +163,13 @@ BOOST_AUTO_TEST_CASE(sustains_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(sp_notes_are_recorded)
 {
-    NoteTrack<NoteColour> track {{{0}, {768}}, {{768, 100}}, {}, {},
-                                 {},           {},           192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
-    std::vector<DrawnNote<NoteColour>> expected_notes {
-        {0.0, 0.0, NoteColour::Green, false},
-        {4.0, 0.0, NoteColour::Green, true}};
+    NoteTrack track {
+        {make_note(0), make_note(768)}, {{768, 100}}, {}, {}, {}, {}, 192};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
+    std::vector<DrawnNote> expected_notes {make_drawn_note(0),
+                                           make_drawn_sp_note(4)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.notes().cbegin(), builder.notes().cend(),
@@ -115,30 +178,44 @@ BOOST_AUTO_TEST_CASE(sp_notes_are_recorded)
 
 BOOST_AUTO_TEST_CASE(six_fret_notes_are_handled_correctly)
 {
-    NoteTrack<GHLNoteColour> track {
-        {{0}, {768, 0, GHLNoteColour::BlackHigh}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
-    std::vector<DrawnNote<GHLNoteColour>> expected_notes {
-        {0.0, 0.0, GHLNoteColour::WhiteLow, false},
-        {4.0, 0.0, GHLNoteColour::BlackHigh, false}};
+    NoteTrack track {
+        {make_ghl_note(0), make_ghl_note(768, 0, SIX_FRET_BLACK_HIGH)},
+        {},
+        {},
+        {},
+        {},
+        {},
+        192};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
+    std::vector<DrawnNote> expected_notes {
+        make_drawn_ghl_note(0), make_drawn_ghl_note(4, 0, SIX_FRET_BLACK_HIGH)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
-        builder.ghl_notes().cbegin(), builder.ghl_notes().cend(),
+        builder.notes().cbegin(), builder.notes().cend(),
         expected_notes.cbegin(), expected_notes.cend());
 }
 
 BOOST_AUTO_TEST_CASE(drum_notes_are_handled_correctly)
 {
-    NoteTrack<DrumNoteColour> track {
-        {{0}, {768, 0, DrumNoteColour::YellowCymbal}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_drum_note(0), make_drum_note(768, DRUM_YELLOW, FLAGS_CYMBAL)},
+        {},
+        {},
+        {},
+        {},
+        {},
+        192};
     ImageBuilder builder {
-        track, {}, Difficulty::Expert, DrumSettings::default_settings(), false};
-    std::vector<DrawnNote<DrumNoteColour>> expected_notes {
-        {0.0, 0.0, DrumNoteColour::Red, false},
-        {4.0, 0.0, DrumNoteColour::YellowCymbal, false}};
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
+    std::vector<DrawnNote> expected_notes {
+        make_drawn_drum_note(0),
+        make_drawn_drum_note(4, DRUM_YELLOW, FLAGS_CYMBAL)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
-        builder.drum_notes().cbegin(), builder.drum_notes().cend(),
+        builder.notes().cbegin(), builder.notes().cend(),
         expected_notes.cbegin(), expected_notes.cend());
 }
 
