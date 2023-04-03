@@ -460,9 +460,16 @@ BOOST_AUTO_TEST_SUITE(green_sp_ranges)
 
 BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
 {
-    NoteTrack<NoteColour> track {
-        {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    NoteTrack track {{make_note(960), make_note(1344, 96)},
+                     {{768, 384}, {1200, 150}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
@@ -474,8 +481,10 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
 
 BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
 {
-    NoteTrack<NoteColour> track {{{768}}, {{768, 384}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    NoteTrack track {{make_note(768)}, {{768, 384}}, {}, {}, {}, {}, 192};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_phrases(track, {}, Path {});
 
     std::vector<std::tuple<double, double>> expected_green_ranges {{4.0, 4.1}};
@@ -487,9 +496,16 @@ BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
 
 BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
 {
-    NoteTrack<GHLNoteColour> track {
-        {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false};
+    NoteTrack track {{make_ghl_note(960), make_ghl_note(1344, 96)},
+                     {{768, 384}, {1200, 150}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
@@ -501,10 +517,16 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
 
 BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
 {
-    NoteTrack<DrumNoteColour> track {
-        {{960}, {1344}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_drum_note(960), make_drum_note(1344)},
+                     {{768, 384}, {1200, 150}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     ImageBuilder builder {
-        track, {}, Difficulty::Expert, DrumSettings::default_settings(), false};
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.1}};
@@ -516,8 +538,13 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
 
 BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
 {
-    NoteTrack<NoteColour> track {
-        {{0}, {768}, {3840}}, {{3840, 192}}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(0), make_note(768), make_note(3840)},
+                     {{3840, 192}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -525,7 +552,9 @@ BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      Gh1Engine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
+    ImageBuilder builder {
+        track, {},   Difficulty::Expert, DrumSettings::default_settings(),
+        false, false};
     Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {0.05},
                  Beat {4.01}, Beat {20.01}}},
                100};
@@ -538,10 +567,10 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)
 {
-    NoteTrack<DrumNoteColour> track {
-        {{288, 0, DrumNoteColour::Red}}, {}, {}, {{192, 96}}, {}, {}, 192};
+    NoteTrack track {{{make_drum_note(288)}}, {}, {}, {{192, 96}}, {}, {}, 192};
     ImageBuilder builder {
-        track, {}, Difficulty::Expert, DrumSettings::default_settings(), false};
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_drum_fills(track);
 
     std::vector<std::tuple<double, double>> expected_fill_ranges {{1.0, 1.5}};
@@ -553,10 +582,11 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)
 
 BOOST_AUTO_TEST_CASE(drum_fills_cancelled_by_a_kick_are_not_drawn)
 {
-    NoteTrack<DrumNoteColour> track {
-        {{288, 0, DrumNoteColour::Kick}}, {}, {}, {{192, 96}}, {}, {}, 192};
+    NoteTrack track {
+        {make_drum_note(288, DRUM_KICK)}, {}, {}, {{192, 96}}, {}, {}, 192};
     ImageBuilder builder {
-        track, {}, Difficulty::Expert, DrumSettings::default_settings(), false};
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_drum_fills(track);
 
     BOOST_TEST(builder.fill_ranges().empty());
@@ -564,8 +594,8 @@ BOOST_AUTO_TEST_CASE(drum_fills_cancelled_by_a_kick_are_not_drawn)
 
 BOOST_AUTO_TEST_CASE(double_kicks_only_drawn_with_enable_double_kick)
 {
-    NoteTrack<DrumNoteColour> track {
-        {{0, 0, DrumNoteColour::Kick}, {192, 0, DrumNoteColour::DoubleKick}},
+    NoteTrack track {
+        {make_drum_note(0, DRUM_KICK), make_drum_note(192, DRUM_DOUBLE_KICK)},
         {},
         {},
         {},
@@ -573,18 +603,20 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_drawn_with_enable_double_kick)
         {},
         192};
     ImageBuilder no_double_builder {
-        track, {}, Difficulty::Expert, {false, false, false, false}, false};
+        track, {},  Difficulty::Expert, {false, false, false, false},
+        false, true};
     ImageBuilder double_builder {
-        track, {}, Difficulty::Expert, {true, false, false, false}, false};
+        track, {},  Difficulty::Expert, {true, false, false, false},
+        false, true};
 
-    BOOST_CHECK_EQUAL(no_double_builder.drum_notes().size(), 1);
-    BOOST_CHECK_EQUAL(double_builder.drum_notes().size(), 2);
+    BOOST_CHECK_EQUAL(no_double_builder.notes().size(), 1);
+    BOOST_CHECK_EQUAL(double_builder.notes().size(), 2);
 }
 
 BOOST_AUTO_TEST_CASE(single_kicks_disappear_with_disable_kick)
 {
-    NoteTrack<DrumNoteColour> track {
-        {{0, 0, DrumNoteColour::Kick}, {192, 0, DrumNoteColour::DoubleKick}},
+    NoteTrack track {
+        {make_drum_note(0, DRUM_KICK), make_drum_note(192, DRUM_DOUBLE_KICK)},
         {},
         {},
         {},
@@ -592,51 +624,65 @@ BOOST_AUTO_TEST_CASE(single_kicks_disappear_with_disable_kick)
         {},
         192};
     ImageBuilder builder {
-        track, {}, Difficulty::Expert, {true, true, false, false}, false};
+        track, {}, Difficulty::Expert, {true, true, false, false}, false, true};
 
-    BOOST_CHECK_EQUAL(builder.drum_notes().size(), 1);
+    BOOST_CHECK_EQUAL(builder.notes().size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(cymbals_become_toms_with_pro_drums_off)
 {
-    NoteTrack<DrumNoteColour> track {
-        {{0, 0, DrumNoteColour::YellowCymbal}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_drum_note(0, DRUM_YELLOW, FLAGS_CYMBAL)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     ImageBuilder builder {
-        track, {}, Difficulty::Expert, {true, false, false, false}, false};
+        track, {},  Difficulty::Expert, {true, false, false, false},
+        false, true};
 
-    BOOST_CHECK_EQUAL(builder.drum_notes().size(), 1);
-    BOOST_CHECK_EQUAL(builder.drum_notes()[0].colour, DrumNoteColour::Yellow);
+    BOOST_CHECK_EQUAL(builder.notes().size(), 1);
+    BOOST_CHECK_EQUAL(builder.notes().front().note_flags, FLAGS_DRUMS);
 }
 
 BOOST_AUTO_TEST_CASE(disco_flip_matters_only_with_pro_drums_on)
 {
-    NoteTrack<DrumNoteColour> track {{{192, 0, DrumNoteColour::YellowCymbal},
-                                      {288, 0, DrumNoteColour::Yellow}},
-                                     {},
-                                     {},
-                                     {},
-                                     {{192, 192}},
-                                     {},
-                                     192};
+    NoteTrack track {{make_drum_note(192, DRUM_YELLOW, FLAGS_CYMBAL),
+                      make_drum_note(288, DRUM_YELLOW)},
+                     {},
+                     {},
+                     {},
+                     {{192, 192}},
+                     {},
+                     192};
     ImageBuilder normal_builder {
-        track, {}, Difficulty::Expert, {true, false, false, false}, false};
+        track, {},  Difficulty::Expert, {true, false, false, false},
+        false, true};
     ImageBuilder pro_builder {
-        track, {}, Difficulty::Expert, DrumSettings::default_settings(), false};
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
 
-    BOOST_CHECK_EQUAL(normal_builder.drum_notes().size(), 2);
-    BOOST_CHECK_EQUAL(normal_builder.drum_notes()[0].colour,
-                      DrumNoteColour::Yellow);
-    BOOST_CHECK_EQUAL(pro_builder.drum_notes().size(), 2);
-    BOOST_CHECK_EQUAL(pro_builder.drum_notes()[0].colour, DrumNoteColour::Red);
-    BOOST_CHECK_EQUAL(pro_builder.drum_notes()[1].colour,
-                      DrumNoteColour::Yellow);
+    BOOST_CHECK_EQUAL(normal_builder.notes().size(), 2);
+    BOOST_CHECK_EQUAL(normal_builder.notes().front().note_flags, FLAGS_DRUMS);
+    BOOST_CHECK_EQUAL(pro_builder.notes().size(), 2);
+    BOOST_CHECK_EQUAL(pro_builder.notes()[0].lengths[DRUM_RED], 0);
+    BOOST_CHECK_EQUAL(pro_builder.notes()[1].lengths[DRUM_YELLOW], 0);
+    BOOST_CHECK_EQUAL(pro_builder.notes()[1].note_flags, FLAGS_DRUMS);
 }
 
 BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
 {
-    NoteTrack<NoteColour> track {
-        {{960}, {1344, 96}}, {{768, 384}, {1200, 150}}, {}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    NoteTrack track {{make_note(960), make_note(1344, 96)},
+                     {{768, 384}, {1200, 150}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_phrases(track, {{768, 384}}, Path {});
     std::vector<std::tuple<double, double>> expected_unison_ranges {{5.0, 5.1}};
 
@@ -649,8 +695,8 @@ BOOST_AUTO_TEST_SUITE(add_sp_acts_adds_correct_ranges)
 
 BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
 {
-    NoteTrack<NoteColour> track {
-        {{0, 96}, {192}}, {{0, 50}}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_note(0, 96), make_note(192)}, {{0, 50}}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -658,7 +704,9 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},
                0};
@@ -683,8 +731,14 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
 
 BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
 {
-    NoteTrack<NoteColour> track {
-        {{0}, {192}, {384}, {576}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_note(0), make_note(192), make_note(384), make_note(576)},
+        {},
+        {},
+        {},
+        {},
+        {},
+        192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -692,7 +746,9 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25}, Beat {0.1},
                  Beat {1.1}},
                 {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
@@ -709,8 +765,14 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
 
 BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
 {
-    NoteTrack<NoteColour> track {
-        {{192}, {384}, {576}, {768}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_note(192), make_note(384), make_note(576), make_note(768)},
+        {},
+        {},
+        {},
+        {},
+        {},
+        192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -718,7 +780,9 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                  Beat {0.0}, Beat {5.0}}},
                0};
@@ -732,7 +796,7 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
 
 BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
 {
-    NoteTrack<NoteColour> track {{{192}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(192)}, {}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -740,7 +804,9 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                  Beat {16.0}}},
                0};
@@ -754,8 +820,14 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
 
 BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
 {
-    NoteTrack<NoteColour> track {
-        {{0}, {192}, {384}, {576}, {768}, {1530}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(0), make_note(192), make_note(384),
+                      make_note(576), make_note(768), make_note(1530)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -763,7 +835,9 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                      {1.0, 1.0, Second(0.0), Second(0.05), Second(0.0)},
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25}, Beat {0.1},
                  Beat {1.1}},
                 {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
@@ -787,8 +861,8 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
 
 BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
 {
-    NoteTrack<NoteColour> track {
-        {{0, 96}, {192}}, {{0, 50}}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_note(0, 96), make_note(192)}, {{0, 50}}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -796,7 +870,9 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      Gh1Engine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
+    ImageBuilder builder {
+        track, {},   Difficulty::Expert, DrumSettings::default_settings(),
+        false, false};
     Path path {{{points.cbegin() + 1, points.cend() - 1, Beat {0.05},
                  Beat {0.1}, Beat {0.9}}},
                0};
@@ -811,8 +887,13 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
 
 BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
 {
-    NoteTrack<NoteColour> track {
-        {{0}, {768}, {3840}}, {{3840, 192}}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(0), make_note(768), make_note(3840)},
+                     {{3840, 192}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -820,7 +901,9 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      Gh1Engine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
+    ImageBuilder builder {
+        track, {},   Difficulty::Expert, DrumSettings::default_settings(),
+        false, false};
     Path path {{{points.cbegin() + 1, points.cbegin() + 1, Beat {0.05},
                  Beat {4.01}, Beat {20.01}}},
                50};
@@ -837,8 +920,13 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
 BOOST_AUTO_TEST_CASE(
     extra_green_ranges_are_not_discarded_for_no_overlap_engines)
 {
-    NoteTrack<NoteColour> track {
-        {{0, 96}, {192}, {3840}}, {{0, 50}, {3840, 192}}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(0, 96), make_note(192), make_note(3840)},
+                     {{0, 50}, {3840, 192}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -846,7 +934,9 @@ BOOST_AUTO_TEST_CASE(
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      Gh1Engine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
+    ImageBuilder builder {
+        track, {},   Difficulty::Expert, DrumSettings::default_settings(),
+        false, false};
     Path path {{{points.cbegin() + 1, points.cend() - 2, Beat {0.05},
                  Beat {0.1}, Beat {0.9}}},
                0};
@@ -862,8 +952,8 @@ BOOST_AUTO_TEST_CASE(
 
 BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
 {
-    NoteTrack<NoteColour> track {
-        {{0, 96}, {192}}, {{0, 50}}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_note(0, 96), make_note(192)}, {{0, 50}}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -871,7 +961,9 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      Gh1Engine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, false};
+    ImageBuilder builder {
+        track, {},   Difficulty::Expert, DrumSettings::default_settings(),
+        false, false};
     Path path {{{points.cbegin() + 1, points.cend() - 1, Beat {0.05},
                  Beat {0.1}, Beat {0.9}}},
                0};
@@ -889,8 +981,10 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(add_solo_sections_add_correct_ranges)
 {
-    NoteTrack<NoteColour> track {{{0}}, {}, {{192, 384, 0}}, {}, {}, {}, 192};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    NoteTrack track {{make_note(0)}, {}, {{192, 384, 0}}, {}, {}, {}, 192};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_solo_sections(track.solos(DrumSettings::default_settings()),
                               192);
     std::vector<std::tuple<double, double>> expected_solo_ranges {{1.0, 2.0}};
@@ -904,7 +998,7 @@ BOOST_AUTO_TEST_SUITE(add_measure_values_gives_correct_values)
 
 BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
 {
-    NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(0), make_note(768)}, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -912,7 +1006,9 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {50, 100};
@@ -927,8 +1023,13 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
 
 BOOST_AUTO_TEST_CASE(solos_are_added)
 {
-    NoteTrack<NoteColour> track {
-        {{768}}, {}, {{0, 100, 100}, {200, 800, 100}}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(768)},
+                     {},
+                     {{0, 100, 100}, {200, 800, 100}},
+                     {},
+                     {},
+                     {},
+                     192};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -936,7 +1037,9 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_score_values {100, 250};
 
@@ -949,7 +1052,7 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
 // Guitar Hero X.
 BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
 {
-    NoteTrack<NoteColour> track {{{0}}, {}, {{0, 1600, 50}}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(0)}, {}, {{0, 1600, 50}}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -957,7 +1060,9 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_score_values {100};
 
@@ -968,8 +1073,14 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(activations_are_added)
 {
-    NoteTrack<NoteColour> track {
-        {{0}, {192}, {384}, {768}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_note(0), make_note(192), make_note(384), make_note(768)},
+        {},
+        {},
+        {},
+        {},
+        {},
+        192};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -979,7 +1090,9 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
     Path path {
         {{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}},
         100};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_score_values {200, 300};
 
@@ -990,7 +1103,7 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
 
 BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
 {
-    NoteTrack<NoteColour> track {{{0}, {768}}, {}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(0), make_note(768)}, {}, {}, {}, {}, {}, 192};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -1000,7 +1113,9 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
     Path path {
         {{points.cbegin() + 1, points.cbegin() + 1, Beat {0.0}, Beat {0.0}}},
         50};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_measure_values(points, {{}, 192, ChGuitarEngine(), {}}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {50, 150};
@@ -1017,11 +1132,13 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
 {
-    NoteTrack<NoteColour> track {
-        {{0}, {192, 768}}, {{192, 50}}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_note(0), make_note(192, 768)}, {{192, 50}}, {}, {}, {}, {}, 192};
     SpData sp_data {
         track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_values(sp_data, ChGuitarEngine());
     std::vector<double> expected_sp_values {3.14, 1.0};
 
@@ -1032,7 +1149,8 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
 
 BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
 {
-    NoteTrack<NoteColour> track {{{0}, {192}}, {{0, 50}}, {}, {}, {}, {}, 192};
+    NoteTrack track {
+        {make_note(0), make_note(192)}, {{0, 50}}, {}, {}, {}, {}, 192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1040,7 +1158,9 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},
                50};
@@ -1051,9 +1171,13 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
 
 BOOST_AUTO_TEST_CASE(difficulty_is_handled)
 {
-    NoteTrack<NoteColour> track {{{0}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder hard_builder {track, {}, Difficulty::Hard, false, true};
-    ImageBuilder expert_builder {track, {}, Difficulty::Expert, false, true};
+    NoteTrack track {{make_note(0)}, {}, {}, {}, {}, {}, 192};
+    ImageBuilder hard_builder {
+        track, {},  Difficulty::Hard, DrumSettings::default_settings(),
+        false, true};
+    ImageBuilder expert_builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
 
     BOOST_CHECK_EQUAL(hard_builder.difficulty(), Difficulty::Hard);
     BOOST_CHECK_EQUAL(expert_builder.difficulty(), Difficulty::Expert);
@@ -1061,9 +1185,13 @@ BOOST_AUTO_TEST_CASE(difficulty_is_handled)
 
 BOOST_AUTO_TEST_CASE(lefty_flip_is_handled)
 {
-    NoteTrack<NoteColour> track {{{0}}, {}, {}, {}, {}, {}, 192};
-    ImageBuilder lefty_builder {track, {}, Difficulty::Expert, true, true};
-    ImageBuilder righty_builder {track, {}, Difficulty::Expert, false, true};
+    NoteTrack track {{make_note(0)}, {}, {}, {}, {}, {}, 192};
+    ImageBuilder lefty_builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        true,  true};
+    ImageBuilder righty_builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
 
     BOOST_TEST(lefty_builder.is_lefty_flip());
     BOOST_TEST(!righty_builder.is_lefty_flip());
@@ -1073,8 +1201,9 @@ BOOST_AUTO_TEST_SUITE(add_sp_percent_values_adds_correct_values)
 
 BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
 {
-    NoteTrack<NoteColour> track {
-        {{960}, {1080}, {1920}, {3840}, {4050}, {19200}},
+    NoteTrack track {
+        {make_note(960), make_note(1080), make_note(1920), make_note(3840),
+         make_note(4050), make_note(19200)},
         {{960, 10}, {1080, 10}, {1920, 10}, {3840, 10}, {4050, 10}},
         {},
         {},
@@ -1094,7 +1223,9 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                  Beat {102.0}}},
                0};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {
         0.0,    0.5,    0.75,   0.75,   0.75,   1.0,    1.0,    1.0, 1.0,
@@ -1109,19 +1240,19 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
 
 BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
 {
-    NoteTrack<NoteColour> track {
-        {{960}, {1080}, {1920}, {3840}, {4050}, {19200}},
-        {{960, 10},
-         {1080, 10},
-         {1920, 10},
-         {3840, 10},
-         {4050, 10},
-         {19200, 10}},
-        {},
-        {},
-        {},
-        {},
-        192};
+    NoteTrack track {{make_note(960), make_note(1080), make_note(1920),
+                      make_note(3840), make_note(4050), make_note(19200)},
+                     {{960, 10},
+                      {1080, 10},
+                      {1920, 10},
+                      {3840, 10},
+                      {4050, 10},
+                      {19200, 10}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1135,7 +1266,9 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                  Beat {132.0}}},
                0};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {
         0.0, 0.5, 0.75, 0.75, 0.75, 1.0, 1.0,    1.0,  1.0,
@@ -1150,8 +1283,13 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
 
 BOOST_AUTO_TEST_CASE(whammy_is_added)
 {
-    NoteTrack<NoteColour> track {
-        {{960}, {1632, 1920}}, {{960, 10}, {1632, 10}}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(960), make_note(1632, 1920)},
+                     {{960, 10}, {1632, 10}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1165,7 +1303,9 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                  Beat {22.0}}},
                0};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.5359166667, 0.49425};
@@ -1180,8 +1320,13 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
 
 BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
 {
-    NoteTrack<NoteColour> track {
-        {{960}, {1632, 1920}}, {{960, 10}, {1632, 10}}, {}, {}, {}, {}, 192};
+    NoteTrack track {{make_note(960), make_note(1632, 1920)},
+                     {{960, 10}, {1632, 10}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1195,7 +1340,9 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                  Beat {22.0}}},
                0};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.4025833333, 0.2775833333};
@@ -1210,14 +1357,14 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
 
 BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
 {
-    NoteTrack<NoteColour> track {
-        {{960}, {1632, 1920}, {6336}, {6528}, {7104}},
-        {{960, 10}, {1632, 10}, {6336, 10}, {6528, 10}},
-        {},
-        {},
-        {},
-        {},
-        192};
+    NoteTrack track {{make_note(960), make_note(1632, 1920), make_note(6336),
+                      make_note(6528), make_note(7104)},
+                     {{960, 10}, {1632, 10}, {6336, 10}, {6528, 10}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1233,7 +1380,9 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                  Beat {53.0}}},
                0};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {
         0.0,          0.25,         0.5275833333, 0.4025833333, 0.2775833333,
@@ -1250,13 +1399,14 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
 // See /issues/4, Triathlon m662 on 100%/100%.
 BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
 {
-    NoteTrack<NoteColour> track {{{0}, {192}, {384}, {3224}, {3456}},
-                                 {{0, 10}, {192, 10}, {3224, 10}},
-                                 {},
-                                 {},
-                                 {},
-                                 {},
-                                 192};
+    NoteTrack track {{make_note(0), make_note(192), make_note(384),
+                      make_note(3224), make_note(3456)},
+                     {{0, 10}, {192, 10}, {3224, 10}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     192};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1270,7 +1420,9 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                  Beat {0.8958}, Beat {16.8958}}},
                50};
 
-    ImageBuilder builder {track, {}, Difficulty::Expert, false, true};
+    ImageBuilder builder {
+        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
+        false, true};
     builder.add_sp_percent_values(sp_data, converter, points, path);
     std::vector<double> expected_percents {0.40299375, 0.27799375, 0.15299375,
                                            0.02799375, 0.25};
