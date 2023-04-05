@@ -195,6 +195,7 @@ BOOST_AUTO_TEST_CASE(sp_phrases_are_read_correctly_from_chart)
                           {},
                           {},
                           {},
+                          TrackType::FiveFret,
                           192};
 
     const auto song = Song::from_chart(chart, {});

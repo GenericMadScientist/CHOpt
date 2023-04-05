@@ -425,7 +425,7 @@ ImageBuilder::ImageBuilder(const NoteTrack& track, const SyncTrack& sync_track,
                            Difficulty difficulty,
                            const DrumSettings& drum_settings,
                            bool is_lefty_flip, bool is_overlap_engine)
-    : m_track_type {TrackType::FiveFret}
+    : m_track_type {track.track_type()}
     , m_difficulty {difficulty}
     , m_is_lefty_flip {is_lefty_flip}
     , m_rows {drawn_rows(track, sync_track)}
@@ -433,15 +433,6 @@ ImageBuilder::ImageBuilder(const NoteTrack& track, const SyncTrack& sync_track,
     , m_overlap_engine {is_overlap_engine}
 {
     form_beat_lines(sync_track, track.resolution());
-
-    const auto first_flags = track.notes().front().flags;
-    if (first_flags & FLAGS_FIVE_FRET_GUITAR) {
-        m_track_type = TrackType::FiveFret;
-    } else if (first_flags & FLAGS_SIX_FRET_GUITAR) {
-        m_track_type = TrackType::SixFret;
-    } else {
-        m_track_type = TrackType::Drums;
-    }
 }
 
 void ImageBuilder::add_bpms(const SyncTrack& sync_track, int resolution)

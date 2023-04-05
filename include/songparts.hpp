@@ -258,6 +258,7 @@ private:
     std::vector<DrumFill> m_drum_fills;
     std::vector<DiscoFlip> m_disco_flips;
     std::optional<BigRockEnding> m_bre;
+    TrackType m_track_type;
     int m_resolution;
     int m_base_score;
 
@@ -294,10 +295,12 @@ public:
     NoteTrack(std::vector<Note> notes, const std::vector<StarPower>& sp_phrases,
               std::vector<Solo> solos, std::vector<DrumFill> drum_fills,
               std::vector<DiscoFlip> disco_flips,
-              std::optional<BigRockEnding> bre, int resolution)
+              std::optional<BigRockEnding> bre, TrackType track_type,
+              int resolution)
         : m_drum_fills {std::move(drum_fills)}
         , m_disco_flips {std::move(disco_flips)}
         , m_bre {bre}
+        , m_track_type {track_type}
         , m_resolution {resolution}
     {
         if (m_resolution <= 0) {
@@ -479,6 +482,7 @@ public:
         return m_disco_flips;
     }
     [[nodiscard]] std::optional<BigRockEnding> bre() const { return m_bre; }
+    [[nodiscard]] TrackType track_type() const { return m_track_type; }
     [[nodiscard]] int resolution() const { return m_resolution; }
     [[nodiscard]] int base_score() const { return m_base_score; }
     [[nodiscard]] int base_score(DrumSettings drum_settings) const

@@ -372,8 +372,13 @@ NoteTrack note_track_from_section(const ChartSection& section, int resolution,
         disco_flips.push_back({start, end - start});
     }
 
-    return {std::move(notes), std::move(sp),          std::move(solos),
-            std::move(fills), std::move(disco_flips), {},
+    return {std::move(notes),
+            std::move(sp),
+            std::move(solos),
+            std::move(fills),
+            std::move(disco_flips),
+            {},
+            track_type,
             resolution};
 }
 
@@ -1012,6 +1017,7 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
                                        {},
                                        {},
                                        bre,
+                                       TrackType::FiveFret,
                                        resolution});
     }
 
@@ -1053,6 +1059,7 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
                                        {},
                                        {},
                                        {},
+                                       TrackType::SixFret,
                                        resolution});
     }
 
@@ -1191,6 +1198,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
                                        drum_fills,
                                        std::move(disco_flips),
                                        {},
+                                       TrackType::Drums,
                                        resolution});
     }
 
