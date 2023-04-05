@@ -43,36 +43,39 @@ template <> struct print_log_value<std::tuple<double, int, int>> {
 }
 
 namespace {
-DrawnNote make_drawn_note(double position, double length = 0,
+DrawnNote make_drawn_note(double position, double length = 0.0,
                           FiveFretNotes colour = FIVE_FRET_GREEN)
 {
     DrawnNote note;
     note.beat = position;
     note.note_flags = FLAGS_FIVE_FRET_GUITAR;
+    std::fill(note.lengths.begin(), note.lengths.end(), -1.0);
     note.lengths[colour] = length;
     note.is_sp_note = false;
 
     return note;
 }
 
-DrawnNote make_drawn_sp_note(double position, double length = 0,
+DrawnNote make_drawn_sp_note(double position, double length = 0.0,
                              FiveFretNotes colour = FIVE_FRET_GREEN)
 {
     DrawnNote note;
     note.beat = position;
     note.note_flags = FLAGS_FIVE_FRET_GUITAR;
+    std::fill(note.lengths.begin(), note.lengths.end(), -1.0);
     note.lengths[colour] = length;
     note.is_sp_note = true;
 
     return note;
 }
 
-DrawnNote make_drawn_ghl_note(double position, double length = 0,
+DrawnNote make_drawn_ghl_note(double position, double length = 0.0,
                               SixFretNotes colour = SIX_FRET_WHITE_LOW)
 {
     DrawnNote note;
     note.beat = position;
     note.note_flags = FLAGS_SIX_FRET_GUITAR;
+    std::fill(note.lengths.begin(), note.lengths.end(), -1.0);
     note.lengths[colour] = length;
     note.is_sp_note = false;
 
@@ -85,7 +88,8 @@ DrawnNote make_drawn_drum_note(double position, DrumNotes colour = DRUM_RED,
     DrawnNote note;
     note.beat = position;
     note.note_flags = static_cast<NoteFlags>(flags | FLAGS_DRUMS);
-    note.lengths[colour] = 0;
+    std::fill(note.lengths.begin(), note.lengths.end(), -1.0);
+    note.lengths[colour] = 0.0;
     note.is_sp_note = false;
 
     return note;
