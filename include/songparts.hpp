@@ -165,7 +165,7 @@ private:
 
 public:
     int position {0};
-    std::array<int, 7> lengths {-1};
+    std::array<int, 7> lengths {{-1, -1, -1, -1, -1, -1, -1}};
     NoteFlags flags {0};
 
     [[nodiscard]] int colours() const
