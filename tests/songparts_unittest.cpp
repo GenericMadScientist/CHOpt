@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE(open_and_non_open_notes_of_same_pos_and_length_are_merged)
                              make_note(768, 1, FIVE_FRET_RED),
                              make_note(768, 0, FIVE_FRET_OPEN)};
     NoteTrack track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
-    std::vector<Note> required_notes {make_note(768, 1, FIVE_FRET_RED),
-                                      make_note(768, 0, FIVE_FRET_OPEN)};
+    std::vector<Note> required_notes {
+        make_chord(768, {{FIVE_FRET_RED, 1}, {FIVE_FRET_OPEN, 0}})};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   required_notes.cbegin(),
@@ -261,8 +261,9 @@ BOOST_AUTO_TEST_SUITE(base_score_for_average_multiplier_is_correct)
 
 BOOST_AUTO_TEST_CASE(base_score_is_correct_for_songs_without_sustains)
 {
-    std::vector<Note> notes {make_note(192), make_note(384),
-                             make_note(384, 0, FIVE_FRET_RED)};
+    std::vector<Note> notes {
+        make_note(192),
+        make_chord(384, {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}})};
 
     NoteTrack track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
 

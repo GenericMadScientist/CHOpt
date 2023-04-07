@@ -182,11 +182,12 @@ public:
     void merge_non_opens_into_open()
     {
         const auto index = open_index();
-        if (index == -1 || lengths[index] == -1) {
+        const auto open_length = lengths[index];
+        if (index == -1 || open_length == -1) {
             return;
         }
         for (auto i = 0; i < 7; ++i) {
-            if (i != index) {
+            if (i != index && lengths[i] == open_length) {
                 lengths[i] = -1;
             }
         }
@@ -199,8 +200,8 @@ public:
 
     [[nodiscard]] bool is_kick_note() const
     {
-        return flags & FLAGS_DRUMS
-            & (lengths[DRUM_KICK] != -1 || lengths[DRUM_DOUBLE_KICK] != -1);
+        return (flags & FLAGS_DRUMS)
+            && (lengths[DRUM_KICK] != -1 || lengths[DRUM_DOUBLE_KICK] != -1);
     }
 
     [[nodiscard]] bool is_skipped_kick(const DrumSettings& settings) const
@@ -267,7 +268,15 @@ private:
         constexpr int BASE_NOTE_VALUE = 50;
         constexpr int BASE_SUSTAIN_DENSITY = 25;
 
-        auto base_score = static_cast<int>(BASE_NOTE_VALUE * m_notes.size());
+        auto note_count = 0;
+        for (const auto& note : m_notes) {
+            for (auto l : note.lengths) {
+                if (l != -1) {
+                    ++note_count;
+                }
+            }
+        }
+        auto base_score = BASE_NOTE_VALUE * note_count;
         auto total_ticks = 0;
         for (const auto& note : m_notes) {
             std::vector<int> constituent_lengths;
@@ -309,6 +318,10 @@ private:
 
     void merge_same_time_notes()
     {
+        if (m_track_type == TrackType::Drums) {
+            return;
+        }
+
         std::vector<Note> notes;
         for (auto p = m_notes.cbegin(); p < m_notes.cend();) {
             auto q = p;
@@ -493,9 +506,7 @@ public:
                 ++q;
                 continue;
             }
-            if ((p->colours() & 5) && !drum_settings.enable_double_kick) {
-                q->value -= 100;
-            } else if ((p->colours() & 4) && drum_settings.disable_kick) {
+            if (p->is_skipped_kick(drum_settings)) {
                 q->value -= 100;
             }
             ++p;
@@ -521,15 +532,8 @@ public:
     {
         constexpr int BASE_NOTE_VALUE = 50;
 
-        auto count_note = [&](auto& note) {
-            if (note.colours() & 4) {
-                return !drum_settings.disable_kick;
-            }
-            if (note.colours() & 5) {
-                return drum_settings.enable_double_kick;
-            }
-            return true;
-        };
+        auto count_note
+            = [&](auto& note) { return !note.is_skipped_kick(drum_settings); };
         return BASE_NOTE_VALUE
             * static_cast<int>(
                    std::count_if(m_notes.cbegin(), m_notes.cend(), count_note));
@@ -545,7 +549,7 @@ public:
 
         for (auto& note : trimmed_track.m_notes) {
             for (auto& length : note.lengths) {
-                if (length <= sust_cutoff) {
+                if (length != -1 && length <= sust_cutoff) {
                     length = 0;
                 }
             }
