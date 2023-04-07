@@ -291,6 +291,36 @@ private:
         return base_score;
     }
 
+    Note combined_note(std::vector<Note>::const_iterator begin,
+                       std::vector<Note>::const_iterator end)
+    {
+        Note note = *begin;
+        ++begin;
+        while (begin < end) {
+            for (auto i = 0; i < 7; ++i) {
+                if (begin->lengths[i] != -1) {
+                    note.lengths[i] = begin->lengths[i];
+                }
+            }
+            ++begin;
+        }
+        return note;
+    }
+
+    void merge_same_time_notes()
+    {
+        std::vector<Note> notes;
+        for (auto p = m_notes.cbegin(); p < m_notes.cend();) {
+            auto q = p;
+            while (q < m_notes.cend() && p->position == q->position) {
+                ++q;
+            }
+            notes.push_back(combined_note(p, q));
+            p = q;
+        }
+        m_notes = std::move(notes);
+    }
+
 public:
     NoteTrack(std::vector<Note> notes, const std::vector<StarPower>& sp_phrases,
               std::vector<Solo> solos, std::vector<DrumFill> drum_fills,
@@ -365,6 +395,8 @@ public:
                              return lhs.start < rhs.start;
                          });
         m_solos = std::move(solos);
+
+        merge_same_time_notes();
 
         m_base_score = compute_base_score();
 
