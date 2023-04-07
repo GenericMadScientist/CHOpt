@@ -446,7 +446,7 @@ public:
     [[nodiscard]] std::vector<Solo>
     solos(const DrumSettings& drum_settings) const
     {
-        if (!(m_notes.front().flags & FLAGS_DRUMS)) {
+        if (m_track_type != TrackType::Drums) {
             return m_solos;
         }
         auto solos = m_solos;
@@ -533,10 +533,6 @@ public:
             }
         }
         return new_track;
-    }
-    [[nodiscard]] bool is_drums_track() const
-    {
-        return m_notes.front().flags & FLAGS_DRUMS;
     }
 };
 

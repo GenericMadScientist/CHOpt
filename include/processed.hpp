@@ -121,7 +121,7 @@ public:
         , m_sp_data {track, sync_track, od_beats, squeeze_settings, engine}
         , m_total_bre_boost {bre_boost(track, engine, m_converter)}
         , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
-        , m_is_drums {track.is_drums_track()}
+        , m_is_drums {track.track_type() == TrackType::Drums}
         , m_overlaps {engine.overlaps()}
     {
         m_base_score = track.base_score(drum_settings);

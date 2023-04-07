@@ -257,7 +257,7 @@ make_builder_from_track(const Song& song, const NoteTrack& track,
         new_track = track.trim_sustains();
     }
     new_track = new_track.snap_chords(settings.engine->snap_gap());
-    if (track.is_drums_track()) {
+    if (track.track_type() == TrackType::Drums) {
         if (!settings.engine->is_rock_band()
             && new_track.drum_fills().empty()) {
             new_track.generate_drum_fills({song.sync_track(),
@@ -275,7 +275,7 @@ make_builder_from_track(const Song& song, const NoteTrack& track,
     builder.add_song_header(song.name(), song.artist(), song.charter(),
                             settings.speed);
 
-    if (track.is_drums_track()) {
+    if (track.track_type() == TrackType::Drums) {
         builder.add_drum_fills(new_track);
     }
 
@@ -312,8 +312,8 @@ make_builder_from_track(const Song& song, const NoteTrack& track,
     Path path;
 
     if (!settings.blank) {
-        const auto is_rb_drums
-            = track.is_drums_track() && settings.engine->is_rock_band();
+        const auto is_rb_drums = track.track_type() == TrackType::Drums
+            && settings.engine->is_rock_band();
         if (is_rb_drums) {
             write("Optimisation disabled for Rock Band drums, planned for a "
                   "future release");

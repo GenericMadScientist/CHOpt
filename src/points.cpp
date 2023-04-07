@@ -328,7 +328,7 @@ std::vector<Point> unmultiplied_points(const NoteTrack& track,
     auto current_phrase = track.sp_phrases().cbegin();
 
     for (auto p = notes.cbegin(); p != notes.cend();) {
-        if (track.is_drums_track()) {
+        if (track.track_type() == TrackType::Drums) {
             if (p->is_skipped_kick(drum_settings)) {
                 ++p;
                 continue;
@@ -337,10 +337,11 @@ std::vector<Point> unmultiplied_points(const NoteTrack& track,
         if (has_relevant_bre && p->position >= track.bre()->start) {
             break;
         }
-        const auto search_start = track.is_drums_track() ? std::next(p) : p;
+        const auto search_start
+            = track.track_type() == TrackType::Drums ? std::next(p) : p;
         const auto q = std::find_if_not(
             search_start, notes.cend(), [=](const auto& note) {
-                if (track.is_drums_track()) {
+                if (track.track_type() == TrackType::Drums) {
                     return note.is_skipped_kick(drum_settings);
                 } else {
                     return note.position == p->position;
@@ -397,7 +398,7 @@ std::vector<Point> PointSet::points_from_track(
     const SqueezeSettings& squeeze_settings, const DrumSettings& drum_settings,
     const Engine& engine)
 {
-    if (!track.is_drums_track()) {
+    if (track.track_type() != TrackType::Drums) {
         return non_drum_points(track, converter, unison_phrases,
                                squeeze_settings, engine);
     }
