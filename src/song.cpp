@@ -134,7 +134,7 @@ std::optional<Note> note_from_note_colour(int position, int length,
                    {8, SIX_FRET_BLACK_HIGH}};
         return note_from_colour_key_map(colours, position, length, fret_type,
                                         FLAGS_SIX_FRET_GUITAR);
-    case TrackType::Drums:
+    case TrackType::Drums: {
         colours = {{0, DRUM_KICK},    {1, DRUM_RED},   {2, DRUM_YELLOW},
                    {3, DRUM_BLUE},    {4, DRUM_GREEN}, {32, DRUM_DOUBLE_KICK},
                    {66, DRUM_YELLOW}, {67, DRUM_BLUE}, {68, DRUM_GREEN}};
@@ -144,6 +144,9 @@ std::optional<Note> note_from_note_colour(int position, int length,
             note->flags = static_cast<NoteFlags>(note->flags | FLAGS_CYMBAL);
         }
         return note;
+    }
+    default:
+        throw std::invalid_argument("Invalid track type");
     }
 }
 
@@ -418,6 +421,8 @@ TrackType track_type_from_instrument(Instrument instrument)
         return TrackType::SixFret;
     case Instrument::Drums:
         return TrackType::Drums;
+    default:
+        throw std::invalid_argument("Invalid instrument");
     }
 }
 
@@ -557,6 +562,8 @@ int colour_from_key(std::uint8_t key, TrackType track_type, bool from_five_lane)
         }
         return colour_from_key_and_bounds(key, diff_ranges, DRUM_NOTE_COLOURS);
     }
+    default:
+        throw std::invalid_argument("Invalid track type");
     }
 }
 
@@ -720,6 +727,8 @@ NoteFlags flags_from_track_type(TrackType track_type)
         return FLAGS_SIX_FRET_GUITAR;
     case TrackType::Drums:
         return FLAGS_DRUMS;
+    default:
+        throw std::invalid_argument("Invalid track type");
     }
 }
 
