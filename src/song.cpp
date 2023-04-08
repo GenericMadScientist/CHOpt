@@ -560,6 +560,15 @@ int colour_from_key(std::uint8_t key, TrackType track_type, bool from_five_lane)
     }
 }
 
+bool is_cymbal_key(std::uint8_t key, bool from_five_lane)
+{
+    const auto index = (key + 1) % 12;
+    if (from_five_lane) {
+        return index == 3 || index == 5;
+    }
+    return index == 3 || index == 4 || index == 5;
+}
+
 bool is_open_event_sysex(const SysexEvent& event)
 {
     constexpr std::array<std::tuple<std::size_t, int>, 6> REQUIRED_BYTES {
@@ -749,9 +758,14 @@ void add_note_on_event(InstrumentMidiTrack& track,
     if (diff.has_value()) {
         auto colour = colour_from_key(data[0], track_type, from_five_lane);
         auto flags = flags_from_track_type(track_type);
-        if (track_type == TrackType::Drums && parse_dynamics) {
-            flags = static_cast<NoteFlags>(
-                flags | dynamics_flags_from_velocity(data[1]));
+        if (track_type == TrackType::Drums) {
+            if (is_cymbal_key(data[0], from_five_lane)) {
+                flags = static_cast<NoteFlags>(flags | FLAGS_CYMBAL);
+            }
+            if (parse_dynamics) {
+                flags = static_cast<NoteFlags>(
+                    flags | dynamics_flags_from_velocity(data[1]));
+            }
         }
         track.note_on_events[{*diff, colour, flags}].push_back({time, rank});
     } else if (data[0] == YELLOW_TOM_ID) {
