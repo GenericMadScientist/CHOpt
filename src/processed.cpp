@@ -28,6 +28,9 @@ namespace {
 int bre_boost(const NoteTrack& track, const Engine& engine,
               const TimeConverter& converter)
 {
+    constexpr int INITIAL_BRE_VALUE = 750;
+    constexpr int BRE_VALUE_PER_SECOND = 500;
+
     if (!engine.has_bres() || !track.bre().has_value()) {
         return 0;
     }
@@ -36,7 +39,8 @@ int bre_boost(const NoteTrack& track, const Engine& engine,
     const auto seconds_end = converter.beats_to_seconds(
         Beat {track.bre()->end / static_cast<double>(track.resolution())});
     const auto seconds_gap = seconds_end - seconds_start;
-    return static_cast<int>(750 + 500 * seconds_gap.value());
+    return static_cast<int>(INITIAL_BRE_VALUE
+                            + BRE_VALUE_PER_SECOND * seconds_gap.value());
 }
 }
 
@@ -66,11 +70,11 @@ ProcessedSong::ProcessedSong(const NoteTrack& track,
                 drum_settings, engine}
     , m_sp_data {track, sync_track, od_beats, squeeze_settings, engine}
     , m_total_bre_boost {bre_boost(track, engine, m_converter)}
+    , m_base_score {track.base_score(drum_settings)}
     , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
     , m_is_drums {track.track_type() == TrackType::Drums}
     , m_overlaps {engine.overlaps()}
 {
-    m_base_score = track.base_score(drum_settings);
     const auto solos = track.solos(drum_settings);
     m_total_solo_boost = std::accumulate(
         solos.cbegin(), solos.cend(), 0,

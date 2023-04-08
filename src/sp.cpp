@@ -108,10 +108,10 @@ SpData::note_spans(const NoteTrack& track, double early_whammy,
         }
         for (auto length : note->lengths) {
             if (length != -1) {
-                spans.push_back(
-                    {note->position, length,
-                     Second {engine.early_timing_window(early_gap, late_gap)}
-                         * early_whammy});
+                spans.emplace_back(
+                    note->position, length,
+                    Second {engine.early_timing_window(early_gap, late_gap)}
+                        * early_whammy);
             }
         }
     }

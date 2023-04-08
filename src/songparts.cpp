@@ -25,9 +25,10 @@ Note combined_note(std::vector<Note>::const_iterator begin,
     Note note = *begin;
     ++begin;
     while (begin < end) {
-        for (auto i = 0; i < 7; ++i) {
-            if (begin->lengths[i] != -1) {
-                note.lengths[i] = begin->lengths[i];
+        for (auto i = 0U; i < note.lengths.size(); ++i) {
+            const auto new_length = begin->lengths.at(i);
+            if (new_length != -1) {
+                note.lengths.at(i) = new_length;
             }
         }
         ++begin;
@@ -38,10 +39,10 @@ Note combined_note(std::vector<Note>::const_iterator begin,
 
 int Note::open_index() const
 {
-    if (flags & FLAGS_FIVE_FRET_GUITAR) {
+    if ((flags & FLAGS_FIVE_FRET_GUITAR) != 0U) {
         return FIVE_FRET_OPEN;
     }
-    if (flags & FLAGS_SIX_FRET_GUITAR) {
+    if ((flags & FLAGS_SIX_FRET_GUITAR) != 0U) {
         return SIX_FRET_OPEN;
     }
     return -1;
@@ -51,7 +52,7 @@ int Note::colours() const
 {
     auto colour_flags = 0;
     for (auto i = 0U; i < lengths.size(); ++i) {
-        if (lengths[i] != -1) {
+        if (lengths.at(i) != -1) {
             colour_flags |= 1 << i;
         }
     }
@@ -61,13 +62,16 @@ int Note::colours() const
 void Note::merge_non_opens_into_open()
 {
     const auto index = open_index();
-    const auto open_length = lengths[index];
-    if (index == -1 || open_length == -1) {
+    if (index == -1) {
         return;
     }
-    for (auto i = 0; i < 7; ++i) {
-        if (i != index && lengths[i] == open_length) {
-            lengths[i] = -1;
+    const auto open_length = lengths.at(index);
+    if (open_length == -1) {
+        return;
+    }
+    for (auto i = 0; i < static_cast<int>(lengths.size()); ++i) {
+        if (i != index && lengths.at(i) == open_length) {
+            lengths.at(i) = -1;
         }
     }
 }
@@ -79,7 +83,7 @@ void Note::disable_dynamics()
 
 bool Note::is_kick_note() const
 {
-    return (flags & FLAGS_DRUMS)
+    return ((flags & FLAGS_DRUMS) != 0U)
         && (lengths[DRUM_KICK] != -1 || lengths[DRUM_DOUBLE_KICK] != -1);
 }
 
@@ -149,6 +153,7 @@ NoteTrack::NoteTrack(std::vector<Note> notes,
     , m_bre {bre}
     , m_track_type {track_type}
     , m_resolution {resolution}
+    , m_base_score_ticks {0}
 {
     if (m_resolution <= 0) {
         throw ParseError("Resolution non-positive");
@@ -224,6 +229,9 @@ NoteTrack::NoteTrack(std::vector<Note> notes,
 
 void NoteTrack::generate_drum_fills(const TimeConverter& converter)
 {
+    const Second FILL_DELAY {0.25};
+    const Measure FILL_GAP {4.0};
+
     if (m_notes.empty()) {
         return;
     }
@@ -232,12 +240,12 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
     for (const auto& n : m_notes) {
         const auto seconds = converter.beats_to_seconds(
             Beat(n.position / static_cast<double>(m_resolution)));
-        note_times.push_back({seconds, n.position});
+        note_times.emplace_back(seconds, n.position);
     }
     const auto final_note_s = converter.beats_to_seconds(
         Beat(m_notes.back().position / static_cast<double>(m_resolution)));
     const auto measure_bound
-        = converter.seconds_to_measures(final_note_s + Second(0.25));
+        = converter.seconds_to_measures(final_note_s + FILL_DELAY);
     Measure m {1.0};
     while (m <= measure_bound) {
         const auto fill_seconds = converter.measures_to_seconds(m);
@@ -247,10 +255,10 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
         int close_note_position = 0;
         for (const auto& [s, pos] : note_times) {
             const auto s_diff = s - fill_seconds;
-            if (s_diff > Second(0.25)) {
+            if (s_diff > FILL_DELAY) {
                 break;
             }
-            if (s_diff < Second(-0.25)) {
+            if (s_diff + FILL_DELAY < Second {0}) {
                 continue;
             }
             if (!exists_close_note) {
@@ -273,7 +281,7 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
             m_resolution * converter.seconds_to_beats(mid_m_seconds).value());
         m_drum_fills.push_back(
             DrumFill {fill_start, measure_ticks - fill_start});
-        m += Measure(4.0);
+        m += FILL_GAP;
     }
 }
 
@@ -286,6 +294,8 @@ void NoteTrack::disable_dynamics()
 
 std::vector<Solo> NoteTrack::solos(const DrumSettings& drum_settings) const
 {
+    constexpr int SOLO_NOTE_VALUE = 100;
+
     if (m_track_type != TrackType::Drums) {
         return m_solos;
     }
@@ -302,7 +312,7 @@ std::vector<Solo> NoteTrack::solos(const DrumSettings& drum_settings) const
             continue;
         }
         if (p->is_skipped_kick(drum_settings)) {
-            q->value -= 100;
+            q->value -= SOLO_NOTE_VALUE;
         }
         ++p;
     }
