@@ -702,6 +702,18 @@ void add_note_off_event(InstrumentMidiTrack& track,
     }
 }
 
+NoteFlags flags_from_track_type(TrackType track_type)
+{
+    switch (track_type) {
+    case TrackType::FiveFret:
+        return FLAGS_FIVE_FRET_GUITAR;
+    case TrackType::SixFret:
+        return FLAGS_SIX_FRET_GUITAR;
+    case TrackType::Drums:
+        return FLAGS_DRUMS;
+    }
+}
+
 NoteFlags dynamics_flags_from_velocity(std::uint8_t velocity)
 {
     constexpr std::uint8_t MIN_ACCENT_VELOCITY = 127;
@@ -736,9 +748,10 @@ void add_note_on_event(InstrumentMidiTrack& track,
     const auto diff = difficulty_from_key(data[0], track_type);
     if (diff.has_value()) {
         auto colour = colour_from_key(data[0], track_type, from_five_lane);
-        auto flags = static_cast<NoteFlags>(0);
+        auto flags = flags_from_track_type(track_type);
         if (track_type == TrackType::Drums && parse_dynamics) {
-            flags = dynamics_flags_from_velocity(data[1]);
+            flags = static_cast<NoteFlags>(
+                flags | dynamics_flags_from_velocity(data[1]));
         }
         track.note_on_events[{*diff, colour, flags}].push_back({time, rank});
     } else if (data[0] == YELLOW_TOM_ID) {
@@ -981,6 +994,7 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
             Note note;
             note.position = pos;
             note.lengths[note_colour] = note_length;
+            note.flags = flags_from_track_type(track_type);
             notes[diff].push_back(note);
         }
     }

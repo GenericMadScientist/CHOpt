@@ -1127,8 +1127,8 @@ BOOST_AUTO_TEST_CASE(short_midi_sustains_are_not_trimmed)
     const auto song = Song::from_midi(midi, {});
     const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
 
-    BOOST_CHECK_EQUAL(notes[0].lengths[0], 0);
-    BOOST_CHECK_EQUAL(notes[1].lengths[0], 0);
+    BOOST_CHECK_EQUAL(notes[0].lengths[0], 65);
+    BOOST_CHECK_EQUAL(notes[1].lengths[0], 70);
 }
 
 BOOST_AUTO_TEST_SUITE(other_five_fret_instruments_are_read_from_mid)
