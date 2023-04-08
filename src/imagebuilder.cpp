@@ -69,15 +69,16 @@ double get_denom(const SyncTrack& sync_track, int resolution, double beat)
 
 DrawnNote note_to_drawn_note(const Note& note, const NoteTrack& track)
 {
+    constexpr auto COLOURS_SIZE = 7;
     const auto beat = note.position / static_cast<double>(track.resolution());
 
-    std::array<double, 7> lengths;
-    for (auto i = 0; i < 7; ++i) {
-        if (note.lengths[i] == -1) {
-            lengths[i] = -1;
+    std::array<double, COLOURS_SIZE> lengths {};
+    for (auto i = 0; i < COLOURS_SIZE; ++i) {
+        if (note.lengths.at(i) == -1) {
+            lengths.at(i) = -1;
         } else {
-            lengths[i]
-                = note.lengths[i] / static_cast<double>(track.resolution());
+            lengths.at(i)
+                = note.lengths.at(i) / static_cast<double>(track.resolution());
         }
     }
 
@@ -95,13 +96,11 @@ DrawnNote note_to_drawn_note(const Note& note, const NoteTrack& track)
 
 bool is_in_disco_flips(const std::vector<DiscoFlip>& disco_flips, int position)
 {
-    for (const auto& flip : disco_flips) {
-        if (flip.position <= position
-            && (flip.position + flip.length) >= position) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(disco_flips.cbegin(), disco_flips.cend(),
+                       [&](const auto& flip) {
+                           return (flip.position <= position)
+                               && (flip.position + flip.length >= position);
+                       });
 }
 
 std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
@@ -124,7 +123,7 @@ std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
                 drawn_note.note_flags = static_cast<NoteFlags>(
                     drawn_note.note_flags | FLAGS_CYMBAL);
             } else if (note.lengths[DRUM_YELLOW] != 1
-                       && (note.flags & FLAGS_CYMBAL)) {
+                       && (note.flags & FLAGS_CYMBAL) != 0U) {
                 std::swap(drawn_note.lengths[DRUM_RED],
                           drawn_note.lengths[DRUM_YELLOW]);
                 drawn_note.note_flags = static_cast<NoteFlags>(

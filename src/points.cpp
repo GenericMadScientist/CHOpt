@@ -91,9 +91,12 @@ void append_sustain_points(OutputIt points, int position, int sust_length,
 
 int get_chord_size(const Note& note, const DrumSettings& drum_settings)
 {
+    if (note.is_skipped_kick(drum_settings)) {
+        return 0;
+    }
     int note_count = 0;
-    for (auto i = 0; i < 7; ++i) {
-        if (note.lengths[i] != -1 && !note.is_skipped_kick(drum_settings)) {
+    for (auto length : note.lengths) {
+        if (length != -1) {
             ++note_count;
         }
     }
@@ -343,9 +346,8 @@ std::vector<Point> unmultiplied_points(const NoteTrack& track,
             search_start, notes.cend(), [=](const auto& note) {
                 if (track.track_type() == TrackType::Drums) {
                     return note.is_skipped_kick(drum_settings);
-                } else {
-                    return note.position == p->position;
                 }
+                return note.position == p->position;
             });
         auto is_note_sp_ender = false;
         auto is_unison_sp_ender = false;
@@ -456,38 +458,40 @@ std::string PointSet::colours_string(const Note& note)
 {
     std::string colours;
 
-    if (note.flags & FLAGS_FIVE_FRET_GUITAR) {
+    if ((note.flags & FLAGS_FIVE_FRET_GUITAR) != 0U) {
         const std::array<std::string, 6> COLOUR_NAMES {"G", "R", "Y",
                                                        "B", "O", "open"};
-        for (auto i = 0; i < 6; ++i) {
-            if (note.lengths[i] != -1) {
-                colours += COLOUR_NAMES[i];
+        for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
+            if (note.lengths.at(i) != -1) {
+                colours += COLOUR_NAMES.at(i);
             }
         }
         return colours;
-    } else if (note.flags & FLAGS_SIX_FRET_GUITAR) {
+    }
+    if ((note.flags & FLAGS_SIX_FRET_GUITAR) != 0U) {
         const std::array<std::string, 7> COLOUR_NAMES {"W1", "W2", "W3",  "B1",
                                                        "B2", "B3", "open"};
-        for (auto i = 0; i < 7; ++i) {
-            if (note.lengths[i] != -1) {
-                colours += COLOUR_NAMES[i];
+        for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
+            if (note.lengths.at(i) != -1) {
+                colours += COLOUR_NAMES.at(i);
             }
         }
-    } else if (note.flags & FLAGS_DRUMS) {
+    }
+    if ((note.flags & FLAGS_DRUMS) != 0U) {
         const std::array<std::string, 6> COLOUR_NAMES {"R", "Y",    "B",
                                                        "G", "kick", "kick"};
-        for (auto i = 0; i < 7; ++i) {
-            if (note.lengths[i] != -1) {
-                colours += COLOUR_NAMES[i];
+        for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
+            if (note.lengths.at(i) != -1) {
+                colours += COLOUR_NAMES.at(i);
             }
         }
-        if (note.flags & FLAGS_GHOST) {
+        if ((note.flags & FLAGS_GHOST) != 0U) {
             colours += " ghost";
         }
-        if (note.flags & FLAGS_ACCENT) {
+        if ((note.flags & FLAGS_ACCENT) != 0U) {
             colours += " accent";
         }
-        if (note.flags & FLAGS_CYMBAL) {
+        if ((note.flags & FLAGS_CYMBAL) != 0U) {
             colours += " cymbal";
         }
     }

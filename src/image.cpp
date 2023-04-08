@@ -529,6 +529,8 @@ void ImageImpl::draw_text_backwards(int x, int y, const char* text,
 
 void ImageImpl::draw_notes(const ImageBuilder& builder)
 {
+    constexpr int FIVE_FRET_COLOUR_COUNT = 6;
+
     for (const auto& note : builder.notes()) {
         const auto max_length
             = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
@@ -537,8 +539,8 @@ void ImageImpl::draw_notes(const ImageBuilder& builder)
         }
 
         const auto [x, y] = get_xy(builder, note.beat);
-        for (auto i = 0; i < 6; ++i) {
-            if (note.lengths[i] == -1) {
+        for (auto i = 0; i < FIVE_FRET_COLOUR_COUNT; ++i) {
+            if (note.lengths.at(i) == -1) {
                 continue;
             }
             const auto colour = static_cast<FiveFretNotes>(i);
@@ -553,6 +555,8 @@ void ImageImpl::draw_notes(const ImageBuilder& builder)
 
 void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
 {
+    constexpr int SIX_FRET_COLOUR_COUNT = 7;
+
     for (const auto& note : builder.notes()) {
         const auto max_length
             = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
@@ -562,8 +566,8 @@ void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
 
         const auto [x, y] = get_xy(builder, note.beat);
         std::set<SixFretNotes> colours;
-        for (auto i = 0; i < 7; ++i) {
-            if (note.lengths[i] != -1) {
+        for (auto i = 0; i < SIX_FRET_COLOUR_COUNT; ++i) {
+            if (note.lengths.at(i) != -1) {
                 colours.insert(static_cast<SixFretNotes>(i));
             }
         }
@@ -573,6 +577,8 @@ void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
 
 void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
 {
+    constexpr int DRUMS_COLOUR_COUNT = 6;
+
     // We draw all the kicks first because we want RYBG to lie on top of the
     // kicks, not underneath.
     for (const auto& note : builder.notes()) {
@@ -580,8 +586,8 @@ void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
             continue;
         }
         const auto [x, y] = get_xy(builder, note.beat);
-        for (auto i = 0; i < 6; ++i) {
-            if (note.lengths[i] == -1) {
+        for (auto i = 0; i < DRUMS_COLOUR_COUNT; ++i) {
+            if (note.lengths.at(i) == -1) {
                 continue;
             }
             const auto colour = static_cast<DrumNotes>(i);
@@ -595,8 +601,8 @@ void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
             continue;
         }
         const auto [x, y] = get_xy(builder, note.beat);
-        for (auto i = 0; i < 6; ++i) {
-            if (note.lengths[i] == -1) {
+        for (auto i = 0; i < DRUMS_COLOUR_COUNT; ++i) {
+            if (note.lengths.at(i) == -1) {
                 continue;
             }
             const auto colour = static_cast<DrumNotes>(i);
@@ -685,7 +691,7 @@ void ImageImpl::draw_drum_note(int x, int y, DrumNotes note_colour,
                                colour.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                black.data(), 1.0, ~0U);
-    } else if (flags & FLAGS_CYMBAL) {
+    } else if ((flags & FLAGS_CYMBAL) != 0U) {
         m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
                               y + offset + RADIUS, x + RADIUS,
                               y + offset + RADIUS, colour.data());
@@ -729,16 +735,17 @@ void ImageImpl::draw_note_star(int x, int y, FiveFretNotes note_colour,
 void ImageImpl::draw_note_sustain(const ImageBuilder& builder,
                                   const DrawnNote& note)
 {
+    constexpr int FIVE_FRET_COLOUR_COUNT = 6;
     constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
 
-    for (auto i = 0; i < 6; ++i) {
-        if (note.lengths[i] == -1) {
+    for (auto i = 0; i < FIVE_FRET_COLOUR_COUNT; ++i) {
+        const auto length = note.lengths.at(i);
+        if (length == -1) {
             continue;
         }
         const auto note_colour = static_cast<FiveFretNotes>(i);
         auto colour = note_colour_to_colour(note_colour);
-        std::tuple<double, double> x_range {note.beat,
-                                            note.beat + note.lengths[i]};
+        std::tuple<double, double> x_range {note.beat, note.beat + length};
         auto offset
             = note_colour_to_offset(note_colour, builder.is_lefty_flip());
         std::tuple<int, int> y_range {offset - 3, offset + 3};
@@ -754,15 +761,16 @@ void ImageImpl::draw_note_sustain(const ImageBuilder& builder,
 void ImageImpl::draw_ghl_note_sustain(const ImageBuilder& builder,
                                       const DrawnNote& note)
 {
+    constexpr int SIX_FRET_COLOUR_COUNT = 7;
     constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
     constexpr std::array<unsigned char, 3> SUST_COLOUR {150, 150, 150};
 
-    for (auto i = 0; i < 7; ++i) {
-        if (note.lengths[i] == -1) {
+    for (auto i = 0; i < SIX_FRET_COLOUR_COUNT; ++i) {
+        const auto length = note.lengths.at(i);
+        if (length == -1) {
             continue;
         }
-        std::tuple<double, double> x_range {note.beat,
-                                            note.beat + note.lengths[i]};
+        std::tuple<double, double> x_range {note.beat, note.beat + length};
         const auto note_colour = static_cast<SixFretNotes>(i);
         auto offset
             = note_colour_to_offset(note_colour, builder.is_lefty_flip());
