@@ -476,8 +476,6 @@ std::string PointSet::colours_string(const Note& note)
     } else if (note.flags & FLAGS_DRUMS) {
         const std::array<std::string, 6> COLOUR_NAMES {"R", "Y",    "B",
                                                        "G", "kick", "kick"};
-
-        std::string colours;
         for (auto i = 0; i < 7; ++i) {
             if (note.lengths[i] != -1) {
                 colours += COLOUR_NAMES[i];
