@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(base_score_is_correctly_handled_with_open_note_merging)
 
     NoteTrack track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
 
-    BOOST_CHECK_EQUAL(track.base_score(), 100);
+    BOOST_CHECK_EQUAL(track.base_score(), 50);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

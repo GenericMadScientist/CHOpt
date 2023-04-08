@@ -261,22 +261,12 @@ private:
     std::optional<BigRockEnding> m_bre;
     TrackType m_track_type;
     int m_resolution;
-    int m_base_score;
+    int m_base_score_ticks;
 
-    int compute_base_score()
+    void compute_base_score_ticks()
     {
-        constexpr int BASE_NOTE_VALUE = 50;
         constexpr int BASE_SUSTAIN_DENSITY = 25;
 
-        auto note_count = 0;
-        for (const auto& note : m_notes) {
-            for (auto l : note.lengths) {
-                if (l != -1) {
-                    ++note_count;
-                }
-            }
-        }
-        auto base_score = BASE_NOTE_VALUE * note_count;
         auto total_ticks = 0;
         for (const auto& note : m_notes) {
             std::vector<int> constituent_lengths;
@@ -295,9 +285,9 @@ private:
             }
         }
 
-        base_score += (total_ticks * BASE_SUSTAIN_DENSITY + m_resolution - 1)
+        m_base_score_ticks
+            = (total_ticks * BASE_SUSTAIN_DENSITY + m_resolution - 1)
             / m_resolution;
-        return base_score;
     }
 
     Note combined_note(std::vector<Note>::const_iterator begin,
@@ -410,8 +400,7 @@ public:
         m_solos = std::move(solos);
 
         merge_same_time_notes();
-
-        m_base_score = compute_base_score();
+        compute_base_score_ticks();
 
         // We handle open note merging at the end because in v23 the removed
         // notes still affect the base score.
@@ -527,16 +516,24 @@ public:
     [[nodiscard]] std::optional<BigRockEnding> bre() const { return m_bre; }
     [[nodiscard]] TrackType track_type() const { return m_track_type; }
     [[nodiscard]] int resolution() const { return m_resolution; }
-    [[nodiscard]] int base_score() const { return m_base_score; }
-    [[nodiscard]] int base_score(DrumSettings drum_settings) const
+    [[nodiscard]] int base_score(DrumSettings drum_settings
+                                 = DrumSettings::default_settings()) const
     {
         constexpr int BASE_NOTE_VALUE = 50;
 
-        auto count_note
-            = [&](auto& note) { return !note.is_skipped_kick(drum_settings); };
-        return BASE_NOTE_VALUE
-            * static_cast<int>(
-                   std::count_if(m_notes.cbegin(), m_notes.cend(), count_note));
+        auto note_count = 0;
+        for (const auto& note : m_notes) {
+            if (note.is_skipped_kick(drum_settings)) {
+                continue;
+            }
+            for (auto l : note.lengths) {
+                if (l != -1) {
+                    ++note_count;
+                }
+            }
+        }
+
+        return BASE_NOTE_VALUE * note_count + m_base_score_ticks;
     }
     [[nodiscard]] NoteTrack trim_sustains() const
     {
@@ -555,7 +552,7 @@ public:
             }
         }
 
-        trimmed_track.m_base_score = trimmed_track.compute_base_score();
+        trimmed_track.compute_base_score_ticks();
 
         return trimmed_track;
     }
