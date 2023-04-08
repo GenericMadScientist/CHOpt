@@ -111,7 +111,7 @@ note_from_colour_key_map(const std::map<int, int>& colour_map, int position,
     }
     Note note;
     note.position = position;
-    note.lengths[colour_iter->second] = length;
+    note.lengths.at(colour_iter->second) = length;
     note.flags = flags;
     return note;
 }
@@ -124,23 +124,26 @@ std::optional<Note> note_from_note_colour(int position, int length,
     case TrackType::FiveFret:
         colours = {{0, FIVE_FRET_GREEN},  {1, FIVE_FRET_RED},
                    {2, FIVE_FRET_YELLOW}, {3, FIVE_FRET_BLUE},
-                   {4, FIVE_FRET_ORANGE}, {7, FIVE_FRET_OPEN}};
+                   {4, FIVE_FRET_ORANGE}, {7, FIVE_FRET_OPEN}}; // NOLINT
         return note_from_colour_key_map(colours, position, length, fret_type,
                                         FLAGS_FIVE_FRET_GUITAR);
     case TrackType::SixFret:
         colours = {{0, SIX_FRET_WHITE_LOW},  {1, SIX_FRET_WHITE_MID},
                    {2, SIX_FRET_WHITE_HIGH}, {3, SIX_FRET_BLACK_LOW},
-                   {4, SIX_FRET_BLACK_MID},  {7, SIX_FRET_OPEN},
-                   {8, SIX_FRET_BLACK_HIGH}};
+                   {4, SIX_FRET_BLACK_MID},  {7, SIX_FRET_OPEN}, // NOLINT
+                   {8, SIX_FRET_BLACK_HIGH}}; // NOLINT
         return note_from_colour_key_map(colours, position, length, fret_type,
                                         FLAGS_SIX_FRET_GUITAR);
     case TrackType::Drums: {
-        colours = {{0, DRUM_KICK},    {1, DRUM_RED},   {2, DRUM_YELLOW},
-                   {3, DRUM_BLUE},    {4, DRUM_GREEN}, {32, DRUM_DOUBLE_KICK},
-                   {66, DRUM_YELLOW}, {67, DRUM_BLUE}, {68, DRUM_GREEN}};
+        constexpr int CYMBAL_THRESHOLD = 64;
+        colours = {{0, DRUM_KICK},    {1, DRUM_RED},
+                   {2, DRUM_YELLOW},  {3, DRUM_BLUE},
+                   {4, DRUM_GREEN},   {32, DRUM_DOUBLE_KICK}, // NOLINT
+                   {66, DRUM_YELLOW}, {67, DRUM_BLUE}, // NOLINT
+                   {68, DRUM_GREEN}}; // NOLINT
         auto note = note_from_colour_key_map(colours, position, length,
                                              fret_type, FLAGS_DRUMS);
-        if (note.has_value() && fret_type >= 64) {
+        if (note.has_value() && fret_type >= CYMBAL_THRESHOLD) {
             note->flags = static_cast<NoteFlags>(note->flags | FLAGS_CYMBAL);
         }
         return note;
@@ -232,7 +235,7 @@ std::vector<Note> apply_cymbal_events(const std::vector<Note>& notes)
     std::set<unsigned int> deletion_spots;
     for (auto i = 0U; i < notes.size(); ++i) {
         const auto& cymbal_note = notes[i];
-        if (!(cymbal_note.flags & FLAGS_CYMBAL)) {
+        if ((cymbal_note.flags & FLAGS_CYMBAL) == 0U) {
             continue;
         }
         bool delete_cymbal = true;
@@ -391,14 +394,8 @@ NoteTrack note_track_from_section(const ChartSection& section, int resolution,
         disco_flips.push_back({start, end - start});
     }
 
-    return {std::move(notes),
-            std::move(sp),
-            std::move(solos),
-            std::move(fills),
-            std::move(disco_flips),
-            {},
-            track_type,
-            resolution};
+    return {std::move(notes),       sp, std::move(solos), std::move(fills),
+            std::move(disco_flips), {}, track_type,       resolution};
 }
 
 bool is_six_fret_instrument(Instrument instrument)
@@ -494,22 +491,22 @@ std::optional<Difficulty> difficulty_from_key(std::uint8_t key,
     std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges;
     switch (track_type) {
     case TrackType::FiveFret:
-        diff_ranges = {{{96, 100, Difficulty::Expert},
-                        {84, 88, Difficulty::Hard},
-                        {72, 76, Difficulty::Medium},
-                        {60, 64, Difficulty::Easy}}};
+        diff_ranges = {{{96, 100, Difficulty::Expert}, // NOLINT
+                        {84, 88, Difficulty::Hard}, // NOLINT
+                        {72, 76, Difficulty::Medium}, // NOLINT
+                        {60, 64, Difficulty::Easy}}}; // NOLINT
         break;
     case TrackType::SixFret:
-        diff_ranges = {{{94, 100, Difficulty::Expert},
-                        {82, 88, Difficulty::Hard},
-                        {70, 76, Difficulty::Medium},
-                        {58, 64, Difficulty::Easy}}};
+        diff_ranges = {{{94, 100, Difficulty::Expert}, // NOLINT
+                        {82, 88, Difficulty::Hard}, // NOLINT
+                        {70, 76, Difficulty::Medium}, // NOLINT
+                        {58, 64, Difficulty::Easy}}}; // NOLINT
         break;
     case TrackType::Drums:
-        diff_ranges = {{{95, 101, Difficulty::Expert},
-                        {83, 89, Difficulty::Hard},
-                        {71, 77, Difficulty::Medium},
-                        {59, 65, Difficulty::Easy}}};
+        diff_ranges = {{{95, 101, Difficulty::Expert}, // NOLINT
+                        {83, 89, Difficulty::Hard}, // NOLINT
+                        {71, 77, Difficulty::Medium}, // NOLINT
+                        {59, 65, Difficulty::Easy}}}; // NOLINT
         break;
     }
     return look_up_difficulty(diff_ranges, key);
@@ -531,17 +528,17 @@ T colour_from_key_and_bounds(std::uint8_t key,
 
 int colour_from_key(std::uint8_t key, TrackType track_type, bool from_five_lane)
 {
-    std::array<unsigned int, 4> diff_ranges;
+    std::array<unsigned int, 4> diff_ranges {};
     switch (track_type) {
     case TrackType::FiveFret: {
-        diff_ranges = {96, 84, 72, 60};
+        diff_ranges = {96, 84, 72, 60}; // NOLINT
         constexpr std::array NOTE_COLOURS {FIVE_FRET_GREEN, FIVE_FRET_RED,
                                            FIVE_FRET_YELLOW, FIVE_FRET_BLUE,
                                            FIVE_FRET_ORANGE};
         return colour_from_key_and_bounds(key, diff_ranges, NOTE_COLOURS);
     }
     case TrackType::SixFret: {
-        diff_ranges = {94, 82, 70, 58};
+        diff_ranges = {94, 82, 70, 58}; // NOLINT
         constexpr std::array GHL_NOTE_COLOURS {
             SIX_FRET_OPEN,       SIX_FRET_WHITE_LOW, SIX_FRET_WHITE_MID,
             SIX_FRET_WHITE_HIGH, SIX_FRET_BLACK_LOW, SIX_FRET_BLACK_MID,
@@ -549,7 +546,7 @@ int colour_from_key(std::uint8_t key, TrackType track_type, bool from_five_lane)
         return colour_from_key_and_bounds(key, diff_ranges, GHL_NOTE_COLOURS);
     }
     case TrackType::Drums: {
-        diff_ranges = {95, 83, 71, 59};
+        diff_ranges = {95, 83, 71, 59}; // NOLINT
         constexpr std::array DRUM_NOTE_COLOURS {DRUM_DOUBLE_KICK, DRUM_KICK,
                                                 DRUM_RED,         DRUM_YELLOW,
                                                 DRUM_BLUE,        DRUM_GREEN};
@@ -571,9 +568,9 @@ bool is_cymbal_key(std::uint8_t key, bool from_five_lane)
 {
     const auto index = (key + 1) % 12;
     if (from_five_lane) {
-        return index == 3 || index == 5;
+        return index == 3 || index == 5; // NOLINT
     }
-    return index == 3 || index == 4 || index == 5;
+    return index == 3 || index == 4 || index == 5; // NOLINT
 }
 
 bool is_open_event_sysex(const SysexEvent& event)
@@ -681,9 +678,9 @@ void add_sysex_event(InstrumentMidiTrack& track, const SysexEvent& event,
     }
     const Difficulty diff = OPEN_EVENT_DIFFS.at(event.data[4]);
     if (event.data[SYSEX_ON_INDEX] == 0) {
-        track.open_off_events[diff].push_back({time, rank});
+        track.open_off_events[diff].emplace_back(time, rank);
     } else {
-        track.open_on_events[diff].push_back({time, rank});
+        track.open_on_events[diff].emplace_back(time, rank);
     }
 }
 
@@ -702,19 +699,19 @@ void add_note_off_event(InstrumentMidiTrack& track,
     if (diff.has_value()) {
         const auto colour
             = colour_from_key(data[0], track_type, from_five_lane);
-        track.note_off_events[{*diff, colour}].push_back({time, rank});
+        track.note_off_events[{*diff, colour}].emplace_back(time, rank);
     } else if (data[0] == YELLOW_TOM_ID) {
-        track.yellow_tom_off_events.push_back({time, rank});
+        track.yellow_tom_off_events.emplace_back(time, rank);
     } else if (data[0] == BLUE_TOM_ID) {
-        track.blue_tom_off_events.push_back({time, rank});
+        track.blue_tom_off_events.emplace_back(time, rank);
     } else if (data[0] == GREEN_TOM_ID) {
-        track.green_tom_off_events.push_back({time, rank});
+        track.green_tom_off_events.emplace_back(time, rank);
     } else if (data[0] == SOLO_NOTE_ID) {
-        track.solo_off_events.push_back({time, rank});
+        track.solo_off_events.emplace_back(time, rank);
     } else if (data[0] == SP_NOTE_ID) {
-        track.sp_off_events.push_back({time, rank});
+        track.sp_off_events.emplace_back(time, rank);
     } else if (data[0] == DRUM_FILL_ID) {
-        track.fill_off_events.push_back({time, rank});
+        track.fill_off_events.emplace_back(time, rank);
     }
 }
 
@@ -776,19 +773,19 @@ void add_note_on_event(InstrumentMidiTrack& track,
                     flags | dynamics_flags_from_velocity(data[1]));
             }
         }
-        track.note_on_events[{*diff, colour, flags}].push_back({time, rank});
+        track.note_on_events[{*diff, colour, flags}].emplace_back(time, rank);
     } else if (data[0] == YELLOW_TOM_ID) {
-        track.yellow_tom_on_events.push_back({time, rank});
+        track.yellow_tom_on_events.emplace_back(time, rank);
     } else if (data[0] == BLUE_TOM_ID) {
-        track.blue_tom_on_events.push_back({time, rank});
+        track.blue_tom_on_events.emplace_back(time, rank);
     } else if (data[0] == GREEN_TOM_ID) {
-        track.green_tom_on_events.push_back({time, rank});
+        track.green_tom_on_events.emplace_back(time, rank);
     } else if (data[0] == SOLO_NOTE_ID) {
-        track.solo_on_events.push_back({time, rank});
+        track.solo_on_events.emplace_back(time, rank);
     } else if (data[0] == SP_NOTE_ID) {
-        track.sp_on_events.push_back({time, rank});
+        track.sp_on_events.emplace_back(time, rank);
     } else if (data[0] == DRUM_FILL_ID) {
-        track.fill_on_events.push_back({time, rank});
+        track.fill_on_events.emplace_back(time, rank);
     }
 }
 
@@ -933,13 +930,13 @@ InstrumentMidiTrack read_instrument_midi_track(const MidiTrack& midi_track,
     }
 
     event_track.disco_flip_off_events.at(Difficulty::Easy)
-        .push_back({std::numeric_limits<int>::max(), ++rank});
+        .emplace_back(std::numeric_limits<int>::max(), ++rank);
     event_track.disco_flip_off_events.at(Difficulty::Medium)
-        .push_back({std::numeric_limits<int>::max(), ++rank});
+        .emplace_back(std::numeric_limits<int>::max(), ++rank);
     event_track.disco_flip_off_events.at(Difficulty::Hard)
-        .push_back({std::numeric_limits<int>::max(), ++rank});
+        .emplace_back(std::numeric_limits<int>::max(), ++rank);
     event_track.disco_flip_off_events.at(Difficulty::Expert)
-        .push_back({std::numeric_limits<int>::max(), ++rank});
+        .emplace_back(std::numeric_limits<int>::max(), ++rank);
 
     if (event_track.sp_on_events.empty()
         && event_track.solo_on_events.size() > 1) {
@@ -1016,7 +1013,7 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
             }
             Note note;
             note.position = pos;
-            note.lengths[note_colour] = note_length;
+            note.lengths.at(note_colour) = note_length;
             note.flags = flags_from_track_type(track_type);
             notes[diff].push_back(note);
         }
@@ -1128,13 +1125,15 @@ void fix_double_greens(std::vector<Note>& notes)
     std::set<int> green_cymbal_positions;
 
     for (const auto& note : notes) {
-        if ((note.lengths[DRUM_GREEN] != 1) && (note.flags & FLAGS_CYMBAL)) {
+        if ((note.lengths.at(DRUM_GREEN) != -1)
+            && ((note.flags & FLAGS_CYMBAL) != 0U)) {
             green_cymbal_positions.insert(note.position);
         }
     }
 
     for (auto& note : notes) {
-        if ((note.lengths[DRUM_GREEN] == 1) || (note.flags & FLAGS_CYMBAL)) {
+        if ((note.lengths.at(DRUM_GREEN) == -1)
+            || ((note.flags & FLAGS_CYMBAL) != 0U)) {
             continue;
         }
         if (green_cymbal_positions.count(note.position) != 0) {
@@ -1205,7 +1204,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
              combine_note_on_off_events(note_ons, note_offs)) {
             Note note;
             note.position = pos;
-            note.lengths[colour] = 0;
+            note.lengths.at(colour) = 0;
             note.flags = flags;
             if (tom_events.force_tom(colour, pos)) {
                 note.flags = static_cast<NoteFlags>(note.flags & ~FLAGS_CYMBAL);
