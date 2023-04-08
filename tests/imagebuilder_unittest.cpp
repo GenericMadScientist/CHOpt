@@ -46,11 +46,11 @@ namespace {
 DrawnNote make_drawn_note(double position, double length = 0.0,
                           FiveFretNotes colour = FIVE_FRET_GREEN)
 {
-    DrawnNote note;
+    DrawnNote note {};
     note.beat = position;
     note.note_flags = FLAGS_FIVE_FRET_GUITAR;
     note.lengths.fill(-1.0);
-    note.lengths[colour] = length;
+    note.lengths.at(colour) = length;
     note.is_sp_note = false;
 
     return note;
@@ -59,11 +59,11 @@ DrawnNote make_drawn_note(double position, double length = 0.0,
 DrawnNote make_drawn_sp_note(double position, double length = 0.0,
                              FiveFretNotes colour = FIVE_FRET_GREEN)
 {
-    DrawnNote note;
+    DrawnNote note {};
     note.beat = position;
     note.note_flags = FLAGS_FIVE_FRET_GUITAR;
     note.lengths.fill(-1.0);
-    note.lengths[colour] = length;
+    note.lengths.at(colour) = length;
     note.is_sp_note = true;
 
     return note;
@@ -72,11 +72,11 @@ DrawnNote make_drawn_sp_note(double position, double length = 0.0,
 DrawnNote make_drawn_ghl_note(double position, double length = 0.0,
                               SixFretNotes colour = SIX_FRET_WHITE_LOW)
 {
-    DrawnNote note;
+    DrawnNote note {};
     note.beat = position;
     note.note_flags = FLAGS_SIX_FRET_GUITAR;
     note.lengths.fill(-1.0);
-    note.lengths[colour] = length;
+    note.lengths.at(colour) = length;
     note.is_sp_note = false;
 
     return note;
@@ -85,11 +85,11 @@ DrawnNote make_drawn_ghl_note(double position, double length = 0.0,
 DrawnNote make_drawn_drum_note(double position, DrumNotes colour = DRUM_RED,
                                NoteFlags flags = FLAGS_NONE)
 {
-    DrawnNote note;
+    DrawnNote note {};
     note.beat = position;
     note.note_flags = static_cast<NoteFlags>(flags | FLAGS_DRUMS);
     note.lengths.fill(-1.0);
-    note.lengths[colour] = 0.0;
+    note.lengths.at(colour) = 0.0;
     note.is_sp_note = false;
 
     return note;
