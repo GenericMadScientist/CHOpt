@@ -93,14 +93,45 @@ DrawnNote note_to_drawn_note(const Note& note, const NoteTrack& track)
     return {beat, lengths, note.flags, is_sp_note};
 }
 
+bool is_in_disco_flips(const std::vector<DiscoFlip>& disco_flips, int position)
+{
+    for (const auto& flip : disco_flips) {
+        if (flip.position <= position
+            && (flip.position + flip.length) >= position) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
                                    const DrumSettings& drum_settings)
 {
     std::vector<DrawnNote> notes;
 
     for (const auto& note : track.notes()) {
-        (void)drum_settings;
-        notes.push_back(note_to_drawn_note(note, track));
+        if (note.is_skipped_kick(drum_settings)) {
+            continue;
+        }
+        auto drawn_note = note_to_drawn_note(note, track);
+        if (!drum_settings.pro_drums) {
+            drawn_note.note_flags
+                = static_cast<NoteFlags>(drawn_note.note_flags & ~FLAGS_CYMBAL);
+        } else if (is_in_disco_flips(track.disco_flips(), note.position)) {
+            if (note.lengths[DRUM_RED] != -1) {
+                std::swap(drawn_note.lengths[DRUM_RED],
+                          drawn_note.lengths[DRUM_YELLOW]);
+                drawn_note.note_flags = static_cast<NoteFlags>(
+                    drawn_note.note_flags | FLAGS_CYMBAL);
+            } else if (note.lengths[DRUM_YELLOW] != 1
+                       && (note.flags & FLAGS_CYMBAL)) {
+                std::swap(drawn_note.lengths[DRUM_RED],
+                          drawn_note.lengths[DRUM_YELLOW]);
+                drawn_note.note_flags = static_cast<NoteFlags>(
+                    drawn_note.note_flags & ~FLAGS_CYMBAL);
+            }
+        }
+        notes.push_back(drawn_note);
     }
 
     return notes;
