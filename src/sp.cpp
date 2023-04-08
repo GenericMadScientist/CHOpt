@@ -76,6 +76,48 @@ SpData::form_beat_rates(int resolution, const SyncTrack& sync_track,
     return beat_rates;
 }
 
+std::vector<std::tuple<int, int, Second>>
+SpData::note_spans(const NoteTrack& track, double early_whammy,
+                   const Engine& engine)
+{
+    std::vector<std::tuple<int, int, Second>> spans;
+    for (auto note = track.notes().cbegin(); note < track.notes().cend();
+         ++note) {
+        auto early_gap = std::numeric_limits<double>::infinity();
+        auto late_gap = std::numeric_limits<double>::infinity();
+        const auto current_note_time
+            = m_converter
+                  .beats_to_seconds(Beat {
+                      note->position / static_cast<double>(track.resolution())})
+                  .value();
+        if (note != track.notes().cbegin()) {
+            early_gap = current_note_time
+                - m_converter
+                      .beats_to_seconds(
+                          Beat {std::prev(note)->position
+                                / static_cast<double>(track.resolution())})
+                      .value();
+        }
+        if (std::next(note) < track.notes().cend()) {
+            late_gap = m_converter
+                           .beats_to_seconds(
+                               Beat {std::next(note)->position
+                                     / static_cast<double>(track.resolution())})
+                           .value()
+                - current_note_time;
+        }
+        for (auto length : note->lengths) {
+            if (length != -1) {
+                spans.push_back(
+                    {note->position, length,
+                     Second {engine.early_timing_window(early_gap, late_gap)}
+                         * early_whammy});
+            }
+        }
+    }
+    return spans;
+}
+
 void SpData::initialise(
     const std::vector<std::tuple<int, int, Second>>& note_spans,
     const std::vector<StarPower>& phrases, int resolution,
@@ -143,6 +185,19 @@ void SpData::initialise(
         });
         m_initial_guesses.push_back(p);
     }
+}
+
+SpData::SpData(const NoteTrack& track, const SyncTrack& sync_track,
+               const std::vector<int>& od_beats,
+               const SqueezeSettings& squeeze_settings, const Engine& engine)
+    : m_converter {sync_track, track.resolution(), engine, od_beats}
+    , m_beat_rates {form_beat_rates(track.resolution(), sync_track, od_beats,
+                                    engine)}
+    , m_sp_gain_rate {engine.sp_gain_rate()}
+    , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
+{
+    initialise(note_spans(track, squeeze_settings.early_whammy, engine),
+               track.sp_phrases(), track.resolution(), squeeze_settings);
 }
 
 std::vector<SpData::WhammyRange>::const_iterator

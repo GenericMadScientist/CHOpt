@@ -87,20 +87,6 @@ private:
     bool m_is_drums;
     bool m_overlaps;
 
-    static int bre_boost(const NoteTrack& track, const Engine& engine,
-                         const TimeConverter& converter)
-    {
-        if (!engine.has_bres() || !track.bre().has_value()) {
-            return 0;
-        }
-        const auto seconds_start = converter.beats_to_seconds(Beat {
-            track.bre()->start / static_cast<double>(track.resolution())});
-        const auto seconds_end = converter.beats_to_seconds(
-            Beat {track.bre()->end / static_cast<double>(track.resolution())});
-        const auto seconds_gap = seconds_end - seconds_start;
-        return static_cast<int>(750 + 500 * seconds_gap.value());
-    }
-
     SpBar sp_from_phrases(PointPtr begin, PointPtr end) const;
     std::vector<std::string> act_summaries(const Path& path) const;
     std::vector<std::string> drum_act_summaries(const Path& path) const;
@@ -113,23 +99,7 @@ public:
                   const SqueezeSettings& squeeze_settings,
                   const DrumSettings& drum_settings, const Engine& engine,
                   const std::vector<int>& od_beats,
-                  const std::vector<int>& unison_phrases)
-        : m_converter {sync_track, track.resolution(), engine, od_beats}
-        , m_points {track,          m_converter,
-                    unison_phrases, squeeze_settings,
-                    drum_settings,  engine}
-        , m_sp_data {track, sync_track, od_beats, squeeze_settings, engine}
-        , m_total_bre_boost {bre_boost(track, engine, m_converter)}
-        , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
-        , m_is_drums {track.track_type() == TrackType::Drums}
-        , m_overlaps {engine.overlaps()}
-    {
-        m_base_score = track.base_score(drum_settings);
-        const auto solos = track.solos(drum_settings);
-        m_total_solo_boost = std::accumulate(
-            solos.cbegin(), solos.cend(), 0,
-            [](const auto x, const auto& y) { return x + y.value; });
-    }
+                  const std::vector<int>& unison_phrases);
 
     // Return the minimum and maximum amount of SP can be acquired between two
     // points. Does not include SP from the point act_start. first_point is

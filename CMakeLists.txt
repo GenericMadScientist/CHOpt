@@ -63,6 +63,7 @@ add_executable(
   src/processed.cpp
   src/settings.cpp
   src/song.cpp
+  src/songparts.cpp
   src/sp.cpp
   src/stringutil.cpp
   src/timeconverter.cpp
@@ -111,6 +112,7 @@ if(BUILD_GUI)
     src/points.cpp
     src/processed.cpp
     src/song.cpp
+    src/songparts.cpp
     src/sp.cpp
     src/stringutil.cpp
     src/timeconverter.cpp
@@ -167,6 +169,7 @@ if(PACKAGE_TESTS)
     src/points.cpp
     src/processed.cpp
     src/song.cpp
+    src/songparts.cpp
     src/sp.cpp
     src/stringutil.cpp
     src/timeconverter.cpp)

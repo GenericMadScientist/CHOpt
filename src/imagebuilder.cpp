@@ -451,6 +451,36 @@ bool ImageBuilder::is_neutralised_phrase(Beat note_pos, const Path& path)
     return false;
 }
 
+std::tuple<double, double>
+ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
+                               const Path& path) const
+{
+    constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
+
+    auto p = track.notes().cbegin();
+    while (p->position < phrase.position) {
+        ++p;
+    }
+    const auto start = p->position / static_cast<double>(track.resolution());
+    if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
+        return {-1, -1};
+    }
+    const auto phrase_end = phrase.position + phrase.length;
+    auto end = start;
+    while (p < track.notes().cend() && p->position < phrase_end) {
+        auto max_length = 0;
+        for (auto length : p->lengths) {
+            max_length = std::max(max_length, length);
+        }
+        auto current_end = (p->position + max_length)
+            / static_cast<double>(track.resolution());
+        end = std::max(end, current_end);
+        ++p;
+    }
+    end = std::max(end, start + MINIMUM_GREEN_RANGE_SIZE);
+    return {start, end};
+}
+
 ImageBuilder::ImageBuilder(const NoteTrack& track, const SyncTrack& sync_track,
                            Difficulty difficulty,
                            const DrumSettings& drum_settings,
@@ -719,6 +749,24 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
     }
 
     assert(m_sp_percent_values.size() == m_measure_lines.size() - 1); // NOLINT
+}
+
+void ImageBuilder::add_sp_phrases(const NoteTrack& track,
+                                  const std::vector<int>& unison_phrases,
+                                  const Path& path)
+{
+    for (const auto& phrase : track.sp_phrases()) {
+        const auto range = sp_phrase_bounds(phrase, track, path);
+        if (std::get<0>(range) == -1) {
+            continue;
+        }
+        m_green_ranges.push_back(range);
+        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(),
+                      phrase.position)
+            != unison_phrases.cend()) {
+            m_unison_ranges.push_back(range);
+        }
+    }
 }
 
 void ImageBuilder::add_sp_values(const SpData& sp_data, const Engine& engine)

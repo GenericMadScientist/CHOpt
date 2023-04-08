@@ -392,6 +392,104 @@ std::vector<Point> non_drum_points(const NoteTrack& track,
     shift_points_by_video_lag(points, converter, squeeze_settings.video_lag);
     return points;
 }
+
+std::string colours_string(const Note& note)
+{
+    std::string colours;
+
+    if ((note.flags & FLAGS_FIVE_FRET_GUITAR) != 0U) {
+        const std::array<std::string, 6> COLOUR_NAMES {"G", "R", "Y",
+                                                       "B", "O", "open"};
+        for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
+            if (note.lengths.at(i) != -1) {
+                colours += COLOUR_NAMES.at(i);
+            }
+        }
+        return colours;
+    }
+    if ((note.flags & FLAGS_SIX_FRET_GUITAR) != 0U) {
+        const std::array<std::string, 7> COLOUR_NAMES {"W1", "W2", "W3",  "B1",
+                                                       "B2", "B3", "open"};
+        for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
+            if (note.lengths.at(i) != -1) {
+                colours += COLOUR_NAMES.at(i);
+            }
+        }
+    }
+    if ((note.flags & FLAGS_DRUMS) != 0U) {
+        const std::array<std::string, 6> COLOUR_NAMES {"R", "Y",    "B",
+                                                       "G", "kick", "kick"};
+        for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
+            if (note.lengths.at(i) != -1) {
+                colours += COLOUR_NAMES.at(i);
+            }
+        }
+        if ((note.flags & FLAGS_GHOST) != 0U) {
+            colours += " ghost";
+        }
+        if ((note.flags & FLAGS_ACCENT) != 0U) {
+            colours += " accent";
+        }
+        if ((note.flags & FLAGS_CYMBAL) != 0U) {
+            colours += " cymbal";
+        }
+    }
+
+    return colours;
+}
+
+std::vector<PointPtr>
+first_after_current_sp_vector(const std::vector<Point>& points,
+                              const NoteTrack& track, const Engine& engine)
+{
+    std::vector<PointPtr> results;
+    auto current_sp = track.sp_phrases().cbegin();
+    for (auto p = points.cbegin(); p < points.cend();) {
+        current_sp
+            = std::find_if(current_sp, track.sp_phrases().cend(), [&](auto sp) {
+                  return Beat((sp.position + sp.length)
+                              / static_cast<double>(track.resolution()))
+                      > p->position.beat;
+              });
+        Beat sp_start {std::numeric_limits<double>::infinity()};
+        Beat sp_end {std::numeric_limits<double>::infinity()};
+        if (current_sp != track.sp_phrases().cend()) {
+            sp_start = Beat {current_sp->position
+                             / static_cast<double>(track.resolution())};
+            sp_end = Beat {(current_sp->position + current_sp->length)
+                           / static_cast<double>(track.resolution())};
+        }
+        if (p->position.beat < sp_start || engine.overlaps()) {
+            results.push_back(++p);
+            continue;
+        }
+        const auto q = std::find_if(std::next(p), points.cend(), [&](auto pt) {
+            return pt.position.beat >= sp_end;
+        });
+        while (p < q) {
+            results.push_back(q);
+            ++p;
+        }
+    }
+    return results;
+}
+
+std::vector<std::string> note_colours(const std::vector<Note>& notes,
+                                      const std::vector<Point>& points)
+{
+    std::vector<std::string> colours;
+    colours.reserve(points.size());
+    auto note_ptr = notes.cbegin();
+    for (const auto& p : points) {
+        if (p.is_hold_point) {
+            colours.emplace_back("");
+            continue;
+        }
+        colours.push_back(colours_string(*note_ptr));
+        ++note_ptr;
+    }
+    return colours;
+}
 }
 
 std::vector<Point> PointSet::points_from_track(
@@ -454,49 +552,22 @@ PointSet::solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
     return solo_boosts;
 }
 
-std::string PointSet::colours_string(const Note& note)
+PointSet::PointSet(const NoteTrack& track, const TimeConverter& converter,
+                   const std::vector<int>& unison_phrases,
+                   const SqueezeSettings& squeeze_settings,
+                   const DrumSettings& drum_settings, const Engine& engine)
+    : m_video_lag {squeeze_settings.video_lag}
 {
-    std::string colours;
-
-    if ((note.flags & FLAGS_FIVE_FRET_GUITAR) != 0U) {
-        const std::array<std::string, 6> COLOUR_NAMES {"G", "R", "Y",
-                                                       "B", "O", "open"};
-        for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
-            if (note.lengths.at(i) != -1) {
-                colours += COLOUR_NAMES.at(i);
-            }
-        }
-        return colours;
-    }
-    if ((note.flags & FLAGS_SIX_FRET_GUITAR) != 0U) {
-        const std::array<std::string, 7> COLOUR_NAMES {"W1", "W2", "W3",  "B1",
-                                                       "B2", "B3", "open"};
-        for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
-            if (note.lengths.at(i) != -1) {
-                colours += COLOUR_NAMES.at(i);
-            }
-        }
-    }
-    if ((note.flags & FLAGS_DRUMS) != 0U) {
-        const std::array<std::string, 6> COLOUR_NAMES {"R", "Y",    "B",
-                                                       "G", "kick", "kick"};
-        for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
-            if (note.lengths.at(i) != -1) {
-                colours += COLOUR_NAMES.at(i);
-            }
-        }
-        if ((note.flags & FLAGS_GHOST) != 0U) {
-            colours += " ghost";
-        }
-        if ((note.flags & FLAGS_ACCENT) != 0U) {
-            colours += " accent";
-        }
-        if ((note.flags & FLAGS_CYMBAL) != 0U) {
-            colours += " cymbal";
-        }
-    }
-
-    return colours;
+    m_points = points_from_track(track, converter, unison_phrases,
+                                 squeeze_settings, drum_settings, engine);
+    m_solo_boosts = solo_boosts_from_solos(track.solos(drum_settings),
+                                           track.resolution(), converter);
+    m_first_after_current_sp
+        = first_after_current_sp_vector(m_points, track, engine);
+    m_next_non_hold_point = next_non_hold_vector(m_points);
+    m_next_sp_granting_note = next_sp_note_vector(m_points);
+    m_cumulative_score_totals = score_totals(m_points);
+    m_colours = note_colours(track.notes(), m_points);
 }
 
 PointPtr PointSet::first_after_current_phrase(PointPtr point) const
