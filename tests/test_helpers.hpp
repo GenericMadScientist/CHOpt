@@ -196,12 +196,6 @@ inline std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
     return stream;
 }
 
-inline std::ostream& operator<<(std::ostream& stream, DrumNoteColour colour)
-{
-    stream << static_cast<int>(colour);
-    return stream;
-}
-
 inline bool operator!=(const Event& lhs, const Event& rhs)
 {
     return std::tie(lhs.position, lhs.data) != std::tie(rhs.position, rhs.data);
@@ -268,12 +262,6 @@ inline std::ostream& operator<<(std::ostream& stream, const Note& note)
         }
     }
     stream << "Flags " << std::hex << note.flags << std::dec << '}';
-    return stream;
-}
-
-inline std::ostream& operator<<(std::ostream& stream, NoteColour colour)
-{
-    stream << static_cast<int>(colour);
     return stream;
 }
 
