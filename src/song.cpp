@@ -71,7 +71,8 @@ combine_solo_events(const std::vector<int>& on_events,
 
 std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
                                    const std::vector<int>& solo_off_events,
-                                   const std::vector<Note>& notes, bool is_midi)
+                                   const std::vector<Note>& notes,
+                                   TrackType track_type, bool is_midi)
 {
     constexpr int SOLO_NOTE_VALUE = 100;
 
@@ -79,12 +80,20 @@ std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
 
     for (auto [start, end] :
          combine_solo_events(solo_on_events, solo_off_events)) {
+        std::set<int> positions_in_solo;
         auto note_count = 0;
         for (const auto& note : notes) {
             if ((note.position >= start && note.position < end)
                 || (note.position == end && !is_midi)) {
+                positions_in_solo.insert(note.position);
                 ++note_count;
             }
+        }
+        if (positions_in_solo.empty()) {
+            continue;
+        }
+        if (track_type != TrackType::Drums) {
+            note_count = static_cast<int>(positions_in_solo.size());
         }
         solos.push_back({start, end, SOLO_NOTE_VALUE * note_count});
     }
@@ -94,7 +103,7 @@ std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
 
 std::optional<Note>
 note_from_colour_key_map(const std::map<int, int>& colour_map, int position,
-                         int length, int fret_type)
+                         int length, int fret_type, NoteFlags flags)
 {
     const auto colour_iter = colour_map.find(fret_type);
     if (colour_iter == colour_map.end()) {
@@ -103,6 +112,7 @@ note_from_colour_key_map(const std::map<int, int>& colour_map, int position,
     Note note;
     note.position = position;
     note.lengths[colour_iter->second] = length;
+    note.flags = flags;
     return note;
 }
 
@@ -115,19 +125,21 @@ std::optional<Note> note_from_note_colour(int position, int length,
         colours = {{0, FIVE_FRET_GREEN},  {1, FIVE_FRET_RED},
                    {2, FIVE_FRET_YELLOW}, {3, FIVE_FRET_BLUE},
                    {4, FIVE_FRET_ORANGE}, {7, FIVE_FRET_OPEN}};
-        return note_from_colour_key_map(colours, position, length, fret_type);
+        return note_from_colour_key_map(colours, position, length, fret_type,
+                                        FLAGS_FIVE_FRET_GUITAR);
     case TrackType::SixFret:
         colours = {{0, SIX_FRET_WHITE_LOW},  {1, SIX_FRET_WHITE_MID},
                    {2, SIX_FRET_WHITE_HIGH}, {3, SIX_FRET_BLACK_LOW},
                    {4, SIX_FRET_BLACK_MID},  {7, SIX_FRET_OPEN},
                    {8, SIX_FRET_BLACK_HIGH}};
-        return note_from_colour_key_map(colours, position, length, fret_type);
+        return note_from_colour_key_map(colours, position, length, fret_type,
+                                        FLAGS_SIX_FRET_GUITAR);
     case TrackType::Drums:
         colours = {{0, DRUM_KICK},    {1, DRUM_RED},   {2, DRUM_YELLOW},
                    {3, DRUM_BLUE},    {4, DRUM_GREEN}, {32, DRUM_DOUBLE_KICK},
                    {66, DRUM_YELLOW}, {67, DRUM_BLUE}, {68, DRUM_GREEN}};
-        auto note
-            = note_from_colour_key_map(colours, position, length, fret_type);
+        auto note = note_from_colour_key_map(colours, position, length,
+                                             fret_type, FLAGS_DRUMS);
         if (note.has_value() && fret_type >= 64) {
             note->flags = static_cast<NoteFlags>(note->flags | FLAGS_CYMBAL);
         }
@@ -362,8 +374,8 @@ NoteTrack note_track_from_section(const ChartSection& section, int resolution,
     }
     std::sort(solo_on_events.begin(), solo_on_events.end());
     std::sort(solo_off_events.begin(), solo_off_events.end());
-    auto solos
-        = form_solo_vector(solo_on_events, solo_off_events, notes, false);
+    auto solos = form_solo_vector(solo_on_events, solo_off_events, notes,
+                                  track_type, false);
     std::sort(disco_flip_on_events.begin(), disco_flip_on_events.end());
     std::sort(disco_flip_off_events.begin(), disco_flip_off_events.end());
     std::vector<DiscoFlip> disco_flips;
@@ -1009,7 +1021,8 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         for (const auto& [pos, rank] : event_track.solo_off_events) {
             solo_offs.push_back(pos);
         }
-        auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
+        auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
+                                      TrackType::FiveFret, true);
         note_tracks.emplace(diff,
                             NoteTrack {note_set,
                                        sp_phrases,
@@ -1051,7 +1064,8 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
         for (const auto& [pos, rank] : event_track.solo_off_events) {
             solo_offs.push_back(pos);
         }
-        auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
+        auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
+                                      TrackType::SixFret, true);
         note_tracks.emplace(diff,
                             NoteTrack {note_set,
                                        sp_phrases,
@@ -1190,7 +1204,8 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
                  event_track.disco_flip_off_events.at(diff))) {
             disco_flips.push_back({start, end - start});
         }
-        auto solos = form_solo_vector(solo_ons, solo_offs, note_set, true);
+        auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
+                                      TrackType::Drums, true);
         note_tracks.emplace(diff,
                             NoteTrack {note_set,
                                        sp_phrases,

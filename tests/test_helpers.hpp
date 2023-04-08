@@ -18,6 +18,7 @@
 
 #include <array>
 #include <cmath>
+#include <iomanip>
 #include <ostream>
 #include <tuple>
 #include <vector>
@@ -266,7 +267,7 @@ inline std::ostream& operator<<(std::ostream& stream, const Note& note)
                    << ", ";
         }
     }
-    stream << '}';
+    stream << "Flags " << std::hex << note.flags << std::dec << '}';
     return stream;
 }
 
