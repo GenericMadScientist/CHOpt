@@ -617,8 +617,8 @@ BOOST_AUTO_TEST_CASE(fifth_lane_notes_are_read_correctly_from_chart)
     std::vector<ChartSection> sections {expert_drums};
     const Chart chart {sections};
     std::vector<Note> notes {make_drum_note(192, DRUM_GREEN),
-                             make_drum_note(384, DRUM_BLUE),
-                             make_drum_note(384, DRUM_GREEN)};
+                             make_drum_note(384, DRUM_GREEN),
+                             make_drum_note(384, DRUM_BLUE)};
 
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.drum_note_track(Difficulty::Expert);

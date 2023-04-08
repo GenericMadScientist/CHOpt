@@ -213,6 +213,7 @@ add_fifth_lane_greens(std::vector<Note> notes,
         }
         Note note;
         note.position = note_event.position;
+        note.flags = FLAGS_DRUMS;
         if (green_positions.count(note_event.position) != 0) {
             note.lengths[DRUM_BLUE] = 0;
         } else {
@@ -233,6 +234,9 @@ std::vector<Note> apply_cymbal_events(const std::vector<Note>& notes)
         }
         bool delete_cymbal = true;
         for (auto j = 0U; j < notes.size(); ++j) {
+            if (i == j) {
+                continue;
+            }
             const auto& non_cymbal_note = notes[j];
             if (non_cymbal_note.position != cymbal_note.position) {
                 continue;
