@@ -77,8 +77,10 @@ public:
     void run() override
     {
         try {
+            const auto& track
+                = m_song->track(m_settings.instrument, m_settings.difficulty);
             const auto builder = make_builder(
-                *m_song, m_settings,
+                *m_song, track, m_settings,
                 [&](const QString& text) { emit write_text(text); },
                 &m_terminate);
             emit write_text("Saving image...");

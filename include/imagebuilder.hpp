@@ -30,6 +30,7 @@
 #include "processed.hpp"
 #include "settings.hpp"
 #include "song.hpp"
+#include "songparts.hpp"
 #include "sp.hpp"
 #include "timeconverter.hpp"
 
@@ -204,7 +205,8 @@ public:
     [[nodiscard]] bool is_lefty_flip() const { return m_is_lefty_flip; }
 };
 
-ImageBuilder make_builder(const Song& song, const Settings& settings,
+ImageBuilder make_builder(const Song& song, const NoteTrack& track,
+                          const Settings& settings,
                           const std::function<void(const char*)>& write,
                           const std::atomic<bool>* terminate);
 

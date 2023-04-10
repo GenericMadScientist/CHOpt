@@ -251,112 +251,6 @@ ImageBuilder build_with_engine_params(const NoteTrack& track,
             settings.engine->overlaps()};
 }
 
-ImageBuilder
-make_builder_from_track(const Song& song, const NoteTrack& track,
-                        const Settings& settings,
-                        const std::function<void(const char*)>& write,
-                        const std::atomic<bool>* terminate)
-{
-    auto new_track = track;
-    if (song.is_from_midi()) {
-        new_track = track.trim_sustains();
-    }
-    new_track = new_track.snap_chords(settings.engine->snap_gap());
-    if (track.track_type() == TrackType::Drums) {
-        if (!settings.engine->is_rock_band()
-            && new_track.drum_fills().empty()) {
-            new_track.generate_drum_fills({song.sync_track(),
-                                           new_track.resolution(),
-                                           *settings.engine,
-                                           {}});
-        }
-        if (!settings.drum_settings.enable_dynamics) {
-            new_track.disable_dynamics();
-        }
-    }
-    const auto sync_track = song.sync_track().speedup(settings.speed);
-
-    auto builder = build_with_engine_params(new_track, sync_track, settings);
-    builder.add_song_header(song.name(), song.artist(), song.charter(),
-                            settings.speed);
-
-    if (track.track_type() == TrackType::Drums) {
-        builder.add_drum_fills(new_track);
-    }
-
-    if (settings.draw_bpms) {
-        builder.add_bpms(sync_track, new_track.resolution());
-    }
-
-    const auto solos = new_track.solos(settings.drum_settings);
-    if (settings.draw_solos) {
-        builder.add_solo_sections(solos, new_track.resolution());
-    }
-
-    if (settings.draw_time_sigs) {
-        builder.add_time_sigs(sync_track, new_track.resolution());
-    }
-
-    const auto unison_positions = (settings.engine->has_unison_bonuses())
-        ? song.unison_phrase_positions()
-        : std::vector<int> {};
-
-    // The 0.1% squeeze minimum is to get around dumb floating point rounding
-    // issues that visibly affect the path at 0% squeeze.
-    auto squeeze_settings = settings.squeeze_settings;
-    constexpr double SQUEEZE_EPSILON = 0.001;
-    squeeze_settings.squeeze
-        = std::max(squeeze_settings.squeeze, SQUEEZE_EPSILON);
-    const ProcessedSong processed_track {new_track,
-                                         sync_track,
-                                         settings.squeeze_settings,
-                                         settings.drum_settings,
-                                         *settings.engine,
-                                         song.od_beats(),
-                                         unison_positions};
-    Path path;
-
-    if (!settings.blank) {
-        const auto is_rb_drums = track.track_type() == TrackType::Drums
-            && settings.engine->is_rock_band();
-        if (is_rb_drums) {
-            write("Optimisation disabled for Rock Band drums, planned for a "
-                  "future release");
-            builder.add_sp_phrases(new_track, unison_positions, path);
-        } else {
-            write("Optimising, please wait...");
-            const Optimiser optimiser {&processed_track, terminate,
-                                       settings.speed,
-                                       squeeze_settings.whammy_delay};
-            path = optimiser.optimal_path();
-            write(processed_track.path_summary(path).c_str());
-            builder.add_sp_phrases(new_track, unison_positions, path);
-            builder.add_sp_acts(processed_track.points(),
-                                processed_track.converter(), path);
-            builder.activation_opacity() = settings.opacity;
-        }
-    } else {
-        builder.add_sp_phrases(new_track, unison_positions, path);
-    }
-
-    builder.add_measure_values(processed_track.points(),
-                               processed_track.converter(), path);
-    if (settings.blank || !settings.engine->overlaps()) {
-        builder.add_sp_values(processed_track.sp_data(), *settings.engine);
-    } else {
-        builder.add_sp_percent_values(processed_track.sp_data(),
-                                      processed_track.converter(),
-                                      processed_track.points(), path);
-    }
-    builder.set_total_score(processed_track.points(), solos, path);
-    if (settings.engine->has_bres() && new_track.bre().has_value()) {
-        builder.add_bre(*(new_track.bre()), new_track.resolution(),
-                        processed_track.converter());
-    }
-
-    return builder;
-}
-
 std::vector<std::tuple<double, double>>
 relative_complement(std::vector<std::tuple<double, double>> parent_set,
                     const std::vector<std::tuple<double, double>>& excluded_set)
@@ -785,10 +679,107 @@ void ImageBuilder::set_total_score(const PointSet& points,
     m_total_score = no_sp_score + path.score_boost;
 }
 
-ImageBuilder make_builder(const Song& song, const Settings& settings,
+ImageBuilder make_builder(const Song& song, const NoteTrack& track,
+                          const Settings& settings,
                           const std::function<void(const char*)>& write,
                           const std::atomic<bool>* terminate)
 {
-    const auto& track = song.track(settings.instrument, settings.difficulty);
-    return make_builder_from_track(song, track, settings, write, terminate);
+    auto new_track = track;
+    if (song.is_from_midi()) {
+        new_track = track.trim_sustains();
+    }
+    new_track = new_track.snap_chords(settings.engine->snap_gap());
+    if (track.track_type() == TrackType::Drums) {
+        if (!settings.engine->is_rock_band()
+            && new_track.drum_fills().empty()) {
+            new_track.generate_drum_fills({song.sync_track(),
+                                           new_track.resolution(),
+                                           *settings.engine,
+                                           {}});
+        }
+        if (!settings.drum_settings.enable_dynamics) {
+            new_track.disable_dynamics();
+        }
+    }
+    const auto sync_track = song.sync_track().speedup(settings.speed);
+
+    auto builder = build_with_engine_params(new_track, sync_track, settings);
+    builder.add_song_header(song.name(), song.artist(), song.charter(),
+                            settings.speed);
+
+    if (track.track_type() == TrackType::Drums) {
+        builder.add_drum_fills(new_track);
+    }
+
+    if (settings.draw_bpms) {
+        builder.add_bpms(sync_track, new_track.resolution());
+    }
+
+    const auto solos = new_track.solos(settings.drum_settings);
+    if (settings.draw_solos) {
+        builder.add_solo_sections(solos, new_track.resolution());
+    }
+
+    if (settings.draw_time_sigs) {
+        builder.add_time_sigs(sync_track, new_track.resolution());
+    }
+
+    const auto unison_positions = (settings.engine->has_unison_bonuses())
+        ? song.unison_phrase_positions()
+        : std::vector<int> {};
+
+    // The 0.1% squeeze minimum is to get around dumb floating point rounding
+    // issues that visibly affect the path at 0% squeeze.
+    auto squeeze_settings = settings.squeeze_settings;
+    constexpr double SQUEEZE_EPSILON = 0.001;
+    squeeze_settings.squeeze
+        = std::max(squeeze_settings.squeeze, SQUEEZE_EPSILON);
+    const ProcessedSong processed_track {new_track,
+                                         sync_track,
+                                         settings.squeeze_settings,
+                                         settings.drum_settings,
+                                         *settings.engine,
+                                         song.od_beats(),
+                                         unison_positions};
+    Path path;
+
+    if (!settings.blank) {
+        const auto is_rb_drums = track.track_type() == TrackType::Drums
+            && settings.engine->is_rock_band();
+        if (is_rb_drums) {
+            write("Optimisation disabled for Rock Band drums, planned for a "
+                  "future release");
+            builder.add_sp_phrases(new_track, unison_positions, path);
+        } else {
+            write("Optimising, please wait...");
+            const Optimiser optimiser {&processed_track, terminate,
+                                       settings.speed,
+                                       squeeze_settings.whammy_delay};
+            path = optimiser.optimal_path();
+            write(processed_track.path_summary(path).c_str());
+            builder.add_sp_phrases(new_track, unison_positions, path);
+            builder.add_sp_acts(processed_track.points(),
+                                processed_track.converter(), path);
+            builder.activation_opacity() = settings.opacity;
+        }
+    } else {
+        builder.add_sp_phrases(new_track, unison_positions, path);
+    }
+
+    builder.add_measure_values(processed_track.points(),
+                               processed_track.converter(), path);
+    if (settings.blank || !settings.engine->overlaps()) {
+        builder.add_sp_values(processed_track.sp_data(), *settings.engine);
+    } else {
+        builder.add_sp_percent_values(processed_track.sp_data(),
+                                      processed_track.converter(),
+                                      processed_track.points(), path);
+    }
+    builder.set_total_score(processed_track.points(), solos, path);
+    if (settings.engine->has_bres() && new_track.bre().has_value()) {
+        builder.add_bre(*(new_track.bre()), new_track.resolution(),
+                        processed_track.converter());
+    }
+
+    return builder;
 }

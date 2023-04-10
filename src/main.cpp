@@ -37,10 +37,12 @@ int main(int argc, char** argv)
             return EXIT_SUCCESS;
         }
         const auto song = Song::from_filename(settings->filename);
+        const auto& track
+            = song.track(settings->instrument, settings->difficulty);
         const std::atomic<bool> terminate {false};
         const auto builder = make_builder(
-            song, *settings, [&](auto p) { boost::nowide::cout << p << '\n'; },
-            &terminate);
+            song, track, *settings,
+            [&](auto p) { boost::nowide::cout << p << '\n'; }, &terminate);
         boost::nowide::cout << std::flush;
         if (settings->draw_image) {
             const Image image {builder};
