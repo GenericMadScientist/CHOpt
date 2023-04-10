@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(chart_reads_easy_note_track_correctly)
     std::vector<StarPower> sp_phrases {{768, 100}};
 
     const auto song = Song::from_chart(chart, {});
-    const auto& track = song.guitar_note_track(Difficulty::Easy);
+    const auto& track = song.track(Instrument::Guitar, Difficulty::Easy);
 
     BOOST_CHECK_EQUAL(track.resolution(), 192);
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(invalid_note_values_are_ignored)
 
     const auto song = Song::from_chart(chart, {});
     const auto& parsed_notes
-        = song.guitar_note_track(Difficulty::Expert).notes();
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_notes.cbegin(), parsed_notes.cend(),
                                   notes.cbegin(), notes.cend());
@@ -200,7 +200,9 @@ BOOST_AUTO_TEST_CASE(sp_phrases_are_read_correctly_from_chart)
 
     const auto song = Song::from_chart(chart, {});
 
-    BOOST_TEST(song.guitar_note_track(Difficulty::Expert).sp_phrases().empty());
+    BOOST_TEST(song.track(Instrument::Guitar, Difficulty::Expert)
+                   .sp_phrases()
+                   .empty());
 }
 
 BOOST_AUTO_TEST_SUITE(chart_does_not_need_sections_in_usual_order)
@@ -240,7 +242,7 @@ BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
 
     const auto song = Song::from_chart(chart, {});
     const auto& parsed_notes
-        = song.guitar_note_track(Difficulty::Expert).notes();
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(song.resolution(), 200);
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_notes.cbegin(), parsed_notes.cend(),
@@ -266,7 +268,7 @@ BOOST_AUTO_TEST_CASE(later_nonempty_sections_are_ignored)
 
     const auto song = Song::from_chart(chart, {});
     const auto& parsed_notes
-        = song.guitar_note_track(Difficulty::Expert).notes();
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_notes.cbegin(), parsed_notes.cend(),
                                   notes.cbegin(), notes.cend());
@@ -283,7 +285,7 @@ BOOST_AUTO_TEST_CASE(leading_empty_sections_are_ignored)
 
     const auto song = Song::from_chart(chart, {});
     const auto& parsed_notes
-        = song.guitar_note_track(Difficulty::Expert).notes();
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_notes.cbegin(), parsed_notes.cend(),
                                   notes.cbegin(), notes.cend());
@@ -308,7 +310,7 @@ BOOST_AUTO_TEST_CASE(expected_solos_are_read_properly)
     std::vector<Solo> required_solos {{0, 200, 100}, {300, 400, 200}};
 
     const auto song = Song::from_chart(chart, {});
-    const auto parsed_solos = song.guitar_note_track(Difficulty::Expert)
+    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
                                   .solos(DrumSettings::default_settings());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_solos.cbegin(), parsed_solos.cend(),
@@ -330,7 +332,7 @@ BOOST_AUTO_TEST_CASE(chords_are_not_counted_double)
     std::vector<Solo> required_solos {{0, 200, 100}};
 
     const auto song = Song::from_chart(chart, {});
-    const auto parsed_solos = song.guitar_note_track(Difficulty::Expert)
+    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
                                   .solos(DrumSettings::default_settings());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_solos.cbegin(), parsed_solos.cend(),
@@ -348,7 +350,7 @@ BOOST_AUTO_TEST_CASE(empty_solos_are_ignored)
 
     const auto song = Song::from_chart(chart, {});
 
-    BOOST_TEST(song.guitar_note_track(Difficulty::Expert)
+    BOOST_TEST(song.track(Instrument::Guitar, Difficulty::Expert)
                    .solos(DrumSettings::default_settings())
                    .empty());
 }
@@ -368,7 +370,7 @@ BOOST_AUTO_TEST_CASE(repeated_solo_starts_and_ends_dont_matter)
     std::vector<Solo> required_solos {{0, 200, 100}};
 
     const auto song = Song::from_chart(chart, {});
-    const auto parsed_solos = song.guitar_note_track(Difficulty::Expert)
+    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
                                   .solos(DrumSettings::default_settings());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_solos.cbegin(), parsed_solos.cend(),
@@ -386,7 +388,7 @@ BOOST_AUTO_TEST_CASE(solo_markers_are_sorted)
     std::vector<Solo> required_solos {{0, 384, 100}};
 
     const auto song = Song::from_chart(chart, {});
-    const auto parsed_solos = song.guitar_note_track(Difficulty::Expert)
+    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
                                   .solos(DrumSettings::default_settings());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_solos.cbegin(), parsed_solos.cend(),
@@ -403,7 +405,7 @@ BOOST_AUTO_TEST_CASE(solos_with_no_soloend_event_are_ignored)
 
     const auto song = Song::from_chart(chart, {});
 
-    BOOST_TEST(song.guitar_note_track(Difficulty::Expert)
+    BOOST_TEST(song.track(Instrument::Guitar, Difficulty::Expert)
                    .solos(DrumSettings::default_settings())
                    .empty());
 }
@@ -460,8 +462,9 @@ BOOST_AUTO_TEST_CASE(guitar_coop_is_read)
 
     const auto song = Song::from_chart(chart, {});
 
-    BOOST_CHECK_NO_THROW(
-        [&] { return song.guitar_coop_note_track(Difficulty::Expert); }());
+    BOOST_CHECK_NO_THROW([&] {
+        return song.track(Instrument::GuitarCoop, Difficulty::Expert);
+    }());
 }
 
 BOOST_AUTO_TEST_CASE(bass_is_read)
@@ -474,7 +477,7 @@ BOOST_AUTO_TEST_CASE(bass_is_read)
     const auto song = Song::from_chart(chart, {});
 
     BOOST_CHECK_NO_THROW(
-        [&] { return song.bass_note_track(Difficulty::Expert); }());
+        [&] { return song.track(Instrument::Bass, Difficulty::Expert); }());
 }
 
 BOOST_AUTO_TEST_CASE(rhythm_is_read)
@@ -487,7 +490,7 @@ BOOST_AUTO_TEST_CASE(rhythm_is_read)
     const auto song = Song::from_chart(chart, {});
 
     BOOST_CHECK_NO_THROW(
-        [&] { return song.rhythm_note_track(Difficulty::Expert); }());
+        [&] { return song.track(Instrument::Rhythm, Difficulty::Expert); }());
 }
 
 BOOST_AUTO_TEST_CASE(keys_is_read)
@@ -500,7 +503,7 @@ BOOST_AUTO_TEST_CASE(keys_is_read)
     const auto song = Song::from_chart(chart, {});
 
     BOOST_CHECK_NO_THROW(
-        [&] { return song.keys_note_track(Difficulty::Expert); }());
+        [&] { return song.track(Instrument::Keys, Difficulty::Expert); }());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -517,7 +520,7 @@ BOOST_AUTO_TEST_CASE(six_fret_guitar_is_read_correctly)
                              make_ghl_note(384, 0, SIX_FRET_BLACK_LOW)};
 
     const auto song = Song::from_chart(chart, {});
-    const auto& track = song.ghl_guitar_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::GHLGuitar, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
@@ -533,7 +536,7 @@ BOOST_AUTO_TEST_CASE(six_fret_bass_is_read_correctly)
                              make_ghl_note(384, 0, SIX_FRET_BLACK_LOW)};
 
     const auto song = Song::from_chart(chart, {});
-    const auto& track = song.ghl_bass_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::GHLBass, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
@@ -558,7 +561,7 @@ BOOST_AUTO_TEST_CASE(drum_notes_are_read_correctly_from_chart)
                              make_drum_note(768, DRUM_DOUBLE_KICK)};
 
     const auto song = Song::from_chart(chart, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
@@ -580,7 +583,7 @@ BOOST_AUTO_TEST_CASE(dynamics_are_read_correctly_from_chart)
                              make_drum_note(384, DRUM_RED, FLAGS_GHOST)};
 
     const auto song = Song::from_chart(chart, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
@@ -599,7 +602,7 @@ BOOST_AUTO_TEST_CASE(drum_solos_are_read_correctly_from_chart)
     const Chart chart {sections};
 
     const auto song = Song::from_chart(chart, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL(track.solos(DrumSettings::default_settings())[0].value,
                       200);
@@ -621,7 +624,7 @@ BOOST_AUTO_TEST_CASE(fifth_lane_notes_are_read_correctly_from_chart)
                              make_drum_note(384, DRUM_BLUE)};
 
     const auto song = Song::from_chart(chart, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
@@ -635,7 +638,7 @@ BOOST_AUTO_TEST_CASE(invalid_drum_notes_are_ignored)
     const Chart chart {sections};
 
     const auto song = Song::from_chart(chart, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL(track.notes().size(), 1);
 }
@@ -649,7 +652,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_read_from_chart)
     const DrumFill fill {192, 1};
 
     const auto song = Song::from_chart(chart, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL(track.drum_fills().size(), 1);
     BOOST_CHECK_EQUAL(track.drum_fills()[0], fill);
@@ -665,7 +668,7 @@ BOOST_AUTO_TEST_CASE(disco_flips_are_read_from_chart)
     const DiscoFlip flip {100, 5};
 
     const auto song = Song::from_chart(chart, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL(track.disco_flips().size(), 1);
     BOOST_CHECK_EQUAL(track.disco_flips()[0], flip);
@@ -811,7 +814,7 @@ BOOST_AUTO_TEST_CASE(notes_of_every_difficulty_are_read)
     const auto song = Song::from_midi(midi, {});
 
     for (auto diff : diffs) {
-        const auto& notes = song.guitar_note_track(diff).notes();
+        const auto& notes = song.track(Instrument::Guitar, diff).notes();
         BOOST_CHECK_EQUAL_COLLECTIONS(notes.cbegin(), notes.cend(),
                                       green_note.cbegin(), green_note.cend());
     }
@@ -832,7 +835,7 @@ BOOST_AUTO_TEST_CASE(notes_are_read_from_part_guitar)
     const auto song = Song::from_midi(midi, {});
 
     BOOST_CHECK_EQUAL(
-        song.guitar_note_track(Difficulty::Expert).notes()[0].colours(),
+        song.track(Instrument::Guitar, Difficulty::Expert).notes()[0].colours(),
         1 << FIVE_FRET_RED);
 }
 
@@ -851,7 +854,7 @@ BOOST_AUTO_TEST_CASE(part_guitar_event_need_not_be_the_first_event)
     const auto song = Song::from_midi(midi, {});
 
     BOOST_CHECK_EQUAL(
-        song.guitar_note_track(Difficulty::Expert).notes()[0].colours(),
+        song.track(Instrument::Guitar, Difficulty::Expert).notes()[0].colours(),
         1 << FIVE_FRET_RED);
 }
 
@@ -868,7 +871,7 @@ BOOST_AUTO_TEST_CASE(guitar_notes_are_also_read_from_t1_gems)
     const auto song = Song::from_midi(midi, {});
 
     BOOST_CHECK_EQUAL(
-        song.guitar_note_track(Difficulty::Expert).notes()[0].colours(),
+        song.track(Instrument::Guitar, Difficulty::Expert).notes()[0].colours(),
         1 << FIVE_FRET_RED);
 }
 
@@ -902,7 +905,8 @@ BOOST_AUTO_TEST_CASE(corresponding_note_off_events_are_after_note_on_events)
     const Midi midi {480, {note_track}};
 
     const auto song = Song::from_midi(midi, {});
-    const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
+    const auto& notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(notes.size(), 2);
     BOOST_CHECK_EQUAL(notes[0].lengths[0], 480);
@@ -935,7 +939,8 @@ BOOST_AUTO_TEST_CASE(
     const Midi midi {192, {note_track}};
 
     const auto song = Song::from_midi(midi, {});
-    const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
+    const auto& notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(notes.size(), 2);
 }
@@ -953,7 +958,8 @@ BOOST_AUTO_TEST_CASE(each_note_on_event_consumes_the_following_note_off_event)
     const Midi midi {192, {note_track}};
 
     const auto song = Song::from_midi(midi, {});
-    const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
+    const auto& notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(notes.size(), 2);
     BOOST_CHECK_GT(notes[1].lengths[0], 0);
@@ -970,7 +976,8 @@ BOOST_AUTO_TEST_CASE(note_off_events_can_be_zero_ticks_after_the_note_on_events)
     const Midi midi {192, {note_track}};
 
     const auto song = Song::from_midi(midi, {});
-    const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
+    const auto& notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(notes.size(), 1);
 }
@@ -1004,7 +1011,7 @@ BOOST_AUTO_TEST_CASE(open_notes_are_read_correctly)
     const auto song = Song::from_midi(midi, {});
 
     BOOST_CHECK_EQUAL(
-        song.guitar_note_track(Difficulty::Expert).notes()[0].colours(),
+        song.track(Instrument::Guitar, Difficulty::Expert).notes()[0].colours(),
         1 << FIVE_FRET_OPEN);
 }
 
@@ -1043,7 +1050,7 @@ BOOST_AUTO_TEST_CASE(solos_are_read_from_mids_correctly)
     const std::vector<Solo> solos {{768, 900, 100}};
 
     const auto song = Song::from_midi(midi, {});
-    const auto parsed_solos = song.guitar_note_track(Difficulty::Expert)
+    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
                                   .solos(DrumSettings::default_settings());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_solos.cbegin(), parsed_solos.cend(),
@@ -1067,7 +1074,7 @@ BOOST_AUTO_TEST_CASE(a_single_phrase_is_read)
 
     const auto song = Song::from_midi(midi, {});
     const auto& parsed_sp
-        = song.guitar_note_track(Difficulty::Expert).sp_phrases();
+        = song.track(Instrument::Guitar, Difficulty::Expert).sp_phrases();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_sp.cbegin(), parsed_sp.cend(),
                                   sp_phrases.cbegin(), sp_phrases.cend());
@@ -1106,7 +1113,7 @@ BOOST_AUTO_TEST_CASE(mids_with_multiple_solos_and_no_sp_have_solos_read_as_sp)
     const Midi midi {192, {note_track}};
 
     const auto song = Song::from_midi(midi, {});
-    const auto& track = song.guitar_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Guitar, Difficulty::Expert);
 
     BOOST_TEST(track.solos(DrumSettings::default_settings()).empty());
     BOOST_CHECK_EQUAL(track.sp_phrases().size(), 2);
@@ -1125,7 +1132,8 @@ BOOST_AUTO_TEST_CASE(short_midi_sustains_are_not_trimmed)
                            {170, {MidiEvent {0x80, {96, 0}}}}}};
     const Midi midi {200, {note_track}};
     const auto song = Song::from_midi(midi, {});
-    const auto& notes = song.guitar_note_track(Difficulty::Expert).notes();
+    const auto& notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(notes[0].lengths[0], 65);
     BOOST_CHECK_EQUAL(notes[1].lengths[0], 70);
@@ -1145,8 +1153,9 @@ BOOST_AUTO_TEST_CASE(guitar_coop_is_read)
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
 
-    BOOST_CHECK_NO_THROW(
-        [&] { return song.guitar_coop_note_track(Difficulty::Expert); }());
+    BOOST_CHECK_NO_THROW([&] {
+        return song.track(Instrument::GuitarCoop, Difficulty::Expert);
+    }());
 }
 
 BOOST_AUTO_TEST_CASE(bass_is_read)
@@ -1161,7 +1170,7 @@ BOOST_AUTO_TEST_CASE(bass_is_read)
     const auto song = Song::from_midi(midi, {});
 
     BOOST_CHECK_NO_THROW(
-        [&] { return song.bass_note_track(Difficulty::Expert); }());
+        [&] { return song.track(Instrument::Bass, Difficulty::Expert); }());
 }
 
 BOOST_AUTO_TEST_CASE(rhythm_is_read)
@@ -1176,7 +1185,7 @@ BOOST_AUTO_TEST_CASE(rhythm_is_read)
     const auto song = Song::from_midi(midi, {});
 
     BOOST_CHECK_NO_THROW(
-        [&] { return song.rhythm_note_track(Difficulty::Expert); }());
+        [&] { return song.track(Instrument::Rhythm, Difficulty::Expert); }());
 }
 
 BOOST_AUTO_TEST_CASE(keys_is_read)
@@ -1191,7 +1200,7 @@ BOOST_AUTO_TEST_CASE(keys_is_read)
     const auto song = Song::from_midi(midi, {});
 
     BOOST_CHECK_NO_THROW(
-        [&] { return song.keys_note_track(Difficulty::Expert); }());
+        [&] { return song.track(Instrument::Keys, Difficulty::Expert); }());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1209,7 +1218,7 @@ BOOST_AUTO_TEST_CASE(six_fret_guitar_is_read_correctly)
          {65, {MidiEvent {0x80, {94, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
-    const auto& track = song.ghl_guitar_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::GHLGuitar, Difficulty::Expert);
 
     std::vector<Note> notes {make_ghl_note(0, 65, SIX_FRET_OPEN)};
 
@@ -1228,7 +1237,7 @@ BOOST_AUTO_TEST_CASE(six_fret_bass_is_read_correctly)
          {65, {MidiEvent {0x80, {94, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
-    const auto& track = song.ghl_bass_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::GHLBass, Difficulty::Expert);
 
     std::vector<Note> notes {make_ghl_note(0, 65, SIX_FRET_OPEN)};
 
@@ -1250,7 +1259,7 @@ BOOST_AUTO_TEST_CASE(drums_are_read_correctly_from_mid)
                            {65, {MidiEvent {0x80, {110, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     std::vector<Note> notes {make_drum_note(0, DRUM_YELLOW)};
 
@@ -1268,7 +1277,7 @@ BOOST_AUTO_TEST_CASE(double_kicks_are_read_correctly_from_mid)
                            {65, {MidiEvent {0x80, {95, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     std::vector<Note> notes {make_drum_note(0, DRUM_DOUBLE_KICK)};
 
@@ -1288,7 +1297,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_read_correctly_from_mid)
                            {75, {MidiEvent {0x80, {120, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     std::vector<DrumFill> fills {{45, 30}};
 
@@ -1316,7 +1325,7 @@ BOOST_AUTO_TEST_CASE(disco_flips_are_read_correctly_from_mid)
                        0x75, 0x6D, 0x73, 0x30, 0x5D}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     std::vector<DiscoFlip> flips {{15, 60}};
 
@@ -1340,7 +1349,7 @@ BOOST_AUTO_TEST_CASE(missing_disco_flip_end_event_just_ends_at_max_int)
          {65, {MidiEvent {0x80, {98, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     std::vector<DiscoFlip> flips {{15, 2147483632}};
 
@@ -1365,7 +1374,7 @@ BOOST_AUTO_TEST_CASE(drum_five_lane_to_four_lane_conversion_is_done_from_mid)
                            {5, {MidiEvent {0x80, {100, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     std::vector<Note> notes {make_drum_note(0, DRUM_GREEN),
                              make_drum_note(2, DRUM_GREEN, FLAGS_CYMBAL),
@@ -1394,7 +1403,7 @@ BOOST_AUTO_TEST_CASE(dynamics_are_parsed_from_mid)
          {5, {MidiEvent {0x80, {97, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     std::vector<Note> notes {make_drum_note(0, DRUM_RED, FLAGS_GHOST),
                              make_drum_note(2, DRUM_RED),
@@ -1418,7 +1427,7 @@ BOOST_AUTO_TEST_CASE(dynamics_not_parsed_from_mid_without_ENABLE_CHART_DYNAMICS)
                            {5, {MidiEvent {0x80, {97, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = Song::from_midi(midi, {});
-    const auto& track = song.drum_note_track(Difficulty::Expert);
+    const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     std::vector<Note> notes {make_drum_note(0, DRUM_RED),
                              make_drum_note(2, DRUM_RED),

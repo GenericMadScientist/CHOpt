@@ -63,37 +63,9 @@ public:
     [[nodiscard]] std::vector<Instrument> instruments() const;
     [[nodiscard]] std::vector<Difficulty>
     difficulties(Instrument instrument) const;
-    [[nodiscard]] const NoteTrack& guitar_note_track(Difficulty diff) const
+    [[nodiscard]] const NoteTrack& track(Instrument inst, Difficulty diff) const
     {
-        return m_tracks.at({Instrument::Guitar, diff});
-    }
-    [[nodiscard]] const NoteTrack& guitar_coop_note_track(Difficulty diff) const
-    {
-        return m_tracks.at({Instrument::GuitarCoop, diff});
-    }
-    [[nodiscard]] const NoteTrack& bass_note_track(Difficulty diff) const
-    {
-        return m_tracks.at({Instrument::Bass, diff});
-    }
-    [[nodiscard]] const NoteTrack& rhythm_note_track(Difficulty diff) const
-    {
-        return m_tracks.at({Instrument::Rhythm, diff});
-    }
-    [[nodiscard]] const NoteTrack& keys_note_track(Difficulty diff) const
-    {
-        return m_tracks.at({Instrument::Keys, diff});
-    }
-    [[nodiscard]] const NoteTrack& ghl_guitar_note_track(Difficulty diff) const
-    {
-        return m_tracks.at({Instrument::GHLGuitar, diff});
-    }
-    [[nodiscard]] const NoteTrack& ghl_bass_note_track(Difficulty diff) const
-    {
-        return m_tracks.at({Instrument::GHLBass, diff});
-    }
-    [[nodiscard]] const NoteTrack& drum_note_track(Difficulty diff) const
-    {
-        return m_tracks.at({Instrument::Drums, diff});
+        return m_tracks.at({inst, diff});
     }
     [[nodiscard]] std::vector<int> unison_phrase_positions() const;
 };
