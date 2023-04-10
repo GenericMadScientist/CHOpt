@@ -63,10 +63,8 @@ public:
     [[nodiscard]] std::vector<Instrument> instruments() const;
     [[nodiscard]] std::vector<Difficulty>
     difficulties(Instrument instrument) const;
-    [[nodiscard]] const NoteTrack& track(Instrument inst, Difficulty diff) const
-    {
-        return m_tracks.at({inst, diff});
-    }
+    [[nodiscard]] const NoteTrack& track(Instrument instrument,
+                                         Difficulty difficulty) const;
     [[nodiscard]] std::vector<int> unison_phrase_positions() const;
 };
 

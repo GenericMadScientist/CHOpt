@@ -1490,6 +1490,20 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
     return song;
 }
 
+const NoteTrack& Song::track(Instrument instrument, Difficulty difficulty) const
+{
+    const auto insts = instruments();
+    if (std::find(insts.cbegin(), insts.cend(), instrument) == insts.cend()) {
+        throw std::invalid_argument("Chosen instrument not present in song");
+    }
+    const auto diffs = difficulties(instrument);
+    if (std::find(diffs.cbegin(), diffs.cend(), difficulty) == diffs.cend()) {
+        throw std::invalid_argument(
+            "Difficulty not available for chosen instrument");
+    }
+    return m_tracks.at({instrument, difficulty});
+}
+
 std::vector<int> Song::unison_phrase_positions() const
 {
     std::map<int, std::set<Instrument>> phrase_by_instrument;
