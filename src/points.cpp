@@ -215,25 +215,7 @@ void add_drum_activation_points(const NoteTrack& track,
         const Beat fill_end {(fill.position + fill.length)
                              / static_cast<double>(track.resolution())};
         const auto best_point = closest_point(points, fill_end);
-        bool has_non_kick = false;
-        for (const auto& note : track.notes()) {
-            if (note.is_kick_note()) {
-                continue;
-            }
-            const Beat note_position {
-                note.position / static_cast<double>(track.resolution())};
-            if (note_position < best_point->position.beat) {
-                continue;
-            }
-            if (note_position > best_point->position.beat) {
-                break;
-            }
-            has_non_kick = true;
-            break;
-        }
-        if (has_non_kick) {
-            best_point->fill_start = converter.beats_to_seconds(fill_start);
-        }
+        best_point->fill_start = converter.beats_to_seconds(fill_start);
     }
 }
 

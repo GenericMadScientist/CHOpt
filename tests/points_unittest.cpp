@@ -1022,7 +1022,7 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
     BOOST_TEST(!(begin + 3)->fill_start.has_value());
 }
 
-BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_killed)
+BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_not_killed)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(1, DRUM_KICK)};
     std::vector<DrumFill> fills {{0, 2}};
@@ -1036,10 +1036,10 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_killed)
     const auto begin = points.cbegin();
 
     BOOST_TEST(!begin->fill_start.has_value());
-    BOOST_TEST(!(begin + 1)->fill_start.has_value());
+    BOOST_TEST((begin + 1)->fill_start.has_value());
 }
 
-BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_killed)
+BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_not_killed)
 {
     std::vector<Note> notes {make_drum_note(0),
                              make_drum_note(1, DRUM_DOUBLE_KICK)};
@@ -1054,7 +1054,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_killed)
     const auto begin = points.cbegin();
 
     BOOST_TEST(!begin->fill_start.has_value());
-    BOOST_TEST(!(begin + 1)->fill_start.has_value());
+    BOOST_TEST((begin + 1)->fill_start.has_value());
 }
 
 BOOST_AUTO_TEST_CASE(
