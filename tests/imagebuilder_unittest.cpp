@@ -614,7 +614,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)
         expected_fill_ranges.cbegin(), expected_fill_ranges.cend());
 }
 
-BOOST_AUTO_TEST_CASE(drum_fills_cancelled_by_a_kick_are_not_drawn)
+BOOST_AUTO_TEST_CASE(drum_fills_cannot_be_cancelled_by_a_kick)
 {
     NoteTrack track {{make_drum_note(288, DRUM_KICK)},
                      {},
@@ -629,7 +629,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_cancelled_by_a_kick_are_not_drawn)
         false, true};
     builder.add_drum_fills(track);
 
-    BOOST_TEST(builder.fill_ranges().empty());
+    BOOST_CHECK_EQUAL(builder.fill_ranges().size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(double_kicks_only_drawn_with_enable_double_kick)

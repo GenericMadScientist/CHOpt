@@ -180,29 +180,6 @@ std::vector<DrawnRow> drawn_rows(const NoteTrack& track,
     return rows;
 }
 
-bool is_fill_active(const std::vector<Note>& notes, DrumFill fill)
-{
-    if (notes.empty()) {
-        return false;
-    }
-    const auto fill_end = fill.position + fill.length;
-    auto best_position = notes.front().position;
-    auto has_non_kick = !notes.front().is_kick_note();
-    for (auto i = 1U; i < notes.size(); ++i) {
-        if (std::abs(fill_end - notes[i].position)
-            > std::abs(fill_end - best_position)) {
-            break;
-        }
-        if (notes[i].position == best_position) {
-            has_non_kick |= !notes[i].is_kick_note();
-        } else {
-            best_position = notes[i].position;
-            has_non_kick = !notes[i].is_kick_note();
-        }
-    }
-    return has_non_kick;
-}
-
 // It is important that SpPhrase has a higher value than ActEnd. This is because
 // in form_events we want to push the event for getting a phrase to the end of
 // the activation if the activation is not an overlap.
@@ -400,11 +377,8 @@ void ImageBuilder::add_drum_fills(const NoteTrack& track)
 {
     const auto resolution = static_cast<double>(track.resolution());
     for (auto fill : track.drum_fills()) {
-        if (is_fill_active(track.notes(), fill)) {
-            m_fill_ranges.emplace_back(fill.position / resolution,
-                                       (fill.position + fill.length)
-                                           / resolution);
-        }
+        m_fill_ranges.emplace_back(fill.position / resolution,
+                                   (fill.position + fill.length) / resolution);
     }
 }
 
