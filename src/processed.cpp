@@ -500,6 +500,8 @@ ProcessedSong::drum_act_summaries(const Path& path) const
 
 std::string ProcessedSong::path_summary(const Path& path) const
 {
+    constexpr double AVG_MULT_PRECISION = 1000.0;
+
     // We use std::stringstream instead of std::string for better formating of
     // floats (average multiplier and mid-sustain activation positions).
     std::stringstream stream;
@@ -529,9 +531,15 @@ std::string ProcessedSong::path_summary(const Path& path) const
     if (!m_ignore_average_multiplier) {
         double avg_mult = 0;
         if (m_base_score != 0) {
-            avg_mult = static_cast<double>(total_score - m_total_solo_boost)
-                / m_base_score;
-            avg_mult = 0.001 * std::floor(1000.0 * avg_mult);
+            auto int_avg_mult = 0;
+            auto stars_score = total_score - m_total_solo_boost;
+            for (auto i = 0; i < 4; ++i) {
+                int_avg_mult *= 10; // NOLINT
+                int_avg_mult += (stars_score / m_base_score);
+                stars_score %= m_base_score;
+                stars_score *= 10; // NOLINT
+            }
+            avg_mult = static_cast<double>(int_avg_mult) / AVG_MULT_PRECISION;
         }
         stream.setf(std::ios_base::fixed, std::ios_base::floatfield);
         stream << std::setprecision(3);
