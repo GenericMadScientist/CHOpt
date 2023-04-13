@@ -1605,6 +1605,7 @@ BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
 BOOST_AUTO_TEST_CASE(average_multiplier_rounds_down)
 {
     std::vector<Note> notes;
+    notes.reserve(11);
     for (auto i = 0; i < 11; ++i) {
         notes.push_back(make_note(i));
     }
