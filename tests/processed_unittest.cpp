@@ -1463,7 +1463,7 @@ BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
     const char* desired_path_output = "Path: 2\n"
                                       "No SP score: 178\n"
                                       "Total score: 228\n"
-                                      "Average multiplier: 1.303x\n"
+                                      "Average multiplier: 1.302x\n"
                                       "2: NN (G)";
 
     BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
@@ -1598,6 +1598,30 @@ BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
                                       "Total score: 540\n"
                                       "Average multiplier: 1.080x\n"
                                       "0: See image";
+
+    BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
+}
+
+BOOST_AUTO_TEST_CASE(average_multiplier_rounds_down)
+{
+    std::vector<Note> notes;
+    for (auto i = 0; i < 11; ++i) {
+        notes.push_back(make_note(i));
+    }
+    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    ProcessedSong track {note_track,
+                         {},
+                         SqueezeSettings::default_settings(),
+                         DrumSettings::default_settings(),
+                         ChGuitarEngine(),
+                         {},
+                         {}};
+    Path path {{}, 0};
+
+    const char* desired_path_output = "Path: None\n"
+                                      "No SP score: 650\n"
+                                      "Total score: 650\n"
+                                      "Average multiplier: 1.181x";
 
     BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
 }

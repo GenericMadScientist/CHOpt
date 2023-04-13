@@ -17,6 +17,7 @@
  */
 
 #include <cassert>
+#include <cmath>
 #include <iomanip>
 #include <iterator>
 #include <sstream>
@@ -530,6 +531,7 @@ std::string ProcessedSong::path_summary(const Path& path) const
         if (m_base_score != 0) {
             avg_mult = static_cast<double>(total_score - m_total_solo_boost)
                 / m_base_score;
+            avg_mult = 0.001 * std::floor(1000.0 * avg_mult);
         }
         stream.setf(std::ios_base::fixed, std::ios_base::floatfield);
         stream << std::setprecision(3);
