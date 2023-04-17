@@ -1463,7 +1463,7 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
             continue;
         }
         if (*track_name == "BEAT") {
-            song.m_od_beats = od_beats_from_track(track);
+            song.m_global_data.od_beats(od_beats_from_track(track));
         }
         const auto inst = midi_section_instrument(*track_name);
         if (!inst.has_value()) {

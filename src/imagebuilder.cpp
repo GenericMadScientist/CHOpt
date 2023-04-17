@@ -712,7 +712,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
                                          settings.squeeze_settings,
                                          settings.drum_settings,
                                          *settings.engine,
-                                         song.od_beats(),
+                                         song.global_data().od_beats(),
                                          unison_positions};
     Path path;
 
