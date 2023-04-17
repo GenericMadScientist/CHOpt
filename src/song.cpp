@@ -1328,6 +1328,14 @@ std::vector<int> od_beats_from_track(const MidiTrack& track)
 }
 }
 
+SongGlobalData::SongGlobalData(int resolution)
+    : m_resolution {resolution}
+{
+    if (resolution < 0) {
+        throw ParseError("Resolution non-positive");
+    }
+}
+
 Song Song::from_filename(const std::string& filename)
 {
     std::string ini_file;
@@ -1391,8 +1399,8 @@ std::vector<Difficulty> Song::difficulties(Instrument instrument) const
 void Song::append_instrument_track(Instrument inst, Difficulty diff,
                                    const ChartSection& section)
 {
-    auto note_track = note_track_from_section(section, m_resolution,
-                                              track_type_from_instrument(inst));
+    auto note_track = note_track_from_section(
+        section, m_global_data.resolution(), track_type_from_instrument(inst));
     if (!note_track.notes().empty()) {
         m_tracks.insert({{inst, diff}, note_track});
     }
@@ -1409,8 +1417,8 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
     for (const auto& section : chart.sections) {
         if (section.name == "Song") {
             try {
-                song.m_resolution = std::stoi(get_with_default(
-                    section.key_value_pairs, "Resolution", "192"));
+                song.m_global_data = SongGlobalData {std::stoi(get_with_default(
+                    section.key_value_pairs, "Resolution", "192"))};
             } catch (const std::invalid_argument&) {
                 // CH just ignores this kind of parsing mistake.
                 // TODO: Use from_chars instead to avoid having to use
@@ -1443,7 +1451,7 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
 
     Song song;
     song.m_is_from_midi = true;
-    song.m_resolution = midi.ticks_per_quarter_note;
+    song.m_global_data = SongGlobalData {midi.ticks_per_quarter_note};
     song.m_name = ini.name;
     song.m_artist = ini.artist;
     song.m_charter = ini.charter;
@@ -1467,19 +1475,22 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
             continue;
         }
         if (is_six_fret_instrument(*inst)) {
-            auto tracks = ghl_note_tracks_from_midi(track, song.m_resolution);
+            auto tracks = ghl_note_tracks_from_midi(
+                track, song.m_global_data.resolution());
             for (auto& [diff, note_track] : tracks) {
                 song.m_tracks.emplace(std::tuple {*inst, diff},
                                       std::move(note_track));
             }
         } else if (*inst == Instrument::Drums) {
-            auto tracks = drum_note_tracks_from_midi(track, song.m_resolution);
+            auto tracks = drum_note_tracks_from_midi(
+                track, song.m_global_data.resolution());
             for (auto& [diff, note_track] : tracks) {
                 song.m_tracks.emplace(std::tuple {Instrument::Drums, diff},
                                       std::move(note_track));
             }
         } else {
-            auto tracks = note_tracks_from_midi(track, song.m_resolution);
+            auto tracks
+                = note_tracks_from_midi(track, song.m_global_data.resolution());
             for (auto& [diff, note_track] : tracks) {
                 song.m_tracks.emplace(std::tuple {*inst, diff},
                                       std::move(note_track));

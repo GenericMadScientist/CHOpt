@@ -33,12 +33,24 @@
 
 // Invariants:
 // resolution() > 0.
-class Song {
+class SongGlobalData {
 private:
     static constexpr int DEFAULT_RESOLUTION = 192;
 
+    int m_resolution;
+
+public:
+    explicit SongGlobalData(int resolution = DEFAULT_RESOLUTION);
+
+    int resolution() const { return m_resolution; }
+};
+
+// Invariants:
+// resolution() > 0.
+class Song {
+private:
     bool m_is_from_midi = false;
-    int m_resolution = DEFAULT_RESOLUTION;
+    SongGlobalData m_global_data;
     std::string m_name;
     std::string m_artist;
     std::string m_charter;
@@ -54,7 +66,10 @@ public:
     static Song from_chart(const Chart& chart, const IniValues& ini);
     static Song from_midi(const Midi& midi, const IniValues& ini);
     [[nodiscard]] bool is_from_midi() const { return m_is_from_midi; }
-    [[nodiscard]] int resolution() const { return m_resolution; }
+    [[nodiscard]] const SongGlobalData& global_data() const
+    {
+        return m_global_data;
+    }
     [[nodiscard]] const std::string& name() const { return m_name; }
     [[nodiscard]] const std::string& artist() const { return m_artist; }
     [[nodiscard]] const std::string& charter() const { return m_charter; }

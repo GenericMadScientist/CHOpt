@@ -42,7 +42,8 @@ BOOST_AUTO_TEST_CASE(default_is_192_resolution)
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
 
-    const auto resolution = Song::from_chart(chart, {}).resolution();
+    const auto global_data = Song::from_chart(chart, {}).global_data();
+    const auto resolution = global_data.resolution();
 
     BOOST_CHECK_EQUAL(resolution, 192);
 }
@@ -56,7 +57,8 @@ BOOST_AUTO_TEST_CASE(default_is_overriden_by_specified_value)
     std::vector<ChartSection> sections {header, expert_single};
     const Chart chart {sections};
 
-    const auto resolution = Song::from_chart(chart, {}).resolution();
+    const auto global_data = Song::from_chart(chart, {}).global_data();
+    const auto resolution = global_data.resolution();
 
     BOOST_CHECK_EQUAL(resolution, 200);
 }
@@ -70,7 +72,8 @@ BOOST_AUTO_TEST_CASE(bad_values_are_ignored)
     std::vector<ChartSection> sections {header, expert_single};
     const Chart chart {sections};
 
-    const auto resolution = Song::from_chart(chart, {}).resolution();
+    const auto global_data = Song::from_chart(chart, {}).global_data();
+    const auto resolution = global_data.resolution();
 
     BOOST_CHECK_EQUAL(resolution, 192);
 }
@@ -244,7 +247,7 @@ BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
     const auto& parsed_notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
-    BOOST_CHECK_EQUAL(song.resolution(), 200);
+    BOOST_CHECK_EQUAL(song.global_data().resolution(), 200);
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_notes.cbegin(), parsed_notes.cend(),
                                   notes.cbegin(), notes.cend());
     BOOST_CHECK_EQUAL_COLLECTIONS(song.sync_track().bpms().cbegin(),
@@ -691,7 +694,7 @@ BOOST_AUTO_TEST_CASE(midi_resolution_is_read)
 
     const auto song = Song::from_midi(midi, {});
 
-    BOOST_CHECK_EQUAL(song.resolution(), 200);
+    BOOST_CHECK_EQUAL(song.global_data().resolution(), 200);
 }
 
 BOOST_AUTO_TEST_CASE(resolution_gt_zero_invariant_is_upheld)
