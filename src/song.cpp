@@ -1328,8 +1328,9 @@ std::vector<int> od_beats_from_track(const MidiTrack& track)
 }
 }
 
-SongGlobalData::SongGlobalData(int resolution)
-    : m_resolution {resolution}
+SongGlobalData::SongGlobalData(bool is_from_midi, int resolution)
+    : m_is_from_midi {is_from_midi}
+    , m_resolution {resolution}
 {
     if (resolution < 0) {
         throw ParseError("Resolution non-positive");
@@ -1417,8 +1418,9 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
     for (const auto& section : chart.sections) {
         if (section.name == "Song") {
             try {
-                song.m_global_data = SongGlobalData {std::stoi(get_with_default(
-                    section.key_value_pairs, "Resolution", "192"))};
+                const auto resolution = std::stoi(get_with_default(
+                    section.key_value_pairs, "Resolution", "192"));
+                song.m_global_data = SongGlobalData(false, resolution);
             } catch (const std::invalid_argument&) {
                 // CH just ignores this kind of parsing mistake.
                 // TODO: Use from_chars instead to avoid having to use
@@ -1450,8 +1452,7 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
     }
 
     Song song;
-    song.m_is_from_midi = true;
-    song.m_global_data = SongGlobalData {midi.ticks_per_quarter_note};
+    song.m_global_data = SongGlobalData(true, midi.ticks_per_quarter_note);
     song.m_name = ini.name;
     song.m_artist = ini.artist;
     song.m_charter = ini.charter;

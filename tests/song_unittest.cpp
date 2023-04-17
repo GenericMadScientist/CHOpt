@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(chart_to_song_has_correct_value_for_is_from_midi)
 
     const auto song = Song::from_chart(chart, {});
 
-    BOOST_TEST(!song.is_from_midi());
+    BOOST_TEST(!song.global_data().is_from_midi());
 }
 
 BOOST_AUTO_TEST_SUITE(chart_reads_resolution)
@@ -683,7 +683,7 @@ BOOST_AUTO_TEST_CASE(midi_to_song_has_correct_value_for_is_from_midi)
 
     const auto song = Song::from_midi(midi, {});
 
-    BOOST_TEST(song.is_from_midi());
+    BOOST_TEST(song.global_data().is_from_midi());
 }
 
 BOOST_AUTO_TEST_SUITE(midi_resolution_is_read_correctly)

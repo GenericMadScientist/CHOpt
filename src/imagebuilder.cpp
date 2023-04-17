@@ -659,7 +659,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
                           const std::atomic<bool>* terminate)
 {
     auto new_track = track;
-    if (song.is_from_midi()) {
+    if (song.global_data().is_from_midi()) {
         new_track = track.trim_sustains();
     }
     new_track = new_track.snap_chords(settings.engine->snap_gap());
