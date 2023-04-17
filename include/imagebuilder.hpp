@@ -94,8 +94,7 @@ public:
     void add_measure_values(const PointSet& points,
                             const TimeConverter& converter, const Path& path);
     void add_solo_sections(const std::vector<Solo>& solos, int resolution);
-    void add_song_header(std::string song_name, std::string artist,
-                         std::string charter, int speed);
+    void add_song_header(const SongGlobalData& global_data, int speed);
     void add_sp_acts(const PointSet& points, const TimeConverter& converter,
                      const Path& path);
     void add_sp_percent_values(const SpData& sp_data,

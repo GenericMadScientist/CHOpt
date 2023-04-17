@@ -458,10 +458,15 @@ BOOST_AUTO_TEST_CASE(normal_speed)
 {
     NoteTrack track {{make_note(0)},      {}, {}, {}, {}, {},
                      TrackType::FiveFret, 192};
+    SongGlobalData global_data;
+    global_data.name("TestName");
+    global_data.artist("GMS");
+    global_data.charter("NotGMS");
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_song_header("TestName", "GMS", "NotGMS", 100);
+
+    builder.add_song_header(global_data, 100);
 
     BOOST_CHECK_EQUAL(builder.song_name(), "TestName");
     BOOST_CHECK_EQUAL(builder.artist(), "GMS");
@@ -472,10 +477,15 @@ BOOST_AUTO_TEST_CASE(double_speed)
 {
     NoteTrack track {{make_note(0)},      {}, {}, {}, {}, {},
                      TrackType::FiveFret, 192};
+    SongGlobalData global_data;
+    global_data.name("TestName");
+    global_data.artist("GMS");
+    global_data.charter("NotGMS");
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_song_header("TestName", "GMS", "NotGMS", 200);
+
+    builder.add_song_header(global_data, 200);
 
     BOOST_CHECK_EQUAL(builder.song_name(), "TestName (200%)");
     BOOST_CHECK_EQUAL(builder.artist(), "GMS");

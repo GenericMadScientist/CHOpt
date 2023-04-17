@@ -464,17 +464,16 @@ void ImageBuilder::add_solo_sections(const std::vector<Solo>& solos,
     }
 }
 
-void ImageBuilder::add_song_header(std::string song_name, std::string artist,
-                                   std::string charter, int speed)
+void ImageBuilder::add_song_header(const SongGlobalData& global_data, int speed)
 {
     constexpr int DEFAULT_SPEED = 100;
-    m_song_name = std::move(song_name);
+    m_song_name = global_data.name();
     if (speed != DEFAULT_SPEED) {
         const auto speedup_string = " (" + std::to_string(speed) + "%)";
         m_song_name += speedup_string;
     }
-    m_artist = std::move(artist);
-    m_charter = std::move(charter);
+    m_artist = global_data.artist();
+    m_charter = global_data.charter();
 }
 
 void ImageBuilder::add_sp_acts(const PointSet& points,
@@ -678,8 +677,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     const auto sync_track = song.sync_track().speedup(settings.speed);
 
     auto builder = build_with_engine_params(new_track, sync_track, settings);
-    builder.add_song_header(song.name(), song.artist(), song.charter(),
-                            settings.speed);
+    builder.add_song_header(song.global_data(), settings.speed);
 
     if (track.track_type() == TrackType::Drums) {
         builder.add_drum_fills(new_track);

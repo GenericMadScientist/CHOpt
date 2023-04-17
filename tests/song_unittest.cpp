@@ -97,9 +97,9 @@ BOOST_AUTO_TEST_CASE(chart_header_values_besides_resolution_are_discarded)
     const Chart chart {sections};
     const auto song = Song::from_chart(chart, {});
 
-    BOOST_CHECK_NE(song.name(), "TestName");
-    BOOST_CHECK_NE(song.artist(), "GMS");
-    BOOST_CHECK_NE(song.charter(), "NotGMS");
+    BOOST_CHECK_NE(song.global_data().name(), "TestName");
+    BOOST_CHECK_NE(song.global_data().artist(), "GMS");
+    BOOST_CHECK_NE(song.global_data().charter(), "NotGMS");
 }
 
 BOOST_AUTO_TEST_CASE(ini_values_are_used_for_converting_from_chart_files)
@@ -112,9 +112,9 @@ BOOST_AUTO_TEST_CASE(ini_values_are_used_for_converting_from_chart_files)
     const IniValues ini {"TestName", "GMS", "NotGMS"};
     const auto song = Song::from_chart(chart, ini);
 
-    BOOST_CHECK_EQUAL(song.name(), "TestName");
-    BOOST_CHECK_EQUAL(song.artist(), "GMS");
-    BOOST_CHECK_EQUAL(song.charter(), "NotGMS");
+    BOOST_CHECK_EQUAL(song.global_data().name(), "TestName");
+    BOOST_CHECK_EQUAL(song.global_data().artist(), "GMS");
+    BOOST_CHECK_EQUAL(song.global_data().charter(), "NotGMS");
 }
 
 BOOST_AUTO_TEST_CASE(chart_reads_sync_track_correctly)
@@ -775,7 +775,7 @@ BOOST_AUTO_TEST_CASE(song_name_is_not_read_from_midi)
 
     const auto song = Song::from_midi(midi, {});
 
-    BOOST_CHECK_NE(song.name(), "Hello");
+    BOOST_CHECK_NE(song.global_data().name(), "Hello");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -787,9 +787,9 @@ BOOST_AUTO_TEST_CASE(ini_values_are_used_when_converting_mid_files)
 
     const auto song = Song::from_midi(midi, ini);
 
-    BOOST_CHECK_EQUAL(song.name(), "TestName");
-    BOOST_CHECK_EQUAL(song.artist(), "GMS");
-    BOOST_CHECK_EQUAL(song.charter(), "NotGMS");
+    BOOST_CHECK_EQUAL(song.global_data().name(), "TestName");
+    BOOST_CHECK_EQUAL(song.global_data().artist(), "GMS");
+    BOOST_CHECK_EQUAL(song.global_data().charter(), "NotGMS");
 }
 
 BOOST_AUTO_TEST_SUITE(notes_are_read_from_mids_correctly)

@@ -30,6 +30,7 @@
 #include "ini.hpp"
 #include "midi.hpp"
 #include "songparts.hpp"
+#include "timeconverter.hpp"
 
 // Invariants:
 // resolution() > 0.
@@ -39,13 +40,30 @@ private:
 
     bool m_is_from_midi = false;
     int m_resolution = DEFAULT_RESOLUTION;
+    std::string m_name;
+    std::string m_artist;
+    std::string m_charter;
 
 public:
     SongGlobalData() = default;
-    SongGlobalData(bool is_from_midi, int resolution);
 
     [[nodiscard]] bool is_from_midi() const { return m_is_from_midi; }
     [[nodiscard]] int resolution() const { return m_resolution; }
+    [[nodiscard]] const std::string& name() const { return m_name; }
+    [[nodiscard]] const std::string& artist() const { return m_artist; }
+    [[nodiscard]] const std::string& charter() const { return m_charter; }
+
+    void is_from_midi(bool value) { m_is_from_midi = value; }
+    void resolution(int value)
+    {
+        if (value <= 0) {
+            throw ParseError("Resolution non-positive");
+        }
+        m_resolution = value;
+    }
+    void name(std::string value) { m_name = std::move(value); }
+    void artist(std::string value) { m_artist = std::move(value); }
+    void charter(std::string value) { m_charter = std::move(value); }
 };
 
 // Invariants:
@@ -53,9 +71,6 @@ public:
 class Song {
 private:
     SongGlobalData m_global_data;
-    std::string m_name;
-    std::string m_artist;
-    std::string m_charter;
     SyncTrack m_sync_track;
     std::vector<int> m_od_beats;
     std::map<std::tuple<Instrument, Difficulty>, NoteTrack> m_tracks;
@@ -71,9 +86,6 @@ public:
     {
         return m_global_data;
     }
-    [[nodiscard]] const std::string& name() const { return m_name; }
-    [[nodiscard]] const std::string& artist() const { return m_artist; }
-    [[nodiscard]] const std::string& charter() const { return m_charter; }
     [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
     [[nodiscard]] const std::vector<int> od_beats() const { return m_od_beats; }
     [[nodiscard]] std::vector<Instrument> instruments() const;
