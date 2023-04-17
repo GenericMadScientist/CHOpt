@@ -1419,7 +1419,7 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
                 // exceptions as control flow.
             }
         } else if (section.name == "SyncTrack") {
-            song.m_sync_track = sync_track_from_section(section);
+            song.m_global_data.sync_track(sync_track_from_section(section));
         } else {
             auto pair = diff_inst_from_header(section.name);
             if (!pair.has_value()) {
@@ -1455,7 +1455,7 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
         return song;
     }
 
-    song.m_sync_track = read_first_midi_track(midi.tracks[0]);
+    song.m_global_data.sync_track(read_first_midi_track(midi.tracks[0]));
 
     for (const auto& track : midi.tracks) {
         const auto track_name = midi_track_name(track);

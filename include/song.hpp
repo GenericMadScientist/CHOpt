@@ -43,6 +43,7 @@ private:
     std::string m_name;
     std::string m_artist;
     std::string m_charter;
+    SyncTrack m_sync_track;
 
 public:
     SongGlobalData() = default;
@@ -52,6 +53,7 @@ public:
     [[nodiscard]] const std::string& name() const { return m_name; }
     [[nodiscard]] const std::string& artist() const { return m_artist; }
     [[nodiscard]] const std::string& charter() const { return m_charter; }
+    [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
 
     void is_from_midi(bool value) { m_is_from_midi = value; }
     void resolution(int value)
@@ -64,6 +66,7 @@ public:
     void name(std::string value) { m_name = std::move(value); }
     void artist(std::string value) { m_artist = std::move(value); }
     void charter(std::string value) { m_charter = std::move(value); }
+    void sync_track(SyncTrack value) { m_sync_track = std::move(value); }
 };
 
 // Invariants:
@@ -71,7 +74,6 @@ public:
 class Song {
 private:
     SongGlobalData m_global_data;
-    SyncTrack m_sync_track;
     std::vector<int> m_od_beats;
     std::map<std::tuple<Instrument, Difficulty>, NoteTrack> m_tracks;
     Song() = default;
@@ -86,7 +88,6 @@ public:
     {
         return m_global_data;
     }
-    [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
     [[nodiscard]] const std::vector<int> od_beats() const { return m_od_beats; }
     [[nodiscard]] std::vector<Instrument> instruments() const;
     [[nodiscard]] std::vector<Difficulty>

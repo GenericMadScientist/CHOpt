@@ -665,7 +665,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     if (track.track_type() == TrackType::Drums) {
         if (!settings.engine->is_rock_band()
             && new_track.drum_fills().empty()) {
-            new_track.generate_drum_fills({song.sync_track(),
+            new_track.generate_drum_fills({song.global_data().sync_track(),
                                            new_track.resolution(),
                                            *settings.engine,
                                            {}});
@@ -674,7 +674,8 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
             new_track.disable_dynamics();
         }
     }
-    const auto sync_track = song.sync_track().speedup(settings.speed);
+    const auto sync_track
+        = song.global_data().sync_track().speedup(settings.speed);
 
     auto builder = build_with_engine_params(new_track, sync_track, settings);
     builder.add_song_header(song.global_data(), settings.speed);

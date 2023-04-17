@@ -128,7 +128,8 @@ BOOST_AUTO_TEST_CASE(chart_reads_sync_track_correctly)
     std::vector<TimeSignature> time_sigs {{0, 4, 4}, {768, 4, 2}};
     std::vector<BPM> bpms {{0, 200000}};
 
-    const auto chart_sync_track = Song::from_chart(chart, {}).sync_track();
+    const auto global_data = Song::from_chart(chart, {}).global_data();
+    const auto chart_sync_track = global_data.sync_track();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(chart_sync_track.time_sigs().cbegin(),
                                   chart_sync_track.time_sigs().cend(),
@@ -241,18 +242,19 @@ BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
     std::vector<ChartSection> sections {sync_track, expert_single, header};
     const Chart chart {sections};
     std::vector<Note> notes {make_note(768)};
-    std::vector<BPM> bpms {{0, 200000}};
+    std::vector<BPM> expected_bpms {{0, 200000}};
 
     const auto song = Song::from_chart(chart, {});
     const auto& parsed_notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
+    const auto bpms
+        = Song::from_chart(chart, {}).global_data().sync_track().bpms();
 
     BOOST_CHECK_EQUAL(song.global_data().resolution(), 200);
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_notes.cbegin(), parsed_notes.cend(),
                                   notes.cbegin(), notes.cend());
-    BOOST_CHECK_EQUAL_COLLECTIONS(song.sync_track().bpms().cbegin(),
-                                  song.sync_track().bpms().cend(),
-                                  bpms.cbegin(), bpms.cend());
+    BOOST_CHECK_EQUAL_COLLECTIONS(bpms.cbegin(), bpms.cend(),
+                                  expected_bpms.cbegin(), expected_bpms.cend());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -716,7 +718,7 @@ BOOST_AUTO_TEST_CASE(tempos_are_read_correctly)
     SyncTrack tempos {{}, {{0, 150000}, {1920, 200000}}};
 
     const auto song = Song::from_midi(midi, {});
-    const auto& sync_track = song.sync_track();
+    const auto& sync_track = song.global_data().sync_track();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(sync_track.bpms().cbegin(),
                                   sync_track.bpms().cend(),
@@ -742,7 +744,7 @@ BOOST_AUTO_TEST_CASE(time_signatures_are_read_correctly)
     SyncTrack tses {{{0, 6, 4}, {1920, 3, 8}}, {}};
 
     const auto song = Song::from_midi(midi, {});
-    const auto& sync_track = song.sync_track();
+    const auto& sync_track = song.global_data().sync_track();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(sync_track.bpms().cbegin(),
                                   sync_track.bpms().cend(),
