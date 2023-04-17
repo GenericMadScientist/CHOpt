@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(chart_reads_sync_track_correctly)
     std::vector<BPM> bpms {{0, 200000}};
 
     const auto global_data = Song::from_chart(chart, {}).global_data();
-    const auto chart_sync_track = global_data.sync_track();
+    const auto& chart_sync_track = global_data.sync_track();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(chart_sync_track.time_sigs().cbegin(),
                                   chart_sync_track.time_sigs().cend(),
