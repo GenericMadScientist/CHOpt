@@ -36,7 +36,7 @@ int main(int argc, char** argv)
         if (!settings.has_value()) {
             return EXIT_SUCCESS;
         }
-        const auto song = Song::from_filename(settings->filename);
+        const auto song = song_from_filename(settings->filename);
         const auto& track
             = song.track(settings->instrument, settings->difficulty);
         const std::atomic<bool> terminate {false};

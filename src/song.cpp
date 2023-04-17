@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <climits>
 #include <filesystem>
 #include <iterator>
@@ -1328,7 +1329,7 @@ std::vector<int> od_beats_from_track(const MidiTrack& track)
 }
 }
 
-Song Song::from_filename(const std::string& filename)
+Song song_from_filename(const std::string& filename)
 {
     std::string ini_file;
     const std::filesystem::path song_path {filename};

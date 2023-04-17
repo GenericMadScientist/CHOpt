@@ -19,7 +19,6 @@
 #ifndef CHOPT_SONG_HPP
 #define CHOPT_SONG_HPP
 
-#include <algorithm>
 #include <map>
 #include <string>
 #include <tuple>
@@ -86,7 +85,6 @@ private:
                                  const ChartSection& section);
 
 public:
-    static Song from_filename(const std::string& filename);
     static Song from_chart(const Chart& chart, const IniValues& ini);
     static Song from_midi(const Midi& midi, const IniValues& ini);
     [[nodiscard]] const SongGlobalData& global_data() const
@@ -100,5 +98,7 @@ public:
                                          Difficulty difficulty) const;
     [[nodiscard]] std::vector<int> unison_phrase_positions() const;
 };
+
+Song song_from_filename(const std::string& filename);
 
 #endif

@@ -45,7 +45,7 @@ public:
     void run() override
     {
         try {
-            emit result_ready(Song::from_filename(m_file_name.toStdString()),
+            emit result_ready(song_from_filename(m_file_name.toStdString()),
                               m_file_name);
         } catch (const std::exception&) {
             emit parsing_failed(m_file_name);
