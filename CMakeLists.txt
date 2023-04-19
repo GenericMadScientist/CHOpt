@@ -161,6 +161,7 @@ if(PACKAGE_TESTS)
     tests/songparts_unittest.cpp
     tests/sp_unittest.cpp
     tests/stringutil_unittest.cpp
+    tests/tempomap_unittest.cpp
     tests/time_unittest.cpp
     tests/timeconverter_unittest.cpp
     src/chart.cpp
