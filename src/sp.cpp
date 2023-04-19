@@ -188,8 +188,7 @@ void SpData::initialise(
 SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
                const std::vector<int>& od_beats,
                const SqueezeSettings& squeeze_settings, const Engine& engine)
-    : m_converter {tempo_map, track.global_data().resolution(), engine,
-                   od_beats}
+    : m_converter {tempo_map, engine, od_beats}
     , m_beat_rates {form_beat_rates(track.global_data().resolution(), tempo_map,
                                     od_beats, engine)}
     , m_sp_gain_rate {engine.sp_gain_rate()}
