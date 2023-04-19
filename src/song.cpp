@@ -426,7 +426,7 @@ TrackType track_type_from_instrument(Instrument instrument)
     }
 }
 
-TempoMap tempo_map_from_section(const ChartSection& section)
+TempoMap tempo_map_from_section(const ChartSection& section, int resolution)
 {
     std::vector<BPM> bpms;
     bpms.reserve(section.bpm_events.size());
@@ -441,7 +441,7 @@ TempoMap tempo_map_from_section(const ChartSection& section)
         }
         tses.push_back({ts.position, ts.numerator, 1 << ts.denominator});
     }
-    return {std::move(tses), std::move(bpms)};
+    return {std::move(tses), std::move(bpms), resolution};
 }
 
 // Like combine_solo_events, but never skips on events to suit Midi parsing and
@@ -600,7 +600,7 @@ bool is_open_event_sysex(const SysexEvent& event)
         });
 }
 
-TempoMap read_first_midi_track(const MidiTrack& track)
+TempoMap read_first_midi_track(const MidiTrack& track, int resolution)
 {
     constexpr int SET_TEMPO_ID = 0x51;
     constexpr int TIME_SIG_ID = 0x58;
@@ -636,7 +636,7 @@ TempoMap read_first_midi_track(const MidiTrack& track)
         }
     }
 
-    return {std::move(time_sigs), std::move(tempos)};
+    return {std::move(time_sigs), std::move(tempos), resolution};
 }
 
 struct InstrumentMidiTrack {
@@ -1425,7 +1425,8 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
                 // exceptions as control flow.
             }
         } else if (section.name == "SyncTrack") {
-            song.m_global_data->tempo_map(tempo_map_from_section(section));
+            song.m_global_data->tempo_map(tempo_map_from_section(
+                section, song.m_global_data->resolution()));
         } else {
             auto pair = diff_inst_from_header(section.name);
             if (!pair.has_value()) {
@@ -1461,7 +1462,8 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
         return song;
     }
 
-    song.m_global_data->tempo_map(read_first_midi_track(midi.tracks[0]));
+    song.m_global_data->tempo_map(
+        read_first_midi_track(midi.tracks[0], midi.ticks_per_quarter_note));
 
     for (const auto& track : midi.tracks) {
         const auto track_name = midi_track_name(track);

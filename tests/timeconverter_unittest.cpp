@@ -25,7 +25,7 @@
 
 BOOST_AUTO_TEST_CASE(beats_to_seconds_conversion_works_correctly)
 {
-    TempoMap tempo_map {{{0, 4, 4}}, {{0, 150000}, {800, 200000}}};
+    TempoMap tempo_map {{{0, 4, 4}}, {{0, 150000}, {800, 200000}}, 192};
     TimeConverter converter {tempo_map, 200, ChGuitarEngine(), {}};
     constexpr std::array beats {-1.0, 0.0, 3.0, 5.0};
     constexpr std::array seconds {-0.5, 0.0, 1.2, 1.9};
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(beats_to_seconds_conversion_works_correctly)
 
 BOOST_AUTO_TEST_CASE(beats_to_measures_conversion_works_correctly)
 {
-    TempoMap tempo_map {{{0, 5, 4}, {1000, 4, 4}, {1200, 4, 16}}, {}};
+    TempoMap tempo_map {{{0, 5, 4}, {1000, 4, 4}, {1200, 4, 16}}, {}, 192};
     TimeConverter converter {tempo_map, 200, ChGuitarEngine(), {}};
     constexpr std::array beats {-1.0, 0.0, 3.0, 5.5, 6.5};
     constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
@@ -65,7 +65,8 @@ BOOST_AUTO_TEST_CASE(beats_to_measures_conversion_works_correctly)
 BOOST_AUTO_TEST_CASE(measures_to_seconds_conversion_works_correctly)
 {
     TempoMap tempo_map {{{0, 5, 4}, {1000, 4, 4}, {1200, 4, 16}},
-                        {{0, 150000}, {800, 200000}}};
+                        {{0, 150000}, {800, 200000}},
+                        192};
     TimeConverter converter {tempo_map, 200, ChGuitarEngine(), {}};
     constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
     constexpr std::array seconds {-0.5, 0.0, 1.2, 2.05, 2.35};

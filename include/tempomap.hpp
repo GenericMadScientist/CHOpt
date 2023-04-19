@@ -52,20 +52,25 @@ struct BPM {
 // time_sigs() is never empty.
 class TempoMap {
 private:
+    static constexpr int DEFAULT_RESOLUTION = 192;
+
     std::vector<TimeSignature> m_time_sigs;
     std::vector<BPM> m_bpms;
+    int m_resolution;
 
 public:
     TempoMap()
-        : TempoMap({}, {})
+        : TempoMap({}, {}, DEFAULT_RESOLUTION)
     {
     }
-    TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms);
+    TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
+             int resolution);
     [[nodiscard]] const std::vector<TimeSignature>& time_sigs() const
     {
         return m_time_sigs;
     }
     [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
+    [[nodiscard]] int resolution() const { return m_resolution; }
     // Return the TempoMap for a speedup of speed% (normal speed is 100).
     [[nodiscard]] TempoMap speedup(int speed) const;
 };

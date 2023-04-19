@@ -20,9 +20,15 @@
 
 #include "tempomap.hpp"
 
-TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms)
+TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
+                   int resolution)
+    : m_resolution {resolution}
 {
     constexpr auto DEFAULT_BPM = 120000;
+
+    if (resolution <= 0) {
+        throw std::invalid_argument("Resolution must be positive");
+    }
 
     for (const auto& bpm : bpms) {
         if (bpm.bpm <= 0) {
@@ -64,7 +70,7 @@ TempoMap TempoMap::speedup(int speed) const
 {
     constexpr auto DEFAULT_SPEED = 100;
 
-    TempoMap speedup {m_time_sigs, m_bpms};
+    TempoMap speedup {m_time_sigs, m_bpms, m_resolution};
     for (auto& bpm : speedup.m_bpms) {
         bpm.bpm = (bpm.bpm * speed) / DEFAULT_SPEED;
     }

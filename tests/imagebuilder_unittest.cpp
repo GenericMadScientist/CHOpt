@@ -294,8 +294,8 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 4, 4}, {768, 3, 4}, {1344, 3, 8}, {1632, 4, 4}},
-                        {}};
+    TempoMap tempo_map {
+        {{0, 4, 4}, {768, 3, 4}, {1344, 3, 8}, {1632, 4, 4}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -316,7 +316,7 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 4, 4}, {767, 3, 4}, {1344, 3, 8}}, {}};
+    TempoMap tempo_map {{{0, 4, 4}, {767, 3, 4}, {1344, 3, 8}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 17, 4}}, {}};
+    TempoMap tempo_map {{{0, 17, 4}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -407,7 +407,7 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 4, 8}}, {}};
+    TempoMap tempo_map {{{0, 4, 8}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 4, 4}, {768, 4, 8}}, {}};
+    TempoMap tempo_map {{{0, 4, 4}, {768, 4, 8}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -471,7 +471,7 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 4, 4}, {768, 4, 8}}, {}};
+    TempoMap tempo_map {{{0, 4, 4}, {768, 4, 8}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -494,7 +494,7 @@ BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 4, 4}, {1920, 3, 4}}, {}};
+    TempoMap tempo_map {{{0, 4, 4}, {1920, 3, 4}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -517,7 +517,7 @@ BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{}, {{0, 150000}, {384, 120000}, {768, 200000}}};
+    TempoMap tempo_map {{}, {{0, 150000}, {384, 120000}, {768, 200000}}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -540,7 +540,7 @@ BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{}, {{0, 120000}, {1920, 200000}}};
+    TempoMap tempo_map {{}, {{0, 120000}, {1920, 200000}}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};

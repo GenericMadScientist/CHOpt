@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_SUITE(sync_track_ctor_maintains_invariants)
 
 BOOST_AUTO_TEST_CASE(bpms_are_sorted_by_position)
 {
-    TempoMap tempo_map {{}, {{0, 150000}, {2000, 200000}, {1000, 225000}}};
+    TempoMap tempo_map {{}, {{0, 150000}, {2000, 200000}, {1000, 225000}}, 192};
     std::vector<BPM> expected_bpms {
         {0, 150000}, {1000, 225000}, {2000, 200000}};
 
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(bpms_are_sorted_by_position)
 
 BOOST_AUTO_TEST_CASE(no_two_bpms_have_the_same_position)
 {
-    TempoMap tempo_map {{}, {{0, 150000}, {0, 200000}}};
+    TempoMap tempo_map {{}, {{0, 150000}, {0, 200000}}, 192};
     std::vector<BPM> expected_bpms {{0, 200000}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(tempo_map.bpms().cbegin(),
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(bpms_is_never_empty)
 
 BOOST_AUTO_TEST_CASE(time_signatures_are_sorted_by_position)
 {
-    TempoMap tempo_map {{{0, 4, 4}, {2000, 3, 3}, {1000, 2, 2}}, {}};
+    TempoMap tempo_map {{{0, 4, 4}, {2000, 3, 3}, {1000, 2, 2}}, {}, 192};
     std::vector<TimeSignature> expected_tses {
         {0, 4, 4}, {1000, 2, 2}, {2000, 3, 3}};
 
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(time_signatures_are_sorted_by_position)
 
 BOOST_AUTO_TEST_CASE(no_two_time_signatures_have_the_same_position)
 {
-    TempoMap tempo_map {{{0, 4, 4}, {0, 3, 4}}, {}};
+    TempoMap tempo_map {{{0, 4, 4}, {0, 3, 4}}, {}, 192};
     std::vector<TimeSignature> expected_tses {{0, 3, 4}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(tempo_map.time_sigs().cbegin(),
@@ -88,11 +88,11 @@ BOOST_AUTO_TEST_CASE(time_sigs_is_never_empty)
 BOOST_AUTO_TEST_CASE(bpms_must_not_be_zero_or_negative)
 {
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{}, {{192, 0}}};
+                          return TempoMap {{}, {{192, 0}}, 192};
                       })(),
                       ParseError);
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{}, {{192, -1}}};
+                          return TempoMap {{}, {{192, -1}}, 192};
                       })(),
                       ParseError);
 }
@@ -100,19 +100,19 @@ BOOST_AUTO_TEST_CASE(bpms_must_not_be_zero_or_negative)
 BOOST_AUTO_TEST_CASE(time_signatures_must_be_positive_positive)
 {
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{{0, 0, 4}}, {}};
+                          return TempoMap {{{0, 0, 4}}, {}, 192};
                       })(),
                       ParseError);
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{{0, -1, 4}}, {}};
+                          return TempoMap {{{0, -1, 4}}, {}, 192};
                       })(),
                       ParseError);
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{{0, 4, 0}}, {}};
+                          return TempoMap {{{0, 4, 0}}, {}, 192};
                       })(),
                       ParseError);
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{{0, 4, -1}}, {}};
+                          return TempoMap {{{0, 4, -1}}, {}, 192};
                       })(),
                       ParseError);
 }
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(speedup_returns_correct_tempo_map)
 {
-    const TempoMap tempo_map {{{0, 4, 4}}, {{0, 120000}, {192, 240000}}};
+    const TempoMap tempo_map {{{0, 4, 4}}, {{0, 120000}, {192, 240000}}, 192};
     const std::vector<BPM> expected_bpms {{0, 180000}, {192, 360000}};
     const std::vector<TimeSignature> expected_tses {{0, 4, 4}};
 
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(speedup_returns_correct_tempo_map)
 
 BOOST_AUTO_TEST_CASE(speedup_doesnt_overflow)
 {
-    const TempoMap tempo_map {{}, {{0, 200000000}}};
+    const TempoMap tempo_map {{}, {{0, 200000000}}, 192};
     const std::vector<BPM> expected_bpms {{0, 400000000}};
 
     const auto speedup = tempo_map.speedup(200);
