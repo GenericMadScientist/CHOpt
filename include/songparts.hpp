@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "settings.hpp"
+#include "tempomap.hpp"
 #include "timeconverter.hpp"
 
 enum class TrackType { FiveFret, SixFret, Drums };

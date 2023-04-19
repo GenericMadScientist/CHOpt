@@ -27,6 +27,7 @@
 #include "engine.hpp"
 #include "settings.hpp"
 #include "songparts.hpp"
+#include "tempomap.hpp"
 #include "time.hpp"
 #include "timeconverter.hpp"
 

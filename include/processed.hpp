@@ -29,7 +29,9 @@
 #include "settings.hpp"
 #include "songparts.hpp"
 #include "sp.hpp"
+#include "tempomap.hpp"
 #include "time.hpp"
+#include "timeconverter.hpp"
 
 struct ActivationCandidate {
     PointPtr act_start;

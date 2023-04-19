@@ -20,58 +20,6 @@
 
 #include "timeconverter.hpp"
 
-SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
-                     std::vector<BPM> bpms)
-{
-    constexpr auto DEFAULT_BPM = 120000;
-
-    for (const auto& bpm : bpms) {
-        if (bpm.bpm <= 0) {
-            throw ParseError("BPMs must be positive");
-        }
-    }
-    for (const auto& ts : time_sigs) {
-        if (ts.numerator <= 0 || ts.denominator <= 0) {
-            throw ParseError("Time signatures must be positive/positive");
-        }
-    }
-
-    std::stable_sort(
-        bpms.begin(), bpms.end(),
-        [](const auto& x, const auto& y) { return x.position < y.position; });
-    BPM prev_bpm {0, DEFAULT_BPM};
-    for (auto p = bpms.cbegin(); p < bpms.cend(); ++p) {
-        if (p->position != prev_bpm.position) {
-            m_bpms.push_back(prev_bpm);
-        }
-        prev_bpm = *p;
-    }
-    m_bpms.push_back(prev_bpm);
-
-    std::stable_sort(
-        time_sigs.begin(), time_sigs.end(),
-        [](const auto& x, const auto& y) { return x.position < y.position; });
-    TimeSignature prev_ts {0, 4, 4};
-    for (auto p = time_sigs.cbegin(); p < time_sigs.cend(); ++p) {
-        if (p->position != prev_ts.position) {
-            m_time_sigs.push_back(prev_ts);
-        }
-        prev_ts = *p;
-    }
-    m_time_sigs.push_back(prev_ts);
-}
-
-SyncTrack SyncTrack::speedup(int speed) const
-{
-    constexpr auto DEFAULT_SPEED = 100;
-
-    SyncTrack speedup {m_time_sigs, m_bpms};
-    for (auto& bpm : speedup.m_bpms) {
-        bpm.bpm = (bpm.bpm * speed) / DEFAULT_SPEED;
-    }
-    return speedup;
-}
-
 TimeConverter::TimeConverter(const SyncTrack& sync_track, int resolution,
                              const Engine& engine,
                              const std::vector<int>& od_beats)
