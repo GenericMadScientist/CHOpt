@@ -120,8 +120,9 @@ void NoteTrack::compute_base_score_ticks()
         }
     }
 
-    m_base_score_ticks = (total_ticks * BASE_SUSTAIN_DENSITY + m_resolution - 1)
-        / m_resolution;
+    const auto resolution = m_global_data->resolution();
+    m_base_score_ticks
+        = (total_ticks * BASE_SUSTAIN_DENSITY + resolution - 1) / resolution;
 }
 
 void NoteTrack::merge_same_time_notes()
@@ -147,16 +148,16 @@ NoteTrack::NoteTrack(std::vector<Note> notes,
                      std::vector<Solo> solos, std::vector<DrumFill> drum_fills,
                      std::vector<DiscoFlip> disco_flips,
                      std::optional<BigRockEnding> bre, TrackType track_type,
-                     int resolution)
+                     std::shared_ptr<SongGlobalData> global_data)
     : m_drum_fills {std::move(drum_fills)}
     , m_disco_flips {std::move(disco_flips)}
     , m_bre {bre}
     , m_track_type {track_type}
-    , m_resolution {resolution}
+    , m_global_data {std::move(global_data)}
     , m_base_score_ticks {0}
 {
-    if (m_resolution <= 0) {
-        throw ParseError("Resolution non-positive");
+    if (m_global_data == nullptr) {
+        throw std::runtime_error("Non-null global data required");
     }
 
     std::stable_sort(notes.begin(), notes.end(),
@@ -237,20 +238,21 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
     }
 
     std::vector<std::tuple<Second, int>> note_times;
+    const auto resolution = static_cast<double>(m_global_data->resolution());
     for (const auto& n : m_notes) {
-        const auto seconds = converter.beats_to_seconds(
-            Beat(n.position / static_cast<double>(m_resolution)));
+        const auto seconds
+            = converter.beats_to_seconds(Beat(n.position / resolution));
         note_times.emplace_back(seconds, n.position);
     }
     const auto final_note_s = converter.beats_to_seconds(
-        Beat(m_notes.back().position / static_cast<double>(m_resolution)));
+        Beat(m_notes.back().position / resolution));
     const auto measure_bound
         = converter.seconds_to_measures(final_note_s + FILL_DELAY);
     Measure m {1.0};
     while (m <= measure_bound) {
         const auto fill_seconds = converter.measures_to_seconds(m);
         const auto measure_ticks = static_cast<int>(
-            m_resolution * converter.measures_to_beats(m).value());
+            resolution * converter.measures_to_beats(m).value());
         bool exists_close_note = false;
         int close_note_position = 0;
         for (const auto& [s, pos] : note_times) {
@@ -278,7 +280,7 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
             = converter.measures_to_seconds(m - Measure(1.0));
         const auto mid_m_seconds = (m_seconds + prev_m_seconds) * 0.5;
         const auto fill_start = static_cast<int>(
-            m_resolution * converter.seconds_to_beats(mid_m_seconds).value());
+            resolution * converter.seconds_to_beats(mid_m_seconds).value());
         m_drum_fills.push_back(
             DrumFill {fill_start, measure_ticks - fill_start});
         m += FILL_GAP;
@@ -347,8 +349,9 @@ NoteTrack NoteTrack::trim_sustains() const
     constexpr int DEFAULT_SUST_CUTOFF = 64;
 
     auto trimmed_track = *this;
+    const auto resolution = m_global_data->resolution();
     const auto sust_cutoff
-        = (DEFAULT_SUST_CUTOFF * m_resolution) / DEFAULT_RESOLUTION;
+        = (DEFAULT_SUST_CUTOFF * resolution) / DEFAULT_RESOLUTION;
 
     for (auto& note : trimmed_track.m_notes) {
         for (auto& length : note.lengths) {

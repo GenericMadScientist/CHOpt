@@ -321,7 +321,8 @@ apply_dynamics_events(std::vector<Note> notes,
     return notes;
 }
 
-NoteTrack note_track_from_section(const ChartSection& section, int resolution,
+NoteTrack note_track_from_section(const ChartSection& section,
+                                  std::shared_ptr<SongGlobalData> global_data,
                                   TrackType track_type)
 {
     constexpr int DISCO_FLIP_START_SIZE = 13;
@@ -395,8 +396,9 @@ NoteTrack note_track_from_section(const ChartSection& section, int resolution,
         disco_flips.push_back({start, end - start});
     }
 
-    return {std::move(notes),       sp, std::move(solos), std::move(fills),
-            std::move(disco_flips), {}, track_type,       resolution};
+    return {
+        std::move(notes),       sp, std::move(solos), std::move(fills),
+        std::move(disco_flips), {}, track_type,       std::move(global_data)};
 }
 
 bool is_six_fret_instrument(Instrument instrument)
@@ -1024,7 +1026,8 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
 }
 
 std::map<Difficulty, NoteTrack>
-note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
+note_tracks_from_midi(const MidiTrack& midi_track,
+                      const std::shared_ptr<SongGlobalData>& global_data)
 {
     const auto event_track
         = read_instrument_midi_track(midi_track, TrackType::FiveFret);
@@ -1070,14 +1073,15 @@ note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
                                        {},
                                        bre,
                                        TrackType::FiveFret,
-                                       resolution});
+                                       global_data});
     }
 
     return note_tracks;
 }
 
 std::map<Difficulty, NoteTrack>
-ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
+ghl_note_tracks_from_midi(const MidiTrack& midi_track,
+                          const std::shared_ptr<SongGlobalData>& global_data)
 {
     const auto event_track
         = read_instrument_midi_track(midi_track, TrackType::SixFret);
@@ -1113,7 +1117,7 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
                                        {},
                                        {},
                                        TrackType::SixFret,
-                                       resolution});
+                                       global_data});
     }
 
     return note_tracks;
@@ -1186,7 +1190,8 @@ public:
 };
 
 std::map<Difficulty, NoteTrack>
-drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
+drum_note_tracks_from_midi(const MidiTrack& midi_track,
+                           const std::shared_ptr<SongGlobalData>& global_data)
 {
     const auto event_track
         = read_instrument_midi_track(midi_track, TrackType::Drums);
@@ -1255,7 +1260,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track, int resolution)
                                        std::move(disco_flips),
                                        {},
                                        TrackType::Drums,
-                                       resolution});
+                                       global_data});
     }
 
     return note_tracks;
@@ -1392,8 +1397,8 @@ std::vector<Difficulty> Song::difficulties(Instrument instrument) const
 void Song::append_instrument_track(Instrument inst, Difficulty diff,
                                    const ChartSection& section)
 {
-    auto note_track = note_track_from_section(
-        section, m_global_data.resolution(), track_type_from_instrument(inst));
+    auto note_track = note_track_from_section(section, m_global_data,
+                                              track_type_from_instrument(inst));
     if (!note_track.notes().empty()) {
         m_tracks.insert({{inst, diff}, note_track});
     }
@@ -1403,24 +1408,24 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
 {
     Song song;
 
-    song.m_global_data.is_from_midi(false);
-    song.m_global_data.name(ini.name);
-    song.m_global_data.artist(ini.artist);
-    song.m_global_data.charter(ini.charter);
+    song.m_global_data->is_from_midi(false);
+    song.m_global_data->name(ini.name);
+    song.m_global_data->artist(ini.artist);
+    song.m_global_data->charter(ini.charter);
 
     for (const auto& section : chart.sections) {
         if (section.name == "Song") {
             try {
                 const auto resolution = std::stoi(get_with_default(
                     section.key_value_pairs, "Resolution", "192"));
-                song.m_global_data.resolution(resolution);
+                song.m_global_data->resolution(resolution);
             } catch (const std::invalid_argument&) {
                 // CH just ignores this kind of parsing mistake.
                 // TODO: Use from_chars instead to avoid having to use
                 // exceptions as control flow.
             }
         } else if (section.name == "SyncTrack") {
-            song.m_global_data.sync_track(sync_track_from_section(section));
+            song.m_global_data->sync_track(sync_track_from_section(section));
         } else {
             auto pair = diff_inst_from_header(section.name);
             if (!pair.has_value()) {
@@ -1446,17 +1451,17 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
 
     Song song;
 
-    song.m_global_data.is_from_midi(true);
-    song.m_global_data.resolution(midi.ticks_per_quarter_note);
-    song.m_global_data.name(ini.name);
-    song.m_global_data.artist(ini.artist);
-    song.m_global_data.charter(ini.charter);
+    song.m_global_data->is_from_midi(true);
+    song.m_global_data->resolution(midi.ticks_per_quarter_note);
+    song.m_global_data->name(ini.name);
+    song.m_global_data->artist(ini.artist);
+    song.m_global_data->charter(ini.charter);
 
     if (midi.tracks.empty()) {
         return song;
     }
 
-    song.m_global_data.sync_track(read_first_midi_track(midi.tracks[0]));
+    song.m_global_data->sync_track(read_first_midi_track(midi.tracks[0]));
 
     for (const auto& track : midi.tracks) {
         const auto track_name = midi_track_name(track);
@@ -1464,29 +1469,26 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
             continue;
         }
         if (*track_name == "BEAT") {
-            song.m_global_data.od_beats(od_beats_from_track(track));
+            song.m_global_data->od_beats(od_beats_from_track(track));
         }
         const auto inst = midi_section_instrument(*track_name);
         if (!inst.has_value()) {
             continue;
         }
         if (is_six_fret_instrument(*inst)) {
-            auto tracks = ghl_note_tracks_from_midi(
-                track, song.m_global_data.resolution());
+            auto tracks = ghl_note_tracks_from_midi(track, song.m_global_data);
             for (auto& [diff, note_track] : tracks) {
                 song.m_tracks.emplace(std::tuple {*inst, diff},
                                       std::move(note_track));
             }
         } else if (*inst == Instrument::Drums) {
-            auto tracks = drum_note_tracks_from_midi(
-                track, song.m_global_data.resolution());
+            auto tracks = drum_note_tracks_from_midi(track, song.m_global_data);
             for (auto& [diff, note_track] : tracks) {
                 song.m_tracks.emplace(std::tuple {Instrument::Drums, diff},
                                       std::move(note_track));
             }
         } else {
-            auto tracks
-                = note_tracks_from_midi(track, song.m_global_data.resolution());
+            auto tracks = note_tracks_from_midi(track, song.m_global_data);
             for (auto& [diff, note_track] : tracks) {
                 song.m_tracks.emplace(std::tuple {*inst, diff},
                                       std::move(note_track));

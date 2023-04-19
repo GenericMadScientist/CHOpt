@@ -30,8 +30,14 @@ BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -58,8 +64,14 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -81,8 +93,14 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_even_started_mid_hold)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -104,8 +122,14 @@ BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -133,8 +157,14 @@ BOOST_AUTO_TEST_CASE(sp_does_not_exceed_full_bar)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -156,8 +186,14 @@ BOOST_AUTO_TEST_CASE(
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -178,8 +214,14 @@ BOOST_AUTO_TEST_CASE(unison_bonuses_are_taken_account_of)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<StarPower> phrases {{0, 50}, {384, 50}, {768, 400}, {1344, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -201,8 +243,14 @@ BOOST_AUTO_TEST_CASE(
 {
     std::vector<Note> notes {make_note(0, 1459), make_note(1459)};
     std::vector<StarPower> phrases {{0, 100}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -224,8 +272,14 @@ BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
 {
     std::vector<Note> notes {make_note(0), make_note(192)};
     std::vector<StarPower> phrases {{0, 100}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
                         {},
                         SqueezeSettings::default_settings(),
@@ -248,7 +302,14 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
 {
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
                              make_note(6144)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -285,7 +346,14 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
 {
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
                              make_note(6144)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -322,7 +390,14 @@ BOOST_AUTO_TEST_CASE(below_half_bar_never_works)
 {
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
                              make_note(6144)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -344,7 +419,14 @@ BOOST_AUTO_TEST_CASE(check_next_point_needs_to_not_lie_in_activation)
 {
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
                              make_note(6144)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -367,8 +449,14 @@ BOOST_AUTO_TEST_CASE(check_intermediate_sp_is_accounted_for)
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
                              make_note(6144)};
     std::vector<StarPower> phrases {{3000, 100}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -391,8 +479,14 @@ BOOST_AUTO_TEST_CASE(check_only_reached_intermediate_sp_is_accounted_for)
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(6000),
                              make_note(6144)};
     std::vector<StarPower> phrases {{6000, 100}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -415,8 +509,14 @@ BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
                              make_note(4000)};
     std::vector<StarPower> phrases {{3072, 100}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -438,8 +538,14 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
 {
     std::vector<Note> notes {make_note(0), make_note(2), make_note(7000)};
     std::vector<StarPower> phrases {{0, 1}, {2, 1}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -461,7 +567,14 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
 {
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
                              make_note(6144)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -490,8 +603,14 @@ BOOST_AUTO_TEST_CASE(
         make_chord(384, {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}}),
         make_note(5088), make_note(5136)};
     std::vector<StarPower> phrases {{384, 1}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{{0, 4, 4}}, {{0, 300000}}};
     ProcessedSong track {note_track,
                          sync_track,
@@ -521,8 +640,14 @@ BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
 {
     std::vector<Note> notes {make_note(192), make_note(5376)};
     std::vector<StarPower> phrases {{192, 1}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -545,8 +670,14 @@ BOOST_AUTO_TEST_CASE(last_note_unison_bonus_accounted_for_excess_sp)
 {
     std::vector<Note> notes {make_note(192), make_note(5376)};
     std::vector<StarPower> phrases {{192, 1}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -574,8 +705,14 @@ BOOST_AUTO_TEST_CASE(check_whammy_is_counted)
     std::vector<Note> notes {make_note(0, 960), make_note(3840),
                              make_note(6144)};
     std::vector<StarPower> phrases {{0, 7000}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -599,8 +736,14 @@ BOOST_AUTO_TEST_CASE(check_whammy_from_end_of_sp_sustain_before_note_is_counted)
     std::vector<Note> notes {make_note(0, 960), make_note(2880),
                              make_note(6144)};
     std::vector<StarPower> phrases {{0, 7000}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -627,8 +770,14 @@ BOOST_AUTO_TEST_CASE(
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384, 192),
                              make_note(5260)};
     std::vector<StarPower> phrases {{384, 1}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -651,8 +800,14 @@ BOOST_AUTO_TEST_CASE(check_compressed_activations_are_counted)
     std::vector<Note> notes {make_note(0, 960), make_note(3840),
                              make_note(6144)};
     std::vector<StarPower> phrases {{0, 7000}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -678,7 +833,14 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_considered)
 {
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(2304),
                              make_note(3072), make_note(4608)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -699,7 +861,14 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_only_considered_down_to_a_half_bar)
 {
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(2304),
                              make_note(3072), make_note(4608)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -725,7 +894,14 @@ BOOST_AUTO_TEST_CASE(
     front_end_and_back_end_of_the_activation_endpoints_are_considered)
 {
     std::vector<Note> notes {make_note(0), make_note(3110)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -746,7 +922,14 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(next_note_can_be_squeezed_late_to_avoid_going_too_far)
 {
     std::vector<Note> notes {make_note(0), make_note(3034), make_note(3053)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -768,8 +951,14 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
 {
     std::vector<Note> notes {make_note(0), make_note(3102), make_note(4608)};
     std::vector<StarPower> phrases {{3100, 100}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -791,8 +980,14 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_late)
 {
     std::vector<Note> notes {make_note(0), make_note(768), make_note(6942)};
     std::vector<StarPower> phrases {{768, 100}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -817,8 +1012,14 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
     std::vector<Note> notes {make_note(0), make_note(192), make_note(768),
                              make_note(4608), make_note(5376)};
     std::vector<StarPower> phrases {{4608, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{}, {{3840, 4000000}}};
     ProcessedSong track {note_track,
                          sync_track,
@@ -842,7 +1043,14 @@ BOOST_AUTO_TEST_SUITE(is_candidate_valid_takes_into_account_squeeze_param)
 BOOST_AUTO_TEST_CASE(front_end_and_back_end_are_restricted)
 {
     std::vector<Note> notes {make_note(0), make_note(3110)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -866,8 +1074,14 @@ BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
 {
     std::vector<Note> notes {make_note(0), make_note(3102), make_note(4608)};
     std::vector<StarPower> phrases {{3100, 100}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -891,8 +1105,14 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
 {
     std::vector<Note> notes {make_note(0), make_note(768), make_note(6942)};
     std::vector<StarPower> phrases {{768, 100}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -915,7 +1135,14 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
 BOOST_AUTO_TEST_CASE(next_note_back_end_is_restricted)
 {
     std::vector<Note> notes {make_note(0), make_note(3034), make_note(3053)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -938,7 +1165,14 @@ BOOST_AUTO_TEST_CASE(next_note_back_end_is_restricted)
 BOOST_AUTO_TEST_CASE(end_position_is_finite_if_activation_goes_past_last_note)
 {
     std::vector<Note> notes {make_note(0)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -966,8 +1200,14 @@ BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
     std::vector<Note> notes {make_note(0), make_note(2688), make_note(3072),
                              make_note(3840)};
     std::vector<StarPower> phrases {{2688, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -989,8 +1229,14 @@ BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
 {
     std::vector<Note> notes {make_note(0), make_note(3072), make_note(3840)};
     std::vector<StarPower> phrases {{3072, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1012,8 +1258,14 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
 {
     std::vector<Note> notes {make_note(0, 1920), make_note(3456)};
     std::vector<StarPower> phrases {{0, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1035,8 +1287,14 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
 {
     std::vector<Note> notes {make_note(0, 2304)};
     std::vector<StarPower> phrases {{0, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1063,8 +1321,14 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_around_sp_granting_note_doesnt_get_added)
     std::vector<Note> notes {make_note(0), make_note(768, 192),
                              make_note(3168)};
     std::vector<StarPower> phrases {{768, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1089,8 +1353,14 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)
     std::vector<Note> notes {make_note(0, 768), make_note(3072),
                              make_note(3264)};
     std::vector<StarPower> phrases {{0, 3300}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1120,8 +1390,14 @@ BOOST_AUTO_TEST_CASE(
     std::vector<Note> notes {make_note(0, 960), make_note(2880),
                              make_note(6144)};
     std::vector<StarPower> phrases {{0, 7000}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1148,8 +1424,14 @@ BOOST_AUTO_TEST_CASE(
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(3456, 192)};
     std::vector<StarPower> phrases {{0, 1}, {192, 1}, {3456, 1}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1177,8 +1459,14 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
 {
     std::vector<Note> notes {make_note(0, 6720)};
     std::vector<StarPower> phrases {{0, 1}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{{0, 1, 4}}, {}};
     ProcessedSong track {note_track,
                          sync_track,
@@ -1201,7 +1489,14 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
 BOOST_AUTO_TEST_CASE(adjusted_hit_window_functions_return_correct_values)
 {
     std::vector<Note> notes {make_note(0)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1232,7 +1527,14 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
     std::vector<Note> notes {make_note(192), make_note(384, 192),
                              make_note(768)};
     std::vector<StarPower> phrases {{384, 1}};
-    NoteTrack track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack track {notes,
+                     phrases,
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     ProcessedSong song {track,
                         {},
                         {0.0, 0.0, Second {0.0}, Second {-0.1}, Second {0.0}},
@@ -1251,7 +1553,14 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
 BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
 {
     std::vector<Note> notes {make_note(768), make_note(3840)};
-    NoteTrack track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack track {notes,
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{{0, 4, 4}, {3840, 2, 4}}, {}};
     ProcessedSong song {track,
                         sync_track,
@@ -1277,7 +1586,14 @@ BOOST_AUTO_TEST_SUITE(is_drums_returns_the_correct_value)
 
 BOOST_AUTO_TEST_CASE(false_for_guitar)
 {
-    NoteTrack note_track {{}, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {{},
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1291,7 +1607,14 @@ BOOST_AUTO_TEST_CASE(false_for_guitar)
 
 BOOST_AUTO_TEST_CASE(true_for_drums)
 {
-    NoteTrack note_track {{}, {}, {}, {}, {}, {}, TrackType::Drums, 192};
+    NoteTrack note_track {{},
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::Drums,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1313,8 +1636,14 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
                              make_note(576), make_note(6144)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
     std::vector<Solo> solos {{0, 50, 50}};
-    NoteTrack note_track {
-        notes, phrases, solos, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          solos,
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1342,8 +1671,14 @@ BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
                              make_note(576), make_note(6144)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
     std::vector<Solo> solos {{0, 50, 50}};
-    NoteTrack note_track {
-        notes, phrases, solos, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          solos,
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1369,8 +1704,14 @@ BOOST_AUTO_TEST_CASE(no_overlap_is_denoted_correctly)
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(576), make_note(6144)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1397,8 +1738,14 @@ BOOST_AUTO_TEST_CASE(no_es_is_denoted_correctly)
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(576), make_note(6144)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1425,7 +1772,14 @@ BOOST_AUTO_TEST_CASE(no_sp_is_denoted_correctly)
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(576), make_note(6144)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}, {384, 50}, {6144, 50}};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1447,8 +1801,14 @@ BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
 {
     std::vector<Note> notes {make_note(0), make_note(192, 192), make_note(768)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1473,8 +1833,14 @@ BOOST_AUTO_TEST_CASE(mid_sustain_activations_noted_correctly)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(768, 192)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1500,8 +1866,14 @@ BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_counted_correctly)
     std::vector<Note> notes {make_note(0), make_note(192), make_note(768),
                              make_note(960, 0, FIVE_FRET_RED)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1528,8 +1900,14 @@ BOOST_AUTO_TEST_CASE(
     std::vector<Note> notes {make_note(0), make_note(192), make_note(768, 96),
                              make_note(960, 0, FIVE_FRET_RED)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1554,8 +1932,14 @@ BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
 {
     std::vector<Note> notes {make_note(0), make_note(192, 192)};
     std::vector<StarPower> phrases {{0, 50}, {192, 50}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1580,8 +1964,14 @@ BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
 {
     std::vector<Note> notes {make_note(0, 3072), make_note(3264)};
     std::vector<StarPower> phrases {{0, 3300}};
-    NoteTrack note_track {notes, phrases, {}, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1609,7 +1999,14 @@ BOOST_AUTO_TEST_CASE(average_multiplier_rounds_down)
     for (auto i = 0; i < 11; ++i) {
         notes.push_back(make_note(i));
     }
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1631,7 +2028,14 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_drums)
 {
     std::vector<Note> notes {make_drum_note(0, DRUM_RED),
                              make_drum_note(192, DRUM_DOUBLE_KICK)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::Drums, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::Drums,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1652,7 +2056,14 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_drums)
 BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_zero_notes)
 {
     std::vector<Note> notes {make_drum_note(192, DRUM_DOUBLE_KICK)};
-    NoteTrack note_track {notes, {}, {}, {}, {}, {}, TrackType::Drums, 192};
+    NoteTrack note_track {notes,
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::Drums,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -1677,8 +2088,14 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_is_used_for_drums)
                              make_drum_note(6528), make_drum_note(6912),
                              make_drum_note(9984), make_drum_note(13056)};
     std::vector<StarPower> phrases {{0, 1}, {192, 1}, {6336, 1}, {6528, 1}};
-    NoteTrack note_track {notes, phrases,          {}, {}, {},
-                          {},    TrackType::Drums, 192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::Drums,
+                          std::make_shared<SongGlobalData>()};
     note_track.generate_drum_fills({{}, 192, ChDrumEngine(), {}});
     ProcessedSong track {note_track,
                          {},
@@ -1708,8 +2125,14 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_l_and_e_are_used_for_drums)
                              make_drum_note(5755), make_drum_note(6912),
                              make_drum_note(9984), make_drum_note(13056)};
     std::vector<StarPower> phrases {{0, 1}, {390, 1}, {5568, 1}, {5755, 1}};
-    NoteTrack note_track {notes, phrases,          {}, {}, {},
-                          {},    TrackType::Drums, 192};
+    NoteTrack note_track {notes,
+                          phrases,
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::Drums,
+                          std::make_shared<SongGlobalData>()};
     note_track.generate_drum_fills({{}, 192, ChDrumEngine(), {}});
     ProcessedSong track {note_track,
                          {},
@@ -1737,8 +2160,14 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_ignored_with_rb)
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(576), make_note(6144)};
     std::vector<Solo> solos {{0, 50, 100}};
-    NoteTrack note_track {notes, {}, solos, {}, {}, {}, TrackType::FiveFret,
-                          192};
+    NoteTrack note_track {notes,
+                          {},
+                          solos,
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),

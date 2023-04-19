@@ -209,11 +209,11 @@ void add_drum_activation_points(const NoteTrack& track,
     if (points.empty()) {
         return;
     }
+    const auto resolution
+        = static_cast<double>(track.global_data().resolution());
     for (auto fill : track.drum_fills()) {
-        const Beat fill_start {fill.position
-                               / static_cast<double>(track.resolution())};
-        const Beat fill_end {(fill.position + fill.length)
-                             / static_cast<double>(track.resolution())};
+        const Beat fill_start {fill.position / resolution};
+        const Beat fill_end {(fill.position + fill.length) / resolution};
         const auto best_point = closest_point(points, fill_end);
         best_point->fill_start = converter.beats_to_seconds(fill_start);
     }
@@ -347,7 +347,7 @@ std::vector<Point> unmultiplied_points(const NoteTrack& track,
             ++current_phrase;
         }
         append_note_points(p, notes, std::back_inserter(points),
-                           track.resolution(), is_note_sp_ender,
+                           track.global_data().resolution(), is_note_sp_ender,
                            is_unison_sp_ender, converter,
                            squeeze_settings.squeeze, engine, drum_settings);
         p = q;
@@ -425,21 +425,21 @@ first_after_current_sp_vector(const std::vector<Point>& points,
                               const NoteTrack& track, const Engine& engine)
 {
     std::vector<PointPtr> results;
+    const auto resolution
+        = static_cast<double>(track.global_data().resolution());
     auto current_sp = track.sp_phrases().cbegin();
     for (auto p = points.cbegin(); p < points.cend();) {
         current_sp
             = std::find_if(current_sp, track.sp_phrases().cend(), [&](auto sp) {
-                  return Beat((sp.position + sp.length)
-                              / static_cast<double>(track.resolution()))
+                  return Beat((sp.position + sp.length) / resolution)
                       > p->position.beat;
               });
         Beat sp_start {std::numeric_limits<double>::infinity()};
         Beat sp_end {std::numeric_limits<double>::infinity()};
         if (current_sp != track.sp_phrases().cend()) {
-            sp_start = Beat {current_sp->position
-                             / static_cast<double>(track.resolution())};
+            sp_start = Beat {current_sp->position / resolution};
             sp_end = Beat {(current_sp->position + current_sp->length)
-                           / static_cast<double>(track.resolution())};
+                           / resolution};
         }
         if (p->position.beat < sp_start || engine.overlaps()) {
             results.push_back(++p);
@@ -542,8 +542,9 @@ PointSet::PointSet(const NoteTrack& track, const TimeConverter& converter,
 {
     m_points = points_from_track(track, converter, unison_phrases,
                                  squeeze_settings, drum_settings, engine);
-    m_solo_boosts = solo_boosts_from_solos(track.solos(drum_settings),
-                                           track.resolution(), converter);
+    m_solo_boosts
+        = solo_boosts_from_solos(track.solos(drum_settings),
+                                 track.global_data().resolution(), converter);
     m_first_after_current_sp
         = first_after_current_sp_vector(m_points, track, engine);
     m_next_non_hold_point = next_non_hold_vector(m_points);

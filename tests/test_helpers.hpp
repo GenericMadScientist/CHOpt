@@ -19,6 +19,7 @@
 #include <array>
 #include <cmath>
 #include <iomanip>
+#include <memory>
 #include <ostream>
 #include <tuple>
 #include <vector>
@@ -480,4 +481,11 @@ inline Note make_drum_note(int position, DrumNotes colour = DRUM_RED,
     note.lengths[colour] = 0;
 
     return note;
+}
+
+inline std::shared_ptr<SongGlobalData> make_resolution(int resolution)
+{
+    auto data = std::make_shared<SongGlobalData>();
+    data->resolution(resolution);
+    return data;
 }

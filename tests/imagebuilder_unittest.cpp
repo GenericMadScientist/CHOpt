@@ -100,7 +100,14 @@ BOOST_AUTO_TEST_SUITE(track_type_is_stored_correctly)
 
 BOOST_AUTO_TEST_CASE(five_fret_gets_the_right_track_type)
 {
-    NoteTrack track {{}, {}, {}, {}, {}, {}, TrackType::FiveFret, 192};
+    NoteTrack track {{},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -110,7 +117,14 @@ BOOST_AUTO_TEST_CASE(five_fret_gets_the_right_track_type)
 
 BOOST_AUTO_TEST_CASE(six_fret_gets_the_right_track_type)
 {
-    NoteTrack track {{}, {}, {}, {}, {}, {}, TrackType::SixFret, 192};
+    NoteTrack track {{},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::SixFret,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -120,7 +134,14 @@ BOOST_AUTO_TEST_CASE(six_fret_gets_the_right_track_type)
 
 BOOST_AUTO_TEST_CASE(drums_gets_the_right_track_type)
 {
-    NoteTrack track {{}, {}, {}, {}, {}, {}, TrackType::Drums, 192};
+    NoteTrack track {{},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::Drums,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -141,7 +162,7 @@ BOOST_AUTO_TEST_CASE(non_sp_non_sustains_are_handled_correctly)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -155,8 +176,14 @@ BOOST_AUTO_TEST_CASE(non_sp_non_sustains_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(sustains_are_handled_correctly)
 {
-    NoteTrack track {{make_note(0, 96)},  {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(0, 96)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -176,7 +203,7 @@ BOOST_AUTO_TEST_CASE(sp_notes_are_recorded)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -198,7 +225,7 @@ BOOST_AUTO_TEST_CASE(six_fret_notes_are_handled_correctly)
         {},
         {},
         TrackType::SixFret,
-        192};
+        std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -220,7 +247,7 @@ BOOST_AUTO_TEST_CASE(drum_notes_are_handled_correctly)
         {},
         {},
         TrackType::Drums,
-        192};
+        std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -239,8 +266,14 @@ BOOST_AUTO_TEST_SUITE(drawn_rows_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(simple_four_four_is_handled_correctly)
 {
-    NoteTrack track {{make_note(2880)},   {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(2880)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -253,8 +286,14 @@ BOOST_AUTO_TEST_CASE(simple_four_four_is_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
 {
-    NoteTrack track {{make_note(2450)},   {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(2450)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{{0, 4, 4}, {768, 3, 4}, {1344, 3, 8}, {1632, 4, 4}},
                           {}};
     ImageBuilder builder {
@@ -269,8 +308,14 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
 
 BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
 {
-    NoteTrack track {{make_note(768)},    {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(768)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{{0, 4, 4}, {767, 3, 4}, {1344, 3, 8}}, {}};
     ImageBuilder builder {
         track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
@@ -284,8 +329,14 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
 
 BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
 {
-    NoteTrack track {{make_note(0)},      {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(0)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{{0, 17, 4}}, {}};
     ImageBuilder builder {
         track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
@@ -299,8 +350,14 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
 
 BOOST_AUTO_TEST_CASE(enough_rows_are_drawn_for_end_of_song_sustains)
 {
-    NoteTrack track {{make_note(0, 3840)}, {}, {}, {}, {}, {},
-                     TrackType::FiveFret,  192};
+    NoteTrack track {{make_note(0, 3840)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -314,8 +371,14 @@ BOOST_AUTO_TEST_SUITE(beat_lines_are_correct)
 
 BOOST_AUTO_TEST_CASE(four_four_works_fine)
 {
-    NoteTrack track {{make_note(767)},    {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(767)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -336,8 +399,14 @@ BOOST_AUTO_TEST_CASE(four_four_works_fine)
 
 BOOST_AUTO_TEST_CASE(four_eight_works_fine)
 {
-    NoteTrack track {{make_note(767)},    {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(767)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{{0, 4, 8}}, {}};
     ImageBuilder builder {
         track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
@@ -360,8 +429,14 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
 
 BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
 {
-    NoteTrack track {{make_note(1151)},   {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(1151)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
     ImageBuilder builder {
         track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
@@ -388,8 +463,14 @@ BOOST_AUTO_TEST_SUITE(time_signatures_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
 {
-    NoteTrack track {{make_note(1920)},   {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(1920)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
     ImageBuilder builder {
         track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
@@ -405,8 +486,14 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
 {
-    NoteTrack track {{make_note(768)},    {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(768)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{{0, 4, 4}, {1920, 3, 4}}, {}};
     ImageBuilder builder {
         track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
@@ -422,8 +509,14 @@ BOOST_AUTO_TEST_SUITE(tempos_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
 {
-    NoteTrack track {{make_note(1920)},   {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(1920)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{}, {{0, 150000}, {384, 120000}, {768, 200000}}};
     ImageBuilder builder {
         track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
@@ -439,8 +532,14 @@ BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
 {
-    NoteTrack track {{make_note(768)},    {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(768)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SyncTrack sync_track {{}, {{0, 120000}, {1920, 200000}}};
     ImageBuilder builder {
         track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
@@ -456,8 +555,14 @@ BOOST_AUTO_TEST_SUITE(song_header_information_is_added)
 
 BOOST_AUTO_TEST_CASE(normal_speed)
 {
-    NoteTrack track {{make_note(0)},      {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(0)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SongGlobalData global_data;
     global_data.name("TestName");
     global_data.artist("GMS");
@@ -475,8 +580,14 @@ BOOST_AUTO_TEST_CASE(normal_speed)
 
 BOOST_AUTO_TEST_CASE(double_speed)
 {
-    NoteTrack track {{make_note(0)},      {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(0)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     SongGlobalData global_data;
     global_data.name("TestName");
     global_data.artist("GMS");
@@ -505,7 +616,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -520,8 +631,14 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
 
 BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
 {
-    NoteTrack track {{make_note(768)},    {{768, 384}}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(768)},
+                     {{768, 384}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -543,7 +660,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
                      {},
                      {},
                      TrackType::SixFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -565,7 +682,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
                      {},
                      {},
                      TrackType::Drums,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -587,7 +704,7 @@ BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -610,8 +727,14 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)
 {
-    NoteTrack track {{{make_drum_note(288)}}, {}, {}, {{192, 96}}, {}, {},
-                     TrackType::Drums,        192};
+    NoteTrack track {{{make_drum_note(288)}},
+                     {},
+                     {},
+                     {{192, 96}},
+                     {},
+                     {},
+                     TrackType::Drums,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -633,7 +756,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_cannot_be_cancelled_by_a_kick)
                      {},
                      {},
                      TrackType::Drums,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -652,7 +775,7 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_drawn_with_enable_double_kick)
         {},
         {},
         TrackType::Drums,
-        192};
+        std::make_shared<SongGlobalData>()};
     ImageBuilder no_double_builder {
         track, {},  Difficulty::Expert, {false, false, false, false},
         false, true};
@@ -674,7 +797,7 @@ BOOST_AUTO_TEST_CASE(single_kicks_disappear_with_disable_kick)
         {},
         {},
         TrackType::Drums,
-        192};
+        std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {}, Difficulty::Expert, {true, true, false, false}, false, true};
 
@@ -690,7 +813,7 @@ BOOST_AUTO_TEST_CASE(cymbals_become_toms_with_pro_drums_off)
                      {},
                      {},
                      TrackType::Drums,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, {true, false, false, false},
         false, true};
@@ -709,7 +832,7 @@ BOOST_AUTO_TEST_CASE(disco_flip_matters_only_with_pro_drums_on)
                      {{192, 192}},
                      {},
                      TrackType::Drums,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder normal_builder {
         track, {},  Difficulty::Expert, {true, false, false, false},
         false, true};
@@ -734,7 +857,7 @@ BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -757,7 +880,7 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -800,7 +923,7 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
         {},
         {},
         TrackType::FiveFret,
-        192};
+        std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -835,7 +958,7 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
         {},
         {},
         TrackType::FiveFret,
-        192};
+        std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -859,8 +982,14 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
 
 BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
 {
-    NoteTrack track {{make_note(192)},    {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(192)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -892,7 +1021,7 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -933,7 +1062,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -965,7 +1094,7 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -999,7 +1128,7 @@ BOOST_AUTO_TEST_CASE(
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -1032,7 +1161,7 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, Gh1Engine(), {}};
     PointSet points {track,
                      converter,
@@ -1060,8 +1189,14 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(add_solo_sections_add_correct_ranges)
 {
-    NoteTrack track {{make_note(0)},      {}, {{192, 384, 0}}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(0)},
+                     {},
+                     {{192, 384, 0}},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -1085,7 +1220,7 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -1110,9 +1245,14 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
 
 BOOST_AUTO_TEST_CASE(solos_are_added)
 {
-    NoteTrack track {
-        {make_note(768)},    {}, {{0, 100, 100}, {200, 800, 100}}, {}, {}, {},
-        TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(768)},
+                     {},
+                     {{0, 100, 100}, {200, 800, 100}},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -1135,8 +1275,14 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
 // Guitar Hero X.
 BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
 {
-    NoteTrack track {{make_note(0)},      {}, {{0, 1600, 50}}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(0)},
+                     {},
+                     {{0, 1600, 50}},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -1165,7 +1311,7 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
         {},
         {},
         TrackType::FiveFret,
-        192};
+        std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -1195,7 +1341,7 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {{}, 192, ChGuitarEngine(), {}},
                      {},
@@ -1231,7 +1377,7 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     SpData sp_data {
         track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     ImageBuilder builder {
@@ -1254,7 +1400,7 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1275,8 +1421,14 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
 
 BOOST_AUTO_TEST_CASE(difficulty_is_handled)
 {
-    NoteTrack track {{make_note(0)},      {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(0)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder hard_builder {
         track, {},  Difficulty::Hard, DrumSettings::default_settings(),
         false, true};
@@ -1290,8 +1442,14 @@ BOOST_AUTO_TEST_CASE(difficulty_is_handled)
 
 BOOST_AUTO_TEST_CASE(lefty_flip_is_handled)
 {
-    NoteTrack track {{make_note(0)},      {}, {}, {}, {}, {},
-                     TrackType::FiveFret, 192};
+    NoteTrack track {{make_note(0)},
+                     {},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     ImageBuilder lefty_builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         true,  true};
@@ -1316,7 +1474,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
         {},
         {},
         TrackType::FiveFret,
-        192};
+        std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1360,7 +1518,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1398,7 +1556,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1436,7 +1594,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1475,7 +1633,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1518,7 +1676,7 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                      {},
                      {},
                      TrackType::FiveFret,
-                     192};
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, 192, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,

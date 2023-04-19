@@ -20,6 +20,7 @@
 #define CHOPT_SONG_HPP
 
 #include <map>
+#include <memory>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -33,52 +34,10 @@
 
 // Invariants:
 // resolution() > 0.
-class SongGlobalData {
-private:
-    static constexpr int DEFAULT_RESOLUTION = 192;
-
-    bool m_is_from_midi = false;
-    int m_resolution = DEFAULT_RESOLUTION;
-    std::string m_name;
-    std::string m_artist;
-    std::string m_charter;
-    SyncTrack m_sync_track;
-    std::vector<int> m_od_beats;
-
-public:
-    SongGlobalData() = default;
-
-    [[nodiscard]] bool is_from_midi() const { return m_is_from_midi; }
-    [[nodiscard]] int resolution() const { return m_resolution; }
-    [[nodiscard]] const std::string& name() const { return m_name; }
-    [[nodiscard]] const std::string& artist() const { return m_artist; }
-    [[nodiscard]] const std::string& charter() const { return m_charter; }
-    [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
-    [[nodiscard]] const std::vector<int>& od_beats() const
-    {
-        return m_od_beats;
-    }
-
-    void is_from_midi(bool value) { m_is_from_midi = value; }
-    void resolution(int value)
-    {
-        if (value <= 0) {
-            throw ParseError("Resolution non-positive");
-        }
-        m_resolution = value;
-    }
-    void name(std::string value) { m_name = std::move(value); }
-    void artist(std::string value) { m_artist = std::move(value); }
-    void charter(std::string value) { m_charter = std::move(value); }
-    void sync_track(SyncTrack value) { m_sync_track = std::move(value); }
-    void od_beats(std::vector<int> value) { m_od_beats = std::move(value); }
-};
-
-// Invariants:
-// resolution() > 0.
 class Song {
 private:
-    SongGlobalData m_global_data;
+    std::shared_ptr<SongGlobalData> m_global_data
+        = std::make_shared<SongGlobalData>();
     std::map<std::tuple<Instrument, Difficulty>, NoteTrack> m_tracks;
     Song() = default;
     void append_instrument_track(Instrument inst, Difficulty diff,
@@ -89,7 +48,7 @@ public:
     static Song from_midi(const Midi& midi, const IniValues& ini);
     [[nodiscard]] const SongGlobalData& global_data() const
     {
-        return m_global_data;
+        return *m_global_data;
     }
     [[nodiscard]] std::vector<Instrument> instruments() const;
     [[nodiscard]] std::vector<Difficulty>

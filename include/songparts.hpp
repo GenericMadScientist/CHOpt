@@ -23,6 +23,7 @@
 #include <array>
 #include <cstdint>
 #include <cstdlib>
+#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -115,6 +116,49 @@ struct BigRockEnding {
 };
 
 // Invariants:
+// resolution() > 0.
+class SongGlobalData {
+private:
+    static constexpr int DEFAULT_RESOLUTION = 192;
+
+    bool m_is_from_midi = false;
+    int m_resolution = DEFAULT_RESOLUTION;
+    std::string m_name;
+    std::string m_artist;
+    std::string m_charter;
+    SyncTrack m_sync_track;
+    std::vector<int> m_od_beats;
+
+public:
+    SongGlobalData() = default;
+
+    [[nodiscard]] bool is_from_midi() const { return m_is_from_midi; }
+    [[nodiscard]] int resolution() const { return m_resolution; }
+    [[nodiscard]] const std::string& name() const { return m_name; }
+    [[nodiscard]] const std::string& artist() const { return m_artist; }
+    [[nodiscard]] const std::string& charter() const { return m_charter; }
+    [[nodiscard]] const SyncTrack& sync_track() const { return m_sync_track; }
+    [[nodiscard]] const std::vector<int>& od_beats() const
+    {
+        return m_od_beats;
+    }
+
+    void is_from_midi(bool value) { m_is_from_midi = value; }
+    void resolution(int value)
+    {
+        if (value <= 0) {
+            throw ParseError("Resolution non-positive");
+        }
+        m_resolution = value;
+    }
+    void name(std::string value) { m_name = std::move(value); }
+    void artist(std::string value) { m_artist = std::move(value); }
+    void charter(std::string value) { m_charter = std::move(value); }
+    void sync_track(SyncTrack value) { m_sync_track = std::move(value); }
+    void od_beats(std::vector<int> value) { m_od_beats = std::move(value); }
+};
+
+// Invariants:
 // notes() will always return a vector of sorted notes.
 // notes() will not return a vector with two notes of the same colour with the
 // same position.
@@ -132,7 +176,7 @@ private:
     std::vector<DiscoFlip> m_disco_flips;
     std::optional<BigRockEnding> m_bre;
     TrackType m_track_type;
-    int m_resolution;
+    std::shared_ptr<SongGlobalData> m_global_data;
     int m_base_score_ticks;
 
     void compute_base_score_ticks();
@@ -143,7 +187,7 @@ public:
               std::vector<Solo> solos, std::vector<DrumFill> drum_fills,
               std::vector<DiscoFlip> disco_flips,
               std::optional<BigRockEnding> bre, TrackType track_type,
-              int resolution);
+              std::shared_ptr<SongGlobalData> global_data);
     void generate_drum_fills(const TimeConverter& converter);
     void disable_dynamics();
     [[nodiscard]] const std::vector<Note>& notes() const { return m_notes; }
@@ -163,7 +207,10 @@ public:
     }
     [[nodiscard]] std::optional<BigRockEnding> bre() const { return m_bre; }
     [[nodiscard]] TrackType track_type() const { return m_track_type; }
-    [[nodiscard]] int resolution() const { return m_resolution; }
+    [[nodiscard]] const SongGlobalData& global_data() const
+    {
+        return *m_global_data;
+    }
     [[nodiscard]] int base_score(DrumSettings drum_settings
                                  = DrumSettings::default_settings()) const;
     [[nodiscard]] NoteTrack trim_sustains() const;

@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(chart_reads_easy_note_track_correctly)
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.track(Instrument::Guitar, Difficulty::Easy);
 
-    BOOST_CHECK_EQUAL(track.resolution(), 192);
+    BOOST_CHECK_EQUAL(track.global_data().resolution(), 192);
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
     BOOST_CHECK_EQUAL_COLLECTIONS(track.sp_phrases().cbegin(),
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE(sp_phrases_are_read_correctly_from_chart)
                           {},
                           {},
                           TrackType::FiveFret,
-                          192};
+                          std::make_shared<SongGlobalData>()};
 
     const auto song = Song::from_chart(chart, {});
 

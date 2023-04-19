@@ -35,10 +35,12 @@ int bre_boost(const NoteTrack& track, const Engine& engine,
     if (!engine.has_bres() || !track.bre().has_value()) {
         return 0;
     }
-    const auto seconds_start = converter.beats_to_seconds(
-        Beat {track.bre()->start / static_cast<double>(track.resolution())});
-    const auto seconds_end = converter.beats_to_seconds(
-        Beat {track.bre()->end / static_cast<double>(track.resolution())});
+    const auto resolution
+        = static_cast<double>(track.global_data().resolution());
+    const auto seconds_start
+        = converter.beats_to_seconds(Beat {track.bre()->start / resolution});
+    const auto seconds_end
+        = converter.beats_to_seconds(Beat {track.bre()->end / resolution});
     const auto seconds_gap = seconds_end - seconds_start;
     return static_cast<int>(INITIAL_BRE_VALUE
                             + BRE_VALUE_PER_SECOND * seconds_gap.value());
@@ -66,7 +68,8 @@ ProcessedSong::ProcessedSong(const NoteTrack& track,
                              const Engine& engine,
                              const std::vector<int>& od_beats,
                              const std::vector<int>& unison_phrases)
-    : m_converter {sync_track, track.resolution(), engine, od_beats}
+    : m_converter {sync_track, track.global_data().resolution(), engine,
+                   od_beats}
     , m_points {track,         m_converter, unison_phrases, squeeze_settings,
                 drum_settings, engine}
     , m_sp_data {track, sync_track, od_beats, squeeze_settings, engine}

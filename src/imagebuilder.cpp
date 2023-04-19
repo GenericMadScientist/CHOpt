@@ -70,15 +70,16 @@ double get_denom(const SyncTrack& sync_track, int resolution, double beat)
 DrawnNote note_to_drawn_note(const Note& note, const NoteTrack& track)
 {
     constexpr auto COLOURS_SIZE = 7;
-    const auto beat = note.position / static_cast<double>(track.resolution());
+    const auto resolution
+        = static_cast<double>(track.global_data().resolution());
+    const auto beat = note.position / resolution;
 
     std::array<double, COLOURS_SIZE> lengths {};
     for (auto i = 0; i < COLOURS_SIZE; ++i) {
         if (note.lengths.at(i) == -1) {
             lengths.at(i) = -1;
         } else {
-            lengths.at(i)
-                = note.lengths.at(i) / static_cast<double>(track.resolution());
+            lengths.at(i) = note.lengths.at(i) / resolution;
         }
     }
 
@@ -147,14 +148,15 @@ std::vector<DrawnRow> drawn_rows(const NoteTrack& track,
         max_pos = std::max(max_pos, note_end);
     }
 
-    const auto max_beat = max_pos / static_cast<double>(track.resolution());
+    const auto resolution = track.global_data().resolution();
+    const auto max_beat = max_pos / static_cast<double>(resolution);
     auto current_beat = 0.0;
     std::vector<DrawnRow> rows;
 
     while (current_beat <= max_beat) {
         auto row_length = 0.0;
         while (true) {
-            auto contribution = get_beat_rate(sync_track, track.resolution(),
+            auto contribution = get_beat_rate(sync_track, resolution,
                                               current_beat + row_length);
             if (contribution > MAX_BEATS_PER_LINE && row_length == 0.0) {
                 // Break up a measure that spans more than a full row.
@@ -307,7 +309,9 @@ ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
     while (p->position < phrase.position) {
         ++p;
     }
-    const auto start = p->position / static_cast<double>(track.resolution());
+    const auto resolution
+        = static_cast<double>(track.global_data().resolution());
+    const auto start = p->position / resolution;
     if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
         return {-1, -1};
     }
@@ -318,8 +322,7 @@ ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
         for (auto length : p->lengths) {
             max_length = std::max(max_length, length);
         }
-        auto current_end = (p->position + max_length)
-            / static_cast<double>(track.resolution());
+        auto current_end = (p->position + max_length) / resolution;
         end = std::max(end, current_end);
         ++p;
     }
@@ -338,7 +341,7 @@ ImageBuilder::ImageBuilder(const NoteTrack& track, const SyncTrack& sync_track,
     , m_notes {drawn_notes(track, drum_settings)}
     , m_overlap_engine {is_overlap_engine}
 {
-    form_beat_lines(sync_track, track.resolution());
+    form_beat_lines(sync_track, track.global_data().resolution());
 }
 
 void ImageBuilder::add_bpms(const SyncTrack& sync_track, int resolution)
@@ -375,7 +378,8 @@ void ImageBuilder::add_bre(const BigRockEnding& bre, int resolution,
 
 void ImageBuilder::add_drum_fills(const NoteTrack& track)
 {
-    const auto resolution = static_cast<double>(track.resolution());
+    const auto resolution
+        = static_cast<double>(track.global_data().resolution());
     for (auto fill : track.drum_fills()) {
         m_fill_ranges.emplace_back(fill.position / resolution,
                                    (fill.position + fill.length) / resolution);
@@ -666,7 +670,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
         if (!settings.engine->is_rock_band()
             && new_track.drum_fills().empty()) {
             new_track.generate_drum_fills({song.global_data().sync_track(),
-                                           new_track.resolution(),
+                                           new_track.global_data().resolution(),
                                            *settings.engine,
                                            {}});
         }
@@ -685,16 +689,16 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     }
 
     if (settings.draw_bpms) {
-        builder.add_bpms(sync_track, new_track.resolution());
+        builder.add_bpms(sync_track, new_track.global_data().resolution());
     }
 
     const auto solos = new_track.solos(settings.drum_settings);
     if (settings.draw_solos) {
-        builder.add_solo_sections(solos, new_track.resolution());
+        builder.add_solo_sections(solos, new_track.global_data().resolution());
     }
 
     if (settings.draw_time_sigs) {
-        builder.add_time_sigs(sync_track, new_track.resolution());
+        builder.add_time_sigs(sync_track, new_track.global_data().resolution());
     }
 
     const auto unison_positions = (settings.engine->has_unison_bonuses())
@@ -750,7 +754,8 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     }
     builder.set_total_score(processed_track.points(), solos, path);
     if (settings.engine->has_bres() && new_track.bre().has_value()) {
-        builder.add_bre(*(new_track.bre()), new_track.resolution(),
+        builder.add_bre(*(new_track.bre()),
+                        new_track.global_data().resolution(),
                         processed_track.converter());
     }
 
