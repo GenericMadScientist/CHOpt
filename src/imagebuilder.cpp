@@ -25,42 +25,42 @@
 constexpr int MAX_BEATS_PER_LINE = 16;
 
 namespace {
-double get_beat_rate(const SyncTrack& sync_track, int resolution, double beat)
+double get_beat_rate(const TempoMap& tempo_map, int resolution, double beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
     auto ts = std::find_if(
-        sync_track.time_sigs().cbegin(), sync_track.time_sigs().cend(),
+        tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
         [=](const auto& x) { return x.position > resolution * beat; });
-    if (ts == sync_track.time_sigs().cbegin()) {
+    if (ts == tempo_map.time_sigs().cbegin()) {
         return BASE_BEAT_RATE;
     }
     --ts;
     return BASE_BEAT_RATE * ts->numerator / ts->denominator;
 }
 
-int get_numer(const SyncTrack& sync_track, int resolution, double beat)
+int get_numer(const TempoMap& tempo_map, int resolution, double beat)
 {
     constexpr int BASE_NUMERATOR = 4;
 
     auto ts = std::find_if(
-        sync_track.time_sigs().cbegin(), sync_track.time_sigs().cend(),
+        tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
         [=](const auto& x) { return x.position > resolution * beat; });
-    if (ts == sync_track.time_sigs().cbegin()) {
+    if (ts == tempo_map.time_sigs().cbegin()) {
         return BASE_NUMERATOR;
     }
     --ts;
     return ts->numerator;
 }
 
-double get_denom(const SyncTrack& sync_track, int resolution, double beat)
+double get_denom(const TempoMap& tempo_map, int resolution, double beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
     auto ts = std::find_if(
-        sync_track.time_sigs().cbegin(), sync_track.time_sigs().cend(),
+        tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
         [=](const auto& x) { return x.position > resolution * beat; });
-    if (ts == sync_track.time_sigs().cbegin()) {
+    if (ts == tempo_map.time_sigs().cbegin()) {
         return 1.0;
     }
     --ts;
@@ -138,7 +138,7 @@ std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
 }
 
 std::vector<DrawnRow> drawn_rows(const NoteTrack& track,
-                                 const SyncTrack& sync_track)
+                                 const TempoMap& tempo_map)
 {
     int max_pos = 0;
     for (const auto& note : track.notes()) {
@@ -156,7 +156,7 @@ std::vector<DrawnRow> drawn_rows(const NoteTrack& track,
     while (current_beat <= max_beat) {
         auto row_length = 0.0;
         while (true) {
-            auto contribution = get_beat_rate(sync_track, resolution,
+            auto contribution = get_beat_rate(tempo_map, resolution,
                                               current_beat + row_length);
             if (contribution > MAX_BEATS_PER_LINE && row_length == 0.0) {
                 // Break up a measure that spans more than a full row.
@@ -219,11 +219,11 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
 }
 
 ImageBuilder build_with_engine_params(const NoteTrack& track,
-                                      const SyncTrack& sync_track,
+                                      const TempoMap& tempo_map,
                                       const Settings& settings)
 {
     return {track,
-            sync_track,
+            tempo_map,
             settings.difficulty,
             settings.drum_settings,
             settings.is_lefty_flip,
@@ -264,16 +264,16 @@ Beat subtract_video_lag(Beat beat, Second video_lag,
 }
 }
 
-void ImageBuilder::form_beat_lines(const SyncTrack& sync_track, int resolution)
+void ImageBuilder::form_beat_lines(const TempoMap& tempo_map, int resolution)
 {
     constexpr double HALF_BEAT = 0.5;
 
     for (const auto& row : m_rows) {
         auto start = row.start;
         while (start < row.end) {
-            auto meas_length = get_beat_rate(sync_track, resolution, start);
-            auto numer = get_numer(sync_track, resolution, start);
-            auto denom = get_denom(sync_track, resolution, start);
+            auto meas_length = get_beat_rate(tempo_map, resolution, start);
+            auto numer = get_numer(tempo_map, resolution, start);
+            auto denom = get_denom(tempo_map, resolution, start);
             m_measure_lines.push_back(start);
             m_half_beat_lines.push_back(start + HALF_BEAT * denom);
             for (int i = 1; i < numer; ++i) {
@@ -330,27 +330,27 @@ ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
     return {start, end};
 }
 
-ImageBuilder::ImageBuilder(const NoteTrack& track, const SyncTrack& sync_track,
+ImageBuilder::ImageBuilder(const NoteTrack& track, const TempoMap& tempo_map,
                            Difficulty difficulty,
                            const DrumSettings& drum_settings,
                            bool is_lefty_flip, bool is_overlap_engine)
     : m_track_type {track.track_type()}
     , m_difficulty {difficulty}
     , m_is_lefty_flip {is_lefty_flip}
-    , m_rows {drawn_rows(track, sync_track)}
+    , m_rows {drawn_rows(track, tempo_map)}
     , m_notes {drawn_notes(track, drum_settings)}
     , m_overlap_engine {is_overlap_engine}
 {
-    form_beat_lines(sync_track, track.global_data().resolution());
+    form_beat_lines(tempo_map, track.global_data().resolution());
 }
 
-void ImageBuilder::add_bpms(const SyncTrack& sync_track, int resolution)
+void ImageBuilder::add_bpms(const TempoMap& tempo_map, int resolution)
 {
     constexpr double MS_PER_SECOND = 1000.0;
 
     m_bpms.clear();
 
-    for (const auto& bpm : sync_track.bpms()) {
+    for (const auto& bpm : tempo_map.bpms()) {
         auto pos = bpm.position / static_cast<double>(resolution);
         auto tempo = static_cast<double>(bpm.bpm) / MS_PER_SECOND;
         if (pos < m_rows.back().end) {
@@ -631,9 +631,9 @@ void ImageBuilder::add_sp_values(const SpData& sp_data, const Engine& engine)
     }
 }
 
-void ImageBuilder::add_time_sigs(const SyncTrack& sync_track, int resolution)
+void ImageBuilder::add_time_sigs(const TempoMap& tempo_map, int resolution)
 {
-    for (const auto& ts : sync_track.time_sigs()) {
+    for (const auto& ts : tempo_map.time_sigs()) {
         auto pos = ts.position / static_cast<double>(resolution);
         auto num = ts.numerator;
         auto denom = ts.denominator;
@@ -669,7 +669,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     if (track.track_type() == TrackType::Drums) {
         if (!settings.engine->is_rock_band()
             && new_track.drum_fills().empty()) {
-            new_track.generate_drum_fills({song.global_data().sync_track(),
+            new_track.generate_drum_fills({song.global_data().tempo_map(),
                                            new_track.global_data().resolution(),
                                            *settings.engine,
                                            {}});
@@ -678,10 +678,10 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
             new_track.disable_dynamics();
         }
     }
-    const auto sync_track
-        = song.global_data().sync_track().speedup(settings.speed);
+    const auto tempo_map
+        = song.global_data().tempo_map().speedup(settings.speed);
 
-    auto builder = build_with_engine_params(new_track, sync_track, settings);
+    auto builder = build_with_engine_params(new_track, tempo_map, settings);
     builder.add_song_header(song.global_data(), settings.speed);
 
     if (track.track_type() == TrackType::Drums) {
@@ -689,7 +689,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     }
 
     if (settings.draw_bpms) {
-        builder.add_bpms(sync_track, new_track.global_data().resolution());
+        builder.add_bpms(tempo_map, new_track.global_data().resolution());
     }
 
     const auto solos = new_track.solos(settings.drum_settings);
@@ -698,7 +698,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     }
 
     if (settings.draw_time_sigs) {
-        builder.add_time_sigs(sync_track, new_track.global_data().resolution());
+        builder.add_time_sigs(tempo_map, new_track.global_data().resolution());
     }
 
     const auto unison_positions = (settings.engine->has_unison_bonuses())
@@ -712,7 +712,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     squeeze_settings.squeeze
         = std::max(squeeze_settings.squeeze, SQUEEZE_EPSILON);
     const ProcessedSong processed_track {new_track,
-                                         sync_track,
+                                         tempo_map,
                                          settings.squeeze_settings,
                                          settings.drum_settings,
                                          *settings.engine,

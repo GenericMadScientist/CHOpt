@@ -50,24 +50,24 @@ struct BPM {
 // time_sigs() are sorted by position.
 // time_sigs() never has two TimeSignatures with the same position.
 // time_sigs() is never empty.
-class SyncTrack {
+class TempoMap {
 private:
     std::vector<TimeSignature> m_time_sigs;
     std::vector<BPM> m_bpms;
 
 public:
-    SyncTrack()
-        : SyncTrack({}, {})
+    TempoMap()
+        : TempoMap({}, {})
     {
     }
-    SyncTrack(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms);
+    TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms);
     [[nodiscard]] const std::vector<TimeSignature>& time_sigs() const
     {
         return m_time_sigs;
     }
     [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
-    // Return the SyncTrack for a speedup of speed% (normal speed is 100).
-    [[nodiscard]] SyncTrack speedup(int speed) const;
+    // Return the TempoMap for a speedup of speed% (normal speed is 100).
+    [[nodiscard]] TempoMap speedup(int speed) const;
 };
 
 #endif

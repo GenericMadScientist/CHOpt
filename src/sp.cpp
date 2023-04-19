@@ -40,16 +40,16 @@ double sp_deduction(Position start, Position end)
 }
 
 std::vector<SpData::BeatRate>
-SpData::form_beat_rates(int resolution, const SyncTrack& sync_track,
+SpData::form_beat_rates(int resolution, const TempoMap& tempo_map,
                         const std::vector<int>& od_beats, const Engine& engine)
 {
     constexpr double DEFAULT_BEAT_RATE = 4.0;
 
     std::vector<BeatRate> beat_rates;
     if (!engine.uses_beat_track()) {
-        beat_rates.reserve(sync_track.time_sigs().size());
+        beat_rates.reserve(tempo_map.time_sigs().size());
 
-        for (const auto& ts : sync_track.time_sigs()) {
+        for (const auto& ts : tempo_map.time_sigs()) {
             const auto pos = static_cast<double>(ts.position) / resolution;
             const auto measure_rate
                 = ts.numerator * DEFAULT_BEAT_RATE / ts.denominator;
@@ -185,13 +185,13 @@ void SpData::initialise(
     }
 }
 
-SpData::SpData(const NoteTrack& track, const SyncTrack& sync_track,
+SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
                const std::vector<int>& od_beats,
                const SqueezeSettings& squeeze_settings, const Engine& engine)
-    : m_converter {sync_track, track.global_data().resolution(), engine,
+    : m_converter {tempo_map, track.global_data().resolution(), engine,
                    od_beats}
-    , m_beat_rates {form_beat_rates(track.global_data().resolution(),
-                                    sync_track, od_beats, engine)}
+    , m_beat_rates {form_beat_rates(track.global_data().resolution(), tempo_map,
+                                    od_beats, engine)}
     , m_sp_gain_rate {engine.sp_gain_rate()}
     , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
 {

@@ -502,7 +502,7 @@ BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_accumulation_is_too_slow)
 {
     std::vector<Note> notes {make_note(0, 192), make_note(950)};
     std::vector<StarPower> phrases {{0, 1000}};
-    SyncTrack sync_track {{{0, 2, 4}}, {}};
+    TempoMap tempo_map {{{0, 2, 4}}, {}};
     NoteTrack track {notes,
                      phrases,
                      {},
@@ -512,7 +512,7 @@ BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_accumulation_is_too_slow)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {track,
-                    sync_track,
+                    tempo_map,
                     {},
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};

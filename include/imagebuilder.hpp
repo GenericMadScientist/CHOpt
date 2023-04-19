@@ -78,17 +78,17 @@ private:
     int m_total_score {0};
     bool m_overlap_engine {true};
 
-    void form_beat_lines(const SyncTrack& sync_track, int resolution);
+    void form_beat_lines(const TempoMap& tempo_map, int resolution);
     static bool is_neutralised_phrase(Beat note_pos, const Path& path);
     std::tuple<double, double> sp_phrase_bounds(const StarPower& phrase,
                                                 const NoteTrack& track,
                                                 const Path& path) const;
 
 public:
-    ImageBuilder(const NoteTrack& track, const SyncTrack& sync_track,
+    ImageBuilder(const NoteTrack& track, const TempoMap& tempo_map,
                  Difficulty difficulty, const DrumSettings& drum_settings,
                  bool is_lefty_flip, bool is_overlap_engine);
-    void add_bpms(const SyncTrack& sync_track, int resolution);
+    void add_bpms(const TempoMap& tempo_map, int resolution);
     void add_bre(const BigRockEnding& bre, int resolution,
                  const TimeConverter& converter);
     void add_drum_fills(const NoteTrack& track);
@@ -105,7 +105,7 @@ public:
                         const std::vector<int>& unison_phrases,
                         const Path& path);
     void add_sp_values(const SpData& sp_data, const Engine& engine);
-    void add_time_sigs(const SyncTrack& sync_track, int resolution);
+    void add_time_sigs(const TempoMap& tempo_map, int resolution);
     void set_total_score(const PointSet& points, const std::vector<Solo>& solos,
                          const Path& path);
 

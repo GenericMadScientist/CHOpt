@@ -800,7 +800,7 @@ BOOST_AUTO_TEST_CASE(drum_activation_delay_is_affected_by_speed)
                           std::make_shared<SongGlobalData>()};
 
     ProcessedSong track {note_track,
-                         SyncTrack().speedup(200),
+                         TempoMap().speedup(200),
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChDrumEngine(),

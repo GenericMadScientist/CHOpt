@@ -98,7 +98,7 @@ private:
     const double m_default_net_sp_gain_rate;
 
     static std::vector<BeatRate>
-    form_beat_rates(int resolution, const SyncTrack& sync_track,
+    form_beat_rates(int resolution, const TempoMap& tempo_map,
                     const std::vector<int>& od_beats, const Engine& engine);
 
     [[nodiscard]] double
@@ -119,7 +119,7 @@ private:
                     const SqueezeSettings& squeeze_settings);
 
 public:
-    SpData(const NoteTrack& track, const SyncTrack& sync_track,
+    SpData(const NoteTrack& track, const TempoMap& tempo_map,
            const std::vector<int>& od_beats,
            const SqueezeSettings& squeeze_settings, const Engine& engine);
     // Return the maximum amount of SP available at the end after propagating

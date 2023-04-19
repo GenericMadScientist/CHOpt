@@ -294,10 +294,10 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{{0, 4, 4}, {768, 3, 4}, {1344, 3, 8}, {1632, 4, 4}},
-                          {}};
+    TempoMap tempo_map {{{0, 4, 4}, {768, 3, 4}, {1344, 3, 8}, {1632, 4, 4}},
+                        {}};
     ImageBuilder builder {
-        track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
+        track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
     std::vector<DrawnRow> expected_rows {{0.0, 12.5}, {12.5, 16.5}};
 
@@ -316,9 +316,9 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{{0, 4, 4}, {767, 3, 4}, {1344, 3, 8}}, {}};
+    TempoMap tempo_map {{{0, 4, 4}, {767, 3, 4}, {1344, 3, 8}}, {}};
     ImageBuilder builder {
-        track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
+        track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
     std::vector<DrawnRow> expected_rows {{0.0, 7.0}};
 
@@ -337,9 +337,9 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{{0, 17, 4}}, {}};
+    TempoMap tempo_map {{{0, 17, 4}}, {}};
     ImageBuilder builder {
-        track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
+        track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
     std::vector<DrawnRow> expected_rows {{0.0, 16.0}, {16.0, 17.0}};
 
@@ -407,9 +407,9 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{{0, 4, 8}}, {}};
+    TempoMap tempo_map {{{0, 4, 8}}, {}};
     ImageBuilder builder {
-        track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
+        track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
     std::vector<double> expected_half_beat_lines {0.25, 0.75, 1.25, 1.75,
                                                   2.25, 2.75, 3.25, 3.75};
@@ -437,9 +437,9 @@ BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
+    TempoMap tempo_map {{{0, 4, 4}, {768, 4, 8}}, {}};
     ImageBuilder builder {
-        track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
+        track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
     std::vector<double> expected_half_beat_lines {0.5,  1.5,  2.5,  3.5,
                                                   4.25, 4.75, 5.25, 5.75};
@@ -471,11 +471,11 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{{0, 4, 4}, {768, 4, 8}}, {}};
+    TempoMap tempo_map {{{0, 4, 4}, {768, 4, 8}}, {}};
     ImageBuilder builder {
-        track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
+        track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_time_sigs(sync_track, 192);
+    builder.add_time_sigs(tempo_map, 192);
     std::vector<std::tuple<double, int, int>> expected_time_sigs {{0.0, 4, 4},
                                                                   {4.0, 4, 8}};
 
@@ -494,11 +494,11 @@ BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{{0, 4, 4}, {1920, 3, 4}}, {}};
+    TempoMap tempo_map {{{0, 4, 4}, {1920, 3, 4}}, {}};
     ImageBuilder builder {
-        track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
+        track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_time_sigs(sync_track, 192);
+    builder.add_time_sigs(tempo_map, 192);
 
     BOOST_CHECK_EQUAL(builder.time_sigs().size(), 1);
 }
@@ -517,11 +517,11 @@ BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{}, {{0, 150000}, {384, 120000}, {768, 200000}}};
+    TempoMap tempo_map {{}, {{0, 150000}, {384, 120000}, {768, 200000}}};
     ImageBuilder builder {
-        track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
+        track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_bpms(sync_track, 192);
+    builder.add_bpms(tempo_map, 192);
     std::vector<std::tuple<double, double>> expected_bpms {
         {0.0, 150.0}, {2.0, 120.0}, {4.0, 200.0}};
 
@@ -540,11 +540,11 @@ BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{}, {{0, 120000}, {1920, 200000}}};
+    TempoMap tempo_map {{}, {{0, 120000}, {1920, 200000}}};
     ImageBuilder builder {
-        track, sync_track, Difficulty::Expert, DrumSettings::default_settings(),
+        track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_bpms(sync_track, 192);
+    builder.add_bpms(tempo_map, 192);
 
     BOOST_CHECK_EQUAL(builder.bpms().size(), 1);
 }

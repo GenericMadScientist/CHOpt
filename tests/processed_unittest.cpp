@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
                                    {Beat(0.0), Measure(0.0)},
                                    {1.0, 1.0}};
     ProcessedSong second_track {note_track,
-                                SyncTrack({{0, 3, 4}}, {}),
+                                TempoMap({{0, 3, 4}}, {}),
                                 SqueezeSettings::default_settings(),
                                 DrumSettings::default_settings(),
                                 ChGuitarEngine(),
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
                                    {Beat(0.0), Measure(0.0)},
                                    {0.5, 0.5}};
     ProcessedSong second_track {note_track,
-                                SyncTrack({{0, 3, 4}}, {}),
+                                TempoMap({{0, 3, 4}}, {}),
                                 SqueezeSettings::default_settings(),
                                 DrumSettings::default_settings(),
                                 ChGuitarEngine(),
@@ -611,9 +611,9 @@ BOOST_AUTO_TEST_CASE(
                           {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{{0, 4, 4}}, {{0, 300000}}};
+    TempoMap tempo_map {{{0, 4, 4}}, {{0, 300000}}};
     ProcessedSong track {note_track,
-                         sync_track,
+                         tempo_map,
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -1020,9 +1020,9 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
                           {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{}, {{3840, 4000000}}};
+    TempoMap tempo_map {{}, {{3840, 4000000}}};
     ProcessedSong track {note_track,
-                         sync_track,
+                         tempo_map,
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -1467,9 +1467,9 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
                           {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{{0, 1, 4}}, {}};
+    TempoMap tempo_map {{{0, 1, 4}}, {}};
     ProcessedSong track {note_track,
-                         sync_track,
+                         tempo_map,
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -1561,9 +1561,9 @@ BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    SyncTrack sync_track {{{0, 4, 4}, {3840, 2, 4}}, {}};
+    TempoMap tempo_map {{{0, 4, 4}, {3840, 2, 4}}, {}};
     ProcessedSong song {track,
-                        sync_track,
+                        tempo_map,
                         {0.0, 0.0, Second {0.0}, Second {0.1}, Second {0.0}},
                         DrumSettings::default_settings(),
                         ChGuitarEngine(),

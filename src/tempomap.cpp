@@ -20,8 +20,7 @@
 
 #include "tempomap.hpp"
 
-SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
-                     std::vector<BPM> bpms)
+TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms)
 {
     constexpr auto DEFAULT_BPM = 120000;
 
@@ -61,11 +60,11 @@ SyncTrack::SyncTrack(std::vector<TimeSignature> time_sigs,
     m_time_sigs.push_back(prev_ts);
 }
 
-SyncTrack SyncTrack::speedup(int speed) const
+TempoMap TempoMap::speedup(int speed) const
 {
     constexpr auto DEFAULT_SPEED = 100;
 
-    SyncTrack speedup {m_time_sigs, m_bpms};
+    TempoMap speedup {m_time_sigs, m_bpms};
     for (auto& bpm : speedup.m_bpms) {
         bpm.bpm = (bpm.bpm * speed) / DEFAULT_SPEED;
     }

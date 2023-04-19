@@ -426,7 +426,7 @@ TrackType track_type_from_instrument(Instrument instrument)
     }
 }
 
-SyncTrack sync_track_from_section(const ChartSection& section)
+TempoMap tempo_map_from_section(const ChartSection& section)
 {
     std::vector<BPM> bpms;
     bpms.reserve(section.bpm_events.size());
@@ -600,7 +600,7 @@ bool is_open_event_sysex(const SysexEvent& event)
         });
 }
 
-SyncTrack read_first_midi_track(const MidiTrack& track)
+TempoMap read_first_midi_track(const MidiTrack& track)
 {
     constexpr int SET_TEMPO_ID = 0x51;
     constexpr int TIME_SIG_ID = 0x58;
@@ -1425,7 +1425,7 @@ Song Song::from_chart(const Chart& chart, const IniValues& ini)
                 // exceptions as control flow.
             }
         } else if (section.name == "SyncTrack") {
-            song.m_global_data->sync_track(sync_track_from_section(section));
+            song.m_global_data->tempo_map(tempo_map_from_section(section));
         } else {
             auto pair = diff_inst_from_header(section.name);
             if (!pair.has_value()) {
@@ -1461,7 +1461,7 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
         return song;
     }
 
-    song.m_global_data->sync_track(read_first_midi_track(midi.tracks[0]));
+    song.m_global_data->tempo_map(read_first_midi_track(midi.tracks[0]));
 
     for (const auto& track : midi.tracks) {
         const auto track_name = midi_track_name(track);

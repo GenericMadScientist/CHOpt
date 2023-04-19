@@ -20,7 +20,7 @@
 
 #include "timeconverter.hpp"
 
-TimeConverter::TimeConverter(const SyncTrack& sync_track, int resolution,
+TimeConverter::TimeConverter(const TempoMap& tempo_map, int resolution,
                              const Engine& engine,
                              const std::vector<int>& od_beats)
 {
@@ -31,7 +31,7 @@ TimeConverter::TimeConverter(const SyncTrack& sync_track, int resolution,
     auto last_bpm = DEFAULT_BPM;
     auto last_time = 0.0;
 
-    for (const auto& bpm : sync_track.bpms()) {
+    for (const auto& bpm : tempo_map.bpms()) {
         last_time += ((bpm.position - last_tick) * MS_PER_MINUTE)
             / (float_resolution * static_cast<double>(last_bpm));
         const auto beat = bpm.position / float_resolution;
@@ -47,7 +47,7 @@ TimeConverter::TimeConverter(const SyncTrack& sync_track, int resolution,
         auto last_beat_rate = DEFAULT_BEAT_RATE;
         auto last_measure = 0.0;
 
-        for (const auto& ts : sync_track.time_sigs()) {
+        for (const auto& ts : tempo_map.time_sigs()) {
             last_measure
                 += (ts.position - last_tick) / (resolution * last_beat_rate);
             const auto beat = ts.position / float_resolution;

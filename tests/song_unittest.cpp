@@ -129,13 +129,13 @@ BOOST_AUTO_TEST_CASE(chart_reads_sync_track_correctly)
     std::vector<BPM> bpms {{0, 200000}};
 
     const auto global_data = Song::from_chart(chart, {}).global_data();
-    const auto& chart_sync_track = global_data.sync_track();
+    const auto& tempo_map = global_data.tempo_map();
 
-    BOOST_CHECK_EQUAL_COLLECTIONS(chart_sync_track.time_sigs().cbegin(),
-                                  chart_sync_track.time_sigs().cend(),
+    BOOST_CHECK_EQUAL_COLLECTIONS(tempo_map.time_sigs().cbegin(),
+                                  tempo_map.time_sigs().cend(),
                                   time_sigs.cbegin(), time_sigs.cend());
-    BOOST_CHECK_EQUAL_COLLECTIONS(chart_sync_track.bpms().cbegin(),
-                                  chart_sync_track.bpms().cend(), bpms.cbegin(),
+    BOOST_CHECK_EQUAL_COLLECTIONS(tempo_map.bpms().cbegin(),
+                                  tempo_map.bpms().cend(), bpms.cbegin(),
                                   bpms.cend());
 }
 
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
     const auto& parsed_notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
     const auto bpms
-        = Song::from_chart(chart, {}).global_data().sync_track().bpms();
+        = Song::from_chart(chart, {}).global_data().tempo_map().bpms();
 
     BOOST_CHECK_EQUAL(song.global_data().resolution(), 200);
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_notes.cbegin(), parsed_notes.cend(),
@@ -715,17 +715,14 @@ BOOST_AUTO_TEST_CASE(tempos_are_read_correctly)
     MidiTrack tempo_track {{{0, {MetaEvent {0x51, {6, 0x1A, 0x80}}}},
                             {1920, {MetaEvent {0x51, {4, 0x93, 0xE0}}}}}};
     const Midi midi {192, {tempo_track}};
-    SyncTrack tempos {{}, {{0, 150000}, {1920, 200000}}};
+    const std::vector<BPM> bpms {{0, 150000}, {1920, 200000}};
 
     const auto song = Song::from_midi(midi, {});
-    const auto& sync_track = song.global_data().sync_track();
+    const auto& tempo_map = song.global_data().tempo_map();
 
-    BOOST_CHECK_EQUAL_COLLECTIONS(sync_track.bpms().cbegin(),
-                                  sync_track.bpms().cend(),
-                                  tempos.bpms().cbegin(), tempos.bpms().cend());
-    BOOST_CHECK_EQUAL_COLLECTIONS(
-        sync_track.time_sigs().cbegin(), sync_track.time_sigs().cend(),
-        tempos.time_sigs().cbegin(), tempos.time_sigs().cend());
+    BOOST_CHECK_EQUAL_COLLECTIONS(tempo_map.bpms().cbegin(),
+                                  tempo_map.bpms().cend(), bpms.cbegin(),
+                                  bpms.cend());
 }
 
 BOOST_AUTO_TEST_CASE(too_short_tempo_events_cause_an_exception)
@@ -741,17 +738,14 @@ BOOST_AUTO_TEST_CASE(time_signatures_are_read_correctly)
     MidiTrack ts_track {{{0, {MetaEvent {0x58, {6, 2, 24, 8}}}},
                          {1920, {MetaEvent {0x58, {3, 3, 24, 8}}}}}};
     const Midi midi {192, {ts_track}};
-    SyncTrack tses {{{0, 6, 4}, {1920, 3, 8}}, {}};
+    const std::vector<TimeSignature> tses {{0, 6, 4}, {1920, 3, 8}};
 
     const auto song = Song::from_midi(midi, {});
-    const auto& sync_track = song.global_data().sync_track();
+    const auto& tempo_map = song.global_data().tempo_map();
 
-    BOOST_CHECK_EQUAL_COLLECTIONS(sync_track.bpms().cbegin(),
-                                  sync_track.bpms().cend(),
-                                  tses.bpms().cbegin(), tses.bpms().cend());
-    BOOST_CHECK_EQUAL_COLLECTIONS(
-        sync_track.time_sigs().cbegin(), sync_track.time_sigs().cend(),
-        tses.time_sigs().cbegin(), tses.time_sigs().cend());
+    BOOST_CHECK_EQUAL_COLLECTIONS(tempo_map.time_sigs().cbegin(),
+                                  tempo_map.time_sigs().cend(), tses.cbegin(),
+                                  tses.cend());
 }
 
 BOOST_AUTO_TEST_CASE(time_signatures_with_large_denominators_cause_an_exception)

@@ -97,7 +97,7 @@ private:
                            const std::string& act_summary) const;
 
 public:
-    ProcessedSong(const NoteTrack& track, const SyncTrack& sync_track,
+    ProcessedSong(const NoteTrack& track, const TempoMap& tempo_map,
                   const SqueezeSettings& squeeze_settings,
                   const DrumSettings& drum_settings, const Engine& engine,
                   const std::vector<int>& od_beats,

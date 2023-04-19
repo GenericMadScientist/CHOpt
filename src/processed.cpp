@@ -61,18 +61,17 @@ SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
     return sp_bar;
 }
 
-ProcessedSong::ProcessedSong(const NoteTrack& track,
-                             const SyncTrack& sync_track,
+ProcessedSong::ProcessedSong(const NoteTrack& track, const TempoMap& tempo_map,
                              const SqueezeSettings& squeeze_settings,
                              const DrumSettings& drum_settings,
                              const Engine& engine,
                              const std::vector<int>& od_beats,
                              const std::vector<int>& unison_phrases)
-    : m_converter {sync_track, track.global_data().resolution(), engine,
+    : m_converter {tempo_map, track.global_data().resolution(), engine,
                    od_beats}
     , m_points {track,         m_converter, unison_phrases, squeeze_settings,
                 drum_settings, engine}
-    , m_sp_data {track, sync_track, od_beats, squeeze_settings, engine}
+    , m_sp_data {track, tempo_map, od_beats, squeeze_settings, engine}
     , m_total_bre_boost {bre_boost(track, engine, m_converter)}
     , m_base_score {track.base_score(drum_settings)}
     , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
