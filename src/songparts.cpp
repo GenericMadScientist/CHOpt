@@ -378,5 +378,6 @@ NoteTrack NoteTrack::snap_chords(Tick snap_gap) const
             new_notes[i].position = new_notes[i - 1].position;
         }
     }
+    new_track.merge_same_time_notes();
     return new_track;
 }
