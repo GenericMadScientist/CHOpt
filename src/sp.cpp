@@ -116,22 +116,29 @@ SpData::note_spans(const NoteTrack& track, double early_whammy,
     return spans;
 }
 
-void SpData::initialise(
-    const std::vector<std::tuple<int, int, Second>>& note_spans,
-    const std::vector<StarPower>& phrases, int resolution,
-    const SqueezeSettings& squeeze_settings)
+SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
+               const std::vector<int>& od_beats,
+               const SqueezeSettings& squeeze_settings, const Engine& engine)
+    : m_converter {tempo_map, engine, od_beats}
+    , m_beat_rates {form_beat_rates(track.global_data().resolution(), tempo_map,
+                                    od_beats, engine)}
+    , m_sp_gain_rate {engine.sp_gain_rate()}
+    , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
 {
+    const double resolution = track.global_data().resolution();
+
     // Elements are (whammy start, whammy end, note).
     std::vector<std::tuple<Beat, Beat, Beat>> ranges;
-    for (const auto& [position, length, early_timing_window] : note_spans) {
+    for (const auto& [position, length, early_timing_window] :
+         note_spans(track, squeeze_settings.early_whammy, engine)) {
         if (length == 0) {
             continue;
         }
         const int pos_copy = position;
         const auto phrase = std::find_if(
-            phrases.cbegin(), phrases.cend(),
+            track.sp_phrases().cbegin(), track.sp_phrases().cend(),
             [&](const auto& p) { return phrase_contains_pos(p, pos_copy); });
-        if (phrase == phrases.cend()) {
+        if (phrase == track.sp_phrases().cend()) {
             continue;
         }
 
@@ -183,20 +190,6 @@ void SpData::initialise(
         });
         m_initial_guesses.push_back(p);
     }
-}
-
-SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
-               const std::vector<int>& od_beats,
-               const SqueezeSettings& squeeze_settings, const Engine& engine)
-    : m_converter {tempo_map, engine, od_beats}
-    , m_beat_rates {form_beat_rates(track.global_data().resolution(), tempo_map,
-                                    od_beats, engine)}
-    , m_sp_gain_rate {engine.sp_gain_rate()}
-    , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
-{
-    initialise(note_spans(track, squeeze_settings.early_whammy, engine),
-               track.sp_phrases(), track.global_data().resolution(),
-               squeeze_settings);
 }
 
 std::vector<SpData::WhammyRange>::const_iterator

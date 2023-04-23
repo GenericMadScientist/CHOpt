@@ -114,9 +114,6 @@ private:
                                                          double early_whammy,
                                                          const Engine& engine);
     Position sp_drain_end_point(Position start, double sp_bar_amount) const;
-    void initialise(const std::vector<std::tuple<int, int, Second>>& note_spans,
-                    const std::vector<StarPower>& phrases, int resolution,
-                    const SqueezeSettings& squeeze_settings);
 
 public:
     SpData(const NoteTrack& track, const TempoMap& tempo_map,
