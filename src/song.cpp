@@ -1330,7 +1330,7 @@ std::vector<Tick> od_beats_from_track(const MidiTrack& track)
         }
         const auto key = midi_event->data[0];
         if (key == BEAT_LOW_KEY || key == BEAT_HIGH_KEY) {
-            od_beats.push_back(Tick {event.time});
+            od_beats.emplace_back(event.time);
         }
     }
 
