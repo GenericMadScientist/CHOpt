@@ -294,8 +294,12 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {
-        {{0, 4, 4}, {768, 3, 4}, {1344, 3, 8}, {1632, 4, 4}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 4},
+                         {Tick {768}, 3, 4},
+                         {Tick {1344}, 3, 8},
+                         {Tick {1632}, 4, 4}},
+                        {},
+                        192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -316,7 +320,8 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 4, 4}, {767, 3, 4}, {1344, 3, 8}}, {}, 192};
+    TempoMap tempo_map {
+        {{Tick {0}, 4, 4}, {Tick {767}, 3, 4}, {Tick {1344}, 3, 8}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -337,7 +342,7 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 17, 4}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 17, 4}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -407,7 +412,7 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 4, 8}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 8}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -437,7 +442,7 @@ BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 4, 4}, {768, 4, 8}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {768}, 4, 8}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -471,11 +476,11 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 4, 4}, {768, 4, 8}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {768}, 4, 8}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_time_sigs(tempo_map, 192);
+    builder.add_time_sigs(tempo_map);
     std::vector<std::tuple<double, int, int>> expected_time_sigs {{0.0, 4, 4},
                                                                   {4.0, 4, 8}};
 
@@ -494,11 +499,11 @@ BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{0, 4, 4}, {1920, 3, 4}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {1920}, 3, 4}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_time_sigs(tempo_map, 192);
+    builder.add_time_sigs(tempo_map);
 
     BOOST_CHECK_EQUAL(builder.time_sigs().size(), 1);
 }
@@ -517,11 +522,14 @@ BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{}, {{0, 150000}, {384, 120000}, {768, 200000}}, 192};
+    TempoMap tempo_map {
+        {},
+        {{Tick {0}, 150000}, {Tick {384}, 120000}, {Tick {768}, 200000}},
+        192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_bpms(tempo_map, 192);
+    builder.add_bpms(tempo_map);
     std::vector<std::tuple<double, double>> expected_bpms {
         {0.0, 150.0}, {2.0, 120.0}, {4.0, 200.0}};
 
@@ -540,11 +548,11 @@ BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{}, {{0, 120000}, {1920, 200000}}, 192};
+    TempoMap tempo_map {{}, {{Tick {0}, 120000}, {Tick {1920}, 200000}}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_bpms(tempo_map, 192);
+    builder.add_bpms(tempo_map);
 
     BOOST_CHECK_EQUAL(builder.bpms().size(), 1);
 }

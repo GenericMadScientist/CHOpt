@@ -25,13 +25,13 @@
 constexpr int MAX_BEATS_PER_LINE = 16;
 
 namespace {
-double get_beat_rate(const TempoMap& tempo_map, int resolution, double beat)
+double get_beat_rate(const TempoMap& tempo_map, Beat beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
     auto ts = std::find_if(
         tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
-        [=](const auto& x) { return x.position > resolution * beat; });
+        [=](const auto& x) { return tempo_map.to_beat(x.position) > beat; });
     if (ts == tempo_map.time_sigs().cbegin()) {
         return BASE_BEAT_RATE;
     }
@@ -39,13 +39,13 @@ double get_beat_rate(const TempoMap& tempo_map, int resolution, double beat)
     return BASE_BEAT_RATE * ts->numerator / ts->denominator;
 }
 
-int get_numer(const TempoMap& tempo_map, int resolution, double beat)
+int get_numer(const TempoMap& tempo_map, Beat beat)
 {
     constexpr int BASE_NUMERATOR = 4;
 
     auto ts = std::find_if(
         tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
-        [=](const auto& x) { return x.position > resolution * beat; });
+        [=](const auto& x) { return tempo_map.to_beat(x.position) > beat; });
     if (ts == tempo_map.time_sigs().cbegin()) {
         return BASE_NUMERATOR;
     }
@@ -53,13 +53,13 @@ int get_numer(const TempoMap& tempo_map, int resolution, double beat)
     return ts->numerator;
 }
 
-double get_denom(const TempoMap& tempo_map, int resolution, double beat)
+double get_denom(const TempoMap& tempo_map, Beat beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
     auto ts = std::find_if(
         tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
-        [=](const auto& x) { return x.position > resolution * beat; });
+        [=](const auto& x) { return tempo_map.to_beat(x.position) > beat; });
     if (ts == tempo_map.time_sigs().cbegin()) {
         return 1.0;
     }
@@ -156,8 +156,8 @@ std::vector<DrawnRow> drawn_rows(const NoteTrack& track,
     while (current_beat <= max_beat) {
         auto row_length = 0.0;
         while (true) {
-            auto contribution = get_beat_rate(tempo_map, resolution,
-                                              current_beat + row_length);
+            auto contribution
+                = get_beat_rate(tempo_map, Beat {current_beat + row_length});
             if (contribution > MAX_BEATS_PER_LINE && row_length == 0.0) {
                 // Break up a measure that spans more than a full row.
                 while (contribution > MAX_BEATS_PER_LINE) {
@@ -264,16 +264,16 @@ Beat subtract_video_lag(Beat beat, Second video_lag,
 }
 }
 
-void ImageBuilder::form_beat_lines(const TempoMap& tempo_map, int resolution)
+void ImageBuilder::form_beat_lines(const TempoMap& tempo_map)
 {
     constexpr double HALF_BEAT = 0.5;
 
     for (const auto& row : m_rows) {
         auto start = row.start;
         while (start < row.end) {
-            auto meas_length = get_beat_rate(tempo_map, resolution, start);
-            auto numer = get_numer(tempo_map, resolution, start);
-            auto denom = get_denom(tempo_map, resolution, start);
+            auto meas_length = get_beat_rate(tempo_map, Beat {start});
+            auto numer = get_numer(tempo_map, Beat {start});
+            auto denom = get_denom(tempo_map, Beat {start});
             m_measure_lines.push_back(start);
             m_half_beat_lines.push_back(start + HALF_BEAT * denom);
             for (int i = 1; i < numer; ++i) {
@@ -341,18 +341,18 @@ ImageBuilder::ImageBuilder(const NoteTrack& track, const TempoMap& tempo_map,
     , m_notes {drawn_notes(track, drum_settings)}
     , m_overlap_engine {is_overlap_engine}
 {
-    form_beat_lines(tempo_map, track.global_data().resolution());
+    form_beat_lines(tempo_map);
 }
 
-void ImageBuilder::add_bpms(const TempoMap& tempo_map, int resolution)
+void ImageBuilder::add_bpms(const TempoMap& tempo_map)
 {
     constexpr double MS_PER_SECOND = 1000.0;
 
     m_bpms.clear();
 
     for (const auto& bpm : tempo_map.bpms()) {
-        auto pos = bpm.position / static_cast<double>(resolution);
-        auto tempo = static_cast<double>(bpm.bpm) / MS_PER_SECOND;
+        const auto pos = tempo_map.to_beat(bpm.position).value();
+        const auto tempo = static_cast<double>(bpm.bpm) / MS_PER_SECOND;
         if (pos < m_rows.back().end) {
             m_bpms.emplace_back(pos, tempo);
         }
@@ -631,12 +631,12 @@ void ImageBuilder::add_sp_values(const SpData& sp_data, const Engine& engine)
     }
 }
 
-void ImageBuilder::add_time_sigs(const TempoMap& tempo_map, int resolution)
+void ImageBuilder::add_time_sigs(const TempoMap& tempo_map)
 {
     for (const auto& ts : tempo_map.time_sigs()) {
-        auto pos = ts.position / static_cast<double>(resolution);
-        auto num = ts.numerator;
-        auto denom = ts.denominator;
+        const auto pos = tempo_map.to_beat(ts.position).value();
+        const auto num = ts.numerator;
+        const auto denom = ts.denominator;
         if (pos < m_rows.back().end) {
             m_time_sigs.emplace_back(pos, num, denom);
         }
@@ -687,7 +687,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     }
 
     if (settings.draw_bpms) {
-        builder.add_bpms(tempo_map, new_track.global_data().resolution());
+        builder.add_bpms(tempo_map);
     }
 
     const auto solos = new_track.solos(settings.drum_settings);
@@ -696,7 +696,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     }
 
     if (settings.draw_time_sigs) {
-        builder.add_time_sigs(tempo_map, new_track.global_data().resolution());
+        builder.add_time_sigs(tempo_map);
     }
 
     const auto unison_positions = (settings.engine->has_unison_bonuses())

@@ -125,8 +125,8 @@ BOOST_AUTO_TEST_CASE(chart_reads_sync_track_correctly)
                                 {{768, 0, 0}},  {}, {}};
     std::vector<ChartSection> sections {sync_track, expert_single};
     const Chart chart {sections};
-    std::vector<TimeSignature> time_sigs {{0, 4, 4}, {768, 4, 2}};
-    std::vector<BPM> bpms {{0, 200000}};
+    std::vector<TimeSignature> time_sigs {{Tick {0}, 4, 4}, {Tick {768}, 4, 2}};
+    std::vector<BPM> bpms {{Tick {0}, 200000}};
 
     const auto global_data = Song::from_chart(chart, {}).global_data();
     const auto& tempo_map = global_data.tempo_map();
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
     std::vector<ChartSection> sections {sync_track, expert_single, header};
     const Chart chart {sections};
     std::vector<Note> notes {make_note(768)};
-    std::vector<BPM> expected_bpms {{0, 200000}};
+    std::vector<BPM> expected_bpms {{Tick {0}, 200000}};
 
     const auto song = Song::from_chart(chart, {});
     const auto& parsed_notes
@@ -715,7 +715,7 @@ BOOST_AUTO_TEST_CASE(tempos_are_read_correctly)
     MidiTrack tempo_track {{{0, {MetaEvent {0x51, {6, 0x1A, 0x80}}}},
                             {1920, {MetaEvent {0x51, {4, 0x93, 0xE0}}}}}};
     const Midi midi {192, {tempo_track}};
-    const std::vector<BPM> bpms {{0, 150000}, {1920, 200000}};
+    const std::vector<BPM> bpms {{Tick {0}, 150000}, {Tick {1920}, 200000}};
 
     const auto song = Song::from_midi(midi, {});
     const auto& tempo_map = song.global_data().tempo_map();
@@ -738,7 +738,8 @@ BOOST_AUTO_TEST_CASE(time_signatures_are_read_correctly)
     MidiTrack ts_track {{{0, {MetaEvent {0x58, {6, 2, 24, 8}}}},
                          {1920, {MetaEvent {0x58, {3, 3, 24, 8}}}}}};
     const Midi midi {192, {ts_track}};
-    const std::vector<TimeSignature> tses {{0, 6, 4}, {1920, 3, 8}};
+    const std::vector<TimeSignature> tses {{Tick {0}, 6, 4},
+                                           {Tick {1920}, 3, 8}};
 
     const auto song = Song::from_midi(midi, {});
     const auto& tempo_map = song.global_data().tempo_map();

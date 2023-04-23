@@ -645,7 +645,9 @@ BOOST_AUTO_TEST_SUITE(hit_window_start_and_hit_window_end_are_set_correctly)
 BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
 {
     TimeConverter converter {
-        {{}, {{0, 150000}, {768, 200000}}, 192}, ChGuitarEngine(), {}};
+        {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192},
+        ChGuitarEngine(),
+        {}};
     std::vector<Note> notes {make_note(192), make_note(787)};
     NoteTrack track {notes,
                      {},
@@ -671,7 +673,9 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
 BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
 {
     TimeConverter converter {
-        {{}, {{0, 150000}, {768, 200000}}, 192}, ChGuitarEngine(), {}};
+        {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192},
+        ChGuitarEngine(),
+        {}};
     std::vector<Note> notes {make_note(192), make_note(749)};
     NoteTrack track {notes,
                      {},
@@ -697,7 +701,9 @@ BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
 BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
 {
     TimeConverter converter {
-        {{}, {{0, 150000}, {768, 200000}}, 192}, ChGuitarEngine(), {}};
+        {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192},
+        ChGuitarEngine(),
+        {}};
     std::vector<Note> notes {make_note(672, 192)};
     NoteTrack track {notes,
                      {},
@@ -723,7 +729,9 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
 BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
 {
     TimeConverter converter {
-        {{}, {{0, 150000}, {768, 200000}}, 192}, ChGuitarEngine(), {}};
+        {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192},
+        ChGuitarEngine(),
+        {}};
     std::vector<Note> notes {make_note(192)};
     NoteTrack track {notes,
                      {},
@@ -749,7 +757,9 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
 BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
 {
     TimeConverter converter {
-        {{}, {{0, 150000}, {768, 200000}}, 192}, ChGuitarEngine(), {}};
+        {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192},
+        ChGuitarEngine(),
+        {}};
     std::vector<Note> notes {make_note(192), make_note(240)};
     NoteTrack track {notes,
                      {},

@@ -50,12 +50,12 @@ SpData::form_beat_rates(int resolution, const TempoMap& tempo_map,
         beat_rates.reserve(tempo_map.time_sigs().size());
 
         for (const auto& ts : tempo_map.time_sigs()) {
-            const auto pos = static_cast<double>(ts.position) / resolution;
+            const auto pos = tempo_map.to_beat(ts.position);
             const auto measure_rate
                 = ts.numerator * DEFAULT_BEAT_RATE / ts.denominator;
             const auto drain_rate
                 = engine.sp_gain_rate() - 1 / (MEASURES_PER_BAR * measure_rate);
-            beat_rates.push_back({Beat(pos), drain_rate});
+            beat_rates.push_back({pos, drain_rate});
         }
     } else if (!od_beats.empty()) {
         beat_rates.reserve(od_beats.size() - 1);

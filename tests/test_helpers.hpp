@@ -98,6 +98,12 @@ inline std::ostream& operator<<(std::ostream& stream, const Activation& act)
     return stream;
 }
 
+inline std::ostream& operator<<(std::ostream& stream, const Tick& tick)
+{
+    stream << tick.value();
+    return stream;
+}
+
 inline bool operator!=(const BPM& lhs, const BPM& rhs)
 {
     return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);

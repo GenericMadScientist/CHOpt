@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,15 +26,15 @@ TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
     constexpr double MS_PER_MINUTE = 60000.0;
     const double float_resolution = tempo_map.resolution();
 
-    auto last_tick = 0;
+    Tick last_tick {0};
     auto last_bpm = DEFAULT_BPM;
     auto last_time = 0.0;
 
     for (const auto& bpm : tempo_map.bpms()) {
-        last_time += ((bpm.position - last_tick) * MS_PER_MINUTE)
-            / (float_resolution * static_cast<double>(last_bpm));
-        const auto beat = bpm.position / float_resolution;
-        m_beat_timestamps.push_back({Beat(beat), Second(last_time)});
+        last_time += tempo_map.to_beat(bpm.position - last_tick).value()
+            * (MS_PER_MINUTE / static_cast<double>(last_bpm));
+        const auto beat = tempo_map.to_beat(bpm.position);
+        m_beat_timestamps.push_back({beat, Second(last_time)});
         last_bpm = bpm.bpm;
         last_tick = bpm.position;
     }
@@ -42,15 +42,15 @@ TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
     m_last_bpm = last_bpm;
 
     if (!engine.uses_beat_track()) {
-        last_tick = 0;
+        last_tick = Tick {0};
         auto last_beat_rate = DEFAULT_BEAT_RATE;
         auto last_measure = 0.0;
 
         for (const auto& ts : tempo_map.time_sigs()) {
-            last_measure += (ts.position - last_tick)
-                / (tempo_map.resolution() * last_beat_rate);
-            const auto beat = ts.position / float_resolution;
-            m_measure_timestamps.push_back({Measure(last_measure), Beat(beat)});
+            last_measure += tempo_map.to_beat(ts.position - last_tick).value()
+                / static_cast<double>(last_beat_rate);
+            const auto beat = tempo_map.to_beat(ts.position);
+            m_measure_timestamps.push_back({Measure(last_measure), beat});
             last_beat_rate
                 = (ts.numerator * DEFAULT_BEAT_RATE) / ts.denominator;
             last_tick = ts.position;

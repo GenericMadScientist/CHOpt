@@ -431,7 +431,7 @@ TempoMap tempo_map_from_section(const ChartSection& section, int resolution)
     std::vector<BPM> bpms;
     bpms.reserve(section.bpm_events.size());
     for (const auto& bpm : section.bpm_events) {
-        bpms.push_back({bpm.position, bpm.bpm});
+        bpms.push_back({Tick {bpm.position}, bpm.bpm});
     }
     std::vector<TimeSignature> tses;
     for (const auto& ts : section.ts_events) {
@@ -439,7 +439,7 @@ TempoMap tempo_map_from_section(const ChartSection& section, int resolution)
             >= (CHAR_BIT * sizeof(int))) {
             throw ParseError("Invalid Time Signature denominator");
         }
-        tses.push_back({ts.position, ts.numerator, 1 << ts.denominator});
+        tses.push_back({Tick {ts.position}, ts.numerator, 1 << ts.denominator});
     }
     return {std::move(tses), std::move(bpms), resolution};
 }
@@ -620,7 +620,7 @@ TempoMap read_first_midi_track(const MidiTrack& track, int resolution)
             const auto us_per_quarter = meta_event->data[0] << 16
                 | meta_event->data[1] << 8 | meta_event->data[2];
             const auto bpm = 60000000000 / us_per_quarter;
-            tempos.push_back({event.time, static_cast<int>(bpm)});
+            tempos.push_back({Tick {event.time}, static_cast<int>(bpm)});
             break;
         }
         case TIME_SIG_ID:
@@ -630,8 +630,8 @@ TempoMap read_first_midi_track(const MidiTrack& track, int resolution)
             if (meta_event->data[1] >= (CHAR_BIT * sizeof(int))) {
                 throw ParseError("Time sig denominator too large");
             }
-            time_sigs.push_back(
-                {event.time, meta_event->data[0], 1 << meta_event->data[1]});
+            time_sigs.push_back({Tick {event.time}, meta_event->data[0],
+                                 1 << meta_event->data[1]});
             break;
         }
     }

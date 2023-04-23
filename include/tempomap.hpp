@@ -23,6 +23,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include "time.hpp"
+
 class ParseError : public std::runtime_error {
 public:
     explicit ParseError(const char* what)
@@ -32,13 +34,13 @@ public:
 };
 
 struct TimeSignature {
-    int position;
+    Tick position;
     int numerator;
     int denominator;
 };
 
 struct BPM {
-    int position;
+    Tick position;
     // Larger int type is needed to handle speedups.
     std::int64_t bpm;
 };
@@ -73,6 +75,11 @@ public:
     [[nodiscard]] int resolution() const { return m_resolution; }
     // Return the TempoMap for a speedup of speed% (normal speed is 100).
     [[nodiscard]] TempoMap speedup(int speed) const;
+
+    [[nodiscard]] Beat to_beat(Tick tick) const
+    {
+        return Beat {tick.value() / static_cast<double>(m_resolution)};
+    }
 };
 
 #endif

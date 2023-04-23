@@ -44,7 +44,7 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
     std::stable_sort(
         bpms.begin(), bpms.end(),
         [](const auto& x, const auto& y) { return x.position < y.position; });
-    BPM prev_bpm {0, DEFAULT_BPM};
+    BPM prev_bpm {Tick {0}, DEFAULT_BPM};
     for (auto p = bpms.cbegin(); p < bpms.cend(); ++p) {
         if (p->position != prev_bpm.position) {
             m_bpms.push_back(prev_bpm);
@@ -56,7 +56,7 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
     std::stable_sort(
         time_sigs.begin(), time_sigs.end(),
         [](const auto& x, const auto& y) { return x.position < y.position; });
-    TimeSignature prev_ts {0, 4, 4};
+    TimeSignature prev_ts {Tick {0}, 4, 4};
     for (auto p = time_sigs.cbegin(); p < time_sigs.cend(); ++p) {
         if (p->position != prev_ts.position) {
             m_time_sigs.push_back(prev_ts);

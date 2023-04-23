@@ -24,6 +24,47 @@
 class Measure;
 class Second;
 
+class Tick {
+private:
+    int m_value;
+
+public:
+    explicit Tick(int value)
+        : m_value {value}
+    {
+    }
+    [[nodiscard]] int value() const { return m_value; }
+
+    friend bool operator==(const Tick& lhs, const Tick& rhs)
+    {
+        return lhs.m_value == rhs.m_value;
+    }
+    friend bool operator!=(const Tick& lhs, const Tick& rhs)
+    {
+        return !(lhs == rhs);
+    }
+    friend bool operator<(const Tick& lhs, const Tick& rhs)
+    {
+        return lhs.m_value < rhs.m_value;
+    }
+    friend bool operator>(const Tick& lhs, const Tick& rhs)
+    {
+        return rhs < lhs;
+    }
+
+    Tick& operator-=(const Tick& rhs)
+    {
+        m_value -= rhs.m_value;
+        return *this;
+    }
+
+    friend Tick operator-(Tick lhs, const Tick& rhs)
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+};
+
 class Beat {
 private:
     double m_value;
