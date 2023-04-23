@@ -72,7 +72,7 @@ public:
         return m_time_sigs;
     }
     [[nodiscard]] const std::vector<BPM>& bpms() const { return m_bpms; }
-    [[nodiscard]] int resolution() const { return m_resolution; }
+
     // Return the TempoMap for a speedup of speed% (normal speed is 100).
     [[nodiscard]] TempoMap speedup(int speed) const;
 
