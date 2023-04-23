@@ -40,8 +40,8 @@ double sp_deduction(Position start, Position end)
 }
 
 std::vector<SpData::BeatRate>
-SpData::form_beat_rates(int resolution, const TempoMap& tempo_map,
-                        const std::vector<int>& od_beats, const Engine& engine)
+SpData::form_beat_rates(const TempoMap& tempo_map,
+                        const std::vector<Tick>& od_beats, const Engine& engine)
 {
     constexpr double DEFAULT_BEAT_RATE = 4.0;
 
@@ -61,12 +61,11 @@ SpData::form_beat_rates(int resolution, const TempoMap& tempo_map,
         beat_rates.reserve(od_beats.size() - 1);
 
         for (auto i = 0U; i < od_beats.size() - 1; ++i) {
-            const auto pos = static_cast<double>(od_beats[i]) / resolution;
-            const auto next_marker
-                = static_cast<double>(od_beats[i + 1]) / resolution;
+            const auto pos = tempo_map.to_beat(od_beats[i]);
+            const auto next_marker = tempo_map.to_beat(od_beats[i + 1]);
             const auto drain_rate = engine.sp_gain_rate()
-                - 1 / (DEFAULT_BEATS_PER_BAR * (next_marker - pos));
-            beat_rates.push_back({Beat(pos), drain_rate});
+                - 1 / (DEFAULT_BEATS_PER_BAR * (next_marker - pos).value());
+            beat_rates.push_back({pos, drain_rate});
         }
     } else {
         beat_rates.push_back(
@@ -117,11 +116,10 @@ SpData::note_spans(const NoteTrack& track, double early_whammy,
 }
 
 SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
-               const std::vector<int>& od_beats,
+               const std::vector<Tick>& od_beats,
                const SqueezeSettings& squeeze_settings, const Engine& engine)
     : m_converter {tempo_map, engine, od_beats}
-    , m_beat_rates {form_beat_rates(track.global_data().resolution(), tempo_map,
-                                    od_beats, engine)}
+    , m_beat_rates {form_beat_rates(tempo_map, od_beats, engine)}
     , m_sp_gain_rate {engine.sp_gain_rate()}
     , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
 {

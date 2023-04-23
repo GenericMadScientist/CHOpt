@@ -21,10 +21,9 @@
 #include "timeconverter.hpp"
 
 TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
-                             const std::vector<int>& od_beats)
+                             const std::vector<Tick>& od_beats)
 {
     constexpr double MS_PER_MINUTE = 60000.0;
-    const double float_resolution = tempo_map.resolution();
 
     Tick last_tick {0};
     auto last_bpm = DEFAULT_BPM;
@@ -59,9 +58,9 @@ TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
         m_last_beat_rate = last_beat_rate;
     } else if (!od_beats.empty()) {
         for (auto i = 0U; i < od_beats.size(); ++i) {
-            const auto beat = od_beats[i] / float_resolution;
+            const auto beat = tempo_map.to_beat(od_beats[i]);
             m_measure_timestamps.push_back(
-                {Measure(i / DEFAULT_BEAT_RATE), Beat(beat)});
+                {Measure(i / DEFAULT_BEAT_RATE), beat});
         }
 
         m_last_beat_rate = DEFAULT_BEAT_RATE;

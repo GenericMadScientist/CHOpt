@@ -1304,14 +1304,14 @@ std::optional<Instrument> midi_section_instrument(const std::string& track_name)
     return iter->second;
 }
 
-std::vector<int> od_beats_from_track(const MidiTrack& track)
+std::vector<Tick> od_beats_from_track(const MidiTrack& track)
 {
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
     constexpr int BEAT_LOW_KEY = 12;
     constexpr int BEAT_HIGH_KEY = 13;
 
-    std::vector<int> od_beats;
+    std::vector<Tick> od_beats;
 
     for (const auto& event : track.events) {
         const auto* midi_event = std::get_if<MidiEvent>(&event.event);
@@ -1326,7 +1326,7 @@ std::vector<int> od_beats_from_track(const MidiTrack& track)
         }
         const auto key = midi_event->data[0];
         if (key == BEAT_LOW_KEY || key == BEAT_HIGH_KEY) {
-            od_beats.push_back(event.time);
+            od_beats.push_back(Tick {event.time});
         }
     }
 

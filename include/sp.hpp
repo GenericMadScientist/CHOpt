@@ -98,8 +98,8 @@ private:
     const double m_default_net_sp_gain_rate;
 
     static std::vector<BeatRate>
-    form_beat_rates(int resolution, const TempoMap& tempo_map,
-                    const std::vector<int>& od_beats, const Engine& engine);
+    form_beat_rates(const TempoMap& tempo_map,
+                    const std::vector<Tick>& od_beats, const Engine& engine);
 
     [[nodiscard]] double
     propagate_over_whammy_range(Beat start, Beat end,
@@ -117,7 +117,7 @@ private:
 
 public:
     SpData(const NoteTrack& track, const TempoMap& tempo_map,
-           const std::vector<int>& od_beats,
+           const std::vector<Tick>& od_beats,
            const SqueezeSettings& squeeze_settings, const Engine& engine);
     // Return the maximum amount of SP available at the end after propagating
     // over a range, or -1 if SP runs out at any point. Only includes SP gain

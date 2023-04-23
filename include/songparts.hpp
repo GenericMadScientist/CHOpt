@@ -32,6 +32,7 @@
 
 #include "settings.hpp"
 #include "tempomap.hpp"
+#include "time.hpp"
 #include "timeconverter.hpp"
 
 enum class TrackType { FiveFret, SixFret, Drums };
@@ -128,7 +129,7 @@ private:
     std::string m_artist;
     std::string m_charter;
     TempoMap m_tempo_map;
-    std::vector<int> m_od_beats;
+    std::vector<Tick> m_od_beats;
 
 public:
     SongGlobalData() = default;
@@ -139,7 +140,7 @@ public:
     [[nodiscard]] const std::string& artist() const { return m_artist; }
     [[nodiscard]] const std::string& charter() const { return m_charter; }
     [[nodiscard]] const TempoMap& tempo_map() const { return m_tempo_map; }
-    [[nodiscard]] const std::vector<int>& od_beats() const
+    [[nodiscard]] const std::vector<Tick>& od_beats() const
     {
         return m_od_beats;
     }
@@ -156,7 +157,7 @@ public:
     void artist(std::string value) { m_artist = std::move(value); }
     void charter(std::string value) { m_charter = std::move(value); }
     void tempo_map(TempoMap value) { m_tempo_map = std::move(value); }
-    void od_beats(std::vector<int> value) { m_od_beats = std::move(value); }
+    void od_beats(std::vector<Tick> value) { m_od_beats = std::move(value); }
 };
 
 // Invariants:

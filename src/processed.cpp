@@ -65,7 +65,7 @@ ProcessedSong::ProcessedSong(const NoteTrack& track, const TempoMap& tempo_map,
                              const SqueezeSettings& squeeze_settings,
                              const DrumSettings& drum_settings,
                              const Engine& engine,
-                             const std::vector<int>& od_beats,
+                             const std::vector<Tick>& od_beats,
                              const std::vector<int>& unison_phrases)
     : m_converter {tempo_map, engine, od_beats}
     , m_points {track,         m_converter, unison_phrases, squeeze_settings,
