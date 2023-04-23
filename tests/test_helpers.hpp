@@ -263,7 +263,7 @@ inline std::ostream& operator<<(std::ostream& stream, const Note& note)
 {
     stream << "{Pos " << note.position << ", ";
     for (auto i = 0; i < 7; ++i) {
-        if (note.lengths[i] != -1) {
+        if (note.lengths[i] != Tick {-1}) {
             stream << "Colour " << i << " with Length " << note.lengths[i]
                    << ", ";
         }
@@ -432,9 +432,9 @@ inline Note make_note(int position, int length = 0,
                       FiveFretNotes colour = FIVE_FRET_GREEN)
 {
     Note note;
-    note.position = position;
+    note.position = Tick {position};
     note.flags = FLAGS_FIVE_FRET_GUITAR;
-    note.lengths[colour] = length;
+    note.lengths[colour] = Tick {length};
 
     return note;
 }
@@ -444,10 +444,10 @@ make_chord(int position,
            const std::vector<std::tuple<FiveFretNotes, int>>& lengths)
 {
     Note note;
-    note.position = position;
+    note.position = Tick {position};
     note.flags = FLAGS_FIVE_FRET_GUITAR;
     for (auto& [lane, length] : lengths) {
-        note.lengths[lane] = length;
+        note.lengths[lane] = Tick {length};
     }
 
     return note;
@@ -457,9 +457,9 @@ inline Note make_ghl_note(int position, int length = 0,
                           SixFretNotes colour = SIX_FRET_WHITE_LOW)
 {
     Note note;
-    note.position = position;
+    note.position = Tick {position};
     note.flags = FLAGS_SIX_FRET_GUITAR;
-    note.lengths[colour] = length;
+    note.lengths[colour] = Tick {length};
 
     return note;
 }
@@ -469,10 +469,10 @@ make_ghl_chord(int position,
                const std::vector<std::tuple<SixFretNotes, int>>& lengths)
 {
     Note note;
-    note.position = position;
+    note.position = Tick {position};
     note.flags = FLAGS_SIX_FRET_GUITAR;
     for (auto& [lane, length] : lengths) {
-        note.lengths[lane] = length;
+        note.lengths[lane] = Tick {length};
     }
 
     return note;
@@ -482,9 +482,9 @@ inline Note make_drum_note(int position, DrumNotes colour = DRUM_RED,
                            NoteFlags flags = FLAGS_NONE)
 {
     Note note;
-    note.position = position;
+    note.position = Tick {position};
     note.flags = static_cast<NoteFlags>(flags | FLAGS_DRUMS);
-    note.lengths[colour] = 0;
+    note.lengths[colour] = Tick {0};
 
     return note;
 }

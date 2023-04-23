@@ -89,12 +89,13 @@ public:
                  Difficulty difficulty, const DrumSettings& drum_settings,
                  bool is_lefty_flip, bool is_overlap_engine);
     void add_bpms(const TempoMap& tempo_map);
-    void add_bre(const BigRockEnding& bre, int resolution,
+    void add_bre(const BigRockEnding& bre, const TempoMap& tempo_map,
                  const TimeConverter& converter);
     void add_drum_fills(const NoteTrack& track);
     void add_measure_values(const PointSet& points,
                             const TimeConverter& converter, const Path& path);
-    void add_solo_sections(const std::vector<Solo>& solos, int resolution);
+    void add_solo_sections(const std::vector<Solo>& solos,
+                           const TempoMap& tempo_map);
     void add_song_header(const SongGlobalData& global_data, int speed);
     void add_sp_acts(const PointSet& points, const TimeConverter& converter,
                      const Path& path);
@@ -102,7 +103,7 @@ public:
                                const TimeConverter& converter,
                                const PointSet& points, const Path& path);
     void add_sp_phrases(const NoteTrack& track,
-                        const std::vector<int>& unison_phrases,
+                        const std::vector<Tick>& unison_phrases,
                         const Path& path);
     void add_sp_values(const SpData& sp_data, const Engine& engine);
     void add_time_sigs(const TempoMap& tempo_map);

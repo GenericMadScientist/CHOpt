@@ -110,9 +110,9 @@ private:
     first_whammy_range_after(Beat pos) const;
     [[nodiscard]] WhammyPropagationState
     initial_whammy_prop_state(Beat start, Beat end, double sp_bar_amount) const;
-    std::vector<std::tuple<int, int, Second>> note_spans(const NoteTrack& track,
-                                                         double early_whammy,
-                                                         const Engine& engine);
+    std::vector<std::tuple<Tick, Tick, Second>>
+    note_spans(const NoteTrack& track, double early_whammy,
+               const Engine& engine);
     Position sp_drain_end_point(Position start, double sp_bar_amount) const;
 
 public:

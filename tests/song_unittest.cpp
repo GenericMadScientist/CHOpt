@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(chart_reads_easy_note_track_correctly)
     std::vector<ChartSection> sections {easy_single};
     const Chart chart {sections};
     std::vector<Note> notes {make_note(768, 0, FIVE_FRET_GREEN)};
-    std::vector<StarPower> sp_phrases {{768, 100}};
+    std::vector<StarPower> sp_phrases {{Tick {768}, Tick {100}}};
 
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.track(Instrument::Guitar, Difficulty::Easy);
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(sp_phrases_are_read_correctly_from_chart)
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
     NoteTrack note_track {{make_note(768, 0, FIVE_FRET_GREEN)},
-                          {{768, 100}},
+                          {{Tick {768}, Tick {100}}},
                           {},
                           {},
                           {},
@@ -312,7 +312,8 @@ BOOST_AUTO_TEST_CASE(expected_solos_are_read_properly)
         {}};
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
-    std::vector<Solo> required_solos {{0, 200, 100}, {300, 400, 200}};
+    std::vector<Solo> required_solos {{Tick {0}, Tick {200}, 100},
+                                      {Tick {300}, Tick {400}, 200}};
 
     const auto song = Song::from_chart(chart, {});
     const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
@@ -334,7 +335,7 @@ BOOST_AUTO_TEST_CASE(chords_are_not_counted_double)
                                 {}};
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
-    std::vector<Solo> required_solos {{0, 200, 100}};
+    std::vector<Solo> required_solos {{Tick {0}, Tick {200}, 100}};
 
     const auto song = Song::from_chart(chart, {});
     const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
@@ -372,7 +373,7 @@ BOOST_AUTO_TEST_CASE(repeated_solo_starts_and_ends_dont_matter)
         {}};
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
-    std::vector<Solo> required_solos {{0, 200, 100}};
+    std::vector<Solo> required_solos {{Tick {0}, Tick {200}, 100}};
 
     const auto song = Song::from_chart(chart, {});
     const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
@@ -390,7 +391,7 @@ BOOST_AUTO_TEST_CASE(solo_markers_are_sorted)
         {{192, 0, 0}},  {}, {}};
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
-    std::vector<Solo> required_solos {{0, 384, 100}};
+    std::vector<Solo> required_solos {{Tick {0}, Tick {384}, 100}};
 
     const auto song = Song::from_chart(chart, {});
     const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
@@ -654,7 +655,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_read_from_chart)
                         {{192, 64, 1}}, {}};
     std::vector<ChartSection> sections {drums};
     const Chart chart {sections};
-    const DrumFill fill {192, 1};
+    const DrumFill fill {Tick {192}, Tick {1}};
 
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
@@ -670,7 +671,7 @@ BOOST_AUTO_TEST_CASE(disco_flips_are_read_from_chart)
         {{192, 1, 0}}, {}, {}};
     std::vector<ChartSection> sections {drums};
     const Chart chart {sections};
-    const DiscoFlip flip {100, 5};
+    const DiscoFlip flip {Tick {100}, Tick {5}};
 
     const auto song = Song::from_chart(chart, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
@@ -909,7 +910,7 @@ BOOST_AUTO_TEST_CASE(corresponding_note_off_events_are_after_note_on_events)
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(notes.size(), 2);
-    BOOST_CHECK_EQUAL(notes[0].lengths[0], 480);
+    BOOST_CHECK_EQUAL(notes[0].lengths[0], Tick {480});
 }
 
 BOOST_AUTO_TEST_CASE(note_on_events_with_velocity_zero_count_as_note_off_events)
@@ -962,7 +963,7 @@ BOOST_AUTO_TEST_CASE(each_note_on_event_consumes_the_following_note_off_event)
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(notes.size(), 2);
-    BOOST_CHECK_GT(notes[1].lengths[0], 0);
+    BOOST_CHECK_GT(notes[1].lengths[0], Tick {0});
 }
 
 BOOST_AUTO_TEST_CASE(note_off_events_can_be_zero_ticks_after_the_note_on_events)
@@ -1047,7 +1048,7 @@ BOOST_AUTO_TEST_CASE(solos_are_read_from_mids_correctly)
                            {960, {MidiEvent {0x80, {96, 0}}}},
                            {960, {MidiEvent {0x80, {97, 64}}}}}};
     const Midi midi {192, {note_track}};
-    const std::vector<Solo> solos {{768, 900, 100}};
+    const std::vector<Solo> solos {{Tick {768}, Tick {900}, 100}};
 
     const auto song = Song::from_midi(midi, {});
     const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
@@ -1070,7 +1071,7 @@ BOOST_AUTO_TEST_CASE(a_single_phrase_is_read)
                            {900, {MidiEvent {0x80, {116, 64}}}},
                            {960, {MidiEvent {0x80, {96, 0}}}}}};
     const Midi midi {192, {note_track}};
-    const std::vector<StarPower> sp_phrases {{768, 132}};
+    const std::vector<StarPower> sp_phrases {{Tick {768}, Tick {132}}};
 
     const auto song = Song::from_midi(midi, {});
     const auto& parsed_sp
@@ -1135,8 +1136,8 @@ BOOST_AUTO_TEST_CASE(short_midi_sustains_are_not_trimmed)
     const auto& notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
-    BOOST_CHECK_EQUAL(notes[0].lengths[0], 65);
-    BOOST_CHECK_EQUAL(notes[1].lengths[0], 70);
+    BOOST_CHECK_EQUAL(notes[0].lengths[0], Tick {65});
+    BOOST_CHECK_EQUAL(notes[1].lengths[0], Tick {70});
 }
 
 BOOST_AUTO_TEST_SUITE(other_five_fret_instruments_are_read_from_mid)
@@ -1299,7 +1300,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_read_correctly_from_mid)
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
-    std::vector<DrumFill> fills {{45, 30}};
+    std::vector<DrumFill> fills {{Tick {45}, Tick {30}}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
                                   track.drum_fills().cend(), fills.cbegin(),
@@ -1327,7 +1328,7 @@ BOOST_AUTO_TEST_CASE(disco_flips_are_read_correctly_from_mid)
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
-    std::vector<DiscoFlip> flips {{15, 60}};
+    std::vector<DiscoFlip> flips {{Tick {15}, Tick {60}}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.disco_flips().cbegin(),
                                   track.disco_flips().cend(), flips.cbegin(),
@@ -1351,7 +1352,7 @@ BOOST_AUTO_TEST_CASE(missing_disco_flip_end_event_just_ends_at_max_int)
     const auto song = Song::from_midi(midi, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
-    std::vector<DiscoFlip> flips {{15, 2147483632}};
+    std::vector<DiscoFlip> flips {{Tick {15}, Tick {2147483632}}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.disco_flips().cbegin(),
                                   track.disco_flips().cend(), flips.cbegin(),
@@ -1466,8 +1467,8 @@ BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
     const Chart chart {sections};
     const auto song = Song::from_chart(chart, {});
 
-    const std::vector<int> expected_unison_phrases {768};
-    const std::vector<int> unison_phrases = song.unison_phrase_positions();
+    const std::vector<Tick> expected_unison_phrases {Tick {768}};
+    const std::vector<Tick> unison_phrases = song.unison_phrase_positions();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         unison_phrases.cbegin(), unison_phrases.cend(),

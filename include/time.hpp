@@ -51,13 +51,31 @@ public:
     {
         return rhs < lhs;
     }
+    friend bool operator<=(const Tick& lhs, const Tick& rhs)
+    {
+        return !(lhs > rhs);
+    }
+    friend bool operator>=(const Tick& lhs, const Tick& rhs)
+    {
+        return !(lhs < rhs);
+    }
 
+    Tick& operator+=(const Tick& rhs)
+    {
+        m_value += rhs.m_value;
+        return *this;
+    }
     Tick& operator-=(const Tick& rhs)
     {
         m_value -= rhs.m_value;
         return *this;
     }
 
+    friend Tick operator+(Tick lhs, const Tick& rhs)
+    {
+        lhs += rhs;
+        return lhs;
+    }
     friend Tick operator-(Tick lhs, const Tick& rhs)
     {
         lhs -= rhs;

@@ -101,7 +101,7 @@ public:
                   const SqueezeSettings& squeeze_settings,
                   const DrumSettings& drum_settings, const Engine& engine,
                   const std::vector<Tick>& od_beats,
-                  const std::vector<int>& unison_phrases);
+                  const std::vector<Tick>& unison_phrases);
 
     // Return the minimum and maximum amount of SP can be acquired between two
     // points. Does not include SP from the point act_start. first_point is

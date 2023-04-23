@@ -55,7 +55,7 @@ public:
     difficulties(Instrument instrument) const;
     [[nodiscard]] const NoteTrack& track(Instrument instrument,
                                          Difficulty difficulty) const;
-    [[nodiscard]] std::vector<int> unison_phrase_positions() const;
+    [[nodiscard]] std::vector<Tick> unison_phrase_positions() const;
 };
 
 Song song_from_filename(const std::string& filename);

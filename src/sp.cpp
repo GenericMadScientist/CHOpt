@@ -22,7 +22,7 @@
 #include "sp.hpp"
 
 namespace {
-bool phrase_contains_pos(const StarPower& phrase, int position)
+bool phrase_contains_pos(const StarPower& phrase, Tick position)
 {
     if (position < phrase.position) {
         return false;
@@ -75,36 +75,35 @@ SpData::form_beat_rates(const TempoMap& tempo_map,
     return beat_rates;
 }
 
-std::vector<std::tuple<int, int, Second>>
+std::vector<std::tuple<Tick, Tick, Second>>
 SpData::note_spans(const NoteTrack& track, double early_whammy,
                    const Engine& engine)
 {
-    const auto resolution
-        = static_cast<double>(track.global_data().resolution());
-    std::vector<std::tuple<int, int, Second>> spans;
+    const auto& tempo_map = track.global_data().tempo_map();
+    std::vector<std::tuple<Tick, Tick, Second>> spans;
     for (auto note = track.notes().cbegin(); note < track.notes().cend();
          ++note) {
         auto early_gap = std::numeric_limits<double>::infinity();
         auto late_gap = std::numeric_limits<double>::infinity();
         const auto current_note_time
-            = m_converter.beats_to_seconds(Beat {note->position / resolution})
+            = m_converter.beats_to_seconds(tempo_map.to_beat(note->position))
                   .value();
         if (note != track.notes().cbegin()) {
             early_gap = current_note_time
                 - m_converter
                       .beats_to_seconds(
-                          Beat {std::prev(note)->position / resolution})
+                          tempo_map.to_beat(std::prev(note)->position))
                       .value();
         }
         if (std::next(note) < track.notes().cend()) {
             late_gap = m_converter
                            .beats_to_seconds(
-                               Beat {std::next(note)->position / resolution})
+                               tempo_map.to_beat(std::next(note)->position))
                            .value()
                 - current_note_time;
         }
         for (auto length : note->lengths) {
-            if (length != -1) {
+            if (length != Tick {-1}) {
                 spans.emplace_back(
                     note->position, length,
                     Second {engine.early_timing_window(early_gap, late_gap)}
@@ -123,16 +122,14 @@ SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
     , m_sp_gain_rate {engine.sp_gain_rate()}
     , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
 {
-    const double resolution = track.global_data().resolution();
-
     // Elements are (whammy start, whammy end, note).
     std::vector<std::tuple<Beat, Beat, Beat>> ranges;
     for (const auto& [position, length, early_timing_window] :
          note_spans(track, squeeze_settings.early_whammy, engine)) {
-        if (length == 0) {
+        if (length == Tick {0}) {
             continue;
         }
-        const int pos_copy = position;
+        const auto pos_copy = position;
         const auto phrase = std::find_if(
             track.sp_phrases().cbegin(), track.sp_phrases().cend(),
             [&](const auto& p) { return phrase_contains_pos(p, pos_copy); });
@@ -140,13 +137,13 @@ SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
             continue;
         }
 
-        const Beat note {static_cast<double>(position) / resolution};
+        const auto note = tempo_map.to_beat(position);
         auto second_start = m_converter.beats_to_seconds(note);
         second_start -= early_timing_window;
         second_start += squeeze_settings.lazy_whammy;
         second_start += squeeze_settings.video_lag;
         const auto beat_start = m_converter.seconds_to_beats(second_start);
-        Beat beat_end {static_cast<double>(position + length) / resolution};
+        auto beat_end = tempo_map.to_beat(position + length);
         if (beat_start < beat_end) {
             ranges.emplace_back(beat_start, beat_end, note);
         }

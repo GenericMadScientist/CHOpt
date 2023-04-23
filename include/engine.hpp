@@ -21,6 +21,8 @@
 
 #include <algorithm>
 
+#include "time.hpp"
+
 enum class SustainRoundingPolicy { RoundUp, RoundToNearest };
 
 class Engine {
@@ -42,7 +44,7 @@ public:
     virtual bool merge_uneven_sustains() const = 0;
     virtual bool overlaps() const = 0;
     virtual bool round_tick_gap() const = 0;
-    virtual int snap_gap() const = 0;
+    virtual Tick snap_gap() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
     virtual SustainRoundingPolicy sustain_rounding() const = 0;
@@ -76,7 +78,7 @@ public:
     bool merge_uneven_sustains() const override { return false; }
     bool overlaps() const override { return true; }
     bool round_tick_gap() const override { return true; }
-    int snap_gap() const override { return 0; }
+    Tick snap_gap() const override { return Tick {0}; }
     double sp_gain_rate() const override { return 1 / 30.0; }
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
@@ -160,7 +162,7 @@ public:
     bool merge_uneven_sustains() const override { return true; }
     bool overlaps() const override { return false; }
     bool round_tick_gap() const override { return false; }
-    int snap_gap() const override { return 2; }
+    Tick snap_gap() const override { return Tick {2}; }
     double sp_gain_rate() const override { return 0.034; }
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
@@ -196,7 +198,7 @@ public:
     bool merge_uneven_sustains() const override { return true; }
     bool overlaps() const override { return true; }
     bool round_tick_gap() const override { return false; }
-    int snap_gap() const override { return 2; }
+    Tick snap_gap() const override { return Tick {2}; }
     double sp_gain_rate() const override { return 0.034; }
     int sust_points_per_beat() const override { return 12; }
     SustainRoundingPolicy sustain_rounding() const override

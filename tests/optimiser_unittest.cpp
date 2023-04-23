@@ -34,7 +34,8 @@ BOOST_AUTO_TEST_SUITE(overlap_guitar_paths)
 BOOST_AUTO_TEST_CASE(simplest_song_with_a_non_empty_path)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384)};
-    std::vector<StarPower> phrases {{0, 50}, {192, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {192}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -76,7 +77,10 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_multiple_acts)
         make_chord(
             10368,
             {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}, {FIVE_FRET_YELLOW, 0}})};
-    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {3840, 50}, {4032, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {192}, Tick {50}},
+                                    {Tick {3840}, Tick {50}},
+                                    {Tick {4032}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -111,7 +115,8 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_an_act_containing_more_than_one_note)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(576)};
-    std::vector<StarPower> phrases {{0, 50}, {192, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {192}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -144,7 +149,8 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_an_act_that_must_go_as_long_as_possible)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(3360)};
-    std::vector<StarPower> phrases {{0, 50}, {192, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {192}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -178,7 +184,8 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_greedy_algorithm_fails)
     std::vector<Note> notes {
         make_note(0), make_note(192), make_note(384),
         make_chord(3840, {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}})};
-    std::vector<StarPower> phrases {{0, 50}, {192, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {192}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -212,7 +219,10 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_a_phrase_must_be_hit_early)
     std::vector<Note> notes {make_note(0),    make_note(192),  make_note(384),
                              make_note(3224), make_note(9378), make_note(15714),
                              make_note(15715)};
-    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {3224, 50}, {9378, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {192}, Tick {50}},
+                                    {Tick {3224}, Tick {50}},
+                                    {Tick {9378}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -254,7 +264,9 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_activations_ending_late_matter)
         make_note(10946),      make_note(10947), make_note(10948),
         make_note(10949),      make_note(10950), make_note(10951),
         make_note(10952),      make_note(10953)};
-    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {3234, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {192}, Tick {50}},
+                                    {Tick {3234}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -285,7 +297,7 @@ BOOST_AUTO_TEST_CASE(early_whammy_at_start_of_an_sp_phrase_is_always_counted)
 {
     std::vector<Note> notes {make_note(0, 1420), make_note(1500),
                              make_note(1600)};
-    std::vector<StarPower> phrases {{0, 1550}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {1550}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -317,7 +329,8 @@ BOOST_AUTO_TEST_CASE(
 {
     std::vector<Note> notes {make_note(192, 1440), make_note(1632),
                              make_note(6336)};
-    std::vector<StarPower> phrases {{192, 1}, {1632, 1}};
+    std::vector<StarPower> phrases {{Tick {192}, Tick {1}},
+                                    {Tick {1632}, Tick {1}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -346,7 +359,7 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(activation_right_after_a_sp_sustain_is_drawn_correctly)
 {
     std::vector<Note> notes {make_note(0, 1488), make_note(2880, 3264)};
-    std::vector<StarPower> phrases {{0, 1}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {1}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -373,7 +386,9 @@ BOOST_AUTO_TEST_CASE(songs_ending_in_es1_are_pathed_correctly)
     std::vector<Note> notes {make_note(0),   make_note(192), make_note(384),
                              make_note(576), make_note(768), make_note(4032),
                              make_note(4224)};
-    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {4032, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {192}, Tick {50}},
+                                    {Tick {4032}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -409,8 +424,10 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_is_specified_correctly)
         make_chord(
             10176,
             {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}, {FIVE_FRET_YELLOW, 0}})};
-    std::vector<StarPower> phrases {
-        {192, 50}, {672, 50}, {3840, 50}, {9984, 50}};
+    std::vector<StarPower> phrases {{Tick {192}, Tick {50}},
+                                    {Tick {672}, Tick {50}},
+                                    {Tick {3840}, Tick {50}},
+                                    {Tick {9984}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -441,7 +458,7 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_is_specified_correctly)
 BOOST_AUTO_TEST_CASE(acts_covering_the_last_note_do_not_compress_whammy)
 {
     std::vector<Note> notes {make_note(0, 1536), make_note(1728)};
-    std::vector<StarPower> phrases {{0, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -479,7 +496,10 @@ BOOST_AUTO_TEST_CASE(use_next_point_to_work_out_compressed_whammy)
         make_chord(
             9696,
             {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}, {FIVE_FRET_YELLOW, 0}})};
-    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {3350, 50}, {9504, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {192}, Tick {50}},
+                                    {Tick {3350}, Tick {50}},
+                                    {Tick {9504}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -513,7 +533,10 @@ BOOST_AUTO_TEST_CASE(forbidden_squeeze_does_not_grant_extra_whammy_next_act)
                              make_note(768),   make_note(3840, 192),
                              make_note(4224),  make_note(19200, 192),
                              make_note(38400), make_note(41990)};
-    std::vector<StarPower> phrases {{0, 1}, {192, 1}, {3840, 576}, {19200, 1}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {1}},
+                                    {Tick {192}, Tick {1}},
+                                    {Tick {3840}, Tick {576}},
+                                    {Tick {19200}, Tick {1}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -544,7 +567,8 @@ BOOST_AUTO_TEST_CASE(easier_activations_are_chosen_where_possible)
     std::vector<Note> notes {make_note(0),    make_note(192),
                              make_note(384),  make_note(3504),
                              make_note(9600), make_note(12672)};
-    std::vector<StarPower> phrases {{0, 1}, {192, 1}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {1}},
+                                    {Tick {192}, Tick {1}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -575,7 +599,8 @@ BOOST_AUTO_TEST_CASE(
     early_whammy_from_a_note_cannot_be_obtained_until_the_note_is_hit)
 {
     std::vector<Note> notes {make_note(0, 1392), make_note(1536, 192)};
-    std::vector<StarPower> phrases {{0, 1}, {1536, 1}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {1}},
+                                    {Tick {1536}, Tick {1}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -604,7 +629,7 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(does_not_crash_with_positive_video_lag)
 {
     std::vector<Note> notes {make_note(192, 192)};
-    std::vector<StarPower> phrases {{192, 1}};
+    std::vector<StarPower> phrases {{Tick {192}, Tick {1}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -634,7 +659,9 @@ BOOST_AUTO_TEST_CASE(whammy_delay_is_handled_correctly)
         make_note(3840, 1420), make_note(5376),  make_note(13056),
         make_note(13248),      make_note(13440), make_note(13632),
         make_note(13824),      make_note(14016), make_note(14208)};
-    std::vector<StarPower> phrases {{0, 1}, {192, 1}, {3840, 1728}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {1}},
+                                    {Tick {192}, Tick {1}},
+                                    {Tick {3840}, Tick {1728}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -666,8 +693,9 @@ BOOST_AUTO_TEST_CASE(drum_paths_can_only_activate_on_activation_notes)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(192),
                              make_drum_note(3000), make_drum_note(4000)};
-    std::vector<StarPower> phrases {{0, 1}, {192, 1}};
-    std::vector<DrumFill> fills {{3900, 101}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {1}},
+                                    {Tick {192}, Tick {1}}};
+    std::vector<DrumFill> fills {{Tick {3900}, Tick {101}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -698,8 +726,12 @@ BOOST_AUTO_TEST_CASE(
                              make_drum_note(3840),  make_drum_note(3940),
                              make_drum_note(4040),  make_drum_note(17000),
                              make_drum_note(20000), make_drum_note(20100)};
-    std::vector<StarPower> phrases {{0, 1}, {192, 1}, {4040, 1}, {17000, 1}};
-    std::vector<DrumFill> fills {{3830, 20}, {19990, 20}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {1}},
+                                    {Tick {192}, Tick {1}},
+                                    {Tick {4040}, Tick {1}},
+                                    {Tick {17000}, Tick {1}}};
+    std::vector<DrumFill> fills {{Tick {3830}, Tick {20}},
+                                 {Tick {19990}, Tick {20}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -730,8 +762,12 @@ BOOST_AUTO_TEST_CASE(drum_reverse_squeezes_are_drawn_properly)
                              make_drum_note(19200), make_drum_note(22232),
                              make_drum_note(22260), make_drum_note(90000),
                              make_drum_note(90100), make_drum_note(90200)};
-    std::vector<StarPower> phrases {{0, 1}, {192, 1}, {22232, 1}, {22260, 1}};
-    std::vector<DrumFill> fills {{19190, 20}, {89990, 20}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {1}},
+                                    {Tick {192}, Tick {1}},
+                                    {Tick {22232}, Tick {1}},
+                                    {Tick {22260}, Tick {1}}};
+    std::vector<DrumFill> fills {{Tick {19190}, Tick {20}},
+                                 {Tick {89990}, Tick {20}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -760,8 +796,10 @@ BOOST_AUTO_TEST_CASE(
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(192),
                              make_drum_note(800), make_drum_note(1000)};
-    std::vector<StarPower> phrases {{0, 1}, {192, 1}};
-    std::vector<DrumFill> fills {{800, 1}, {1000, 1}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {1}},
+                                    {Tick {192}, Tick {1}}};
+    std::vector<DrumFill> fills {{Tick {800}, Tick {1}},
+                                 {Tick {1000}, Tick {1}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -788,8 +826,10 @@ BOOST_AUTO_TEST_CASE(drum_activation_delay_is_affected_by_speed)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(192),
                              make_drum_note(800), make_drum_note(1000)};
-    std::vector<StarPower> phrases {{0, 1}, {192, 1}};
-    std::vector<DrumFill> fills {{800, 1}, {1000, 1}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {1}},
+                                    {Tick {192}, Tick {1}}};
+    std::vector<DrumFill> fills {{Tick {800}, Tick {1}},
+                                 {Tick {1000}, Tick {1}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -822,7 +862,9 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_overlap_matters)
         make_note(0), make_note(192),
         make_chord(384, {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}}),
         make_note(3456), make_note(4224)};
-    std::vector<StarPower> phrases {{0, 50}, {192, 50}, {3456, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {192}, Tick {50}},
+                                    {Tick {3456}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -865,8 +907,10 @@ BOOST_AUTO_TEST_CASE(partial_overlap_doesnt_work)
         make_chord(
             4416,
             {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}, {FIVE_FRET_YELLOW, 0}})};
-    std::vector<StarPower> phrases {
-        {0, 50}, {192, 50}, {3456, 200}, {4224, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {192}, Tick {50}},
+                                    {Tick {3456}, Tick {200}},
+                                    {Tick {4224}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},
@@ -914,8 +958,10 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_considered_even_with_maxable_sp)
         make_chord(
             24384,
             {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}, {FIVE_FRET_YELLOW, 0}})};
-    std::vector<StarPower> phrases {
-        {0, 50}, {9600, 800}, {15936, 50}, {23616, 50}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
+                                    {Tick {9600}, Tick {800}},
+                                    {Tick {15936}, Tick {50}},
+                                    {Tick {23616}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
                           {},

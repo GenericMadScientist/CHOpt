@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE(sustains_are_handled_correctly)
 BOOST_AUTO_TEST_CASE(sp_notes_are_recorded)
 {
     NoteTrack track {{make_note(0), make_note(768)},
-                     {{768, 100}},
+                     {{Tick {768}, Tick {100}}},
                      {},
                      {},
                      {},
@@ -618,7 +618,7 @@ BOOST_AUTO_TEST_SUITE(green_sp_ranges)
 BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
 {
     NoteTrack track {{make_note(960), make_note(1344, 96)},
-                     {{768, 384}, {1200, 150}},
+                     {{Tick {768}, Tick {384}}, {Tick {1200}, Tick {150}}},
                      {},
                      {},
                      {},
@@ -639,14 +639,9 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
 
 BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
 {
-    NoteTrack track {{make_note(768)},
-                     {{768, 384}},
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    NoteTrack track {
+        {make_note(768)},    {{Tick {768}, Tick {384}}},        {}, {}, {}, {},
+        TrackType::FiveFret, std::make_shared<SongGlobalData>()};
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -662,7 +657,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
 BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
 {
     NoteTrack track {{make_ghl_note(960), make_ghl_note(1344, 96)},
-                     {{768, 384}, {1200, 150}},
+                     {{Tick {768}, Tick {384}}, {Tick {1200}, Tick {150}}},
                      {},
                      {},
                      {},
@@ -684,7 +679,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
 BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
 {
     NoteTrack track {{make_drum_note(960), make_drum_note(1344)},
-                     {{768, 384}, {1200, 150}},
+                     {{Tick {768}, Tick {384}}, {Tick {1200}, Tick {150}}},
                      {},
                      {},
                      {},
@@ -706,7 +701,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
 BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
 {
     NoteTrack track {{make_note(0), make_note(768), make_note(3840)},
-                     {{3840, 192}},
+                     {{Tick {3840}, Tick {192}}},
                      {},
                      {},
                      {},
@@ -738,7 +733,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)
     NoteTrack track {{{make_drum_note(288)}},
                      {},
                      {},
-                     {{192, 96}},
+                     {{Tick {192}, Tick {96}}},
                      {},
                      {},
                      TrackType::Drums,
@@ -760,7 +755,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_cannot_be_cancelled_by_a_kick)
     NoteTrack track {{make_drum_note(288, DRUM_KICK)},
                      {},
                      {},
-                     {{192, 96}},
+                     {{Tick {192}, Tick {96}}},
                      {},
                      {},
                      TrackType::Drums,
@@ -837,7 +832,7 @@ BOOST_AUTO_TEST_CASE(disco_flip_matters_only_with_pro_drums_on)
                      {},
                      {},
                      {},
-                     {{192, 192}},
+                     {{Tick {192}, Tick {192}}},
                      {},
                      TrackType::Drums,
                      std::make_shared<SongGlobalData>()};
@@ -859,7 +854,7 @@ BOOST_AUTO_TEST_CASE(disco_flip_matters_only_with_pro_drums_on)
 BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
 {
     NoteTrack track {{make_note(960), make_note(1344, 96)},
-                     {{768, 384}, {1200, 150}},
+                     {{Tick {768}, Tick {384}}, {Tick {1200}, Tick {150}}},
                      {},
                      {},
                      {},
@@ -869,7 +864,7 @@ BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_sp_phrases(track, {{768, 384}}, Path {});
+    builder.add_sp_phrases(track, {{Tick {768}, Tick {384}}}, Path {});
     std::vector<std::tuple<double, double>> expected_unison_ranges {{5.0, 5.1}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -882,7 +877,7 @@ BOOST_AUTO_TEST_SUITE(add_sp_acts_adds_correct_ranges)
 BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
 {
     NoteTrack track {{make_note(0, 96), make_note(192)},
-                     {{0, 50}},
+                     {{Tick {0}, Tick {50}}},
                      {},
                      {},
                      {},
@@ -1064,7 +1059,7 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
 BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
 {
     NoteTrack track {{make_note(0, 96), make_note(192)},
-                     {{0, 50}},
+                     {{Tick {0}, Tick {50}}},
                      {},
                      {},
                      {},
@@ -1096,7 +1091,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
 BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
 {
     NoteTrack track {{make_note(0), make_note(768), make_note(3840)},
-                     {{3840, 192}},
+                     {{Tick {3840}, Tick {192}}},
                      {},
                      {},
                      {},
@@ -1130,7 +1125,7 @@ BOOST_AUTO_TEST_CASE(
     extra_green_ranges_are_not_discarded_for_no_overlap_engines)
 {
     NoteTrack track {{make_note(0, 96), make_note(192), make_note(3840)},
-                     {{0, 50}, {3840, 192}},
+                     {{Tick {0}, Tick {50}}, {Tick {3840}, Tick {192}}},
                      {},
                      {},
                      {},
@@ -1163,7 +1158,7 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
 {
     NoteTrack track {{make_note(0, 96), make_note(192)},
-                     {{0, 50}},
+                     {{Tick {0}, Tick {50}}},
                      {},
                      {},
                      {},
@@ -1199,7 +1194,7 @@ BOOST_AUTO_TEST_CASE(add_solo_sections_add_correct_ranges)
 {
     NoteTrack track {{make_note(0)},
                      {},
-                     {{192, 384, 0}},
+                     {{Tick {192}, Tick {384}, 0}},
                      {},
                      {},
                      {},
@@ -1209,7 +1204,7 @@ BOOST_AUTO_TEST_CASE(add_solo_sections_add_correct_ranges)
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
     builder.add_solo_sections(track.solos(DrumSettings::default_settings()),
-                              192);
+                              {});
     std::vector<std::tuple<double, double>> expected_solo_ranges {{1.0, 2.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -1253,14 +1248,15 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
 
 BOOST_AUTO_TEST_CASE(solos_are_added)
 {
-    NoteTrack track {{make_note(768)},
-                     {},
-                     {{0, 100, 100}, {200, 800, 100}},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    NoteTrack track {
+        {make_note(768)},
+        {},
+        {{Tick {0}, Tick {100}, 100}, {Tick {200}, Tick {800}, 100}},
+        {},
+        {},
+        {},
+        TrackType::FiveFret,
+        std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {{}, ChGuitarEngine(), {}},
                      {},
@@ -1285,7 +1281,7 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
 {
     NoteTrack track {{make_note(0)},
                      {},
-                     {{0, 1600, 50}},
+                     {{Tick {0}, Tick {1600}, 50}},
                      {},
                      {},
                      {},
@@ -1379,7 +1375,7 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
 {
     NoteTrack track {{make_note(0), make_note(192, 768)},
-                     {{192, 50}},
+                     {{Tick {192}, Tick {50}}},
                      {},
                      {},
                      {},
@@ -1402,7 +1398,7 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
 BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
 {
     NoteTrack track {{make_note(0), make_note(192)},
-                     {{0, 50}},
+                     {{Tick {0}, Tick {50}}},
                      {},
                      {},
                      {},
@@ -1422,7 +1418,7 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},
                50};
-    builder.set_total_score(points, {{0, 1, 100}}, path);
+    builder.set_total_score(points, {{Tick {0}, Tick {1}, 100}}, path);
 
     BOOST_CHECK_EQUAL(builder.total_score(), 250);
 }
@@ -1473,16 +1469,19 @@ BOOST_AUTO_TEST_SUITE(add_sp_percent_values_adds_correct_values)
 
 BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
 {
-    NoteTrack track {
-        {make_note(960), make_note(1080), make_note(1920), make_note(3840),
-         make_note(4050), make_note(19200)},
-        {{960, 10}, {1080, 10}, {1920, 10}, {3840, 10}, {4050, 10}},
-        {},
-        {},
-        {},
-        {},
-        TrackType::FiveFret,
-        std::make_shared<SongGlobalData>()};
+    NoteTrack track {{make_note(960), make_note(1080), make_note(1920),
+                      make_note(3840), make_note(4050), make_note(19200)},
+                     {{Tick {960}, Tick {10}},
+                      {Tick {1080}, Tick {10}},
+                      {Tick {1920}, Tick {10}},
+                      {Tick {3840}, Tick {10}},
+                      {Tick {4050}, Tick {10}}},
+                     {},
+                     {},
+                     {},
+                     {},
+                     TrackType::FiveFret,
+                     std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      converter,
@@ -1515,12 +1514,12 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
 {
     NoteTrack track {{make_note(960), make_note(1080), make_note(1920),
                       make_note(3840), make_note(4050), make_note(19200)},
-                     {{960, 10},
-                      {1080, 10},
-                      {1920, 10},
-                      {3840, 10},
-                      {4050, 10},
-                      {19200, 10}},
+                     {{Tick {960}, Tick {10}},
+                      {Tick {1080}, Tick {10}},
+                      {Tick {1920}, Tick {10}},
+                      {Tick {3840}, Tick {10}},
+                      {Tick {4050}, Tick {10}},
+                      {Tick {19200}, Tick {10}}},
                      {},
                      {},
                      {},
@@ -1558,7 +1557,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
 BOOST_AUTO_TEST_CASE(whammy_is_added)
 {
     NoteTrack track {{make_note(960), make_note(1632, 1920)},
-                     {{960, 10}, {1632, 10}},
+                     {{Tick {960}, Tick {10}}, {Tick {1632}, Tick {10}}},
                      {},
                      {},
                      {},
@@ -1596,7 +1595,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
 BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
 {
     NoteTrack track {{make_note(960), make_note(1632, 1920)},
-                     {{960, 10}, {1632, 10}},
+                     {{Tick {960}, Tick {10}}, {Tick {1632}, Tick {10}}},
                      {},
                      {},
                      {},
@@ -1635,7 +1634,10 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
 {
     NoteTrack track {{make_note(960), make_note(1632, 1920), make_note(6336),
                       make_note(6528), make_note(7104)},
-                     {{960, 10}, {1632, 10}, {6336, 10}, {6528, 10}},
+                     {{Tick {960}, Tick {10}},
+                      {Tick {1632}, Tick {10}},
+                      {Tick {6336}, Tick {10}},
+                      {Tick {6528}, Tick {10}}},
                      {},
                      {},
                      {},
@@ -1678,7 +1680,9 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
 {
     NoteTrack track {{make_note(0), make_note(192), make_note(384),
                       make_note(3224), make_note(3456)},
-                     {{0, 10}, {192, 10}, {3224, 10}},
+                     {{Tick {0}, Tick {10}},
+                      {Tick {192}, Tick {10}},
+                      {Tick {3224}, Tick {10}}},
                      {},
                      {},
                      {},

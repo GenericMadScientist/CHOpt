@@ -47,11 +47,11 @@ bool ends_with_suffix(const std::string& string, std::string_view suffix)
 // Takes a sequence of points where some note type/event is turned on, and a
 // sequence where said type is turned off, and returns a tuple of intervals
 // where the event is on.
-std::vector<std::tuple<int, int>>
+std::vector<std::tuple<Tick, Tick>>
 combine_solo_events(const std::vector<int>& on_events,
                     const std::vector<int>& off_events)
 {
-    std::vector<std::tuple<int, int>> ranges;
+    std::vector<std::tuple<Tick, Tick>> ranges;
 
     auto on_iter = on_events.cbegin();
     auto off_iter = off_events.cbegin();
@@ -81,7 +81,7 @@ std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
 
     for (auto [start, end] :
          combine_solo_events(solo_on_events, solo_off_events)) {
-        std::set<int> positions_in_solo;
+        std::set<Tick> positions_in_solo;
         auto note_count = 0;
         for (const auto& note : notes) {
             if ((note.position >= start && note.position < end)
@@ -111,8 +111,8 @@ note_from_colour_key_map(const std::map<int, int>& colour_map, int position,
         return std::nullopt;
     }
     Note note;
-    note.position = position;
-    note.lengths.at(colour_iter->second) = length;
+    note.position = Tick {position};
+    note.lengths.at(colour_iter->second) = Tick {length};
     note.flags = flags;
     return note;
 }
@@ -208,9 +208,9 @@ add_fifth_lane_greens(std::vector<Note> notes,
 {
     constexpr int FIVE_LANE_GREEN = 5;
 
-    std::set<int> green_positions;
+    std::set<Tick> green_positions;
     for (const auto& note : notes) {
-        if (note.lengths[3] != -1) {
+        if (note.lengths[3] != Tick {-1}) {
             green_positions.insert(note.position);
         }
     }
@@ -219,12 +219,12 @@ add_fifth_lane_greens(std::vector<Note> notes,
             continue;
         }
         Note note;
-        note.position = note_event.position;
+        note.position = Tick {note_event.position};
         note.flags = FLAGS_DRUMS;
-        if (green_positions.count(note_event.position) != 0) {
-            note.lengths[DRUM_BLUE] = 0;
+        if (green_positions.count(Tick {note_event.position}) != 0) {
+            note.lengths[DRUM_BLUE] = Tick {0};
         } else {
-            note.lengths[DRUM_GREEN] = 0;
+            note.lengths[DRUM_GREEN] = Tick {0};
         }
         notes.push_back(note);
     }
@@ -270,16 +270,16 @@ std::vector<Note> apply_cymbal_events(const std::vector<Note>& notes)
 
 int no_dynamics_lane_colour(const Note& note)
 {
-    if (note.lengths[DRUM_RED] != -1) {
+    if (note.lengths[DRUM_RED] != Tick {-1}) {
         return 0;
     }
-    if (note.lengths[DRUM_YELLOW] != -1) {
+    if (note.lengths[DRUM_YELLOW] != Tick {-1}) {
         return 1;
     }
-    if (note.lengths[DRUM_BLUE] != -1) {
+    if (note.lengths[DRUM_BLUE] != Tick {-1}) {
         return 2;
     }
-    if (note.lengths[DRUM_GREEN] != -1) {
+    if (note.lengths[DRUM_GREEN] != Tick {-1}) {
         return 3;
     }
     return -1;
@@ -293,18 +293,20 @@ apply_dynamics_events(std::vector<Note> notes,
     constexpr int ACCENT_BASE = 40;
     constexpr int LANE_COUNT = 4;
 
-    std::set<std::tuple<int, int>> accent_events;
-    std::set<std::tuple<int, int>> ghost_events;
+    std::set<std::tuple<Tick, int>> accent_events;
+    std::set<std::tuple<Tick, int>> ghost_events;
 
     for (const auto& event : note_events) {
         if (event.fret > ACCENT_BASE + LANE_COUNT || event.fret < GHOST_BASE) {
             continue;
         }
         if (event.fret < GHOST_BASE + LANE_COUNT) {
-            accent_events.emplace(event.position, event.fret - GHOST_BASE);
+            accent_events.emplace(Tick {event.position},
+                                  event.fret - GHOST_BASE);
         }
         if (event.fret >= ACCENT_BASE) {
-            ghost_events.emplace(event.position, event.fret - ACCENT_BASE);
+            ghost_events.emplace(Tick {event.position},
+                                 event.fret - ACCENT_BASE);
         }
     }
     for (auto& note : notes) {
@@ -351,9 +353,11 @@ NoteTrack note_track_from_section(const ChartSection& section,
     std::vector<StarPower> sp;
     for (const auto& phrase : section.special_events) {
         if (phrase.key == 2) {
-            sp.push_back(StarPower {phrase.position, phrase.length});
+            sp.push_back(
+                StarPower {Tick {phrase.position}, Tick {phrase.length}});
         } else if (phrase.key == DRUM_FILL_KEY) {
-            fills.push_back(DrumFill {phrase.position, phrase.length});
+            fills.push_back(
+                DrumFill {Tick {phrase.position}, Tick {phrase.length}});
         }
     }
     if (track_type != TrackType::Drums) {
@@ -958,8 +962,8 @@ std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
     bool has_bre = false;
-    int bre_start = 0;
-    int bre_end = 0;
+    Tick bre_start {0};
+    Tick bre_end {0};
 
     for (const auto& event : midi_track.events) {
         const auto* midi_event = std::get_if<MidiEvent>(&event.event);
@@ -972,12 +976,12 @@ std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
         const auto event_type = midi_event->status & UPPER_NIBBLE_MASK;
         if (event_type == NOTE_OFF_ID
             || (event_type == NOTE_ON_ID && midi_event->data[1] == 0)) {
-            bre_end = event.time;
+            bre_end = Tick {event.time};
             has_bre = true;
             break;
         }
         if (event_type == NOTE_ON_ID) {
-            bre_start = event.time;
+            bre_start = Tick {event.time};
         }
     }
 
@@ -1015,8 +1019,8 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
                 }
             }
             Note note;
-            note.position = pos;
-            note.lengths.at(note_colour) = note_length;
+            note.position = Tick {pos};
+            note.lengths.at(note_colour) = Tick {note_length};
             note.flags = flags_from_track_type(track_type);
             notes[diff].push_back(note);
         }
@@ -1048,7 +1052,7 @@ note_tracks_from_midi(const MidiTrack& midi_track,
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.sp_on_events, event_track.sp_off_events)) {
-        sp_phrases.push_back({start, end - start});
+        sp_phrases.push_back({Tick {start}, Tick {end - start}});
     }
 
     std::map<Difficulty, NoteTrack> note_tracks;
@@ -1092,7 +1096,7 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track,
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.sp_on_events, event_track.sp_off_events)) {
-        sp_phrases.push_back({start, end - start});
+        sp_phrases.push_back({Tick {start}, Tick {end - start}});
     }
 
     std::map<Difficulty, NoteTrack> note_tracks;
@@ -1127,17 +1131,17 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track,
 // cymbal + B tom. This combination cannot happen from a four lane chart.
 void fix_double_greens(std::vector<Note>& notes)
 {
-    std::set<int> green_cymbal_positions;
+    std::set<Tick> green_cymbal_positions;
 
     for (const auto& note : notes) {
-        if ((note.lengths.at(DRUM_GREEN) != -1)
+        if ((note.lengths.at(DRUM_GREEN) != Tick {-1})
             && ((note.flags & FLAGS_CYMBAL) != 0U)) {
             green_cymbal_positions.insert(note.position);
         }
     }
 
     for (auto& note : notes) {
-        if ((note.lengths.at(DRUM_GREEN) == -1)
+        if ((note.lengths.at(DRUM_GREEN) == Tick {-1})
             || ((note.flags & FLAGS_CYMBAL) != 0U)) {
             continue;
         }
@@ -1209,8 +1213,8 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
         for (const auto& [pos, end] :
              combine_note_on_off_events(note_ons, note_offs)) {
             Note note;
-            note.position = pos;
-            note.lengths.at(colour) = 0;
+            note.position = Tick {pos};
+            note.lengths.at(colour) = Tick {0};
             note.flags = flags;
             if (tom_events.force_tom(colour, pos)) {
                 note.flags = static_cast<NoteFlags>(note.flags & ~FLAGS_CYMBAL);
@@ -1223,13 +1227,13 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.sp_on_events, event_track.sp_off_events)) {
-        sp_phrases.push_back({start, end - start});
+        sp_phrases.push_back({Tick {start}, Tick {end - start}});
     }
 
     std::vector<DrumFill> drum_fills;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.fill_on_events, event_track.fill_off_events)) {
-        drum_fills.push_back({start, end - start});
+        drum_fills.push_back({Tick {start}, Tick {end - start}});
     }
 
     std::map<Difficulty, NoteTrack> note_tracks;
@@ -1248,7 +1252,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
         for (const auto& [start, end] : combine_note_on_off_events(
                  event_track.disco_flip_on_events.at(diff),
                  event_track.disco_flip_off_events.at(diff))) {
-            disco_flips.push_back({start, end - start});
+            disco_flips.push_back({Tick {start}, Tick {end - start}});
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
                                       TrackType::Drums, true);
@@ -1515,9 +1519,9 @@ const NoteTrack& Song::track(Instrument instrument, Difficulty difficulty) const
     return m_tracks.at({instrument, difficulty});
 }
 
-std::vector<int> Song::unison_phrase_positions() const
+std::vector<Tick> Song::unison_phrase_positions() const
 {
-    std::map<int, std::set<Instrument>> phrase_by_instrument;
+    std::map<Tick, std::set<Instrument>> phrase_by_instrument;
     for (const auto& [key, value] : m_tracks) {
         const auto instrument = std::get<0>(key);
         if (is_six_fret_instrument(instrument)) {
@@ -1528,7 +1532,7 @@ std::vector<int> Song::unison_phrase_positions() const
         }
     }
 
-    std::vector<int> unison_starts;
+    std::vector<Tick> unison_starts;
     for (const auto& [key, value] : phrase_by_instrument) {
         if (value.size() > 1) {
             unison_starts.push_back(key);

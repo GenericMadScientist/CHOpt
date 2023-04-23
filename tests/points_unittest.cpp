@@ -451,7 +451,9 @@ BOOST_AUTO_TEST_CASE(points_are_sorted)
 BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)
 {
     NoteTrack track {{make_note(768), make_note(960), make_note(1152)},
-                     {{768, 1}, {900, 50}, {1100, 53}},
+                     {{Tick {768}, Tick {1}},
+                      {Tick {900}, Tick {50}},
+                      {Tick {1100}, Tick {53}}},
                      {},
                      {},
                      {},
@@ -467,7 +469,7 @@ BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)
                      ChGuitarEngine()};
     PointSet unison_points {track,
                             converter,
-                            {{1100, 53}},
+                            {{Tick {1100}, Tick {53}}},
                             SqueezeSettings::default_settings(),
                             DrumSettings::default_settings(),
                             Rb3Engine()};
@@ -562,7 +564,7 @@ BOOST_AUTO_TEST_CASE(later_sustain_points_in_extended_sustains_are_multiplied)
     for (int i = 0; i < 10; ++i) {
         notes.push_back(make_note(192 * i));
     }
-    notes[0].lengths[0] = 2000;
+    notes[0].lengths[0] = Tick {2000};
 
     NoteTrack track {notes,
                      {},
@@ -936,7 +938,8 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
 {
     std::vector<Note> notes {make_note(100, 0), make_note(200, 100),
                              make_note(400, 0)};
-    std::vector<StarPower> phrases {{200, 1}, {400, 1}};
+    std::vector<StarPower> phrases {{Tick {200}, Tick {1}},
+                                    {Tick {400}, Tick {1}}};
     NoteTrack track {notes,
                      phrases,
                      {},
@@ -965,7 +968,8 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
 
 BOOST_AUTO_TEST_CASE(solo_sections_are_added)
 {
-    std::vector<Solo> solos {{0, 576, 100}, {768, 1152, 200}};
+    std::vector<Solo> solos {{Tick {0}, Tick {576}, 100},
+                             {Tick {768}, Tick {1152}, 200}};
     NoteTrack track {{},
                      {},
                      solos,
@@ -1152,7 +1156,7 @@ BOOST_AUTO_TEST_CASE(disable_kick_doesnt_kill_sp_phrases)
 {
     std::vector<Note> notes {make_drum_note(0, DRUM_RED),
                              make_drum_note(192, DRUM_KICK)};
-    std::vector<StarPower> phrases {{0, 200}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
     NoteTrack track {notes,
                      phrases,
                      {},
@@ -1175,7 +1179,7 @@ BOOST_AUTO_TEST_CASE(double_kicks_dont_kill_phrases)
 {
     std::vector<Note> notes {make_drum_note(0, DRUM_RED),
                              make_drum_note(192, DRUM_DOUBLE_KICK)};
-    std::vector<StarPower> phrases {{0, 200}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
     NoteTrack track {notes,
                      phrases,
                      {},
@@ -1198,7 +1202,7 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(192),
                              make_drum_note(385), make_drum_note(576)};
-    std::vector<DrumFill> fills {{384, 5}};
+    std::vector<DrumFill> fills {{Tick {384}, Tick {5}}};
     NoteTrack track {notes,
                      {},
                      {},
@@ -1224,7 +1228,7 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
 BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_not_killed)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(1, DRUM_KICK)};
-    std::vector<DrumFill> fills {{0, 2}};
+    std::vector<DrumFill> fills {{Tick {0}, Tick {2}}};
     NoteTrack track {notes,
                      {},
                      {},
@@ -1249,7 +1253,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_not_killed)
 {
     std::vector<Note> notes {make_drum_note(0),
                              make_drum_note(1, DRUM_DOUBLE_KICK)};
-    std::vector<DrumFill> fills {{0, 2}};
+    std::vector<DrumFill> fills {{Tick {0}, Tick {2}}};
     NoteTrack track {notes,
                      {},
                      {},
@@ -1274,7 +1278,7 @@ BOOST_AUTO_TEST_CASE(
     fills_ending_in_a_multi_note_have_the_activation_attached_to_the_first_note)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(0, DRUM_KICK)};
-    std::vector<DrumFill> fills {{0, 2}};
+    std::vector<DrumFill> fills {{Tick {0}, Tick {2}}};
     NoteTrack track {notes,
                      {},
                      {},
@@ -1299,7 +1303,8 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(192),
                              make_drum_note(370), make_drum_note(384)};
-    std::vector<DrumFill> fills {{0, 2}, {193, 5}, {377, 4}};
+    std::vector<DrumFill> fills {
+        {Tick {0}, Tick {2}}, {Tick {193}, Tick {5}}, {Tick {377}, Tick {4}}};
     NoteTrack track {notes,
                      {},
                      {},
@@ -1325,7 +1330,7 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
 BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(192)};
-    std::vector<DrumFill> fills {{0, 96}};
+    std::vector<DrumFill> fills {{Tick {0}, Tick {96}}};
     NoteTrack track {notes,
                      {},
                      {},
@@ -1431,7 +1436,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
 BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384)};
-    std::vector<StarPower> phrases {{0, 200}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
     NoteTrack track {notes,
                      phrases,
                      {},
@@ -1454,7 +1459,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
 BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384)};
-    std::vector<StarPower> phrases {{0, 200}};
+    std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
     NoteTrack track {notes,
                      phrases,
                      {},

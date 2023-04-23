@@ -80,8 +80,9 @@ private:
     int open_index() const;
 
 public:
-    int position {0};
-    std::array<int, 7> lengths {{-1, -1, -1, -1, -1, -1, -1}};
+    Tick position {0};
+    std::array<Tick, 7> lengths {{Tick {-1}, Tick {-1}, Tick {-1}, Tick {-1},
+                                  Tick {-1}, Tick {-1}, Tick {-1}}};
     NoteFlags flags {0};
 
     [[nodiscard]] int colours() const;
@@ -92,29 +93,29 @@ public:
 };
 
 struct StarPower {
-    int position;
-    int length;
+    Tick position;
+    Tick length;
 };
 
 struct Solo {
-    int start;
-    int end;
+    Tick start;
+    Tick end;
     int value;
 };
 
 struct DrumFill {
-    int position;
-    int length;
+    Tick position;
+    Tick length;
 };
 
 struct DiscoFlip {
-    int position;
-    int length;
+    Tick position;
+    Tick length;
 };
 
 struct BigRockEnding {
-    int start;
-    int end;
+    Tick start;
+    Tick end;
 };
 
 // Invariants:
@@ -216,7 +217,7 @@ public:
     [[nodiscard]] int base_score(DrumSettings drum_settings
                                  = DrumSettings::default_settings()) const;
     [[nodiscard]] NoteTrack trim_sustains() const;
-    [[nodiscard]] NoteTrack snap_chords(int snap_gap) const;
+    [[nodiscard]] NoteTrack snap_chords(Tick snap_gap) const;
 };
 
 #endif

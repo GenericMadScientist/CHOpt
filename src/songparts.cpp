@@ -27,7 +27,7 @@ Note combined_note(std::vector<Note>::const_iterator begin,
     while (begin < end) {
         for (auto i = 0U; i < note.lengths.size(); ++i) {
             const auto new_length = begin->lengths.at(i);
-            if (new_length != -1) {
+            if (new_length != Tick {-1}) {
                 note.lengths.at(i) = new_length;
             }
         }
@@ -52,7 +52,7 @@ int Note::colours() const
 {
     auto colour_flags = 0;
     for (auto i = 0U; i < lengths.size(); ++i) {
-        if (lengths.at(i) != -1) {
+        if (lengths.at(i) != Tick {-1}) {
             colour_flags |= 1 << i;
         }
     }
@@ -66,12 +66,12 @@ void Note::merge_non_opens_into_open()
         return;
     }
     const auto open_length = lengths.at(index);
-    if (open_length == -1) {
+    if (open_length == Tick {-1}) {
         return;
     }
     for (auto i = 0; i < static_cast<int>(lengths.size()); ++i) {
         if (i != index && lengths.at(i) == open_length) {
-            lengths.at(i) = -1;
+            lengths.at(i) = Tick {-1};
         }
     }
 }
@@ -84,7 +84,8 @@ void Note::disable_dynamics()
 bool Note::is_kick_note() const
 {
     return ((flags & FLAGS_DRUMS) != 0U)
-        && (lengths[DRUM_KICK] != -1 || lengths[DRUM_DOUBLE_KICK] != -1);
+        && (lengths[DRUM_KICK] != Tick {-1}
+            || lengths[DRUM_DOUBLE_KICK] != Tick {-1});
 }
 
 bool Note::is_skipped_kick(const DrumSettings& settings) const
@@ -92,7 +93,7 @@ bool Note::is_skipped_kick(const DrumSettings& settings) const
     if (!is_kick_note()) {
         return false;
     }
-    if (lengths[DRUM_KICK] != -1) {
+    if (lengths[DRUM_KICK] != Tick {-1}) {
         return settings.disable_kick;
     }
     return !settings.enable_double_kick;
@@ -102,11 +103,11 @@ void NoteTrack::compute_base_score_ticks()
 {
     constexpr int BASE_SUSTAIN_DENSITY = 25;
 
-    auto total_ticks = 0;
+    Tick total_ticks {0};
     for (const auto& note : m_notes) {
-        std::vector<int> constituent_lengths;
+        std::vector<Tick> constituent_lengths;
         for (auto length : note.lengths) {
-            if (length != -1) {
+            if (length != Tick {-1}) {
                 constituent_lengths.push_back(length);
             }
         }
@@ -122,7 +123,8 @@ void NoteTrack::compute_base_score_ticks()
 
     const auto resolution = m_global_data->resolution();
     m_base_score_ticks
-        = (total_ticks * BASE_SUSTAIN_DENSITY + resolution - 1) / resolution;
+        = (total_ticks.value() * BASE_SUSTAIN_DENSITY + resolution - 1)
+        / resolution;
 }
 
 void NoteTrack::merge_same_time_notes()
@@ -177,8 +179,8 @@ NoteTrack::NoteTrack(std::vector<Note> notes,
         m_notes.push_back(*prev_note);
     }
 
-    std::vector<int> sp_starts;
-    std::vector<int> sp_ends;
+    std::vector<Tick> sp_starts;
+    std::vector<Tick> sp_ends;
     sp_starts.reserve(sp_phrases.size());
     sp_ends.reserve(sp_phrases.size());
 
@@ -237,24 +239,25 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
         return;
     }
 
-    std::vector<std::tuple<Second, int>> note_times;
+    std::vector<std::tuple<Second, Tick>> note_times;
+    const auto& tempo_map = m_global_data->tempo_map();
     const auto resolution = static_cast<double>(m_global_data->resolution());
     for (const auto& n : m_notes) {
         const auto seconds
-            = converter.beats_to_seconds(Beat(n.position / resolution));
+            = converter.beats_to_seconds(tempo_map.to_beat(n.position));
         note_times.emplace_back(seconds, n.position);
     }
     const auto final_note_s = converter.beats_to_seconds(
-        Beat(m_notes.back().position / resolution));
+        tempo_map.to_beat(m_notes.back().position));
     const auto measure_bound
         = converter.seconds_to_measures(final_note_s + FILL_DELAY);
     Measure m {1.0};
     while (m <= measure_bound) {
         const auto fill_seconds = converter.measures_to_seconds(m);
-        const auto measure_ticks = static_cast<int>(
-            resolution * converter.measures_to_beats(m).value());
+        const Tick measure_ticks {static_cast<int>(
+            resolution * converter.measures_to_beats(m).value())};
         bool exists_close_note = false;
-        int close_note_position = 0;
+        Tick close_note_position {0};
         for (const auto& [s, pos] : note_times) {
             const auto s_diff = s - fill_seconds;
             if (s_diff > FILL_DELAY) {
@@ -266,8 +269,8 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
             if (!exists_close_note) {
                 exists_close_note = true;
                 close_note_position = pos;
-            } else if (std::abs(measure_ticks - pos)
-                       <= std::abs(measure_ticks - close_note_position)) {
+            } else if (std::abs((measure_ticks - pos).value()) <= std::abs(
+                           (measure_ticks - close_note_position).value())) {
                 close_note_position = pos;
             }
         }
@@ -279,8 +282,8 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
         const auto prev_m_seconds
             = converter.measures_to_seconds(m - Measure(1.0));
         const auto mid_m_seconds = (m_seconds + prev_m_seconds) * 0.5;
-        const auto fill_start = static_cast<int>(
-            resolution * converter.seconds_to_beats(mid_m_seconds).value());
+        const Tick fill_start {static_cast<int>(
+            resolution * converter.seconds_to_beats(mid_m_seconds).value())};
         m_drum_fills.push_back(
             DrumFill {fill_start, measure_ticks - fill_start});
         m += FILL_GAP;
@@ -334,7 +337,7 @@ int NoteTrack::base_score(DrumSettings drum_settings) const
             continue;
         }
         for (auto l : note.lengths) {
-            if (l != -1) {
+            if (l != Tick {-1}) {
                 ++note_count;
             }
         }
@@ -350,13 +353,13 @@ NoteTrack NoteTrack::trim_sustains() const
 
     auto trimmed_track = *this;
     const auto resolution = m_global_data->resolution();
-    const auto sust_cutoff
-        = (DEFAULT_SUST_CUTOFF * resolution) / DEFAULT_RESOLUTION;
+    const Tick sust_cutoff {(DEFAULT_SUST_CUTOFF * resolution)
+                            / DEFAULT_RESOLUTION};
 
     for (auto& note : trimmed_track.m_notes) {
         for (auto& length : note.lengths) {
-            if (length != -1 && length <= sust_cutoff) {
-                length = 0;
+            if (length != Tick {-1} && length <= sust_cutoff) {
+                length = Tick {0};
             }
         }
     }
@@ -366,7 +369,7 @@ NoteTrack NoteTrack::trim_sustains() const
     return trimmed_track;
 }
 
-NoteTrack NoteTrack::snap_chords(int snap_gap) const
+NoteTrack NoteTrack::snap_chords(Tick snap_gap) const
 {
     auto new_track = *this;
     auto& new_notes = new_track.m_notes;

@@ -70,16 +70,15 @@ double get_denom(const TempoMap& tempo_map, Beat beat)
 DrawnNote note_to_drawn_note(const Note& note, const NoteTrack& track)
 {
     constexpr auto COLOURS_SIZE = 7;
-    const auto resolution
-        = static_cast<double>(track.global_data().resolution());
-    const auto beat = note.position / resolution;
+    const auto& tempo_map = track.global_data().tempo_map();
+    const auto beat = tempo_map.to_beat(note.position);
 
     std::array<double, COLOURS_SIZE> lengths {};
     for (auto i = 0; i < COLOURS_SIZE; ++i) {
-        if (note.lengths.at(i) == -1) {
+        if (note.lengths.at(i) == Tick {-1}) {
             lengths.at(i) = -1;
         } else {
-            lengths.at(i) = note.lengths.at(i) / resolution;
+            lengths.at(i) = tempo_map.to_beat(note.lengths.at(i)).value();
         }
     }
 
@@ -92,10 +91,10 @@ DrawnNote note_to_drawn_note(const Note& note, const NoteTrack& track)
         }
     }
 
-    return {beat, lengths, note.flags, is_sp_note};
+    return {beat.value(), lengths, note.flags, is_sp_note};
 }
 
-bool is_in_disco_flips(const std::vector<DiscoFlip>& disco_flips, int position)
+bool is_in_disco_flips(const std::vector<DiscoFlip>& disco_flips, Tick position)
 {
     return std::any_of(disco_flips.cbegin(), disco_flips.cend(),
                        [&](const auto& flip) {
@@ -118,12 +117,12 @@ std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
             drawn_note.note_flags
                 = static_cast<NoteFlags>(drawn_note.note_flags & ~FLAGS_CYMBAL);
         } else if (is_in_disco_flips(track.disco_flips(), note.position)) {
-            if (note.lengths[DRUM_RED] != -1) {
+            if (note.lengths[DRUM_RED] != Tick {-1}) {
                 std::swap(drawn_note.lengths[DRUM_RED],
                           drawn_note.lengths[DRUM_YELLOW]);
                 drawn_note.note_flags = static_cast<NoteFlags>(
                     drawn_note.note_flags | FLAGS_CYMBAL);
-            } else if (note.lengths[DRUM_YELLOW] != 1
+            } else if (note.lengths[DRUM_YELLOW] != Tick {-1}
                        && (note.flags & FLAGS_CYMBAL) != 0U) {
                 std::swap(drawn_note.lengths[DRUM_RED],
                           drawn_note.lengths[DRUM_YELLOW]);
@@ -140,7 +139,7 @@ std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
 std::vector<DrawnRow> drawn_rows(const NoteTrack& track,
                                  const TempoMap& tempo_map)
 {
-    int max_pos = 0;
+    Tick max_pos {0};
     for (const auto& note : track.notes()) {
         const auto length
             = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
@@ -148,8 +147,7 @@ std::vector<DrawnRow> drawn_rows(const NoteTrack& track,
         max_pos = std::max(max_pos, note_end);
     }
 
-    const auto resolution = track.global_data().resolution();
-    const auto max_beat = max_pos / static_cast<double>(resolution);
+    const auto max_beat = tempo_map.to_beat(max_pos).value();
     auto current_beat = 0.0;
     std::vector<DrawnRow> rows;
 
@@ -309,20 +307,19 @@ ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
     while (p->position < phrase.position) {
         ++p;
     }
-    const auto resolution
-        = static_cast<double>(track.global_data().resolution());
-    const auto start = p->position / resolution;
+    const auto& tempo_map = track.global_data().tempo_map();
+    const auto start = tempo_map.to_beat(p->position).value();
     if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
         return {-1, -1};
     }
     const auto phrase_end = phrase.position + phrase.length;
     auto end = start;
     while (p < track.notes().cend() && p->position < phrase_end) {
-        auto max_length = 0;
+        Tick max_length {0};
         for (auto length : p->lengths) {
             max_length = std::max(max_length, length);
         }
-        auto current_end = (p->position + max_length) / resolution;
+        auto current_end = tempo_map.to_beat(p->position + max_length).value();
         end = std::max(end, current_end);
         ++p;
     }
@@ -359,30 +356,30 @@ void ImageBuilder::add_bpms(const TempoMap& tempo_map)
     }
 }
 
-void ImageBuilder::add_bre(const BigRockEnding& bre, int resolution,
+void ImageBuilder::add_bre(const BigRockEnding& bre, const TempoMap& tempo_map,
                            const TimeConverter& converter)
 {
-    const auto seconds_start = converter.beats_to_seconds(
-        Beat {bre.start / static_cast<double>(resolution)});
-    const auto seconds_end = converter.beats_to_seconds(
-        Beat {bre.end / static_cast<double>(resolution)});
+    const auto seconds_start
+        = converter.beats_to_seconds(tempo_map.to_beat(bre.start));
+    const auto seconds_end
+        = converter.beats_to_seconds(tempo_map.to_beat(bre.end));
     const auto seconds_gap = seconds_end - seconds_start;
     const auto bre_value = static_cast<int>(750 + 500 * seconds_gap.value());
 
     m_total_score += bre_value;
     m_score_values.back() += bre_value;
 
-    m_bre_ranges.emplace_back(bre.start / static_cast<double>(resolution),
-                              bre.end / static_cast<double>(resolution));
+    m_bre_ranges.emplace_back(tempo_map.to_beat(bre.start).value(),
+                              tempo_map.to_beat(bre.end).value());
 }
 
 void ImageBuilder::add_drum_fills(const NoteTrack& track)
 {
-    const auto resolution
-        = static_cast<double>(track.global_data().resolution());
+    const auto& tempo_map = track.global_data().tempo_map();
     for (auto fill : track.drum_fills()) {
-        m_fill_ranges.emplace_back(fill.position / resolution,
-                                   (fill.position + fill.length) / resolution);
+        m_fill_ranges.emplace_back(
+            tempo_map.to_beat(fill.position).value(),
+            tempo_map.to_beat(fill.position + fill.length).value());
     }
 }
 
@@ -459,11 +456,11 @@ void ImageBuilder::add_measure_values(const PointSet& points,
 }
 
 void ImageBuilder::add_solo_sections(const std::vector<Solo>& solos,
-                                     int resolution)
+                                     const TempoMap& tempo_map)
 {
     for (const auto& solo : solos) {
-        auto start = solo.start / static_cast<double>(resolution);
-        auto end = solo.end / static_cast<double>(resolution);
+        const auto start = tempo_map.to_beat(solo.start).value();
+        const auto end = tempo_map.to_beat(solo.end).value();
         m_solo_ranges.emplace_back(start, end);
     }
 }
@@ -598,7 +595,7 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
 }
 
 void ImageBuilder::add_sp_phrases(const NoteTrack& track,
-                                  const std::vector<int>& unison_phrases,
+                                  const std::vector<Tick>& unison_phrases,
                                   const Path& path)
 {
     for (const auto& phrase : track.sp_phrases()) {
@@ -692,7 +689,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
 
     const auto solos = new_track.solos(settings.drum_settings);
     if (settings.draw_solos) {
-        builder.add_solo_sections(solos, new_track.global_data().resolution());
+        builder.add_solo_sections(solos, tempo_map);
     }
 
     if (settings.draw_time_sigs) {
@@ -701,7 +698,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
 
     const auto unison_positions = (settings.engine->has_unison_bonuses())
         ? song.unison_phrase_positions()
-        : std::vector<int> {};
+        : std::vector<Tick> {};
 
     // The 0.1% squeeze minimum is to get around dumb floating point rounding
     // issues that visibly affect the path at 0% squeeze.
@@ -752,8 +749,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     }
     builder.set_total_score(processed_track.points(), solos, path);
     if (settings.engine->has_bres() && new_track.bre().has_value()) {
-        builder.add_bre(*(new_track.bre()),
-                        new_track.global_data().resolution(),
+        builder.add_bre(*(new_track.bre()), tempo_map,
                         processed_track.converter());
     }
 

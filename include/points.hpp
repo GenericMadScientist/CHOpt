@@ -60,7 +60,7 @@ private:
 
     static std::vector<Point>
     points_from_track(const NoteTrack& track, const TimeConverter& converter,
-                      const std::vector<int>& unison_phrases,
+                      const std::vector<Tick>& unison_phrases,
                       const SqueezeSettings& squeeze_settings,
                       const DrumSettings& drum_settings, const Engine& engine);
 
@@ -70,12 +70,13 @@ private:
     next_sp_note_vector(const std::vector<Point>& points);
     static std::vector<int> score_totals(const std::vector<Point>& points);
     static std::vector<std::tuple<Position, int>>
-    solo_boosts_from_solos(const std::vector<Solo>& solos, int resolution,
+    solo_boosts_from_solos(const std::vector<Solo>& solos,
+                           const TempoMap& tempo_map,
                            const TimeConverter& converter);
 
 public:
     PointSet(const NoteTrack& track, const TimeConverter& converter,
-             const std::vector<int>& unison_phrases,
+             const std::vector<Tick>& unison_phrases,
              const SqueezeSettings& squeeze_settings,
              const DrumSettings& drum_settings, const Engine& engine);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
