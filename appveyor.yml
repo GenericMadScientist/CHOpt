@@ -5,10 +5,10 @@ platform: x64
 
 environment:
   matrix:
-    - job_name: Windows (MSVC)
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     - job_name: Linux (GCC, tests, and static analysis)
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+    - job_name: Windows (MSVC)
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     - job_name: Mac OSX (Clang)
       APPVEYOR_BUILD_WORKER_IMAGE: macOS-BigSur
 
@@ -87,11 +87,6 @@ for:
     build_script:
     - ps: if (-Not (Test-Path C:\Tools\vcpkg\archives)) { mkdir C:\Tools\vcpkg\archives }
     - ps: vcpkg --triplet x64-windows install libpng
-    - ps: ls C:\Qt\6.4
-    - ps: ls C:\Qt\6.4\msvc2019_64
-    - ps: ls C:\Qt\6.4\msvc2019_64\lib
-    - ps: ls C:\Qt\6.4\msvc2019_64\lib\cmake
-    - ps: ls C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6
     - ps: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DPACKAGE_TESTS=OFF -DBOOST_ROOT=C:\Libraries\boost_1_77_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
     - ps: cmake --build . --verbose --config $env:CONFIGURATION
 
