@@ -961,9 +961,7 @@ std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
-    bool has_bre = false;
     Tick bre_start {0};
-    Tick bre_end {0};
 
     for (const auto& event : midi_track.events) {
         const auto* midi_event = std::get_if<MidiEvent>(&event.event);
@@ -976,19 +974,15 @@ std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
         const auto event_type = midi_event->status & UPPER_NIBBLE_MASK;
         if (event_type == NOTE_OFF_ID
             || (event_type == NOTE_ON_ID && midi_event->data[1] == 0)) {
-            bre_end = Tick {event.time};
-            has_bre = true;
-            break;
+            const Tick bre_end {event.time};
+            return {{bre_start, bre_end}};
         }
         if (event_type == NOTE_ON_ID) {
             bre_start = Tick {event.time};
         }
     }
 
-    if (!has_bre) {
-        return std::nullopt;
-    }
-    return {{bre_start, bre_end}};
+    return std::nullopt;
 }
 
 std::map<Difficulty, std::vector<Note>> notes_from_event_track(
