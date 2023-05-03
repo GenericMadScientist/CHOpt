@@ -241,7 +241,6 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
 
     std::vector<std::tuple<Second, Tick>> note_times;
     const auto& tempo_map = m_global_data->tempo_map();
-    const auto resolution = static_cast<double>(m_global_data->resolution());
     for (const auto& n : m_notes) {
         const auto seconds
             = converter.beats_to_seconds(tempo_map.to_beat(n.position));
@@ -254,8 +253,8 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
     Measure m {1.0};
     while (m <= measure_bound) {
         const auto fill_seconds = converter.measures_to_seconds(m);
-        const Tick measure_ticks {static_cast<int>(
-            resolution * converter.measures_to_beats(m).value())};
+        const auto measure_ticks
+            = tempo_map.to_tick(converter.measures_to_beats(m));
         bool exists_close_note = false;
         Tick close_note_position {0};
         for (const auto& [s, pos] : note_times) {
@@ -282,8 +281,8 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
         const auto prev_m_seconds
             = converter.measures_to_seconds(m - Measure(1.0));
         const auto mid_m_seconds = (m_seconds + prev_m_seconds) * 0.5;
-        const Tick fill_start {static_cast<int>(
-            resolution * converter.seconds_to_beats(mid_m_seconds).value())};
+        const auto fill_start
+            = tempo_map.to_tick(converter.seconds_to_beats(mid_m_seconds));
         m_drum_fills.push_back(
             DrumFill {fill_start, measure_ticks - fill_start});
         m += FILL_GAP;

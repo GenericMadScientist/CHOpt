@@ -80,6 +80,10 @@ public:
     {
         return Beat {tick.value() / static_cast<double>(m_resolution)};
     }
+    [[nodiscard]] Tick to_tick(Beat beat) const
+    {
+        return Tick {static_cast<int>(beat.value() * m_resolution)};
+    }
 };
 
 #endif
