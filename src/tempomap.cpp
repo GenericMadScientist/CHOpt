@@ -134,3 +134,13 @@ Second TempoMap::to_seconds(Beat beats) const
         + (pos->time - prev->time)
         * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
+
+Second TempoMap::to_seconds(Tick ticks) const
+{
+    return to_seconds(to_beats(ticks));
+}
+
+Tick TempoMap::to_ticks(Second seconds) const
+{
+    return to_ticks(to_beats(seconds));
+}

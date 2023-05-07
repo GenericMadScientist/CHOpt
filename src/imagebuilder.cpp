@@ -357,9 +357,8 @@ void ImageBuilder::add_bpms(const TempoMap& tempo_map)
 
 void ImageBuilder::add_bre(const BigRockEnding& bre, const TempoMap& tempo_map)
 {
-    const auto seconds_start
-        = tempo_map.to_seconds(tempo_map.to_beats(bre.start));
-    const auto seconds_end = tempo_map.to_seconds(tempo_map.to_beats(bre.end));
+    const auto seconds_start = tempo_map.to_seconds(bre.start);
+    const auto seconds_end = tempo_map.to_seconds(bre.end);
     const auto seconds_gap = seconds_end - seconds_start;
     const auto bre_value = static_cast<int>(750 + 500 * seconds_gap.value());
 

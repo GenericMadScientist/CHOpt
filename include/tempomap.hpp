@@ -92,11 +92,13 @@ public:
     }
 
     [[nodiscard]] Second to_seconds(Beat beats) const;
+    [[nodiscard]] Second to_seconds(Tick ticks) const;
 
     [[nodiscard]] Tick to_ticks(Beat beats) const
     {
         return Tick {static_cast<int>(beats.value() * m_resolution)};
     }
+    [[nodiscard]] Tick to_ticks(Second seconds) const;
 };
 
 #endif

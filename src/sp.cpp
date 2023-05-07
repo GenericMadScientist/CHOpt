@@ -86,18 +86,13 @@ SpData::note_spans(const NoteTrack& track, double early_whammy,
         auto early_gap = std::numeric_limits<double>::infinity();
         auto late_gap = std::numeric_limits<double>::infinity();
         const auto current_note_time
-            = tempo_map.to_seconds(tempo_map.to_beats(note->position)).value();
+            = tempo_map.to_seconds(note->position).value();
         if (note != track.notes().cbegin()) {
             early_gap = current_note_time
-                - tempo_map
-                      .to_seconds(tempo_map.to_beats(std::prev(note)->position))
-                      .value();
+                - tempo_map.to_seconds(std::prev(note)->position).value();
         }
         if (std::next(note) < track.notes().cend()) {
-            late_gap
-                = tempo_map
-                      .to_seconds(tempo_map.to_beats(std::next(note)->position))
-                      .value()
+            late_gap = tempo_map.to_seconds(std::next(note)->position).value()
                 - current_note_time;
         }
         for (auto length : note->lengths) {
