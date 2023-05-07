@@ -36,9 +36,9 @@ int bre_boost(const NoteTrack& track, const Engine& engine)
     }
     const auto& tempo_map = track.global_data().tempo_map();
     const auto seconds_start
-        = tempo_map.to_seconds(tempo_map.to_beat(track.bre()->start));
+        = tempo_map.to_seconds(tempo_map.to_beats(track.bre()->start));
     const auto seconds_end
-        = tempo_map.to_seconds(tempo_map.to_beat(track.bre()->end));
+        = tempo_map.to_seconds(tempo_map.to_beats(track.bre()->end));
     const auto seconds_gap = seconds_end - seconds_start;
     return static_cast<int>(INITIAL_BRE_VALUE
                             + BRE_VALUE_PER_SECOND * seconds_gap.value());

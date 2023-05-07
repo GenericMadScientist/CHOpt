@@ -243,18 +243,18 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
     const auto& tempo_map = m_global_data->tempo_map();
     for (const auto& n : m_notes) {
         const auto seconds
-            = tempo_map.to_seconds(tempo_map.to_beat(n.position));
+            = tempo_map.to_seconds(tempo_map.to_beats(n.position));
         note_times.emplace_back(seconds, n.position);
     }
     const auto final_note_s
-        = tempo_map.to_seconds(tempo_map.to_beat(m_notes.back().position));
+        = tempo_map.to_seconds(tempo_map.to_beats(m_notes.back().position));
     const auto measure_bound
         = converter.seconds_to_measures(final_note_s + FILL_DELAY);
     Measure m {1.0};
     while (m <= measure_bound) {
         const auto fill_seconds = converter.measures_to_seconds(m);
         const auto measure_ticks
-            = tempo_map.to_tick(converter.measures_to_beats(m));
+            = tempo_map.to_ticks(converter.measures_to_beats(m));
         bool exists_close_note = false;
         Tick close_note_position {0};
         for (const auto& [s, pos] : note_times) {
@@ -282,7 +282,7 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
             = converter.measures_to_seconds(m - Measure(1.0));
         const auto mid_m_seconds = (m_seconds + prev_m_seconds) * 0.5;
         const auto fill_start
-            = tempo_map.to_tick(tempo_map.to_beats(mid_m_seconds));
+            = tempo_map.to_ticks(tempo_map.to_beats(mid_m_seconds));
         m_drum_fills.push_back(
             DrumFill {fill_start, measure_ticks - fill_start});
         m += FILL_GAP;

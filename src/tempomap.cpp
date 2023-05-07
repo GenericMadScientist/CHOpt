@@ -70,9 +70,9 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
     auto last_time = 0.0;
 
     for (const auto& bpm : m_bpms) {
-        last_time += to_beat(bpm.position - last_tick).value()
+        last_time += to_beats(bpm.position - last_tick).value()
             * (MS_PER_MINUTE / static_cast<double>(last_bpm));
-        const auto beat = to_beat(bpm.position);
+        const auto beat = to_beats(bpm.position);
         m_beat_timestamps.push_back({beat, Second(last_time)});
         last_bpm = bpm.bpm;
         last_tick = bpm.position;

@@ -50,7 +50,7 @@ SpData::form_beat_rates(const TempoMap& tempo_map,
         beat_rates.reserve(tempo_map.time_sigs().size());
 
         for (const auto& ts : tempo_map.time_sigs()) {
-            const auto pos = tempo_map.to_beat(ts.position);
+            const auto pos = tempo_map.to_beats(ts.position);
             const auto measure_rate
                 = ts.numerator * DEFAULT_BEAT_RATE / ts.denominator;
             const auto drain_rate
@@ -61,8 +61,8 @@ SpData::form_beat_rates(const TempoMap& tempo_map,
         beat_rates.reserve(od_beats.size() - 1);
 
         for (auto i = 0U; i < od_beats.size() - 1; ++i) {
-            const auto pos = tempo_map.to_beat(od_beats[i]);
-            const auto next_marker = tempo_map.to_beat(od_beats[i + 1]);
+            const auto pos = tempo_map.to_beats(od_beats[i]);
+            const auto next_marker = tempo_map.to_beats(od_beats[i + 1]);
             const auto drain_rate = engine.sp_gain_rate()
                 - 1 / (DEFAULT_BEATS_PER_BAR * (next_marker - pos).value());
             beat_rates.push_back({pos, drain_rate});
@@ -86,17 +86,17 @@ SpData::note_spans(const NoteTrack& track, double early_whammy,
         auto early_gap = std::numeric_limits<double>::infinity();
         auto late_gap = std::numeric_limits<double>::infinity();
         const auto current_note_time
-            = tempo_map.to_seconds(tempo_map.to_beat(note->position)).value();
+            = tempo_map.to_seconds(tempo_map.to_beats(note->position)).value();
         if (note != track.notes().cbegin()) {
             early_gap = current_note_time
                 - tempo_map
-                      .to_seconds(tempo_map.to_beat(std::prev(note)->position))
+                      .to_seconds(tempo_map.to_beats(std::prev(note)->position))
                       .value();
         }
         if (std::next(note) < track.notes().cend()) {
             late_gap
                 = tempo_map
-                      .to_seconds(tempo_map.to_beat(std::next(note)->position))
+                      .to_seconds(tempo_map.to_beats(std::next(note)->position))
                       .value()
                 - current_note_time;
         }
@@ -135,13 +135,13 @@ SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
             continue;
         }
 
-        const auto note = tempo_map.to_beat(position);
+        const auto note = tempo_map.to_beats(position);
         auto second_start = tempo_map.to_seconds(note);
         second_start -= early_timing_window;
         second_start += squeeze_settings.lazy_whammy;
         second_start += squeeze_settings.video_lag;
         const auto beat_start = tempo_map.to_beats(second_start);
-        auto beat_end = tempo_map.to_beat(position + length);
+        auto beat_end = tempo_map.to_beats(position + length);
         if (beat_start < beat_end) {
             ranges.emplace_back(beat_start, beat_end, note);
         }

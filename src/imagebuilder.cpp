@@ -31,7 +31,7 @@ double get_beat_rate(const TempoMap& tempo_map, Beat beat)
 
     auto ts = std::find_if(
         tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
-        [=](const auto& x) { return tempo_map.to_beat(x.position) > beat; });
+        [=](const auto& x) { return tempo_map.to_beats(x.position) > beat; });
     if (ts == tempo_map.time_sigs().cbegin()) {
         return BASE_BEAT_RATE;
     }
@@ -45,7 +45,7 @@ int get_numer(const TempoMap& tempo_map, Beat beat)
 
     auto ts = std::find_if(
         tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
-        [=](const auto& x) { return tempo_map.to_beat(x.position) > beat; });
+        [=](const auto& x) { return tempo_map.to_beats(x.position) > beat; });
     if (ts == tempo_map.time_sigs().cbegin()) {
         return BASE_NUMERATOR;
     }
@@ -59,7 +59,7 @@ double get_denom(const TempoMap& tempo_map, Beat beat)
 
     auto ts = std::find_if(
         tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
-        [=](const auto& x) { return tempo_map.to_beat(x.position) > beat; });
+        [=](const auto& x) { return tempo_map.to_beats(x.position) > beat; });
     if (ts == tempo_map.time_sigs().cbegin()) {
         return 1.0;
     }
@@ -71,14 +71,14 @@ DrawnNote note_to_drawn_note(const Note& note, const NoteTrack& track)
 {
     constexpr auto COLOURS_SIZE = 7;
     const auto& tempo_map = track.global_data().tempo_map();
-    const auto beat = tempo_map.to_beat(note.position);
+    const auto beat = tempo_map.to_beats(note.position);
 
     std::array<double, COLOURS_SIZE> lengths {};
     for (auto i = 0; i < COLOURS_SIZE; ++i) {
         if (note.lengths.at(i) == Tick {-1}) {
             lengths.at(i) = -1;
         } else {
-            lengths.at(i) = tempo_map.to_beat(note.lengths.at(i)).value();
+            lengths.at(i) = tempo_map.to_beats(note.lengths.at(i)).value();
         }
     }
 
@@ -147,7 +147,7 @@ std::vector<DrawnRow> drawn_rows(const NoteTrack& track,
         max_pos = std::max(max_pos, note_end);
     }
 
-    const auto max_beat = tempo_map.to_beat(max_pos).value();
+    const auto max_beat = tempo_map.to_beats(max_pos).value();
     auto current_beat = 0.0;
     std::vector<DrawnRow> rows;
 
@@ -307,7 +307,7 @@ ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
         ++p;
     }
     const auto& tempo_map = track.global_data().tempo_map();
-    const auto start = tempo_map.to_beat(p->position).value();
+    const auto start = tempo_map.to_beats(p->position).value();
     if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
         return {-1, -1};
     }
@@ -318,7 +318,7 @@ ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
         for (auto length : p->lengths) {
             max_length = std::max(max_length, length);
         }
-        auto current_end = tempo_map.to_beat(p->position + max_length).value();
+        auto current_end = tempo_map.to_beats(p->position + max_length).value();
         end = std::max(end, current_end);
         ++p;
     }
@@ -347,7 +347,7 @@ void ImageBuilder::add_bpms(const TempoMap& tempo_map)
     m_bpms.clear();
 
     for (const auto& bpm : tempo_map.bpms()) {
-        const auto pos = tempo_map.to_beat(bpm.position).value();
+        const auto pos = tempo_map.to_beats(bpm.position).value();
         const auto tempo = static_cast<double>(bpm.bpm) / MS_PER_SECOND;
         if (pos < m_rows.back().end) {
             m_bpms.emplace_back(pos, tempo);
@@ -358,16 +358,16 @@ void ImageBuilder::add_bpms(const TempoMap& tempo_map)
 void ImageBuilder::add_bre(const BigRockEnding& bre, const TempoMap& tempo_map)
 {
     const auto seconds_start
-        = tempo_map.to_seconds(tempo_map.to_beat(bre.start));
-    const auto seconds_end = tempo_map.to_seconds(tempo_map.to_beat(bre.end));
+        = tempo_map.to_seconds(tempo_map.to_beats(bre.start));
+    const auto seconds_end = tempo_map.to_seconds(tempo_map.to_beats(bre.end));
     const auto seconds_gap = seconds_end - seconds_start;
     const auto bre_value = static_cast<int>(750 + 500 * seconds_gap.value());
 
     m_total_score += bre_value;
     m_score_values.back() += bre_value;
 
-    m_bre_ranges.emplace_back(tempo_map.to_beat(bre.start).value(),
-                              tempo_map.to_beat(bre.end).value());
+    m_bre_ranges.emplace_back(tempo_map.to_beats(bre.start).value(),
+                              tempo_map.to_beats(bre.end).value());
 }
 
 void ImageBuilder::add_drum_fills(const NoteTrack& track)
@@ -375,8 +375,8 @@ void ImageBuilder::add_drum_fills(const NoteTrack& track)
     const auto& tempo_map = track.global_data().tempo_map();
     for (auto fill : track.drum_fills()) {
         m_fill_ranges.emplace_back(
-            tempo_map.to_beat(fill.position).value(),
-            tempo_map.to_beat(fill.position + fill.length).value());
+            tempo_map.to_beats(fill.position).value(),
+            tempo_map.to_beats(fill.position + fill.length).value());
     }
 }
 
@@ -456,8 +456,8 @@ void ImageBuilder::add_solo_sections(const std::vector<Solo>& solos,
                                      const TempoMap& tempo_map)
 {
     for (const auto& solo : solos) {
-        const auto start = tempo_map.to_beat(solo.start).value();
-        const auto end = tempo_map.to_beat(solo.end).value();
+        const auto start = tempo_map.to_beats(solo.start).value();
+        const auto end = tempo_map.to_beats(solo.end).value();
         m_solo_ranges.emplace_back(start, end);
     }
 }
@@ -628,7 +628,7 @@ void ImageBuilder::add_sp_values(const SpData& sp_data, const Engine& engine)
 void ImageBuilder::add_time_sigs(const TempoMap& tempo_map)
 {
     for (const auto& ts : tempo_map.time_sigs()) {
-        const auto pos = tempo_map.to_beat(ts.position).value();
+        const auto pos = tempo_map.to_beats(ts.position).value();
         const auto num = ts.numerator;
         const auto denom = ts.denominator;
         if (pos < m_rows.back().end) {

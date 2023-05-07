@@ -86,14 +86,14 @@ public:
     [[nodiscard]] TempoMap speedup(int speed) const;
 
     [[nodiscard]] Beat to_beats(Second seconds) const;
-    [[nodiscard]] Beat to_beat(Tick ticks) const
+    [[nodiscard]] Beat to_beats(Tick ticks) const
     {
         return Beat {ticks.value() / static_cast<double>(m_resolution)};
     }
 
     [[nodiscard]] Second to_seconds(Beat beats) const;
 
-    [[nodiscard]] Tick to_tick(Beat beats) const
+    [[nodiscard]] Tick to_ticks(Beat beats) const
     {
         return Tick {static_cast<int>(beats.value() * m_resolution)};
     }

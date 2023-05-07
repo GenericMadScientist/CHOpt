@@ -31,9 +31,9 @@ TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
     auto last_time = 0.0;
 
     for (const auto& bpm : tempo_map.bpms()) {
-        last_time += tempo_map.to_beat(bpm.position - last_tick).value()
+        last_time += tempo_map.to_beats(bpm.position - last_tick).value()
             * (MS_PER_MINUTE / static_cast<double>(last_bpm));
-        const auto beat = tempo_map.to_beat(bpm.position);
+        const auto beat = tempo_map.to_beats(bpm.position);
         m_beat_timestamps.push_back({beat, Second(last_time)});
         last_bpm = bpm.bpm;
         last_tick = bpm.position;
@@ -47,9 +47,9 @@ TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
         auto last_measure = 0.0;
 
         for (const auto& ts : tempo_map.time_sigs()) {
-            last_measure += tempo_map.to_beat(ts.position - last_tick).value()
+            last_measure += tempo_map.to_beats(ts.position - last_tick).value()
                 / static_cast<double>(last_beat_rate);
-            const auto beat = tempo_map.to_beat(ts.position);
+            const auto beat = tempo_map.to_beats(ts.position);
             m_measure_timestamps.push_back({Measure(last_measure), beat});
             last_beat_rate
                 = (ts.numerator * DEFAULT_BEAT_RATE) / ts.denominator;
@@ -59,7 +59,7 @@ TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
         m_last_beat_rate = last_beat_rate;
     } else if (!od_beats.empty()) {
         for (auto i = 0U; i < od_beats.size(); ++i) {
-            const auto beat = tempo_map.to_beat(od_beats[i]);
+            const auto beat = tempo_map.to_beats(od_beats[i]);
             m_measure_timestamps.push_back(
                 {Measure(i / DEFAULT_BEAT_RATE), beat});
         }

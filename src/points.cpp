@@ -122,21 +122,21 @@ void append_note_points(std::vector<Note>::const_iterator note,
     }
     const auto chord_size = get_chord_size(*note, drum_settings);
     const auto pos = note->position;
-    const auto beat = tempo_map.to_beat(pos);
+    const auto beat = tempo_map.to_beats(pos);
     const auto meas = converter.beats_to_measures(beat);
     const auto note_seconds = tempo_map.to_seconds(beat);
 
     auto early_gap = std::numeric_limits<double>::infinity();
     if (note != notes.cbegin()) {
         const auto prev_note_beat
-            = tempo_map.to_beat(std::prev(note)->position);
+            = tempo_map.to_beats(std::prev(note)->position);
         const auto prev_note_seconds = tempo_map.to_seconds(prev_note_beat);
         early_gap = (note_seconds - prev_note_seconds).value();
     }
     auto late_gap = std::numeric_limits<double>::infinity();
     if (std::next(note) != notes.cend()) {
         const auto next_note_beat
-            = tempo_map.to_beat(std::next(note)->position);
+            = tempo_map.to_beats(std::next(note)->position);
         const auto next_note_seconds = tempo_map.to_seconds(next_note_beat);
         late_gap = (next_note_seconds - note_seconds).value();
     }
@@ -206,8 +206,8 @@ void add_drum_activation_points(const NoteTrack& track,
     }
     const auto& tempo_map = track.global_data().tempo_map();
     for (auto fill : track.drum_fills()) {
-        const auto fill_start = tempo_map.to_beat(fill.position);
-        const auto fill_end = tempo_map.to_beat(fill.position + fill.length);
+        const auto fill_start = tempo_map.to_beats(fill.position);
+        const auto fill_end = tempo_map.to_beats(fill.position + fill.length);
         const auto best_point = closest_point(points, fill_end);
         best_point->fill_start = tempo_map.to_seconds(fill_start);
     }
@@ -428,15 +428,15 @@ first_after_current_sp_vector(const std::vector<Point>& points,
     for (auto p = points.cbegin(); p < points.cend();) {
         current_sp
             = std::find_if(current_sp, track.sp_phrases().cend(), [&](auto sp) {
-                  return tempo_map.to_beat(sp.position + sp.length)
+                  return tempo_map.to_beats(sp.position + sp.length)
                       > p->position.beat;
               });
         Beat sp_start {std::numeric_limits<double>::infinity()};
         Beat sp_end {std::numeric_limits<double>::infinity()};
         if (current_sp != track.sp_phrases().cend()) {
-            sp_start = tempo_map.to_beat(current_sp->position);
+            sp_start = tempo_map.to_beats(current_sp->position);
             sp_end
-                = tempo_map.to_beat(current_sp->position + current_sp->length);
+                = tempo_map.to_beats(current_sp->position + current_sp->length);
         }
         if (p->position.beat < sp_start || engine.overlaps()) {
             results.push_back(++p);
@@ -525,7 +525,7 @@ PointSet::solo_boosts_from_solos(const std::vector<Solo>& solos,
     std::vector<std::tuple<Position, int>> solo_boosts;
     solo_boosts.reserve(solos.size());
     for (const auto& solo : solos) {
-        const auto end_beat = tempo_map.to_beat(solo.end);
+        const auto end_beat = tempo_map.to_beats(solo.end);
         const Measure end_meas = converter.beats_to_measures(end_beat);
         const Position end_pos {end_beat, end_meas};
         solo_boosts.emplace_back(end_pos, solo.value);
