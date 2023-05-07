@@ -310,6 +310,11 @@ inline std::ostream& operator<<(std::ostream& stream,
     return stream;
 }
 
+inline bool operator==(const Second& lhs, const Second& rhs)
+{
+    return std::abs(lhs.value() - rhs.value()) < 0.01;
+}
+
 inline std::ostream& operator<<(std::ostream& stream, Second second)
 {
     stream << second.value() << 's';

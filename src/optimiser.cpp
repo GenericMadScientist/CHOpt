@@ -83,7 +83,7 @@ Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
 
 Optimiser::CacheKey Optimiser::add_whammy_delay(CacheKey key) const
 {
-    auto seconds = m_song->converter().beats_to_seconds(key.position.beat);
+    auto seconds = m_song->tempo_map().to_seconds(key.position.beat);
     seconds += m_whammy_delay;
     key.position.beat = m_song->tempo_map().to_beats(seconds);
     key.position.measure
@@ -235,8 +235,7 @@ Second Optimiser::earliest_fill_appearance(CacheKey key, bool has_full_sp) const
         if (p->is_sp_granting_note) {
             ++sp_count;
             if (sp_count == 2) {
-                return m_song->converter().beats_to_seconds(
-                           p->hit_window_start.beat)
+                return m_song->tempo_map().to_seconds(p->hit_window_start.beat)
                     + m_drum_fill_delay;
             }
         }

@@ -1030,15 +1030,13 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
     std::vector<Note> notes {make_note(0), make_note(192), make_note(768),
                              make_note(4608), make_note(5376)};
     std::vector<StarPower> phrases {{Tick {4608}, Tick {50}}};
-    NoteTrack note_track {notes,
-                          phrases,
-                          {},
-                          {},
-                          {},
-                          {},
-                          TrackType::FiveFret,
-                          std::make_shared<SongGlobalData>()};
     TempoMap tempo_map {{}, {{Tick {3840}, 4000000}}, 192};
+
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
+    NoteTrack note_track {
+        notes, phrases, {}, {}, {}, {}, TrackType::FiveFret, global_data};
     ProcessedSong track {note_track,
                          tempo_map,
                          SqueezeSettings::default_settings(),

@@ -116,3 +116,21 @@ Beat TempoMap::to_beats(Second seconds) const
         + (pos->beat - prev->beat)
         * ((seconds - prev->time) / (pos->time - prev->time));
 }
+
+Second TempoMap::to_seconds(Beat beats) const
+{
+    const auto pos = std::lower_bound(
+        m_beat_timestamps.cbegin(), m_beat_timestamps.cend(), beats,
+        [](const auto& x, const auto& y) { return x.beat < y; });
+    if (pos == m_beat_timestamps.cend()) {
+        const auto& back = m_beat_timestamps.back();
+        return back.time + (beats - back.beat).to_second(m_last_bpm);
+    }
+    if (pos == m_beat_timestamps.cbegin()) {
+        return pos->time - (pos->beat - beats).to_second(DEFAULT_BPM);
+    }
+    const auto prev = pos - 1;
+    return prev->time
+        + (pos->time - prev->time)
+        * ((beats - prev->beat) / (pos->beat - prev->beat));
+}

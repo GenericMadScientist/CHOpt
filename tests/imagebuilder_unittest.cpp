@@ -885,10 +885,9 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
+                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -900,7 +899,7 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                  Beat {0.9}}},
                0};
     builder.add_sp_phrases(track, {}, path);
-    builder.add_sp_acts(points, {}, converter, path);
+    builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_blue_ranges {{0.1, 0.9}};
     std::vector<std::tuple<double, double>> expected_red_ranges {{0.0, 0.1},
                                                                  {0.9, 1.0}};
@@ -929,10 +928,9 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
         {},
         TrackType::FiveFret,
         std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
+                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -945,7 +943,7 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
                 {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
                  Beat {2.0}, Beat {2.9}}},
                0};
-    builder.add_sp_acts(points, {}, converter, path);
+    builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_red_ranges {{0.0, 0.1},
                                                                  {2.9, 3.0}};
 
@@ -965,10 +963,9 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
         {},
         TrackType::FiveFret,
         std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
+                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -979,7 +976,7 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
     Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                  Beat {0.0}, Beat {5.0}}},
                0};
-    builder.add_sp_acts(points, {}, converter, path);
+    builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_blue_ranges {{1.0, 4.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -997,10 +994,9 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
+                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1011,7 +1007,7 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
     Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                  Beat {16.0}}},
                0};
-    builder.add_sp_acts(points, {}, converter, path);
+    builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_blue_ranges {{0.0, 4.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -1030,10 +1026,9 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
+                     {{}, ChGuitarEngine(), {}},
                      {},
                      {1.0, 1.0, Second(0.0), Second(0.05), Second(0.0)},
                      DrumSettings::default_settings(),
@@ -1052,7 +1047,7 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
         {0.0, 1.0}, {1.9, 2.8}, {6.9, 8.0}};
     std::vector<std::tuple<double, double>> expected_red_ranges {{2.8, 3.0}};
 
-    builder.add_sp_acts(points, {}, converter, path);
+    builder.add_sp_acts(points, {}, path);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.blue_ranges().cbegin(), builder.blue_ranges().cend(),
@@ -1072,10 +1067,9 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, Gh1Engine(), {}};
     PointSet points {track,
                      {},
-                     converter,
+                     {{}, Gh1Engine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1087,7 +1081,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
                  Beat {0.1}, Beat {0.9}}},
                0};
     builder.add_sp_phrases(track, {}, path);
-    builder.add_sp_acts(points, {}, converter, path);
+    builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_green_ranges {{0.0, 0.1}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -1105,10 +1099,9 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, Gh1Engine(), {}};
     PointSet points {track,
                      {},
-                     converter,
+                     {{}, Gh1Engine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1120,7 +1113,7 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
                  Beat {4.01}, Beat {20.01}}},
                50};
     builder.add_sp_phrases(track, {}, path);
-    builder.add_sp_acts(points, {}, converter, path);
+    builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_green_ranges {
         {20.0, 20.1}};
 
@@ -1140,10 +1133,9 @@ BOOST_AUTO_TEST_CASE(
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, Gh1Engine(), {}};
     PointSet points {track,
                      {},
-                     converter,
+                     {{}, Gh1Engine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1155,7 +1147,7 @@ BOOST_AUTO_TEST_CASE(
                  Beat {0.1}, Beat {0.9}}},
                0};
     builder.add_sp_phrases(track, {}, path);
-    builder.add_sp_acts(points, {}, converter, path);
+    builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_green_ranges {
         {0.0, 0.1}, {20.0, 20.1}};
 
@@ -1174,10 +1166,9 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, Gh1Engine(), {}};
     PointSet points {track,
                      {},
-                     converter,
+                     {{}, Gh1Engine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1189,7 +1180,7 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
                  Beat {0.1}, Beat {0.9}}},
                0};
     builder.add_sp_phrases(track, {}, path);
-    builder.add_sp_acts(points, {}, converter, path);
+    builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_yellow_ranges {
         {0.05, 0.1}};
 
@@ -1245,7 +1236,7 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_measure_values(points, {}, {{}, ChGuitarEngine(), {}}, path);
+    builder.add_measure_values(points, {}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {50, 100};
 
@@ -1279,7 +1270,7 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_measure_values(points, {}, {{}, ChGuitarEngine(), {}}, path);
+    builder.add_measure_values(points, {}, path);
     std::vector<int> expected_score_values {100, 250};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -1310,7 +1301,7 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_measure_values(points, {}, {{}, ChGuitarEngine(), {}}, path);
+    builder.add_measure_values(points, {}, path);
     std::vector<int> expected_score_values {100};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -1342,7 +1333,7 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_measure_values(points, {}, {{}, ChGuitarEngine(), {}}, path);
+    builder.add_measure_values(points, {}, path);
     std::vector<int> expected_score_values {200, 300};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -1373,7 +1364,7 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_measure_values(points, {}, {{}, ChGuitarEngine(), {}}, path);
+    builder.add_measure_values(points, {}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {50, 150};
 

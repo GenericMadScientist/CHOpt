@@ -124,22 +124,20 @@ void append_note_points(std::vector<Note>::const_iterator note,
     const auto pos = note->position;
     const auto beat = tempo_map.to_beat(pos);
     const auto meas = converter.beats_to_measures(beat);
-    const auto note_seconds = converter.beats_to_seconds(beat);
+    const auto note_seconds = tempo_map.to_seconds(beat);
 
     auto early_gap = std::numeric_limits<double>::infinity();
     if (note != notes.cbegin()) {
         const auto prev_note_beat
             = tempo_map.to_beat(std::prev(note)->position);
-        const auto prev_note_seconds
-            = converter.beats_to_seconds(prev_note_beat);
+        const auto prev_note_seconds = tempo_map.to_seconds(prev_note_beat);
         early_gap = (note_seconds - prev_note_seconds).value();
     }
     auto late_gap = std::numeric_limits<double>::infinity();
     if (std::next(note) != notes.cend()) {
         const auto next_note_beat
             = tempo_map.to_beat(std::next(note)->position);
-        const auto next_note_seconds
-            = converter.beats_to_seconds(next_note_beat);
+        const auto next_note_seconds = tempo_map.to_seconds(next_note_beat);
         late_gap = (next_note_seconds - note_seconds).value();
     }
 
@@ -201,7 +199,6 @@ std::vector<Point>::iterator closest_point(std::vector<Point>& points,
 }
 
 void add_drum_activation_points(const NoteTrack& track,
-                                const TimeConverter& converter,
                                 std::vector<Point>& points)
 {
     if (points.empty()) {
@@ -212,7 +209,7 @@ void add_drum_activation_points(const NoteTrack& track,
         const auto fill_start = tempo_map.to_beat(fill.position);
         const auto fill_end = tempo_map.to_beat(fill.position + fill.length);
         const auto best_point = closest_point(points, fill_end);
-        best_point->fill_start = converter.beats_to_seconds(fill_start);
+        best_point->fill_start = tempo_map.to_seconds(fill_start);
     }
 }
 
@@ -221,7 +218,7 @@ void shift_points_by_video_lag(std::vector<Point>& points,
                                const TimeConverter& converter, Second video_lag)
 {
     const auto add_video_lag = [&](auto& position) {
-        auto seconds = converter.beats_to_seconds(position.beat);
+        auto seconds = tempo_map.to_seconds(position.beat);
         seconds += video_lag;
         position.beat = tempo_map.to_beats(seconds);
         position.measure = converter.beats_to_measures(position.beat);
@@ -486,7 +483,7 @@ std::vector<Point> PointSet::points_from_track(
     }
     auto points = unmultiplied_points(track, converter, unison_phrases,
                                       squeeze_settings, drum_settings, engine);
-    add_drum_activation_points(track, converter, points);
+    add_drum_activation_points(track, points);
     apply_multiplier(points, engine);
     shift_points_by_video_lag(points, tempo_map, converter,
                               squeeze_settings.video_lag);

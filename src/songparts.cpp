@@ -243,11 +243,11 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
     const auto& tempo_map = m_global_data->tempo_map();
     for (const auto& n : m_notes) {
         const auto seconds
-            = converter.beats_to_seconds(tempo_map.to_beat(n.position));
+            = tempo_map.to_seconds(tempo_map.to_beat(n.position));
         note_times.emplace_back(seconds, n.position);
     }
-    const auto final_note_s = converter.beats_to_seconds(
-        tempo_map.to_beat(m_notes.back().position));
+    const auto final_note_s
+        = tempo_map.to_seconds(tempo_map.to_beat(m_notes.back().position));
     const auto measure_bound
         = converter.seconds_to_measures(final_note_s + FILL_DELAY);
     Measure m {1.0};

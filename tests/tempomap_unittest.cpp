@@ -161,8 +161,8 @@ BOOST_AUTO_TEST_CASE(seconds_to_beats_conversion_works_correctly)
     constexpr std::array seconds {-0.5, 0.0, 1.2, 1.9};
 
     for (auto i = 0U; i < beats.size(); ++i) {
-        BOOST_CHECK_CLOSE(tempo_map.to_beats(Second {seconds.at(i)}).value(),
-                          beats.at(i), 0.0001);
+        BOOST_CHECK_EQUAL(tempo_map.to_beats(Second {seconds.at(i)}),
+                          Beat {beats.at(i)});
     }
 }
 
@@ -171,4 +171,24 @@ BOOST_AUTO_TEST_CASE(seconds_to_beats_conversion_works_correctly_after_speedup)
     TempoMap tempo_map = TempoMap().speedup(200);
 
     BOOST_CHECK_EQUAL(tempo_map.to_beats(Second {1}), Beat {4.0});
+}
+
+BOOST_AUTO_TEST_CASE(beats_to_seconds_conversion_works_correctly)
+{
+    TempoMap tempo_map {
+        {{Tick {0}, 4, 4}}, {{Tick {0}, 150000}, {Tick {800}, 200000}}, 200};
+    constexpr std::array beats {-1.0, 0.0, 3.0, 5.0};
+    constexpr std::array seconds {-0.5, 0.0, 1.2, 1.9};
+
+    for (auto i = 0U; i < beats.size(); ++i) {
+        BOOST_CHECK_EQUAL(tempo_map.to_seconds(Beat(beats.at(i))),
+                          Second {seconds.at(i)});
+    }
+}
+
+BOOST_AUTO_TEST_CASE(beats_to_seconds_conversion_works_correctly_after_speedup)
+{
+    TempoMap tempo_map = TempoMap().speedup(200);
+
+    BOOST_CHECK_EQUAL(tempo_map.to_seconds(Beat {4}), Second {1});
 }

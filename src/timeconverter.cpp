@@ -74,24 +74,6 @@ TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
     assert(!m_measure_timestamps.empty()); // NOLINT
 }
 
-Second TimeConverter::beats_to_seconds(Beat beats) const
-{
-    const auto pos = std::lower_bound(
-        m_beat_timestamps.cbegin(), m_beat_timestamps.cend(), beats,
-        [](const auto& x, const auto& y) { return x.beat < y; });
-    if (pos == m_beat_timestamps.cend()) {
-        const auto& back = m_beat_timestamps.back();
-        return back.time + (beats - back.beat).to_second(m_last_bpm);
-    }
-    if (pos == m_beat_timestamps.cbegin()) {
-        return pos->time - (pos->beat - beats).to_second(DEFAULT_BPM);
-    }
-    const auto prev = pos - 1;
-    return prev->time
-        + (pos->time - prev->time)
-        * ((beats - prev->beat) / (pos->beat - prev->beat));
-}
-
 Measure TimeConverter::beats_to_measures(Beat beats) const
 {
     const auto pos = std::lower_bound(
@@ -130,7 +112,7 @@ Beat TimeConverter::measures_to_beats(Measure measures) const
 
 Second TimeConverter::measures_to_seconds(Measure measures) const
 {
-    return beats_to_seconds(measures_to_beats(measures));
+    return m_tempo_map.to_seconds(measures_to_beats(measures));
 }
 
 Measure TimeConverter::seconds_to_measures(Second seconds) const

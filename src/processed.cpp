@@ -26,8 +26,7 @@
 #include "stringutil.hpp"
 
 namespace {
-int bre_boost(const NoteTrack& track, const Engine& engine,
-              const TimeConverter& converter)
+int bre_boost(const NoteTrack& track, const Engine& engine)
 {
     constexpr int INITIAL_BRE_VALUE = 750;
     constexpr int BRE_VALUE_PER_SECOND = 500;
@@ -37,9 +36,9 @@ int bre_boost(const NoteTrack& track, const Engine& engine,
     }
     const auto& tempo_map = track.global_data().tempo_map();
     const auto seconds_start
-        = converter.beats_to_seconds(tempo_map.to_beat(track.bre()->start));
+        = tempo_map.to_seconds(tempo_map.to_beat(track.bre()->start));
     const auto seconds_end
-        = converter.beats_to_seconds(tempo_map.to_beat(track.bre()->end));
+        = tempo_map.to_seconds(tempo_map.to_beat(track.bre()->end));
     const auto seconds_gap = seconds_end - seconds_start;
     return static_cast<int>(INITIAL_BRE_VALUE
                             + BRE_VALUE_PER_SECOND * seconds_gap.value());
@@ -72,7 +71,7 @@ ProcessedSong::ProcessedSong(const NoteTrack& track, const TempoMap& tempo_map,
                 unison_phrases, squeeze_settings, drum_settings,
                 engine}
     , m_sp_data {track, tempo_map, od_beats, squeeze_settings, engine}
-    , m_total_bre_boost {bre_boost(track, engine, m_converter)}
+    , m_total_bre_boost {bre_boost(track, engine)}
     , m_base_score {track.base_score(drum_settings)}
     , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
     , m_is_drums {track.track_type() == TrackType::Drums}
@@ -164,8 +163,8 @@ Position ProcessedSong::adjusted_hit_window_start(PointPtr point,
         return point->hit_window_start;
     }
 
-    auto start = m_converter.beats_to_seconds(point->hit_window_start.beat);
-    auto mid = m_converter.beats_to_seconds(point->position.beat);
+    auto start = m_tempo_map.to_seconds(point->hit_window_start.beat);
+    auto mid = m_tempo_map.to_seconds(point->position.beat);
     auto adj_start_s = start + (mid - start) * (1.0 - squeeze);
     auto adj_start_b = m_tempo_map.to_beats(adj_start_s);
     auto adj_start_m = m_converter.beats_to_measures(adj_start_b);
@@ -182,8 +181,8 @@ Position ProcessedSong::adjusted_hit_window_end(PointPtr point,
         return point->hit_window_end;
     }
 
-    auto mid = m_converter.beats_to_seconds(point->position.beat);
-    auto end = m_converter.beats_to_seconds(point->hit_window_end.beat);
+    auto mid = m_tempo_map.to_seconds(point->position.beat);
+    auto end = m_tempo_map.to_seconds(point->hit_window_end.beat);
     auto adj_end_s = mid + (end - mid) * squeeze;
     auto adj_end_b = m_tempo_map.to_beats(adj_end_s);
     auto adj_end_m = m_converter.beats_to_measures(adj_end_b);
@@ -465,11 +464,11 @@ ProcessedSong::drum_act_summaries(const Path& path) const
             ++start_point;
         }
         const auto early_fill_point
-            = m_converter.beats_to_seconds(
+            = m_tempo_map.to_seconds(
                   std::prev(start_point)->hit_window_start.beat)
             + Second(2.0);
         const auto late_fill_point
-            = m_converter.beats_to_seconds(
+            = m_tempo_map.to_seconds(
                   std::prev(start_point)->hit_window_end.beat)
             + Second(2.0);
         const auto skipped_fills

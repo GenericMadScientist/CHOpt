@@ -333,14 +333,10 @@ BOOST_AUTO_TEST_CASE(automatic_zones_are_half_a_measure_according_to_seconds)
     TempoMap tempo_map {{}, {{Tick {576}, 40000}}, 192};
     TimeConverter converter {tempo_map, ChDrumEngine(), {}};
 
-    NoteTrack track {notes,
-                     {},
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::Drums,
-                     std::make_shared<SongGlobalData>()};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
+    NoteTrack track {notes, {}, {}, {}, {}, {}, TrackType::Drums, global_data};
     std::vector<DrumFill> fills {{Tick {576}, Tick {192}}};
 
     track.generate_drum_fills(converter);

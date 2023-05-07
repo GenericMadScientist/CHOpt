@@ -90,6 +90,9 @@ public:
     {
         return Beat {ticks.value() / static_cast<double>(m_resolution)};
     }
+
+    [[nodiscard]] Second to_seconds(Beat beats) const;
+
     [[nodiscard]] Tick to_tick(Beat beats) const
     {
         return Tick {static_cast<int>(beats.value() * m_resolution)};

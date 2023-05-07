@@ -251,10 +251,9 @@ relative_complement(std::vector<std::tuple<double, double>> parent_set,
     return result;
 }
 
-Beat subtract_video_lag(Beat beat, Second video_lag, const TempoMap& tempo_map,
-                        const TimeConverter& converter)
+Beat subtract_video_lag(Beat beat, Second video_lag, const TempoMap& tempo_map)
 {
-    const auto seconds = converter.beats_to_seconds(beat) - video_lag;
+    const auto seconds = tempo_map.to_seconds(beat) - video_lag;
     if (seconds.value() < 0.0) {
         return Beat {0.0};
     }
@@ -356,13 +355,11 @@ void ImageBuilder::add_bpms(const TempoMap& tempo_map)
     }
 }
 
-void ImageBuilder::add_bre(const BigRockEnding& bre, const TempoMap& tempo_map,
-                           const TimeConverter& converter)
+void ImageBuilder::add_bre(const BigRockEnding& bre, const TempoMap& tempo_map)
 {
     const auto seconds_start
-        = converter.beats_to_seconds(tempo_map.to_beat(bre.start));
-    const auto seconds_end
-        = converter.beats_to_seconds(tempo_map.to_beat(bre.end));
+        = tempo_map.to_seconds(tempo_map.to_beat(bre.start));
+    const auto seconds_end = tempo_map.to_seconds(tempo_map.to_beat(bre.end));
     const auto seconds_gap = seconds_end - seconds_start;
     const auto bre_value = static_cast<int>(750 + 500 * seconds_gap.value());
 
@@ -385,7 +382,6 @@ void ImageBuilder::add_drum_fills(const NoteTrack& track)
 
 void ImageBuilder::add_measure_values(const PointSet& points,
                                       const TempoMap& tempo_map,
-                                      const TimeConverter& converter,
                                       const Path& path)
 {
     // This is needed below because the subtract_video_lag calculation can
@@ -404,7 +400,7 @@ void ImageBuilder::add_measure_values(const PointSet& points,
     for (auto p = points.cbegin(); p < points.cend(); ++p) {
         const auto adjusted_p_pos
             = subtract_video_lag(p->position.beat, points.video_lag(),
-                                 tempo_map, converter)
+                                 tempo_map)
                   .value();
         while (meas_iter != m_measure_lines.cend()
                && (*meas_iter - MEAS_EPSILON) <= adjusted_p_pos) {
@@ -440,7 +436,7 @@ void ImageBuilder::add_measure_values(const PointSet& points,
             while (meas_iter != m_measure_lines.cend()
                    && *meas_iter <= subtract_video_lag(p->position.beat,
                                                        points.video_lag(),
-                                                       tempo_map, converter)
+                                                       tempo_map)
                                         .value()) {
                 ++meas_iter;
                 ++score_value_iter;
@@ -479,14 +475,12 @@ void ImageBuilder::add_song_header(const SongGlobalData& global_data, int speed)
 }
 
 void ImageBuilder::add_sp_acts(const PointSet& points,
-                               const TempoMap& tempo_map,
-                               const TimeConverter& converter, const Path& path)
+                               const TempoMap& tempo_map, const Path& path)
 {
     std::vector<std::tuple<double, double>> no_whammy_ranges;
 
     const auto shifted_beat = [&](auto beat) {
-        return subtract_video_lag(beat, points.video_lag(), tempo_map,
-                                  converter);
+        return subtract_video_lag(beat, points.video_lag(), tempo_map);
     };
 
     for (const auto& act : path.activations) {
@@ -733,16 +727,14 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
             path = optimiser.optimal_path();
             write(processed_track.path_summary(path).c_str());
             builder.add_sp_phrases(new_track, unison_positions, path);
-            builder.add_sp_acts(processed_track.points(), tempo_map,
-                                processed_track.converter(), path);
+            builder.add_sp_acts(processed_track.points(), tempo_map, path);
             builder.activation_opacity() = settings.opacity;
         }
     } else {
         builder.add_sp_phrases(new_track, unison_positions, path);
     }
 
-    builder.add_measure_values(processed_track.points(), tempo_map,
-                               processed_track.converter(), path);
+    builder.add_measure_values(processed_track.points(), tempo_map, path);
     if (settings.blank || !settings.engine->overlaps()) {
         builder.add_sp_values(processed_track.sp_data(), *settings.engine);
     } else {
@@ -752,8 +744,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     }
     builder.set_total_score(processed_track.points(), solos, path);
     if (settings.engine->has_bres() && new_track.bre().has_value()) {
-        builder.add_bre(*(new_track.bre()), tempo_map,
-                        processed_track.converter());
+        builder.add_bre(*(new_track.bre()), tempo_map);
     }
 
     return builder;

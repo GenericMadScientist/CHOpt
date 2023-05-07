@@ -86,20 +86,18 @@ SpData::note_spans(const NoteTrack& track, double early_whammy,
         auto early_gap = std::numeric_limits<double>::infinity();
         auto late_gap = std::numeric_limits<double>::infinity();
         const auto current_note_time
-            = m_converter.beats_to_seconds(tempo_map.to_beat(note->position))
-                  .value();
+            = tempo_map.to_seconds(tempo_map.to_beat(note->position)).value();
         if (note != track.notes().cbegin()) {
             early_gap = current_note_time
-                - m_converter
-                      .beats_to_seconds(
-                          tempo_map.to_beat(std::prev(note)->position))
+                - tempo_map
+                      .to_seconds(tempo_map.to_beat(std::prev(note)->position))
                       .value();
         }
         if (std::next(note) < track.notes().cend()) {
-            late_gap = m_converter
-                           .beats_to_seconds(
-                               tempo_map.to_beat(std::next(note)->position))
-                           .value()
+            late_gap
+                = tempo_map
+                      .to_seconds(tempo_map.to_beat(std::next(note)->position))
+                      .value()
                 - current_note_time;
         }
         for (auto length : note->lengths) {
@@ -138,7 +136,7 @@ SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
         }
 
         const auto note = tempo_map.to_beat(position);
-        auto second_start = m_converter.beats_to_seconds(note);
+        auto second_start = tempo_map.to_seconds(note);
         second_start -= early_timing_window;
         second_start += squeeze_settings.lazy_whammy;
         second_start += squeeze_settings.video_lag;

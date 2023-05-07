@@ -830,17 +830,16 @@ BOOST_AUTO_TEST_CASE(drum_activation_delay_is_affected_by_speed)
                                     {Tick {192}, Tick {1}}};
     std::vector<DrumFill> fills {{Tick {800}, Tick {1}},
                                  {Tick {1000}, Tick {1}}};
-    NoteTrack note_track {notes,
-                          phrases,
-                          {},
-                          fills,
-                          {},
-                          {},
-                          TrackType::Drums,
-                          std::make_shared<SongGlobalData>()};
+
+    auto tempo_map = TempoMap().speedup(200);
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
+    NoteTrack note_track {notes, phrases,          {},         fills, {},
+                          {},    TrackType::Drums, global_data};
 
     ProcessedSong track {note_track,
-                         TempoMap().speedup(200),
+                         tempo_map,
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChDrumEngine(),
