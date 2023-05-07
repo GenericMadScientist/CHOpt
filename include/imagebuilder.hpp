@@ -92,13 +92,13 @@ public:
     void add_bre(const BigRockEnding& bre, const TempoMap& tempo_map,
                  const TimeConverter& converter);
     void add_drum_fills(const NoteTrack& track);
-    void add_measure_values(const PointSet& points,
+    void add_measure_values(const PointSet& points, const TempoMap& tempo_map,
                             const TimeConverter& converter, const Path& path);
     void add_solo_sections(const std::vector<Solo>& solos,
                            const TempoMap& tempo_map);
     void add_song_header(const SongGlobalData& global_data, int speed);
-    void add_sp_acts(const PointSet& points, const TimeConverter& converter,
-                     const Path& path);
+    void add_sp_acts(const PointSet& points, const TempoMap& tempo_map,
+                     const TimeConverter& converter, const Path& path);
     void add_sp_percent_values(const SpData& sp_data,
                                const TimeConverter& converter,
                                const PointSet& points, const Path& path);

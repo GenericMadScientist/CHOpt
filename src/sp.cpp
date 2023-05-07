@@ -142,7 +142,7 @@ SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
         second_start -= early_timing_window;
         second_start += squeeze_settings.lazy_whammy;
         second_start += squeeze_settings.video_lag;
-        const auto beat_start = m_converter.seconds_to_beats(second_start);
+        const auto beat_start = tempo_map.to_beats(second_start);
         auto beat_end = tempo_map.to_beat(position + length);
         if (beat_start < beat_end) {
             ranges.emplace_back(beat_start, beat_end, note);

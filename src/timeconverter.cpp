@@ -22,6 +22,7 @@
 
 TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
                              const std::vector<Tick>& od_beats)
+    : m_tempo_map {tempo_map}
 {
     constexpr double MS_PER_MINUTE = 60000.0;
 
@@ -91,24 +92,6 @@ Second TimeConverter::beats_to_seconds(Beat beats) const
         * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
-Beat TimeConverter::seconds_to_beats(Second seconds) const
-{
-    const auto pos = std::lower_bound(
-        m_beat_timestamps.cbegin(), m_beat_timestamps.cend(), seconds,
-        [](const auto& x, const auto& y) { return x.time < y; });
-    if (pos == m_beat_timestamps.cend()) {
-        const auto& back = m_beat_timestamps.back();
-        return back.beat + (seconds - back.time).to_beat(m_last_bpm);
-    }
-    if (pos == m_beat_timestamps.cbegin()) {
-        return pos->beat - (pos->time - seconds).to_beat(DEFAULT_BPM);
-    }
-    const auto prev = pos - 1;
-    return prev->beat
-        + (pos->beat - prev->beat)
-        * ((seconds - prev->time) / (pos->time - prev->time));
-}
-
 Measure TimeConverter::beats_to_measures(Beat beats) const
 {
     const auto pos = std::lower_bound(
@@ -152,5 +135,5 @@ Second TimeConverter::measures_to_seconds(Measure measures) const
 
 Measure TimeConverter::seconds_to_measures(Second seconds) const
 {
-    return beats_to_measures(seconds_to_beats(seconds));
+    return beats_to_measures(m_tempo_map.to_beats(seconds));
 }

@@ -35,12 +35,6 @@ BOOST_AUTO_TEST_CASE(beats_to_seconds_conversion_works_correctly)
         BOOST_CHECK_CLOSE(converter.beats_to_seconds(Beat(beats.at(i))).value(),
                           seconds.at(i), 0.0001);
     }
-
-    for (auto i = 0U; i < beats.size(); ++i) {
-        BOOST_CHECK_CLOSE(
-            converter.seconds_to_beats(Second(seconds.at(i))).value(),
-            beats.at(i), 0.0001);
-    }
 }
 
 BOOST_AUTO_TEST_CASE(beats_to_measures_conversion_works_correctly)

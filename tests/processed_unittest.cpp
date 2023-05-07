@@ -620,19 +620,16 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
 BOOST_AUTO_TEST_CASE(
     activations_starting_on_an_sp_granting_note_have_the_correct_end)
 {
+    TempoMap tempo_map {{{Tick {0}, 4, 4}}, {{Tick {0}, 300000}}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
     std::vector<Note> notes {
         make_chord(384, {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}}),
         make_note(5088), make_note(5136)};
     std::vector<StarPower> phrases {{Tick {384}, Tick {1}}};
-    NoteTrack note_track {notes,
-                          phrases,
-                          {},
-                          {},
-                          {},
-                          {},
-                          TrackType::FiveFret,
-                          std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{Tick {0}, 4, 4}}, {{Tick {0}, 300000}}, 192};
+    NoteTrack note_track {
+        notes, phrases, {}, {}, {}, {}, TrackType::FiveFret, global_data};
     ProcessedSong track {note_track,
                          tempo_map,
                          SqueezeSettings::default_settings(),

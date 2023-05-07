@@ -282,7 +282,7 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
             = converter.measures_to_seconds(m - Measure(1.0));
         const auto mid_m_seconds = (m_seconds + prev_m_seconds) * 0.5;
         const auto fill_start
-            = tempo_map.to_tick(converter.seconds_to_beats(mid_m_seconds));
+            = tempo_map.to_tick(tempo_map.to_beats(mid_m_seconds));
         m_drum_fills.push_back(
             DrumFill {fill_start, measure_ticks - fill_start});
         m += FILL_GAP;

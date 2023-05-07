@@ -40,6 +40,7 @@ private:
 
     static constexpr std::int64_t DEFAULT_BPM = 120000;
     static constexpr double DEFAULT_BEAT_RATE = 4.0;
+    TempoMap m_tempo_map;
     std::vector<BeatTimestamp> m_beat_timestamps;
     std::vector<MeasureTimestamp> m_measure_timestamps;
     double m_last_beat_rate;
@@ -49,7 +50,6 @@ public:
     TimeConverter(const TempoMap& tempo_map, const Engine& engine,
                   const std::vector<Tick>& od_beats);
     [[nodiscard]] Second beats_to_seconds(Beat beats) const;
-    [[nodiscard]] Beat seconds_to_beats(Second seconds) const;
     [[nodiscard]] Measure beats_to_measures(Beat beats) const;
     [[nodiscard]] Beat measures_to_beats(Measure measures) const;
     [[nodiscard]] Second measures_to_seconds(Measure measures) const;

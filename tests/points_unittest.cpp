@@ -73,6 +73,7 @@ BOOST_AUTO_TEST_CASE(single_notes_give_fifty_points)
                      std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -99,6 +100,7 @@ BOOST_AUTO_TEST_CASE(chords_give_multiples_of_fifty_points)
         std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -124,6 +126,7 @@ BOOST_AUTO_TEST_CASE(ghl_notes_behave_the_same_as_five_fret_notes)
                      std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -153,6 +156,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
                      std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet first_points {track,
+                           {},
                            converter,
                            {},
                            SqueezeSettings::default_settings(),
@@ -166,6 +170,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
     TimeConverter second_converter {
         make_resolution(200)->tempo_map(), ChGuitarEngine(), {}};
     PointSet second_points {second_track,
+                            make_resolution(200)->tempo_map(),
                             second_converter,
                             {},
                             SqueezeSettings::default_settings(),
@@ -206,6 +211,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
         std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -232,6 +238,7 @@ BOOST_AUTO_TEST_CASE(resolutions_below_25_do_not_enter_an_infinite_loop)
     TimeConverter converter {
         make_resolution(1)->tempo_map(), ChGuitarEngine(), {}};
     PointSet points {track,
+                     make_resolution(1)->tempo_map(),
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -256,6 +263,7 @@ BOOST_AUTO_TEST_CASE(sustains_of_uneven_length_are_handled_correctly)
                      std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -284,6 +292,7 @@ BOOST_AUTO_TEST_CASE(chord_sustains_in_rb_are_handled_correctly)
                      make_resolution(480)};
     TimeConverter converter {make_resolution(480)->tempo_map(), RbEngine(), {}};
     PointSet points {track,
+                     make_resolution(480)->tempo_map(),
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -305,6 +314,7 @@ BOOST_AUTO_TEST_CASE(
         make_resolution(480)};
     TimeConverter converter {make_resolution(480)->tempo_map(), RbEngine(), {}};
     PointSet points {track,
+                     make_resolution(480)->tempo_map(),
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -331,6 +341,7 @@ BOOST_AUTO_TEST_CASE(rounding_from_length_in_rb_for_chords_is_handled_correctly)
         make_resolution(480)};
     TimeConverter converter {make_resolution(480)->tempo_map(), RbEngine(), {}};
     PointSet points {track,
+                     make_resolution(480)->tempo_map(),
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -357,6 +368,7 @@ BOOST_AUTO_TEST_CASE(gh1_one_beat_sustain_is_handled_correctly)
     TimeConverter converter {
         make_resolution(480)->tempo_map(), Gh1Engine(), {}};
     PointSet points {track,
+                     make_resolution(480)->tempo_map(),
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -384,6 +396,7 @@ BOOST_AUTO_TEST_CASE(
     TimeConverter converter {
         make_resolution(480)->tempo_map(), Gh1Engine(), {}};
     PointSet points {track,
+                     make_resolution(480)->tempo_map(),
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -412,6 +425,7 @@ BOOST_AUTO_TEST_CASE(
     TimeConverter converter {
         make_resolution(480)->tempo_map(), Gh1Engine(), {}};
     PointSet points {track,
+                     make_resolution(480)->tempo_map(),
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -438,6 +452,7 @@ BOOST_AUTO_TEST_CASE(points_are_sorted)
                      std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -462,12 +477,14 @@ BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)
                      std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     PointSet unison_points {track,
+                            {},
                             converter,
                             {{Tick {1100}, Tick {53}}},
                             SqueezeSettings::default_settings(),
@@ -503,6 +520,7 @@ BOOST_AUTO_TEST_CASE(multiplier_applies_to_non_sustains)
                      std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -547,6 +565,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_are_multiplied)
                      std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -576,6 +595,7 @@ BOOST_AUTO_TEST_CASE(later_sustain_points_in_extended_sustains_are_multiplied)
                      std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -605,6 +625,7 @@ BOOST_AUTO_TEST_CASE(drum_notes_have_the_multiplier_handled_correctly)
                      std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, ChDrumEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -630,6 +651,7 @@ BOOST_AUTO_TEST_CASE(gh1_multiplier_delay_accounted_for)
                      std::make_shared<SongGlobalData>()};
     TimeConverter converter {{}, Gh1Engine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -646,20 +668,16 @@ BOOST_AUTO_TEST_SUITE(hit_window_start_and_hit_window_end_are_set_correctly)
 
 BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
 {
-    TimeConverter converter {
-        {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192},
-        ChGuitarEngine(),
-        {}};
+    TempoMap tempo_map {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
+    TimeConverter converter {tempo_map, ChGuitarEngine(), {}};
     std::vector<Note> notes {make_note(192), make_note(787)};
-    NoteTrack track {notes,
-                     {},
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    NoteTrack track {notes,      {}, {}, {}, {}, {}, TrackType::FiveFret,
+                     global_data};
     PointSet points {track,
+                     tempo_map,
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -674,20 +692,16 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
 
 BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
 {
-    TimeConverter converter {
-        {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192},
-        ChGuitarEngine(),
-        {}};
+    TempoMap tempo_map {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
+    TimeConverter converter {tempo_map, ChGuitarEngine(), {}};
     std::vector<Note> notes {make_note(192), make_note(749)};
-    NoteTrack track {notes,
-                     {},
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    NoteTrack track {notes,      {}, {}, {}, {}, {}, TrackType::FiveFret,
+                     global_data};
     PointSet points {track,
+                     tempo_map,
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -702,10 +716,8 @@ BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
 
 BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
 {
-    TimeConverter converter {
-        {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192},
-        ChGuitarEngine(),
-        {}};
+    TempoMap tempo_map {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192};
+    TimeConverter converter {tempo_map, ChGuitarEngine(), {}};
     std::vector<Note> notes {make_note(672, 192)};
     NoteTrack track {notes,
                      {},
@@ -716,6 +728,7 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
+                     tempo_map,
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -730,20 +743,16 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
 
 BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
 {
-    TimeConverter converter {
-        {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192},
-        ChGuitarEngine(),
-        {}};
+    TempoMap tempo_map {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
+    TimeConverter converter {tempo_map, ChGuitarEngine(), {}};
     std::vector<Note> notes {make_note(192)};
-    NoteTrack track {notes,
-                     {},
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_unique<SongGlobalData>()};
+    NoteTrack track {notes,      {}, {}, {}, {}, {}, TrackType::FiveFret,
+                     global_data};
     PointSet points {track,
+                     tempo_map,
                      converter,
                      {},
                      {0.5, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
@@ -758,20 +767,16 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
 
 BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
 {
-    TimeConverter converter {
-        {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192},
-        ChGuitarEngine(),
-        {}};
+    TempoMap tempo_map {{}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
+    TimeConverter converter {tempo_map, ChGuitarEngine(), {}};
     std::vector<Note> notes {make_note(192), make_note(240)};
-    NoteTrack track {notes,
-                     {},
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_unique<SongGlobalData>()};
+    NoteTrack track {notes,      {}, {}, {}, {}, {}, TrackType::FiveFret,
+                     global_data};
     PointSet points {track,
+                     tempo_map,
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -779,6 +784,7 @@ BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
                      RbEngine()};
     PointSet fifty_sqz_points {
         track,
+        tempo_map,
         converter,
         {},
         {0.5, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
@@ -810,6 +816,7 @@ BOOST_AUTO_TEST_CASE(rb_bass_multiplier_is_taken_into_account)
                            std::make_unique<SongGlobalData>()};
     const TimeConverter converter {{}, RbBassEngine(), {}};
     const PointSet points {track,
+                           {},
                            converter,
                            {},
                            SqueezeSettings::default_settings(),
@@ -838,6 +845,7 @@ BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
                            std::make_unique<SongGlobalData>()};
     const TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      {1.0, 1.0, Second {0.0}, Second {-0.20}, Second {0.0}},
@@ -866,6 +874,7 @@ BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
                            std::make_unique<SongGlobalData>()};
     const TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      {1.0, 1.0, Second {0.0}, Second {0.20}, Second {0.0}},
@@ -897,6 +906,7 @@ BOOST_AUTO_TEST_CASE(tick_points_are_not_multiplied_prematurely)
                      std::make_unique<SongGlobalData>()};
     const TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      {1.0, 1.0, Second {0.0}, Second {-0.40}, Second {0.0}},
@@ -922,6 +932,7 @@ BOOST_AUTO_TEST_CASE(next_non_hold_point_is_correct)
                      std::make_unique<SongGlobalData>()};
 
     PointSet points {track,
+                     {},
                      {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -951,6 +962,7 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
     TimeConverter converter {{}, ChGuitarEngine(), {}};
 
     PointSet points {track,
+                     {},
                      converter,
                      {},
                      SqueezeSettings::default_settings(),
@@ -979,6 +991,7 @@ BOOST_AUTO_TEST_CASE(solo_sections_are_added)
                      TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1003,6 +1016,7 @@ BOOST_AUTO_TEST_CASE(range_score_is_correct)
                      TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1031,6 +1045,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_five_fret)
                      TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1059,6 +1074,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_six_fret)
                      TrackType::SixFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1087,6 +1103,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_drums)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1113,12 +1130,14 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_appear_with_enable_double_kick)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet single_points {track,
+                            {},
                             {{}, ChDrumEngine(), {}},
                             {},
                             SqueezeSettings::default_settings(),
                             {false, false, true, false},
                             ChDrumEngine()};
     PointSet double_points {track,
+                            {},
                             {{}, ChDrumEngine(), {}},
                             {},
                             SqueezeSettings::default_settings(),
@@ -1142,6 +1161,7 @@ BOOST_AUTO_TEST_CASE(single_kicks_are_removed_with_disable_kick)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1166,6 +1186,7 @@ BOOST_AUTO_TEST_CASE(disable_kick_doesnt_kill_sp_phrases)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1189,6 +1210,7 @@ BOOST_AUTO_TEST_CASE(double_kicks_dont_kill_phrases)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1212,6 +1234,7 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1238,6 +1261,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_not_killed)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1263,6 +1287,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_not_killed)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1288,6 +1313,7 @@ BOOST_AUTO_TEST_CASE(
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1314,6 +1340,7 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1340,6 +1367,7 @@ BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1363,6 +1391,7 @@ BOOST_AUTO_TEST_CASE(cymbals_get_extra_points)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1393,6 +1422,7 @@ BOOST_AUTO_TEST_CASE(dynamics_get_double_points)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChDrumEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1422,6 +1452,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
                      TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, Gh1Engine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1446,6 +1477,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
                      TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, Gh1Engine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
@@ -1469,6 +1501,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
                      TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
+                     {},
                      {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),

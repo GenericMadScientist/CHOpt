@@ -59,7 +59,8 @@ private:
     std::vector<std::string> m_colours;
 
     static std::vector<Point>
-    points_from_track(const NoteTrack& track, const TimeConverter& converter,
+    points_from_track(const NoteTrack& track, const TempoMap& tempo_map,
+                      const TimeConverter& converter,
                       const std::vector<Tick>& unison_phrases,
                       const SqueezeSettings& squeeze_settings,
                       const DrumSettings& drum_settings, const Engine& engine);
@@ -75,7 +76,8 @@ private:
                            const TimeConverter& converter);
 
 public:
-    PointSet(const NoteTrack& track, const TimeConverter& converter,
+    PointSet(const NoteTrack& track, const TempoMap& tempo_map,
+             const TimeConverter& converter,
              const std::vector<Tick>& unison_phrases,
              const SqueezeSettings& squeeze_settings,
              const DrumSettings& drum_settings, const Engine& engine);

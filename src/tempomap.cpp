@@ -24,7 +24,7 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
                    int resolution)
     : m_resolution {resolution}
 {
-    constexpr auto DEFAULT_BPM = 120000;
+    constexpr double MS_PER_MINUTE = 60000.0;
 
     if (resolution <= 0) {
         throw std::invalid_argument("Resolution must be positive");
@@ -64,6 +64,21 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
         prev_ts = *p;
     }
     m_time_sigs.push_back(prev_ts);
+
+    Tick last_tick {0};
+    auto last_bpm = DEFAULT_BPM;
+    auto last_time = 0.0;
+
+    for (const auto& bpm : m_bpms) {
+        last_time += to_beat(bpm.position - last_tick).value()
+            * (MS_PER_MINUTE / static_cast<double>(last_bpm));
+        const auto beat = to_beat(bpm.position);
+        m_beat_timestamps.push_back({beat, Second(last_time)});
+        last_bpm = bpm.bpm;
+        last_tick = bpm.position;
+    }
+
+    m_last_bpm = last_bpm;
 }
 
 TempoMap TempoMap::speedup(int speed) const
@@ -74,5 +89,30 @@ TempoMap TempoMap::speedup(int speed) const
     for (auto& bpm : speedup.m_bpms) {
         bpm.bpm = (bpm.bpm * speed) / DEFAULT_SPEED;
     }
+
+    const auto speed_ratio = static_cast<double>(speed) / DEFAULT_SPEED;
+    for (auto& timestamp : speedup.m_beat_timestamps) {
+        timestamp.time *= speed_ratio;
+    }
+    speedup.m_last_bpm = (speedup.m_last_bpm * speed) / DEFAULT_SPEED;
+
     return speedup;
+}
+
+Beat TempoMap::to_beats(Second seconds) const
+{
+    const auto pos = std::lower_bound(
+        m_beat_timestamps.cbegin(), m_beat_timestamps.cend(), seconds,
+        [](const auto& x, const auto& y) { return x.time < y; });
+    if (pos == m_beat_timestamps.cend()) {
+        const auto& back = m_beat_timestamps.back();
+        return back.beat + (seconds - back.time).to_beat(m_last_bpm);
+    }
+    if (pos == m_beat_timestamps.cbegin()) {
+        return pos->beat - (pos->time - seconds).to_beat(DEFAULT_BPM);
+    }
+    const auto prev = pos - 1;
+    return prev->beat
+        + (pos->beat - prev->beat)
+        * ((seconds - prev->time) / (pos->time - prev->time));
 }

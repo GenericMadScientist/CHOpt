@@ -85,7 +85,7 @@ Optimiser::CacheKey Optimiser::add_whammy_delay(CacheKey key) const
 {
     auto seconds = m_song->converter().beats_to_seconds(key.position.beat);
     seconds += m_whammy_delay;
-    key.position.beat = m_song->converter().seconds_to_beats(seconds);
+    key.position.beat = m_song->tempo_map().to_beats(seconds);
     key.position.measure
         = m_song->converter().beats_to_measures(key.position.beat);
     return key;

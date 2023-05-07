@@ -66,9 +66,11 @@ ProcessedSong::ProcessedSong(const NoteTrack& track, const TempoMap& tempo_map,
                              const Engine& engine,
                              const std::vector<Tick>& od_beats,
                              const std::vector<Tick>& unison_phrases)
-    : m_converter {tempo_map, engine, od_beats}
-    , m_points {track,         m_converter, unison_phrases, squeeze_settings,
-                drum_settings, engine}
+    : m_tempo_map {tempo_map}
+    , m_converter {tempo_map, engine, od_beats}
+    , m_points {track,          tempo_map,        m_converter,
+                unison_phrases, squeeze_settings, drum_settings,
+                engine}
     , m_sp_data {track, tempo_map, od_beats, squeeze_settings, engine}
     , m_total_bre_boost {bre_boost(track, engine, m_converter)}
     , m_base_score {track.base_score(drum_settings)}
@@ -165,7 +167,7 @@ Position ProcessedSong::adjusted_hit_window_start(PointPtr point,
     auto start = m_converter.beats_to_seconds(point->hit_window_start.beat);
     auto mid = m_converter.beats_to_seconds(point->position.beat);
     auto adj_start_s = start + (mid - start) * (1.0 - squeeze);
-    auto adj_start_b = m_converter.seconds_to_beats(adj_start_s);
+    auto adj_start_b = m_tempo_map.to_beats(adj_start_s);
     auto adj_start_m = m_converter.beats_to_measures(adj_start_b);
 
     return {adj_start_b, adj_start_m};
@@ -183,7 +185,7 @@ Position ProcessedSong::adjusted_hit_window_end(PointPtr point,
     auto mid = m_converter.beats_to_seconds(point->position.beat);
     auto end = m_converter.beats_to_seconds(point->hit_window_end.beat);
     auto adj_end_s = mid + (end - mid) * squeeze;
-    auto adj_end_b = m_converter.seconds_to_beats(adj_end_s);
+    auto adj_end_b = m_tempo_map.to_beats(adj_end_s);
     auto adj_end_m = m_converter.beats_to_measures(adj_end_b);
 
     return {adj_end_b, adj_end_m};
