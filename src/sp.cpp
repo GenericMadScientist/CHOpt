@@ -37,6 +37,37 @@ double sp_deduction(Position start, Position end)
     const auto meas_diff = end.measure - start.measure;
     return meas_diff.value() / MEASURES_PER_BAR;
 }
+
+std::vector<std::tuple<Tick, Tick, Second>>
+note_spans(const NoteTrack& track, double early_whammy, const Engine& engine)
+{
+    const auto& tempo_map = track.global_data().tempo_map();
+    std::vector<std::tuple<Tick, Tick, Second>> spans;
+    for (auto note = track.notes().cbegin(); note < track.notes().cend();
+         ++note) {
+        auto early_gap = std::numeric_limits<double>::infinity();
+        auto late_gap = std::numeric_limits<double>::infinity();
+        const auto current_note_time
+            = tempo_map.to_seconds(note->position).value();
+        if (note != track.notes().cbegin()) {
+            early_gap = current_note_time
+                - tempo_map.to_seconds(std::prev(note)->position).value();
+        }
+        if (std::next(note) < track.notes().cend()) {
+            late_gap = tempo_map.to_seconds(std::next(note)->position).value()
+                - current_note_time;
+        }
+        for (auto length : note->lengths) {
+            if (length != Tick {-1}) {
+                spans.emplace_back(
+                    note->position, length,
+                    Second {engine.early_timing_window(early_gap, late_gap)}
+                        * early_whammy);
+            }
+        }
+    }
+    return spans;
+}
 }
 
 std::vector<SpData::BeatRate>
@@ -73,38 +104,6 @@ SpData::form_beat_rates(const TempoMap& tempo_map,
     }
 
     return beat_rates;
-}
-
-std::vector<std::tuple<Tick, Tick, Second>>
-SpData::note_spans(const NoteTrack& track, double early_whammy,
-                   const Engine& engine)
-{
-    const auto& tempo_map = track.global_data().tempo_map();
-    std::vector<std::tuple<Tick, Tick, Second>> spans;
-    for (auto note = track.notes().cbegin(); note < track.notes().cend();
-         ++note) {
-        auto early_gap = std::numeric_limits<double>::infinity();
-        auto late_gap = std::numeric_limits<double>::infinity();
-        const auto current_note_time
-            = tempo_map.to_seconds(note->position).value();
-        if (note != track.notes().cbegin()) {
-            early_gap = current_note_time
-                - tempo_map.to_seconds(std::prev(note)->position).value();
-        }
-        if (std::next(note) < track.notes().cend()) {
-            late_gap = tempo_map.to_seconds(std::next(note)->position).value()
-                - current_note_time;
-        }
-        for (auto length : note->lengths) {
-            if (length != Tick {-1}) {
-                spans.emplace_back(
-                    note->position, length,
-                    Second {engine.early_timing_window(early_gap, late_gap)}
-                        * early_whammy);
-            }
-        }
-    }
-    return spans;
 }
 
 SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
