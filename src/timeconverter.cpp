@@ -24,25 +24,8 @@ TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
                              const std::vector<Tick>& od_beats)
     : m_tempo_map {tempo_map}
 {
-    constexpr double MS_PER_MINUTE = 60000.0;
-
-    Tick last_tick {0};
-    auto last_bpm = DEFAULT_BPM;
-    auto last_time = 0.0;
-
-    for (const auto& bpm : tempo_map.bpms()) {
-        last_time += tempo_map.to_beats(bpm.position - last_tick).value()
-            * (MS_PER_MINUTE / static_cast<double>(last_bpm));
-        const auto beat = tempo_map.to_beats(bpm.position);
-        m_beat_timestamps.push_back({beat, Second(last_time)});
-        last_bpm = bpm.bpm;
-        last_tick = bpm.position;
-    }
-
-    m_last_bpm = last_bpm;
-
     if (!engine.uses_beat_track()) {
-        last_tick = Tick {0};
+        Tick last_tick {0};
         auto last_beat_rate = DEFAULT_BEAT_RATE;
         auto last_measure = 0.0;
 
@@ -70,7 +53,6 @@ TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
         m_last_beat_rate = DEFAULT_BEAT_RATE;
     }
 
-    assert(!m_beat_timestamps.empty()); // NOLINT
     assert(!m_measure_timestamps.empty()); // NOLINT
 }
 

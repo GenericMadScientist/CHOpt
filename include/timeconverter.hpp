@@ -19,7 +19,6 @@
 #ifndef CHOPT_TIMECONVERTER_HPP
 #define CHOPT_TIMECONVERTER_HPP
 
-#include <cstdint>
 #include <vector>
 
 #include "engine.hpp"
@@ -28,23 +27,15 @@
 
 class TimeConverter {
 private:
-    struct BeatTimestamp {
-        Beat beat;
-        Second time;
-    };
-
     struct MeasureTimestamp {
         Measure measure;
         Beat beat;
     };
 
-    static constexpr std::int64_t DEFAULT_BPM = 120000;
     static constexpr double DEFAULT_BEAT_RATE = 4.0;
     TempoMap m_tempo_map;
-    std::vector<BeatTimestamp> m_beat_timestamps;
     std::vector<MeasureTimestamp> m_measure_timestamps;
     double m_last_beat_rate;
-    std::int64_t m_last_bpm;
 
 public:
     TimeConverter(const TempoMap& tempo_map, const Engine& engine,
