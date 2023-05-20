@@ -107,9 +107,9 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
 
     m_last_beat_rate = last_beat_rate;
 
-    if (!od_beats.empty()) {
-        for (auto i = 0U; i < od_beats.size(); ++i) {
-            const auto beat = to_beats(od_beats[i]);
+    if (!m_od_beats.empty()) {
+        for (auto i = 0U; i < m_od_beats.size(); ++i) {
+            const auto beat = to_beats(m_od_beats[i]);
             m_od_beat_timestamps.push_back(
                 {Measure(i / DEFAULT_BEAT_RATE), beat});
         }
