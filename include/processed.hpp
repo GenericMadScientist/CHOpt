@@ -31,7 +31,6 @@
 #include "sp.hpp"
 #include "tempomap.hpp"
 #include "time.hpp"
-#include "timeconverter.hpp"
 
 struct ActivationCandidate {
     PointPtr act_start;
@@ -77,10 +76,7 @@ class ProcessedSong {
 private:
     static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
 
-    // The order of these members is important. We must have m_converter before
-    // m_points.
     TempoMap m_tempo_map;
-    TimeConverter m_converter;
     PointSet m_points;
     SpData m_sp_data;
     int m_total_bre_boost;
@@ -143,7 +139,6 @@ public:
     [[nodiscard]] const PointSet& points() const { return m_points; }
     [[nodiscard]] const SpData& sp_data() const { return m_sp_data; }
     [[nodiscard]] const TempoMap& tempo_map() const { return m_tempo_map; }
-    [[nodiscard]] const TimeConverter& converter() const { return m_converter; }
     [[nodiscard]] bool is_drums() const { return m_is_drums; }
 };
 
