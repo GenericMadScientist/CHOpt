@@ -98,8 +98,7 @@ public:
     void add_song_header(const SongGlobalData& global_data, int speed);
     void add_sp_acts(const PointSet& points, const TempoMap& tempo_map,
                      const Path& path);
-    void add_sp_percent_values(const SpData& sp_data,
-                               const TimeConverter& converter,
+    void add_sp_percent_values(const SpData& sp_data, const TempoMap& tempo_map,
                                const PointSet& points, const Path& path);
     void add_sp_phrases(const NoteTrack& track,
                         const std::vector<Tick>& unison_phrases,

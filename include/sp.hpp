@@ -29,7 +29,6 @@
 #include "songparts.hpp"
 #include "tempomap.hpp"
 #include "time.hpp"
-#include "timeconverter.hpp"
 
 // Represents the minimum and maximum SP possible at a given time.
 class SpBar {
@@ -89,7 +88,7 @@ private:
     static constexpr double DEFAULT_BEATS_PER_BAR = 32.0;
     static constexpr double MEASURES_PER_BAR = 8.0;
 
-    TimeConverter m_converter;
+    TempoMap m_tempo_map;
     std::vector<BeatRate> m_beat_rates;
     std::vector<WhammyRange> m_whammy_ranges;
     Beat m_last_whammy_point {-std::numeric_limits<double>::infinity()};

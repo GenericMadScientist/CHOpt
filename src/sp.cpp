@@ -109,7 +109,7 @@ SpData::form_beat_rates(const TempoMap& tempo_map,
 SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
                const std::vector<Tick>& od_beats,
                const SqueezeSettings& squeeze_settings, const Engine& engine)
-    : m_converter {tempo_map, engine, od_beats}
+    : m_tempo_map {tempo_map}
     , m_beat_rates {form_beat_rates(tempo_map, od_beats, engine)}
     , m_sp_gain_rate {engine.sp_gain_rate()}
     , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
@@ -160,8 +160,8 @@ SpData::SpData(const NoteTrack& track, const TempoMap& tempo_map,
     merged_ranges.push_back(pair);
 
     for (auto [start, end, note] : merged_ranges) {
-        const auto start_meas = m_converter.beats_to_measures(start);
-        const auto end_meas = m_converter.beats_to_measures(end);
+        const auto start_meas = tempo_map.to_measures(start);
+        const auto end_meas = tempo_map.to_measures(end);
         m_whammy_ranges.push_back({{start, start_meas}, {end, end_meas}, note});
     }
 
@@ -333,7 +333,7 @@ Position SpData::sp_drain_end_point(Position start, double sp_bar_amount) const
 {
     const auto end_meas
         = start.measure + Measure(sp_bar_amount * MEASURES_PER_BAR);
-    const auto end_beat = m_converter.measures_to_beats(end_meas);
+    const auto end_beat = m_tempo_map.to_beats(end_meas);
     return {end_beat, end_meas};
 }
 
@@ -356,7 +356,7 @@ Position SpData::activation_end_point(Position start, Position end,
         if (new_sp_bar_amount < 0.0) {
             const auto end_beat = whammy_propagation_endpoint(
                 start.beat, end.beat, sp_bar_amount);
-            const auto end_meas = m_converter.beats_to_measures(end_beat);
+            const auto end_meas = m_tempo_map.to_measures(end_beat);
             return {end_beat, end_meas};
         }
         sp_bar_amount = new_sp_bar_amount;

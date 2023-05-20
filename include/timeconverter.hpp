@@ -40,8 +40,6 @@ private:
 public:
     TimeConverter(const TempoMap& tempo_map, const Engine& engine,
                   const std::vector<Tick>& od_beats);
-    [[nodiscard]] Measure beats_to_measures(Beat beats) const;
-    [[nodiscard]] Beat measures_to_beats(Measure measures) const;
     [[nodiscard]] Second measures_to_seconds(Measure measures) const;
     [[nodiscard]] Measure seconds_to_measures(Second seconds) const;
 };

@@ -29,7 +29,6 @@
 #include "settings.hpp"
 #include "songparts.hpp"
 #include "time.hpp"
-#include "timeconverter.hpp"
 
 // fill_start is used for Drums, giving the start of the fill that makes a point
 // an activation note if it is one, or nullopt otherwise.
@@ -60,7 +59,6 @@ private:
 
     static std::vector<Point>
     points_from_track(const NoteTrack& track, const TempoMap& tempo_map,
-                      const TimeConverter& converter,
                       const std::vector<Tick>& unison_phrases,
                       const SqueezeSettings& squeeze_settings,
                       const DrumSettings& drum_settings, const Engine& engine);
@@ -72,12 +70,10 @@ private:
     static std::vector<int> score_totals(const std::vector<Point>& points);
     static std::vector<std::tuple<Position, int>>
     solo_boosts_from_solos(const std::vector<Solo>& solos,
-                           const TempoMap& tempo_map,
-                           const TimeConverter& converter);
+                           const TempoMap& tempo_map);
 
 public:
     PointSet(const NoteTrack& track, const TempoMap& tempo_map,
-             const TimeConverter& converter,
              const std::vector<Tick>& unison_phrases,
              const SqueezeSettings& squeeze_settings,
              const DrumSettings& drum_settings, const Engine& engine);

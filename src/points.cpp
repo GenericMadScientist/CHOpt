@@ -48,7 +48,7 @@ double song_tick_gap(int resolution, const Engine& engine)
 template <typename OutputIt>
 void append_sustain_points(OutputIt points, Tick position, Tick sust_length,
                            int resolution, int chord_size,
-                           const TimeConverter& converter, const Engine& engine)
+                           const TempoMap& tempo_map, const Engine& engine)
 {
     constexpr double HALF_RES_OFFSET = 0.5;
 
@@ -76,14 +76,14 @@ void append_sustain_points(OutputIt points, Tick position, Tick sust_length,
         float_pos += tick_gap;
         float_sust_len -= tick_gap;
         const Beat beat {(float_pos - HALF_RES_OFFSET) / float_res};
-        const auto meas = converter.beats_to_measures(beat);
+        const auto meas = tempo_map.to_measures(beat);
         --sust_ticks;
         *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, {}, 1, 1,
                      true,         false,        false};
     }
     if (sust_ticks > 0) {
         const Beat beat {(float_pos + HALF_RES_OFFSET) / float_res};
-        const auto meas = converter.beats_to_measures(beat);
+        const auto meas = tempo_map.to_measures(beat);
         *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, {},   sust_ticks,
                      sust_ticks,   true,         false,        false};
     }
@@ -108,8 +108,8 @@ void append_note_points(std::vector<Note>::const_iterator note,
                         const std::vector<Note>& notes, OutputIt points,
                         const TempoMap& tempo_map, int resolution,
                         bool is_note_sp_ender, bool is_unison_sp_ender,
-                        const TimeConverter& converter, double squeeze,
-                        const Engine& engine, const DrumSettings& drum_settings)
+                        double squeeze, const Engine& engine,
+                        const DrumSettings& drum_settings)
 {
     auto note_value = engine.base_note_value();
     if (note->flags & FLAGS_DRUMS) {
@@ -123,7 +123,7 @@ void append_note_points(std::vector<Note>::const_iterator note,
     const auto chord_size = get_chord_size(*note, drum_settings);
     const auto pos = note->position;
     const auto beat = tempo_map.to_beats(pos);
-    const auto meas = converter.beats_to_measures(beat);
+    const auto meas = tempo_map.to_measures(beat);
     const auto note_seconds = tempo_map.to_seconds(beat);
 
     auto early_gap = std::numeric_limits<double>::infinity();
@@ -147,9 +147,9 @@ void append_note_points(std::vector<Note>::const_iterator note,
                               * squeeze};
 
     const auto early_beat = tempo_map.to_beats(note_seconds - early_window);
-    const auto early_meas = converter.beats_to_measures(early_beat);
+    const auto early_meas = tempo_map.to_measures(early_beat);
     const auto late_beat = tempo_map.to_beats(note_seconds + late_window);
-    const auto late_meas = converter.beats_to_measures(late_beat);
+    const auto late_meas = tempo_map.to_measures(late_beat);
     *points++
         = {{beat, meas}, {early_beat, early_meas}, {late_beat, late_meas},
            {},           note_value * chord_size,  note_value * chord_size,
@@ -167,12 +167,12 @@ void append_note_points(std::vector<Note>::const_iterator note,
 
     if (min_length == max_length || engine.merge_uneven_sustains()) {
         append_sustain_points(points, pos, min_length, resolution, chord_size,
-                              converter, engine);
+                              tempo_map, engine);
     } else {
         for (auto length : note->lengths) {
             if (length != Tick {-1}) {
                 append_sustain_points(points, pos, length, resolution,
-                                      chord_size, converter, engine);
+                                      chord_size, tempo_map, engine);
             }
         }
     }
@@ -214,14 +214,13 @@ void add_drum_activation_points(const NoteTrack& track,
 }
 
 void shift_points_by_video_lag(std::vector<Point>& points,
-                               const TempoMap& tempo_map,
-                               const TimeConverter& converter, Second video_lag)
+                               const TempoMap& tempo_map, Second video_lag)
 {
     const auto add_video_lag = [&](auto& position) {
         auto seconds = tempo_map.to_seconds(position.beat);
         seconds += video_lag;
         position.beat = tempo_map.to_beats(seconds);
-        position.measure = converter.beats_to_measures(position.beat);
+        position.measure = tempo_map.to_measures(position.beat);
     };
 
     for (auto& point : points) {
@@ -295,7 +294,6 @@ void apply_multiplier(std::vector<Point>& points, const Engine& engine)
 }
 
 std::vector<Point> unmultiplied_points(const NoteTrack& track,
-                                       const TimeConverter& converter,
                                        const std::vector<Tick>& unison_phrases,
                                        const SqueezeSettings& squeeze_settings,
                                        const DrumSettings& drum_settings,
@@ -344,8 +342,8 @@ std::vector<Point> unmultiplied_points(const NoteTrack& track,
         append_note_points(p, notes, std::back_inserter(points),
                            track.global_data().tempo_map(),
                            track.global_data().resolution(), is_note_sp_ender,
-                           is_unison_sp_ender, converter,
-                           squeeze_settings.squeeze, engine, drum_settings);
+                           is_unison_sp_ender, squeeze_settings.squeeze, engine,
+                           drum_settings);
         p = q;
     }
 
@@ -359,17 +357,14 @@ std::vector<Point> unmultiplied_points(const NoteTrack& track,
 
 std::vector<Point> non_drum_points(const NoteTrack& track,
                                    const TempoMap& tempo_map,
-                                   const TimeConverter& converter,
                                    const std::vector<Tick>& unison_phrases,
                                    const SqueezeSettings& squeeze_settings,
                                    const Engine& engine)
 {
-    auto points = unmultiplied_points(track, converter, unison_phrases,
-                                      squeeze_settings,
+    auto points = unmultiplied_points(track, unison_phrases, squeeze_settings,
                                       DrumSettings::default_settings(), engine);
     apply_multiplier(points, engine);
-    shift_points_by_video_lag(points, tempo_map, converter,
-                              squeeze_settings.video_lag);
+    shift_points_by_video_lag(points, tempo_map, squeeze_settings.video_lag);
     return points;
 }
 
@@ -471,22 +466,22 @@ std::vector<std::string> note_colours(const std::vector<Note>& notes,
 }
 }
 
-std::vector<Point> PointSet::points_from_track(
-    const NoteTrack& track, const TempoMap& tempo_map,
-    const TimeConverter& converter, const std::vector<Tick>& unison_phrases,
-    const SqueezeSettings& squeeze_settings, const DrumSettings& drum_settings,
-    const Engine& engine)
+std::vector<Point>
+PointSet::points_from_track(const NoteTrack& track, const TempoMap& tempo_map,
+                            const std::vector<Tick>& unison_phrases,
+                            const SqueezeSettings& squeeze_settings,
+                            const DrumSettings& drum_settings,
+                            const Engine& engine)
 {
     if (track.track_type() != TrackType::Drums) {
-        return non_drum_points(track, tempo_map, converter, unison_phrases,
+        return non_drum_points(track, tempo_map, unison_phrases,
                                squeeze_settings, engine);
     }
-    auto points = unmultiplied_points(track, converter, unison_phrases,
-                                      squeeze_settings, drum_settings, engine);
+    auto points = unmultiplied_points(track, unison_phrases, squeeze_settings,
+                                      drum_settings, engine);
     add_drum_activation_points(track, points);
     apply_multiplier(points, engine);
-    shift_points_by_video_lag(points, tempo_map, converter,
-                              squeeze_settings.video_lag);
+    shift_points_by_video_lag(points, tempo_map, squeeze_settings.video_lag);
     return points;
 }
 
@@ -519,14 +514,13 @@ std::vector<int> PointSet::score_totals(const std::vector<Point>& points)
 
 std::vector<std::tuple<Position, int>>
 PointSet::solo_boosts_from_solos(const std::vector<Solo>& solos,
-                                 const TempoMap& tempo_map,
-                                 const TimeConverter& converter)
+                                 const TempoMap& tempo_map)
 {
     std::vector<std::tuple<Position, int>> solo_boosts;
     solo_boosts.reserve(solos.size());
     for (const auto& solo : solos) {
         const auto end_beat = tempo_map.to_beats(solo.end);
-        const Measure end_meas = converter.beats_to_measures(end_beat);
+        const Measure end_meas = tempo_map.to_measures(end_beat);
         const Position end_pos {end_beat, end_meas};
         solo_boosts.emplace_back(end_pos, solo.value);
     }
@@ -534,16 +528,15 @@ PointSet::solo_boosts_from_solos(const std::vector<Solo>& solos,
 }
 
 PointSet::PointSet(const NoteTrack& track, const TempoMap& tempo_map,
-                   const TimeConverter& converter,
                    const std::vector<Tick>& unison_phrases,
                    const SqueezeSettings& squeeze_settings,
                    const DrumSettings& drum_settings, const Engine& engine)
     : m_video_lag {squeeze_settings.video_lag}
 {
-    m_points = points_from_track(track, tempo_map, converter, unison_phrases,
+    m_points = points_from_track(track, tempo_map, unison_phrases,
                                  squeeze_settings, drum_settings, engine);
-    m_solo_boosts = solo_boosts_from_solos(track.solos(drum_settings),
-                                           tempo_map, converter);
+    m_solo_boosts
+        = solo_boosts_from_solos(track.solos(drum_settings), tempo_map);
     m_first_after_current_sp
         = first_after_current_sp_vector(m_points, track, engine);
     m_next_non_hold_point = next_non_hold_vector(m_points);

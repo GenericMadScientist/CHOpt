@@ -65,9 +65,8 @@ ProcessedSong::ProcessedSong(const NoteTrack& track, const TempoMap& tempo_map,
                              const std::vector<Tick>& unison_phrases)
     : m_tempo_map {tempo_map}
     , m_converter {tempo_map, engine, od_beats}
-    , m_points {track,          tempo_map,        m_converter,
-                unison_phrases, squeeze_settings, drum_settings,
-                engine}
+    , m_points {track,         tempo_map, unison_phrases, squeeze_settings,
+                drum_settings, engine}
     , m_sp_data {track, tempo_map, od_beats, squeeze_settings, engine}
     , m_total_bre_boost {bre_boost(track, engine)}
     , m_base_score {track.base_score(drum_settings)}
@@ -148,8 +147,7 @@ std::tuple<SpBar, Position> ProcessedSong::total_available_sp_with_earliest_pos(
         earliest_potential_pos.beat, last_beat, act_start->position.beat);
     sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
-    return {sp_bar,
-            Position {last_beat, m_converter.beats_to_measures(last_beat)}};
+    return {sp_bar, Position {last_beat, m_tempo_map.to_measures(last_beat)}};
 }
 
 Position ProcessedSong::adjusted_hit_window_start(PointPtr point,
@@ -165,7 +163,7 @@ Position ProcessedSong::adjusted_hit_window_start(PointPtr point,
     auto mid = m_tempo_map.to_seconds(point->position.beat);
     auto adj_start_s = start + (mid - start) * (1.0 - squeeze);
     auto adj_start_b = m_tempo_map.to_beats(adj_start_s);
-    auto adj_start_m = m_converter.beats_to_measures(adj_start_b);
+    auto adj_start_m = m_tempo_map.to_measures(adj_start_b);
 
     return {adj_start_b, adj_start_m};
 }
@@ -183,7 +181,7 @@ Position ProcessedSong::adjusted_hit_window_end(PointPtr point,
     auto end = m_tempo_map.to_seconds(point->hit_window_end.beat);
     auto adj_end_s = mid + (end - mid) * squeeze;
     auto adj_end_b = m_tempo_map.to_beats(adj_end_s);
-    auto adj_end_m = m_converter.beats_to_measures(adj_end_b);
+    auto adj_end_m = m_tempo_map.to_measures(adj_end_b);
 
     return {adj_end_b, adj_end_m};
 }
@@ -350,7 +348,7 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
         return {null_position, ActValidity::surplus_sp};
     }
 
-    const auto end_beat = m_converter.measures_to_beats(end_meas);
+    const auto end_beat = m_tempo_map.to_beats(end_meas);
     return {{end_beat, end_meas}, ActValidity::success};
 }
 

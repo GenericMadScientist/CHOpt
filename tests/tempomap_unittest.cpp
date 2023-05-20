@@ -28,6 +28,7 @@ BOOST_AUTO_TEST_CASE(bpms_are_sorted_by_position)
     TempoMap tempo_map {
         {},
         {{Tick {0}, 150000}, {Tick {2000}, 200000}, {Tick {1000}, 225000}},
+        {},
         192};
     std::vector<BPM> expected_bpms {
         {Tick {0}, 150000}, {Tick {1000}, 225000}, {Tick {2000}, 200000}};
@@ -39,7 +40,7 @@ BOOST_AUTO_TEST_CASE(bpms_are_sorted_by_position)
 
 BOOST_AUTO_TEST_CASE(no_two_bpms_have_the_same_position)
 {
-    TempoMap tempo_map {{}, {{Tick {0}, 150000}, {Tick {0}, 200000}}, 192};
+    TempoMap tempo_map {{}, {{Tick {0}, 150000}, {Tick {0}, 200000}}, {}, 192};
     std::vector<BPM> expected_bpms {{Tick {0}, 200000}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(tempo_map.bpms().cbegin(),
@@ -60,7 +61,10 @@ BOOST_AUTO_TEST_CASE(bpms_is_never_empty)
 BOOST_AUTO_TEST_CASE(time_signatures_are_sorted_by_position)
 {
     TempoMap tempo_map {
-        {{Tick {0}, 4, 4}, {Tick {2000}, 3, 3}, {Tick {1000}, 2, 2}}, {}, 192};
+        {{Tick {0}, 4, 4}, {Tick {2000}, 3, 3}, {Tick {1000}, 2, 2}},
+        {},
+        {},
+        192};
     std::vector<TimeSignature> expected_tses {
         {Tick {0}, 4, 4}, {Tick {1000}, 2, 2}, {Tick {2000}, 3, 3}};
 
@@ -71,7 +75,7 @@ BOOST_AUTO_TEST_CASE(time_signatures_are_sorted_by_position)
 
 BOOST_AUTO_TEST_CASE(no_two_time_signatures_have_the_same_position)
 {
-    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {0}, 3, 4}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {0}, 3, 4}}, {}, {}, 192};
     std::vector<TimeSignature> expected_tses {{Tick {0}, 3, 4}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(tempo_map.time_sigs().cbegin(),
@@ -92,11 +96,11 @@ BOOST_AUTO_TEST_CASE(time_sigs_is_never_empty)
 BOOST_AUTO_TEST_CASE(bpms_must_be_positive)
 {
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{}, {{Tick {192}, 0}}, 192};
+                          return TempoMap {{}, {{Tick {192}, 0}}, {}, 192};
                       })(),
                       ParseError);
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{}, {{Tick {192}, -1}}, 192};
+                          return TempoMap {{}, {{Tick {192}, -1}}, {}, 192};
                       })(),
                       ParseError);
 }
@@ -104,19 +108,19 @@ BOOST_AUTO_TEST_CASE(bpms_must_be_positive)
 BOOST_AUTO_TEST_CASE(time_signatures_must_be_positive_positive)
 {
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{{Tick {0}, 0, 4}}, {}, 192};
+                          return TempoMap {{{Tick {0}, 0, 4}}, {}, {}, 192};
                       })(),
                       ParseError);
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{{Tick {0}, -1, 4}}, {}, 192};
+                          return TempoMap {{{Tick {0}, -1, 4}}, {}, {}, 192};
                       })(),
                       ParseError);
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{{Tick {0}, 4, 0}}, {}, 192};
+                          return TempoMap {{{Tick {0}, 4, 0}}, {}, {}, 192};
                       })(),
                       ParseError);
     BOOST_CHECK_THROW(([&] {
-                          return TempoMap {{{Tick {0}, 4, -1}}, {}, 192};
+                          return TempoMap {{{Tick {0}, 4, -1}}, {}, {}, 192};
                       })(),
                       ParseError);
 }
@@ -125,8 +129,10 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(speedup_returns_correct_tempo_map)
 {
-    const TempoMap tempo_map {
-        {{Tick {0}, 4, 4}}, {{Tick {0}, 120000}, {Tick {192}, 240000}}, 192};
+    const TempoMap tempo_map {{{Tick {0}, 4, 4}},
+                              {{Tick {0}, 120000}, {Tick {192}, 240000}},
+                              {},
+                              192};
     const std::vector<BPM> expected_bpms {{Tick {0}, 180000},
                                           {Tick {192}, 360000}};
     const std::vector<TimeSignature> expected_tses {{Tick {0}, 4, 4}};
@@ -143,7 +149,7 @@ BOOST_AUTO_TEST_CASE(speedup_returns_correct_tempo_map)
 
 BOOST_AUTO_TEST_CASE(speedup_doesnt_overflow)
 {
-    const TempoMap tempo_map {{}, {{Tick {0}, 200000000}}, 192};
+    const TempoMap tempo_map {{}, {{Tick {0}, 200000000}}, {}, 192};
     const std::vector<BPM> expected_bpms {{Tick {0}, 400000000}};
 
     const auto speedup = tempo_map.speedup(200);
@@ -155,8 +161,10 @@ BOOST_AUTO_TEST_CASE(speedup_doesnt_overflow)
 
 BOOST_AUTO_TEST_CASE(seconds_to_beats_conversion_works_correctly)
 {
-    TempoMap tempo_map {
-        {{Tick {0}, 4, 4}}, {{Tick {0}, 150000}, {Tick {800}, 200000}}, 200};
+    TempoMap tempo_map {{{Tick {0}, 4, 4}},
+                        {{Tick {0}, 150000}, {Tick {800}, 200000}},
+                        {},
+                        200};
     constexpr std::array beats {-1.0, 0.0, 3.0, 5.0};
     constexpr std::array seconds {-0.5, 0.0, 1.2, 1.9};
 
@@ -175,8 +183,10 @@ BOOST_AUTO_TEST_CASE(seconds_to_beats_conversion_works_correctly_after_speedup)
 
 BOOST_AUTO_TEST_CASE(beats_to_seconds_conversion_works_correctly)
 {
-    TempoMap tempo_map {
-        {{Tick {0}, 4, 4}}, {{Tick {0}, 150000}, {Tick {800}, 200000}}, 200};
+    TempoMap tempo_map {{{Tick {0}, 4, 4}},
+                        {{Tick {0}, 150000}, {Tick {800}, 200000}},
+                        {},
+                        200};
     constexpr std::array beats {-1.0, 0.0, 3.0, 5.0};
     constexpr std::array seconds {-0.5, 0.0, 1.2, 1.9};
 
@@ -191,4 +201,36 @@ BOOST_AUTO_TEST_CASE(beats_to_seconds_conversion_works_correctly_after_speedup)
     TempoMap tempo_map = TempoMap().speedup(200);
 
     BOOST_CHECK_EQUAL(tempo_map.to_seconds(Beat {4}), Second {1});
+}
+
+BOOST_AUTO_TEST_CASE(beats_to_measures_conversion_works_correctly)
+{
+    TempoMap tempo_map {
+        {{Tick {0}, 5, 4}, {Tick {1000}, 4, 4}, {Tick {1200}, 4, 16}},
+        {},
+        {},
+        200};
+    constexpr std::array beats {-1.0, 0.0, 3.0, 5.5, 6.5};
+    constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
+
+    for (auto i = 0U; i < beats.size(); ++i) {
+        BOOST_CHECK_CLOSE(tempo_map.to_measures(Beat(beats.at(i))).value(),
+                          measures.at(i), 0.0001);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(measures_to_beats_conversion_works_correctly)
+{
+    TempoMap tempo_map {
+        {{Tick {0}, 5, 4}, {Tick {1000}, 4, 4}, {Tick {1200}, 4, 16}},
+        {},
+        {},
+        200};
+    constexpr std::array beats {-1.0, 0.0, 3.0, 5.5, 6.5};
+    constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
+
+    for (auto i = 0U; i < beats.size(); ++i) {
+        BOOST_CHECK_CLOSE(tempo_map.to_beats(Measure(measures.at(i))).value(),
+                          beats.at(i), 0.0001);
+    }
 }

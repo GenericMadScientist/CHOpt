@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_four_four)
                      std::make_shared<SongGlobalData>()};
     std::vector<TimeSignature> time_sigs {{Tick {0}, 4, 4}};
     SpData sp_data {track,
-                    {time_sigs, {}, 192},
+                    {time_sigs, {}, {}, 192},
                     {},
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_three_four)
                      std::make_shared<SongGlobalData>()};
     std::vector<TimeSignature> time_sigs {{Tick {0}, 3, 4}};
     SpData sp_data {track,
-                    {time_sigs, {}, 192},
+                    {time_sigs, {}, {}, 192},
                     {},
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_changing_time_signatures)
                      std::make_shared<SongGlobalData>()};
     std::vector<TimeSignature> time_sigs {{Tick {0}, 4, 4}, {Tick {384}, 3, 4}};
     SpData sp_data {track,
-                    {time_sigs, {}, 192},
+                    {time_sigs, {}, {}, 192},
                     {},
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(returns_negative_one_if_sp_runs_out)
                      std::make_shared<SongGlobalData>()};
     std::vector<TimeSignature> time_sigs {{Tick {0}, 3, 4}, {Tick {384}, 4, 4}};
     SpData sp_data {track,
-                    {time_sigs, {}, 192},
+                    {time_sigs, {}, {}, 192},
                     {},
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};
@@ -503,7 +503,7 @@ BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_accumulation_is_too_slow)
 {
     std::vector<Note> notes {make_note(0, 192), make_note(950)};
     std::vector<StarPower> phrases {{Tick {0}, Tick {1000}}};
-    TempoMap tempo_map {{{Tick {0}, 2, 4}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 2, 4}}, {}, {}, 192};
     NoteTrack track {notes,
                      phrases,
                      {},

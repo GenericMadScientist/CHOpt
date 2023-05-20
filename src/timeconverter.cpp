@@ -56,48 +56,12 @@ TimeConverter::TimeConverter(const TempoMap& tempo_map, const Engine& engine,
     assert(!m_measure_timestamps.empty()); // NOLINT
 }
 
-Measure TimeConverter::beats_to_measures(Beat beats) const
-{
-    const auto pos = std::lower_bound(
-        m_measure_timestamps.cbegin(), m_measure_timestamps.cend(), beats,
-        [](const auto& x, const auto& y) { return x.beat < y; });
-    if (pos == m_measure_timestamps.cend()) {
-        const auto& back = m_measure_timestamps.back();
-        return back.measure + (beats - back.beat).to_measure(m_last_beat_rate);
-    }
-    if (pos == m_measure_timestamps.cbegin()) {
-        return pos->measure - (pos->beat - beats).to_measure(DEFAULT_BEAT_RATE);
-    }
-    const auto prev = pos - 1;
-    return prev->measure
-        + (pos->measure - prev->measure)
-        * ((beats - prev->beat) / (pos->beat - prev->beat));
-}
-
-Beat TimeConverter::measures_to_beats(Measure measures) const
-{
-    const auto pos = std::lower_bound(
-        m_measure_timestamps.cbegin(), m_measure_timestamps.cend(), measures,
-        [](const auto& x, const auto& y) { return x.measure < y; });
-    if (pos == m_measure_timestamps.cend()) {
-        const auto& back = m_measure_timestamps.back();
-        return back.beat + (measures - back.measure).to_beat(m_last_beat_rate);
-    }
-    if (pos == m_measure_timestamps.cbegin()) {
-        return pos->beat - (pos->measure - measures).to_beat(DEFAULT_BEAT_RATE);
-    }
-    const auto prev = pos - 1;
-    return prev->beat
-        + (pos->beat - prev->beat)
-        * ((measures - prev->measure) / (pos->measure - prev->measure));
-}
-
 Second TimeConverter::measures_to_seconds(Measure measures) const
 {
-    return m_tempo_map.to_seconds(measures_to_beats(measures));
+    return m_tempo_map.to_seconds(m_tempo_map.to_beats(measures));
 }
 
 Measure TimeConverter::seconds_to_measures(Second seconds) const
 {
-    return beats_to_measures(m_tempo_map.to_beats(seconds));
+    return m_tempo_map.to_measures(m_tempo_map.to_beats(seconds));
 }

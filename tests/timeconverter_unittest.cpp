@@ -23,32 +23,12 @@
 #include "test_helpers.hpp"
 #include "timeconverter.hpp"
 
-BOOST_AUTO_TEST_CASE(beats_to_measures_conversion_works_correctly)
-{
-    TempoMap tempo_map {
-        {{Tick {0}, 5, 4}, {Tick {1000}, 4, 4}, {Tick {1200}, 4, 16}}, {}, 200};
-    TimeConverter converter {tempo_map, ChGuitarEngine(), {}};
-    constexpr std::array beats {-1.0, 0.0, 3.0, 5.5, 6.5};
-    constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
-
-    for (auto i = 0U; i < beats.size(); ++i) {
-        BOOST_CHECK_CLOSE(
-            converter.beats_to_measures(Beat(beats.at(i))).value(),
-            measures.at(i), 0.0001);
-    }
-
-    for (auto i = 0U; i < beats.size(); ++i) {
-        BOOST_CHECK_CLOSE(
-            converter.measures_to_beats(Measure(measures.at(i))).value(),
-            beats.at(i), 0.0001);
-    }
-}
-
 BOOST_AUTO_TEST_CASE(measures_to_seconds_conversion_works_correctly)
 {
     TempoMap tempo_map {
         {{Tick {0}, 5, 4}, {Tick {1000}, 4, 4}, {Tick {1200}, 4, 16}},
         {{Tick {0}, 150000}, {Tick {800}, 200000}},
+        {},
         200};
     TimeConverter converter {tempo_map, ChGuitarEngine(), {}};
     constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};

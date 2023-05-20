@@ -299,6 +299,7 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
                          {Tick {1344}, 3, 8},
                          {Tick {1632}, 4, 4}},
                         {},
+                        {},
                         192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
@@ -321,7 +322,10 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     TempoMap tempo_map {
-        {{Tick {0}, 4, 4}, {Tick {767}, 3, 4}, {Tick {1344}, 3, 8}}, {}, 192};
+        {{Tick {0}, 4, 4}, {Tick {767}, 3, 4}, {Tick {1344}, 3, 8}},
+        {},
+        {},
+        192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -342,7 +346,7 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{Tick {0}, 17, 4}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 17, 4}}, {}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -412,7 +416,7 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{Tick {0}, 4, 8}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 8}}, {}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -442,7 +446,7 @@ BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {768}, 4, 8}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {768}, 4, 8}}, {}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -476,7 +480,7 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {768}, 4, 8}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {768}, 4, 8}}, {}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -499,7 +503,7 @@ BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {1920}, 3, 4}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {1920}, 3, 4}}, {}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -525,6 +529,7 @@ BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
     TempoMap tempo_map {
         {},
         {{Tick {0}, 150000}, {Tick {384}, 120000}, {Tick {768}, 200000}},
+        {},
         192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
@@ -548,7 +553,8 @@ BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{}, {{Tick {0}, 120000}, {Tick {1920}, 200000}}, 192};
+    TempoMap tempo_map {
+        {}, {{Tick {0}, 120000}, {Tick {1920}, 200000}}, {}, 192};
     ImageBuilder builder {
         track, tempo_map, Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
@@ -708,10 +714,8 @@ BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, Gh1Engine(), {}};
     PointSet points {track,
                      {},
-                     converter,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -887,7 +891,6 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -930,7 +933,6 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -965,7 +967,6 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -996,7 +997,6 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1028,7 +1028,6 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, ChGuitarEngine(), {}},
                      {},
                      {1.0, 1.0, Second(0.0), Second(0.05), Second(0.0)},
                      DrumSettings::default_settings(),
@@ -1069,7 +1068,6 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, Gh1Engine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1101,7 +1099,6 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, Gh1Engine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1135,7 +1132,6 @@ BOOST_AUTO_TEST_CASE(
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, Gh1Engine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1168,7 +1164,6 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, Gh1Engine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1227,7 +1222,6 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1261,7 +1255,6 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1292,7 +1285,6 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1322,7 +1314,6 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, ChGuitarEngine(), {}},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1353,7 +1344,6 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {{}, ChGuitarEngine(), {}},
                      {},
                      {1.0, 1.0, Second {0.0}, Second {-0.1}, Second {0.0}},
                      DrumSettings::default_settings(),
@@ -1411,10 +1401,8 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1489,10 +1477,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1506,7 +1492,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path);
+    builder.add_sp_percent_values(sp_data, {}, points, path);
     std::vector<double> expected_percents {
         0.0,    0.5,    0.75,   0.75,   0.75,   1.0,    1.0,    1.0, 1.0,
         1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0, 0.9375,
@@ -1534,10 +1520,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1551,7 +1535,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path);
+    builder.add_sp_percent_values(sp_data, {}, points, path);
     std::vector<double> expected_percents {
         0.0, 0.5, 0.75, 0.75, 0.75, 1.0, 1.0,    1.0,  1.0,
         1.0, 1.0, 1.0,  1.0,  1.0,  1.0, 1.0,    1.0,  1.0,
@@ -1573,10 +1557,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1590,7 +1572,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path);
+    builder.add_sp_percent_values(sp_data, {}, points, path);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.5359166667, 0.49425};
 
@@ -1612,10 +1594,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1629,7 +1609,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path);
+    builder.add_sp_percent_values(sp_data, {}, points, path);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.4025833333, 0.2775833333};
 
@@ -1655,10 +1635,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1674,7 +1652,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path);
+    builder.add_sp_percent_values(sp_data, {}, points, path);
     std::vector<double> expected_percents {
         0.0,          0.25,         0.5275833333, 0.4025833333, 0.2775833333,
         0.1525833333, 0.0275833333, 0.0,          0.5,          0.40625};
@@ -1701,10 +1679,8 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TimeConverter converter {{}, ChGuitarEngine(), {}};
     PointSet points {track,
                      {},
-                     converter,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1718,7 +1694,7 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
     ImageBuilder builder {
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
-    builder.add_sp_percent_values(sp_data, converter, points, path);
+    builder.add_sp_percent_values(sp_data, {}, points, path);
     std::vector<double> expected_percents {0.40299375, 0.27799375, 0.15299375,
                                            0.02799375, 0.25};
 

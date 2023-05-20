@@ -59,23 +59,41 @@ private:
         Second time;
     };
 
+    struct MeasureTimestamp {
+        Measure measure;
+        Beat beat;
+    };
+
+    static constexpr double DEFAULT_BEAT_RATE = 4.0;
     static constexpr std::int64_t DEFAULT_BPM = 120000;
     static constexpr int DEFAULT_RESOLUTION = 192;
 
     std::vector<TimeSignature> m_time_sigs;
     std::vector<BPM> m_bpms;
+    std::vector<Tick> m_od_beats;
     int m_resolution;
 
     std::vector<BeatTimestamp> m_beat_timestamps;
     std::int64_t m_last_bpm;
 
+    std::vector<MeasureTimestamp> m_measure_timestamps;
+    double m_last_beat_rate;
+
+    std::vector<MeasureTimestamp> m_od_beat_timestamps;
+    double m_last_od_beat_rate;
+
+    bool m_use_od_beats = false;
+
+    const std::vector<TempoMap::MeasureTimestamp>& measure_timestamps() const;
+    double last_beat_rate() const;
+
 public:
     TempoMap()
-        : TempoMap({}, {}, DEFAULT_RESOLUTION)
+        : TempoMap({}, {}, {}, DEFAULT_RESOLUTION)
     {
     }
     TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
-             int resolution);
+             std::vector<Tick> od_beats, int resolution);
     [[nodiscard]] const std::vector<TimeSignature>& time_sigs() const
     {
         return m_time_sigs;
@@ -85,11 +103,14 @@ public:
     // Return the TempoMap for a speedup of speed% (normal speed is 100).
     [[nodiscard]] TempoMap speedup(int speed) const;
 
+    [[nodiscard]] Beat to_beats(Measure measures) const;
     [[nodiscard]] Beat to_beats(Second seconds) const;
     [[nodiscard]] Beat to_beats(Tick ticks) const
     {
         return Beat {ticks.value() / static_cast<double>(m_resolution)};
     }
+
+    [[nodiscard]] Measure to_measures(Beat beats) const;
 
     [[nodiscard]] Second to_seconds(Beat beats) const;
     [[nodiscard]] Second to_seconds(Tick ticks) const;
@@ -99,6 +120,8 @@ public:
         return Tick {static_cast<int>(beats.value() * m_resolution)};
     }
     [[nodiscard]] Tick to_ticks(Second seconds) const;
+
+    void use_od_beats(bool value) { m_use_od_beats = value; }
 };
 
 #endif

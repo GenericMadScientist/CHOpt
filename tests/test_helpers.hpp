@@ -498,6 +498,6 @@ inline std::shared_ptr<SongGlobalData> make_resolution(int resolution)
 {
     auto data = std::make_shared<SongGlobalData>();
     data->resolution(resolution);
-    data->tempo_map({{}, {}, resolution});
+    data->tempo_map({{}, {}, {}, resolution});
     return data;
 }

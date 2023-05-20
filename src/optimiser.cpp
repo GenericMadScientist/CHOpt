@@ -86,8 +86,7 @@ Optimiser::CacheKey Optimiser::add_whammy_delay(CacheKey key) const
     auto seconds = m_song->tempo_map().to_seconds(key.position.beat);
     seconds += m_whammy_delay;
     key.position.beat = m_song->tempo_map().to_beats(seconds);
-    key.position.measure
-        = m_song->converter().beats_to_measures(key.position.beat);
+    key.position.measure = m_song->tempo_map().to_measures(key.position.beat);
     return key;
 }
 
@@ -416,7 +415,7 @@ Position Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
            > THRESHOLD) {
         auto mid_beat
             = (min_whammy_force.beat + max_whammy_force.beat) * (1.0 / 2);
-        auto mid_meas = m_song->converter().beats_to_measures(mid_beat);
+        auto mid_meas = m_song->tempo_map().to_measures(mid_beat);
         Position mid_pos {mid_beat, mid_meas};
         auto sp_bar = m_song->total_available_sp(key.position.beat, key.point,
                                                  act.act_start, mid_beat);
@@ -450,7 +449,7 @@ std::tuple<Beat, Beat> Optimiser::act_duration(ProtoActivation act,
         key.position.beat, key.point, act.act_start, min_whammy_force.beat);
     while ((max_pos.beat - min_pos.beat).value() > THRESHOLD) {
         auto trial_beat = (min_pos.beat + max_pos.beat) * (1.0 / 2);
-        auto trial_meas = m_song->converter().beats_to_measures(trial_beat);
+        auto trial_meas = m_song->tempo_map().to_measures(trial_beat);
         Position trial_pos {trial_beat, trial_meas};
         ActivationCandidate candidate {act.act_start, act.act_end, trial_pos,
                                        sp_bar};

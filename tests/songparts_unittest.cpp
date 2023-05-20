@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE(the_last_automatic_zone_exists_even_if_the_note_is_early)
 BOOST_AUTO_TEST_CASE(automatic_zones_are_half_a_measure_according_to_seconds)
 {
     std::vector<Note> notes {make_drum_note(768)};
-    TempoMap tempo_map {{}, {{Tick {576}, 40000}}, 192};
+    TempoMap tempo_map {{}, {{Tick {576}, 40000}}, {}, 192};
     TimeConverter converter {tempo_map, ChDrumEngine(), {}};
 
     auto global_data = std::make_shared<SongGlobalData>();

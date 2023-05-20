@@ -251,8 +251,7 @@ void NoteTrack::generate_drum_fills(const TimeConverter& converter)
     Measure m {1.0};
     while (m <= measure_bound) {
         const auto fill_seconds = converter.measures_to_seconds(m);
-        const auto measure_ticks
-            = tempo_map.to_ticks(converter.measures_to_beats(m));
+        const auto measure_ticks = tempo_map.to_ticks(tempo_map.to_beats(m));
         bool exists_close_note = false;
         Tick close_note_position {0};
         for (const auto& [s, pos] : note_times) {

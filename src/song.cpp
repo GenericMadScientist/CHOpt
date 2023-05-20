@@ -445,7 +445,7 @@ TempoMap tempo_map_from_section(const ChartSection& section, int resolution)
         }
         tses.push_back({Tick {ts.position}, ts.numerator, 1 << ts.denominator});
     }
-    return {std::move(tses), std::move(bpms), resolution};
+    return {std::move(tses), std::move(bpms), {}, resolution};
 }
 
 // Like combine_solo_events, but never skips on events to suit Midi parsing and
@@ -640,7 +640,7 @@ TempoMap read_first_midi_track(const MidiTrack& track, int resolution)
         }
     }
 
-    return {std::move(time_sigs), std::move(tempos), resolution};
+    return {std::move(time_sigs), std::move(tempos), {}, resolution};
 }
 
 struct InstrumentMidiTrack {

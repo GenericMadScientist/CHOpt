@@ -344,7 +344,7 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
                                    {Beat(0.0), Measure(0.0)},
                                    {1.0, 1.0}};
     ProcessedSong second_track {note_track,
-                                TempoMap({{Tick {0}, 3, 4}}, {}, 192),
+                                TempoMap({{Tick {0}, 3, 4}}, {}, {}, 192),
                                 SqueezeSettings::default_settings(),
                                 DrumSettings::default_settings(),
                                 ChGuitarEngine(),
@@ -388,7 +388,7 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
                                    {Beat(0.0), Measure(0.0)},
                                    {0.5, 0.5}};
     ProcessedSong second_track {note_track,
-                                TempoMap({{Tick {0}, 3, 4}}, {}, 192),
+                                TempoMap({{Tick {0}, 3, 4}}, {}, {}, 192),
                                 SqueezeSettings::default_settings(),
                                 DrumSettings::default_settings(),
                                 ChGuitarEngine(),
@@ -620,7 +620,7 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
 BOOST_AUTO_TEST_CASE(
     activations_starting_on_an_sp_granting_note_have_the_correct_end)
 {
-    TempoMap tempo_map {{{Tick {0}, 4, 4}}, {{Tick {0}, 300000}}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 4}}, {{Tick {0}, 300000}}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -1030,7 +1030,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
     std::vector<Note> notes {make_note(0), make_note(192), make_note(768),
                              make_note(4608), make_note(5376)};
     std::vector<StarPower> phrases {{Tick {4608}, Tick {50}}};
-    TempoMap tempo_map {{}, {{Tick {3840}, 4000000}}, 192};
+    TempoMap tempo_map {{}, {{Tick {3840}, 4000000}}, {}, 192};
 
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
@@ -1484,7 +1484,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
                           {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{Tick {0}, 1, 4}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 1, 4}}, {}, {}, 192};
     ProcessedSong track {note_track,
                          tempo_map,
                          SqueezeSettings::default_settings(),
@@ -1578,7 +1578,7 @@ BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {3840}, 2, 4}}, {}, 192};
+    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {3840}, 2, 4}}, {}, {}, 192};
     ProcessedSong song {track,
                         tempo_map,
                         {0.0, 0.0, Second {0.0}, Second {0.1}, Second {0.0}},
