@@ -666,8 +666,8 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
             new_track.disable_dynamics();
         }
     }
-    const auto tempo_map
-        = song.global_data().tempo_map().speedup(settings.speed);
+    auto tempo_map = song.global_data().tempo_map().speedup(settings.speed);
+    tempo_map.use_od_beats(settings.engine->uses_beat_track());
 
     auto builder = build_with_engine_params(new_track, tempo_map, settings);
     builder.add_song_header(song.global_data(), settings.speed);

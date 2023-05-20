@@ -1496,6 +1496,14 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
         }
     }
 
+    const auto& od_beats = song.m_global_data->od_beats();
+    if (!od_beats.empty()) {
+        auto old_tempo_map = song.m_global_data->tempo_map();
+        TempoMap new_tempo_map {old_tempo_map.time_sigs(), old_tempo_map.bpms(),
+                                od_beats, midi.ticks_per_quarter_note};
+        song.m_global_data->tempo_map(new_tempo_map);
+    }
+
     return song;
 }
 

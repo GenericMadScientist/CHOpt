@@ -294,6 +294,7 @@ void apply_multiplier(std::vector<Point>& points, const Engine& engine)
 }
 
 std::vector<Point> unmultiplied_points(const NoteTrack& track,
+                                       const TempoMap& tempo_map,
                                        const std::vector<Tick>& unison_phrases,
                                        const SqueezeSettings& squeeze_settings,
                                        const DrumSettings& drum_settings,
@@ -339,8 +340,7 @@ std::vector<Point> unmultiplied_points(const NoteTrack& track,
             }
             ++current_phrase;
         }
-        append_note_points(p, notes, std::back_inserter(points),
-                           track.global_data().tempo_map(),
+        append_note_points(p, notes, std::back_inserter(points), tempo_map,
                            track.global_data().resolution(), is_note_sp_ender,
                            is_unison_sp_ender, squeeze_settings.squeeze, engine,
                            drum_settings);
@@ -361,7 +361,8 @@ std::vector<Point> non_drum_points(const NoteTrack& track,
                                    const SqueezeSettings& squeeze_settings,
                                    const Engine& engine)
 {
-    auto points = unmultiplied_points(track, unison_phrases, squeeze_settings,
+    auto points = unmultiplied_points(track, tempo_map, unison_phrases,
+                                      squeeze_settings,
                                       DrumSettings::default_settings(), engine);
     apply_multiplier(points, engine);
     shift_points_by_video_lag(points, tempo_map, squeeze_settings.video_lag);
@@ -477,8 +478,8 @@ PointSet::points_from_track(const NoteTrack& track, const TempoMap& tempo_map,
         return non_drum_points(track, tempo_map, unison_phrases,
                                squeeze_settings, engine);
     }
-    auto points = unmultiplied_points(track, unison_phrases, squeeze_settings,
-                                      drum_settings, engine);
+    auto points = unmultiplied_points(track, tempo_map, unison_phrases,
+                                      squeeze_settings, drum_settings, engine);
     add_drum_activation_points(track, points);
     apply_multiplier(points, engine);
     shift_points_by_video_lag(points, tempo_map, squeeze_settings.video_lag);
