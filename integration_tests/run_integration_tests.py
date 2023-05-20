@@ -23,7 +23,8 @@ for song in songs:
     output_lines.append(f"Path: {path}")
     output_lines.append(f"No SP score: {base_score}")
     output_lines.append(f"Total score: {total_score}")
-    output_lines.append(f"Average multiplier: {avg_mult}x")
+    if avg_mult:
+        output_lines.append(f"Average multiplier: {avg_mult}x")
     c.execute(
         (
             "select description, activation_end from activations "
