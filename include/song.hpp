@@ -30,7 +30,6 @@
 #include "ini.hpp"
 #include "midi.hpp"
 #include "songparts.hpp"
-#include "timeconverter.hpp"
 
 // Invariants:
 // resolution() > 0.

@@ -67,7 +67,6 @@ add_executable(
   src/sp.cpp
   src/stringutil.cpp
   src/tempomap.cpp
-  src/timeconverter.cpp
   resources/chopt.exe.manifest
   resources/resources.rc)
 target_include_directories(
@@ -117,7 +116,6 @@ if(BUILD_GUI)
     src/sp.cpp
     src/stringutil.cpp
     src/tempomap.cpp
-    src/timeconverter.cpp
     resources/choptgui.exe.manifest
     resources/resources.qrc
     resources/resources.rc)
@@ -163,7 +161,6 @@ if(PACKAGE_TESTS)
     tests/stringutil_unittest.cpp
     tests/tempomap_unittest.cpp
     tests/time_unittest.cpp
-    tests/timeconverter_unittest.cpp
     src/chart.cpp
     src/imagebuilder.cpp
     src/ini.cpp
@@ -175,8 +172,7 @@ if(PACKAGE_TESTS)
     src/songparts.cpp
     src/sp.cpp
     src/stringutil.cpp
-    src/tempomap.cpp
-    src/timeconverter.cpp)
+    src/tempomap.cpp)
 
   target_include_directories(chopt_tests
     PRIVATE "${PROJECT_SOURCE_DIR}/include")

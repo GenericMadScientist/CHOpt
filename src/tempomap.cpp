@@ -192,6 +192,11 @@ Measure TempoMap::to_measures(Beat beats) const
         * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
+Measure TempoMap::to_measures(Second seconds) const
+{
+    return to_measures(to_beats(seconds));
+}
+
 Second TempoMap::to_seconds(Beat beats) const
 {
     const auto pos = std::lower_bound(
@@ -208,6 +213,11 @@ Second TempoMap::to_seconds(Beat beats) const
     return prev->time
         + (pos->time - prev->time)
         * ((beats - prev->beat) / (pos->beat - prev->beat));
+}
+
+Second TempoMap::to_seconds(Measure measures) const
+{
+    return to_seconds(to_beats(measures));
 }
 
 Second TempoMap::to_seconds(Tick ticks) const

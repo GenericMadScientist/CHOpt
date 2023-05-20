@@ -33,7 +33,6 @@
 #include "settings.hpp"
 #include "tempomap.hpp"
 #include "time.hpp"
-#include "timeconverter.hpp"
 
 enum class TrackType { FiveFret, SixFret, Drums };
 
@@ -191,7 +190,7 @@ public:
               std::vector<DiscoFlip> disco_flips,
               std::optional<BigRockEnding> bre, TrackType track_type,
               std::shared_ptr<SongGlobalData> global_data);
-    void generate_drum_fills(const TimeConverter& converter);
+    void generate_drum_fills(const TempoMap& tempo_map);
     void disable_dynamics();
     [[nodiscard]] const std::vector<Note>& notes() const { return m_notes; }
     [[nodiscard]] const std::vector<StarPower>& sp_phrases() const

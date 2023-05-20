@@ -2136,7 +2136,7 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_is_used_for_drums)
                           {},
                           TrackType::Drums,
                           std::make_shared<SongGlobalData>()};
-    note_track.generate_drum_fills({{}, ChDrumEngine(), {}});
+    note_track.generate_drum_fills({});
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),
@@ -2176,7 +2176,7 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_l_and_e_are_used_for_drums)
                           {},
                           TrackType::Drums,
                           std::make_shared<SongGlobalData>()};
-    note_track.generate_drum_fills({{}, ChDrumEngine(), {}});
+    note_track.generate_drum_fills({});
     ProcessedSong track {note_track,
                          {},
                          SqueezeSettings::default_settings(),

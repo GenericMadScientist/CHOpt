@@ -33,7 +33,6 @@
 #include "songparts.hpp"
 #include "sp.hpp"
 #include "tempomap.hpp"
-#include "timeconverter.hpp"
 
 struct DrawnRow {
     double start;

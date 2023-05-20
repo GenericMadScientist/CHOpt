@@ -238,8 +238,6 @@ BOOST_AUTO_TEST_CASE(automatic_zones_are_created)
     std::vector<Note> notes {make_drum_note(768), make_drum_note(1536),
                              make_drum_note(2304), make_drum_note(3072),
                              make_drum_note(3840)};
-    TimeConverter converter {{}, ChDrumEngine(), {}};
-
     NoteTrack track {notes,
                      {},
                      {},
@@ -251,7 +249,7 @@ BOOST_AUTO_TEST_CASE(automatic_zones_are_created)
     std::vector<DrumFill> fills {{Tick {384}, Tick {384}},
                                  {Tick {3456}, Tick {384}}};
 
-    track.generate_drum_fills(converter);
+    track.generate_drum_fills({});
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
                                   track.drum_fills().cend(), fills.cbegin(),
@@ -262,8 +260,6 @@ BOOST_AUTO_TEST_CASE(automatic_zones_have_250ms_of_leniency)
 {
     std::vector<Note> notes {make_drum_note(672), make_drum_note(3936),
                              make_drum_note(6815), make_drum_note(10081)};
-    TimeConverter converter {{}, ChDrumEngine(), {}};
-
     NoteTrack track {notes,
                      {},
                      {},
@@ -275,7 +271,7 @@ BOOST_AUTO_TEST_CASE(automatic_zones_have_250ms_of_leniency)
     std::vector<DrumFill> fills {{Tick {384}, Tick {384}},
                                  {Tick {3456}, Tick {384}}};
 
-    track.generate_drum_fills(converter);
+    track.generate_drum_fills({});
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
                                   track.drum_fills().cend(), fills.cbegin(),
@@ -285,8 +281,6 @@ BOOST_AUTO_TEST_CASE(automatic_zones_have_250ms_of_leniency)
 BOOST_AUTO_TEST_CASE(automatic_zones_handle_skipped_measures_correctly)
 {
     std::vector<Note> notes {make_drum_note(768), make_drum_note(4608)};
-    TimeConverter converter {{}, ChDrumEngine(), {}};
-
     NoteTrack track {notes,
                      {},
                      {},
@@ -298,7 +292,7 @@ BOOST_AUTO_TEST_CASE(automatic_zones_handle_skipped_measures_correctly)
     std::vector<DrumFill> fills {{Tick {384}, Tick {384}},
                                  {Tick {4224}, Tick {384}}};
 
-    track.generate_drum_fills(converter);
+    track.generate_drum_fills({});
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
                                   track.drum_fills().cend(), fills.cbegin(),
@@ -308,8 +302,6 @@ BOOST_AUTO_TEST_CASE(automatic_zones_handle_skipped_measures_correctly)
 BOOST_AUTO_TEST_CASE(the_last_automatic_zone_exists_even_if_the_note_is_early)
 {
     std::vector<Note> notes {make_drum_note(760)};
-    TimeConverter converter {{}, ChDrumEngine(), {}};
-
     NoteTrack track {notes,
                      {},
                      {},
@@ -320,7 +312,7 @@ BOOST_AUTO_TEST_CASE(the_last_automatic_zone_exists_even_if_the_note_is_early)
                      std::make_shared<SongGlobalData>()};
     std::vector<DrumFill> fills {{Tick {384}, Tick {384}}};
 
-    track.generate_drum_fills(converter);
+    track.generate_drum_fills({});
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
                                   track.drum_fills().cend(), fills.cbegin(),
@@ -331,7 +323,6 @@ BOOST_AUTO_TEST_CASE(automatic_zones_are_half_a_measure_according_to_seconds)
 {
     std::vector<Note> notes {make_drum_note(768)};
     TempoMap tempo_map {{}, {{Tick {576}, 40000}}, {}, 192};
-    TimeConverter converter {tempo_map, ChDrumEngine(), {}};
 
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
@@ -339,7 +330,7 @@ BOOST_AUTO_TEST_CASE(automatic_zones_are_half_a_measure_according_to_seconds)
     NoteTrack track {notes, {}, {}, {}, {}, {}, TrackType::Drums, global_data};
     std::vector<DrumFill> fills {{Tick {576}, Tick {192}}};
 
-    track.generate_drum_fills(converter);
+    track.generate_drum_fills(tempo_map);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
                                   track.drum_fills().cend(), fills.cbegin(),
@@ -351,8 +342,6 @@ BOOST_AUTO_TEST_CASE(fill_ends_remain_snapped_to_measure)
     std::vector<Note> notes {make_drum_note(758),  make_drum_note(770),
                              make_drum_note(3830), make_drum_note(3860),
                              make_drum_note(6900), make_drum_note(6924)};
-    TimeConverter converter {{}, ChDrumEngine(), {}};
-
     NoteTrack track {notes,
                      {},
                      {},
@@ -365,7 +354,7 @@ BOOST_AUTO_TEST_CASE(fill_ends_remain_snapped_to_measure)
                                  {Tick {3456}, Tick {384}},
                                  {Tick {6528}, Tick {384}}};
 
-    track.generate_drum_fills(converter);
+    track.generate_drum_fills({});
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
                                   track.drum_fills().cend(), fills.cbegin(),

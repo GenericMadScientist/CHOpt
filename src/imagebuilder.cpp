@@ -659,8 +659,7 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
     if (track.track_type() == TrackType::Drums) {
         if (!settings.engine->is_rock_band()
             && new_track.drum_fills().empty()) {
-            new_track.generate_drum_fills(
-                {song.global_data().tempo_map(), *settings.engine, {}});
+            new_track.generate_drum_fills(song.global_data().tempo_map());
         }
         if (!settings.drum_settings.enable_dynamics) {
             new_track.disable_dynamics();

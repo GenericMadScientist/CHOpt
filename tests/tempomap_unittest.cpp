@@ -234,3 +234,35 @@ BOOST_AUTO_TEST_CASE(measures_to_beats_conversion_works_correctly)
                           beats.at(i), 0.0001);
     }
 }
+
+BOOST_AUTO_TEST_CASE(measures_to_seconds_conversion_works_correctly)
+{
+    TempoMap tempo_map {
+        {{Tick {0}, 5, 4}, {Tick {1000}, 4, 4}, {Tick {1200}, 4, 16}},
+        {{Tick {0}, 150000}, {Tick {800}, 200000}},
+        {},
+        200};
+    constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
+    constexpr std::array seconds {-0.5, 0.0, 1.2, 2.05, 2.35};
+
+    for (auto i = 0U; i < measures.size(); ++i) {
+        BOOST_CHECK_CLOSE(tempo_map.to_seconds(Measure(measures.at(i))).value(),
+                          seconds.at(i), 0.0001);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(seconds_to_measures_conversion_works_correctly)
+{
+    TempoMap tempo_map {
+        {{Tick {0}, 5, 4}, {Tick {1000}, 4, 4}, {Tick {1200}, 4, 16}},
+        {{Tick {0}, 150000}, {Tick {800}, 200000}},
+        {},
+        200};
+    constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
+    constexpr std::array seconds {-0.5, 0.0, 1.2, 2.05, 2.35};
+
+    for (auto i = 0U; i < measures.size(); ++i) {
+        BOOST_CHECK_CLOSE(tempo_map.to_measures(Second(seconds.at(i))).value(),
+                          measures.at(i), 0.0001);
+    }
+}

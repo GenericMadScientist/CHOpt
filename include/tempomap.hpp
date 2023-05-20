@@ -111,8 +111,10 @@ public:
     }
 
     [[nodiscard]] Measure to_measures(Beat beats) const;
+    [[nodiscard]] Measure to_measures(Second seconds) const;
 
     [[nodiscard]] Second to_seconds(Beat beats) const;
+    [[nodiscard]] Second to_seconds(Measure measures) const;
     [[nodiscard]] Second to_seconds(Tick ticks) const;
 
     [[nodiscard]] Tick to_ticks(Beat beats) const
