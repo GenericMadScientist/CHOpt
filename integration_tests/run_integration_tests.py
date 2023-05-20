@@ -11,14 +11,14 @@ c = conn.cursor()
 c.execute(
     (
         "select song_id, file, difficulty, instrument, path, base_score, total_score, "
-        "avg_mult from Songs"
+        "avg_mult, engine from Songs"
     )
 )
 songs = list(c.fetchall())
 
 outputs = []
 for song in songs:
-    song_id, _, _, _, path, base_score, total_score, avg_mult = song
+    song_id, _, _, _, path, base_score, total_score, avg_mult, _ = song
     output_lines = ["Optimising, please wait..."]
     output_lines.append(f"Path: {path}")
     output_lines.append(f"No SP score: {base_score}")
@@ -43,9 +43,19 @@ for song in songs:
 conn.close()
 
 for song, output in zip(songs, outputs):
-    _, file, difficulty, instrument, _, _, _, _ = song
+    _, file, difficulty, instrument, _, _, _, _, engine = song
     result = subprocess.run(
-        [program, "-f", f"{song_dir}/{file}", "-d", difficulty, "-i", instrument],
+        [
+            program,
+            "-f",
+            f"{song_dir}/{file}",
+            "-d",
+            difficulty,
+            "-i",
+            instrument,
+            "--engine",
+            engine,
+        ],
         capture_output=True,
     )
     result.check_returncode()
