@@ -16,6 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef CHOPT_SONGFILE_HPP
+#define CHOPT_SONGFILE_HPP
+
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -35,3 +38,5 @@ public:
     SongFile(const std::string& filename);
     Song load_song() const;
 };
+
+#endif
