@@ -47,8 +47,7 @@ public:
         try {
             SongFile song_file {m_file_name.toStdString()};
             auto song = song_file.load_song();
-            emit result_ready(std::move(song), std::move(song_file),
-                              m_file_name);
+            emit result_ready(std::move(song_file), song, m_file_name);
         } catch (const std::exception&) {
             emit parsing_failed(m_file_name);
         }
@@ -58,7 +57,7 @@ public:
 
 signals:
     void parsing_failed(const QString& file_name);
-    void result_ready(Song song, SongFile loaded_file,
+    void result_ready(SongFile loaded_file, const Song& song,
                       const QString& file_name);
 };
 
@@ -97,10 +96,10 @@ public:
         }
     }
 
-    void set_data(Settings settings, const Song& song, const QString& file_name)
+    void set_data(Settings settings, Song song, const QString& file_name)
     {
         m_settings = std::move(settings);
-        m_song = song;
+        m_song = std::move(song);
         m_file_name = file_name;
     }
 
@@ -371,7 +370,8 @@ void MainWindow::on_findPathButton_clicked()
     m_ui->findPathButton->setEnabled(false);
 
     auto* worker_thread = new OptimiserThread(this);
-    worker_thread->set_data(get_settings(), *m_song, file_name);
+    worker_thread->set_data(get_settings(), m_loaded_file->load_song(),
+                            file_name);
     connect(worker_thread, &OptimiserThread::write_text, this,
             &MainWindow::write_message);
     connect(worker_thread, &OptimiserThread::finished, this,
@@ -389,12 +389,11 @@ void MainWindow::parsing_failed(const QString& file_name)
     m_ui->selectFileButton->setEnabled(true);
 }
 
-void MainWindow::song_read(Song song, SongFile loaded_file,
+void MainWindow::song_read(SongFile loaded_file, const Song& song,
                            const QString& file_name)
 {
     m_thread = nullptr;
     m_loaded_file = std::move(loaded_file);
-    m_song = std::move(song);
 
     m_ui->instrumentComboBox->clear();
     const std::map<Instrument, QString> INST_NAMES {
@@ -406,7 +405,7 @@ void MainWindow::song_read(Song song, SongFile loaded_file,
         {Instrument::GHLGuitar, "GHL Guitar"},
         {Instrument::GHLBass, "GHL Bass"},
         {Instrument::Drums, "Drums"}};
-    for (auto inst : m_song->instruments()) {
+    for (auto inst : song.instruments()) {
         m_ui->instrumentComboBox->addItem(INST_NAMES.at(inst),
                                           QVariant::fromValue(inst));
     }
@@ -443,7 +442,7 @@ void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
         {Difficulty::Expert, "Expert"}};
     const auto inst
         = m_ui->instrumentComboBox->currentData().value<Instrument>();
-    for (auto diff : m_song->difficulties(inst)) {
+    for (auto diff : m_loaded_file->load_song().difficulties(inst)) {
         m_ui->difficultyComboBox->addItem(DIFF_NAMES.at(diff),
                                           QVariant::fromValue(diff));
     }

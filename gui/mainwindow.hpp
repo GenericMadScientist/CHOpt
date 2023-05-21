@@ -39,9 +39,7 @@ class MainWindow : public QMainWindow {
 
 private:
     std::unique_ptr<Ui::MainWindow> m_ui;
-    std::optional<Song> m_song;
     std::optional<SongFile> m_loaded_file;
-    bool m_is_midi_file;
     QThread* m_thread = nullptr;
     Settings get_settings() const;
     void load_file(const QString& file_name);
@@ -64,7 +62,8 @@ private slots:
     void on_videoLagSlider_valueChanged(int value);
     void parsing_failed(const QString& file_name);
     void path_found();
-    void song_read(Song song, SongFile song_file, const QString& file_name);
+    void song_read(SongFile song_file, const Song& song,
+                   const QString& file_name);
     void write_message(const QString& message);
 };
 
