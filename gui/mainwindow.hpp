@@ -19,10 +19,8 @@
 #ifndef CHOPT_MAINWINDOW_HPP
 #define CHOPT_MAINWINDOW_HPP
 
-#include <cstdint>
 #include <memory>
 #include <optional>
-#include <vector>
 
 #include <QMainWindow>
 #include <QString>
@@ -30,6 +28,7 @@
 
 #include "settings.hpp"
 #include "song.hpp"
+#include "songfile.hpp"
 
 namespace Ui {
 class MainWindow;
@@ -41,7 +40,7 @@ class MainWindow : public QMainWindow {
 private:
     std::unique_ptr<Ui::MainWindow> m_ui;
     std::optional<Song> m_song;
-    std::optional<std::vector<std::uint8_t>> m_loaded_file;
+    std::optional<SongFile> m_loaded_file;
     bool m_is_midi_file;
     QThread* m_thread = nullptr;
     Settings get_settings() const;
@@ -65,8 +64,7 @@ private slots:
     void on_videoLagSlider_valueChanged(int value);
     void parsing_failed(const QString& file_name);
     void path_found();
-    void song_read(const Song& song, std::vector<std::uint8_t> loaded_file,
-                   const QString& file_name);
+    void song_read(Song song, SongFile song_file, const QString& file_name);
     void write_message(const QString& message);
 };
 

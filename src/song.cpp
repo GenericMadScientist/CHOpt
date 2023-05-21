@@ -18,15 +18,12 @@
 
 #include <algorithm>
 #include <climits>
-#include <filesystem>
 #include <iterator>
 #include <limits>
 #include <optional>
 #include <set>
 #include <stdexcept>
 #include <type_traits>
-
-#include <boost/nowide/fstream.hpp>
 
 #include "song.hpp"
 
@@ -1330,41 +1327,6 @@ std::vector<Tick> od_beats_from_track(const MidiTrack& track)
 
     return od_beats;
 }
-}
-
-Song song_from_filename(const std::string& filename)
-{
-    std::string ini_file;
-    const std::filesystem::path song_path {filename};
-    const auto song_directory = song_path.parent_path();
-    const auto ini_path = song_directory / "song.ini";
-    boost::nowide::ifstream ini_in {ini_path.string()};
-    if (ini_in.is_open()) {
-        ini_file = std::string {std::istreambuf_iterator<char>(ini_in),
-                                std::istreambuf_iterator<char>()};
-    }
-    const auto ini = parse_ini(ini_file);
-
-    if (ends_with_suffix(filename, ".chart")) {
-        boost::nowide::ifstream in {filename};
-        if (!in.is_open()) {
-            throw std::invalid_argument("File did not open");
-        }
-        const std::string contents {std::istreambuf_iterator<char>(in),
-                                    std::istreambuf_iterator<char>()};
-        return Song::from_chart(parse_chart(contents), ini);
-    }
-    if (ends_with_suffix(filename, ".mid")) {
-        boost::nowide::ifstream in {filename, std::ios::binary};
-        if (!in.is_open()) {
-            throw std::invalid_argument("File did not open");
-        }
-        const std::vector<std::uint8_t> buffer {
-            std::istreambuf_iterator<char>(in),
-            std::istreambuf_iterator<char>()};
-        return Song::from_midi(parse_midi(buffer), ini);
-    }
-    throw std::invalid_argument("file should be .chart or .mid");
 }
 
 std::vector<Instrument> Song::instruments() const

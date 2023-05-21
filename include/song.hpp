@@ -57,6 +57,4 @@ public:
     [[nodiscard]] std::vector<Tick> unison_phrase_positions() const;
 };
 
-Song song_from_filename(const std::string& filename);
-
 #endif

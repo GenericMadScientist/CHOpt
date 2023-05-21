@@ -25,7 +25,7 @@
 #include "image.hpp"
 #include "optimiser.hpp"
 #include "settings.hpp"
-#include "song.hpp"
+#include "songfile.hpp"
 #include "time.hpp"
 
 int main(int argc, char** argv)
@@ -36,7 +36,8 @@ int main(int argc, char** argv)
         if (!settings.has_value()) {
             return EXIT_SUCCESS;
         }
-        const auto song = song_from_filename(settings->filename);
+        const SongFile song_file {settings->filename};
+        const auto song = song_file.load_song();
         const auto& track
             = song.track(settings->instrument, settings->difficulty);
         const std::atomic<bool> terminate {false};
