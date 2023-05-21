@@ -152,3 +152,11 @@ std::string to_utf8_string(std::string_view input)
     }
     return std::string(input);
 }
+
+bool ends_with_suffix(const std::string& string, std::string_view suffix)
+{
+    if (string.size() < suffix.size()) {
+        return false;
+    }
+    return string.substr(string.size() - suffix.size()) == suffix;
+}

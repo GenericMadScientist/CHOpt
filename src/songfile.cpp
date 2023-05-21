@@ -22,16 +22,7 @@
 #include <boost/nowide/fstream.hpp>
 
 #include "songfile.hpp"
-
-namespace {
-bool ends_with_suffix(const std::string& string, std::string_view suffix)
-{
-    if (string.size() < suffix.size()) {
-        return false;
-    }
-    return string.substr(string.size() - suffix.size()) == suffix;
-}
-}
+#include "stringutil.hpp"
 
 SongFile::SongFile(const std::string& filename)
 {

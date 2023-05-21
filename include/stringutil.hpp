@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,5 +33,7 @@ std::string to_ordinal(int ordinal);
 
 // Convert a UTF-8 or UTF-16le string to a UTF-8 string.
 std::string to_utf8_string(std::string_view input);
+
+bool ends_with_suffix(const std::string& string, std::string_view suffix);
 
 #endif

@@ -26,19 +26,12 @@
 #include <type_traits>
 
 #include "song.hpp"
+#include "stringutil.hpp"
 
 namespace {
 bool starts_with_prefix(const std::string& string, std::string_view prefix)
 {
     return string.substr(0, prefix.size()) == prefix;
-}
-
-bool ends_with_suffix(const std::string& string, std::string_view suffix)
-{
-    if (string.size() < suffix.size()) {
-        return false;
-    }
-    return string.substr(string.size() - suffix.size()) == suffix;
 }
 
 // Takes a sequence of points where some note type/event is turned on, and a

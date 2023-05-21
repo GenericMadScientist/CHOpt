@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,4 +81,11 @@ BOOST_AUTO_TEST_CASE(to_ordinal_works_correctly)
     BOOST_CHECK_EQUAL(to_ordinal(12), "12th");
     BOOST_CHECK_EQUAL(to_ordinal(13), "13th");
     BOOST_CHECK_THROW([&] { return to_ordinal(-1); }(), std::exception);
+}
+
+BOOST_AUTO_TEST_CASE(ends_with_suffix_works_correctly)
+{
+    BOOST_CHECK(ends_with_suffix("Some String", "String"));
+    BOOST_CHECK(!ends_with_suffix("Some String", "Some"));
+    BOOST_CHECK(!ends_with_suffix("Short", "Long String"));
 }
