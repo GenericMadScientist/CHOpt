@@ -18,6 +18,8 @@
 
 #include <stdexcept>
 
+#include <boost/nowide/fstream.hpp>
+
 #include <QDesktopServices>
 #include <QDragEnterEvent>
 #include <QFileDialog>
@@ -45,8 +47,16 @@ public:
     void run() override
     {
         try {
+            boost::nowide::ifstream in {m_file_name.toStdString(),
+                                        std::ios::binary};
+            if (!in.is_open()) {
+                throw std::invalid_argument("File did not open");
+            }
+            std::vector<std::uint8_t> buffer {
+                std::istreambuf_iterator<char>(in),
+                std::istreambuf_iterator<char>()};
             emit result_ready(song_from_filename(m_file_name.toStdString()),
-                              m_file_name);
+                              std::move(buffer), m_file_name);
         } catch (const std::exception&) {
             emit parsing_failed(m_file_name);
         }
@@ -56,7 +66,8 @@ public:
 
 signals:
     void parsing_failed(const QString& file_name);
-    void result_ready(const Song& song, const QString& file_name);
+    void result_ready(const Song& song, std::vector<std::uint8_t> loaded_file,
+                      const QString& file_name);
 };
 
 class OptimiserThread : public QThread {
@@ -386,9 +397,12 @@ void MainWindow::parsing_failed(const QString& file_name)
     m_ui->selectFileButton->setEnabled(true);
 }
 
-void MainWindow::song_read(const Song& song, const QString& file_name)
+void MainWindow::song_read(const Song& song,
+                           std::vector<std::uint8_t> loaded_file,
+                           const QString& file_name)
 {
     m_thread = nullptr;
+    m_loaded_file = std::move(loaded_file);
     m_song = song;
 
     m_ui->instrumentComboBox->clear();
