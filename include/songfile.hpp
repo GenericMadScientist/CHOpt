@@ -35,7 +35,7 @@ private:
     FileType m_file_type;
 
 public:
-    SongFile(const std::string& filename);
+    explicit SongFile(const std::string& filename);
     Song load_song() const;
 };
 
