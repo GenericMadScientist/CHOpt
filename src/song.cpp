@@ -1500,7 +1500,9 @@ std::vector<Tick> Song::unison_phrase_positions() const
 
 void Song::speedup(int speed)
 {
-    if (speed == 100) {
+    constexpr int DEFAULT_SPEED = 100;
+
+    if (speed == DEFAULT_SPEED) {
         return;
     }
     if (speed <= 0) {
