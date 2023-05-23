@@ -1497,3 +1497,17 @@ std::vector<Tick> Song::unison_phrase_positions() const
     }
     return unison_starts;
 }
+
+void Song::speedup(int speed)
+{
+    if (speed == 100) {
+        return;
+    }
+    if (speed <= 0) {
+        throw std::invalid_argument("Speed must be positive");
+    }
+
+    m_global_data->name(m_global_data->name() + " (" + std::to_string(speed)
+                        + "%)");
+    m_global_data->tempo_map(m_global_data->tempo_map().speedup(speed));
+}

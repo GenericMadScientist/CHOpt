@@ -55,6 +55,7 @@ public:
     [[nodiscard]] const NoteTrack& track(Instrument instrument,
                                          Difficulty difficulty) const;
     [[nodiscard]] std::vector<Tick> unison_phrase_positions() const;
+    void speedup(int speed);
 };
 
 #endif

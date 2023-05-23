@@ -1474,3 +1474,53 @@ BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
         unison_phrases.cbegin(), unison_phrases.cend(),
         expected_unison_phrases.cbegin(), expected_unison_phrases.cend());
 }
+
+BOOST_AUTO_TEST_SUITE(speedup)
+
+ChartSection sync_track {"SyncTrack", {}, {{0, 200000}},           {},
+                         {},          {}, {{0, 4, 2}, {768, 4, 1}}};
+ChartSection expert_single {"ExpertSingle", {}, {}, {}, {{768, 0, 0}}, {}, {}};
+std::vector<ChartSection> sections {sync_track, expert_single};
+const Chart chart {sections};
+const IniValues ini {"TestName", "GMS", "NotGMS"};
+
+BOOST_AUTO_TEST_CASE(song_name_is_updated)
+{
+    auto song = Song::from_chart(chart, ini);
+    song.speedup(200);
+
+    BOOST_CHECK_EQUAL(song.global_data().name(), "TestName (200%)");
+}
+
+BOOST_AUTO_TEST_CASE(song_name_is_unaffected_by_normal_speed)
+{
+    auto song = Song::from_chart(chart, ini);
+    song.speedup(100);
+
+    BOOST_CHECK_EQUAL(song.global_data().name(), "TestName");
+}
+
+BOOST_AUTO_TEST_CASE(tempo_map_affected_by_speedup)
+{
+    auto song = Song::from_chart(chart, ini);
+    song.speedup(200);
+    const auto& tempo_map = song.global_data().tempo_map();
+
+    BOOST_CHECK_EQUAL(tempo_map.bpms().front().bpm, 400000);
+}
+
+BOOST_AUTO_TEST_CASE(throws_on_negative_speeds)
+{
+    auto song = Song::from_chart(chart, ini);
+
+    BOOST_CHECK_THROW([&] { song.speedup(-100); }(), std::invalid_argument);
+}
+
+BOOST_AUTO_TEST_CASE(throws_on_zero_speed)
+{
+    auto song = Song::from_chart(chart, ini);
+
+    BOOST_CHECK_THROW([&] { song.speedup(0); }(), std::invalid_argument);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
