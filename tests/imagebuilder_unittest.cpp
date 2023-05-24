@@ -1259,7 +1259,7 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     ImageBuilder builder {track, Difficulty::Expert,
                           DrumSettings::default_settings(), false, true};
     builder.add_sp_values(sp_data, ChGuitarEngine());
@@ -1356,7 +1356,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     Path path {{{points.cbegin() + 5, points.cend(), Beat {1000.0}, Beat {70.0},
                  Beat {102.0}}},
                0};
@@ -1397,7 +1397,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     Path path {{{points.cbegin() + 5, points.cend(), Beat {1000.0}, Beat {98.0},
                  Beat {132.0}}},
                0};
@@ -1432,7 +1432,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     Path path {{{points.cbegin() + 5, points.cend(), Beat {1000.0}, Beat {9.0},
                  Beat {22.0}}},
                0};
@@ -1467,7 +1467,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     Path path {{{points.cbegin() + 5, points.cend(), Beat {12.0}, Beat {9.0},
                  Beat {22.0}}},
                0};
@@ -1506,7 +1506,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     Path path {{{points.cbegin() + 5, points.cend() - 3, Beat {12.0},
                  Beat {9.0}, Beat {28.8827}},
                 {points.cend() - 1, points.cend(), Beat {1000.0}, Beat {37.0},
@@ -1548,7 +1548,7 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     Path path {{{points.cbegin() + 2, points.cbegin() + 2, Beat {17.0},
                  Beat {0.8958}, Beat {16.8958}}},
                50};

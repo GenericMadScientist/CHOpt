@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,23 +55,18 @@ BOOST_AUTO_TEST_SUITE(propagate_sp_over_whammy_works_correctly)
 
 BOOST_AUTO_TEST_CASE(works_correctly_over_four_four)
 {
+    std::vector<TimeSignature> time_sigs {{Tick {0}, 4, 4}};
+    TempoMap tempo_map {time_sigs, {}, {}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
     std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
                              make_note(3000)};
     std::vector<StarPower> phrases {{Tick {0}, Tick {3000}}};
-    NoteTrack track {notes,
-                     phrases,
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
-    std::vector<TimeSignature> time_sigs {{Tick {0}, 4, 4}};
-    SpData sp_data {track,
-                    {time_sigs, {}, {}, 192},
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    NoteTrack track {notes,      phrases, {}, {}, {}, {}, TrackType::FiveFret,
+                     global_data};
+    SpData sp_data {
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
         sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
@@ -85,23 +80,18 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_four_four)
 
 BOOST_AUTO_TEST_CASE(works_correctly_over_three_four)
 {
+    std::vector<TimeSignature> time_sigs {{Tick {0}, 3, 4}};
+    TempoMap tempo_map {time_sigs, {}, {}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
     std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
                              make_note(3000)};
     std::vector<StarPower> phrases {{Tick {0}, Tick {3000}}};
-    NoteTrack track {notes,
-                     phrases,
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
-    std::vector<TimeSignature> time_sigs {{Tick {0}, 3, 4}};
-    SpData sp_data {track,
-                    {time_sigs, {}, {}, 192},
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    NoteTrack track {notes,      phrases, {}, {}, {}, {}, TrackType::FiveFret,
+                     global_data};
+    SpData sp_data {
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
         sp_data.propagate_sp_over_whammy_max(
@@ -115,23 +105,18 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_three_four)
 
 BOOST_AUTO_TEST_CASE(works_correctly_over_changing_time_signatures)
 {
+    std::vector<TimeSignature> time_sigs {{Tick {0}, 4, 4}, {Tick {384}, 3, 4}};
+    TempoMap tempo_map {time_sigs, {}, {}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
     std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
                              make_note(3000)};
     std::vector<StarPower> phrases {{Tick {0}, Tick {3000}}};
-    NoteTrack track {notes,
-                     phrases,
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
-    std::vector<TimeSignature> time_sigs {{Tick {0}, 4, 4}, {Tick {384}, 3, 4}};
-    SpData sp_data {track,
-                    {time_sigs, {}, {}, 192},
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    NoteTrack track {notes,      phrases, {}, {}, {}, {}, TrackType::FiveFret,
+                     global_data};
+    SpData sp_data {
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
         sp_data.propagate_sp_over_whammy_max(
@@ -145,23 +130,18 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_changing_time_signatures)
 
 BOOST_AUTO_TEST_CASE(returns_negative_one_if_sp_runs_out)
 {
+    std::vector<TimeSignature> time_sigs {{Tick {0}, 3, 4}, {Tick {384}, 4, 4}};
+    TempoMap tempo_map {time_sigs, {}, {}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
     std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
                              make_note(3000)};
     std::vector<StarPower> phrases {{Tick {0}, Tick {3000}}};
-    NoteTrack track {notes,
-                     phrases,
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
-    std::vector<TimeSignature> time_sigs {{Tick {0}, 3, 4}, {Tick {384}, 4, 4}};
-    SpData sp_data {track,
-                    {time_sigs, {}, {}, 192},
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    NoteTrack track {notes,      phrases, {}, {}, {}, {}, TrackType::FiveFret,
+                     global_data};
+    SpData sp_data {
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
         sp_data.propagate_sp_over_whammy_max(
@@ -187,7 +167,7 @@ BOOST_AUTO_TEST_CASE(works_even_if_some_of_the_range_isnt_whammyable)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
         sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
@@ -209,7 +189,7 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
         sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
@@ -234,7 +214,7 @@ BOOST_AUTO_TEST_CASE(sustains_not_in_a_phrase_do_not_contribute_sp)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
         sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
@@ -256,7 +236,7 @@ BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_min(
                           {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)},
@@ -280,7 +260,7 @@ BOOST_AUTO_TEST_CASE(
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_min(
                           {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)},
@@ -304,7 +284,7 @@ BOOST_AUTO_TEST_CASE(is_in_whammy_ranges_works_correctly)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_TEST(sp_data.is_in_whammy_ranges(Beat(1.0)));
     BOOST_TEST(!sp_data.is_in_whammy_ranges(Beat(11.0)));
@@ -326,7 +306,7 @@ BOOST_AUTO_TEST_CASE(max_early_whammy)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(sp_data.available_whammy(Beat(0.0), Beat(16.0)), 0.471333,
                       0.0001);
@@ -350,7 +330,6 @@ BOOST_AUTO_TEST_CASE(mid_early_whammy)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {track,
-                    {},
                     {},
                     {1.0, 0.5, Second {0.0}, Second {0.0}, Second {0.0}},
                     ChGuitarEngine()};
@@ -378,7 +357,6 @@ BOOST_AUTO_TEST_CASE(negative_early_whammy)
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {track,
                     {},
-                    {},
                     {1.0, 0.0, Second {2.5}, Second {0.0}, Second {0.0}},
                     ChGuitarEngine()};
 
@@ -402,7 +380,7 @@ BOOST_AUTO_TEST_CASE(three_argument_version_works_correctly)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(Beat(0.0), Beat(12.0), Beat(12.0)), 0.3333333,
@@ -425,7 +403,7 @@ BOOST_AUTO_TEST_CASE(works_when_sp_is_sufficient)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     Position start {Beat(0.0), Measure(0.0)};
     Position end {Beat(1.0), Measure(0.25)};
 
@@ -446,7 +424,7 @@ BOOST_AUTO_TEST_CASE(works_when_sp_is_insufficient)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     Position start {Beat(0.0), Measure(0.0)};
     Position end {Beat(1.0), Measure(0.25)};
 
@@ -468,7 +446,7 @@ BOOST_AUTO_TEST_CASE(works_when_adding_whammy_makes_sp_sufficient)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     Position start {Beat(0.0), Measure(0.0)};
     Position end {Beat(1.0), Measure(0.25)};
 
@@ -490,7 +468,7 @@ BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_insufficient)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     Position start {Beat(0.0), Measure(0.0)};
     Position end {Beat(2.0), Measure(0.5)};
 
@@ -501,22 +479,16 @@ BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_insufficient)
 
 BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_accumulation_is_too_slow)
 {
+    TempoMap tempo_map {{{Tick {0}, 2, 4}}, {}, {}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
     std::vector<Note> notes {make_note(0, 192), make_note(950)};
     std::vector<StarPower> phrases {{Tick {0}, Tick {1000}}};
-    TempoMap tempo_map {{{Tick {0}, 2, 4}}, {}, {}, 192};
-    NoteTrack track {notes,
-                     phrases,
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
-    SpData sp_data {track,
-                    tempo_map,
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    NoteTrack track {notes,      phrases, {}, {}, {}, {}, TrackType::FiveFret,
+                     global_data};
+    SpData sp_data {
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
     Position start {Beat(0.0), Measure(0.0)};
     Position end {Beat(1.0), Measure(0.25)};
 
@@ -543,7 +515,7 @@ BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
                            std::make_shared<SongGlobalData>()};
 
     SpData sp_data {
-        track, {}, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
+        track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_TEST(sp_data.is_in_whammy_ranges(Beat(0.9)));
     BOOST_TEST(sp_data.is_in_whammy_ranges(Beat(1.9)));
@@ -563,7 +535,6 @@ BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
                            std::make_shared<SongGlobalData>()};
 
     SpData sp_data {track,
-                    {},
                     {},
                     {1.0, 1.0, Second {0.0}, Second {0.1}, Second {0.0}},
                     ChGuitarEngine()};

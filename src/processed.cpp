@@ -65,8 +65,7 @@ ProcessedSong::ProcessedSong(const NoteTrack& track,
                              const std::vector<Tick>& unison_phrases)
     : m_tempo_map {track.global_data().tempo_map()}
     , m_points {track, unison_phrases, squeeze_settings, drum_settings, engine}
-    , m_sp_data {track, track.global_data().tempo_map(), od_beats,
-                 squeeze_settings, engine}
+    , m_sp_data {track, od_beats, squeeze_settings, engine}
     , m_total_bre_boost {bre_boost(track, engine)}
     , m_base_score {track.base_score(drum_settings)}
     , m_ignore_average_multiplier {engine.ignore_average_multiplier()}

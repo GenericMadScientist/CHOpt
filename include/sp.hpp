@@ -112,8 +112,7 @@ private:
     Position sp_drain_end_point(Position start, double sp_bar_amount) const;
 
 public:
-    SpData(const NoteTrack& track, const TempoMap& tempo_map,
-           const std::vector<Tick>& od_beats,
+    SpData(const NoteTrack& track, const std::vector<Tick>& od_beats,
            const SqueezeSettings& squeeze_settings, const Engine& engine);
     // Return the maximum amount of SP available at the end after propagating
     // over a range, or -1 if SP runs out at any point. Only includes SP gain
