@@ -45,6 +45,7 @@ private:
 public:
     static Song from_chart(const Chart& chart, const IniValues& ini);
     static Song from_midi(const Midi& midi, const IniValues& ini);
+    [[nodiscard]] SongGlobalData& global_data() { return *m_global_data; }
     [[nodiscard]] const SongGlobalData& global_data() const
     {
         return *m_global_data;

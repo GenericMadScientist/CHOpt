@@ -655,7 +655,7 @@ ImageBuilder make_builder(Song& song, const NoteTrack& track,
         }
     }
     song.speedup(settings.speed);
-    auto tempo_map = song.global_data().tempo_map();
+    auto& tempo_map = song.global_data().tempo_map();
     tempo_map.use_od_beats(settings.engine->uses_beat_track());
 
     auto builder = build_with_engine_params(new_track, settings);

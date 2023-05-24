@@ -139,6 +139,7 @@ public:
     [[nodiscard]] const std::string& name() const { return m_name; }
     [[nodiscard]] const std::string& artist() const { return m_artist; }
     [[nodiscard]] const std::string& charter() const { return m_charter; }
+    [[nodiscard]] TempoMap& tempo_map() { return m_tempo_map; }
     [[nodiscard]] const TempoMap& tempo_map() const { return m_tempo_map; }
     [[nodiscard]] const std::vector<Tick>& od_beats() const
     {
