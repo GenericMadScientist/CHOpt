@@ -73,7 +73,6 @@ BOOST_AUTO_TEST_CASE(single_notes_give_fifty_points)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -98,7 +97,6 @@ BOOST_AUTO_TEST_CASE(chords_give_multiples_of_fifty_points)
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -121,7 +119,6 @@ BOOST_AUTO_TEST_CASE(ghl_notes_behave_the_same_as_five_fret_notes)
                      TrackType::SixFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -150,7 +147,6 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
                      std::make_shared<SongGlobalData>()};
     PointSet first_points {track,
                            {},
-                           {},
                            SqueezeSettings::default_settings(),
                            DrumSettings::default_settings(),
                            ChGuitarEngine()};
@@ -160,7 +156,6 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
         {make_note(768, 15)}, {}, {}, {}, {}, {}, TrackType::FiveFret,
         make_resolution(200)};
     PointSet second_points {second_track,
-                            make_resolution(200)->tempo_map(),
                             {},
                             SqueezeSettings::default_settings(),
                             DrumSettings::default_settings(),
@@ -200,7 +195,6 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -223,7 +217,6 @@ BOOST_AUTO_TEST_CASE(resolutions_below_25_do_not_enter_an_infinite_loop)
         {make_note(768, 2)}, {}, {}, {}, {}, {}, TrackType::FiveFret,
         make_resolution(1)};
     PointSet points {track,
-                     make_resolution(1)->tempo_map(),
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -246,7 +239,6 @@ BOOST_AUTO_TEST_CASE(sustains_of_uneven_length_are_handled_correctly)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -273,7 +265,6 @@ BOOST_AUTO_TEST_CASE(chord_sustains_in_rb_are_handled_correctly)
                      TrackType::FiveFret,
                      make_resolution(480)};
     PointSet points {track,
-                     make_resolution(480)->tempo_map(),
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -293,7 +284,6 @@ BOOST_AUTO_TEST_CASE(
         {make_note(0, 419)}, {}, {}, {}, {}, {}, TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track,
-                     make_resolution(480)->tempo_map(),
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -318,7 +308,6 @@ BOOST_AUTO_TEST_CASE(rounding_from_length_in_rb_for_chords_is_handled_correctly)
         TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track,
-                     make_resolution(480)->tempo_map(),
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -342,7 +331,6 @@ BOOST_AUTO_TEST_CASE(gh1_one_beat_sustain_is_handled_correctly)
                      TrackType::FiveFret,
                      make_resolution(480)};
     PointSet points {track,
-                     make_resolution(480)->tempo_map(),
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -367,7 +355,6 @@ BOOST_AUTO_TEST_CASE(
                      TrackType::FiveFret,
                      make_resolution(480)};
     PointSet points {track,
-                     make_resolution(480)->tempo_map(),
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -393,7 +380,6 @@ BOOST_AUTO_TEST_CASE(
         TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track,
-                     make_resolution(480)->tempo_map(),
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -419,7 +405,6 @@ BOOST_AUTO_TEST_CASE(points_are_sorted)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -442,12 +427,10 @@ BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
     PointSet unison_points {track,
-                            {},
                             {{Tick {1100}, Tick {53}}},
                             SqueezeSettings::default_settings(),
                             DrumSettings::default_settings(),
@@ -481,7 +464,6 @@ BOOST_AUTO_TEST_CASE(multiplier_applies_to_non_sustains)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -525,7 +507,6 @@ BOOST_AUTO_TEST_CASE(sustain_points_are_multiplied)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -552,7 +533,6 @@ BOOST_AUTO_TEST_CASE(later_sustain_points_in_extended_sustains_are_multiplied)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -581,7 +561,6 @@ BOOST_AUTO_TEST_CASE(drum_notes_have_the_multiplier_handled_correctly)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChDrumEngine()};
@@ -604,7 +583,6 @@ BOOST_AUTO_TEST_CASE(gh1_multiplier_delay_accounted_for)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -629,7 +607,6 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
     NoteTrack track {notes,      {}, {}, {}, {}, {}, TrackType::FiveFret,
                      global_data};
     PointSet points {track,
-                     tempo_map,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -652,7 +629,6 @@ BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
     NoteTrack track {notes,      {}, {}, {}, {}, {}, TrackType::FiveFret,
                      global_data};
     PointSet points {track,
-                     tempo_map,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -668,17 +644,13 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
 {
     TempoMap tempo_map {
         {}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, {}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
     std::vector<Note> notes {make_note(672, 192)};
-    NoteTrack track {notes,
-                     {},
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    NoteTrack track {notes,      {}, {}, {}, {}, {}, TrackType::FiveFret,
+                     global_data};
     PointSet points {track,
-                     tempo_map,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -701,7 +673,6 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
     NoteTrack track {notes,      {}, {}, {}, {}, {}, TrackType::FiveFret,
                      global_data};
     PointSet points {track,
-                     tempo_map,
                      {},
                      {0.5, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
                      DrumSettings::default_settings(),
@@ -724,14 +695,12 @@ BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
     NoteTrack track {notes,      {}, {}, {}, {}, {}, TrackType::FiveFret,
                      global_data};
     PointSet points {track,
-                     tempo_map,
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      RbEngine()};
     PointSet fifty_sqz_points {
         track,
-        tempo_map,
         {},
         {0.5, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
         DrumSettings::default_settings(),
@@ -762,7 +731,6 @@ BOOST_AUTO_TEST_CASE(rb_bass_multiplier_is_taken_into_account)
                            std::make_unique<SongGlobalData>()};
     const PointSet points {track,
                            {},
-                           {},
                            SqueezeSettings::default_settings(),
                            DrumSettings::default_settings(),
                            RbBassEngine()};
@@ -789,7 +757,6 @@ BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
                            std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      {1.0, 1.0, Second {0.0}, Second {-0.20}, Second {0.0}},
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -815,7 +782,6 @@ BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
                            TrackType::FiveFret,
                            std::make_unique<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      {1.0, 1.0, Second {0.0}, Second {0.20}, Second {0.0}},
                      DrumSettings::default_settings(),
@@ -846,7 +812,6 @@ BOOST_AUTO_TEST_CASE(tick_points_are_not_multiplied_prematurely)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      {1.0, 1.0, Second {0.0}, Second {-0.40}, Second {0.0}},
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -870,7 +835,6 @@ BOOST_AUTO_TEST_CASE(next_non_hold_point_is_correct)
                      std::make_unique<SongGlobalData>()};
 
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -899,7 +863,6 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
 
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -927,7 +890,6 @@ BOOST_AUTO_TEST_CASE(solo_sections_are_added)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -950,7 +912,6 @@ BOOST_AUTO_TEST_CASE(range_score_is_correct)
                      TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -979,7 +940,6 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_five_fret)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -1006,7 +966,6 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_six_fret)
                      TrackType::SixFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1035,7 +994,6 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_drums)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChDrumEngine()};
@@ -1061,12 +1019,10 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_appear_with_enable_double_kick)
                      std::make_unique<SongGlobalData>()};
     PointSet single_points {track,
                             {},
-                            {},
                             SqueezeSettings::default_settings(),
                             {false, false, true, false},
                             ChDrumEngine()};
     PointSet double_points {track,
-                            {},
                             {},
                             SqueezeSettings::default_settings(),
                             DrumSettings::default_settings(),
@@ -1089,7 +1045,6 @@ BOOST_AUTO_TEST_CASE(single_kicks_are_removed_with_disable_kick)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      {true, true, false, false},
@@ -1114,7 +1069,6 @@ BOOST_AUTO_TEST_CASE(disable_kick_doesnt_kill_sp_phrases)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      {false, true, false, false},
                      ChDrumEngine()};
@@ -1137,7 +1091,6 @@ BOOST_AUTO_TEST_CASE(double_kicks_dont_kill_phrases)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      {false, false, false, false},
                      ChDrumEngine()};
@@ -1159,7 +1112,6 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1186,7 +1138,6 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_not_killed)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      {false, false, false, false},
                      ChDrumEngine()};
@@ -1211,7 +1162,6 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_not_killed)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChDrumEngine()};
@@ -1235,7 +1185,6 @@ BOOST_AUTO_TEST_CASE(
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1262,7 +1211,6 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChDrumEngine()};
@@ -1288,7 +1236,6 @@ BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChDrumEngine()};
@@ -1310,7 +1257,6 @@ BOOST_AUTO_TEST_CASE(cymbals_get_extra_points)
                      TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1341,7 +1287,6 @@ BOOST_AUTO_TEST_CASE(dynamics_get_double_points)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChDrumEngine()};
@@ -1370,7 +1315,6 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      Gh1Engine()};
@@ -1394,7 +1338,6 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      Gh1Engine()};
@@ -1416,7 +1359,6 @@ BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
                      TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),

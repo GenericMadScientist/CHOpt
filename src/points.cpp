@@ -294,7 +294,6 @@ void apply_multiplier(std::vector<Point>& points, const Engine& engine)
 }
 
 std::vector<Point> unmultiplied_points(const NoteTrack& track,
-                                       const TempoMap& tempo_map,
                                        const std::vector<Tick>& unison_phrases,
                                        const SqueezeSettings& squeeze_settings,
                                        const DrumSettings& drum_settings,
@@ -340,7 +339,8 @@ std::vector<Point> unmultiplied_points(const NoteTrack& track,
             }
             ++current_phrase;
         }
-        append_note_points(p, notes, std::back_inserter(points), tempo_map,
+        append_note_points(p, notes, std::back_inserter(points),
+                           track.global_data().tempo_map(),
                            track.global_data().resolution(), is_note_sp_ender,
                            is_unison_sp_ender, squeeze_settings.squeeze, engine,
                            drum_settings);
@@ -356,16 +356,15 @@ std::vector<Point> unmultiplied_points(const NoteTrack& track,
 }
 
 std::vector<Point> non_drum_points(const NoteTrack& track,
-                                   const TempoMap& tempo_map,
                                    const std::vector<Tick>& unison_phrases,
                                    const SqueezeSettings& squeeze_settings,
                                    const Engine& engine)
 {
-    auto points = unmultiplied_points(track, tempo_map, unison_phrases,
-                                      squeeze_settings,
+    auto points = unmultiplied_points(track, unison_phrases, squeeze_settings,
                                       DrumSettings::default_settings(), engine);
     apply_multiplier(points, engine);
-    shift_points_by_video_lag(points, tempo_map, squeeze_settings.video_lag);
+    shift_points_by_video_lag(points, track.global_data().tempo_map(),
+                              squeeze_settings.video_lag);
     return points;
 }
 
@@ -467,21 +466,20 @@ std::vector<std::string> note_colours(const std::vector<Note>& notes,
 }
 
 std::vector<Point> points_from_track(const NoteTrack& track,
-                                     const TempoMap& tempo_map,
                                      const std::vector<Tick>& unison_phrases,
                                      const SqueezeSettings& squeeze_settings,
                                      const DrumSettings& drum_settings,
                                      const Engine& engine)
 {
     if (track.track_type() != TrackType::Drums) {
-        return non_drum_points(track, tempo_map, unison_phrases,
-                               squeeze_settings, engine);
+        return non_drum_points(track, unison_phrases, squeeze_settings, engine);
     }
-    auto points = unmultiplied_points(track, tempo_map, unison_phrases,
-                                      squeeze_settings, drum_settings, engine);
+    auto points = unmultiplied_points(track, unison_phrases, squeeze_settings,
+                                      drum_settings, engine);
     add_drum_activation_points(track, points);
     apply_multiplier(points, engine);
-    shift_points_by_video_lag(points, tempo_map, squeeze_settings.video_lag);
+    shift_points_by_video_lag(points, track.global_data().tempo_map(),
+                              squeeze_settings.video_lag);
     return points;
 }
 
@@ -526,16 +524,16 @@ solo_boosts_from_solos(const std::vector<Solo>& solos,
 }
 }
 
-PointSet::PointSet(const NoteTrack& track, const TempoMap& tempo_map,
+PointSet::PointSet(const NoteTrack& track,
                    const std::vector<Tick>& unison_phrases,
                    const SqueezeSettings& squeeze_settings,
                    const DrumSettings& drum_settings, const Engine& engine)
     : m_video_lag {squeeze_settings.video_lag}
 {
-    m_points = points_from_track(track, tempo_map, unison_phrases,
-                                 squeeze_settings, drum_settings, engine);
-    m_solo_boosts
-        = solo_boosts_from_solos(track.solos(drum_settings), tempo_map);
+    m_points = points_from_track(track, unison_phrases, squeeze_settings,
+                                 drum_settings, engine);
+    m_solo_boosts = solo_boosts_from_solos(track.solos(drum_settings),
+                                           track.global_data().tempo_map());
     m_first_after_current_sp
         = first_after_current_sp_vector(m_points, track, engine);
     m_next_non_hold_point = next_non_hold_vector(m_points);

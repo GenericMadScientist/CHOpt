@@ -343,7 +343,12 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
                                    points.cbegin() + 3,
                                    {Beat(0.0), Measure(0.0)},
                                    {1.0, 1.0}};
-    ProcessedSong second_track {note_track,
+
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(TempoMap({{Tick {0}, 3, 4}}, {}, {}, 192));
+    NoteTrack second_note_track {
+        notes, {}, {}, {}, {}, {}, TrackType::FiveFret, global_data};
+    ProcessedSong second_track {second_note_track,
                                 TempoMap({{Tick {0}, 3, 4}}, {}, {}, 192),
                                 SqueezeSettings::default_settings(),
                                 DrumSettings::default_settings(),
@@ -387,7 +392,12 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
                                    points.cbegin() + 2,
                                    {Beat(0.0), Measure(0.0)},
                                    {0.5, 0.5}};
-    ProcessedSong second_track {note_track,
+
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(TempoMap({{Tick {0}, 3, 4}}, {}, {}, 192));
+    NoteTrack second_note_track {
+        notes, {}, {}, {}, {}, {}, TrackType::FiveFret, global_data};
+    ProcessedSong second_track {second_note_track,
                                 TempoMap({{Tick {0}, 3, 4}}, {}, {}, 192),
                                 SqueezeSettings::default_settings(),
                                 DrumSettings::default_settings(),
@@ -1569,16 +1579,13 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
 
 BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
 {
-    std::vector<Note> notes {make_note(768), make_note(3840)};
-    NoteTrack track {notes,
-                     {},
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
     TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {3840}, 2, 4}}, {}, {}, 192};
+    auto global_data = std::make_shared<SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
+    std::vector<Note> notes {make_note(768), make_note(3840)};
+    NoteTrack track {notes,      {}, {}, {}, {}, {}, TrackType::FiveFret,
+                     global_data};
     ProcessedSong song {track,
                         tempo_map,
                         {0.0, 0.0, Second {0.0}, Second {0.1}, Second {0.0}},

@@ -687,7 +687,6 @@ BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      Gh1Engine()};
@@ -862,7 +861,6 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -904,7 +902,6 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -938,7 +935,6 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -967,7 +963,6 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -998,7 +993,6 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      {1.0, 1.0, Second(0.0), Second(0.05), Second(0.0)},
                      DrumSettings::default_settings(),
@@ -1039,7 +1033,6 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      Gh1Engine()};
@@ -1069,7 +1062,6 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1103,7 +1095,6 @@ BOOST_AUTO_TEST_CASE(
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      Gh1Engine()};
@@ -1134,7 +1125,6 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1193,7 +1183,6 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -1226,7 +1215,6 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -1256,7 +1244,6 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -1284,7 +1271,6 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
         TrackType::FiveFret,
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1314,7 +1300,6 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      {1.0, 1.0, Second {0.0}, Second {-0.1}, Second {0.0}},
                      DrumSettings::default_settings(),
@@ -1373,7 +1358,6 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1450,7 +1434,6 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -1493,7 +1476,6 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -1530,7 +1512,6 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {},
-                     {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
@@ -1566,7 +1547,6 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1607,7 +1587,6 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
@@ -1651,7 +1630,6 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
-                     {},
                      {},
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
