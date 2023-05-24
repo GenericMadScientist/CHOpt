@@ -465,14 +465,13 @@ std::vector<std::string> note_colours(const std::vector<Note>& notes,
     }
     return colours;
 }
-}
 
-std::vector<Point>
-PointSet::points_from_track(const NoteTrack& track, const TempoMap& tempo_map,
-                            const std::vector<Tick>& unison_phrases,
-                            const SqueezeSettings& squeeze_settings,
-                            const DrumSettings& drum_settings,
-                            const Engine& engine)
+std::vector<Point> points_from_track(const NoteTrack& track,
+                                     const TempoMap& tempo_map,
+                                     const std::vector<Tick>& unison_phrases,
+                                     const SqueezeSettings& squeeze_settings,
+                                     const DrumSettings& drum_settings,
+                                     const Engine& engine)
 {
     if (track.track_type() != TrackType::Drums) {
         return non_drum_points(track, tempo_map, unison_phrases,
@@ -486,21 +485,19 @@ PointSet::points_from_track(const NoteTrack& track, const TempoMap& tempo_map,
     return points;
 }
 
-std::vector<PointPtr>
-PointSet::next_non_hold_vector(const std::vector<Point>& points)
+std::vector<PointPtr> next_non_hold_vector(const std::vector<Point>& points)
 {
     return next_matching_vector(points,
                                 [](const auto& p) { return !p.is_hold_point; });
 }
 
-std::vector<PointPtr>
-PointSet::next_sp_note_vector(const std::vector<Point>& points)
+std::vector<PointPtr> next_sp_note_vector(const std::vector<Point>& points)
 {
     return next_matching_vector(
         points, [](const auto& p) { return p.is_sp_granting_note; });
 }
 
-std::vector<int> PointSet::score_totals(const std::vector<Point>& points)
+std::vector<int> score_totals(const std::vector<Point>& points)
 {
     std::vector<int> scores;
     scores.reserve(points.size() + 1);
@@ -514,8 +511,8 @@ std::vector<int> PointSet::score_totals(const std::vector<Point>& points)
 }
 
 std::vector<std::tuple<Position, int>>
-PointSet::solo_boosts_from_solos(const std::vector<Solo>& solos,
-                                 const TempoMap& tempo_map)
+solo_boosts_from_solos(const std::vector<Solo>& solos,
+                       const TempoMap& tempo_map)
 {
     std::vector<std::tuple<Position, int>> solo_boosts;
     solo_boosts.reserve(solos.size());
@@ -526,6 +523,7 @@ PointSet::solo_boosts_from_solos(const std::vector<Solo>& solos,
         solo_boosts.emplace_back(end_pos, solo.value);
     }
     return solo_boosts;
+}
 }
 
 PointSet::PointSet(const NoteTrack& track, const TempoMap& tempo_map,

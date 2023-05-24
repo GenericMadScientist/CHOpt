@@ -57,21 +57,6 @@ private:
     Second m_video_lag;
     std::vector<std::string> m_colours;
 
-    static std::vector<Point>
-    points_from_track(const NoteTrack& track, const TempoMap& tempo_map,
-                      const std::vector<Tick>& unison_phrases,
-                      const SqueezeSettings& squeeze_settings,
-                      const DrumSettings& drum_settings, const Engine& engine);
-
-    static std::vector<PointPtr>
-    next_non_hold_vector(const std::vector<Point>& points);
-    static std::vector<PointPtr>
-    next_sp_note_vector(const std::vector<Point>& points);
-    static std::vector<int> score_totals(const std::vector<Point>& points);
-    static std::vector<std::tuple<Position, int>>
-    solo_boosts_from_solos(const std::vector<Solo>& solos,
-                           const TempoMap& tempo_map);
-
 public:
     PointSet(const NoteTrack& track, const TempoMap& tempo_map,
              const std::vector<Tick>& unison_phrases,
