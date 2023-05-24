@@ -84,9 +84,9 @@ private:
                                                 const Path& path) const;
 
 public:
-    ImageBuilder(const NoteTrack& track, const TempoMap& tempo_map,
-                 Difficulty difficulty, const DrumSettings& drum_settings,
-                 bool is_lefty_flip, bool is_overlap_engine);
+    ImageBuilder(const NoteTrack& track, Difficulty difficulty,
+                 const DrumSettings& drum_settings, bool is_lefty_flip,
+                 bool is_overlap_engine);
     void add_bpms(const TempoMap& tempo_map);
     void add_bre(const BigRockEnding& bre, const TempoMap& tempo_map);
     void add_drum_fills(const NoteTrack& track);

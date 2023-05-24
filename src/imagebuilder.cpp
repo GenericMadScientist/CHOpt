@@ -136,8 +136,7 @@ std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
     return notes;
 }
 
-std::vector<DrawnRow> drawn_rows(const NoteTrack& track,
-                                 const TempoMap& tempo_map)
+std::vector<DrawnRow> drawn_rows(const NoteTrack& track)
 {
     Tick max_pos {0};
     for (const auto& note : track.notes()) {
@@ -147,6 +146,7 @@ std::vector<DrawnRow> drawn_rows(const NoteTrack& track,
         max_pos = std::max(max_pos, note_end);
     }
 
+    const auto& tempo_map = track.global_data().tempo_map();
     const auto max_beat = tempo_map.to_beats(max_pos).value();
     auto current_beat = 0.0;
     std::vector<DrawnRow> rows;
@@ -217,15 +217,10 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
 }
 
 ImageBuilder build_with_engine_params(const NoteTrack& track,
-                                      const TempoMap& tempo_map,
                                       const Settings& settings)
 {
-    return {track,
-            tempo_map,
-            settings.difficulty,
-            settings.drum_settings,
-            settings.is_lefty_flip,
-            settings.engine->overlaps()};
+    return {track, settings.difficulty, settings.drum_settings,
+            settings.is_lefty_flip, settings.engine->overlaps()};
 }
 
 std::vector<std::tuple<double, double>>
@@ -326,18 +321,17 @@ ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
     return {start, end};
 }
 
-ImageBuilder::ImageBuilder(const NoteTrack& track, const TempoMap& tempo_map,
-                           Difficulty difficulty,
+ImageBuilder::ImageBuilder(const NoteTrack& track, Difficulty difficulty,
                            const DrumSettings& drum_settings,
                            bool is_lefty_flip, bool is_overlap_engine)
     : m_track_type {track.track_type()}
     , m_difficulty {difficulty}
     , m_is_lefty_flip {is_lefty_flip}
-    , m_rows {drawn_rows(track, tempo_map)}
+    , m_rows {drawn_rows(track)}
     , m_notes {drawn_notes(track, drum_settings)}
     , m_overlap_engine {is_overlap_engine}
 {
-    form_beat_lines(tempo_map);
+    form_beat_lines(track.global_data().tempo_map());
 }
 
 void ImageBuilder::add_bpms(const TempoMap& tempo_map)
@@ -664,7 +658,7 @@ ImageBuilder make_builder(Song& song, const NoteTrack& track,
     auto tempo_map = song.global_data().tempo_map();
     tempo_map.use_od_beats(settings.engine->uses_beat_track());
 
-    auto builder = build_with_engine_params(new_track, tempo_map, settings);
+    auto builder = build_with_engine_params(new_track, settings);
     builder.add_song_header(song.global_data());
 
     if (track.track_type() == TrackType::Drums) {
