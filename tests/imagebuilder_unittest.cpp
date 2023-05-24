@@ -565,8 +565,6 @@ BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(song_header_information_is_added)
-
 BOOST_AUTO_TEST_CASE(normal_speed)
 {
     NoteTrack track {{make_note(0)},
@@ -585,39 +583,12 @@ BOOST_AUTO_TEST_CASE(normal_speed)
         track, {},  Difficulty::Expert, DrumSettings::default_settings(),
         false, true};
 
-    builder.add_song_header(global_data, 100);
+    builder.add_song_header(global_data);
 
     BOOST_CHECK_EQUAL(builder.song_name(), "TestName");
     BOOST_CHECK_EQUAL(builder.artist(), "GMS");
     BOOST_CHECK_EQUAL(builder.charter(), "NotGMS");
 }
-
-BOOST_AUTO_TEST_CASE(double_speed)
-{
-    NoteTrack track {{make_note(0)},
-                     {},
-                     {},
-                     {},
-                     {},
-                     {},
-                     TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
-    SongGlobalData global_data;
-    global_data.name("TestName");
-    global_data.artist("GMS");
-    global_data.charter("NotGMS");
-    ImageBuilder builder {
-        track, {},  Difficulty::Expert, DrumSettings::default_settings(),
-        false, true};
-
-    builder.add_song_header(global_data, 200);
-
-    BOOST_CHECK_EQUAL(builder.song_name(), "TestName (200%)");
-    BOOST_CHECK_EQUAL(builder.artist(), "GMS");
-    BOOST_CHECK_EQUAL(builder.charter(), "NotGMS");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(green_sp_ranges)
 

@@ -94,7 +94,7 @@ public:
                             const Path& path);
     void add_solo_sections(const std::vector<Solo>& solos,
                            const TempoMap& tempo_map);
-    void add_song_header(const SongGlobalData& global_data, int speed);
+    void add_song_header(const SongGlobalData& global_data);
     void add_sp_acts(const PointSet& points, const TempoMap& tempo_map,
                      const Path& path);
     void add_sp_percent_values(const SpData& sp_data, const TempoMap& tempo_map,
@@ -203,7 +203,7 @@ public:
     [[nodiscard]] bool is_lefty_flip() const { return m_is_lefty_flip; }
 };
 
-ImageBuilder make_builder(const Song& song, const NoteTrack& track,
+ImageBuilder make_builder(Song& song, const NoteTrack& track,
                           const Settings& settings,
                           const std::function<void(const char*)>& write,
                           const std::atomic<bool>* terminate);

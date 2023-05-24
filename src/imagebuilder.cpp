@@ -461,14 +461,9 @@ void ImageBuilder::add_solo_sections(const std::vector<Solo>& solos,
     }
 }
 
-void ImageBuilder::add_song_header(const SongGlobalData& global_data, int speed)
+void ImageBuilder::add_song_header(const SongGlobalData& global_data)
 {
-    constexpr int DEFAULT_SPEED = 100;
     m_song_name = global_data.name();
-    if (speed != DEFAULT_SPEED) {
-        const auto speedup_string = " (" + std::to_string(speed) + "%)";
-        m_song_name += speedup_string;
-    }
     m_artist = global_data.artist();
     m_charter = global_data.charter();
 }
@@ -646,7 +641,7 @@ void ImageBuilder::set_total_score(const PointSet& points,
     m_total_score = no_sp_score + path.score_boost;
 }
 
-ImageBuilder make_builder(const Song& song, const NoteTrack& track,
+ImageBuilder make_builder(Song& song, const NoteTrack& track,
                           const Settings& settings,
                           const std::function<void(const char*)>& write,
                           const std::atomic<bool>* terminate)
@@ -665,11 +660,12 @@ ImageBuilder make_builder(const Song& song, const NoteTrack& track,
             new_track.disable_dynamics();
         }
     }
-    auto tempo_map = song.global_data().tempo_map().speedup(settings.speed);
+    song.speedup(settings.speed);
+    auto tempo_map = song.global_data().tempo_map();
     tempo_map.use_od_beats(settings.engine->uses_beat_track());
 
     auto builder = build_with_engine_params(new_track, tempo_map, settings);
-    builder.add_song_header(song.global_data(), settings.speed);
+    builder.add_song_header(song.global_data());
 
     if (track.track_type() == TrackType::Drums) {
         builder.add_drum_fills(new_track);

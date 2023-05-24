@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
             return EXIT_SUCCESS;
         }
         const SongFile song_file {settings->filename};
-        const auto song = song_file.load_song();
+        auto song = song_file.load_song();
         const auto& track
             = song.track(settings->instrument, settings->difficulty);
         const std::atomic<bool> terminate {false};
