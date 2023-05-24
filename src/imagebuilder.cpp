@@ -688,13 +688,9 @@ ImageBuilder make_builder(Song& song, const NoteTrack& track,
     constexpr double SQUEEZE_EPSILON = 0.001;
     squeeze_settings.squeeze
         = std::max(squeeze_settings.squeeze, SQUEEZE_EPSILON);
-    const ProcessedSong processed_track {new_track,
-                                         tempo_map,
-                                         settings.squeeze_settings,
-                                         settings.drum_settings,
-                                         *settings.engine,
-                                         song.global_data().od_beats(),
-                                         unison_positions};
+    const ProcessedSong processed_track {
+        new_track,        settings.squeeze_settings,     settings.drum_settings,
+        *settings.engine, song.global_data().od_beats(), unison_positions};
     Path path;
 
     if (!settings.blank) {
