@@ -528,18 +528,18 @@ PointSet::PointSet(const NoteTrack& track,
                    const std::vector<Tick>& unison_phrases,
                    const SqueezeSettings& squeeze_settings,
                    const DrumSettings& drum_settings, const Engine& engine)
-    : m_video_lag {squeeze_settings.video_lag}
+    : m_points {points_from_track(track, unison_phrases, squeeze_settings,
+                                  drum_settings, engine)}
+    , m_first_after_current_sp {first_after_current_sp_vector(m_points, track,
+                                                              engine)}
+    , m_next_non_hold_point {next_non_hold_vector(m_points)}
+    , m_next_sp_granting_note {next_sp_note_vector(m_points)}
+    , m_solo_boosts {solo_boosts_from_solos(track.solos(drum_settings),
+                                            track.global_data().tempo_map())}
+    , m_cumulative_score_totals {score_totals(m_points)}
+    , m_video_lag {squeeze_settings.video_lag}
+    , m_colours {note_colours(track.notes(), m_points)}
 {
-    m_points = points_from_track(track, unison_phrases, squeeze_settings,
-                                 drum_settings, engine);
-    m_solo_boosts = solo_boosts_from_solos(track.solos(drum_settings),
-                                           track.global_data().tempo_map());
-    m_first_after_current_sp
-        = first_after_current_sp_vector(m_points, track, engine);
-    m_next_non_hold_point = next_non_hold_vector(m_points);
-    m_next_sp_granting_note = next_sp_note_vector(m_points);
-    m_cumulative_score_totals = score_totals(m_points);
-    m_colours = note_colours(track.notes(), m_points);
 }
 
 PointPtr PointSet::first_after_current_phrase(PointPtr point) const
