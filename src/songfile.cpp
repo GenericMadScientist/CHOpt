@@ -60,7 +60,7 @@ Song SongFile::load_song() const
         std::string_view chart_buffer {
             reinterpret_cast<const char*>(m_loaded_file.data()), // NOLINT
             m_loaded_file.size()};
-        return Song::from_chart(parse_chart(chart_buffer), m_ini_values);
+        return from_chart(parse_chart(chart_buffer), m_ini_values);
     }
     case FileType::Midi:
         return Song::from_midi(parse_midi(m_loaded_file), m_ini_values);

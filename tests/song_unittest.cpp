@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(chart_to_song_has_correct_value_for_is_from_midi)
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
 
     BOOST_TEST(!song.global_data().is_from_midi());
 }
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(default_is_192_resolution)
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
 
-    const auto global_data = Song::from_chart(chart, {}).global_data();
+    const auto global_data = from_chart(chart, {}).global_data();
     const auto resolution = global_data.resolution();
 
     BOOST_CHECK_EQUAL(resolution, 192);
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(default_is_overriden_by_specified_value)
     std::vector<ChartSection> sections {header, expert_single};
     const Chart chart {sections};
 
-    const auto global_data = Song::from_chart(chart, {}).global_data();
+    const auto global_data = from_chart(chart, {}).global_data();
     const auto resolution = global_data.resolution();
 
     BOOST_CHECK_EQUAL(resolution, 200);
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(bad_values_are_ignored)
     std::vector<ChartSection> sections {header, expert_single};
     const Chart chart {sections};
 
-    const auto global_data = Song::from_chart(chart, {}).global_data();
+    const auto global_data = from_chart(chart, {}).global_data();
     const auto resolution = global_data.resolution();
 
     BOOST_CHECK_EQUAL(resolution, 192);
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(chart_header_values_besides_resolution_are_discarded)
                                  {}};
     std::vector<ChartSection> sections {header_section, expert_single};
     const Chart chart {sections};
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
 
     BOOST_CHECK_NE(song.global_data().name(), "TestName");
     BOOST_CHECK_NE(song.global_data().artist(), "GMS");
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(ini_values_are_used_for_converting_from_chart_files)
     std::vector<ChartSection> sections {header_section, expert_single};
     const Chart chart {sections};
     const IniValues ini {"TestName", "GMS", "NotGMS"};
-    const auto song = Song::from_chart(chart, ini);
+    const auto song = from_chart(chart, ini);
 
     BOOST_CHECK_EQUAL(song.global_data().name(), "TestName");
     BOOST_CHECK_EQUAL(song.global_data().artist(), "GMS");
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(chart_reads_sync_track_correctly)
     std::vector<TimeSignature> time_sigs {{Tick {0}, 4, 4}, {Tick {768}, 4, 2}};
     std::vector<BPM> bpms {{Tick {0}, 200000}};
 
-    const auto global_data = Song::from_chart(chart, {}).global_data();
+    const auto global_data = from_chart(chart, {}).global_data();
     const auto& tempo_map = global_data.tempo_map();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(tempo_map.time_sigs().cbegin(),
@@ -147,8 +147,7 @@ BOOST_AUTO_TEST_CASE(large_time_sig_denominators_cause_an_exception)
     std::vector<ChartSection> sections {sync_track, expert_single};
     const Chart chart {sections};
 
-    BOOST_CHECK_THROW([&] { return Song::from_chart(chart, {}); }(),
-                      ParseError);
+    BOOST_CHECK_THROW([&] { return from_chart(chart, {}); }(), ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(chart_reads_easy_note_track_correctly)
@@ -160,7 +159,7 @@ BOOST_AUTO_TEST_CASE(chart_reads_easy_note_track_correctly)
     std::vector<Note> notes {make_note(768, 0, FIVE_FRET_GREEN)};
     std::vector<StarPower> sp_phrases {{Tick {768}, Tick {100}}};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& track = song.track(Instrument::Guitar, Difficulty::Easy);
 
     BOOST_CHECK_EQUAL(track.global_data().resolution(), 192);
@@ -179,7 +178,7 @@ BOOST_AUTO_TEST_CASE(invalid_note_values_are_ignored)
     const Chart chart {sections};
     std::vector<Note> notes {make_note(768, 0, FIVE_FRET_GREEN)};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& parsed_notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
@@ -202,7 +201,7 @@ BOOST_AUTO_TEST_CASE(sp_phrases_are_read_correctly_from_chart)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
 
     BOOST_TEST(song.track(Instrument::Guitar, Difficulty::Expert)
                    .sp_phrases()
@@ -218,7 +217,7 @@ BOOST_AUTO_TEST_CASE(non_note_sections_need_not_be_present)
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
 
-    BOOST_CHECK_NO_THROW([&] { return Song::from_chart(chart, {}); }());
+    BOOST_CHECK_NO_THROW([&] { return from_chart(chart, {}); }());
 }
 
 BOOST_AUTO_TEST_CASE(at_least_one_nonempty_note_section_must_be_present)
@@ -228,9 +227,8 @@ BOOST_AUTO_TEST_CASE(at_least_one_nonempty_note_section_must_be_present)
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
 
-    BOOST_CHECK_THROW([] { return Song::from_chart({}, {}); }(), ParseError);
-    BOOST_CHECK_THROW([&] { return Song::from_chart(chart, {}); }(),
-                      ParseError);
+    BOOST_CHECK_THROW([] { return from_chart({}, {}); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return from_chart(chart, {}); }(), ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
@@ -244,11 +242,10 @@ BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
     std::vector<Note> notes {make_note(768)};
     std::vector<BPM> expected_bpms {{Tick {0}, 200000}};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& parsed_notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
-    const auto bpms
-        = Song::from_chart(chart, {}).global_data().tempo_map().bpms();
+    const auto bpms = from_chart(chart, {}).global_data().tempo_map().bpms();
 
     BOOST_CHECK_EQUAL(song.global_data().resolution(), 200);
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_notes.cbegin(), parsed_notes.cend(),
@@ -271,7 +268,7 @@ BOOST_AUTO_TEST_CASE(later_nonempty_sections_are_ignored)
     const Chart chart {sections};
     std::vector<Note> notes {make_note(768, 0, FIVE_FRET_GREEN)};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& parsed_notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
@@ -288,7 +285,7 @@ BOOST_AUTO_TEST_CASE(leading_empty_sections_are_ignored)
     const Chart chart {sections};
     std::vector<Note> notes {make_note(768, 0, FIVE_FRET_RED)};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& parsed_notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
@@ -315,7 +312,7 @@ BOOST_AUTO_TEST_CASE(expected_solos_are_read_properly)
     std::vector<Solo> required_solos {{Tick {0}, Tick {200}, 100},
                                       {Tick {300}, Tick {400}, 200}};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
                                   .solos(DrumSettings::default_settings());
 
@@ -337,7 +334,7 @@ BOOST_AUTO_TEST_CASE(chords_are_not_counted_double)
     const Chart chart {sections};
     std::vector<Solo> required_solos {{Tick {0}, Tick {200}, 100}};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
                                   .solos(DrumSettings::default_settings());
 
@@ -354,7 +351,7 @@ BOOST_AUTO_TEST_CASE(empty_solos_are_ignored)
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
 
     BOOST_TEST(song.track(Instrument::Guitar, Difficulty::Expert)
                    .solos(DrumSettings::default_settings())
@@ -375,7 +372,7 @@ BOOST_AUTO_TEST_CASE(repeated_solo_starts_and_ends_dont_matter)
     const Chart chart {sections};
     std::vector<Solo> required_solos {{Tick {0}, Tick {200}, 100}};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
                                   .solos(DrumSettings::default_settings());
 
@@ -393,7 +390,7 @@ BOOST_AUTO_TEST_CASE(solo_markers_are_sorted)
     const Chart chart {sections};
     std::vector<Solo> required_solos {{Tick {0}, Tick {384}, 100}};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
                                   .solos(DrumSettings::default_settings());
 
@@ -409,7 +406,7 @@ BOOST_AUTO_TEST_CASE(solos_with_no_soloend_event_are_ignored)
     std::vector<ChartSection> sections {expert_single};
     const Chart chart {sections};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
 
     BOOST_TEST(song.track(Instrument::Guitar, Difficulty::Expert)
                    .solos(DrumSettings::default_settings())
@@ -427,7 +424,7 @@ BOOST_AUTO_TEST_CASE(instruments_returns_the_supported_instruments)
     const Chart chart {sections};
     std::vector<Instrument> instruments {Instrument::Guitar, Instrument::Drums};
 
-    const auto parsed_instruments = Song::from_chart(chart, {}).instruments();
+    const auto parsed_instruments = from_chart(chart, {}).instruments();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_instruments.cbegin(),
                                   parsed_instruments.cend(),
@@ -445,7 +442,7 @@ BOOST_AUTO_TEST_CASE(difficulties_returns_the_difficulties_for_an_instrument)
                                                  Difficulty::Expert};
     std::vector<Difficulty> drum_difficulties {Difficulty::Expert};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto guitar_diffs = song.difficulties(Instrument::Guitar);
     const auto drum_diffs = song.difficulties(Instrument::Drums);
 
@@ -466,7 +463,7 @@ BOOST_AUTO_TEST_CASE(guitar_coop_is_read)
     std::vector<ChartSection> sections {expert_double};
     const Chart chart {sections};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
 
     BOOST_CHECK_NO_THROW([&] {
         return song.track(Instrument::GuitarCoop, Difficulty::Expert);
@@ -480,7 +477,7 @@ BOOST_AUTO_TEST_CASE(bass_is_read)
     std::vector<ChartSection> sections {expert_double};
     const Chart chart {sections};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
 
     BOOST_CHECK_NO_THROW(
         [&] { return song.track(Instrument::Bass, Difficulty::Expert); }());
@@ -493,7 +490,7 @@ BOOST_AUTO_TEST_CASE(rhythm_is_read)
     std::vector<ChartSection> sections {expert_double};
     const Chart chart {sections};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
 
     BOOST_CHECK_NO_THROW(
         [&] { return song.track(Instrument::Rhythm, Difficulty::Expert); }());
@@ -506,7 +503,7 @@ BOOST_AUTO_TEST_CASE(keys_is_read)
     std::vector<ChartSection> sections {expert_double};
     const Chart chart {sections};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
 
     BOOST_CHECK_NO_THROW(
         [&] { return song.track(Instrument::Keys, Difficulty::Expert); }());
@@ -525,7 +522,7 @@ BOOST_AUTO_TEST_CASE(six_fret_guitar_is_read_correctly)
     std::vector<Note> notes {make_ghl_note(192, 0, SIX_FRET_WHITE_LOW),
                              make_ghl_note(384, 0, SIX_FRET_BLACK_LOW)};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& track = song.track(Instrument::GHLGuitar, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
@@ -541,7 +538,7 @@ BOOST_AUTO_TEST_CASE(six_fret_bass_is_read_correctly)
     std::vector<Note> notes {make_ghl_note(192, 0, SIX_FRET_WHITE_LOW),
                              make_ghl_note(384, 0, SIX_FRET_BLACK_LOW)};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& track = song.track(Instrument::GHLBass, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
@@ -566,7 +563,7 @@ BOOST_AUTO_TEST_CASE(drum_notes_are_read_correctly_from_chart)
                              make_drum_note(384, DRUM_YELLOW, FLAGS_CYMBAL),
                              make_drum_note(768, DRUM_DOUBLE_KICK)};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
@@ -588,7 +585,7 @@ BOOST_AUTO_TEST_CASE(dynamics_are_read_correctly_from_chart)
     std::vector<Note> notes {make_drum_note(192, DRUM_RED, FLAGS_ACCENT),
                              make_drum_note(384, DRUM_RED, FLAGS_GHOST)};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
@@ -607,7 +604,7 @@ BOOST_AUTO_TEST_CASE(drum_solos_are_read_correctly_from_chart)
     std::vector<ChartSection> sections {expert_drums};
     const Chart chart {sections};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL(track.solos(DrumSettings::default_settings())[0].value,
@@ -629,7 +626,7 @@ BOOST_AUTO_TEST_CASE(fifth_lane_notes_are_read_correctly_from_chart)
                              make_drum_note(384, DRUM_GREEN),
                              make_drum_note(384, DRUM_BLUE)};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
@@ -643,7 +640,7 @@ BOOST_AUTO_TEST_CASE(invalid_drum_notes_are_ignored)
     std::vector<ChartSection> sections {drums};
     const Chart chart {sections};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL(track.notes().size(), 1);
@@ -657,7 +654,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_read_from_chart)
     const Chart chart {sections};
     const DrumFill fill {Tick {192}, Tick {1}};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL(track.drum_fills().size(), 1);
@@ -673,7 +670,7 @@ BOOST_AUTO_TEST_CASE(disco_flips_are_read_from_chart)
     const Chart chart {sections};
     const DiscoFlip flip {Tick {100}, Tick {5}};
 
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
     BOOST_CHECK_EQUAL(track.disco_flips().size(), 1);
@@ -1465,7 +1462,7 @@ BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
         {{4096, 2, 100}}, {}};
     std::vector<ChartSection> sections {guitar, bass, drums};
     const Chart chart {sections};
-    const auto song = Song::from_chart(chart, {});
+    const auto song = from_chart(chart, {});
 
     const std::vector<Tick> expected_unison_phrases {Tick {768}};
     const std::vector<Tick> unison_phrases = song.unison_phrase_positions();
@@ -1486,7 +1483,7 @@ BOOST_AUTO_TEST_CASE(song_name_is_updated)
     std::vector<ChartSection> sections {sync_track, expert_single};
     const Chart chart {sections};
     const IniValues ini {"TestName", "GMS", "NotGMS"};
-    auto song = Song::from_chart(chart, ini);
+    auto song = from_chart(chart, ini);
 
     song.speedup(200);
 
@@ -1502,7 +1499,7 @@ BOOST_AUTO_TEST_CASE(song_name_is_unaffected_by_normal_speed)
     std::vector<ChartSection> sections {sync_track, expert_single};
     const Chart chart {sections};
     const IniValues ini {"TestName", "GMS", "NotGMS"};
-    auto song = Song::from_chart(chart, ini);
+    auto song = from_chart(chart, ini);
 
     song.speedup(100);
 
@@ -1518,7 +1515,7 @@ BOOST_AUTO_TEST_CASE(tempo_map_affected_by_speedup)
     std::vector<ChartSection> sections {sync_track, expert_single};
     const Chart chart {sections};
     const IniValues ini {"TestName", "GMS", "NotGMS"};
-    auto song = Song::from_chart(chart, ini);
+    auto song = from_chart(chart, ini);
 
     song.speedup(200);
     const auto& tempo_map = song.global_data().tempo_map();
@@ -1535,7 +1532,7 @@ BOOST_AUTO_TEST_CASE(throws_on_negative_speeds)
     std::vector<ChartSection> sections {sync_track, expert_single};
     const Chart chart {sections};
     const IniValues ini {"TestName", "GMS", "NotGMS"};
-    auto song = Song::from_chart(chart, ini);
+    auto song = from_chart(chart, ini);
 
     BOOST_CHECK_THROW([&] { song.speedup(-100); }(), std::invalid_argument);
 }
@@ -1549,7 +1546,7 @@ BOOST_AUTO_TEST_CASE(throws_on_zero_speed)
     std::vector<ChartSection> sections {sync_track, expert_single};
     const Chart chart {sections};
     const IniValues ini {"TestName", "GMS", "NotGMS"};
-    auto song = Song::from_chart(chart, ini);
+    auto song = from_chart(chart, ini);
 
     BOOST_CHECK_THROW([&] { song.speedup(0); }(), std::invalid_argument);
 }

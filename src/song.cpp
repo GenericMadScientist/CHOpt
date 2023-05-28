@@ -1322,6 +1322,14 @@ std::vector<Tick> od_beats_from_track(const MidiTrack& track)
 }
 }
 
+void Song::add_note_track(Instrument instrument, Difficulty difficulty,
+                          NoteTrack note_track)
+{
+    if (!note_track.notes().empty()) {
+        m_tracks.insert({{instrument, difficulty}, std::move(note_track)});
+    }
+}
+
 std::vector<Instrument> Song::instruments() const
 {
     std::set<Instrument> instrument_set;
@@ -1347,50 +1355,43 @@ std::vector<Difficulty> Song::difficulties(Instrument instrument) const
     return difficulties;
 }
 
-void Song::append_instrument_track(Instrument inst, Difficulty diff,
-                                   const ChartSection& section)
-{
-    auto note_track = note_track_from_section(section, m_global_data,
-                                              track_type_from_instrument(inst));
-    if (!note_track.notes().empty()) {
-        m_tracks.insert({{inst, diff}, note_track});
-    }
-}
-
-Song Song::from_chart(const Chart& chart, const IniValues& ini)
+Song from_chart(const Chart& chart, const IniValues& ini)
 {
     Song song;
 
-    song.m_global_data->is_from_midi(false);
-    song.m_global_data->name(ini.name);
-    song.m_global_data->artist(ini.artist);
-    song.m_global_data->charter(ini.charter);
+    song.global_data().is_from_midi(false);
+    song.global_data().name(ini.name);
+    song.global_data().artist(ini.artist);
+    song.global_data().charter(ini.charter);
 
     for (const auto& section : chart.sections) {
         if (section.name == "Song") {
             try {
                 const auto resolution = std::stoi(get_with_default(
                     section.key_value_pairs, "Resolution", "192"));
-                song.m_global_data->resolution(resolution);
+                song.global_data().resolution(resolution);
             } catch (const std::invalid_argument&) {
                 // CH just ignores this kind of parsing mistake.
                 // TODO: Use from_chars instead to avoid having to use
                 // exceptions as control flow.
             }
         } else if (section.name == "SyncTrack") {
-            song.m_global_data->tempo_map(tempo_map_from_section(
-                section, song.m_global_data->resolution()));
+            song.global_data().tempo_map(tempo_map_from_section(
+                section, song.global_data().resolution()));
         } else {
             auto pair = diff_inst_from_header(section.name);
             if (!pair.has_value()) {
                 continue;
             }
             auto [diff, inst] = *pair;
-            song.append_instrument_track(inst, diff, section);
+            auto note_track
+                = note_track_from_section(section, song.global_data_ptr(),
+                                          track_type_from_instrument(inst));
+            song.add_note_track(inst, diff, std::move(note_track));
         }
     }
 
-    if (song.m_tracks.empty()) {
+    if (song.instruments().empty()) {
         throw ParseError("Chart has no notes");
     }
 

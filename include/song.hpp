@@ -31,24 +31,25 @@
 #include "midi.hpp"
 #include "songparts.hpp"
 
-// Invariants:
-// resolution() > 0.
 class Song {
 private:
     std::shared_ptr<SongGlobalData> m_global_data
         = std::make_shared<SongGlobalData>();
     std::map<std::tuple<Instrument, Difficulty>, NoteTrack> m_tracks;
-    Song() = default;
-    void append_instrument_track(Instrument inst, Difficulty diff,
-                                 const ChartSection& section);
 
 public:
-    static Song from_chart(const Chart& chart, const IniValues& ini);
+    Song() = default;
     static Song from_midi(const Midi& midi, const IniValues& ini);
+    void add_note_track(Instrument instrument, Difficulty difficulty,
+                        NoteTrack note_track);
     [[nodiscard]] SongGlobalData& global_data() { return *m_global_data; }
     [[nodiscard]] const SongGlobalData& global_data() const
     {
         return *m_global_data;
+    }
+    [[nodiscard]] const std::shared_ptr<SongGlobalData>& global_data_ptr()
+    {
+        return m_global_data;
     }
     [[nodiscard]] std::vector<Instrument> instruments() const;
     [[nodiscard]] std::vector<Difficulty>
@@ -58,5 +59,7 @@ public:
     [[nodiscard]] std::vector<Tick> unison_phrase_positions() const;
     void speedup(int speed);
 };
+
+Song from_chart(const Chart& chart, const IniValues& ini);
 
 #endif
