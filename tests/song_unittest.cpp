@@ -807,7 +807,7 @@ BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
         {{4096, 2, 100}}, {}};
     std::vector<ChartSection> sections {guitar, bass, drums};
     const Chart chart {sections};
-    const auto song = ChartParser().parse(chart, {});
+    const auto song = ChartParser({}).parse(chart);
 
     const std::vector<Tick> expected_unison_phrases {Tick {768}};
     const std::vector<Tick> unison_phrases = song.unison_phrase_positions();

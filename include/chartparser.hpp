@@ -19,14 +19,21 @@
 #ifndef CHOPT_CHARTPARSER_HPP
 #define CHOPT_CHARTPARSER_HPP
 
+#include <string>
+
 #include "chart.hpp"
 #include "ini.hpp"
 #include "song.hpp"
 
 class ChartParser {
+private:
+    std::string m_song_name;
+    std::string m_artist;
+    std::string m_charter;
+
 public:
-    ChartParser() = default;
-    Song parse(const Chart& chart, const IniValues& ini) const;
+    ChartParser(const IniValues& ini);
+    Song parse(const Chart& chart) const;
 };
 
 #endif

@@ -427,14 +427,21 @@ TrackType track_type_from_instrument(Instrument instrument)
 }
 }
 
-Song ChartParser::parse(const Chart& chart, const IniValues& ini) const
+ChartParser::ChartParser(const IniValues& ini)
+    : m_song_name {ini.name}
+    , m_artist {ini.artist}
+    , m_charter {ini.charter}
+{
+}
+
+Song ChartParser::parse(const Chart& chart) const
 {
     Song song;
 
     song.global_data().is_from_midi(false);
-    song.global_data().name(ini.name);
-    song.global_data().artist(ini.artist);
-    song.global_data().charter(ini.charter);
+    song.global_data().name(m_song_name);
+    song.global_data().artist(m_artist);
+    song.global_data().charter(m_charter);
 
     for (const auto& section : chart.sections) {
         if (section.name == "Song") {

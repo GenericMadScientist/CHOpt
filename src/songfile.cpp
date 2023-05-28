@@ -61,8 +61,8 @@ Song SongFile::load_song() const
         std::string_view chart_buffer {
             reinterpret_cast<const char*>(m_loaded_file.data()), // NOLINT
             m_loaded_file.size()};
-        ChartParser parser;
-        return parser.parse(parse_chart(chart_buffer), m_ini_values);
+        ChartParser parser {m_ini_values};
+        return parser.parse(parse_chart(chart_buffer));
     }
     case FileType::Midi:
         return from_midi(parse_midi(m_loaded_file), m_ini_values);
