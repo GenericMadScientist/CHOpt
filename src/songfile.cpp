@@ -22,6 +22,7 @@
 #include <boost/nowide/fstream.hpp>
 
 #include "chartparser.hpp"
+#include "midiparser.hpp"
 #include "songfile.hpp"
 #include "stringutil.hpp"
 
@@ -65,7 +66,8 @@ Song SongFile::load_song() const
         return parser.parse(parse_chart(chart_buffer));
     }
     case FileType::Midi:
-        return from_midi(parse_midi(m_loaded_file), m_ini_values);
+        MidiParser parser {m_ini_values};
+        return parser.parse(parse_midi(m_loaded_file));
     }
     throw std::runtime_error("Invalid file type");
 }
