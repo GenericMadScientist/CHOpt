@@ -17,16 +17,12 @@
  */
 
 #include <algorithm>
-#include <climits>
-#include <iterator>
-#include <limits>
-#include <optional>
 #include <set>
 #include <stdexcept>
-#include <type_traits>
+#include <string>
+#include <utility>
 
 #include "song.hpp"
-#include "stringutil.hpp"
 
 namespace {
 bool is_six_fret_instrument(Instrument instrument)

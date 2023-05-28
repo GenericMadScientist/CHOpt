@@ -21,15 +21,12 @@
 
 #include <map>
 #include <memory>
-#include <string>
 #include <tuple>
-#include <utility>
 #include <vector>
 
-#include "chart.hpp"
-#include "ini.hpp"
-#include "midi.hpp"
+#include "settings.hpp"
 #include "songparts.hpp"
+#include "time.hpp"
 
 class Song {
 private:
