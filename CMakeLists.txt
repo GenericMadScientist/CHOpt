@@ -54,6 +54,7 @@ add_executable(
   chopt
   src/main.cpp
   src/chart.cpp
+  src/chartparser.cpp
   src/image.cpp
   src/imagebuilder.cpp
   src/ini.cpp
@@ -105,6 +106,7 @@ if(BUILD_GUI)
     gui/mainwindow.cpp
     gui/mainwindow.ui
     src/chart.cpp
+    src/chartparser.cpp
     src/image.cpp
     src/imagebuilder.cpp
     src/ini.cpp
@@ -164,6 +166,7 @@ if(PACKAGE_TESTS)
     tests/tempomap_unittest.cpp
     tests/time_unittest.cpp
     src/chart.cpp
+    src/chartparser.cpp
     src/imagebuilder.cpp
     src/ini.cpp
     src/midi.cpp
