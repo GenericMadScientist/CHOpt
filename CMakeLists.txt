@@ -159,6 +159,7 @@ if(PACKAGE_TESTS)
     tests/imagebuilder_unittest.cpp
     tests/ini_unittest.cpp
     tests/midi_unittest.cpp
+    tests/midiparser_unittest.cpp
     tests/optimiser_unittest.cpp
     tests/points_unittest.cpp
     tests/processed_unittest.cpp
