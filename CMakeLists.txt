@@ -153,6 +153,7 @@ if(PACKAGE_TESTS)
     chopt_tests
     tests/test_main.cpp
     tests/chart_unittest.cpp
+    tests/chartparser_unittest.cpp
     tests/imagebuilder_unittest.cpp
     tests/ini_unittest.cpp
     tests/midi_unittest.cpp
