@@ -35,7 +35,7 @@ private:
     Song from_chart(const Chart& chart) const;
 
 public:
-    ChartParser(const IniValues& ini);
+    explicit ChartParser(const IniValues& ini);
     Song parse(std::string_view data) const;
 };
 

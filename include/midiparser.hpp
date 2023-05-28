@@ -32,7 +32,7 @@ private:
     std::string m_charter;
 
 public:
-    MidiParser(const IniValues& ini);
+    explicit MidiParser(const IniValues& ini);
     Song parse(const Midi& midi) const;
 };
 
