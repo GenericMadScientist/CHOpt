@@ -20,6 +20,7 @@
 #define CHOPT_CHARTPARSER_HPP
 
 #include <string>
+#include <string_view>
 
 #include "chart.hpp"
 #include "ini.hpp"
@@ -31,9 +32,11 @@ private:
     std::string m_artist;
     std::string m_charter;
 
+    Song from_chart(const Chart& chart) const;
+
 public:
     ChartParser(const IniValues& ini);
-    Song parse(const Chart& chart) const;
+    Song parse(std::string_view data) const;
 };
 
 #endif

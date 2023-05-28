@@ -377,7 +377,12 @@ ChartParser::ChartParser(const IniValues& ini)
 {
 }
 
-Song ChartParser::parse(const Chart& chart) const
+Song ChartParser::parse(std::string_view data) const
+{
+    return from_chart(parse_chart(data));
+}
+
+Song ChartParser::from_chart(const Chart& chart) const
 {
     Song song;
 

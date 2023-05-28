@@ -63,7 +63,7 @@ Song SongFile::load_song() const
             reinterpret_cast<const char*>(m_loaded_file.data()), // NOLINT
             m_loaded_file.size()};
         ChartParser parser {m_ini_values};
-        return parser.parse(parse_chart(chart_buffer));
+        return parser.parse(chart_buffer);
     }
     case FileType::Midi:
         MidiParser parser {m_ini_values};
