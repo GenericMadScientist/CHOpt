@@ -63,7 +63,7 @@ Song SongFile::load_song() const
         return from_chart(parse_chart(chart_buffer), m_ini_values);
     }
     case FileType::Midi:
-        return Song::from_midi(parse_midi(m_loaded_file), m_ini_values);
+        return from_midi(parse_midi(m_loaded_file), m_ini_values);
     }
     throw std::runtime_error("Invalid file type");
 }

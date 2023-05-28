@@ -1398,7 +1398,7 @@ Song from_chart(const Chart& chart, const IniValues& ini)
     return song;
 }
 
-Song Song::from_midi(const Midi& midi, const IniValues& ini)
+Song from_midi(const Midi& midi, const IniValues& ini)
 {
     if (midi.ticks_per_quarter_note == 0) {
         throw ParseError("Resolution must be > 0");
@@ -1406,17 +1406,17 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
 
     Song song;
 
-    song.m_global_data->is_from_midi(true);
-    song.m_global_data->resolution(midi.ticks_per_quarter_note);
-    song.m_global_data->name(ini.name);
-    song.m_global_data->artist(ini.artist);
-    song.m_global_data->charter(ini.charter);
+    song.global_data().is_from_midi(true);
+    song.global_data().resolution(midi.ticks_per_quarter_note);
+    song.global_data().name(ini.name);
+    song.global_data().artist(ini.artist);
+    song.global_data().charter(ini.charter);
 
     if (midi.tracks.empty()) {
         return song;
     }
 
-    song.m_global_data->tempo_map(
+    song.global_data().tempo_map(
         read_first_midi_track(midi.tracks[0], midi.ticks_per_quarter_note));
 
     for (const auto& track : midi.tracks) {
@@ -1425,39 +1425,39 @@ Song Song::from_midi(const Midi& midi, const IniValues& ini)
             continue;
         }
         if (*track_name == "BEAT") {
-            song.m_global_data->od_beats(od_beats_from_track(track));
+            song.global_data().od_beats(od_beats_from_track(track));
         }
         const auto inst = midi_section_instrument(*track_name);
         if (!inst.has_value()) {
             continue;
         }
         if (is_six_fret_instrument(*inst)) {
-            auto tracks = ghl_note_tracks_from_midi(track, song.m_global_data);
+            auto tracks
+                = ghl_note_tracks_from_midi(track, song.global_data_ptr());
             for (auto& [diff, note_track] : tracks) {
-                song.m_tracks.emplace(std::tuple {*inst, diff},
-                                      std::move(note_track));
+                song.add_note_track(*inst, diff, std::move(note_track));
             }
         } else if (*inst == Instrument::Drums) {
-            auto tracks = drum_note_tracks_from_midi(track, song.m_global_data);
+            auto tracks
+                = drum_note_tracks_from_midi(track, song.global_data_ptr());
             for (auto& [diff, note_track] : tracks) {
-                song.m_tracks.emplace(std::tuple {Instrument::Drums, diff},
-                                      std::move(note_track));
+                song.add_note_track(Instrument::Drums, diff,
+                                    std::move(note_track));
             }
         } else {
-            auto tracks = note_tracks_from_midi(track, song.m_global_data);
+            auto tracks = note_tracks_from_midi(track, song.global_data_ptr());
             for (auto& [diff, note_track] : tracks) {
-                song.m_tracks.emplace(std::tuple {*inst, diff},
-                                      std::move(note_track));
+                song.add_note_track(*inst, diff, std::move(note_track));
             }
         }
     }
 
-    const auto& od_beats = song.m_global_data->od_beats();
+    const auto& od_beats = song.global_data().od_beats();
     if (!od_beats.empty()) {
-        auto old_tempo_map = song.m_global_data->tempo_map();
+        auto old_tempo_map = song.global_data().tempo_map();
         TempoMap new_tempo_map {old_tempo_map.time_sigs(), old_tempo_map.bpms(),
                                 od_beats, midi.ticks_per_quarter_note};
-        song.m_global_data->tempo_map(new_tempo_map);
+        song.global_data().tempo_map(new_tempo_map);
     }
 
     return song;

@@ -39,7 +39,6 @@ private:
 
 public:
     Song() = default;
-    static Song from_midi(const Midi& midi, const IniValues& ini);
     void add_note_track(Instrument instrument, Difficulty difficulty,
                         NoteTrack note_track);
     [[nodiscard]] SongGlobalData& global_data() { return *m_global_data; }
@@ -61,5 +60,6 @@ public:
 };
 
 Song from_chart(const Chart& chart, const IniValues& ini);
+Song from_midi(const Midi& midi, const IniValues& ini);
 
 #endif
