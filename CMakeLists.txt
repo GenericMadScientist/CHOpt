@@ -61,6 +61,7 @@ add_executable(
   src/midi.cpp
   src/midiparser.cpp
   src/optimiser.cpp
+  src/parserutil.cpp
   src/points.cpp
   src/processed.cpp
   src/settings.cpp
@@ -114,6 +115,7 @@ if(BUILD_GUI)
     src/midi.cpp
     src/midiparser.cpp
     src/optimiser.cpp
+    src/parserutil.cpp
     src/points.cpp
     src/processed.cpp
     src/song.cpp
@@ -176,6 +178,7 @@ if(PACKAGE_TESTS)
     src/midi.cpp
     src/midiparser.cpp
     src/optimiser.cpp
+    src/parserutil.cpp
     src/points.cpp
     src/processed.cpp
     src/song.cpp

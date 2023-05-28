@@ -21,6 +21,7 @@
 #include <set>
 
 #include "midiparser.hpp"
+#include "parserutil.hpp"
 
 namespace {
 TempoMap read_first_midi_track(const MidiTrack& track, int resolution)
@@ -127,12 +128,6 @@ std::optional<Instrument> midi_section_instrument(const std::string& track_name)
         return std::nullopt;
     }
     return iter->second;
-}
-
-bool is_six_fret_instrument(Instrument instrument)
-{
-    return instrument == Instrument::GHLGuitar
-        || instrument == Instrument::GHLBass;
 }
 
 bool is_five_lane_green_note(const TimedEvent& event)
@@ -337,32 +332,6 @@ NoteFlags dynamics_flags_from_velocity(std::uint8_t velocity)
     return static_cast<NoteFlags>(0);
 }
 
-// Takes a sequence of points where some note type/event is turned on, and a
-// sequence where said type is turned off, and returns a tuple of intervals
-// where the event is on.
-std::vector<std::tuple<Tick, Tick>>
-combine_solo_events(const std::vector<int>& on_events,
-                    const std::vector<int>& off_events)
-{
-    std::vector<std::tuple<Tick, Tick>> ranges;
-
-    auto on_iter = on_events.cbegin();
-    auto off_iter = off_events.cbegin();
-
-    while (on_iter < on_events.cend() && off_iter < off_events.cend()) {
-        if (*on_iter >= *off_iter) {
-            ++off_iter;
-            continue;
-        }
-        ranges.emplace_back(*on_iter, *off_iter);
-        while (on_iter < on_events.cend() && *on_iter < *off_iter) {
-            ++on_iter;
-        }
-    }
-
-    return ranges;
-}
-
 // Like combine_solo_events, but never skips on events to suit Midi parsing and
 // checks if there is an unmatched on event.
 // The tuples are a pair of the form (position, rank), where events later in the
@@ -392,38 +361,6 @@ combine_note_on_off_events(const std::vector<std::tuple<int, int>>& on_events,
     }
 
     return ranges;
-}
-
-std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
-                                   const std::vector<int>& solo_off_events,
-                                   const std::vector<Note>& notes,
-                                   TrackType track_type, bool is_midi)
-{
-    constexpr int SOLO_NOTE_VALUE = 100;
-
-    std::vector<Solo> solos;
-
-    for (auto [start, end] :
-         combine_solo_events(solo_on_events, solo_off_events)) {
-        std::set<Tick> positions_in_solo;
-        auto note_count = 0;
-        for (const auto& note : notes) {
-            if ((note.position >= start && note.position < end)
-                || (note.position == end && !is_midi)) {
-                positions_in_solo.insert(note.position);
-                ++note_count;
-            }
-        }
-        if (positions_in_solo.empty()) {
-            continue;
-        }
-        if (track_type != TrackType::Drums) {
-            note_count = static_cast<int>(positions_in_solo.size());
-        }
-        solos.push_back({start, end, SOLO_NOTE_VALUE * note_count});
-    }
-
-    return solos;
 }
 
 struct InstrumentMidiTrack {

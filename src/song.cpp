@@ -22,15 +22,8 @@
 #include <string>
 #include <utility>
 
+#include "parserutil.hpp"
 #include "song.hpp"
-
-namespace {
-bool is_six_fret_instrument(Instrument instrument)
-{
-    return instrument == Instrument::GHLGuitar
-        || instrument == Instrument::GHLBass;
-}
-}
 
 void Song::add_note_track(Instrument instrument, Difficulty difficulty,
                           NoteTrack note_track)

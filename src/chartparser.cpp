@@ -20,6 +20,7 @@
 #include <set>
 
 #include "chartparser.hpp"
+#include "parserutil.hpp"
 #include "stringutil.hpp"
 
 namespace {
@@ -265,64 +266,6 @@ apply_dynamics_events(std::vector<Note> notes,
         }
     }
     return notes;
-}
-
-// Takes a sequence of points where some note type/event is turned on, and a
-// sequence where said type is turned off, and returns a tuple of intervals
-// where the event is on.
-std::vector<std::tuple<Tick, Tick>>
-combine_solo_events(const std::vector<int>& on_events,
-                    const std::vector<int>& off_events)
-{
-    std::vector<std::tuple<Tick, Tick>> ranges;
-
-    auto on_iter = on_events.cbegin();
-    auto off_iter = off_events.cbegin();
-
-    while (on_iter < on_events.cend() && off_iter < off_events.cend()) {
-        if (*on_iter >= *off_iter) {
-            ++off_iter;
-            continue;
-        }
-        ranges.emplace_back(*on_iter, *off_iter);
-        while (on_iter < on_events.cend() && *on_iter < *off_iter) {
-            ++on_iter;
-        }
-    }
-
-    return ranges;
-}
-
-std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
-                                   const std::vector<int>& solo_off_events,
-                                   const std::vector<Note>& notes,
-                                   TrackType track_type, bool is_midi)
-{
-    constexpr int SOLO_NOTE_VALUE = 100;
-
-    std::vector<Solo> solos;
-
-    for (auto [start, end] :
-         combine_solo_events(solo_on_events, solo_off_events)) {
-        std::set<Tick> positions_in_solo;
-        auto note_count = 0;
-        for (const auto& note : notes) {
-            if ((note.position >= start && note.position < end)
-                || (note.position == end && !is_midi)) {
-                positions_in_solo.insert(note.position);
-                ++note_count;
-            }
-        }
-        if (positions_in_solo.empty()) {
-            continue;
-        }
-        if (track_type != TrackType::Drums) {
-            note_count = static_cast<int>(positions_in_solo.size());
-        }
-        solos.push_back({start, end, SOLO_NOTE_VALUE * note_count});
-    }
-
-    return solos;
 }
 
 NoteTrack note_track_from_section(const ChartSection& section,
