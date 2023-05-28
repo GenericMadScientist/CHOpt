@@ -59,7 +59,6 @@ public:
     void speedup(int speed);
 };
 
-Song from_chart(const Chart& chart, const IniValues& ini);
 Song from_midi(const Midi& midi, const IniValues& ini);
 
 #endif

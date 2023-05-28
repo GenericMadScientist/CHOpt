@@ -21,6 +21,7 @@
 
 #include <boost/nowide/fstream.hpp>
 
+#include "chartparser.hpp"
 #include "songfile.hpp"
 #include "stringutil.hpp"
 
@@ -60,7 +61,8 @@ Song SongFile::load_song() const
         std::string_view chart_buffer {
             reinterpret_cast<const char*>(m_loaded_file.data()), // NOLINT
             m_loaded_file.size()};
-        return from_chart(parse_chart(chart_buffer), m_ini_values);
+        ChartParser parser;
+        return parser.parse(parse_chart(chart_buffer), m_ini_values);
     }
     case FileType::Midi:
         return from_midi(parse_midi(m_loaded_file), m_ini_values);

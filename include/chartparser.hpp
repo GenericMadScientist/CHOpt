@@ -26,7 +26,7 @@
 class ChartParser {
 public:
     ChartParser() = default;
-    Song parse_chart(const Chart& chart, const IniValues& ini) const;
+    Song parse(const Chart& chart, const IniValues& ini) const;
 };
 
 #endif
