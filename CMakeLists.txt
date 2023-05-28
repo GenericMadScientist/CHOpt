@@ -59,6 +59,7 @@ add_executable(
   src/imagebuilder.cpp
   src/ini.cpp
   src/midi.cpp
+  src/midiparser.cpp
   src/optimiser.cpp
   src/points.cpp
   src/processed.cpp
@@ -111,6 +112,7 @@ if(BUILD_GUI)
     src/imagebuilder.cpp
     src/ini.cpp
     src/midi.cpp
+    src/midiparser.cpp
     src/optimiser.cpp
     src/points.cpp
     src/processed.cpp
@@ -171,6 +173,7 @@ if(PACKAGE_TESTS)
     src/imagebuilder.cpp
     src/ini.cpp
     src/midi.cpp
+    src/midiparser.cpp
     src/optimiser.cpp
     src/points.cpp
     src/processed.cpp
