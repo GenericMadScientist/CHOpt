@@ -22,34 +22,112 @@
 #include "song.hpp"
 #include "test_helpers.hpp"
 
+BOOST_AUTO_TEST_CASE(instruments_returns_the_supported_instruments)
+{
+    NoteTrack guitar_track {{make_note(192)},
+                            {},
+                            {},
+                            {},
+                            {},
+                            {},
+                            TrackType::FiveFret,
+                            std::make_shared<SongGlobalData>()};
+    NoteTrack drum_track {{make_drum_note(192)},
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::Drums,
+                          std::make_shared<SongGlobalData>()};
+    Song song;
+    song.add_note_track(Instrument::Guitar, Difficulty::Expert, guitar_track);
+    song.add_note_track(Instrument::Drums, Difficulty::Expert, drum_track);
+
+    std::vector<Instrument> instruments {Instrument::Guitar, Instrument::Drums};
+
+    const auto parsed_instruments = song.instruments();
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(parsed_instruments.cbegin(),
+                                  parsed_instruments.cend(),
+                                  instruments.cbegin(), instruments.cend());
+}
+
+BOOST_AUTO_TEST_CASE(difficulties_returns_the_difficulties_for_an_instrument)
+{
+    NoteTrack guitar_track {{make_note(192)},
+                            {},
+                            {},
+                            {},
+                            {},
+                            {},
+                            TrackType::FiveFret,
+                            std::make_shared<SongGlobalData>()};
+    NoteTrack drum_track {{make_drum_note(192)},
+                          {},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::Drums,
+                          std::make_shared<SongGlobalData>()};
+    Song song;
+    song.add_note_track(Instrument::Guitar, Difficulty::Expert, guitar_track);
+    song.add_note_track(Instrument::Guitar, Difficulty::Hard, guitar_track);
+    song.add_note_track(Instrument::Drums, Difficulty::Expert, drum_track);
+
+    std::vector<Difficulty> guitar_difficulties {Difficulty::Hard,
+                                                 Difficulty::Expert};
+    std::vector<Difficulty> drum_difficulties {Difficulty::Expert};
+
+    const auto guitar_diffs = song.difficulties(Instrument::Guitar);
+    const auto drum_diffs = song.difficulties(Instrument::Drums);
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(guitar_diffs.cbegin(), guitar_diffs.cend(),
+                                  guitar_difficulties.cbegin(),
+                                  guitar_difficulties.cend());
+    BOOST_CHECK_EQUAL_COLLECTIONS(drum_diffs.cbegin(), drum_diffs.cend(),
+                                  drum_difficulties.cbegin(),
+                                  drum_difficulties.cend());
+}
+
 BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
 {
-    ChartSection guitar {"ExpertSingle",
-                         {},
-                         {},
-                         {},
-                         {{768, 0, 0}, {1024, 0, 0}},
-                         {{768, 2, 100}, {1024, 2, 100}},
-                         {}};
+    NoteTrack guitar_track {
+        {make_note(768), make_note(1024)},
+        {{Tick {768}, Tick {100}}, {Tick {1024}, Tick {100}}},
+        {},
+        {},
+        {},
+        {},
+        TrackType::FiveFret,
+        std::make_shared<SongGlobalData>()};
     // Note the first phrase has a different length than the other instruments.
     // It should still be a unison phrase: this happens in Roundabout, with the
     // key phrases being a slightly different length.
-    ChartSection bass {"ExpertDoubleBass",
-                       {},
-                       {},
-                       {},
-                       {{768, 0, 0}, {2048, 0, 0}},
-                       {{768, 2, 99}, {2048, 2, 100}},
-                       {}};
+    NoteTrack bass_track {{make_note(768), make_note(2048)},
+                          {{Tick {768}, Tick {99}}, {Tick {2048}, Tick {100}}},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
     // The 768 phrase is absent for drums: this is to test that unison bonuses
     // can apply when at least 2 instruments have the phrase. This happens with
     // the first phrase on RB3 Last Dance guitar, the phrase is missing on bass.
-    ChartSection drums {
-        "ExpertDrums",    {}, {}, {}, {{768, 0, 0}, {4096, 0, 0}},
-        {{4096, 2, 100}}, {}};
-    std::vector<ChartSection> sections {guitar, bass, drums};
-    const Chart chart {sections};
-    const auto song = ChartParser({}).parse(chart);
+    NoteTrack drum_track {{make_drum_note(768), make_drum_note(4096)},
+                          {{Tick {4096}, Tick {100}}},
+                          {},
+                          {},
+                          {},
+                          {},
+                          TrackType::FiveFret,
+                          std::make_shared<SongGlobalData>()};
+    Song song;
+    song.add_note_track(Instrument::Guitar, Difficulty::Expert, guitar_track);
+    song.add_note_track(Instrument::Bass, Difficulty::Expert, bass_track);
+    song.add_note_track(Instrument::Drums, Difficulty::Expert, drum_track);
 
     const std::vector<Tick> expected_unison_phrases {Tick {768}};
     const std::vector<Tick> unison_phrases = song.unison_phrase_positions();
