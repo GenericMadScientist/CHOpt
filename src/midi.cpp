@@ -24,70 +24,23 @@
 #include "songparts.hpp"
 
 namespace {
-class ByteSpan {
-private:
-    using Iter = std::span<const std::uint8_t>::iterator;
-    static constexpr std::size_t MAX_SIZE = static_cast<std::size_t>(-1);
-    Iter m_begin;
-    Iter m_end;
-    std::size_t m_size;
-    ByteSpan(Iter begin, Iter end)
-        : m_begin {begin}
-        , m_end {end}
-        , m_size {static_cast<std::size_t>(m_end - m_begin)}
-    {
-    }
-
-public:
-    explicit ByteSpan(std::span<const std::uint8_t> data)
-        : m_begin {data.begin()}
-        , m_end {data.end()}
-        , m_size {data.size()}
-    {
-    }
-
-    [[nodiscard]] Iter begin() const { return m_begin; }
-    [[nodiscard]] Iter end() const { return m_end; }
-    [[nodiscard]] std::size_t size() const { return m_size; }
-
-    std::uint8_t operator[](std::size_t index) const
-    {
-        if (index >= m_size) {
-            throw ParseError("index too large");
-        }
-        return *(m_begin + static_cast<std::ptrdiff_t>(index));
-    }
-
-    // Returns the subspan starting at offset of size count. Throws an exception
-    // if offset is OOB. If count is -1, then returns the rest of the span, else
-    // if count would go OOB then an exception is thrown.
-    [[nodiscard]] ByteSpan subspan(std::size_t offset,
-                                   std::size_t count = MAX_SIZE) const
-    {
-        if (offset > m_size) {
-            throw ParseError("offset would be OOB");
-        }
-        if (count == MAX_SIZE) {
-            return ByteSpan {m_begin + static_cast<std::ptrdiff_t>(offset),
-                             m_end};
-        }
-        if (count > m_size - offset) {
-            throw ParseError("count is too large");
-        }
-        return ByteSpan {m_begin + static_cast<std::ptrdiff_t>(offset),
-                         m_begin + static_cast<std::ptrdiff_t>(offset + count)};
-    }
-};
+void throw_on_insufficient_bytes() { throw ParseError("insufficient bytes"); }
 
 // Read a two byte big endian number from the specified offset.
-int read_two_byte_be(ByteSpan span, std::size_t offset)
+int read_two_byte_be(std::span<const std::uint8_t> span, std::size_t offset)
 {
+    if (span.size() < offset + 2) {
+        throw_on_insufficient_bytes();
+    }
     return span[offset] << CHAR_BIT | span[offset + 1];
 }
 
 // Read a four byte big endian number from the specified offset.
-int read_four_byte_be(ByteSpan span, std::size_t offset)
+int read_four_byte_be(std::span<const std::uint8_t> span, std::size_t offset)
 {
+    if (span.size() < offset + 4) {
+        throw_on_insufficient_bytes();
+    }
     return span[offset] << (3 * CHAR_BIT) | span[offset + 1] << (2 * CHAR_BIT)
         | span[offset + 2] << CHAR_BIT | span[offset + 3];
 }
@@ -97,7 +50,7 @@ struct MidiHeader {
     int num_of_tracks;
 };
 
-ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
+MidiHeader read_midi_header(std::span<const std::uint8_t>& data)
 {
     constexpr std::array<std::uint8_t, 10> MAGIC_NUMBER {
         0x4D, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1};
@@ -106,57 +59,72 @@ ByteSpan read_midi_header(ByteSpan span, MidiHeader& header)
     constexpr int TICKS_OFFSET = 12;
     constexpr int TRACK_COUNT_OFFSET = 10;
 
-    const auto first_ten_bytes = span.subspan(0, MAGIC_NUMBER.size());
+    if (data.size() < FIRST_TRACK_OFFSET) {
+        throw_on_insufficient_bytes();
+    }
+
+    const auto first_ten_bytes = data.subspan(0, MAGIC_NUMBER.size());
     if (!std::equal(first_ten_bytes.begin(), first_ten_bytes.end(),
                     MAGIC_NUMBER.cbegin())) {
         throw ParseError("Invalid MIDI file");
     }
-    header.num_of_tracks = read_two_byte_be(span, TRACK_COUNT_OFFSET);
-    auto division = read_two_byte_be(span, TICKS_OFFSET);
+    MidiHeader header;
+    header.num_of_tracks = read_two_byte_be(data, TRACK_COUNT_OFFSET);
+    auto division = read_two_byte_be(data, TICKS_OFFSET);
     if ((division & DIVISION_NEGATIVE_SMPTE_MASK) != 0) {
         throw ParseError("Only ticks per quarter-note is supported");
     }
     header.ticks_per_quarter_note = division;
-    return span.subspan(FIRST_TRACK_OFFSET);
+    data = data.subspan(FIRST_TRACK_OFFSET);
+    return header;
 }
 
-ByteSpan read_variable_length_num(ByteSpan span, int& number)
+int read_variable_length_num(std::span<const std::uint8_t>& data)
 {
     constexpr int VARIABLE_LENGTH_DATA_MASK = 0x7F;
     constexpr int VARIABLE_LENGTH_DATA_SIZE = 7;
     constexpr int VARIABLE_LENGTH_HIGH_MASK = 0x80;
 
-    number = 0;
+    int number = 0;
     int bytes_read = 0;
-    while ((span[0] & VARIABLE_LENGTH_HIGH_MASK) != 0) {
+    while (!data.empty() && ((data.front() & VARIABLE_LENGTH_HIGH_MASK) != 0)) {
         ++bytes_read;
         if (bytes_read >= 4) {
             throw ParseError("Too long variable length number");
         }
         number <<= VARIABLE_LENGTH_DATA_SIZE;
-        number |= span[0] & VARIABLE_LENGTH_DATA_MASK;
-        span = span.subspan(1);
+        number |= data.front() & VARIABLE_LENGTH_DATA_MASK;
+        data = data.subspan(1);
+    }
+    if (data.empty()) {
+        throw_on_insufficient_bytes();
     }
     number <<= VARIABLE_LENGTH_DATA_SIZE;
-    number |= span[0] & VARIABLE_LENGTH_DATA_MASK;
-    return span.subspan(1);
+    number |= data.front() & VARIABLE_LENGTH_DATA_MASK;
+    data = data.subspan(1);
+    return number;
 }
 
-ByteSpan read_meta_event(ByteSpan span, MetaEvent& event)
+MetaEvent read_meta_event(std::span<const std::uint8_t>& data)
 {
-    event.type = span[0];
-    span = span.subspan(1);
-    int data_length = 0;
-    span = read_variable_length_num(span, data_length);
-    if (static_cast<std::size_t>(data_length) > span.size()) {
+    if (data.empty()) {
+        throw_on_insufficient_bytes();
+    }
+    MetaEvent event;
+    event.type = data.front();
+    data = data.subspan(1);
+    const auto data_length = read_variable_length_num(data);
+    if (static_cast<std::size_t>(data_length) > data.size()) {
         throw ParseError("Meta Event too long");
     }
     event.data
-        = std::vector<std::uint8_t> {span.begin(), span.begin() + data_length};
-    return span.subspan(static_cast<std::size_t>(data_length));
+        = std::vector<std::uint8_t> {data.begin(), data.begin() + data_length};
+    data = data.subspan(static_cast<std::size_t>(data_length));
+    return event;
 }
 
-ByteSpan read_midi_event(ByteSpan span, MidiEvent& event, int prev_status_byte)
+MidiEvent read_midi_event(std::span<const std::uint8_t>& data,
+                          int prev_status_byte)
 {
     constexpr int CHANNEL_PRESSURE_ID = 0xD0;
     constexpr int IS_STATUS_BYTE_MASK = 0x80;
@@ -164,9 +132,12 @@ ByteSpan read_midi_event(ByteSpan span, MidiEvent& event, int prev_status_byte)
     constexpr int SYSTEM_COMMON_MSG_ID = 0xF0;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
-    auto event_type = span[0];
+    if (data.empty()) {
+        throw_on_insufficient_bytes();
+    }
+    auto event_type = data.front();
     if ((event_type & IS_STATUS_BYTE_MASK) != 0) {
-        span = span.subspan(1);
+        data = data.subspan(1);
     } else if (prev_status_byte != -1) {
         event_type = static_cast<std::uint8_t>(prev_status_byte);
     } else {
@@ -177,88 +148,87 @@ ByteSpan read_midi_event(ByteSpan span, MidiEvent& event, int prev_status_byte)
     if ((event_type & UPPER_NIBBLE_MASK) == SYSTEM_COMMON_MSG_ID) {
         throw ParseError("MIDI Events with high nibble 0xF are not supported");
     }
+    MidiEvent event;
     if ((event_type & UPPER_NIBBLE_MASK) == PROGRAM_CHANGE_ID
         || (event_type & UPPER_NIBBLE_MASK) == CHANNEL_PRESSURE_ID) {
-        event.data = {span[0], 0};
-        span = span.subspan(1);
+        if (data.empty()) {
+            throw_on_insufficient_bytes();
+        }
+        event.data = {data.front(), 0};
+        data = data.subspan(1);
     } else {
-        event.data = {span[0], span[1]};
-        span = span.subspan(2);
+        if (data.size() < 2) {
+            throw_on_insufficient_bytes();
+        }
+        event.data = {data[0], data[1]};
+        data = data.subspan(2);
     }
     event.status = event_type;
 
-    return span;
+    return event;
 }
 
-ByteSpan read_sysex_event(ByteSpan span, SysexEvent& event)
+SysexEvent read_sysex_event(std::span<const std::uint8_t>& data)
 {
-    int data_length = 0;
-    span = read_variable_length_num(span, data_length);
-    if (static_cast<std::size_t>(data_length) > span.size()) {
+    const auto data_length = read_variable_length_num(data);
+    if (static_cast<std::size_t>(data_length) > data.size()) {
         throw ParseError("Sysex Event too long");
     }
+    SysexEvent event;
     event.data
-        = std::vector<std::uint8_t> {span.begin(), span.begin() + data_length};
-    return span.subspan(static_cast<std::size_t>(data_length));
+        = std::vector<std::uint8_t> {data.begin(), data.begin() + data_length};
+    data = data.subspan(static_cast<std::size_t>(data_length));
+    return event;
 }
 
-ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
+MidiTrack read_midi_track(std::span<const std::uint8_t>& data)
 {
     constexpr int META_EVENT_ID = 0xFF;
     constexpr int SYSEX_EVENT_ID = 0xF0;
     constexpr int TRACK_HEADER_MAGIC_NUMBER = 0x4D54726B;
     constexpr int TRACK_HEADER_SIZE = 8;
 
-    if (read_four_byte_be(span, 0) != TRACK_HEADER_MAGIC_NUMBER) {
+    if (read_four_byte_be(data, 0) != TRACK_HEADER_MAGIC_NUMBER) {
         throw ParseError("Invalid MIDI file");
     }
-    auto track_size = read_four_byte_be(span, 4);
-    span = span.subspan(TRACK_HEADER_SIZE);
+    const auto track_size = read_four_byte_be(data, 4);
+    data = data.subspan(TRACK_HEADER_SIZE);
     auto absolute_time = 0;
     const auto final_span_size
-        = span.size() - static_cast<std::size_t>(track_size);
+        = data.size() - static_cast<std::size_t>(track_size);
     auto prev_status_byte = -1;
-    while (span.size() != final_span_size) {
-        int delta_time = 0;
-        span = read_variable_length_num(span, delta_time);
+    MidiTrack track;
+    while (data.size() != final_span_size) {
+        const auto delta_time = read_variable_length_num(data);
         absolute_time += delta_time;
         TimedEvent event {absolute_time, {}};
-        const auto event_type = span[0];
-        if (event_type == META_EVENT_ID) {
-            span = span.subspan(1);
-            MetaEvent meta_event {};
-            span = read_meta_event(span, meta_event);
-            event.event = meta_event;
-        } else if (event_type == SYSEX_EVENT_ID) {
-            span = span.subspan(1);
-            SysexEvent sysex_event {};
-            span = read_sysex_event(span, sysex_event);
-            event.event = sysex_event;
-        } else {
-            MidiEvent midi_event {};
-            span = read_midi_event(span, midi_event, prev_status_byte);
-            prev_status_byte = midi_event.status;
-            event.event = midi_event;
+        if (data.empty()) {
+            throw_on_insufficient_bytes();
         }
-        track.events.push_back(event);
+        const auto event_type = data.front();
+        if (event_type == META_EVENT_ID) {
+            data = data.subspan(1);
+            event.event = read_meta_event(data);
+        } else if (event_type == SYSEX_EVENT_ID) {
+            data = data.subspan(1);
+            event.event = read_sysex_event(data);
+        } else {
+            auto midi_event = read_midi_event(data, prev_status_byte);
+            prev_status_byte = midi_event.status;
+            event.event = std::move(midi_event);
+        }
+        track.events.push_back(std::move(event));
     }
-    return span;
+    return track;
 }
 }
 
 Midi parse_midi(std::span<const std::uint8_t> data)
 {
-    ByteSpan span {data};
-    MidiHeader header {};
-    span = read_midi_header(span, header);
+    const auto header = read_midi_header(data);
     std::vector<MidiTrack> tracks;
-    for (auto i = 0; i < header.num_of_tracks; ++i) {
-        if (span.size() == 0) {
-            break;
-        }
-        MidiTrack track {};
-        span = read_midi_track(span, track);
-        tracks.push_back(track);
+    for (auto i = 0; i < header.num_of_tracks && !data.empty(); ++i) {
+        tracks.push_back(read_midi_track(data));
     }
     return Midi {header.ticks_per_quarter_note, std::move(tracks)};
 }
