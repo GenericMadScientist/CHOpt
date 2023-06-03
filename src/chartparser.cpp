@@ -166,7 +166,7 @@ add_fifth_lane_greens(std::vector<Note> notes,
         Note note;
         note.position = Tick {note_event.position};
         note.flags = FLAGS_DRUMS;
-        if (green_positions.count(Tick {note_event.position}) != 0) {
+        if (green_positions.contains(Tick {note_event.position})) {
             note.lengths[DRUM_BLUE] = Tick {0};
         } else {
             note.lengths[DRUM_GREEN] = Tick {0};
@@ -206,7 +206,7 @@ std::vector<Note> apply_cymbal_events(const std::vector<Note>& notes)
 
     std::vector<Note> new_notes;
     for (auto i = 0U; i < notes.size(); ++i) {
-        if (deletion_spots.count(i) == 0) {
+        if (!deletion_spots.contains(i)) {
             new_notes.push_back(notes[i]);
         }
     }
@@ -259,9 +259,9 @@ apply_dynamics_events(std::vector<Note> notes,
             continue;
         }
         const auto lane = no_dynamics_lane_colour(note);
-        if (accent_events.count({note.position, lane}) > 0) {
+        if (accent_events.contains({note.position, lane})) {
             note.flags = static_cast<NoteFlags>(note.flags | FLAGS_ACCENT);
-        } else if (ghost_events.count({note.position, lane}) > 0) {
+        } else if (ghost_events.contains({note.position, lane})) {
             note.flags = static_cast<NoteFlags>(note.flags | FLAGS_GHOST);
         }
     }

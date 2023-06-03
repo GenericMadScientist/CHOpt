@@ -605,7 +605,7 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
     std::map<Difficulty, std::vector<Note>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour, flags] = key;
-        if (event_track.note_off_events.count({diff, colour}) == 0) {
+        if (!event_track.note_off_events.contains({diff, colour})) {
             throw ParseError("No corresponding Note Off events");
         }
         const auto& note_offs = event_track.note_off_events.at({diff, colour});
@@ -739,7 +739,7 @@ void fix_double_greens(std::vector<Note>& notes)
             || ((note.flags & FLAGS_CYMBAL) != 0U)) {
             continue;
         }
-        if (green_cymbal_positions.count(note.position) != 0) {
+        if (green_cymbal_positions.contains(note.position)) {
             std::swap(note.lengths[DRUM_BLUE], note.lengths[DRUM_GREEN]);
         }
     }
@@ -758,7 +758,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour, flags] = key;
         const std::tuple<Difficulty, int> no_flags_key {diff, colour};
-        if (event_track.note_off_events.count(no_flags_key) == 0) {
+        if (!event_track.note_off_events.contains(no_flags_key)) {
             throw ParseError("No corresponding Note Off events");
         }
         const auto& note_offs = event_track.note_off_events.at(no_flags_key);
@@ -863,7 +863,7 @@ note_tracks_from_midi(const MidiTrack& midi_track,
 
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
     for (const auto& [diff, open_ons] : event_track.open_on_events) {
-        if (event_track.open_off_events.count(diff) == 0) {
+        if (!event_track.open_off_events.contains(diff)) {
             throw ParseError("No open Note Off events");
         }
         const auto& open_offs = event_track.open_off_events.at(diff);

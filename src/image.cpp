@@ -642,7 +642,7 @@ void ImageImpl::draw_ghl_note(int x, int y,
     constexpr int FRET_GAP = 30;
     constexpr int RADIUS = 5;
 
-    if (note_colours.count(SIX_FRET_OPEN) != 0) {
+    if (note_colours.contains(SIX_FRET_OPEN)) {
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                white.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
