@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,21 +38,21 @@ IniValues parse_ini(std::string_view data)
     values.charter = "Unknown Charter";
     while (!data.empty()) {
         const auto line = break_off_newline(data);
-        if (line.substr(0, NAME_SIZE) == "name") {
+        if (line.starts_with("name")) {
             auto value = skip_whitespace(line.substr(NAME_SIZE));
             if (value[0] != '=') {
                 continue;
             }
             value = skip_whitespace(value.substr(1));
             values.name = value;
-        } else if (line.substr(0, ARTIST_SIZE) == "artist") {
+        } else if (line.starts_with("artist")) {
             auto value = skip_whitespace(line.substr(ARTIST_SIZE));
             if (value[0] != '=') {
                 continue;
             }
             value = skip_whitespace(value.substr(1));
             values.artist = value;
-        } else if (line.substr(0, CHARTER_SIZE) == "charter") {
+        } else if (line.starts_with("charter")) {
             auto value = skip_whitespace(line.substr(CHARTER_SIZE));
             if (value[0] != '=') {
                 continue;
@@ -61,7 +61,7 @@ IniValues parse_ini(std::string_view data)
             if (!value.empty()) {
                 values.charter = value;
             }
-        } else if (line.substr(0, FRETS_SIZE) == "frets") {
+        } else if (line.starts_with("frets")) {
             auto value = skip_whitespace(line.substr(FRETS_SIZE));
             if (value[0] != '=') {
                 continue;

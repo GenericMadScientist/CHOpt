@@ -31,17 +31,7 @@ namespace po = boost::program_options;
 namespace {
 bool is_valid_image_path(std::string_view path)
 {
-    if (path.size() < 4) {
-        return false;
-    }
-    const auto file_type = path.substr(path.size() - 4, 4);
-    if (file_type == ".bmp") {
-        return true;
-    }
-    if (file_type == ".png") {
-        return true;
-    }
-    return false;
+    return path.ends_with(".bmp") || path.ends_with(".png");
 }
 
 Difficulty string_to_diff(std::string_view text)

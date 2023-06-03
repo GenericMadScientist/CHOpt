@@ -313,9 +313,7 @@ std::vector<Solo> NoteTrack::solos(const DrumSettings& drum_settings) const
         }
         ++p;
     }
-    auto it = std::remove_if(solos.begin(), solos.end(),
-                             [](auto solo) { return solo.value == 0; });
-    solos.erase(it, solos.end());
+    std::erase_if(solos, [](const auto& solo) { return solo.value == 0; });
     return solos;
 }
 
