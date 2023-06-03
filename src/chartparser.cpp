@@ -21,7 +21,6 @@
 
 #include "chartparser.hpp"
 #include "parserutil.hpp"
-#include "stringutil.hpp"
 
 namespace {
 std::string get_with_default(const std::map<std::string, std::string>& map,

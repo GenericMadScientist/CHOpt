@@ -24,7 +24,6 @@
 #include "chartparser.hpp"
 #include "midiparser.hpp"
 #include "songfile.hpp"
-#include "stringutil.hpp"
 
 SongFile::SongFile(const std::string& filename)
 {
