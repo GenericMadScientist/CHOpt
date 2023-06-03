@@ -787,3 +787,26 @@ BOOST_AUTO_TEST_CASE(dynamics_not_parsed_from_mid_without_ENABLE_CHART_DYNAMICS)
     BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
                                   notes.cbegin(), notes.cend());
 }
+
+BOOST_AUTO_TEST_CASE(instruments_not_permitted_are_ignored)
+{
+    MidiTrack guitar_track {{{0,
+                              {MetaEvent {3,
+                                          {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                           0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                             {768, {MidiEvent {0x90, {97, 64}}}},
+                             {960, {MidiEvent {0x80, {97, 0}}}}}};
+    MidiTrack bass_track {
+        {{0,
+          {MetaEvent {3,
+                      {0x50, 0x41, 0x52, 0x54, 0x20, 0x42, 0x41, 0x53, 0x53}}}},
+         {0, {MidiEvent {0x90, {96, 64}}}},
+         {65, {MidiEvent {0x80, {96, 0}}}}}};
+    const Midi midi {192, {guitar_track, bass_track}};
+    const std::vector<Instrument> expected_instruments {Instrument::Guitar};
+
+    const auto parser = MidiParser({}).permit_instruments({Instrument::Guitar});
+    const auto song = parser.from_midi(midi);
+
+    BOOST_CHECK_EQUAL(song.instruments(), expected_instruments);
+}

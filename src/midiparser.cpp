@@ -912,7 +912,15 @@ MidiParser::MidiParser(const IniValues& ini)
     : m_song_name {ini.name}
     , m_artist {ini.artist}
     , m_charter {ini.charter}
+    , m_permitted_instruments {all_instruments()}
 {
+}
+
+MidiParser&
+MidiParser::permit_instruments(std::set<Instrument> permitted_instruments)
+{
+    m_permitted_instruments = std::move(permitted_instruments);
+    return *this;
 }
 
 Song MidiParser::from_midi(const Midi& midi) const
@@ -945,7 +953,7 @@ Song MidiParser::from_midi(const Midi& midi) const
             song.global_data().od_beats(od_beats_from_track(track));
         }
         const auto inst = midi_section_instrument(*track_name);
-        if (!inst.has_value()) {
+        if (!inst.has_value() || !m_permitted_instruments.contains(*inst)) {
             continue;
         }
         if (is_six_fret_instrument(*inst)) {

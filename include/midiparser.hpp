@@ -20,11 +20,13 @@
 #define CHOPT_MIDIPARSER_HPP
 
 #include <cstdint>
+#include <set>
 #include <span>
 #include <string>
 
 #include "ini.hpp"
 #include "midi.hpp"
+#include "settings.hpp"
 #include "song.hpp"
 
 class MidiParser {
@@ -32,9 +34,11 @@ private:
     std::string m_song_name;
     std::string m_artist;
     std::string m_charter;
+    std::set<Instrument> m_permitted_instruments;
 
 public:
-    explicit MidiParser(const IniValues& ini);
+    MidiParser(const IniValues& ini);
+    MidiParser& permit_instruments(std::set<Instrument> permitted_instruments);
     Song from_midi(const Midi& midi) const;
     Song parse(std::span<const std::uint8_t> data) const;
 };

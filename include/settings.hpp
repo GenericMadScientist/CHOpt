@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 
 #include "engine.hpp"
@@ -86,5 +87,12 @@ struct Settings {
 // Parses the command line options. If something is wrong with the options
 // chosen, an exception is thrown. If --help is requested, returns empty.
 std::optional<Settings> from_args(int argc, char** argv);
+
+inline std::set<Instrument> all_instruments()
+{
+    using enum Instrument;
+
+    return {Guitar, GuitarCoop, Bass, Rhythm, Keys, GHLGuitar, GHLBass, Drums};
+}
 
 #endif
