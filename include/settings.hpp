@@ -90,9 +90,9 @@ std::optional<Settings> from_args(int argc, char** argv);
 
 inline std::set<Instrument> all_instruments()
 {
-    using enum Instrument;
-
-    return {Guitar, GuitarCoop, Bass, Rhythm, Keys, GHLGuitar, GHLBass, Drums};
+    return {Instrument::Guitar,  Instrument::GuitarCoop, Instrument::Bass,
+            Instrument::Rhythm,  Instrument::Keys,       Instrument::GHLGuitar,
+            Instrument::GHLBass, Instrument::Drums};
 }
 
 #endif
