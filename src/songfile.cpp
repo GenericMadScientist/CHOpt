@@ -39,9 +39,9 @@ SongFile::SongFile(const std::string& filename)
     }
     m_ini_values = parse_ini(ini_file);
 
-    if (ends_with_suffix(filename, ".chart")) {
+    if (filename.ends_with(".chart")) {
         m_file_type = FileType::Chart;
-    } else if (ends_with_suffix(filename, ".mid")) {
+    } else if (filename.ends_with(".mid")) {
         m_file_type = FileType::Midi;
     } else {
         throw std::invalid_argument("file should be .chart or .mid");

@@ -24,11 +24,6 @@
 #include "stringutil.hpp"
 
 namespace {
-bool starts_with_prefix(const std::string& string, std::string_view prefix)
-{
-    return string.substr(0, prefix.size()) == prefix;
-}
-
 std::string get_with_default(const std::map<std::string, std::string>& map,
                              const std::string& key, std::string default_value)
 {
@@ -80,15 +75,14 @@ diff_inst_from_header(const std::string& header)
     // compile to fail.
     auto diff_iter = std::find_if( // NOLINT
         DIFFICULTIES.cbegin(), DIFFICULTIES.cend(), [&](const auto& pair) {
-            return starts_with_prefix(header, std::get<0>(pair));
+            return header.starts_with(std::get<0>(pair));
         });
     if (diff_iter == DIFFICULTIES.cend()) {
         return std::nullopt;
     }
     auto inst_iter = std::find_if( // NOLINT
-        INSTRUMENTS.cbegin(), INSTRUMENTS.cend(), [&](const auto& pair) {
-            return ends_with_suffix(header, std::get<0>(pair));
-        });
+        INSTRUMENTS.cbegin(), INSTRUMENTS.cend(),
+        [&](const auto& pair) { return header.ends_with(std::get<0>(pair)); });
     if (inst_iter == INSTRUMENTS.cend()) {
         return std::nullopt;
     }

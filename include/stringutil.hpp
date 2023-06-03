@@ -34,6 +34,4 @@ std::string to_ordinal(int ordinal);
 // Convert a UTF-8 or UTF-16le string to a UTF-8 string.
 std::string to_utf8_string(std::string_view input);
 
-bool ends_with_suffix(const std::string& string, std::string_view suffix);
-
 #endif

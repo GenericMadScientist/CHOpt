@@ -101,15 +101,6 @@ std::string utf16_to_utf8_string(std::string_view input)
         .to_bytes(utf16_string_view.cbegin(), utf16_string_view.cend());
 #endif
 }
-
-bool string_starts_with(std::string_view input, std::string_view pattern)
-{
-    if (input.size() < pattern.size()) {
-        return false;
-    }
-
-    return input.substr(0, pattern.size()) == pattern;
-}
 }
 
 std::string to_ordinal(int ordinal)
@@ -140,23 +131,15 @@ std::string to_ordinal(int ordinal)
 
 std::string to_utf8_string(std::string_view input)
 {
-    if (string_starts_with(input, "\xEF\xBB\xBF")) {
+    if (input.starts_with("\xEF\xBB\xBF")) {
         // Trim off UTF-8 BOM.
         input.remove_prefix(3);
         return std::string(input);
     }
-    if (string_starts_with(input, "\xFF\xFE")) {
+    if (input.starts_with("\xFF\xFE")) {
         // Trim off UTF-16le BOM.
         input.remove_prefix(2);
         return utf16_to_utf8_string(input);
     }
     return std::string(input);
-}
-
-bool ends_with_suffix(const std::string& string, std::string_view suffix)
-{
-    if (string.size() < suffix.size()) {
-        return false;
-    }
-    return string.substr(string.size() - suffix.size()) == suffix;
 }
