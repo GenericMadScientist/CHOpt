@@ -11,11 +11,11 @@ project(
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 include(cmake/Sanitisers.cmake)
 
-# Require standard C++17
+# Require standard C++20
 function(set_cpp_standard target)
   set_target_properties(
     ${target}
-    PROPERTIES CXX_STANDARD 17
+    PROPERTIES CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF)
 endfunction()
