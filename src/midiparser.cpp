@@ -980,7 +980,7 @@ Song MidiParser::from_midi(const Midi& midi) const
     return song;
 }
 
-Song MidiParser::parse(const std::vector<std::uint8_t>& data) const
+Song MidiParser::parse(std::span<const std::uint8_t> data) const
 {
     return from_midi(parse_midi(data));
 }

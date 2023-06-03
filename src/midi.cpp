@@ -26,7 +26,7 @@
 namespace {
 class ByteSpan {
 private:
-    using Iter = std::vector<std::uint8_t>::const_iterator;
+    using Iter = std::span<const std::uint8_t>::iterator;
     static constexpr std::size_t MAX_SIZE = static_cast<std::size_t>(-1);
     Iter m_begin;
     Iter m_end;
@@ -39,21 +39,15 @@ private:
     }
 
 public:
-    explicit ByteSpan(const std::vector<std::uint8_t>& data)
-        : m_begin {data.cbegin()}
-        , m_end {data.cend()}
+    explicit ByteSpan(std::span<const std::uint8_t> data)
+        : m_begin {data.begin()}
+        , m_end {data.end()}
         , m_size {data.size()}
     {
     }
 
-    [[nodiscard]] std::vector<std::uint8_t>::const_iterator begin() const
-    {
-        return m_begin;
-    }
-    [[nodiscard]] std::vector<std::uint8_t>::const_iterator end() const
-    {
-        return m_end;
-    }
+    [[nodiscard]] Iter begin() const { return m_begin; }
+    [[nodiscard]] Iter end() const { return m_end; }
     [[nodiscard]] std::size_t size() const { return m_size; }
 
     std::uint8_t operator[](std::size_t index) const
@@ -252,7 +246,7 @@ ByteSpan read_midi_track(ByteSpan span, MidiTrack& track)
 }
 }
 
-Midi parse_midi(const std::vector<std::uint8_t>& data)
+Midi parse_midi(std::span<const std::uint8_t> data)
 {
     ByteSpan span {data};
     MidiHeader header {};

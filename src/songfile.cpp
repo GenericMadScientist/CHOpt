@@ -65,8 +65,10 @@ Song SongFile::load_song() const
         return parser.parse(chart_buffer);
     }
     case FileType::Midi:
+        std::span<const std::uint8_t> midi_buffer {m_loaded_file.data(),
+                                                   m_loaded_file.size()};
         MidiParser parser {m_ini_values};
-        return parser.parse(m_loaded_file);
+        return parser.parse(midi_buffer);
     }
     throw std::runtime_error("Invalid file type");
 }

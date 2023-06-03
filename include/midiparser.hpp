@@ -20,8 +20,8 @@
 #define CHOPT_MIDIPARSER_HPP
 
 #include <cstdint>
+#include <span>
 #include <string>
-#include <vector>
 
 #include "ini.hpp"
 #include "midi.hpp"
@@ -36,7 +36,7 @@ private:
 public:
     explicit MidiParser(const IniValues& ini);
     Song from_midi(const Midi& midi) const;
-    Song parse(const std::vector<std::uint8_t>& data) const;
+    Song parse(std::span<const std::uint8_t> data) const;
 };
 
 #endif

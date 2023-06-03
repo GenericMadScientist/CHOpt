@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020 Raymond Wright
+ * Copyright (C) 2020, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include <array>
 #include <cstdint>
+#include <span>
 #include <variant>
 #include <vector>
 
@@ -52,6 +53,6 @@ struct Midi {
     std::vector<MidiTrack> tracks;
 };
 
-Midi parse_midi(const std::vector<std::uint8_t>& data);
+Midi parse_midi(std::span<const std::uint8_t> data);
 
 #endif
