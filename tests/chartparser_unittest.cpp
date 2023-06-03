@@ -606,3 +606,17 @@ BOOST_AUTO_TEST_CASE(disco_flips_are_read_from_chart)
     BOOST_CHECK_EQUAL(track.disco_flips().size(), 1);
     BOOST_CHECK_EQUAL(track.disco_flips()[0], flip);
 }
+
+BOOST_AUTO_TEST_CASE(instruments_not_permitted_are_dropped_from_charts)
+{
+    const auto guitar_track = section_string("ExpertSingle", {{768, 0, 0}});
+    const auto bass_track = section_string("ExpertDoubleBass", {{192, 0, 0}});
+    const auto chart_file = guitar_track + '\n' + bass_track;
+    const std::vector<Instrument> expected_instruments {Instrument::Guitar};
+
+    const auto parser
+        = ChartParser({}).permit_instruments({Instrument::Guitar});
+    const auto song = parser.parse(chart_file);
+
+    BOOST_CHECK_EQUAL(song.instruments(), expected_instruments);
+}

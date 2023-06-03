@@ -37,7 +37,7 @@ private:
     std::set<Instrument> m_permitted_instruments;
 
 public:
-    MidiParser(const IniValues& ini);
+    explicit MidiParser(const IniValues& ini);
     MidiParser& permit_instruments(std::set<Instrument> permitted_instruments);
     Song from_midi(const Midi& midi) const;
     Song parse(std::span<const std::uint8_t> data) const;

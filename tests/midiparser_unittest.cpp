@@ -788,7 +788,7 @@ BOOST_AUTO_TEST_CASE(dynamics_not_parsed_from_mid_without_ENABLE_CHART_DYNAMICS)
                                   notes.cbegin(), notes.cend());
 }
 
-BOOST_AUTO_TEST_CASE(instruments_not_permitted_are_ignored)
+BOOST_AUTO_TEST_CASE(instruments_not_permitted_are_dropped_from_midis)
 {
     MidiTrack guitar_track {{{0,
                               {MetaEvent {3,

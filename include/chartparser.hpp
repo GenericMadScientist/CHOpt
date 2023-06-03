@@ -19,11 +19,13 @@
 #ifndef CHOPT_CHARTPARSER_HPP
 #define CHOPT_CHARTPARSER_HPP
 
+#include <set>
 #include <string>
 #include <string_view>
 
 #include "chart.hpp"
 #include "ini.hpp"
+#include "settings.hpp"
 #include "song.hpp"
 
 class ChartParser {
@@ -31,11 +33,13 @@ private:
     std::string m_song_name;
     std::string m_artist;
     std::string m_charter;
+    std::set<Instrument> m_permitted_instruments;
 
     Song from_chart(const Chart& chart) const;
 
 public:
     explicit ChartParser(const IniValues& ini);
+    ChartParser& permit_instruments(std::set<Instrument> permitted_instruments);
     Song parse(std::string_view data) const;
 };
 

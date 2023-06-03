@@ -367,7 +367,15 @@ ChartParser::ChartParser(const IniValues& ini)
     : m_song_name {ini.name}
     , m_artist {ini.artist}
     , m_charter {ini.charter}
+    , m_permitted_instruments {all_instruments()}
 {
+}
+
+ChartParser&
+ChartParser::permit_instruments(std::set<Instrument> permitted_instruments)
+{
+    m_permitted_instruments = std::move(permitted_instruments);
+    return *this;
 }
 
 Song ChartParser::parse(std::string_view data) const
@@ -404,6 +412,9 @@ Song ChartParser::from_chart(const Chart& chart) const
                 continue;
             }
             auto [diff, inst] = *pair;
+            if (!m_permitted_instruments.contains(inst)) {
+                continue;
+            }
             auto note_track
                 = note_track_from_section(section, song.global_data_ptr(),
                                           track_type_from_instrument(inst));
