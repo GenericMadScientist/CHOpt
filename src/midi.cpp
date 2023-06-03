@@ -26,6 +26,16 @@
 namespace {
 void throw_on_insufficient_bytes() { throw ParseError("insufficient bytes"); }
 
+std::uint8_t pop_front(std::span<const std::uint8_t>& data)
+{
+    if (data.empty()) {
+        throw_on_insufficient_bytes();
+    }
+    const auto value = data.front();
+    data = data.subspan(1);
+    return value;
+}
+
 // Read a two byte big endian number from the specified offset.
 int read_two_byte_be(std::span<const std::uint8_t> span, std::size_t offset)
 {
@@ -68,15 +78,13 @@ MidiHeader read_midi_header(std::span<const std::uint8_t>& data)
                     MAGIC_NUMBER.cbegin())) {
         throw ParseError("Invalid MIDI file");
     }
-    MidiHeader header;
-    header.num_of_tracks = read_two_byte_be(data, TRACK_COUNT_OFFSET);
-    auto division = read_two_byte_be(data, TICKS_OFFSET);
+    const auto num_of_tracks = read_two_byte_be(data, TRACK_COUNT_OFFSET);
+    const auto division = read_two_byte_be(data, TICKS_OFFSET);
     if ((division & DIVISION_NEGATIVE_SMPTE_MASK) != 0) {
         throw ParseError("Only ticks per quarter-note is supported");
     }
-    header.ticks_per_quarter_note = division;
     data = data.subspan(FIRST_TRACK_OFFSET);
-    return header;
+    return {division, num_of_tracks};
 }
 
 int read_variable_length_num(std::span<const std::uint8_t>& data)
@@ -93,15 +101,10 @@ int read_variable_length_num(std::span<const std::uint8_t>& data)
             throw ParseError("Too long variable length number");
         }
         number <<= VARIABLE_LENGTH_DATA_SIZE;
-        number |= data.front() & VARIABLE_LENGTH_DATA_MASK;
-        data = data.subspan(1);
-    }
-    if (data.empty()) {
-        throw_on_insufficient_bytes();
+        number |= pop_front(data) & VARIABLE_LENGTH_DATA_MASK;
     }
     number <<= VARIABLE_LENGTH_DATA_SIZE;
-    number |= data.front() & VARIABLE_LENGTH_DATA_MASK;
-    data = data.subspan(1);
+    number |= pop_front(data) & VARIABLE_LENGTH_DATA_MASK;
     return number;
 }
 
@@ -111,8 +114,7 @@ MetaEvent read_meta_event(std::span<const std::uint8_t>& data)
         throw_on_insufficient_bytes();
     }
     MetaEvent event;
-    event.type = data.front();
-    data = data.subspan(1);
+    event.type = pop_front(data);
     const auto data_length = read_variable_length_num(data);
     if (static_cast<std::size_t>(data_length) > data.size()) {
         throw ParseError("Meta Event too long");
@@ -148,24 +150,13 @@ MidiEvent read_midi_event(std::span<const std::uint8_t>& data,
     if ((event_type & UPPER_NIBBLE_MASK) == SYSTEM_COMMON_MSG_ID) {
         throw ParseError("MIDI Events with high nibble 0xF are not supported");
     }
-    MidiEvent event;
-    if ((event_type & UPPER_NIBBLE_MASK) == PROGRAM_CHANGE_ID
-        || (event_type & UPPER_NIBBLE_MASK) == CHANNEL_PRESSURE_ID) {
-        if (data.empty()) {
-            throw_on_insufficient_bytes();
-        }
-        event.data = {data.front(), 0};
-        data = data.subspan(1);
-    } else {
-        if (data.size() < 2) {
-            throw_on_insufficient_bytes();
-        }
-        event.data = {data[0], data[1]};
-        data = data.subspan(2);
+    std::array<std::uint8_t, 2> event_data {pop_front(data), 0};
+    if ((event_type & UPPER_NIBBLE_MASK) != PROGRAM_CHANGE_ID
+        && (event_type & UPPER_NIBBLE_MASK) != CHANNEL_PRESSURE_ID) {
+        event_data[1] = pop_front(data);
     }
-    event.status = event_type;
 
-    return event;
+    return {event_type, event_data};
 }
 
 SysexEvent read_sysex_event(std::span<const std::uint8_t>& data)
@@ -213,9 +204,9 @@ MidiTrack read_midi_track(std::span<const std::uint8_t>& data)
             data = data.subspan(1);
             event.event = read_sysex_event(data);
         } else {
-            auto midi_event = read_midi_event(data, prev_status_byte);
+            const auto midi_event = read_midi_event(data, prev_status_byte);
             prev_status_byte = midi_event.status;
-            event.event = std::move(midi_event);
+            event.event = midi_event;
         }
         track.events.push_back(std::move(event));
     }
