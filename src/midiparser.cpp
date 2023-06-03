@@ -915,7 +915,7 @@ MidiParser::MidiParser(const IniValues& ini)
 {
 }
 
-Song MidiParser::parse(const Midi& midi) const
+Song MidiParser::from_midi(const Midi& midi) const
 {
     if (midi.ticks_per_quarter_note == 0) {
         throw ParseError("Resolution must be > 0");
@@ -978,4 +978,9 @@ Song MidiParser::parse(const Midi& midi) const
     }
 
     return song;
+}
+
+Song MidiParser::parse(const std::vector<std::uint8_t>& data) const
+{
+    return from_midi(parse_midi(data));
 }

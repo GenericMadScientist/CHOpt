@@ -67,7 +67,7 @@ Song SongFile::load_song() const
     }
     case FileType::Midi:
         MidiParser parser {m_ini_values};
-        return parser.parse(parse_midi(m_loaded_file));
+        return parser.parse(m_loaded_file);
     }
     throw std::runtime_error("Invalid file type");
 }
