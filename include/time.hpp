@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #ifndef CHOPT_TIME_HPP
 #define CHOPT_TIME_HPP
 
+#include <compare>
 #include <cstdint>
 
 class Measure;
@@ -35,30 +36,7 @@ public:
     }
     [[nodiscard]] int value() const { return m_value; }
 
-    friend bool operator==(const Tick& lhs, const Tick& rhs)
-    {
-        return lhs.m_value == rhs.m_value;
-    }
-    friend bool operator!=(const Tick& lhs, const Tick& rhs)
-    {
-        return !(lhs == rhs);
-    }
-    friend bool operator<(const Tick& lhs, const Tick& rhs)
-    {
-        return lhs.m_value < rhs.m_value;
-    }
-    friend bool operator>(const Tick& lhs, const Tick& rhs)
-    {
-        return rhs < lhs;
-    }
-    friend bool operator<=(const Tick& lhs, const Tick& rhs)
-    {
-        return !(lhs > rhs);
-    }
-    friend bool operator>=(const Tick& lhs, const Tick& rhs)
-    {
-        return !(lhs < rhs);
-    }
+    std::strong_ordering operator<=>(const Tick&) const = default;
 
     Tick& operator+=(const Tick& rhs)
     {
@@ -96,21 +74,9 @@ public:
     [[nodiscard]] Second to_second(std::int64_t bpm) const;
     [[nodiscard]] Measure to_measure(double beat_rate) const;
 
-    friend bool operator<(const Beat& lhs, const Beat& rhs)
+    std::partial_ordering operator<=>(const Beat& rhs) const
     {
-        return lhs.m_value < rhs.m_value;
-    }
-    friend bool operator>(const Beat& lhs, const Beat& rhs)
-    {
-        return rhs < lhs;
-    }
-    friend bool operator<=(const Beat& lhs, const Beat& rhs)
-    {
-        return !(lhs > rhs);
-    }
-    friend bool operator>=(const Beat& lhs, const Beat& rhs)
-    {
-        return !(lhs < rhs);
+        return m_value <=> rhs.m_value;
     }
 
     Beat& operator+=(const Beat& rhs)
@@ -170,21 +136,9 @@ public:
         return Beat(m_value * beat_rate);
     }
 
-    friend bool operator<(const Measure& lhs, const Measure& rhs)
+    std::partial_ordering operator<=>(const Measure& rhs) const
     {
-        return lhs.m_value < rhs.m_value;
-    }
-    friend bool operator>(const Measure& lhs, const Measure& rhs)
-    {
-        return rhs < lhs;
-    }
-    friend bool operator<=(const Measure& lhs, const Measure& rhs)
-    {
-        return !(lhs > rhs);
-    }
-    friend bool operator>=(const Measure& lhs, const Measure& rhs)
-    {
-        return !(lhs < rhs);
+        return m_value <=> rhs.m_value;
     }
 
     Measure& operator+=(const Measure& rhs)
@@ -245,21 +199,9 @@ public:
         return Beat(m_value * bpm / MS_PER_MINUTE);
     }
 
-    friend bool operator<(const Second& lhs, const Second& rhs)
+    std::partial_ordering operator<=>(const Second& rhs) const
     {
-        return lhs.m_value < rhs.m_value;
-    }
-    friend bool operator>(const Second& lhs, const Second& rhs)
-    {
-        return rhs < lhs;
-    }
-    friend bool operator<=(const Second& lhs, const Second& rhs)
-    {
-        return !(lhs > rhs);
-    }
-    friend bool operator>=(const Second& lhs, const Second& rhs)
-    {
-        return !(lhs < rhs);
+        return m_value <=> rhs.m_value;
     }
 
     Second& operator+=(const Second& rhs)
