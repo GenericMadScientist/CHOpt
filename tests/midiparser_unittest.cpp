@@ -810,3 +810,25 @@ BOOST_AUTO_TEST_CASE(instruments_not_permitted_are_dropped_from_midis)
 
     BOOST_CHECK_EQUAL(song.instruments(), expected_instruments);
 }
+
+BOOST_AUTO_TEST_CASE(solos_ignored_from_midis_if_not_permitted)
+{
+    MidiTrack note_track {{{0,
+                            {MetaEvent {3,
+                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x47,
+                                         0x55, 0x49, 0x54, 0x41, 0x52}}}},
+                           {768, {MidiEvent {0x90, {103, 64}}}},
+                           {768, {MidiEvent {0x90, {96, 64}}}},
+                           {900, {MidiEvent {0x90, {97, 64}}}},
+                           {900, {MidiEvent {0x80, {103, 64}}}},
+                           {960, {MidiEvent {0x80, {96, 0}}}},
+                           {960, {MidiEvent {0x80, {97, 64}}}}}};
+    const Midi midi {192, {note_track}};
+
+    auto parser = MidiParser({}).parse_solos(false);
+    const auto song = parser.from_midi(midi);
+    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
+                                  .solos(DrumSettings::default_settings());
+
+    BOOST_CHECK(parsed_solos.empty());
+}

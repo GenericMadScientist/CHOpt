@@ -637,7 +637,8 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
 
 std::map<Difficulty, NoteTrack>
 ghl_note_tracks_from_midi(const MidiTrack& midi_track,
-                          const std::shared_ptr<SongGlobalData>& global_data)
+                          const std::shared_ptr<SongGlobalData>& global_data,
+                          bool permit_solos)
 {
     const auto event_track
         = read_instrument_midi_track(midi_track, TrackType::SixFret);
@@ -665,6 +666,9 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track,
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
                                       TrackType::SixFret, true);
+        if (!permit_solos) {
+            solos.clear();
+        }
         note_tracks.emplace(diff,
                             NoteTrack {note_set,
                                        sp_phrases,
@@ -747,7 +751,8 @@ void fix_double_greens(std::vector<Note>& notes)
 
 std::map<Difficulty, NoteTrack>
 drum_note_tracks_from_midi(const MidiTrack& midi_track,
-                           const std::shared_ptr<SongGlobalData>& global_data)
+                           const std::shared_ptr<SongGlobalData>& global_data,
+                           bool permit_solos)
 {
     const auto event_track
         = read_instrument_midi_track(midi_track, TrackType::Drums);
@@ -808,6 +813,9 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
                                       TrackType::Drums, true);
+        if (!permit_solos) {
+            solos.clear();
+        }
         note_tracks.emplace(diff,
                             NoteTrack {note_set,
                                        sp_phrases,
@@ -855,7 +863,8 @@ std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
 
 std::map<Difficulty, NoteTrack>
 note_tracks_from_midi(const MidiTrack& midi_track,
-                      const std::shared_ptr<SongGlobalData>& global_data)
+                      const std::shared_ptr<SongGlobalData>& global_data,
+                      bool permit_solos)
 {
     const auto event_track
         = read_instrument_midi_track(midi_track, TrackType::FiveFret);
@@ -893,6 +902,9 @@ note_tracks_from_midi(const MidiTrack& midi_track,
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
                                       TrackType::FiveFret, true);
+        if (!permit_solos) {
+            solos.clear();
+        }
         note_tracks.emplace(diff,
                             NoteTrack {note_set,
                                        sp_phrases,
@@ -913,6 +925,7 @@ MidiParser::MidiParser(const IniValues& ini)
     , m_artist {ini.artist}
     , m_charter {ini.charter}
     , m_permitted_instruments {all_instruments()}
+    , m_permit_solos {true}
 {
 }
 
@@ -920,6 +933,12 @@ MidiParser&
 MidiParser::permit_instruments(std::set<Instrument> permitted_instruments)
 {
     m_permitted_instruments = std::move(permitted_instruments);
+    return *this;
+}
+
+MidiParser& MidiParser::parse_solos(bool permit_solos)
+{
+    m_permit_solos = permit_solos;
     return *this;
 }
 
@@ -957,20 +976,21 @@ Song MidiParser::from_midi(const Midi& midi) const
             continue;
         }
         if (is_six_fret_instrument(*inst)) {
-            auto tracks
-                = ghl_note_tracks_from_midi(track, song.global_data_ptr());
+            auto tracks = ghl_note_tracks_from_midi(
+                track, song.global_data_ptr(), m_permit_solos);
             for (auto& [diff, note_track] : tracks) {
                 song.add_note_track(*inst, diff, std::move(note_track));
             }
         } else if (*inst == Instrument::Drums) {
-            auto tracks
-                = drum_note_tracks_from_midi(track, song.global_data_ptr());
+            auto tracks = drum_note_tracks_from_midi(
+                track, song.global_data_ptr(), m_permit_solos);
             for (auto& [diff, note_track] : tracks) {
                 song.add_note_track(Instrument::Drums, diff,
                                     std::move(note_track));
             }
         } else {
-            auto tracks = note_tracks_from_midi(track, song.global_data_ptr());
+            auto tracks = note_tracks_from_midi(track, song.global_data_ptr(),
+                                                m_permit_solos);
             for (auto& [diff, note_track] : tracks) {
                 song.add_note_track(*inst, diff, std::move(note_track));
             }

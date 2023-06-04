@@ -35,10 +35,12 @@ private:
     std::string m_artist;
     std::string m_charter;
     std::set<Instrument> m_permitted_instruments;
+    bool m_permit_solos;
 
 public:
     explicit MidiParser(const IniValues& ini);
     MidiParser& permit_instruments(std::set<Instrument> permitted_instruments);
+    MidiParser& parse_solos(bool permit_solos);
     Song from_midi(const Midi& midi) const;
     Song parse(std::span<const std::uint8_t> data) const;
 };
