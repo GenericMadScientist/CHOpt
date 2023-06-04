@@ -7,4 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install clang-tidy-16
+        run: sudo apt install -y clang-tidy-16
       - run: clang-tidy-16 src/*.cpp gui/json_settings.cpp -- -Iinclude -Ilibs -I$HOME/boost_1_81_0 -std=c++20
