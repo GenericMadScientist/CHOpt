@@ -9,6 +9,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install clang-tidy-16
         run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           sudo apt-get install -y software-properties-common
           sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main"
           sudo add-apt-repository "deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main"
