@@ -29,7 +29,8 @@ void Song::add_note_track(Instrument instrument, Difficulty difficulty,
                           NoteTrack note_track)
 {
     if (!note_track.notes().empty()) {
-        m_tracks.insert({{instrument, difficulty}, std::move(note_track)});
+        m_tracks.emplace(std::tuple {instrument, difficulty},
+                         std::move(note_track));
     }
 }
 
