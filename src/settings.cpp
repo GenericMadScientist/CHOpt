@@ -119,6 +119,8 @@ std::unique_ptr<Engine> game_to_engine(Game game, Instrument instrument,
         }
         return std::make_unique<Rb3Engine>();
     }
+
+    throw std::invalid_argument("Invalid Game");
 }
 
 std::optional<Settings> from_args(int argc, char** argv)
