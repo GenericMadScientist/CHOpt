@@ -65,7 +65,7 @@ private slots:
     void on_videoLagSlider_valueChanged(int value);
     void parsing_failed(const QString& file_name);
     void path_found();
-    void song_read(SongFile song_file, std::set<Game> games,
+    void song_read(SongFile song_file, const std::set<Game>& games,
                    const QString& file_name);
     void write_message(const QString& message);
 };

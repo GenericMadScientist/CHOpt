@@ -38,6 +38,8 @@ std::set<Instrument> permitted_instruments(Game game)
         return {Instrument::Guitar, Instrument::Bass};
     case Game::RockBandThree:
         return {Instrument::Guitar, Instrument::Bass, Instrument::Keys};
+    default:
+        throw std::invalid_argument("Invalid Game");
     }
 }
 }

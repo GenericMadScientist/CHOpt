@@ -386,7 +386,7 @@ void MainWindow::parsing_failed(const QString& file_name)
     m_ui->selectFileButton->setEnabled(true);
 }
 
-void MainWindow::song_read(SongFile loaded_file, std::set<Game> games,
+void MainWindow::song_read(SongFile loaded_file, const std::set<Game>& games,
                            const QString& file_name)
 {
     m_thread = nullptr;
