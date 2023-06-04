@@ -250,8 +250,9 @@ std::optional<Settings> from_args(int argc, char** argv)
 
     const auto precision_mode = vm.count("precision-mode") != 0;
     const auto engine_name = vm["engine"].as<std::string>();
-    const auto game = game_from_string(engine_name);
-    settings.engine = game_to_engine(game, settings.instrument, precision_mode);
+    settings.game = game_from_string(engine_name);
+    settings.engine
+        = game_to_engine(settings.game, settings.instrument, precision_mode);
 
     const auto speed = vm["speed"].as<int>();
     if (speed < MIN_SPEED || speed > MAX_SPEED || speed % MIN_SPEED != 0) {

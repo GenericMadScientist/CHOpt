@@ -17,6 +17,7 @@
  */
 
 #include <filesystem>
+#include <set>
 #include <string_view>
 
 #include <boost/nowide/fstream.hpp>
@@ -24,6 +25,22 @@
 #include "chartparser.hpp"
 #include "midiparser.hpp"
 #include "songfile.hpp"
+
+namespace {
+std::set<Instrument> permitted_instruments(Game game)
+{
+    switch (game) {
+    case Game::CloneHero:
+        return all_instruments();
+    case Game::GuitarHeroOne:
+        return {Instrument::Guitar};
+    case Game::RockBand:
+        return {Instrument::Guitar, Instrument::Bass};
+    case Game::RockBand3:
+        return {Instrument::Guitar, Instrument::Bass, Instrument::Keys};
+    }
+}
+}
 
 SongFile::SongFile(const std::string& filename)
 {
@@ -54,7 +71,7 @@ SongFile::SongFile(const std::string& filename)
         std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
 }
 
-Song SongFile::load_song() const
+Song SongFile::load_song(Game game) const
 {
     switch (m_file_type) {
     case FileType::Chart: {
@@ -62,12 +79,14 @@ Song SongFile::load_song() const
             reinterpret_cast<const char*>(m_loaded_file.data()), // NOLINT
             m_loaded_file.size()};
         ChartParser parser {m_ini_values};
+        parser.permit_instruments(permitted_instruments(game));
         return parser.parse(chart_buffer);
     }
     case FileType::Midi:
         std::span<const std::uint8_t> midi_buffer {m_loaded_file.data(),
                                                    m_loaded_file.size()};
         MidiParser parser {m_ini_values};
+        parser.permit_instruments(permitted_instruments(game));
         return parser.parse(midi_buffer);
     }
     throw std::runtime_error("Invalid file type");

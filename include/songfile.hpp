@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "ini.hpp"
+#include "settings.hpp"
 #include "song.hpp"
 
 class SongFile {
@@ -36,7 +37,7 @@ private:
 
 public:
     explicit SongFile(const std::string& filename);
-    Song load_song() const;
+    Song load_song(Game game) const;
 };
 
 #endif

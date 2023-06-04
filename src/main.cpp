@@ -37,7 +37,7 @@ int main(int argc, char** argv)
             return EXIT_SUCCESS;
         }
         const SongFile song_file {settings->filename};
-        auto song = song_file.load_song();
+        auto song = song_file.load_song(settings->game);
         const auto& track
             = song.track(settings->instrument, settings->difficulty);
         const std::atomic<bool> terminate {false};

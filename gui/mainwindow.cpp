@@ -46,7 +46,7 @@ public:
     {
         try {
             SongFile song_file {m_file_name.toStdString()};
-            auto song = song_file.load_song();
+            auto song = song_file.load_song(Game::CloneHero);
             emit result_ready(std::move(song_file), song, m_file_name);
         } catch (const std::exception&) {
             emit parsing_failed(m_file_name);
@@ -338,8 +338,8 @@ void MainWindow::on_findPathButton_clicked()
     m_ui->findPathButton->setEnabled(false);
 
     auto* worker_thread = new OptimiserThread(this);
-    worker_thread->set_data(get_settings(), m_loaded_file->load_song(),
-                            file_name);
+    worker_thread->set_data(
+        get_settings(), m_loaded_file->load_song(Game::CloneHero), file_name);
     connect(worker_thread, &OptimiserThread::write_text, this,
             &MainWindow::write_message);
     connect(worker_thread, &OptimiserThread::finished, this,
@@ -410,7 +410,8 @@ void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
         {Difficulty::Expert, "Expert"}};
     const auto inst
         = m_ui->instrumentComboBox->currentData().value<Instrument>();
-    for (auto diff : m_loaded_file->load_song().difficulties(inst)) {
+    for (auto diff :
+         m_loaded_file->load_song(Game::CloneHero).difficulties(inst)) {
         m_ui->difficultyComboBox->addItem(DIFF_NAMES.at(diff),
                                           QVariant::fromValue(diff));
     }

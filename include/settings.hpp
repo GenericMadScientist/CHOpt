@@ -29,6 +29,11 @@
 #include "songparts.hpp"
 #include "time.hpp"
 
+enum class Game { CloneHero, GuitarHeroOne, RockBand, RockBand3 };
+
+std::unique_ptr<Engine> game_to_engine(Game game, Instrument instrument,
+                                       bool precision_mode);
+
 struct SqueezeSettings {
     double squeeze;
     double early_whammy;
@@ -56,6 +61,7 @@ struct Settings {
     SqueezeSettings squeeze_settings;
     int speed;
     bool is_lefty_flip;
+    Game game;
     std::unique_ptr<Engine> engine;
     DrumSettings drum_settings;
     float opacity;
@@ -64,10 +70,5 @@ struct Settings {
 // Parses the command line options. If something is wrong with the options
 // chosen, an exception is thrown. If --help is requested, returns empty.
 std::optional<Settings> from_args(int argc, char** argv);
-
-enum class Game { CloneHero, GuitarHeroOne, RockBand, RockBand3 };
-
-std::unique_ptr<Engine> game_to_engine(Game game, Instrument instrument,
-                                       bool precision_mode);
 
 #endif
