@@ -620,3 +620,17 @@ BOOST_AUTO_TEST_CASE(instruments_not_permitted_are_dropped_from_charts)
 
     BOOST_CHECK_EQUAL(song.instruments(), expected_instruments);
 }
+
+BOOST_AUTO_TEST_CASE(solos_ignored_from_charts_if_not_permitted)
+{
+    const auto chart_file = section_string(
+        "ExpertSingle", {{100, 0, 0}, {300, 0, 0}, {400, 0, 0}}, {},
+        {{0, "solo"}, {200, "soloend"}, {300, "solo"}, {400, "soloend"}});
+
+    const auto parser = ChartParser({}).parse_solos(false);
+    const auto song = parser.parse(chart_file);
+    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
+                                  .solos(DrumSettings::default_settings());
+
+    BOOST_CHECK(parsed_solos.empty());
+}

@@ -34,12 +34,14 @@ private:
     std::string m_artist;
     std::string m_charter;
     std::set<Instrument> m_permitted_instruments;
+    bool m_permit_solos;
 
     Song from_chart(const Chart& chart) const;
 
 public:
     explicit ChartParser(const IniValues& ini);
     ChartParser& permit_instruments(std::set<Instrument> permitted_instruments);
+    ChartParser& parse_solos(bool permit_solos);
     Song parse(std::string_view data) const;
 };
 

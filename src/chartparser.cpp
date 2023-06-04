@@ -263,7 +263,7 @@ apply_dynamics_events(std::vector<Note> notes,
 
 NoteTrack note_track_from_section(const ChartSection& section,
                                   std::shared_ptr<SongGlobalData> global_data,
-                                  TrackType track_type)
+                                  TrackType track_type, bool permit_solos)
 {
     constexpr int DISCO_FLIP_START_SIZE = 13;
     constexpr int DISCO_FLIP_END_SIZE = 12;
@@ -330,6 +330,9 @@ NoteTrack note_track_from_section(const ChartSection& section,
     std::sort(solo_off_events.begin(), solo_off_events.end());
     auto solos = form_solo_vector(solo_on_events, solo_off_events, notes,
                                   track_type, false);
+    if (!permit_solos) {
+        solos.clear();
+    }
     std::sort(disco_flip_on_events.begin(), disco_flip_on_events.end());
     std::sort(disco_flip_off_events.begin(), disco_flip_off_events.end());
     std::vector<DiscoFlip> disco_flips;
@@ -368,6 +371,7 @@ ChartParser::ChartParser(const IniValues& ini)
     , m_artist {ini.artist}
     , m_charter {ini.charter}
     , m_permitted_instruments {all_instruments()}
+    , m_permit_solos {true}
 {
 }
 
@@ -375,6 +379,12 @@ ChartParser&
 ChartParser::permit_instruments(std::set<Instrument> permitted_instruments)
 {
     m_permitted_instruments = std::move(permitted_instruments);
+    return *this;
+}
+
+ChartParser& ChartParser::parse_solos(bool permit_solos)
+{
+    m_permit_solos = permit_solos;
     return *this;
 }
 
@@ -415,9 +425,9 @@ Song ChartParser::from_chart(const Chart& chart) const
             if (!m_permitted_instruments.contains(inst)) {
                 continue;
             }
-            auto note_track
-                = note_track_from_section(section, song.global_data_ptr(),
-                                          track_type_from_instrument(inst));
+            auto note_track = note_track_from_section(
+                section, song.global_data_ptr(),
+                track_type_from_instrument(inst), m_permit_solos);
             song.add_note_track(inst, diff, std::move(note_track));
         }
     }

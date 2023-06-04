@@ -825,7 +825,7 @@ BOOST_AUTO_TEST_CASE(solos_ignored_from_midis_if_not_permitted)
                            {960, {MidiEvent {0x80, {97, 64}}}}}};
     const Midi midi {192, {note_track}};
 
-    auto parser = MidiParser({}).parse_solos(false);
+    const auto parser = MidiParser({}).parse_solos(false);
     const auto song = parser.from_midi(midi);
     const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
                                   .solos(DrumSettings::default_settings());
