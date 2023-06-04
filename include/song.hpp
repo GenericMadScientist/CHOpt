@@ -24,7 +24,6 @@
 #include <tuple>
 #include <vector>
 
-#include "settings.hpp"
 #include "songparts.hpp"
 #include "time.hpp"
 

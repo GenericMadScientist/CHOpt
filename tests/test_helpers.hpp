@@ -29,7 +29,6 @@
 #include "midi.hpp"
 #include "points.hpp"
 #include "processed.hpp"
-#include "settings.hpp"
 #include "songparts.hpp"
 #include "sp.hpp"
 #include "time.hpp"

@@ -25,14 +25,30 @@
 #include <cstdlib>
 #include <memory>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <tuple>
 #include <vector>
 
-#include "settings.hpp"
+#include "drumsettings.hpp"
 #include "tempomap.hpp"
 #include "time.hpp"
+
+enum class Difficulty { Easy = 0, Medium = 1, Hard = 2, Expert = 3 };
+
+enum class Instrument {
+    Guitar,
+    GuitarCoop,
+    Bass,
+    Rhythm,
+    Keys,
+    GHLGuitar,
+    GHLBass,
+    Drums
+};
+
+std::set<Instrument> all_instruments();
 
 enum class TrackType { FiveFret, SixFret, Drums };
 

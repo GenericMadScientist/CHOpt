@@ -25,8 +25,8 @@
 
 #include "chart.hpp"
 #include "ini.hpp"
-#include "settings.hpp"
 #include "song.hpp"
+#include "songparts.hpp"
 
 class ChartParser {
 private:

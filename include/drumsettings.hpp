@@ -16,31 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef CHOPT_MIDIPARSER_HPP
-#define CHOPT_MIDIPARSER_HPP
+#ifndef CHOPT_DRUMSETTINGS_HPP
+#define CHOPT_DRUMSETTINGS_HPP
 
-#include <cstdint>
-#include <set>
-#include <span>
-#include <string>
+struct DrumSettings {
+    bool enable_double_kick;
+    bool disable_kick;
+    bool pro_drums;
+    bool enable_dynamics;
 
-#include "ini.hpp"
-#include "midi.hpp"
-#include "song.hpp"
-#include "songparts.hpp"
-
-class MidiParser {
-private:
-    std::string m_song_name;
-    std::string m_artist;
-    std::string m_charter;
-    std::set<Instrument> m_permitted_instruments;
-
-public:
-    explicit MidiParser(const IniValues& ini);
-    MidiParser& permit_instruments(std::set<Instrument> permitted_instruments);
-    Song from_midi(const Midi& midi) const;
-    Song parse(std::span<const std::uint8_t> data) const;
+    static DrumSettings default_settings()
+    {
+        return {true, false, true, false};
+    }
 };
 
 #endif

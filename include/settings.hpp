@@ -24,33 +24,10 @@
 #include <set>
 #include <string>
 
+#include "drumsettings.hpp"
 #include "engine.hpp"
+#include "songparts.hpp"
 #include "time.hpp"
-
-enum class Difficulty { Easy = 0, Medium = 1, Hard = 2, Expert = 3 };
-
-enum class Instrument {
-    Guitar,
-    GuitarCoop,
-    Bass,
-    Rhythm,
-    Keys,
-    GHLGuitar,
-    GHLBass,
-    Drums
-};
-
-struct DrumSettings {
-    bool enable_double_kick;
-    bool disable_kick;
-    bool pro_drums;
-    bool enable_dynamics;
-
-    static DrumSettings default_settings()
-    {
-        return {true, false, true, false};
-    }
-};
 
 struct SqueezeSettings {
     double squeeze;
@@ -87,12 +64,5 @@ struct Settings {
 // Parses the command line options. If something is wrong with the options
 // chosen, an exception is thrown. If --help is requested, returns empty.
 std::optional<Settings> from_args(int argc, char** argv);
-
-inline std::set<Instrument> all_instruments()
-{
-    return {Instrument::Guitar,  Instrument::GuitarCoop, Instrument::Bass,
-            Instrument::Rhythm,  Instrument::Keys,       Instrument::GHLGuitar,
-            Instrument::GHLBass, Instrument::Drums};
-}
 
 #endif

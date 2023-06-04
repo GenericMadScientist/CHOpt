@@ -37,6 +37,13 @@ Note combined_note(std::vector<Note>::const_iterator begin,
 }
 }
 
+std::set<Instrument> all_instruments()
+{
+    return {Instrument::Guitar,  Instrument::GuitarCoop, Instrument::Bass,
+            Instrument::Rhythm,  Instrument::Keys,       Instrument::GHLGuitar,
+            Instrument::GHLBass, Instrument::Drums};
+}
+
 int Note::open_index() const
 {
     if ((flags & FLAGS_FIVE_FRET_GUITAR) != 0U) {
