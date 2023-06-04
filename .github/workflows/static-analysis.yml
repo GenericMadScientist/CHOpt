@@ -9,7 +9,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install clang-tidy-16
         run: |
-          deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main
-          deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main
+          sudo apt install -y software-properties-common
+          sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main"
+          sudo add-apt-repository "deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main"
           sudo apt install -y clang-tidy-16
       - run: clang-tidy-16 src/*.cpp gui/json_settings.cpp -- -Iinclude -Ilibs -I$HOME/boost_1_81_0 -std=c++20
