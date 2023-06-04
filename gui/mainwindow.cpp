@@ -36,6 +36,21 @@ class ParserThread : public QThread {
 private:
     QString m_file_name;
 
+    static std::set<Game> song_file_games(const SongFile& song_file)
+    {
+        const std::set<Game> all_games {Game::CloneHero, Game::GuitarHeroOne,
+                                        Game::RockBand, Game::RockBand3};
+        std::set<Game> supported_games;
+        for (const auto game : all_games) {
+            try {
+                song_file.load_song(game);
+                supported_games.insert(game);
+            } catch (const std::exception&) {
+            }
+        }
+        return supported_games;
+    }
+
 public:
     explicit ParserThread(QObject* parent = nullptr)
         : QThread(parent)
@@ -46,8 +61,12 @@ public:
     {
         try {
             SongFile song_file {m_file_name.toStdString()};
-            auto song = song_file.load_song(Game::CloneHero);
-            emit result_ready(std::move(song_file), song, m_file_name);
+            auto games = song_file_games(song_file);
+            if (games.empty()) {
+                emit parsing_failed(m_file_name);
+            }
+            emit result_ready(std::move(song_file), std::move(games),
+                              m_file_name);
         } catch (const std::exception&) {
             emit parsing_failed(m_file_name);
         }
@@ -57,7 +76,7 @@ public:
 
 signals:
     void parsing_failed(const QString& file_name);
-    void result_ready(SongFile loaded_file, const Song& song,
+    void result_ready(SongFile loaded_file, std::set<Game> games,
                       const QString& file_name);
 };
 
@@ -113,22 +132,15 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , m_ui {std::make_unique<Ui::MainWindow>()}
 {
-    // This is the maximum for our validators instead of MAX_INT because with
-    // MAX_INT the user can enter 9,999,999,999 which causes an overflow.
+    // This is the maximum for our validators instead of MAX_INT because
+    // with MAX_INT the user can enter 9,999,999,999 which causes an
+    // overflow.
     constexpr int max_digits_int = 999999999;
 
     m_ui->setupUi(this);
     m_ui->instrumentComboBox->setEnabled(false);
     m_ui->difficultyComboBox->setEnabled(false);
     m_ui->engineComboBox->setEnabled(false);
-    m_ui->engineComboBox->addItem("Clone Hero",
-                                  QVariant::fromValue(Game::CloneHero));
-    m_ui->engineComboBox->addItem("Guitar Hero 1",
-                                  QVariant::fromValue(Game::GuitarHeroOne));
-    m_ui->engineComboBox->addItem("Rock Band",
-                                  QVariant::fromValue(Game::RockBand));
-    m_ui->engineComboBox->addItem("Rock Band 3",
-                                  QVariant::fromValue(Game::RockBand3));
     m_ui->findPathButton->setEnabled(false);
 
     m_ui->lazyWhammyLineEdit->setValidator(
@@ -188,9 +200,9 @@ MainWindow::~MainWindow()
             opt_thread->end_thread();
         }
         m_thread->quit();
-        // We give the thread 5 seconds to obey, then kill it. Although all the
-        // thread does apart from CPU-bound work is write to a file at the very
-        // end, so the call to terminate is not so bad.
+        // We give the thread 5 seconds to obey, then kill it. Although all
+        // the thread does apart from CPU-bound work is write to a file at
+        // the very end, so the call to terminate is not so bad.
         if (!m_thread->wait(5000)) {
             m_thread->terminate();
             m_thread->wait();
@@ -244,10 +256,10 @@ Settings MainWindow::get_settings() const
         = m_ui->earlyWhammySlider->value() / 100.0;
     settings.squeeze_settings.video_lag
         = Second {m_ui->videoLagSlider->value() / 1000.0};
-    const auto engine = m_ui->engineComboBox->currentData().value<Game>();
+    settings.game = m_ui->engineComboBox->currentData().value<Game>();
     const auto precision_mode = m_ui->precisionModeCheckBox->isChecked();
     settings.engine
-        = game_to_engine(engine, settings.instrument, precision_mode);
+        = game_to_engine(settings.game, settings.instrument, precision_mode);
     settings.is_lefty_flip = m_ui->leftyCheckBox->isChecked();
     settings.opacity = m_ui->opacitySlider->value() / 100.0F;
 
@@ -314,6 +326,22 @@ void MainWindow::load_file(const QString& file_name)
     worker_thread->start();
 }
 
+void MainWindow::populate_games(const std::set<Game>& games)
+{
+    m_ui->engineComboBox->clear();
+    const std::array<std::pair<Game, QString>, 4> full_game_set {
+        {{Game::CloneHero, "Clone Hero"},
+         {Game::GuitarHeroOne, "Guitar Hero 1"},
+         {Game::RockBand, "Rock Band"},
+         {Game::RockBand3, "Rock Band 3"}}};
+    for (const auto& [game, name] : full_game_set) {
+        if (games.contains(game)) {
+            m_ui->engineComboBox->addItem(name, QVariant::fromValue(game));
+        }
+    }
+    m_ui->engineComboBox->setCurrentIndex(0);
+}
+
 void MainWindow::on_findPathButton_clicked()
 {
     const auto speed_text = m_ui->speedLineEdit->text();
@@ -338,8 +366,9 @@ void MainWindow::on_findPathButton_clicked()
     m_ui->findPathButton->setEnabled(false);
 
     auto* worker_thread = new OptimiserThread(this);
-    worker_thread->set_data(
-        get_settings(), m_loaded_file->load_song(Game::CloneHero), file_name);
+    auto settings = get_settings();
+    auto song = m_loaded_file->load_song(settings.game);
+    worker_thread->set_data(std::move(settings), std::move(song), file_name);
     connect(worker_thread, &OptimiserThread::write_text, this,
             &MainWindow::write_message);
     connect(worker_thread, &OptimiserThread::finished, this,
@@ -357,27 +386,13 @@ void MainWindow::parsing_failed(const QString& file_name)
     m_ui->selectFileButton->setEnabled(true);
 }
 
-void MainWindow::song_read(SongFile loaded_file, const Song& song,
+void MainWindow::song_read(SongFile loaded_file, std::set<Game> games,
                            const QString& file_name)
 {
     m_thread = nullptr;
     m_loaded_file = std::move(loaded_file);
 
-    m_ui->instrumentComboBox->clear();
-    const std::map<Instrument, QString> INST_NAMES {
-        {Instrument::Guitar, "Guitar"},
-        {Instrument::GuitarCoop, "Guitar Co-op"},
-        {Instrument::Bass, "Bass"},
-        {Instrument::Rhythm, "Rhythm"},
-        {Instrument::Keys, "Keys"},
-        {Instrument::GHLGuitar, "GHL Guitar"},
-        {Instrument::GHLBass, "GHL Bass"},
-        {Instrument::Drums, "Drums"}};
-    for (auto inst : song.instruments()) {
-        m_ui->instrumentComboBox->addItem(INST_NAMES.at(inst),
-                                          QVariant::fromValue(inst));
-    }
-    m_ui->instrumentComboBox->setCurrentIndex(0);
+    populate_games(games);
 
     write_message(file_name + " loaded");
 
@@ -396,6 +411,30 @@ void MainWindow::path_found()
     m_ui->findPathButton->setEnabled(true);
 }
 
+void MainWindow::on_engineComboBox_currentIndexChanged(int index)
+{
+    m_ui->instrumentComboBox->clear();
+
+    if (index == -1) {
+        return;
+    }
+    const std::map<Instrument, QString> INST_NAMES {
+        {Instrument::Guitar, "Guitar"},
+        {Instrument::GuitarCoop, "Guitar Co-op"},
+        {Instrument::Bass, "Bass"},
+        {Instrument::Rhythm, "Rhythm"},
+        {Instrument::Keys, "Keys"},
+        {Instrument::GHLGuitar, "GHL Guitar"},
+        {Instrument::GHLBass, "GHL Bass"},
+        {Instrument::Drums, "Drums"}};
+    const auto game = m_ui->engineComboBox->currentData().value<Game>();
+    for (auto inst : m_loaded_file->load_song(game).instruments()) {
+        m_ui->instrumentComboBox->addItem(INST_NAMES.at(inst),
+                                          QVariant::fromValue(inst));
+    }
+    m_ui->instrumentComboBox->setCurrentIndex(0);
+}
+
 void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
 {
     m_ui->difficultyComboBox->clear();
@@ -410,8 +449,8 @@ void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
         {Difficulty::Expert, "Expert"}};
     const auto inst
         = m_ui->instrumentComboBox->currentData().value<Instrument>();
-    for (auto diff :
-         m_loaded_file->load_song(Game::CloneHero).difficulties(inst)) {
+    const auto game = m_ui->engineComboBox->currentData().value<Game>();
+    for (auto diff : m_loaded_file->load_song(game).difficulties(inst)) {
         m_ui->difficultyComboBox->addItem(DIFF_NAMES.at(diff),
                                           QVariant::fromValue(diff));
     }

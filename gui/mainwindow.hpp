@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <optional>
+#include <set>
 
 #include <QMainWindow>
 #include <QString>
@@ -43,6 +44,7 @@ private:
     QThread* m_thread = nullptr;
     Settings get_settings() const;
     void load_file(const QString& file_name);
+    void populate_games(const std::set<Game>& games);
 
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
@@ -54,6 +56,7 @@ public:
 
 private slots:
     void on_earlyWhammySlider_valueChanged(int value);
+    void on_engineComboBox_currentIndexChanged(int value);
     void on_findPathButton_clicked();
     void on_instrumentComboBox_currentIndexChanged(int value);
     void on_opacitySlider_valueChanged(int value);
@@ -62,7 +65,7 @@ private slots:
     void on_videoLagSlider_valueChanged(int value);
     void parsing_failed(const QString& file_name);
     void path_found();
-    void song_read(SongFile song_file, const Song& song,
+    void song_read(SongFile song_file, std::set<Game> games,
                    const QString& file_name);
     void write_message(const QString& message);
 };
