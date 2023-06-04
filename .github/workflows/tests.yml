@@ -18,5 +18,6 @@ jobs:
           ./b2 install > /dev/null
       - name: Build
         run: |
-          cmake -DBUILD_GUI=OFF -DCMAKE_CXX_COMPILER=g++-10 -DBOOST_ROOT=$HOME/boost_1_81_0 ..
-          cmake --build . --verbose --config Debug
+          mkdir build
+          cmake -DBUILD_GUI=OFF -DCMAKE_CXX_COMPILER=g++-10 -DBOOST_ROOT=$HOME/boost_1_81_0 .
+          cmake --build build/ --verbose --config Debug
