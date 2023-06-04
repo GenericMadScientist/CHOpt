@@ -22,3 +22,9 @@ jobs:
           cd build
           cmake -DBUILD_GUI=OFF -DCMAKE_CXX_COMPILER=g++-10 -DBOOST_ROOT=$HOME/boost_1_81_0 ..
           cmake --build . --verbose --config Debug
+      - name: Unit tests
+        run: |
+          cd build
+          ctest --verbose -C Debug
+      - name: Integration tests
+        run: python3 integration_tests/run_integration_tests.py
