@@ -86,7 +86,7 @@ Game game_from_string(std::string_view game)
         {"ch", Game::CloneHero},
         {"gh1", Game::GuitarHeroOne},
         {"rb", Game::RockBand},
-        {"rb3", Game::RockBand3}};
+        {"rb3", Game::RockBandThree}};
     return game_map.at(game);
 }
 }
@@ -113,7 +113,7 @@ std::unique_ptr<Engine> game_to_engine(Game game, Instrument instrument,
             return std::make_unique<RbBassEngine>();
         }
         return std::make_unique<RbEngine>();
-    case Game::RockBand3:
+    case Game::RockBandThree:
         if (instrument == Instrument::Bass) {
             return std::make_unique<Rb3BassEngine>();
         }

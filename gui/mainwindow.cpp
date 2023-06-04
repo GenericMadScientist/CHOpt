@@ -39,7 +39,7 @@ private:
     static std::set<Game> song_file_games(const SongFile& song_file)
     {
         const std::set<Game> all_games {Game::CloneHero, Game::GuitarHeroOne,
-                                        Game::RockBand, Game::RockBand3};
+                                        Game::RockBand, Game::RockBandThree};
         std::set<Game> supported_games;
         for (const auto game : all_games) {
             try {
@@ -333,7 +333,7 @@ void MainWindow::populate_games(const std::set<Game>& games)
         {{Game::CloneHero, "Clone Hero"},
          {Game::GuitarHeroOne, "Guitar Hero 1"},
          {Game::RockBand, "Rock Band"},
-         {Game::RockBand3, "Rock Band 3"}}};
+         {Game::RockBandThree, "Rock Band 3"}}};
     for (const auto& [game, name] : full_game_set) {
         if (games.contains(game)) {
             m_ui->engineComboBox->addItem(name, QVariant::fromValue(game));

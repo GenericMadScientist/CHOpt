@@ -29,7 +29,7 @@
 #include "songparts.hpp"
 #include "time.hpp"
 
-enum class Game { CloneHero, GuitarHeroOne, RockBand, RockBand3 };
+enum class Game { CloneHero, GuitarHeroOne, RockBand, RockBandThree };
 
 std::unique_ptr<Engine> game_to_engine(Game game, Instrument instrument,
                                        bool precision_mode);

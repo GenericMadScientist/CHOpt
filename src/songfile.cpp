@@ -36,7 +36,7 @@ std::set<Instrument> permitted_instruments(Game game)
         return {Instrument::Guitar};
     case Game::RockBand:
         return {Instrument::Guitar, Instrument::Bass};
-    case Game::RockBand3:
+    case Game::RockBandThree:
         return {Instrument::Guitar, Instrument::Bass, Instrument::Keys};
     }
 }
