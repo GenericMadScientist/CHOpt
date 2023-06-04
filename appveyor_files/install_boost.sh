@@ -6,7 +6,7 @@ then
     cd "$HOME/boost_1_81_0"
     export CC=gcc-10
     export CXX=g++-10
-    ./bootstrap.sh --with-libraries=json,nowide,program_options,test --prefix=.
+    ./bootstrap.sh --with-libraries=json,nowide,program_options --prefix=.
     ./b2 install > /dev/null
     cd "$HOME/projects/CHOpt/build"
 fi

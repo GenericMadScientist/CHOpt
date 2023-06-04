@@ -5,7 +5,7 @@ platform: x64
 
 environment:
   matrix:
-    - job_name: Linux (GCC, tests, and static analysis)
+    - job_name: Linux (GCC)
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
     - job_name: Windows (MSVC)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
@@ -24,24 +24,18 @@ for:
   -
     matrix:
       only:
-        - job_name: Linux (GCC, tests, and static analysis)
+        - job_name: Linux (GCC)
 
     cache: $HOME/boost_1_81_0 -> appveyor_files/install_boost.sh
 
     build_script:
     - sh: sudo apt -y install g++-10 libgl1-mesa-dev
     - sh: ../appveyor_files/install_boost.sh
-    - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DBOOST_ROOT=$HOME/boost_1_81_0 -DQt6_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6WidgetsTools ..
+    - sh: cmake -DPACKAGE_TESTS=OFF -DCMAKE_CXX_COMPILER=g++-10 -DBOOST_ROOT=$HOME/boost_1_81_0 -DQt6_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config ${CONFIGURATION}
-
-    test_script:
-    - sh: ctest --verbose -C ${CONFIGURATION}
-    - sh: cd ..
-    - sh: python3 integration_tests/run_integration_tests.py
 
     before_deploy:
     - sh: export RELEASE_NAME=${APPVEYOR_REPO_TAG_NAME#v}
-    - sh: cd build
     - sh: rm -rf *
     - sh: cmake -DCMAKE_CXX_COMPILER=g++-10 -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBOOST_ROOT=$HOME/boost_1_81_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6 -DQt6CoreTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6CoreTools -DQt6DBusTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6DBusTools -DQt6GuiTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6GuiTools -DQt6WidgetsTools_DIR=$HOME/Qt/6.4/gcc_64/lib/cmake/Qt6WidgetsTools ..
     - sh: cmake --build . --verbose --config Release
