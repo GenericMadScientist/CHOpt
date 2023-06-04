@@ -19,5 +19,6 @@ jobs:
       - name: Build
         run: |
           mkdir build
-          cmake -DBUILD_GUI=OFF -DCMAKE_CXX_COMPILER=g++-10 -DBOOST_ROOT=$HOME/boost_1_81_0 .
-          cmake --build build/ --verbose --config Debug
+          cd build
+          cmake -DBUILD_GUI=OFF -DCMAKE_CXX_COMPILER=g++-10 -DBOOST_ROOT=$HOME/boost_1_81_0 ..
+          cmake --build . --verbose --config Debug
