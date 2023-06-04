@@ -42,6 +42,8 @@ std::set<Instrument> permitted_instruments(Game game)
         throw std::invalid_argument("Invalid Game");
     }
 }
+
+bool parse_solos(Game game) { return game != Game::GuitarHeroOne; }
 }
 
 SongFile::SongFile(const std::string& filename)
@@ -82,6 +84,7 @@ Song SongFile::load_song(Game game) const
             m_loaded_file.size()};
         ChartParser parser {m_ini_values};
         parser.permit_instruments(permitted_instruments(game));
+        parser.parse_solos(parse_solos(game));
         return parser.parse(chart_buffer);
     }
     case FileType::Midi:
@@ -89,6 +92,7 @@ Song SongFile::load_song(Game game) const
                                                    m_loaded_file.size()};
         MidiParser parser {m_ini_values};
         parser.permit_instruments(permitted_instruments(game));
+        parser.parse_solos(parse_solos(game));
         return parser.parse(midi_buffer);
     }
     throw std::runtime_error("Invalid file type");
