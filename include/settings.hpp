@@ -65,4 +65,9 @@ struct Settings {
 // chosen, an exception is thrown. If --help is requested, returns empty.
 std::optional<Settings> from_args(int argc, char** argv);
 
+enum class Game { CloneHero, GuitarHeroOne, RockBand, RockBand3 };
+
+std::unique_ptr<Engine> game_to_engine(Game game, Instrument instrument,
+                                       bool precision_mode);
+
 #endif

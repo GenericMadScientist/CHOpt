@@ -109,8 +109,6 @@ signals:
     void write_text(const QString& text);
 };
 
-enum class EngineType { CloneHero, GuitarHeroOne, RockBand, RockBand3 };
-
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , m_ui {std::make_unique<Ui::MainWindow>()}
@@ -124,13 +122,13 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->difficultyComboBox->setEnabled(false);
     m_ui->engineComboBox->setEnabled(false);
     m_ui->engineComboBox->addItem("Clone Hero",
-                                  QVariant::fromValue(EngineType::CloneHero));
-    m_ui->engineComboBox->addItem(
-        "Guitar Hero 1", QVariant::fromValue(EngineType::GuitarHeroOne));
+                                  QVariant::fromValue(Game::CloneHero));
+    m_ui->engineComboBox->addItem("Guitar Hero 1",
+                                  QVariant::fromValue(Game::GuitarHeroOne));
     m_ui->engineComboBox->addItem("Rock Band",
-                                  QVariant::fromValue(EngineType::RockBand));
+                                  QVariant::fromValue(Game::RockBand));
     m_ui->engineComboBox->addItem("Rock Band 3",
-                                  QVariant::fromValue(EngineType::RockBand3));
+                                  QVariant::fromValue(Game::RockBand3));
     m_ui->findPathButton->setEnabled(false);
 
     m_ui->lazyWhammyLineEdit->setValidator(
@@ -246,40 +244,10 @@ Settings MainWindow::get_settings() const
         = m_ui->earlyWhammySlider->value() / 100.0;
     settings.squeeze_settings.video_lag
         = Second {m_ui->videoLagSlider->value() / 1000.0};
-    const auto engine = m_ui->engineComboBox->currentData().value<EngineType>();
+    const auto engine = m_ui->engineComboBox->currentData().value<Game>();
     const auto precision_mode = m_ui->precisionModeCheckBox->isChecked();
-    switch (engine) {
-    case EngineType::CloneHero:
-        if (settings.instrument == Instrument::Drums) {
-            if (precision_mode) {
-                settings.engine = std::make_unique<ChPrecisionDrumEngine>();
-            } else {
-                settings.engine = std::make_unique<ChDrumEngine>();
-            }
-        } else if (precision_mode) {
-            settings.engine = std::make_unique<ChPrecisionGuitarEngine>();
-        } else {
-            settings.engine = std::make_unique<ChGuitarEngine>();
-        }
-        break;
-    case EngineType::GuitarHeroOne:
-        settings.engine = std::make_unique<Gh1Engine>();
-        break;
-    case EngineType::RockBand:
-        if (settings.instrument == Instrument::Bass) {
-            settings.engine = std::make_unique<RbBassEngine>();
-        } else {
-            settings.engine = std::make_unique<RbEngine>();
-        }
-        break;
-    case EngineType::RockBand3:
-        if (settings.instrument == Instrument::Bass) {
-            settings.engine = std::make_unique<Rb3BassEngine>();
-        } else {
-            settings.engine = std::make_unique<Rb3Engine>();
-        }
-        break;
-    }
+    settings.engine
+        = game_to_engine(engine, settings.instrument, precision_mode);
     settings.is_lefty_flip = m_ui->leftyCheckBox->isChecked();
     settings.opacity = m_ui->opacitySlider->value() / 100.0F;
 

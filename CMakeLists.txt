@@ -118,6 +118,7 @@ if(BUILD_GUI)
     src/parserutil.cpp
     src/points.cpp
     src/processed.cpp
+    src/settings.cpp
     src/song.cpp
     src/songfile.cpp
     src/songparts.cpp
@@ -131,7 +132,7 @@ if(BUILD_GUI)
     choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
   target_link_directories(choptgui PRIVATE ${Boost_LIBRARY_DIRS})
   target_link_libraries(
-    choptgui PRIVATE Boost::json Boost::nowide ${PNG_LIBRARIES}
+    choptgui PRIVATE Boost::json Boost::nowide Boost::program_options ${PNG_LIBRARIES}
     Qt6::Widgets)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
@@ -181,6 +182,7 @@ if(PACKAGE_TESTS)
     src/parserutil.cpp
     src/points.cpp
     src/processed.cpp
+    src/settings.cpp
     src/song.cpp
     src/songparts.cpp
     src/sp.cpp
@@ -190,7 +192,7 @@ if(PACKAGE_TESTS)
   target_include_directories(chopt_tests
     PRIVATE "${PROJECT_SOURCE_DIR}/include")
   target_link_directories(chopt_tests PRIVATE ${Boost_LIBRARY_DIRS})
-  target_link_libraries(chopt_tests PRIVATE Boost::nowide
+  target_link_libraries(chopt_tests PRIVATE Boost::nowide Boost::program_options
     Boost::unit_test_framework)
   add_test(NAME chopt_tests COMMAND chopt_tests)
   set_cpp_standard(chopt_tests)

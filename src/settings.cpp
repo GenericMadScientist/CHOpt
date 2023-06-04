@@ -80,11 +80,22 @@ Instrument string_to_inst(std::string_view text)
     throw std::invalid_argument("Unrecognised instrument");
 }
 
-std::unique_ptr<Engine> string_to_engine(std::string_view engine,
-                                         Instrument instrument,
-                                         bool precision_mode)
+Game game_from_string(std::string_view game)
 {
-    if (engine == "ch") {
+    const std::map<std::string_view, Game> game_map {
+        {"ch", Game::CloneHero},
+        {"gh1", Game::GuitarHeroOne},
+        {"rb", Game::RockBand},
+        {"rb3", Game::RockBand3}};
+    return game_map.at(game);
+}
+}
+
+std::unique_ptr<Engine> game_to_engine(Game game, Instrument instrument,
+                                       bool precision_mode)
+{
+    switch (game) {
+    case Game::CloneHero:
         if (instrument == Instrument::Drums) {
             if (precision_mode) {
                 return std::make_unique<ChPrecisionDrumEngine>();
@@ -95,25 +106,19 @@ std::unique_ptr<Engine> string_to_engine(std::string_view engine,
             return std::make_unique<ChPrecisionGuitarEngine>();
         }
         return std::make_unique<ChGuitarEngine>();
-    }
-    if (engine == "gh1") {
+    case Game::GuitarHeroOne:
         return std::make_unique<Gh1Engine>();
-    }
-    if (engine == "rb") {
+    case Game::RockBand:
         if (instrument == Instrument::Bass) {
             return std::make_unique<RbBassEngine>();
         }
         return std::make_unique<RbEngine>();
-    }
-    if (engine == "rb3") {
+    case Game::RockBand3:
         if (instrument == Instrument::Bass) {
             return std::make_unique<Rb3BassEngine>();
         }
         return std::make_unique<Rb3Engine>();
     }
-
-    throw std::invalid_argument("Invalid engine specified");
-}
 }
 
 std::optional<Settings> from_args(int argc, char** argv)
@@ -245,8 +250,8 @@ std::optional<Settings> from_args(int argc, char** argv)
 
     const auto precision_mode = vm.count("precision-mode") != 0;
     const auto engine_name = vm["engine"].as<std::string>();
-    settings.engine
-        = string_to_engine(engine_name, settings.instrument, precision_mode);
+    const auto game = game_from_string(engine_name);
+    settings.engine = game_to_engine(game, settings.instrument, precision_mode);
 
     const auto speed = vm["speed"].as<int>();
     if (speed < MIN_SPEED || speed > MAX_SPEED || speed % MIN_SPEED != 0) {
