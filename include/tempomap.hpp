@@ -45,73 +45,6 @@ struct BPM {
     std::int64_t bpm;
 };
 
-class SpMeasure {
-private:
-    double m_value;
-
-public:
-    explicit SpMeasure(double value)
-        : m_value {value}
-    {
-    }
-    [[nodiscard]] double value() const { return m_value; }
-    [[nodiscard]] Beat to_beat(double beat_rate) const
-    {
-        return Beat(m_value * beat_rate);
-    }
-
-    std::partial_ordering operator<=>(const SpMeasure& rhs) const
-    {
-        return m_value <=> rhs.m_value;
-    }
-
-    SpMeasure& operator+=(const SpMeasure& rhs)
-    {
-        m_value += rhs.m_value;
-        return *this;
-    }
-
-    SpMeasure& operator-=(const SpMeasure& rhs)
-    {
-        m_value -= rhs.m_value;
-        return *this;
-    }
-
-    SpMeasure& operator*=(double rhs)
-    {
-        m_value *= rhs;
-        return *this;
-    }
-
-    friend SpMeasure operator+(SpMeasure lhs, const SpMeasure& rhs)
-    {
-        lhs += rhs;
-        return lhs;
-    }
-
-    friend SpMeasure operator-(SpMeasure lhs, const SpMeasure& rhs)
-    {
-        lhs -= rhs;
-        return lhs;
-    }
-
-    friend SpMeasure operator*(SpMeasure lhs, double rhs)
-    {
-        lhs *= rhs;
-        return lhs;
-    }
-
-    friend double operator/(const SpMeasure& lhs, const SpMeasure& rhs)
-    {
-        return lhs.m_value / rhs.m_value;
-    }
-};
-
-struct SpPosition {
-    Beat beat;
-    SpMeasure sp_measure;
-};
-
 // Invariants:
 // bpms() are sorted by position.
 // bpms() never has two BPMs with the same position.
@@ -154,8 +87,6 @@ private:
     std::vector<OdBeatTimestamp> m_od_beat_timestamps;
     double m_last_od_beat_rate;
 
-    bool m_use_od_beats = false;
-
 public:
     TempoMap()
         : TempoMap({}, {}, {}, DEFAULT_RESOLUTION)
@@ -175,7 +106,6 @@ public:
     [[nodiscard]] Beat to_beats(Measure measures) const;
     [[nodiscard]] Beat to_beats(OdBeat od_beats) const;
     [[nodiscard]] Beat to_beats(Second seconds) const;
-    [[nodiscard]] Beat to_beats(SpMeasure measures) const;
     [[nodiscard]] Beat to_beats(Tick ticks) const
     {
         return Beat {ticks.value() / static_cast<double>(m_resolution)};
@@ -188,7 +118,6 @@ public:
 
     [[nodiscard]] Second to_seconds(Beat beats) const;
     [[nodiscard]] Second to_seconds(Measure measures) const;
-    [[nodiscard]] Second to_seconds(SpMeasure measures) const;
     [[nodiscard]] Second to_seconds(Tick ticks) const;
 
     [[nodiscard]] Tick to_ticks(Beat beats) const
@@ -196,8 +125,6 @@ public:
         return Tick {static_cast<int>(beats.value() * m_resolution)};
     }
     [[nodiscard]] Tick to_ticks(Second seconds) const;
-
-    void use_od_beats(bool value) { m_use_od_beats = value; }
 };
 
 #endif

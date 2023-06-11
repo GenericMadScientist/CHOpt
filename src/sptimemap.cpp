@@ -25,9 +25,16 @@ Beat SpTimeMap::to_beats(Second seconds) const
     return m_tempo_map.to_beats(seconds);
 }
 
-Beat SpTimeMap::to_beats(SpMeasure sp_measures) const
+Beat SpTimeMap::to_beats(SpMeasure measures) const
 {
-    return m_tempo_map.to_beats(sp_measures);
+    switch (m_sp_mode) {
+    case SpMode::Measure:
+        return m_tempo_map.to_beats(Measure {measures.value()});
+    case SpMode::OdBeat:
+        return m_tempo_map.to_beats(OdBeat {measures.value()});
+    default:
+        throw std::runtime_error("Invalid SpMode value");
+    }
 }
 
 Beat SpTimeMap::to_beats(Tick ticks) const
@@ -38,6 +45,11 @@ Beat SpTimeMap::to_beats(Tick ticks) const
 Second SpTimeMap::to_seconds(Beat beats) const
 {
     return m_tempo_map.to_seconds(beats);
+}
+
+Second SpTimeMap::to_seconds(SpMeasure sp_measures) const
+{
+    return to_seconds(to_beats(sp_measures));
 }
 
 SpMeasure SpTimeMap::to_sp_measures(Beat beats) const

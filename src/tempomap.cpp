@@ -182,14 +182,6 @@ Beat TempoMap::to_beats(Second seconds) const
         * ((seconds - prev->time) / (pos->time - prev->time));
 }
 
-Beat TempoMap::to_beats(SpMeasure measures) const
-{
-    if (m_use_od_beats) {
-        return to_beats(OdBeat {measures.value()});
-    }
-    return to_beats(Measure {measures.value()});
-}
-
 Measure TempoMap::to_measures(Beat beats) const
 {
     const auto pos = std::lower_bound(
@@ -253,11 +245,6 @@ Second TempoMap::to_seconds(Beat beats) const
 }
 
 Second TempoMap::to_seconds(Measure measures) const
-{
-    return to_seconds(to_beats(measures));
-}
-
-Second TempoMap::to_seconds(SpMeasure measures) const
 {
     return to_seconds(to_beats(measures));
 }
