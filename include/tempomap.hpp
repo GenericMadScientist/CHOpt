@@ -127,6 +127,11 @@ private:
     };
 
     struct MeasureTimestamp {
+        Measure measure;
+        Beat beat;
+    };
+
+    struct SpMeasureTimestamp {
         SpMeasure measure;
         Beat beat;
     };
@@ -146,12 +151,11 @@ private:
     std::vector<MeasureTimestamp> m_measure_timestamps;
     double m_last_beat_rate;
 
-    std::vector<MeasureTimestamp> m_od_beat_timestamps;
+    std::vector<SpMeasureTimestamp> m_od_beat_timestamps;
     double m_last_od_beat_rate;
 
     bool m_use_od_beats = false;
 
-    const std::vector<TempoMap::MeasureTimestamp>& measure_timestamps() const;
     double last_beat_rate() const;
 
 public:
@@ -170,19 +174,22 @@ public:
     // Return the TempoMap for a speedup of speed% (normal speed is 100).
     [[nodiscard]] TempoMap speedup(int speed) const;
 
-    [[nodiscard]] Beat to_beats(SpMeasure measures) const;
+    [[nodiscard]] Beat to_beats(Measure measures) const;
     [[nodiscard]] Beat to_beats(Second seconds) const;
+    [[nodiscard]] Beat to_beats(SpMeasure measures) const;
     [[nodiscard]] Beat to_beats(Tick ticks) const
     {
         return Beat {ticks.value() / static_cast<double>(m_resolution)};
     }
 
-    [[nodiscard]] SpMeasure to_sp_measures(Beat beats) const;
-    [[nodiscard]] SpMeasure to_sp_measures(Second seconds) const;
+    [[nodiscard]] Measure to_measures(Beat beats) const;
 
     [[nodiscard]] Second to_seconds(Beat beats) const;
     [[nodiscard]] Second to_seconds(SpMeasure measures) const;
     [[nodiscard]] Second to_seconds(Tick ticks) const;
+
+    [[nodiscard]] SpMeasure to_sp_measures(Beat beats) const;
+    [[nodiscard]] SpMeasure to_sp_measures(Second seconds) const;
 
     [[nodiscard]] Tick to_ticks(Beat beats) const
     {
