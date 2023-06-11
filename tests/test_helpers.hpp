@@ -16,6 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef CHOPT_TESTHELPERS_HPP
+#define CHOPT_TESTHELPERS_HPP
+
 #include <array>
 #include <cmath>
 #include <iomanip>
@@ -513,3 +516,5 @@ inline std::shared_ptr<SongGlobalData> make_resolution(int resolution)
     data->tempo_map({{}, {}, {}, resolution});
     return data;
 }
+
+#endif
