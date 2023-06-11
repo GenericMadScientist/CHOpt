@@ -105,10 +105,10 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
         for (auto i = 0U; i < m_od_beats.size(); ++i) {
             const auto beat = to_beats(m_od_beats[i]);
             m_od_beat_timestamps.push_back(
-                {SpMeasure(i / DEFAULT_BEAT_RATE), beat});
+                {OdBeat(i / DEFAULT_BEAT_RATE), beat});
         }
     } else {
-        m_od_beat_timestamps.push_back({SpMeasure(0.0), Beat(0.0)});
+        m_od_beat_timestamps.push_back({OdBeat(0.0), Beat(0.0)});
     }
 
     m_last_od_beat_rate = DEFAULT_BEAT_RATE;
@@ -150,6 +150,24 @@ Beat TempoMap::to_beats(Measure measures) const
         * ((measures - prev->measure) / (pos->measure - prev->measure));
 }
 
+Beat TempoMap::to_beats(OdBeat od_beats) const
+{
+    const auto pos = std::lower_bound(
+        m_od_beat_timestamps.cbegin(), m_od_beat_timestamps.cend(), od_beats,
+        [](const auto& x, const auto& y) { return x.od_beat < y; });
+    if (pos == m_od_beat_timestamps.cend()) {
+        const auto& back = m_od_beat_timestamps.back();
+        return back.beat + (od_beats - back.od_beat).to_beat(last_beat_rate());
+    }
+    if (pos == m_od_beat_timestamps.cbegin()) {
+        return pos->beat - (pos->od_beat - od_beats).to_beat(DEFAULT_BEAT_RATE);
+    }
+    const auto prev = pos - 1;
+    return prev->beat
+        + (pos->beat - prev->beat)
+        * ((od_beats - prev->od_beat) / (pos->od_beat - prev->od_beat));
+}
+
 Beat TempoMap::to_beats(Second seconds) const
 {
     const auto pos = std::lower_bound(
@@ -170,24 +188,10 @@ Beat TempoMap::to_beats(Second seconds) const
 
 Beat TempoMap::to_beats(SpMeasure measures) const
 {
-    if (!m_use_od_beats) {
-        return to_beats(Measure {measures.value()});
+    if (m_use_od_beats) {
+        return to_beats(OdBeat {measures.value()});
     }
-
-    const auto pos = std::lower_bound(
-        m_od_beat_timestamps.cbegin(), m_od_beat_timestamps.cend(), measures,
-        [](const auto& x, const auto& y) { return x.measure < y; });
-    if (pos == m_od_beat_timestamps.cend()) {
-        const auto& back = m_od_beat_timestamps.back();
-        return back.beat + (measures - back.measure).to_beat(last_beat_rate());
-    }
-    if (pos == m_od_beat_timestamps.cbegin()) {
-        return pos->beat - (pos->measure - measures).to_beat(DEFAULT_BEAT_RATE);
-    }
-    const auto prev = pos - 1;
-    return prev->beat
-        + (pos->beat - prev->beat)
-        * ((measures - prev->measure) / (pos->measure - prev->measure));
+    return to_beats(Measure {measures.value()});
 }
 
 Measure TempoMap::to_measures(Beat beats) const
@@ -205,6 +209,26 @@ Measure TempoMap::to_measures(Beat beats) const
     const auto prev = pos - 1;
     return prev->measure
         + (pos->measure - prev->measure)
+        * ((beats - prev->beat) / (pos->beat - prev->beat));
+}
+
+OdBeat TempoMap::to_od_beats(Beat beats) const
+{
+    const auto pos = std::lower_bound(
+        m_od_beat_timestamps.cbegin(), m_od_beat_timestamps.cend(), beats,
+        [](const auto& x, const auto& y) { return x.beat < y; });
+    if (pos == m_od_beat_timestamps.cend()) {
+        const auto& back = m_od_beat_timestamps.back();
+        return back.od_beat
+            + OdBeat((beats - back.beat).to_measure(last_beat_rate()).value());
+    }
+    if (pos == m_od_beat_timestamps.cbegin()) {
+        return pos->od_beat
+            - OdBeat((pos->beat - beats).to_measure(DEFAULT_BEAT_RATE).value());
+    }
+    const auto prev = pos - 1;
+    return prev->od_beat
+        + (pos->od_beat - prev->od_beat)
         * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
@@ -238,28 +262,10 @@ Second TempoMap::to_seconds(Tick ticks) const
 
 SpMeasure TempoMap::to_sp_measures(Beat beats) const
 {
-    if (!m_use_od_beats) {
-        return SpMeasure {to_measures(beats).value()};
+    if (m_use_od_beats) {
+        return SpMeasure {to_od_beats(beats).value()};
     }
-
-    const auto pos = std::lower_bound(
-        m_od_beat_timestamps.cbegin(), m_od_beat_timestamps.cend(), beats,
-        [](const auto& x, const auto& y) { return x.beat < y; });
-    if (pos == m_od_beat_timestamps.cend()) {
-        const auto& back = m_od_beat_timestamps.back();
-        return back.measure
-            + SpMeasure(
-                   (beats - back.beat).to_measure(last_beat_rate()).value());
-    }
-    if (pos == m_od_beat_timestamps.cbegin()) {
-        return pos->measure
-            - SpMeasure(
-                   (pos->beat - beats).to_measure(DEFAULT_BEAT_RATE).value());
-    }
-    const auto prev = pos - 1;
-    return prev->measure
-        + (pos->measure - prev->measure)
-        * ((beats - prev->beat) / (pos->beat - prev->beat));
+    return SpMeasure {to_measures(beats).value()};
 }
 
 SpMeasure TempoMap::to_sp_measures(Second seconds) const

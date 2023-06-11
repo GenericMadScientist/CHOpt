@@ -131,8 +131,8 @@ private:
         Beat beat;
     };
 
-    struct SpMeasureTimestamp {
-        SpMeasure measure;
+    struct OdBeatTimestamp {
+        OdBeat od_beat;
         Beat beat;
     };
 
@@ -151,7 +151,7 @@ private:
     std::vector<MeasureTimestamp> m_measure_timestamps;
     double m_last_beat_rate;
 
-    std::vector<SpMeasureTimestamp> m_od_beat_timestamps;
+    std::vector<OdBeatTimestamp> m_od_beat_timestamps;
     double m_last_od_beat_rate;
 
     bool m_use_od_beats = false;
@@ -175,6 +175,7 @@ public:
     [[nodiscard]] TempoMap speedup(int speed) const;
 
     [[nodiscard]] Beat to_beats(Measure measures) const;
+    [[nodiscard]] Beat to_beats(OdBeat od_beats) const;
     [[nodiscard]] Beat to_beats(Second seconds) const;
     [[nodiscard]] Beat to_beats(SpMeasure measures) const;
     [[nodiscard]] Beat to_beats(Tick ticks) const
@@ -183,6 +184,8 @@ public:
     }
 
     [[nodiscard]] Measure to_measures(Beat beats) const;
+
+    [[nodiscard]] OdBeat to_od_beats(Beat beats) const;
 
     [[nodiscard]] Second to_seconds(Beat beats) const;
     [[nodiscard]] Second to_seconds(SpMeasure measures) const;

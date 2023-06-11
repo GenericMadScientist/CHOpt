@@ -183,6 +183,68 @@ public:
     }
 };
 
+class OdBeat {
+private:
+    double m_value;
+
+public:
+    explicit OdBeat(double value)
+        : m_value {value}
+    {
+    }
+    [[nodiscard]] double value() const { return m_value; }
+    [[nodiscard]] Beat to_beat(double beat_rate) const
+    {
+        return Beat(m_value * beat_rate);
+    }
+
+    std::partial_ordering operator<=>(const OdBeat& rhs) const
+    {
+        return m_value <=> rhs.m_value;
+    }
+
+    OdBeat& operator+=(const OdBeat& rhs)
+    {
+        m_value += rhs.m_value;
+        return *this;
+    }
+
+    OdBeat& operator-=(const OdBeat& rhs)
+    {
+        m_value -= rhs.m_value;
+        return *this;
+    }
+
+    OdBeat& operator*=(double rhs)
+    {
+        m_value *= rhs;
+        return *this;
+    }
+
+    friend OdBeat operator+(OdBeat lhs, const OdBeat& rhs)
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    friend OdBeat operator-(OdBeat lhs, const OdBeat& rhs)
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
+    friend OdBeat operator*(OdBeat lhs, double rhs)
+    {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    friend double operator/(const OdBeat& lhs, const OdBeat& rhs)
+    {
+        return lhs.m_value / rhs.m_value;
+    }
+};
+
 class Second {
 private:
     double m_value;
