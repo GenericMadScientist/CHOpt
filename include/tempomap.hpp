@@ -156,8 +156,6 @@ private:
 
     bool m_use_od_beats = false;
 
-    double last_beat_rate() const;
-
 public:
     TempoMap()
         : TempoMap({}, {}, {}, DEFAULT_RESOLUTION)

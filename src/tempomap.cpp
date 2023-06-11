@@ -20,11 +20,6 @@
 
 #include "tempomap.hpp"
 
-double TempoMap::last_beat_rate() const
-{
-    return m_use_od_beats ? m_last_od_beat_rate : m_last_beat_rate;
-}
-
 TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
                    std::vector<Tick> od_beats, int resolution)
     : m_od_beats {std::move(od_beats)}
@@ -139,7 +134,7 @@ Beat TempoMap::to_beats(Measure measures) const
         [](const auto& x, const auto& y) { return x.measure < y; });
     if (pos == m_measure_timestamps.cend()) {
         const auto& back = m_measure_timestamps.back();
-        return back.beat + (measures - back.measure).to_beat(last_beat_rate());
+        return back.beat + (measures - back.measure).to_beat(m_last_beat_rate);
     }
     if (pos == m_measure_timestamps.cbegin()) {
         return pos->beat - (pos->measure - measures).to_beat(DEFAULT_BEAT_RATE);
@@ -157,7 +152,8 @@ Beat TempoMap::to_beats(OdBeat od_beats) const
         [](const auto& x, const auto& y) { return x.od_beat < y; });
     if (pos == m_od_beat_timestamps.cend()) {
         const auto& back = m_od_beat_timestamps.back();
-        return back.beat + (od_beats - back.od_beat).to_beat(last_beat_rate());
+        return back.beat
+            + (od_beats - back.od_beat).to_beat(m_last_od_beat_rate);
     }
     if (pos == m_od_beat_timestamps.cbegin()) {
         return pos->beat - (pos->od_beat - od_beats).to_beat(DEFAULT_BEAT_RATE);
@@ -201,7 +197,7 @@ Measure TempoMap::to_measures(Beat beats) const
         [](const auto& x, const auto& y) { return x.beat < y; });
     if (pos == m_measure_timestamps.cend()) {
         const auto& back = m_measure_timestamps.back();
-        return back.measure + (beats - back.beat).to_measure(last_beat_rate());
+        return back.measure + (beats - back.beat).to_measure(m_last_beat_rate);
     }
     if (pos == m_measure_timestamps.cbegin()) {
         return pos->measure - (pos->beat - beats).to_measure(DEFAULT_BEAT_RATE);
@@ -220,7 +216,8 @@ OdBeat TempoMap::to_od_beats(Beat beats) const
     if (pos == m_od_beat_timestamps.cend()) {
         const auto& back = m_od_beat_timestamps.back();
         return back.od_beat
-            + OdBeat((beats - back.beat).to_measure(last_beat_rate()).value());
+            + OdBeat(
+                   (beats - back.beat).to_measure(m_last_od_beat_rate).value());
     }
     if (pos == m_od_beat_timestamps.cbegin()) {
         return pos->od_beat
