@@ -290,25 +290,6 @@ inline std::ostream& operator<<(std::ostream& stream, PointPtr addr)
     return stream;
 }
 
-inline bool operator==(const Position& lhs, const Position& rhs)
-{
-    return std::tie(lhs.beat, lhs.measure) == std::tie(rhs.beat, rhs.measure);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const Position& position)
-{
-    stream << "{Beat " << position.beat << ", Measure" << position.measure
-           << '}';
-    return stream;
-}
-
-inline std::ostream& operator<<(std::ostream& stream,
-                                const std::tuple<Position, int>& tuple)
-{
-    stream << '{' << std::get<0>(tuple) << ", " << std::get<1>(tuple) << '}';
-    return stream;
-}
-
 inline bool operator==(const Second& lhs, const Second& rhs)
 {
     return std::abs(lhs.value() - rhs.value()) < 0.01;
@@ -355,6 +336,38 @@ inline std::ostream& operator<<(std::ostream& stream, const SpecialEvent& event)
 {
     stream << "{Pos " << event.position << ", Key " << event.key << ", Length"
            << event.length << '}';
+    return stream;
+}
+
+inline bool operator==(const SpMeasure& lhs, const SpMeasure& rhs)
+{
+    return std::abs(lhs.value() - rhs.value()) < 0.000001;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, SpMeasure measure)
+{
+    stream << measure.value() << 'm';
+    return stream;
+}
+
+inline bool operator==(const SpPosition& lhs, const SpPosition& rhs)
+{
+    return std::tie(lhs.beat, lhs.sp_measure)
+        == std::tie(rhs.beat, rhs.sp_measure);
+}
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const SpPosition& position)
+{
+    stream << "{Beat " << position.beat << ", SpMeasure" << position.sp_measure
+           << '}';
+    return stream;
+}
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const std::tuple<SpPosition, int>& tuple)
+{
+    stream << '{' << std::get<0>(tuple) << ", " << std::get<1>(tuple) << '}';
     return stream;
 }
 

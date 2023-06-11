@@ -30,11 +30,11 @@ bool phrase_contains_pos(const StarPower& phrase, Tick position)
     return position < (phrase.position + phrase.length);
 }
 
-double sp_deduction(Position start, Position end)
+double sp_deduction(SpPosition start, SpPosition end)
 {
     constexpr double MEASURES_PER_BAR = 8.0;
 
-    const auto meas_diff = end.measure - start.measure;
+    const auto meas_diff = end.sp_measure - start.sp_measure;
     return meas_diff.value() / MEASURES_PER_BAR;
 }
 
@@ -160,8 +160,8 @@ SpData::SpData(const NoteTrack& track, const std::vector<Tick>& od_beats,
     merged_ranges.push_back(pair);
 
     for (auto [start, end, note] : merged_ranges) {
-        const auto start_meas = m_tempo_map.to_measures(start);
-        const auto end_meas = m_tempo_map.to_measures(end);
+        const auto start_meas = m_tempo_map.to_sp_measures(start);
+        const auto end_meas = m_tempo_map.to_sp_measures(end);
         m_whammy_ranges.push_back({{start, start_meas}, {end, end_meas}, note});
     }
 
@@ -213,14 +213,14 @@ SpData::initial_whammy_prop_state(Beat start, Beat end,
     return {p, start, sp_bar_amount};
 }
 
-double SpData::propagate_sp_over_whammy_max(Position start, Position end,
+double SpData::propagate_sp_over_whammy_max(SpPosition start, SpPosition end,
                                             double sp) const
 {
     assert(start.beat <= end.beat); // NOLINT
     auto p = first_whammy_range_after(start.beat);
     while ((p != m_whammy_ranges.cend()) && (p->start.beat < end.beat)) {
         if (p->start.beat > start.beat) {
-            const auto meas_diff = p->start.measure - start.measure;
+            const auto meas_diff = p->start.sp_measure - start.sp_measure;
             sp -= meas_diff.value() / MEASURES_PER_BAR;
             if (sp < 0.0) {
                 return sp;
@@ -236,14 +236,15 @@ double SpData::propagate_sp_over_whammy_max(Position start, Position end,
         ++p;
     }
 
-    const auto meas_diff = end.measure - start.measure;
+    const auto meas_diff = end.sp_measure - start.sp_measure;
     sp -= meas_diff.value() / MEASURES_PER_BAR;
     return sp;
 }
 
-double SpData::propagate_sp_over_whammy_min(Position start, Position end,
-                                            double sp,
-                                            Position required_whammy_end) const
+double
+SpData::propagate_sp_over_whammy_min(SpPosition start, SpPosition end,
+                                     double sp,
+                                     SpPosition required_whammy_end) const
 {
     assert(start.beat <= end.beat); // NOLINT
     if (required_whammy_end.beat > start.beat) {
@@ -255,7 +256,7 @@ double SpData::propagate_sp_over_whammy_min(Position start, Position end,
         start = required_whammy_end;
     }
     if (start.beat < end.beat) {
-        const auto meas_diff = end.measure - start.measure;
+        const auto meas_diff = end.sp_measure - start.sp_measure;
         sp -= meas_diff.value() / MEASURES_PER_BAR;
     }
 
@@ -329,16 +330,17 @@ double SpData::available_whammy(Beat start, Beat end, Beat note_pos) const
     return total_whammy;
 }
 
-Position SpData::sp_drain_end_point(Position start, double sp_bar_amount) const
+SpPosition SpData::sp_drain_end_point(SpPosition start,
+                                      double sp_bar_amount) const
 {
     const auto end_meas
-        = start.measure + Measure(sp_bar_amount * MEASURES_PER_BAR);
+        = start.sp_measure + SpMeasure(sp_bar_amount * MEASURES_PER_BAR);
     const auto end_beat = m_tempo_map.to_beats(end_meas);
     return {end_beat, end_meas};
 }
 
-Position SpData::activation_end_point(Position start, Position end,
-                                      double sp_bar_amount) const
+SpPosition SpData::activation_end_point(SpPosition start, SpPosition end,
+                                        double sp_bar_amount) const
 {
     auto p = first_whammy_range_after(start.beat);
     while ((p != m_whammy_ranges.cend()) && (p->start.beat < end.beat)) {
@@ -356,7 +358,7 @@ Position SpData::activation_end_point(Position start, Position end,
         if (new_sp_bar_amount < 0.0) {
             const auto end_beat = whammy_propagation_endpoint(
                 start.beat, end.beat, sp_bar_amount);
-            const auto end_meas = m_tempo_map.to_measures(end_beat);
+            const auto end_meas = m_tempo_map.to_sp_measures(end_beat);
             return {end_beat, end_meas};
         }
         sp_bar_amount = new_sp_bar_amount;

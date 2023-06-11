@@ -69,12 +69,12 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_four_four)
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
-        sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
-                                             {Beat(4.0), Measure(1.0)}, 0.5),
+        sp_data.propagate_sp_over_whammy_max({Beat(0.0), SpMeasure(0.0)},
+                                             {Beat(4.0), SpMeasure(1.0)}, 0.5),
         0.508333, 0.0001);
     BOOST_CHECK_CLOSE(
-        sp_data.propagate_sp_over_whammy_max({Beat(1.0), Measure(0.25)},
-                                             {Beat(4.0), Measure(1.0)}, 0.5),
+        sp_data.propagate_sp_over_whammy_max({Beat(1.0), SpMeasure(0.25)},
+                                             {Beat(4.0), SpMeasure(1.0)}, 0.5),
         0.50625, 0.0001);
 }
 
@@ -95,12 +95,12 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_three_four)
 
     BOOST_CHECK_CLOSE(
         sp_data.propagate_sp_over_whammy_max(
-            {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(4.0 / 3)}, 0.5),
+            {Beat(0.0), SpMeasure(0.0)}, {Beat(4.0), SpMeasure(4.0 / 3)}, 0.5),
         0.466667, 0.0001);
-    BOOST_CHECK_CLOSE(
-        sp_data.propagate_sp_over_whammy_max(
-            {Beat(-1.0), Measure(-0.25)}, {Beat(4.0), Measure(4.0 / 3)}, 0.5),
-        0.440083, 0.0001);
+    BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_max(
+                          {Beat(-1.0), SpMeasure(-0.25)},
+                          {Beat(4.0), SpMeasure(4.0 / 3)}, 0.5),
+                      0.440083, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(works_correctly_over_changing_time_signatures)
@@ -120,11 +120,11 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_changing_time_signatures)
 
     BOOST_CHECK_CLOSE(
         sp_data.propagate_sp_over_whammy_max(
-            {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(7.0 / 6)}, 0.5),
+            {Beat(0.0), SpMeasure(0.0)}, {Beat(4.0), SpMeasure(7.0 / 6)}, 0.5),
         0.4875, 0.0001);
     BOOST_CHECK_CLOSE(
         sp_data.propagate_sp_over_whammy_max(
-            {Beat(1.0), Measure(0.25)}, {Beat(4.0), Measure(7.0 / 6)}, 0.5),
+            {Beat(1.0), SpMeasure(0.25)}, {Beat(4.0), SpMeasure(7.0 / 6)}, 0.5),
         0.485417, 0.0001);
 }
 
@@ -143,14 +143,14 @@ BOOST_AUTO_TEST_CASE(returns_negative_one_if_sp_runs_out)
     SpData sp_data {
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
-    BOOST_CHECK_CLOSE(
-        sp_data.propagate_sp_over_whammy_max(
-            {Beat(0.0), Measure(0.0)}, {Beat(2.0), Measure(2.0 / 3)}, 0.015),
-        -1.0, 0.0001);
-    BOOST_CHECK_CLOSE(
-        sp_data.propagate_sp_over_whammy_max(
-            {Beat(0.0), Measure(0.0)}, {Beat(10.0), Measure(8.0 / 3)}, 0.015),
-        -1.0, 0.0001);
+    BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_max(
+                          {Beat(0.0), SpMeasure(0.0)},
+                          {Beat(2.0), SpMeasure(2.0 / 3)}, 0.015),
+                      -1.0, 0.0001);
+    BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_max(
+                          {Beat(0.0), SpMeasure(0.0)},
+                          {Beat(10.0), SpMeasure(8.0 / 3)}, 0.015),
+                      -1.0, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(works_even_if_some_of_the_range_isnt_whammyable)
@@ -170,8 +170,8 @@ BOOST_AUTO_TEST_CASE(works_even_if_some_of_the_range_isnt_whammyable)
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
-        sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
-                                             {Beat(12.0), Measure(3.0)}, 0.5),
+        sp_data.propagate_sp_over_whammy_max({Beat(0.0), SpMeasure(0.0)},
+                                             {Beat(12.0), SpMeasure(3.0)}, 0.5),
         0.496333, 0.0001);
 }
 
@@ -192,12 +192,12 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
-        sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
-                                             {Beat(10.0), Measure(2.5)}, 1.0),
+        sp_data.propagate_sp_over_whammy_max({Beat(0.0), SpMeasure(0.0)},
+                                             {Beat(10.0), SpMeasure(2.5)}, 1.0),
         1.0, 0.0001);
     BOOST_CHECK_CLOSE(
-        sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
-                                             {Beat(10.5), Measure(2.625)}, 1.0),
+        sp_data.propagate_sp_over_whammy_max(
+            {Beat(0.0), SpMeasure(0.0)}, {Beat(10.5), SpMeasure(2.625)}, 1.0),
         0.984375, 0.0001);
 }
 
@@ -217,8 +217,8 @@ BOOST_AUTO_TEST_CASE(sustains_not_in_a_phrase_do_not_contribute_sp)
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(
-        sp_data.propagate_sp_over_whammy_max({Beat(0.0), Measure(0.0)},
-                                             {Beat(4.0), Measure(1.0)}, 1.0),
+        sp_data.propagate_sp_over_whammy_max({Beat(0.0), SpMeasure(0.0)},
+                                             {Beat(4.0), SpMeasure(1.0)}, 1.0),
         0.875, 0.0001);
 }
 
@@ -238,10 +238,11 @@ BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
     SpData sp_data {
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
-    BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_min(
-                          {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)},
-                          0.5, {Beat(2.0), Measure(0.5)}),
-                      0.441667, 0.0001);
+    BOOST_CHECK_CLOSE(
+        sp_data.propagate_sp_over_whammy_min({Beat(0.0), SpMeasure(0.0)},
+                                             {Beat(4.0), SpMeasure(1.0)}, 0.5,
+                                             {Beat(2.0), SpMeasure(0.5)}),
+        0.441667, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(
@@ -263,8 +264,9 @@ BOOST_AUTO_TEST_CASE(
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
 
     BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_min(
-                          {Beat(0.0), Measure(0.0)}, {Beat(4.0), Measure(1.0)},
-                          0.5, {Beat {NEG_INF}, Measure {NEG_INF}}),
+                          {Beat(0.0), SpMeasure(0.0)},
+                          {Beat(4.0), SpMeasure(1.0)}, 0.5,
+                          {Beat {NEG_INF}, SpMeasure {NEG_INF}}),
                       0.375, 0.0001);
 }
 
@@ -404,8 +406,8 @@ BOOST_AUTO_TEST_CASE(works_when_sp_is_sufficient)
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
-    Position start {Beat(0.0), Measure(0.0)};
-    Position end {Beat(1.0), Measure(0.25)};
+    SpPosition start {Beat(0.0), SpMeasure(0.0)};
+    SpPosition end {Beat(1.0), SpMeasure(0.25)};
 
     BOOST_CHECK_CLOSE(
         sp_data.activation_end_point(start, end, 0.5).beat.value(), 1.0,
@@ -425,8 +427,8 @@ BOOST_AUTO_TEST_CASE(works_when_sp_is_insufficient)
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
-    Position start {Beat(0.0), Measure(0.0)};
-    Position end {Beat(1.0), Measure(0.25)};
+    SpPosition start {Beat(0.0), SpMeasure(0.0)};
+    SpPosition end {Beat(1.0), SpMeasure(0.25)};
 
     BOOST_CHECK_CLOSE(
         sp_data.activation_end_point(start, end, 0.01).beat.value(), 0.32,
@@ -447,8 +449,8 @@ BOOST_AUTO_TEST_CASE(works_when_adding_whammy_makes_sp_sufficient)
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
-    Position start {Beat(0.0), Measure(0.0)};
-    Position end {Beat(1.0), Measure(0.25)};
+    SpPosition start {Beat(0.0), SpMeasure(0.0)};
+    SpPosition end {Beat(1.0), SpMeasure(0.25)};
 
     BOOST_CHECK_CLOSE(
         sp_data.activation_end_point(start, end, 0.01).beat.value(), 1.0,
@@ -469,8 +471,8 @@ BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_insufficient)
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
-    Position start {Beat(0.0), Measure(0.0)};
-    Position end {Beat(2.0), Measure(0.5)};
+    SpPosition start {Beat(0.0), SpMeasure(0.0)};
+    SpPosition end {Beat(2.0), SpMeasure(0.5)};
 
     BOOST_CHECK_CLOSE(
         sp_data.activation_end_point(start, end, 0.01).beat.value(), 1.386667,
@@ -489,8 +491,8 @@ BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_accumulation_is_too_slow)
                      global_data};
     SpData sp_data {
         track, {}, SqueezeSettings::default_settings(), ChGuitarEngine()};
-    Position start {Beat(0.0), Measure(0.0)};
-    Position end {Beat(1.0), Measure(0.25)};
+    SpPosition start {Beat(0.0), SpMeasure(0.0)};
+    SpPosition end {Beat(1.0), SpMeasure(0.25)};
 
     BOOST_CHECK_CLOSE(
         sp_data.activation_end_point(start, end, 0.01).beat.value(), 0.342857,

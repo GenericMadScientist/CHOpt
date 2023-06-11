@@ -105,9 +105,10 @@ SpBar ProcessedSong::total_available_sp(Beat start, PointPtr first_point,
     return sp_bar;
 }
 
-std::tuple<SpBar, Position> ProcessedSong::total_available_sp_with_earliest_pos(
+std::tuple<SpBar, SpPosition>
+ProcessedSong::total_available_sp_with_earliest_pos(
     Beat start, PointPtr first_point, PointPtr act_start,
-    Position earliest_potential_pos) const
+    SpPosition earliest_potential_pos) const
 {
     const Beat BEAT_EPSILON {0.0001};
 
@@ -145,11 +146,12 @@ std::tuple<SpBar, Position> ProcessedSong::total_available_sp_with_earliest_pos(
         earliest_potential_pos.beat, last_beat, act_start->position.beat);
     sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
-    return {sp_bar, Position {last_beat, m_tempo_map.to_measures(last_beat)}};
+    return {sp_bar,
+            SpPosition {last_beat, m_tempo_map.to_sp_measures(last_beat)}};
 }
 
-Position ProcessedSong::adjusted_hit_window_start(PointPtr point,
-                                                  double squeeze) const
+SpPosition ProcessedSong::adjusted_hit_window_start(PointPtr point,
+                                                    double squeeze) const
 {
     assert((0.0 <= squeeze) && (squeeze <= 1.0)); // NOLINT
 
@@ -161,13 +163,13 @@ Position ProcessedSong::adjusted_hit_window_start(PointPtr point,
     auto mid = m_tempo_map.to_seconds(point->position.beat);
     auto adj_start_s = start + (mid - start) * (1.0 - squeeze);
     auto adj_start_b = m_tempo_map.to_beats(adj_start_s);
-    auto adj_start_m = m_tempo_map.to_measures(adj_start_b);
+    auto adj_start_m = m_tempo_map.to_sp_measures(adj_start_b);
 
     return {adj_start_b, adj_start_m};
 }
 
-Position ProcessedSong::adjusted_hit_window_end(PointPtr point,
-                                                double squeeze) const
+SpPosition ProcessedSong::adjusted_hit_window_end(PointPtr point,
+                                                  double squeeze) const
 {
     assert((0.0 <= squeeze) && (squeeze <= 1.0)); // NOLINT
 
@@ -179,27 +181,27 @@ Position ProcessedSong::adjusted_hit_window_end(PointPtr point,
     auto end = m_tempo_map.to_seconds(point->hit_window_end.beat);
     auto adj_end_s = mid + (end - mid) * squeeze;
     auto adj_end_b = m_tempo_map.to_beats(adj_end_s);
-    auto adj_end_m = m_tempo_map.to_measures(adj_end_b);
+    auto adj_end_m = m_tempo_map.to_sp_measures(adj_end_b);
 
     return {adj_end_b, adj_end_m};
 }
 
 class SpStatus {
 private:
-    Position m_position;
+    SpPosition m_position;
     double m_sp;
     bool m_overlap_engine;
     static constexpr double MEASURES_PER_BAR = 8.0;
 
 public:
-    SpStatus(Position position, double sp, bool overlap_engine)
+    SpStatus(SpPosition position, double sp, bool overlap_engine)
         : m_position {position}
         , m_sp {sp}
         , m_overlap_engine {overlap_engine}
     {
     }
 
-    [[nodiscard]] Position position() const { return m_position; }
+    [[nodiscard]] SpPosition position() const { return m_position; }
     [[nodiscard]] double sp() const { return m_sp; }
 
     void add_phrase()
@@ -210,24 +212,24 @@ public:
         m_sp = std::min(m_sp, 1.0);
     }
 
-    void advance_whammy_max(Position end_position, const SpData& sp_data,
+    void advance_whammy_max(SpPosition end_position, const SpData& sp_data,
                             bool does_overlap)
     {
         if (does_overlap) {
             m_sp = sp_data.propagate_sp_over_whammy_max(m_position,
                                                         end_position, m_sp);
         } else {
-            m_sp -= (end_position.measure - m_position.measure).value()
+            m_sp -= (end_position.sp_measure - m_position.sp_measure).value()
                 / MEASURES_PER_BAR;
         }
         m_position = end_position;
     }
 
-    void update_early_end(Position sp_note_start, const SpData& sp_data,
-                          Position required_whammy_end)
+    void update_early_end(SpPosition sp_note_start, const SpData& sp_data,
+                          SpPosition required_whammy_end)
     {
         if (!m_overlap_engine) {
-            required_whammy_end = {Beat {0.0}, Measure {0.0}};
+            required_whammy_end = {Beat {0.0}, SpMeasure {0.0}};
         }
         m_sp = sp_data.propagate_sp_over_whammy_min(m_position, sp_note_start,
                                                     m_sp, required_whammy_end);
@@ -236,7 +238,7 @@ public:
         }
     }
 
-    void update_late_end(Position sp_note_start, Position sp_note_end,
+    void update_late_end(SpPosition sp_note_start, SpPosition sp_note_end,
                          const SpData& sp_data, bool does_overlap)
     {
         if (sp_note_start.beat < m_position.beat) {
@@ -263,11 +265,11 @@ public:
 ActResult
 ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
                                   double squeeze,
-                                  Position required_whammy_end) const
+                                  SpPosition required_whammy_end) const
 {
     static constexpr double MEASURES_PER_BAR = 8.0;
     static constexpr double MINIMUM_SP_AMOUNT = 0.5;
-    const Position null_position {Beat(0.0), Measure(0.0)};
+    const SpPosition null_position {Beat(0.0), SpMeasure(0.0)};
 
     if (!activation.sp_bar.full_enough_to_activate()) {
         return {null_position, ActValidity::insufficient_sp};
@@ -337,12 +339,13 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
             status_for_early_end.add_phrase();
         }
     }
-    const auto end_meas = status_for_early_end.position().measure
-        + Measure(status_for_early_end.sp() * MEASURES_PER_BAR);
+    const auto end_meas = status_for_early_end.position().sp_measure
+        + SpMeasure(status_for_early_end.sp() * MEASURES_PER_BAR);
 
     const auto next_point = std::next(activation.act_end);
     if (next_point != m_points.cend()
-        && end_meas >= adjusted_hit_window_end(next_point, squeeze).measure) {
+        && end_meas
+            >= adjusted_hit_window_end(next_point, squeeze).sp_measure) {
         return {null_position, ActValidity::surplus_sp};
     }
 

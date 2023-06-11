@@ -36,7 +36,7 @@
 struct ActivationCandidate {
     PointPtr act_start;
     PointPtr act_end;
-    Position earliest_activation_point {Beat(0.0), Measure(0.0)};
+    SpPosition earliest_activation_point {Beat(0.0), SpMeasure(0.0)};
     SpBar sp_bar {0.0, 0.0};
 };
 
@@ -61,7 +61,7 @@ enum class ActValidity { success, insufficient_sp, surplus_sp };
 // Return value of ProcessedSong::is_candidate_valid, providing information on
 // whether an activation is valid, and if so the earliest position it can end.
 struct ActResult {
-    Position ending_position;
+    SpPosition ending_position;
     ActValidity validity;
 };
 
@@ -113,29 +113,29 @@ public:
     // possible to get a half bar then the earliest position >=
     // earliest_potential_pos that grants a half bar is returned along with the
     // SP only up to that position.
-    [[nodiscard]] std::tuple<SpBar, Position>
-    total_available_sp_with_earliest_pos(Beat start, PointPtr first_point,
-                                         PointPtr act_start,
-                                         Position earliest_potential_pos) const;
+    [[nodiscard]] std::tuple<SpBar, SpPosition>
+    total_available_sp_with_earliest_pos(
+        Beat start, PointPtr first_point, PointPtr act_start,
+        SpPosition earliest_potential_pos) const;
     // Returns an ActResult which says if an activation is valid, and if so the
     // earliest position it can end. Checks squeezes against the given amount
     // only.
     [[nodiscard]] ActResult
     is_candidate_valid(const ActivationCandidate& activation,
                        double squeeze = 1.0,
-                       Position required_whammy_end
-                       = {Beat {NEG_INF}, Measure {NEG_INF}}) const;
+                       SpPosition required_whammy_end
+                       = {Beat {NEG_INF}, SpMeasure {NEG_INF}}) const;
     // Return the summary of a path.
     [[nodiscard]] std::string path_summary(const Path& path) const;
 
     // Return the position that is (100 - squeeze)% along the start of point's
     // timing window.
-    [[nodiscard]] Position adjusted_hit_window_start(PointPtr point,
-                                                     double squeeze) const;
+    [[nodiscard]] SpPosition adjusted_hit_window_start(PointPtr point,
+                                                       double squeeze) const;
     // Return the position that is squeeze% along the end of point's timing
     // window.
-    [[nodiscard]] Position adjusted_hit_window_end(PointPtr point,
-                                                   double squeeze) const;
+    [[nodiscard]] SpPosition adjusted_hit_window_end(PointPtr point,
+                                                     double squeeze) const;
 
     [[nodiscard]] const PointSet& points() const { return m_points; }
     [[nodiscard]] const SpData& sp_data() const { return m_sp_data; }

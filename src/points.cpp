@@ -76,14 +76,14 @@ void append_sustain_points(OutputIt points, Tick position, Tick sust_length,
         float_pos += tick_gap;
         float_sust_len -= tick_gap;
         const Beat beat {(float_pos - HALF_RES_OFFSET) / float_res};
-        const auto meas = tempo_map.to_measures(beat);
+        const auto meas = tempo_map.to_sp_measures(beat);
         --sust_ticks;
         *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, {}, 1, 1,
                      true,         false,        false};
     }
     if (sust_ticks > 0) {
         const Beat beat {(float_pos + HALF_RES_OFFSET) / float_res};
-        const auto meas = tempo_map.to_measures(beat);
+        const auto meas = tempo_map.to_sp_measures(beat);
         *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, {},   sust_ticks,
                      sust_ticks,   true,         false,        false};
     }
@@ -123,7 +123,7 @@ void append_note_points(std::vector<Note>::const_iterator note,
     const auto chord_size = get_chord_size(*note, drum_settings);
     const auto pos = note->position;
     const auto beat = tempo_map.to_beats(pos);
-    const auto meas = tempo_map.to_measures(beat);
+    const auto meas = tempo_map.to_sp_measures(beat);
     const auto note_seconds = tempo_map.to_seconds(beat);
 
     auto early_gap = std::numeric_limits<double>::infinity();
@@ -147,9 +147,9 @@ void append_note_points(std::vector<Note>::const_iterator note,
                               * squeeze};
 
     const auto early_beat = tempo_map.to_beats(note_seconds - early_window);
-    const auto early_meas = tempo_map.to_measures(early_beat);
+    const auto early_meas = tempo_map.to_sp_measures(early_beat);
     const auto late_beat = tempo_map.to_beats(note_seconds + late_window);
-    const auto late_meas = tempo_map.to_measures(late_beat);
+    const auto late_meas = tempo_map.to_sp_measures(late_beat);
     *points++
         = {{beat, meas}, {early_beat, early_meas}, {late_beat, late_meas},
            {},           note_value * chord_size,  note_value * chord_size,
@@ -220,7 +220,7 @@ void shift_points_by_video_lag(std::vector<Point>& points,
         auto seconds = tempo_map.to_seconds(position.beat);
         seconds += video_lag;
         position.beat = tempo_map.to_beats(seconds);
-        position.measure = tempo_map.to_measures(position.beat);
+        position.sp_measure = tempo_map.to_sp_measures(position.beat);
     };
 
     for (auto& point : points) {
@@ -508,16 +508,16 @@ std::vector<int> score_totals(const std::vector<Point>& points)
     return scores;
 }
 
-std::vector<std::tuple<Position, int>>
+std::vector<std::tuple<SpPosition, int>>
 solo_boosts_from_solos(const std::vector<Solo>& solos,
                        const TempoMap& tempo_map)
 {
-    std::vector<std::tuple<Position, int>> solo_boosts;
+    std::vector<std::tuple<SpPosition, int>> solo_boosts;
     solo_boosts.reserve(solos.size());
     for (const auto& solo : solos) {
         const auto end_beat = tempo_map.to_beats(solo.end);
-        const Measure end_meas = tempo_map.to_measures(end_beat);
-        const Position end_pos {end_beat, end_meas};
+        const SpMeasure end_meas = tempo_map.to_sp_measures(end_beat);
+        const SpPosition end_pos {end_beat, end_meas};
         solo_boosts.emplace_back(end_pos, solo.value);
     }
     return solo_boosts;

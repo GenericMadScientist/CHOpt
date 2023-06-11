@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
 
     const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
         Beat(0.0), points.cbegin(), std::next(points.cbegin()),
-        {Beat(0.0), Measure(0.0)});
+        {Beat(0.0), SpMeasure(0.0)});
 
     BOOST_CHECK_CLOSE(sp_bar.max(), 0.5, 0.0001);
 }
@@ -331,7 +331,7 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
 
     auto global_data = std::make_shared<SongGlobalData>();
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
     const auto& second_points = second_track.points();
     ActivationCandidate second_candidate {second_points.cbegin(),
                                           second_points.cbegin() + 3,
-                                          {Beat(0.0), Measure(0.0)},
+                                          {Beat(0.0), SpMeasure(0.0)},
                                           {1.0, 1.0}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -378,7 +378,7 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     auto global_data = std::make_shared<SongGlobalData>();
@@ -394,7 +394,7 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
     const auto& second_points = second_track.points();
     ActivationCandidate second_candidate {second_points.cbegin(),
                                           second_points.cbegin() + 2,
-                                          {Beat(0.0), Measure(0.0)},
+                                          {Beat(0.0), SpMeasure(0.0)},
                                           {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -425,7 +425,7 @@ BOOST_AUTO_TEST_CASE(below_half_bar_never_works)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.25, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -453,7 +453,7 @@ BOOST_AUTO_TEST_CASE(check_next_point_needs_to_not_lie_in_activation)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.6, 0.6}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -482,7 +482,7 @@ BOOST_AUTO_TEST_CASE(check_intermediate_sp_is_accounted_for)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.8, 0.8}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -511,7 +511,7 @@ BOOST_AUTO_TEST_CASE(check_only_reached_intermediate_sp_is_accounted_for)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.8, 0.8}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -540,7 +540,7 @@ BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -568,7 +568,7 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -596,7 +596,7 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(-2.0), Measure(-0.5)},
+                                   {Beat(-2.0), SpMeasure(-0.5)},
                                    {0.53125, 0.53125}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -629,11 +629,11 @@ BOOST_AUTO_TEST_CASE(
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(2.24), Measure(0.56)},
+                                   {Beat(2.24), SpMeasure(0.56)},
                                    {0.5, 0.5}};
 
-    const auto result
-        = track.is_candidate_valid(candidate, 1.0, {Beat {27}, Measure {6.75}});
+    const auto result = track.is_candidate_valid(candidate, 1.0,
+                                                 {Beat {27}, SpMeasure {6.75}});
 
     BOOST_CHECK_EQUAL(result.validity, ActValidity::success);
     BOOST_CHECK_LT(result.ending_position.beat.value(), 26.5);
@@ -664,7 +664,7 @@ BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     const auto result = track.is_candidate_valid(candidate);
@@ -693,7 +693,7 @@ BOOST_AUTO_TEST_CASE(last_note_unison_bonus_accounted_for_excess_sp)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin(),
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     const auto result = track.is_candidate_valid(candidate);
@@ -727,7 +727,7 @@ BOOST_AUTO_TEST_CASE(check_whammy_is_counted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -757,7 +757,7 @@ BOOST_AUTO_TEST_CASE(check_whammy_from_end_of_sp_sustain_before_note_is_counted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cend() - 2,
                                    points.cend() - 1,
-                                   {Beat(1.0), Measure(0.25)},
+                                   {Beat(1.0), SpMeasure(0.25)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -790,7 +790,7 @@ BOOST_AUTO_TEST_CASE(
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 2,
                                    points.cend() - 1,
-                                   {Beat(1.0), Measure(0.25)},
+                                   {Beat(1.0), SpMeasure(0.25)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -819,7 +819,7 @@ BOOST_AUTO_TEST_CASE(check_compressed_activations_are_counted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.9}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -851,7 +851,7 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_considered)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 1.0}};
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -878,7 +878,7 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_only_considered_down_to_a_half_bar)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.25, 1.0}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -910,7 +910,7 @@ BOOST_AUTO_TEST_CASE(
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -937,7 +937,7 @@ BOOST_AUTO_TEST_CASE(next_note_can_be_squeezed_late_to_avoid_going_too_far)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -965,7 +965,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -993,7 +993,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_late)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -1023,7 +1023,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 2,
                                    points.cbegin() + 4,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -1052,7 +1052,7 @@ BOOST_AUTO_TEST_CASE(front_end_and_back_end_are_restricted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
@@ -1082,7 +1082,7 @@ BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
@@ -1112,7 +1112,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
@@ -1141,7 +1141,7 @@ BOOST_AUTO_TEST_CASE(next_note_back_end_is_restricted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
@@ -1170,7 +1170,7 @@ BOOST_AUTO_TEST_CASE(end_position_is_finite_if_activation_goes_past_last_note)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin(),
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
     auto result = track.is_candidate_valid(candidate, 1.0);
 
@@ -1204,7 +1204,7 @@ BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
@@ -1232,7 +1232,7 @@ BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
@@ -1260,7 +1260,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
@@ -1288,11 +1288,11 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(
-        track.is_candidate_valid(candidate, 0.0, {Beat {1.0}, Measure {0.25}})
+        track.is_candidate_valid(candidate, 0.0, {Beat {1.0}, SpMeasure {0.25}})
             .ending_position.beat,
         Beat {16.0});
 }
@@ -1321,7 +1321,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_around_sp_granting_note_doesnt_get_added)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
@@ -1352,15 +1352,15 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(
-        track.is_candidate_valid(candidate, 1.0, {Beat(0.0), Measure(0.0)})
+        track.is_candidate_valid(candidate, 1.0, {Beat(0.0), SpMeasure(0.0)})
             .validity,
         ActValidity::success);
     BOOST_CHECK_EQUAL(
-        track.is_candidate_valid(candidate, 1.0, {Beat(4.0), Measure(1.0)})
+        track.is_candidate_valid(candidate, 1.0, {Beat(4.0), SpMeasure(1.0)})
             .validity,
         ActValidity::surplus_sp);
 }
@@ -1388,7 +1388,7 @@ BOOST_AUTO_TEST_CASE(
     const auto& points = track.points();
     ActivationCandidate candidate {points.cend() - 2,
                                    points.cend() - 1,
-                                   {Beat(1.0), Measure(0.25)},
+                                   {Beat(1.0), SpMeasure(0.25)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.0).validity,
@@ -1422,7 +1422,7 @@ BOOST_AUTO_TEST_CASE(
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 2,
                                    points.cend() - 1,
-                                   {Beat(1.0), Measure(0.25)},
+                                   {Beat(1.0), SpMeasure(0.25)},
                                    {0.5, 0.5}};
 
     auto result = track.is_candidate_valid(candidate, 0.0);
@@ -1454,7 +1454,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 500,
                                    points.cbegin() + 750,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
 
     auto result = track.is_candidate_valid(candidate, 0.0);
@@ -1542,7 +1542,7 @@ BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
     const auto& points = song.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), Measure(0.0)},
+                                   {Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     auto result = song.is_candidate_valid(candidate);

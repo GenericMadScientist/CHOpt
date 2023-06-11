@@ -34,9 +34,9 @@
 // fill_start is used for Drums, giving the start of the fill that makes a point
 // an activation note if it is one, or nullopt otherwise.
 struct Point {
-    Position position;
-    Position hit_window_start;
-    Position hit_window_end;
+    SpPosition position;
+    SpPosition hit_window_start;
+    SpPosition hit_window_end;
     std::optional<Second> fill_start;
     int value;
     int base_value;
@@ -53,7 +53,7 @@ private:
     std::vector<PointPtr> m_first_after_current_sp;
     std::vector<PointPtr> m_next_non_hold_point;
     std::vector<PointPtr> m_next_sp_granting_note;
-    std::vector<std::tuple<Position, int>> m_solo_boosts;
+    std::vector<std::tuple<SpPosition, int>> m_solo_boosts;
     std::vector<int> m_cumulative_score_totals;
     Second m_video_lag;
     std::vector<std::string> m_colours;
@@ -77,7 +77,7 @@ public:
     }
     // Get the combined score of all points that are >= start and < end.
     [[nodiscard]] int range_score(PointPtr start, PointPtr end) const;
-    [[nodiscard]] const std::vector<std::tuple<Position, int>>&
+    [[nodiscard]] const std::vector<std::tuple<SpPosition, int>>&
     solo_boosts() const
     {
         return m_solo_boosts;

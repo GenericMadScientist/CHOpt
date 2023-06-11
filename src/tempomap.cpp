@@ -100,7 +100,7 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
         last_measure += to_beats(ts.position - last_tick).value()
             / static_cast<double>(last_beat_rate);
         const auto beat = to_beats(ts.position);
-        m_measure_timestamps.push_back({Measure(last_measure), beat});
+        m_measure_timestamps.push_back({SpMeasure(last_measure), beat});
         last_beat_rate = (ts.numerator * DEFAULT_BEAT_RATE) / ts.denominator;
         last_tick = ts.position;
     }
@@ -111,10 +111,10 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
         for (auto i = 0U; i < m_od_beats.size(); ++i) {
             const auto beat = to_beats(m_od_beats[i]);
             m_od_beat_timestamps.push_back(
-                {Measure(i / DEFAULT_BEAT_RATE), beat});
+                {SpMeasure(i / DEFAULT_BEAT_RATE), beat});
         }
     } else {
-        m_od_beat_timestamps.push_back({Measure(0.0), Beat(0.0)});
+        m_od_beat_timestamps.push_back({SpMeasure(0.0), Beat(0.0)});
     }
 
     m_last_od_beat_rate = DEFAULT_BEAT_RATE;
@@ -138,7 +138,7 @@ TempoMap TempoMap::speedup(int speed) const
     return speedup;
 }
 
-Beat TempoMap::to_beats(Measure measures) const
+Beat TempoMap::to_beats(SpMeasure measures) const
 {
     const auto pos = std::lower_bound(
         measure_timestamps().cbegin(), measure_timestamps().cend(), measures,
@@ -174,17 +174,21 @@ Beat TempoMap::to_beats(Second seconds) const
         * ((seconds - prev->time) / (pos->time - prev->time));
 }
 
-Measure TempoMap::to_measures(Beat beats) const
+SpMeasure TempoMap::to_sp_measures(Beat beats) const
 {
     const auto pos = std::lower_bound(
         measure_timestamps().cbegin(), measure_timestamps().cend(), beats,
         [](const auto& x, const auto& y) { return x.beat < y; });
     if (pos == measure_timestamps().cend()) {
         const auto& back = measure_timestamps().back();
-        return back.measure + (beats - back.beat).to_measure(last_beat_rate());
+        return back.measure
+            + SpMeasure(
+                   (beats - back.beat).to_measure(last_beat_rate()).value());
     }
     if (pos == measure_timestamps().cbegin()) {
-        return pos->measure - (pos->beat - beats).to_measure(DEFAULT_BEAT_RATE);
+        return pos->measure
+            - SpMeasure(
+                   (pos->beat - beats).to_measure(DEFAULT_BEAT_RATE).value());
     }
     const auto prev = pos - 1;
     return prev->measure
@@ -192,9 +196,9 @@ Measure TempoMap::to_measures(Beat beats) const
         * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
-Measure TempoMap::to_measures(Second seconds) const
+SpMeasure TempoMap::to_sp_measures(Second seconds) const
 {
-    return to_measures(to_beats(seconds));
+    return to_sp_measures(to_beats(seconds));
 }
 
 Second TempoMap::to_seconds(Beat beats) const
@@ -215,7 +219,7 @@ Second TempoMap::to_seconds(Beat beats) const
         * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
-Second TempoMap::to_seconds(Measure measures) const
+Second TempoMap::to_seconds(SpMeasure measures) const
 {
     return to_seconds(to_beats(measures));
 }

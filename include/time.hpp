@@ -257,9 +257,4 @@ inline Second Beat::to_second(std::int64_t bpm) const
     return Second(m_value * MS_PER_MINUTE / bpm);
 }
 
-struct Position {
-    Beat beat;
-    Measure measure;
-};
-
 #endif

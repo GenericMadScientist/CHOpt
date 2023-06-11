@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ private:
     // already full SP there.
     struct CacheKey {
         PointPtr point;
-        Position position {Beat(0.0), Measure(0.0)};
+        SpPosition position {Beat(0.0), SpMeasure(0.0)};
 
         friend bool operator<(const CacheKey& lhs, const CacheKey& rhs)
         {
@@ -144,15 +144,16 @@ private:
     int get_partial_full_sp_path(PointPtr point, Cache& cache) const;
     [[nodiscard]] double act_squeeze_level(ProtoActivation act,
                                            CacheKey key) const;
-    [[nodiscard]] Position forced_whammy_end(ProtoActivation act, CacheKey key,
-                                             double sqz_level) const;
+    [[nodiscard]] SpPosition forced_whammy_end(ProtoActivation act,
+                                               CacheKey key,
+                                               double sqz_level) const;
     [[nodiscard]] std::tuple<Beat, Beat>
     act_duration(ProtoActivation act, CacheKey key, double sqz_level,
-                 Position min_whammy_force) const;
+                 SpPosition min_whammy_force) const;
     [[nodiscard]] Second earliest_fill_appearance(CacheKey key,
                                                   bool has_full_sp) const;
     void complete_subpath(
-        PointPtr p, Position starting_pos, SpBar sp_bar,
+        PointPtr p, SpPosition starting_pos, SpBar sp_bar,
         PointPtrRangeSet& attained_act_ends, Cache& cache,
         int& best_score_boost,
         std::vector<std::tuple<ProtoActivation, CacheKey>>& acts) const;

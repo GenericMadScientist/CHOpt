@@ -74,8 +74,8 @@ private:
     };
 
     struct WhammyRange {
-        Position start;
-        Position end;
+        SpPosition start;
+        SpPosition end;
         Beat note;
     };
 
@@ -109,7 +109,7 @@ private:
     first_whammy_range_after(Beat pos) const;
     [[nodiscard]] WhammyPropagationState
     initial_whammy_prop_state(Beat start, Beat end, double sp_bar_amount) const;
-    Position sp_drain_end_point(Position start, double sp_bar_amount) const;
+    SpPosition sp_drain_end_point(SpPosition start, double sp_bar_amount) const;
 
 public:
     SpData(const NoteTrack& track, const std::vector<Tick>& od_beats,
@@ -117,14 +117,15 @@ public:
     // Return the maximum amount of SP available at the end after propagating
     // over a range, or -1 if SP runs out at any point. Only includes SP gain
     // from whammy.
-    [[nodiscard]] double
-    propagate_sp_over_whammy_max(Position start, Position end, double sp) const;
+    [[nodiscard]] double propagate_sp_over_whammy_max(SpPosition start,
+                                                      SpPosition end,
+                                                      double sp) const;
     // Return the minimum amount of SP is available at the end after propagating
     // over a range, returning 0.0 if the minimum would hypothetically be
     // negative.
     [[nodiscard]] double
-    propagate_sp_over_whammy_min(Position start, Position end, double sp,
-                                 Position required_whammy_end) const;
+    propagate_sp_over_whammy_min(SpPosition start, SpPosition end, double sp,
+                                 SpPosition required_whammy_end) const;
     // Return if a beat is at a place that can be whammied.
     [[nodiscard]] bool is_in_whammy_ranges(Beat beat) const;
     // Return the amount of whammy obtainable across a range.
@@ -135,8 +136,9 @@ public:
                                           Beat note_pos) const;
     // Return how far an activation can propagate based on whammy, returning the
     // end of the range if it can be reached.
-    [[nodiscard]] Position activation_end_point(Position start, Position end,
-                                                double sp_bar_amount) const;
+    [[nodiscard]] SpPosition activation_end_point(SpPosition start,
+                                                  SpPosition end,
+                                                  double sp_bar_amount) const;
 };
 
 #endif

@@ -893,8 +893,9 @@ BOOST_AUTO_TEST_CASE(solo_sections_are_added)
                      SqueezeSettings::default_settings(),
                      DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    std::vector<std::tuple<Position, int>> expected_solo_boosts {
-        {{Beat(3.0), Measure(0.75)}, 100}, {{Beat(6.0), Measure(1.5)}, 200}};
+    std::vector<std::tuple<SpPosition, int>> expected_solo_boosts {
+        {{Beat(3.0), SpMeasure(0.75)}, 100},
+        {{Beat(6.0), SpMeasure(1.5)}, 200}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         points.solo_boosts().cbegin(), points.solo_boosts().cend(),

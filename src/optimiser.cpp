@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,7 +86,8 @@ Optimiser::CacheKey Optimiser::add_whammy_delay(CacheKey key) const
     auto seconds = m_song->tempo_map().to_seconds(key.position.beat);
     seconds += m_whammy_delay;
     key.position.beat = m_song->tempo_map().to_beats(seconds);
-    key.position.measure = m_song->tempo_map().to_measures(key.position.beat);
+    key.position.sp_measure
+        = m_song->tempo_map().to_sp_measures(key.position.beat);
     return key;
 }
 
@@ -174,7 +175,7 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
 // This function takes some information and completes the optimal subpaths from
 // it.
 void Optimiser::complete_subpath(
-    PointPtr p, Position starting_pos, SpBar sp_bar,
+    PointPtr p, SpPosition starting_pos, SpBar sp_bar,
     PointPtrRangeSet& attained_act_ends, Cache& cache, int& best_score_boost,
     std::vector<std::tuple<ProtoActivation, CacheKey>>& acts) const
 {
@@ -265,7 +266,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             continue;
         }
         SpBar sp_bar {1.0, 1.0};
-        Position starting_pos {Beat {NEG_INF}, Measure {NEG_INF}};
+        SpPosition starting_pos {Beat {NEG_INF}, SpMeasure {NEG_INF}};
         if (p != m_song->points().cbegin()) {
             starting_pos = std::prev(p)->hit_window_start;
         }
@@ -279,8 +280,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         if (m_song->is_drums()) {
             starting_pos.beat
                 = std::max(starting_pos.beat, p->hit_window_start.beat);
-            starting_pos.measure
-                = std::max(starting_pos.measure, p->hit_window_start.measure);
+            starting_pos.sp_measure = std::max(starting_pos.sp_measure,
+                                               p->hit_window_start.sp_measure);
         }
         if (!sp_bar.full_enough_to_activate()) {
             continue;
@@ -301,11 +302,11 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         // This skips some points that are too early to be an act end for the
         // earliest possible activation.
         if (!lower_bound_set) {
-            const Measure act_length {8.0 * std::max(sp_bar.min(), 0.5)};
-            const auto earliest_act_end = starting_pos.measure + act_length;
+            const SpMeasure act_length {8.0 * std::max(sp_bar.min(), 0.5)};
+            const auto earliest_act_end = starting_pos.sp_measure + act_length;
             auto earliest_pt_end = std::find_if_not(
                 std::next(p), m_song->points().cend(), [&](const auto& pt) {
-                    return pt.hit_window_end.measure <= earliest_act_end;
+                    return pt.hit_window_end.sp_measure <= earliest_act_end;
                 });
             --earliest_pt_end;
             attained_act_ends
@@ -323,7 +324,7 @@ Path Optimiser::optimal_path() const
 {
     Cache cache;
     CacheKey start_key {m_song->points().cbegin(),
-                        {Beat(NEG_INF), Measure(NEG_INF)}};
+                        {Beat(NEG_INF), SpMeasure(NEG_INF)}};
     start_key = advance_cache_key(start_key);
 
     const auto best_score_boost = get_partial_path(start_key, cache);
@@ -395,8 +396,8 @@ double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
     return max_sqz;
 }
 
-Position Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
-                                      double sqz_level) const
+SpPosition Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
+                                        double sqz_level) const
 {
     constexpr double POS_INF = std::numeric_limits<double>::infinity();
     constexpr double THRESHOLD = 0.01;
@@ -404,7 +405,7 @@ Position Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
     auto next_point = std::next(act.act_end);
 
     if (next_point == m_song->points().cend()) {
-        return {Beat {POS_INF}, Measure {POS_INF}};
+        return {Beat {POS_INF}, SpMeasure {POS_INF}};
     }
 
     auto prev_point = std::prev(act.act_start);
@@ -415,8 +416,8 @@ Position Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
            > THRESHOLD) {
         auto mid_beat
             = (min_whammy_force.beat + max_whammy_force.beat) * (1.0 / 2);
-        auto mid_meas = m_song->tempo_map().to_measures(mid_beat);
-        Position mid_pos {mid_beat, mid_meas};
+        auto mid_meas = m_song->tempo_map().to_sp_measures(mid_beat);
+        SpPosition mid_pos {mid_beat, mid_meas};
         auto sp_bar = m_song->total_available_sp(key.position.beat, key.point,
                                                  act.act_start, mid_beat);
         ActivationCandidate candidate {act.act_start, act.act_end, start_pos,
@@ -432,9 +433,9 @@ Position Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
     return min_whammy_force;
 }
 
-std::tuple<Beat, Beat> Optimiser::act_duration(ProtoActivation act,
-                                               CacheKey key, double sqz_level,
-                                               Position min_whammy_force) const
+std::tuple<Beat, Beat>
+Optimiser::act_duration(ProtoActivation act, CacheKey key, double sqz_level,
+                        SpPosition min_whammy_force) const
 {
     constexpr double THRESHOLD = 0.01;
 
@@ -449,8 +450,8 @@ std::tuple<Beat, Beat> Optimiser::act_duration(ProtoActivation act,
         key.position.beat, key.point, act.act_start, min_whammy_force.beat);
     while ((max_pos.beat - min_pos.beat).value() > THRESHOLD) {
         auto trial_beat = (min_pos.beat + max_pos.beat) * (1.0 / 2);
-        auto trial_meas = m_song->tempo_map().to_measures(trial_beat);
-        Position trial_pos {trial_beat, trial_meas};
+        auto trial_meas = m_song->tempo_map().to_sp_measures(trial_beat);
+        SpPosition trial_pos {trial_beat, trial_meas};
         ActivationCandidate candidate {act.act_start, act.act_end, trial_pos,
                                        sp_bar};
         if (m_song->is_candidate_valid(candidate, sqz_level, min_whammy_force)

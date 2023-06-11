@@ -538,11 +538,11 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
     double total_sp = 0.0;
     for (auto [event_pos, event_type] : events) {
         if (is_sp_active) {
-            Position start_pos {position, tempo_map.to_measures(position)};
-            Position end_pos {event_pos, tempo_map.to_measures(event_pos)};
-            Position whammy_pos {Beat {0.0}, Measure {0.0}};
+            SpPosition start_pos {position, tempo_map.to_sp_measures(position)};
+            SpPosition end_pos {event_pos, tempo_map.to_sp_measures(event_pos)};
+            SpPosition whammy_pos {Beat {0.0}, SpMeasure {0.0}};
             if (m_overlap_engine) {
-                whammy_pos = {whammy_end, tempo_map.to_measures(whammy_end)};
+                whammy_pos = {whammy_end, tempo_map.to_sp_measures(whammy_end)};
             }
             total_sp = sp_data.propagate_sp_over_whammy_min(
                 start_pos, end_pos, total_sp, whammy_pos);
