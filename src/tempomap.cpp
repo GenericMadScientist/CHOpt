@@ -208,6 +208,11 @@ Measure TempoMap::to_measures(Beat beats) const
         * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
+Measure TempoMap::to_measures(Second seconds) const
+{
+    return to_measures(to_beats(seconds));
+}
+
 OdBeat TempoMap::to_od_beats(Beat beats) const
 {
     const auto pos = std::lower_bound(
@@ -247,6 +252,11 @@ Second TempoMap::to_seconds(Beat beats) const
         * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
+Second TempoMap::to_seconds(Measure measures) const
+{
+    return to_seconds(to_beats(measures));
+}
+
 Second TempoMap::to_seconds(SpMeasure measures) const
 {
     return to_seconds(to_beats(measures));
@@ -255,19 +265,6 @@ Second TempoMap::to_seconds(SpMeasure measures) const
 Second TempoMap::to_seconds(Tick ticks) const
 {
     return to_seconds(to_beats(ticks));
-}
-
-SpMeasure TempoMap::to_sp_measures(Beat beats) const
-{
-    if (m_use_od_beats) {
-        return SpMeasure {to_od_beats(beats).value()};
-    }
-    return SpMeasure {to_measures(beats).value()};
-}
-
-SpMeasure TempoMap::to_sp_measures(Second seconds) const
-{
-    return to_sp_measures(to_beats(seconds));
 }
 
 Tick TempoMap::to_ticks(Second seconds) const

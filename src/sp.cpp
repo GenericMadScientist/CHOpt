@@ -18,6 +18,7 @@
 
 #include <cassert>
 #include <iterator>
+#include <utility>
 
 #include "sp.hpp"
 
@@ -106,9 +107,10 @@ SpData::form_beat_rates(const TempoMap& tempo_map,
     return beat_rates;
 }
 
-SpData::SpData(const NoteTrack& track, const std::vector<Tick>& od_beats,
+SpData::SpData(const NoteTrack& track, SpTimeMap time_map,
+               const std::vector<Tick>& od_beats,
                const SqueezeSettings& squeeze_settings, const Engine& engine)
-    : m_tempo_map {track.global_data().tempo_map()}
+    : m_time_map {std::move(time_map)}
     , m_beat_rates {form_beat_rates(track.global_data().tempo_map(), od_beats,
                                     engine)}
     , m_sp_gain_rate {engine.sp_gain_rate()}
@@ -129,13 +131,13 @@ SpData::SpData(const NoteTrack& track, const std::vector<Tick>& od_beats,
             continue;
         }
 
-        const auto note = m_tempo_map.to_beats(position);
-        auto second_start = m_tempo_map.to_seconds(note);
+        const auto note = m_time_map.to_beats(position);
+        auto second_start = m_time_map.to_seconds(note);
         second_start -= early_timing_window;
         second_start += squeeze_settings.lazy_whammy;
         second_start += squeeze_settings.video_lag;
-        const auto beat_start = m_tempo_map.to_beats(second_start);
-        auto beat_end = m_tempo_map.to_beats(position + length);
+        const auto beat_start = m_time_map.to_beats(second_start);
+        auto beat_end = m_time_map.to_beats(position + length);
         if (beat_start < beat_end) {
             ranges.emplace_back(beat_start, beat_end, note);
         }
@@ -160,8 +162,8 @@ SpData::SpData(const NoteTrack& track, const std::vector<Tick>& od_beats,
     merged_ranges.push_back(pair);
 
     for (auto [start, end, note] : merged_ranges) {
-        const auto start_meas = m_tempo_map.to_sp_measures(start);
-        const auto end_meas = m_tempo_map.to_sp_measures(end);
+        const auto start_meas = m_time_map.to_sp_measures(start);
+        const auto end_meas = m_time_map.to_sp_measures(end);
         m_whammy_ranges.push_back({{start, start_meas}, {end, end_meas}, note});
     }
 
@@ -335,7 +337,7 @@ SpPosition SpData::sp_drain_end_point(SpPosition start,
 {
     const auto end_meas
         = start.sp_measure + SpMeasure(sp_bar_amount * MEASURES_PER_BAR);
-    const auto end_beat = m_tempo_map.to_beats(end_meas);
+    const auto end_beat = m_time_map.to_beats(end_meas);
     return {end_beat, end_meas};
 }
 
@@ -358,7 +360,7 @@ SpPosition SpData::activation_end_point(SpPosition start, SpPosition end,
         if (new_sp_bar_amount < 0.0) {
             const auto end_beat = whammy_propagation_endpoint(
                 start.beat, end.beat, sp_bar_amount);
-            const auto end_meas = m_tempo_map.to_sp_measures(end_beat);
+            const auto end_meas = m_time_map.to_sp_measures(end_beat);
             return {end_beat, end_meas};
         }
         sp_bar_amount = new_sp_bar_amount;

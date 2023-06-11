@@ -521,7 +521,7 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
 }
 
 void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
-                                         const TempoMap& tempo_map,
+                                         const SpTimeMap& time_map,
                                          const PointSet& points,
                                          const Path& path)
 {
@@ -538,11 +538,11 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
     double total_sp = 0.0;
     for (auto [event_pos, event_type] : events) {
         if (is_sp_active) {
-            SpPosition start_pos {position, tempo_map.to_sp_measures(position)};
-            SpPosition end_pos {event_pos, tempo_map.to_sp_measures(event_pos)};
+            SpPosition start_pos {position, time_map.to_sp_measures(position)};
+            SpPosition end_pos {event_pos, time_map.to_sp_measures(event_pos)};
             SpPosition whammy_pos {Beat {0.0}, SpMeasure {0.0}};
             if (m_overlap_engine) {
-                whammy_pos = {whammy_end, tempo_map.to_sp_measures(whammy_end)};
+                whammy_pos = {whammy_end, time_map.to_sp_measures(whammy_end)};
             }
             total_sp = sp_data.propagate_sp_over_whammy_min(
                 start_pos, end_pos, total_sp, whammy_pos);
@@ -655,8 +655,8 @@ ImageBuilder make_builder(Song& song, const NoteTrack& track,
         }
     }
     song.speedup(settings.speed);
-    auto& tempo_map = song.global_data().tempo_map();
-    tempo_map.use_od_beats(settings.engine->uses_beat_track());
+    const auto& tempo_map = song.global_data().tempo_map();
+    const SpTimeMap time_map {tempo_map, settings.engine->sp_mode()};
 
     auto builder = build_with_engine_params(new_track, settings);
     builder.add_song_header(song.global_data());
@@ -688,9 +688,13 @@ ImageBuilder make_builder(Song& song, const NoteTrack& track,
     constexpr double SQUEEZE_EPSILON = 0.001;
     squeeze_settings.squeeze
         = std::max(squeeze_settings.squeeze, SQUEEZE_EPSILON);
-    const ProcessedSong processed_track {
-        new_track,        settings.squeeze_settings,     settings.drum_settings,
-        *settings.engine, song.global_data().od_beats(), unison_positions};
+    const ProcessedSong processed_track {new_track,
+                                         time_map,
+                                         settings.squeeze_settings,
+                                         settings.drum_settings,
+                                         *settings.engine,
+                                         song.global_data().od_beats(),
+                                         unison_positions};
     Path path;
 
     if (!settings.blank) {
@@ -719,8 +723,7 @@ ImageBuilder make_builder(Song& song, const NoteTrack& track,
     if (settings.blank || !settings.engine->overlaps()) {
         builder.add_sp_values(processed_track.sp_data(), *settings.engine);
     } else {
-        builder.add_sp_percent_values(processed_track.sp_data(),
-                                      processed_track.tempo_map(),
+        builder.add_sp_percent_values(processed_track.sp_data(), time_map,
                                       processed_track.points(), path);
     }
     builder.set_total_score(processed_track.points(), solos, path);

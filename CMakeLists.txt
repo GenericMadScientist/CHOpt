@@ -69,6 +69,7 @@ add_executable(
   src/songfile.cpp
   src/songparts.cpp
   src/sp.cpp
+  src/sptimemap.cpp
   src/stringutil.cpp
   src/tempomap.cpp
   resources/chopt.exe.manifest
@@ -123,6 +124,7 @@ if(BUILD_GUI)
     src/songfile.cpp
     src/songparts.cpp
     src/sp.cpp
+    src/sptimemap.cpp
     src/stringutil.cpp
     src/tempomap.cpp
     resources/choptgui.exe.manifest
@@ -186,6 +188,7 @@ if(PACKAGE_TESTS)
     src/song.cpp
     src/songparts.cpp
     src/sp.cpp
+    src/sptimemap.cpp
     src/stringutil.cpp
     src/tempomap.cpp)
 

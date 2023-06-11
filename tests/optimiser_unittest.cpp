@@ -45,6 +45,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_a_non_empty_path)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -89,6 +90,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_multiple_acts)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -124,6 +126,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_an_act_containing_more_than_one_note)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -157,6 +160,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_an_act_that_must_go_as_long_as_possible)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -191,6 +195,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_greedy_algorithm_fails)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -227,6 +232,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_a_phrase_must_be_hit_early)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -270,6 +276,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_activations_ending_late_matter)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -300,6 +307,7 @@ BOOST_AUTO_TEST_CASE(early_whammy_at_start_of_an_sp_phrase_is_always_counted)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -332,6 +340,7 @@ BOOST_AUTO_TEST_CASE(
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -360,6 +369,7 @@ BOOST_AUTO_TEST_CASE(activation_right_after_a_sp_sustain_is_drawn_correctly)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -388,6 +398,7 @@ BOOST_AUTO_TEST_CASE(songs_ending_in_es1_are_pathed_correctly)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -426,6 +437,7 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_is_specified_correctly)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -456,6 +468,7 @@ BOOST_AUTO_TEST_CASE(acts_covering_the_last_note_do_not_compress_whammy)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -496,6 +509,7 @@ BOOST_AUTO_TEST_CASE(use_next_point_to_work_out_compressed_whammy)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -532,6 +546,7 @@ BOOST_AUTO_TEST_CASE(forbidden_squeeze_does_not_grant_extra_whammy_next_act)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -563,6 +578,7 @@ BOOST_AUTO_TEST_CASE(easier_activations_are_chosen_where_possible)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -594,6 +610,7 @@ BOOST_AUTO_TEST_CASE(
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -622,6 +639,7 @@ BOOST_AUTO_TEST_CASE(does_not_crash_with_positive_video_lag)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          {1.0, 1.0, Second {0.0}, Second {0.1}, Second {0.0}},
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -653,6 +671,7 @@ BOOST_AUTO_TEST_CASE(whammy_delay_is_handled_correctly)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          {1.0, 1.0, Second {0.0}, Second {0.0}, Second {0.1}},
                          DrumSettings::default_settings(),
                          ChGuitarEngine(),
@@ -686,6 +705,7 @@ BOOST_AUTO_TEST_CASE(drum_paths_can_only_activate_on_activation_notes)
                           TrackType::Drums,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChDrumEngine(),
@@ -722,6 +742,7 @@ BOOST_AUTO_TEST_CASE(
                           std::make_shared<SongGlobalData>()};
 
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChDrumEngine(),
@@ -756,6 +777,7 @@ BOOST_AUTO_TEST_CASE(drum_reverse_squeezes_are_drawn_properly)
                           TrackType::Drums,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChDrumEngine(),
@@ -788,6 +810,7 @@ BOOST_AUTO_TEST_CASE(
                           std::make_shared<SongGlobalData>()};
 
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChDrumEngine(),
@@ -816,6 +839,7 @@ BOOST_AUTO_TEST_CASE(drum_activation_delay_is_affected_by_speed)
                           {},    TrackType::Drums, global_data};
 
     ProcessedSong track {note_track,
+                         {tempo_map, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          ChDrumEngine(),
@@ -849,6 +873,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_overlap_matters)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          Gh1Engine(),
@@ -894,6 +919,7 @@ BOOST_AUTO_TEST_CASE(partial_overlap_doesnt_work)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          Gh1Engine(),
@@ -944,6 +970,7 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_considered_even_with_maxable_sp)
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
+                         {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
                          DrumSettings::default_settings(),
                          Gh1Engine(),

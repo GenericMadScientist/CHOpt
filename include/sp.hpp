@@ -27,6 +27,7 @@
 #include "engine.hpp"
 #include "settings.hpp"
 #include "songparts.hpp"
+#include "sptimemap.hpp"
 #include "tempomap.hpp"
 #include "time.hpp"
 
@@ -88,7 +89,7 @@ private:
     static constexpr double DEFAULT_BEATS_PER_BAR = 32.0;
     static constexpr double MEASURES_PER_BAR = 8.0;
 
-    TempoMap m_tempo_map;
+    SpTimeMap m_time_map;
     std::vector<BeatRate> m_beat_rates;
     std::vector<WhammyRange> m_whammy_ranges;
     Beat m_last_whammy_point {-std::numeric_limits<double>::infinity()};
@@ -112,7 +113,8 @@ private:
     SpPosition sp_drain_end_point(SpPosition start, double sp_bar_amount) const;
 
 public:
-    SpData(const NoteTrack& track, const std::vector<Tick>& od_beats,
+    SpData(const NoteTrack& track, SpTimeMap time_map,
+           const std::vector<Tick>& od_beats,
            const SqueezeSettings& squeeze_settings, const Engine& engine);
     // Return the maximum amount of SP available at the end after propagating
     // over a range, or -1 if SP runs out at any point. Only includes SP gain

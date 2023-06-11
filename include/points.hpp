@@ -29,6 +29,7 @@
 #include "engine.hpp"
 #include "settings.hpp"
 #include "songparts.hpp"
+#include "sptimemap.hpp"
 #include "time.hpp"
 
 // fill_start is used for Drums, giving the start of the fill that makes a point
@@ -59,7 +60,8 @@ private:
     std::vector<std::string> m_colours;
 
 public:
-    PointSet(const NoteTrack& track, const std::vector<Tick>& unison_phrases,
+    PointSet(const NoteTrack& track, const SpTimeMap& time_map,
+             const std::vector<Tick>& unison_phrases,
              const SqueezeSettings& squeeze_settings,
              const DrumSettings& drum_settings, const Engine& engine);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }

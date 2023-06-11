@@ -21,6 +21,7 @@
 
 #include <algorithm>
 
+#include "sptimemap.hpp"
 #include "time.hpp"
 
 enum class SustainRoundingPolicy { RoundUp, RoundToNearest };
@@ -45,6 +46,7 @@ public:
     virtual bool overlaps() const = 0;
     virtual bool round_tick_gap() const = 0;
     virtual Tick snap_gap() const = 0;
+    virtual SpMode sp_mode() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
     virtual SustainRoundingPolicy sustain_rounding() const = 0;
@@ -80,6 +82,7 @@ public:
     bool round_tick_gap() const override { return true; }
     Tick snap_gap() const override { return Tick {0}; }
     double sp_gain_rate() const override { return 1 / 30.0; }
+    SpMode sp_mode() const override { return SpMode::Measure; }
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
     {
@@ -164,6 +167,7 @@ public:
     bool round_tick_gap() const override { return false; }
     Tick snap_gap() const override { return Tick {2}; }
     double sp_gain_rate() const override { return 0.034; }
+    SpMode sp_mode() const override { return SpMode::Measure; }
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
     {
@@ -200,6 +204,7 @@ public:
     bool round_tick_gap() const override { return false; }
     Tick snap_gap() const override { return Tick {2}; }
     double sp_gain_rate() const override { return 0.034; }
+    SpMode sp_mode() const override { return SpMode::OdBeat; }
     int sust_points_per_beat() const override { return 12; }
     SustainRoundingPolicy sustain_rounding() const override
     {

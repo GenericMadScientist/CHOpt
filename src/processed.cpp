@@ -57,15 +57,16 @@ SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
     return sp_bar;
 }
 
-ProcessedSong::ProcessedSong(const NoteTrack& track,
+ProcessedSong::ProcessedSong(const NoteTrack& track, SpTimeMap time_map,
                              const SqueezeSettings& squeeze_settings,
                              const DrumSettings& drum_settings,
                              const Engine& engine,
                              const std::vector<Tick>& od_beats,
                              const std::vector<Tick>& unison_phrases)
-    : m_tempo_map {track.global_data().tempo_map()}
-    , m_points {track, unison_phrases, squeeze_settings, drum_settings, engine}
-    , m_sp_data {track, od_beats, squeeze_settings, engine}
+    : m_time_map {std::move(time_map)}
+    , m_points {track,         m_time_map, unison_phrases, squeeze_settings,
+                drum_settings, engine}
+    , m_sp_data {track, m_time_map, od_beats, squeeze_settings, engine}
     , m_total_bre_boost {bre_boost(track, engine)}
     , m_base_score {track.base_score(drum_settings)}
     , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
@@ -147,7 +148,7 @@ ProcessedSong::total_available_sp_with_earliest_pos(
     sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
     return {sp_bar,
-            SpPosition {last_beat, m_tempo_map.to_sp_measures(last_beat)}};
+            SpPosition {last_beat, m_time_map.to_sp_measures(last_beat)}};
 }
 
 SpPosition ProcessedSong::adjusted_hit_window_start(PointPtr point,
@@ -159,11 +160,11 @@ SpPosition ProcessedSong::adjusted_hit_window_start(PointPtr point,
         return point->hit_window_start;
     }
 
-    auto start = m_tempo_map.to_seconds(point->hit_window_start.beat);
-    auto mid = m_tempo_map.to_seconds(point->position.beat);
+    auto start = m_time_map.to_seconds(point->hit_window_start.beat);
+    auto mid = m_time_map.to_seconds(point->position.beat);
     auto adj_start_s = start + (mid - start) * (1.0 - squeeze);
-    auto adj_start_b = m_tempo_map.to_beats(adj_start_s);
-    auto adj_start_m = m_tempo_map.to_sp_measures(adj_start_b);
+    auto adj_start_b = m_time_map.to_beats(adj_start_s);
+    auto adj_start_m = m_time_map.to_sp_measures(adj_start_b);
 
     return {adj_start_b, adj_start_m};
 }
@@ -177,11 +178,11 @@ SpPosition ProcessedSong::adjusted_hit_window_end(PointPtr point,
         return point->hit_window_end;
     }
 
-    auto mid = m_tempo_map.to_seconds(point->position.beat);
-    auto end = m_tempo_map.to_seconds(point->hit_window_end.beat);
+    auto mid = m_time_map.to_seconds(point->position.beat);
+    auto end = m_time_map.to_seconds(point->hit_window_end.beat);
     auto adj_end_s = mid + (end - mid) * squeeze;
-    auto adj_end_b = m_tempo_map.to_beats(adj_end_s);
-    auto adj_end_m = m_tempo_map.to_sp_measures(adj_end_b);
+    auto adj_end_b = m_time_map.to_beats(adj_end_s);
+    auto adj_end_m = m_time_map.to_sp_measures(adj_end_b);
 
     return {adj_end_b, adj_end_m};
 }
@@ -349,7 +350,7 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
         return {null_position, ActValidity::surplus_sp};
     }
 
-    const auto end_beat = m_tempo_map.to_beats(end_meas);
+    const auto end_beat = m_time_map.to_beats(end_meas);
     return {{end_beat, end_meas}, ActValidity::success};
 }
 
@@ -461,12 +462,11 @@ ProcessedSong::drum_act_summaries(const Path& path) const
             ++start_point;
         }
         const auto early_fill_point
-            = m_tempo_map.to_seconds(
+            = m_time_map.to_seconds(
                   std::prev(start_point)->hit_window_start.beat)
             + Second(2.0);
         const auto late_fill_point
-            = m_tempo_map.to_seconds(
-                  std::prev(start_point)->hit_window_end.beat)
+            = m_time_map.to_seconds(std::prev(start_point)->hit_window_end.beat)
             + Second(2.0);
         const auto skipped_fills
             = std::count_if(start_point, act.act_start, [&](const auto& p) {

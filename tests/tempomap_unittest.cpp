@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(beats_to_measures_conversion_works_correctly)
     constexpr std::array measures {-0.25, 0.0, 0.6, 1.125, 1.75};
 
     for (auto i = 0U; i < beats.size(); ++i) {
-        BOOST_CHECK_CLOSE(tempo_map.to_sp_measures(Beat(beats.at(i))).value(),
+        BOOST_CHECK_CLOSE(tempo_map.to_measures(Beat(beats.at(i))).value(),
                           measures.at(i), 0.0001);
     }
 }
@@ -263,8 +263,7 @@ BOOST_AUTO_TEST_CASE(seconds_to_measures_conversion_works_correctly)
     constexpr std::array seconds {-0.5, 0.0, 1.2, 2.05, 2.35};
 
     for (auto i = 0U; i < measures.size(); ++i) {
-        BOOST_CHECK_CLOSE(
-            tempo_map.to_sp_measures(Second(seconds.at(i))).value(),
-            measures.at(i), 0.0001);
+        BOOST_CHECK_CLOSE(tempo_map.to_measures(Second(seconds.at(i))).value(),
+                          measures.at(i), 0.0001);
     }
 }

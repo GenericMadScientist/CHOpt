@@ -30,6 +30,7 @@
 #include "settings.hpp"
 #include "songparts.hpp"
 #include "sp.hpp"
+#include "sptimemap.hpp"
 #include "tempomap.hpp"
 #include "time.hpp"
 
@@ -77,7 +78,7 @@ class ProcessedSong {
 private:
     static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
 
-    TempoMap m_tempo_map;
+    SpTimeMap m_time_map;
     PointSet m_points;
     SpData m_sp_data;
     int m_total_bre_boost;
@@ -95,7 +96,7 @@ private:
                            const std::string& act_summary) const;
 
 public:
-    ProcessedSong(const NoteTrack& track,
+    ProcessedSong(const NoteTrack& track, SpTimeMap time_map,
                   const SqueezeSettings& squeeze_settings,
                   const DrumSettings& drum_settings, const Engine& engine,
                   const std::vector<Tick>& od_beats,
@@ -139,7 +140,7 @@ public:
 
     [[nodiscard]] const PointSet& points() const { return m_points; }
     [[nodiscard]] const SpData& sp_data() const { return m_sp_data; }
-    [[nodiscard]] const TempoMap& tempo_map() const { return m_tempo_map; }
+    [[nodiscard]] const SpTimeMap& sp_time_map() const { return m_time_map; }
     [[nodiscard]] bool is_drums() const { return m_is_drums; }
 };
 

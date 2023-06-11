@@ -32,6 +32,7 @@
 #include "song.hpp"
 #include "songparts.hpp"
 #include "sp.hpp"
+#include "sptimemap.hpp"
 #include "tempomap.hpp"
 
 struct DrawnRow {
@@ -97,7 +98,7 @@ public:
     void add_song_header(const SongGlobalData& global_data);
     void add_sp_acts(const PointSet& points, const TempoMap& tempo_map,
                      const Path& path);
-    void add_sp_percent_values(const SpData& sp_data, const TempoMap& tempo_map,
+    void add_sp_percent_values(const SpData& sp_data, const SpTimeMap& time_map,
                                const PointSet& points, const Path& path);
     void add_sp_phrases(const NoteTrack& track,
                         const std::vector<Tick>& unison_phrases,

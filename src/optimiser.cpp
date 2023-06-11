@@ -83,11 +83,11 @@ Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
 
 Optimiser::CacheKey Optimiser::add_whammy_delay(CacheKey key) const
 {
-    auto seconds = m_song->tempo_map().to_seconds(key.position.beat);
+    auto seconds = m_song->sp_time_map().to_seconds(key.position.beat);
     seconds += m_whammy_delay;
-    key.position.beat = m_song->tempo_map().to_beats(seconds);
+    key.position.beat = m_song->sp_time_map().to_beats(seconds);
     key.position.sp_measure
-        = m_song->tempo_map().to_sp_measures(key.position.beat);
+        = m_song->sp_time_map().to_sp_measures(key.position.beat);
     return key;
 }
 
@@ -235,7 +235,8 @@ Second Optimiser::earliest_fill_appearance(CacheKey key, bool has_full_sp) const
         if (p->is_sp_granting_note) {
             ++sp_count;
             if (sp_count == 2) {
-                return m_song->tempo_map().to_seconds(p->hit_window_start.beat)
+                return m_song->sp_time_map().to_seconds(
+                           p->hit_window_start.beat)
                     + m_drum_fill_delay;
             }
         }
@@ -416,7 +417,7 @@ SpPosition Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
            > THRESHOLD) {
         auto mid_beat
             = (min_whammy_force.beat + max_whammy_force.beat) * (1.0 / 2);
-        auto mid_meas = m_song->tempo_map().to_sp_measures(mid_beat);
+        auto mid_meas = m_song->sp_time_map().to_sp_measures(mid_beat);
         SpPosition mid_pos {mid_beat, mid_meas};
         auto sp_bar = m_song->total_available_sp(key.position.beat, key.point,
                                                  act.act_start, mid_beat);
@@ -450,7 +451,7 @@ Optimiser::act_duration(ProtoActivation act, CacheKey key, double sqz_level,
         key.position.beat, key.point, act.act_start, min_whammy_force.beat);
     while ((max_pos.beat - min_pos.beat).value() > THRESHOLD) {
         auto trial_beat = (min_pos.beat + max_pos.beat) * (1.0 / 2);
-        auto trial_meas = m_song->tempo_map().to_sp_measures(trial_beat);
+        auto trial_meas = m_song->sp_time_map().to_sp_measures(trial_beat);
         SpPosition trial_pos {trial_beat, trial_meas};
         ActivationCandidate candidate {act.act_start, act.act_end, trial_pos,
                                        sp_bar};
