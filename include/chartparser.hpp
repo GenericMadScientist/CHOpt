@@ -28,11 +28,31 @@
 #include "song.hpp"
 #include "songparts.hpp"
 
+enum class HopoThresholdType { Resolution, HopoFrequency, EighthNote };
+
+struct HopoThreshold {
+    HopoThresholdType threshold_type;
+    Tick hopo_frequency;
+
+    Tick max_hopo_gap(int resolution) const
+    {
+        switch (threshold_type) {
+        case HopoThresholdType::HopoFrequency:
+            return hopo_frequency;
+        case HopoThresholdType::EighthNote:
+            return Tick {(resolution + 3) / 2};
+        default:
+            return Tick {(65 * resolution) / 192};
+        }
+    }
+};
+
 class ChartParser {
 private:
     std::string m_song_name;
     std::string m_artist;
     std::string m_charter;
+    HopoThreshold m_hopo_threshold;
     std::set<Instrument> m_permitted_instruments;
     bool m_permit_solos;
 
@@ -40,6 +60,7 @@ private:
 
 public:
     explicit ChartParser(const IniValues& ini);
+    ChartParser& hopo_threshold(HopoThreshold hopo_threshold);
     ChartParser& permit_instruments(std::set<Instrument> permitted_instruments);
     ChartParser& parse_solos(bool permit_solos);
     Song parse(std::string_view data) const;

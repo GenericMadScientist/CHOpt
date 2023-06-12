@@ -140,6 +140,28 @@ std::optional<Note> note_from_note_colour(int position, int length,
     }
 }
 
+bool is_forcing_key(int fret_type, TrackType track_type)
+{
+    switch (track_type) {
+    case TrackType::FiveFret:
+    case TrackType::SixFret:
+        return fret_type == 5;
+    default:
+        return false;
+    }
+}
+
+bool is_tap_key(int fret_type, TrackType track_type)
+{
+    switch (track_type) {
+    case TrackType::FiveFret:
+    case TrackType::SixFret:
+        return fret_type == 6;
+    default:
+        return false;
+    }
+}
+
 std::vector<Note>
 add_fifth_lane_greens(std::vector<Note> notes,
                       const std::vector<NoteEvent>& note_events)
@@ -263,7 +285,8 @@ apply_dynamics_events(std::vector<Note> notes,
 
 NoteTrack note_track_from_section(const ChartSection& section,
                                   std::shared_ptr<SongGlobalData> global_data,
-                                  TrackType track_type, bool permit_solos)
+                                  TrackType track_type, bool permit_solos,
+                                  Tick max_hopo_gap)
 {
     constexpr int DISCO_FLIP_START_SIZE = 13;
     constexpr int DISCO_FLIP_END_SIZE = 12;
@@ -272,6 +295,8 @@ NoteTrack note_track_from_section(const ChartSection& section,
     constexpr std::array<std::uint8_t, 6> DRUMS {
         {'_', 'd', 'r', 'u', 'm', 's'}};
 
+    std::set<int> forcing_positions;
+    std::set<int> tap_positions;
     std::vector<Note> notes;
     for (const auto& note_event : section.note_events) {
         const auto note
@@ -279,6 +304,17 @@ NoteTrack note_track_from_section(const ChartSection& section,
                                     note_event.fret, track_type);
         if (note.has_value()) {
             notes.push_back(*note);
+        } else if (is_forcing_key(note_event.fret, track_type)) {
+            forcing_positions.insert(note_event.position);
+        } else if (is_tap_key(note_event.fret, track_type)) {
+            tap_positions.insert(note_event.position);
+        }
+    }
+    for (auto& note : notes) {
+        if (tap_positions.contains(note.position.value())) {
+            note.flags = static_cast<NoteFlags>(note.flags | FLAGS_TAP);
+        } else if (forcing_positions.contains(note.position.value())) {
+            note.flags = static_cast<NoteFlags>(note.flags | FLAGS_HOPO);
         }
     }
     if (track_type == TrackType::Drums) {
@@ -341,9 +377,15 @@ NoteTrack note_track_from_section(const ChartSection& section,
         disco_flips.push_back({start, end - start});
     }
 
-    return {
-        std::move(notes),       sp, std::move(solos), std::move(fills),
-        std::move(disco_flips), {}, track_type,       std::move(global_data)};
+    return {std::move(notes),
+            sp,
+            std::move(solos),
+            std::move(fills),
+            std::move(disco_flips),
+            {},
+            track_type,
+            std::move(global_data),
+            max_hopo_gap};
 }
 
 TrackType track_type_from_instrument(Instrument instrument)
@@ -370,9 +412,16 @@ ChartParser::ChartParser(const IniValues& ini)
     : m_song_name {ini.name}
     , m_artist {ini.artist}
     , m_charter {ini.charter}
+    , m_hopo_threshold {HopoThresholdType::Resolution, Tick {0}}
     , m_permitted_instruments {all_instruments()}
     , m_permit_solos {true}
 {
+}
+
+ChartParser& ChartParser::hopo_threshold(HopoThreshold hopo_threshold)
+{
+    m_hopo_threshold = hopo_threshold;
+    return *this;
 }
 
 ChartParser&
@@ -425,9 +474,11 @@ Song ChartParser::from_chart(const Chart& chart) const
             if (!m_permitted_instruments.contains(inst)) {
                 continue;
             }
+            const auto resolution = song.global_data().resolution();
             auto note_track = note_track_from_section(
                 section, song.global_data_ptr(),
-                track_type_from_instrument(inst), m_permit_solos);
+                track_type_from_instrument(inst), m_permit_solos,
+                m_hopo_threshold.max_hopo_gap(resolution));
             song.add_note_track(inst, diff, std::move(note_track));
         }
     }

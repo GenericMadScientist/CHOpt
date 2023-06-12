@@ -634,3 +634,151 @@ BOOST_AUTO_TEST_CASE(solos_ignored_from_charts_if_not_permitted)
 
     BOOST_CHECK(parsed_solos.empty());
 }
+
+BOOST_AUTO_TEST_SUITE(hopos_and_taps)
+
+BOOST_AUTO_TEST_CASE(automatically_set_based_on_distance)
+{
+    const auto chart_file
+        = section_string("ExpertSingle", {{0, 0, 0}, {65, 1, 0}, {131, 2, 0}});
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
+
+    BOOST_CHECK_EQUAL(notes[0].flags, FLAGS_FIVE_FRET_GUITAR);
+    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_HOPO | FLAGS_FIVE_FRET_GUITAR);
+    BOOST_CHECK_EQUAL(notes[2].flags, FLAGS_FIVE_FRET_GUITAR);
+}
+
+BOOST_AUTO_TEST_CASE(does_not_do_it_on_same_note)
+{
+    const auto chart_file
+        = section_string("ExpertSingle", {{0, 0, 0}, {65, 0, 0}});
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
+
+    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_FIVE_FRET_GUITAR);
+}
+
+BOOST_AUTO_TEST_CASE(forcing_is_handled_correctly)
+{
+    const auto chart_file = section_string(
+        "ExpertSingle", {{0, 0, 0}, {0, 5, 0}, {65, 1, 0}, {65, 5, 0}});
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
+
+    BOOST_CHECK_EQUAL(notes[0].flags, FLAGS_HOPO | FLAGS_FIVE_FRET_GUITAR);
+    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_FIVE_FRET_GUITAR);
+}
+
+BOOST_AUTO_TEST_CASE(chords_are_not_hopos_due_to_proximity)
+{
+    const auto chart_file
+        = section_string("ExpertSingle", {{0, 0, 0}, {64, 1, 0}, {64, 2, 0}});
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
+
+    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_FIVE_FRET_GUITAR);
+}
+
+BOOST_AUTO_TEST_CASE(chords_can_be_forced)
+{
+    const auto chart_file = section_string(
+        "ExpertSingle", {{0, 0, 0}, {64, 1, 0}, {64, 2, 0}, {64, 5, 0}});
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
+
+    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_HOPO | FLAGS_FIVE_FRET_GUITAR);
+}
+
+BOOST_AUTO_TEST_CASE(taps_are_read)
+{
+    const auto chart_file
+        = section_string("ExpertSingle", {{0, 0, 0}, {0, 6, 0}});
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
+
+    BOOST_CHECK_EQUAL(notes[0].flags, FLAGS_TAP | FLAGS_FIVE_FRET_GUITAR);
+}
+
+BOOST_AUTO_TEST_CASE(taps_take_precedence_over_hopos)
+{
+    const auto chart_file
+        = section_string("ExpertSingle", {{0, 0, 0}, {64, 1, 0}, {64, 6, 0}});
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
+
+    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_TAP | FLAGS_FIVE_FRET_GUITAR);
+}
+
+BOOST_AUTO_TEST_CASE(chords_can_be_taps)
+{
+    const auto chart_file = section_string(
+        "ExpertSingle", {{0, 0, 0}, {64, 1, 0}, {64, 2, 0}, {64, 6, 0}});
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
+
+    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_TAP | FLAGS_FIVE_FRET_GUITAR);
+}
+
+BOOST_AUTO_TEST_CASE(other_resolutions_are_handled_correctly)
+{
+    const auto header = header_string({{"Resolution", "480"}});
+    const auto guitar_track
+        = section_string("ExpertSingle", {{0, 0, 0}, {162, 1, 0}, {325, 2, 0}});
+    const auto chart_file = header + '\n' + guitar_track;
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
+
+    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_HOPO | FLAGS_FIVE_FRET_GUITAR);
+    BOOST_CHECK_EQUAL(notes[2].flags, FLAGS_FIVE_FRET_GUITAR);
+}
+
+BOOST_AUTO_TEST_CASE(custom_hopo_threshold_is_handled_correctly)
+{
+    const auto chart_file
+        = section_string("ExpertSingle", {{0, 0, 0}, {65, 1, 0}, {131, 2, 0}});
+
+    const auto song
+        = ChartParser({})
+              .hopo_threshold({HopoThresholdType::HopoFrequency, Tick {96}})
+              .parse(chart_file);
+    const auto notes
+        = song.track(Instrument::Guitar, Difficulty::Expert).notes();
+
+    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_HOPO | FLAGS_FIVE_FRET_GUITAR);
+    BOOST_CHECK_EQUAL(notes[2].flags, FLAGS_HOPO | FLAGS_FIVE_FRET_GUITAR);
+}
+
+BOOST_AUTO_TEST_CASE(not_done_on_drums)
+{
+    const auto chart_file = section_string(
+        "ExpertDrums", {{0, 0, 0}, {65, 1, 0}, {131, 2, 0}, {131, 6, 0}});
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto notes
+        = song.track(Instrument::Drums, Difficulty::Expert).notes();
+
+    BOOST_CHECK_EQUAL(notes[0].flags, FLAGS_DRUMS);
+    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_DRUMS);
+    BOOST_CHECK_EQUAL(notes[2].flags, FLAGS_DRUMS);
+}
+
+BOOST_AUTO_TEST_SUITE_END()

@@ -202,13 +202,15 @@ private:
 
     void compute_base_score_ticks();
     void merge_same_time_notes();
+    void add_hopos(Tick max_hopo_gap);
 
 public:
     NoteTrack(std::vector<Note> notes, const std::vector<StarPower>& sp_phrases,
               std::vector<Solo> solos, std::vector<DrumFill> drum_fills,
               std::vector<DiscoFlip> disco_flips,
               std::optional<BigRockEnding> bre, TrackType track_type,
-              std::shared_ptr<SongGlobalData> global_data);
+              std::shared_ptr<SongGlobalData> global_data,
+              Tick max_hopo_gap = Tick {65});
     void generate_drum_fills(const TempoMap& tempo_map);
     void disable_dynamics();
     [[nodiscard]] const std::vector<Note>& notes() const { return m_notes; }

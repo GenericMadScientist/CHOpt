@@ -35,6 +35,17 @@ Note combined_note(std::vector<Note>::const_iterator begin,
     }
     return note;
 }
+
+bool is_chord(const Note& note)
+{
+    auto count = 0;
+    for (auto length : note.lengths) {
+        if (length != Tick {-1}) {
+            ++count;
+        }
+    }
+    return count >= 2;
+}
 }
 
 std::set<Instrument> all_instruments()
@@ -152,12 +163,36 @@ void NoteTrack::merge_same_time_notes()
     m_notes = std::move(notes);
 }
 
+void NoteTrack::add_hopos(Tick max_hopo_gap)
+{
+    if (m_track_type == TrackType::Drums) {
+        return;
+    }
+
+    for (auto i = 1U; i < m_notes.size(); ++i) {
+        if (is_chord(m_notes[i])) {
+            continue;
+        }
+        if (m_notes[i].colours() == m_notes[i - 1].colours()) {
+            continue;
+        }
+        if ((m_notes[i].flags & FLAGS_TAP) != 0) {
+            continue;
+        }
+        if (m_notes[i].position - m_notes[i - 1].position <= max_hopo_gap) {
+            m_notes[i].flags
+                = static_cast<NoteFlags>(m_notes[i].flags ^ FLAGS_HOPO);
+        }
+    }
+}
+
 NoteTrack::NoteTrack(std::vector<Note> notes,
                      const std::vector<StarPower>& sp_phrases,
                      std::vector<Solo> solos, std::vector<DrumFill> drum_fills,
                      std::vector<DiscoFlip> disco_flips,
                      std::optional<BigRockEnding> bre, TrackType track_type,
-                     std::shared_ptr<SongGlobalData> global_data)
+                     std::shared_ptr<SongGlobalData> global_data,
+                     Tick max_hopo_gap)
     : m_drum_fills {std::move(drum_fills)}
     , m_disco_flips {std::move(disco_flips)}
     , m_bre {bre}
@@ -235,6 +270,8 @@ NoteTrack::NoteTrack(std::vector<Note> notes,
     for (auto& note : m_notes) {
         note.merge_non_opens_into_open();
     }
+
+    add_hopos(max_hopo_gap);
 }
 
 void NoteTrack::generate_drum_fills(const TempoMap& tempo_map)
