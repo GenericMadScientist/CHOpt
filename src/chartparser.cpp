@@ -140,28 +140,6 @@ std::optional<Note> note_from_note_colour(int position, int length,
     }
 }
 
-bool is_forcing_key(int fret_type, TrackType track_type)
-{
-    switch (track_type) {
-    case TrackType::FiveFret:
-    case TrackType::SixFret:
-        return fret_type == 5;
-    default:
-        return false;
-    }
-}
-
-bool is_tap_key(int fret_type, TrackType track_type)
-{
-    switch (track_type) {
-    case TrackType::FiveFret:
-    case TrackType::SixFret:
-        return fret_type == 6;
-    default:
-        return false;
-    }
-}
-
 std::vector<Note>
 add_fifth_lane_greens(std::vector<Note> notes,
                       const std::vector<NoteEvent>& note_events)
@@ -283,6 +261,71 @@ apply_dynamics_events(std::vector<Note> notes,
     return notes;
 }
 
+class ForcingEvents {
+private:
+    std::set<int> m_forcing_positions;
+    std::set<int> m_tap_positions;
+
+    static bool is_forcing_key(int fret_type, TrackType track_type)
+    {
+        constexpr int HOPO_FORCE_KEY = 5;
+
+        switch (track_type) {
+        case TrackType::FiveFret:
+        case TrackType::SixFret:
+            return fret_type == HOPO_FORCE_KEY;
+        default:
+            return false;
+        }
+    }
+
+    static bool is_tap_key(int fret_type, TrackType track_type)
+    {
+        constexpr int TAP_FORCE_KEY = 6;
+
+        switch (track_type) {
+        case TrackType::FiveFret:
+        case TrackType::SixFret:
+            return fret_type == TAP_FORCE_KEY;
+        default:
+            return false;
+        }
+    }
+
+public:
+    void apply_forcing(std::vector<Note>& notes) const
+    {
+        for (auto& note : notes) {
+            if (m_tap_positions.contains(note.position.value())) {
+                note.flags = static_cast<NoteFlags>(note.flags | FLAGS_TAP);
+            } else if (m_forcing_positions.contains(note.position.value())) {
+                note.flags = static_cast<NoteFlags>(note.flags | FLAGS_HOPO);
+            }
+        }
+    }
+
+    void add_force_event(const NoteEvent& event, TrackType track_type)
+    {
+        if (is_forcing_key(event.fret, track_type)) {
+            m_forcing_positions.insert(event.position);
+        } else if (is_tap_key(event.fret, track_type)) {
+            m_tap_positions.insert(event.position);
+        }
+    }
+};
+
+std::vector<Note> apply_drum_events(std::vector<Note> notes,
+                                    const std::vector<NoteEvent>& note_events,
+                                    TrackType track_type)
+{
+    if (track_type != TrackType::Drums) {
+        return notes;
+    }
+    notes = add_fifth_lane_greens(std::move(notes), note_events);
+    notes = apply_cymbal_events(notes);
+    return apply_dynamics_events(notes, note_events);
+}
+
 NoteTrack note_track_from_section(const ChartSection& section,
                                   std::shared_ptr<SongGlobalData> global_data,
                                   TrackType track_type, bool permit_solos,
@@ -295,8 +338,7 @@ NoteTrack note_track_from_section(const ChartSection& section,
     constexpr std::array<std::uint8_t, 6> DRUMS {
         {'_', 'd', 'r', 'u', 'm', 's'}};
 
-    std::set<int> forcing_positions;
-    std::set<int> tap_positions;
+    ForcingEvents forcing_events;
     std::vector<Note> notes;
     for (const auto& note_event : section.note_events) {
         const auto note
@@ -304,24 +346,12 @@ NoteTrack note_track_from_section(const ChartSection& section,
                                     note_event.fret, track_type);
         if (note.has_value()) {
             notes.push_back(*note);
-        } else if (is_forcing_key(note_event.fret, track_type)) {
-            forcing_positions.insert(note_event.position);
-        } else if (is_tap_key(note_event.fret, track_type)) {
-            tap_positions.insert(note_event.position);
+        } else {
+            forcing_events.add_force_event(note_event, track_type);
         }
     }
-    for (auto& note : notes) {
-        if (tap_positions.contains(note.position.value())) {
-            note.flags = static_cast<NoteFlags>(note.flags | FLAGS_TAP);
-        } else if (forcing_positions.contains(note.position.value())) {
-            note.flags = static_cast<NoteFlags>(note.flags | FLAGS_HOPO);
-        }
-    }
-    if (track_type == TrackType::Drums) {
-        notes = add_fifth_lane_greens(std::move(notes), section.note_events);
-        notes = apply_cymbal_events(notes);
-        notes = apply_dynamics_events(notes, section.note_events);
-    }
+    forcing_events.apply_forcing(notes);
+    notes = apply_drum_events(notes, section.note_events, track_type);
 
     std::vector<DrumFill> fills;
     std::vector<StarPower> sp;
