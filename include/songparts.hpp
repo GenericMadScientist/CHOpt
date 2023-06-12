@@ -57,6 +57,8 @@ enum NoteFlags : std::uint32_t {
     FLAGS_CYMBAL = 1U << 0,
     FLAGS_GHOST = 1U << 1,
     FLAGS_ACCENT = 1U << 2,
+    FLAGS_HOPO = 1U << 3,
+    FLAGS_TAP = 1U << 4,
     FLAGS_DRUMS = 1U << 29,
     FLAGS_SIX_FRET_GUITAR = 1U << 30,
     FLAGS_FIVE_FRET_GUITAR = 1U << 31
