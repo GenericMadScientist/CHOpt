@@ -65,7 +65,6 @@ BOOST_AUTO_TEST_CASE(single_notes_give_fifty_points)
 {
     NoteTrack track {{make_note(768), make_note(960)},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -87,7 +86,6 @@ BOOST_AUTO_TEST_CASE(chords_give_multiples_of_fifty_points)
     NoteTrack track {
         {make_chord(768, {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}})},
         {},
-        {},
         TrackType::FiveFret,
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -107,7 +105,6 @@ BOOST_AUTO_TEST_CASE(chords_give_multiples_of_fifty_points)
 BOOST_AUTO_TEST_CASE(ghl_notes_behave_the_same_as_five_fret_notes)
 {
     NoteTrack track {{make_ghl_note(768), make_ghl_note(960)},
-                     {},
                      {},
                      TrackType::SixFret,
                      std::make_shared<SongGlobalData>()};
@@ -133,7 +130,6 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
 {
     NoteTrack track {{make_note(768, 15)},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet first_points {track,
@@ -144,11 +140,8 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
                            ChGuitarEngine()};
     std::vector<int> first_expected_values {50, 3};
     std::vector<Beat> first_expected_beats {Beat(4.0), Beat(4.0026)};
-    NoteTrack second_track {{make_note(768, 15)},
-                            {},
-                            {},
-                            TrackType::FiveFret,
-                            make_resolution(200)};
+    NoteTrack second_track {
+        {make_note(768, 15)}, {}, TrackType::FiveFret, make_resolution(200)};
     PointSet second_points {
         second_track,
         {make_resolution(200)->tempo_map(), SpMode::Measure},
@@ -183,7 +176,6 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
     NoteTrack track {
         {make_chord(768, {{FIVE_FRET_GREEN, 8}, {FIVE_FRET_RED, 8}})},
         {},
-        {},
         TrackType::FiveFret,
         std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -208,7 +200,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
 BOOST_AUTO_TEST_CASE(resolutions_below_25_do_not_enter_an_infinite_loop)
 {
     NoteTrack track {
-        {make_note(768, 2)}, {}, {}, TrackType::FiveFret, make_resolution(1)};
+        {make_note(768, 2)}, {}, TrackType::FiveFret, make_resolution(1)};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -225,7 +217,6 @@ BOOST_AUTO_TEST_CASE(sustains_of_uneven_length_are_handled_correctly)
                                  {{FIVE_FRET_GREEN, 1504},
                                   {FIVE_FRET_RED, 1504},
                                   {FIVE_FRET_YELLOW, 736}})},
-                     {},
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
@@ -250,7 +241,6 @@ BOOST_AUTO_TEST_CASE(chord_sustains_in_rb_are_handled_correctly)
                                   {FIVE_FRET_RED, 1800},
                                   {FIVE_FRET_BLUE, 1800}})},
                      {},
-                     {},
                      TrackType::FiveFret,
                      make_resolution(480)};
     PointSet points {track,
@@ -271,7 +261,7 @@ BOOST_AUTO_TEST_CASE(
     rounding_from_length_in_rb_for_single_notes_is_handled_correctly)
 {
     NoteTrack track {
-        {make_note(0, 419)}, {}, {}, TrackType::FiveFret, make_resolution(480)};
+        {make_note(0, 419)}, {}, TrackType::FiveFret, make_resolution(480)};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -290,7 +280,6 @@ BOOST_AUTO_TEST_CASE(rounding_from_length_in_rb_for_chords_is_handled_correctly)
 {
     NoteTrack track {
         {make_chord(0, {{FIVE_FRET_RED, 419}, {FIVE_FRET_ORANGE, 419}})},
-        {},
         {},
         TrackType::FiveFret,
         make_resolution(480)};
@@ -312,7 +301,6 @@ BOOST_AUTO_TEST_CASE(gh1_one_beat_sustain_is_handled_correctly)
 {
     NoteTrack track {{make_note(0, 1917, FIVE_FRET_YELLOW)},
                      {},
-                     {},
                      TrackType::FiveFret,
                      make_resolution(480)};
     PointSet points {track,
@@ -333,7 +321,6 @@ BOOST_AUTO_TEST_CASE(
     rounding_from_fractional_length_in_gh1_is_handled_correctly)
 {
     NoteTrack track {{make_note(0, 1560, FIVE_FRET_ORANGE)},
-                     {},
                      {},
                      TrackType::FiveFret,
                      make_resolution(480)};
@@ -357,7 +344,6 @@ BOOST_AUTO_TEST_CASE(
     NoteTrack track {
         {make_chord(0, {{FIVE_FRET_BLUE, 360}, {FIVE_FRET_ORANGE, 360}})},
         {},
-        {},
         TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track,
@@ -379,7 +365,6 @@ BOOST_AUTO_TEST_CASE(points_are_sorted)
 {
     NoteTrack track {{make_note(768, 15), make_note(770, 0)},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -399,7 +384,6 @@ BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)
                      {{Tick {768}, Tick {1}},
                       {Tick {900}, Tick {50}},
                       {Tick {1100}, Tick {53}}},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -435,7 +419,7 @@ BOOST_AUTO_TEST_CASE(multiplier_applies_to_non_sustains)
         notes.push_back(make_note(192 * i));
     }
     NoteTrack track {
-        notes, {}, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
+        notes, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -472,7 +456,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_are_multiplied)
     notes.push_back(make_note(9600, 192));
 
     NoteTrack track {
-        notes, {}, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
+        notes, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -494,7 +478,7 @@ BOOST_AUTO_TEST_CASE(later_sustain_points_in_extended_sustains_are_multiplied)
     notes[0].lengths[0] = Tick {2000};
 
     NoteTrack track {
-        notes, {}, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
+        notes, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -516,7 +500,7 @@ BOOST_AUTO_TEST_CASE(drum_notes_have_the_multiplier_handled_correctly)
     notes.push_back(make_drum_note(192 * 7, DRUM_YELLOW));
 
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_shared<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -534,7 +518,7 @@ BOOST_AUTO_TEST_CASE(gh1_multiplier_delay_accounted_for)
                              make_note(600),     make_note(700), make_note(800),
                              make_note(900, 100)};
     NoteTrack track {
-        notes, {}, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
+        notes, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -558,7 +542,7 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
     global_data->tempo_map(tempo_map);
 
     std::vector<Note> notes {make_note(192), make_note(787)};
-    NoteTrack track {notes, {}, {}, TrackType::FiveFret, global_data};
+    NoteTrack track {notes, {}, TrackType::FiveFret, global_data};
     PointSet points {track,
                      {tempo_map, SpMode::Measure},
                      {},
@@ -580,7 +564,7 @@ BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
     global_data->tempo_map(tempo_map);
 
     std::vector<Note> notes {make_note(192), make_note(749)};
-    NoteTrack track {notes, {}, {}, TrackType::FiveFret, global_data};
+    NoteTrack track {notes, {}, TrackType::FiveFret, global_data};
     PointSet points {track,
                      {tempo_map, SpMode::Measure},
                      {},
@@ -602,7 +586,7 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
     global_data->tempo_map(tempo_map);
 
     std::vector<Note> notes {make_note(672, 192)};
-    NoteTrack track {notes, {}, {}, TrackType::FiveFret, global_data};
+    NoteTrack track {notes, {}, TrackType::FiveFret, global_data};
     PointSet points {track,
                      {tempo_map, SpMode::Measure},
                      {},
@@ -624,7 +608,7 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
     global_data->tempo_map(tempo_map);
 
     std::vector<Note> notes {make_note(192)};
-    NoteTrack track {notes, {}, {}, TrackType::FiveFret, global_data};
+    NoteTrack track {notes, {}, TrackType::FiveFret, global_data};
     PointSet points {track,
                      {tempo_map, SpMode::Measure},
                      {},
@@ -646,7 +630,7 @@ BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
     global_data->tempo_map(tempo_map);
 
     std::vector<Note> notes {make_note(192), make_note(240)};
-    NoteTrack track {notes, {}, {}, TrackType::FiveFret, global_data};
+    NoteTrack track {notes, {}, TrackType::FiveFret, global_data};
     PointSet points {track,
                      {tempo_map, SpMode::Measure},
                      {},
@@ -677,7 +661,7 @@ BOOST_AUTO_TEST_CASE(rb_bass_multiplier_is_taken_into_account)
         notes.push_back(make_note(192 * i));
     }
     const NoteTrack track {
-        notes, {}, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
     const PointSet points {track,
                            {{}, SpMode::Measure},
                            {},
@@ -698,7 +682,7 @@ BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
 {
     const std::vector<Note> notes {make_note(192, 0), make_note(384, 192)};
     const NoteTrack track {
-        notes, {}, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -719,7 +703,7 @@ BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
 {
     const std::vector<Note> notes {make_note(192, 0), make_note(384, 192)};
     const NoteTrack track {
-        notes, {}, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -743,7 +727,7 @@ BOOST_AUTO_TEST_CASE(tick_points_are_not_multiplied_prematurely)
         make_note(196),      make_note(197), make_note(198), make_note(199),
         make_note(200, 200), make_note(400)};
     NoteTrack track {
-        notes, {}, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -761,7 +745,7 @@ BOOST_AUTO_TEST_CASE(next_non_hold_point_is_correct)
 {
     std::vector<Note> notes {make_note(0), make_note(192, 192)};
     NoteTrack track {
-        notes, {}, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
 
     PointSet points {track,
                      {{}, SpMode::Measure},
@@ -782,10 +766,7 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
                              make_note(400, 0)};
     std::vector<StarPower> phrases {{Tick {200}, Tick {1}},
                                     {Tick {400}, Tick {1}}};
-    NoteTrack track {notes,
-                     phrases,
-                     {},
-                     TrackType::FiveFret,
+    NoteTrack track {notes, phrases, TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
 
     PointSet points {track,
@@ -809,7 +790,8 @@ BOOST_AUTO_TEST_CASE(solo_sections_are_added)
     std::vector<Solo> solos {{Tick {0}, Tick {576}, 100},
                              {Tick {768}, Tick {1152}, 200}};
     NoteTrack track {
-        {}, {}, solos, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
+        {}, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
+    track.solos(solos);
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -828,7 +810,6 @@ BOOST_AUTO_TEST_CASE(solo_sections_are_added)
 BOOST_AUTO_TEST_CASE(range_score_is_correct)
 {
     NoteTrack track {{make_note(0, 192), make_note(386)},
-                     {},
                      {},
                      TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
@@ -853,7 +834,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_five_fret)
         make_note(176, 100, FIVE_FRET_YELLOW),
         make_note(500, 0, FIVE_FRET_BLUE)};
     NoteTrack track {
-        notes, {}, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -875,7 +856,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_six_fret)
         make_ghl_note(176, 100, SIX_FRET_BLACK_HIGH),
         make_ghl_note(500, 0, SIX_FRET_OPEN)};
     NoteTrack track {
-        notes, {}, {}, TrackType::SixFret, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::SixFret, std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -897,7 +878,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_drums)
                              make_drum_note(176, DRUM_BLUE, FLAGS_CYMBAL),
                              make_drum_note(500, DRUM_KICK)};
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -917,7 +898,7 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_appear_with_enable_double_kick)
     std::vector<Note> notes {make_drum_note(0, DRUM_KICK),
                              make_drum_note(192, DRUM_DOUBLE_KICK)};
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     PointSet single_points {track,
                             {{}, SpMode::Measure},
                             {},
@@ -940,7 +921,7 @@ BOOST_AUTO_TEST_CASE(single_kicks_are_removed_with_disable_kick)
     std::vector<Note> notes {make_drum_note(0, DRUM_DOUBLE_KICK),
                              make_drum_note(192, DRUM_KICK)};
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -957,10 +938,7 @@ BOOST_AUTO_TEST_CASE(disable_kick_doesnt_kill_sp_phrases)
     std::vector<Note> notes {make_drum_note(0, DRUM_RED),
                              make_drum_note(192, DRUM_KICK)};
     std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
-    NoteTrack track {notes,
-                     phrases,
-                     {},
-                     TrackType::Drums,
+    NoteTrack track {notes, phrases, TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
@@ -977,10 +955,7 @@ BOOST_AUTO_TEST_CASE(double_kicks_dont_kill_phrases)
     std::vector<Note> notes {make_drum_note(0, DRUM_RED),
                              make_drum_note(192, DRUM_DOUBLE_KICK)};
     std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
-    NoteTrack track {notes,
-                     phrases,
-                     {},
-                     TrackType::Drums,
+    NoteTrack track {notes, phrases, TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
@@ -998,7 +973,7 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
                              make_drum_note(385), make_drum_note(576)};
     std::vector<DrumFill> fills {{Tick {384}, Tick {5}}};
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track,
                      {{}, SpMode::Measure},
@@ -1019,7 +994,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_not_killed)
     std::vector<Note> notes {make_drum_note(0), make_drum_note(1, DRUM_KICK)};
     std::vector<DrumFill> fills {{Tick {0}, Tick {2}}};
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track,
                      {{}, SpMode::Measure},
@@ -1039,7 +1014,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_not_killed)
                              make_drum_note(1, DRUM_DOUBLE_KICK)};
     std::vector<DrumFill> fills {{Tick {0}, Tick {2}}};
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track,
                      {{}, SpMode::Measure},
@@ -1059,7 +1034,7 @@ BOOST_AUTO_TEST_CASE(
     std::vector<Note> notes {make_drum_note(0), make_drum_note(0, DRUM_KICK)};
     std::vector<DrumFill> fills {{Tick {0}, Tick {2}}};
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track,
                      {{}, SpMode::Measure},
@@ -1080,7 +1055,7 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
     std::vector<DrumFill> fills {
         {Tick {0}, Tick {2}}, {Tick {193}, Tick {5}}, {Tick {377}, Tick {4}}};
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track,
                      {{}, SpMode::Measure},
@@ -1101,7 +1076,7 @@ BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
     std::vector<Note> notes {make_drum_note(0), make_drum_note(192)};
     std::vector<DrumFill> fills {{Tick {0}, Tick {96}}};
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track,
                      {{}, SpMode::Measure},
@@ -1119,7 +1094,7 @@ BOOST_AUTO_TEST_CASE(cymbals_get_extra_points)
 {
     std::vector<Note> notes {make_drum_note(0, DRUM_YELLOW, FLAGS_CYMBAL)};
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -1143,7 +1118,7 @@ BOOST_AUTO_TEST_CASE(dynamics_get_double_points)
                        static_cast<NoteFlags>(FLAGS_CYMBAL | FLAGS_ACCENT)),
         make_drum_note(960, DRUM_YELLOW, FLAGS_CYMBAL)};
     NoteTrack track {
-        notes, {}, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -1166,7 +1141,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384)};
     NoteTrack track {
-        notes, {}, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
+        notes, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -1183,10 +1158,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384)};
     std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
-    NoteTrack track {notes,
-                     phrases,
-                     {},
-                     TrackType::FiveFret,
+    NoteTrack track {notes, phrases, TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},
@@ -1203,10 +1175,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384)};
     std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
-    NoteTrack track {notes,
-                     phrases,
-                     {},
-                     TrackType::FiveFret,
+    NoteTrack track {notes, phrases, TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
                      {{}, SpMode::Measure},

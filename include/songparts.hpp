@@ -207,8 +207,7 @@ private:
 
 public:
     NoteTrack(std::vector<Note> notes, const std::vector<StarPower>& sp_phrases,
-              std::vector<Solo> solos, TrackType track_type,
-              std::shared_ptr<SongGlobalData> global_data,
+              TrackType track_type, std::shared_ptr<SongGlobalData> global_data,
               Tick max_hopo_gap = Tick {65});
     void generate_drum_fills(const TempoMap& tempo_map);
     void disable_dynamics();
@@ -217,8 +216,10 @@ public:
     {
         return m_sp_phrases;
     }
+
     [[nodiscard]] std::vector<Solo>
     solos(const DrumSettings& drum_settings) const;
+    void solos(std::vector<Solo> solos);
 
     [[nodiscard]] const std::vector<DrumFill>& drum_fills() const
     {

@@ -669,9 +669,10 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track,
         if (!permit_solos) {
             solos.clear();
         }
-        note_tracks.emplace(diff,
-                            NoteTrack {note_set, sp_phrases, std::move(solos),
-                                       TrackType::SixFret, global_data});
+        NoteTrack note_track {note_set, sp_phrases, TrackType::SixFret,
+                              global_data};
+        note_track.solos(std::move(solos));
+        note_tracks.emplace(diff, std::move(note_track));
     }
 
     return note_tracks;
@@ -810,8 +811,9 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
         if (!permit_solos) {
             solos.clear();
         }
-        NoteTrack note_track {note_set, sp_phrases, std::move(solos),
-                              TrackType::Drums, global_data};
+        NoteTrack note_track {note_set, sp_phrases, TrackType::Drums,
+                              global_data};
+        note_track.solos(std::move(solos));
         note_track.drum_fills(drum_fills);
         note_track.disco_flips(std::move(disco_flips));
         note_tracks.emplace(diff, std::move(note_track));
@@ -895,8 +897,9 @@ note_tracks_from_midi(const MidiTrack& midi_track,
         if (!permit_solos) {
             solos.clear();
         }
-        NoteTrack note_track {note_set, sp_phrases, std::move(solos),
-                              TrackType::FiveFret, global_data};
+        NoteTrack note_track {note_set, sp_phrases, TrackType::FiveFret,
+                              global_data};
+        note_track.solos(std::move(solos));
         note_track.bre(bre);
         note_tracks.emplace(diff, std::move(note_track));
     }

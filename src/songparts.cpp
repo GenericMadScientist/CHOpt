@@ -188,7 +188,7 @@ void NoteTrack::add_hopos(Tick max_hopo_gap)
 
 NoteTrack::NoteTrack(std::vector<Note> notes,
                      const std::vector<StarPower>& sp_phrases,
-                     std::vector<Solo> solos, TrackType track_type,
+                     TrackType track_type,
                      std::shared_ptr<SongGlobalData> global_data,
                      Tick max_hopo_gap)
     : m_track_type {track_type}
@@ -251,11 +251,6 @@ NoteTrack::NoteTrack(std::vector<Note> notes,
             m_sp_phrases.push_back(phrase);
         }
     }
-
-    std::stable_sort(
-        solos.begin(), solos.end(),
-        [](const auto& lhs, const auto& rhs) { return lhs.start < rhs.start; });
-    m_solos = std::move(solos);
 
     merge_same_time_notes();
     compute_base_score_ticks();
@@ -354,6 +349,14 @@ std::vector<Solo> NoteTrack::solos(const DrumSettings& drum_settings) const
     }
     std::erase_if(solos, [](const auto& solo) { return solo.value == 0; });
     return solos;
+}
+
+void NoteTrack::solos(std::vector<Solo> solos)
+{
+    std::stable_sort(
+        solos.begin(), solos.end(),
+        [](const auto& lhs, const auto& rhs) { return lhs.start < rhs.start; });
+    m_solos = std::move(solos);
 }
 
 int NoteTrack::base_score(DrumSettings drum_settings) const
