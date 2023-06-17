@@ -467,6 +467,18 @@ ChartParser& ChartParser::parse_solos(bool permit_solos)
     return *this;
 }
 
+Tick ChartParser::max_hopo_gap(int resolution) const
+{
+    switch (m_hopo_threshold.threshold_type) {
+    case HopoThresholdType::HopoFrequency:
+        return m_hopo_threshold.hopo_frequency;
+    case HopoThresholdType::EighthNote:
+        return Tick {(resolution + 3) / 2};
+    default:
+        return Tick {(65 * resolution) / 192};
+    }
+}
+
 Song ChartParser::parse(std::string_view data) const
 {
     return from_chart(parse_chart(data));
@@ -508,7 +520,7 @@ Song ChartParser::from_chart(const Chart& chart) const
             auto note_track = note_track_from_section(
                 section, song.global_data_ptr(),
                 track_type_from_instrument(inst), m_permit_solos,
-                m_hopo_threshold.max_hopo_gap(resolution));
+                max_hopo_gap(resolution));
             song.add_note_track(inst, diff, std::move(note_track));
         }
     }

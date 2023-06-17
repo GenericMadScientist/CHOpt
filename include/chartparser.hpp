@@ -33,18 +33,6 @@ enum class HopoThresholdType { Resolution, HopoFrequency, EighthNote };
 struct HopoThreshold {
     HopoThresholdType threshold_type;
     Tick hopo_frequency;
-
-    Tick max_hopo_gap(int resolution) const
-    {
-        switch (threshold_type) {
-        case HopoThresholdType::HopoFrequency:
-            return hopo_frequency;
-        case HopoThresholdType::EighthNote:
-            return Tick {(resolution + 3) / 2};
-        default:
-            return Tick {(65 * resolution) / 192};
-        }
-    }
 };
 
 class ChartParser {
@@ -57,6 +45,7 @@ private:
     bool m_permit_solos;
 
     Song from_chart(const Chart& chart) const;
+    Tick max_hopo_gap(int resolution) const;
 
 public:
     explicit ChartParser(const IniValues& ini);
