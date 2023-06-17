@@ -465,13 +465,16 @@ ChartParser& ChartParser::parse_solos(bool permit_solos)
 
 Tick ChartParser::max_hopo_gap(int resolution) const
 {
+    constexpr int DEFAULT_HOPO_GAP = 65;
+    constexpr int DEFAULT_RESOLUTION = 192;
+
     switch (m_hopo_threshold.threshold_type) {
     case HopoThresholdType::HopoFrequency:
         return m_hopo_threshold.hopo_frequency;
     case HopoThresholdType::EighthNote:
         return Tick {(resolution + 3) / 2};
     default:
-        return Tick {(65 * resolution) / 192};
+        return Tick {(DEFAULT_HOPO_GAP * resolution) / DEFAULT_RESOLUTION};
     }
 }
 
