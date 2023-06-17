@@ -207,8 +207,7 @@ private:
 public:
     NoteTrack(std::vector<Note> notes, const std::vector<StarPower>& sp_phrases,
               std::vector<Solo> solos, std::vector<DrumFill> drum_fills,
-              std::vector<DiscoFlip> disco_flips,
-              std::optional<BigRockEnding> bre, TrackType track_type,
+              std::vector<DiscoFlip> disco_flips, TrackType track_type,
               std::shared_ptr<SongGlobalData> global_data,
               Tick max_hopo_gap = Tick {65});
     void generate_drum_fills(const TempoMap& tempo_map);
@@ -228,7 +227,10 @@ public:
     {
         return m_disco_flips;
     }
+
     [[nodiscard]] std::optional<BigRockEnding> bre() const { return m_bre; }
+    void bre(std::optional<BigRockEnding> bre) { m_bre = std::move(bre); }
+
     [[nodiscard]] TrackType track_type() const { return m_track_type; }
     [[nodiscard]] const SongGlobalData& global_data() const
     {

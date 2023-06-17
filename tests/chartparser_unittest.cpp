@@ -248,14 +248,6 @@ BOOST_AUTO_TEST_CASE(non_sp_phrase_special_events_are_ignored)
 {
     const auto chart_file
         = section_string("ExpertSingle", {{768, 0, 0}}, {{768, 1, 100}});
-    NoteTrack note_track {{make_note(768, 0, FIVE_FRET_GREEN)},
-                          {{Tick {768}, Tick {100}}},
-                          {},
-                          {},
-                          {},
-                          {},
-                          TrackType::FiveFret,
-                          std::make_shared<SongGlobalData>()};
 
     const auto song = ChartParser({}).parse(chart_file);
 

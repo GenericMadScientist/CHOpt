@@ -675,7 +675,6 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track,
                                        std::move(solos),
                                        {},
                                        {},
-                                       {},
                                        TrackType::SixFret,
                                        global_data});
     }
@@ -817,14 +816,9 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
             solos.clear();
         }
         note_tracks.emplace(diff,
-                            NoteTrack {note_set,
-                                       sp_phrases,
-                                       std::move(solos),
-                                       drum_fills,
-                                       std::move(disco_flips),
-                                       {},
-                                       TrackType::Drums,
-                                       global_data});
+                            NoteTrack {note_set, sp_phrases, std::move(solos),
+                                       drum_fills, std::move(disco_flips),
+                                       TrackType::Drums, global_data});
     }
 
     return note_tracks;
@@ -905,15 +899,11 @@ note_tracks_from_midi(const MidiTrack& midi_track,
         if (!permit_solos) {
             solos.clear();
         }
-        note_tracks.emplace(diff,
-                            NoteTrack {note_set,
-                                       sp_phrases,
-                                       std::move(solos),
-                                       {},
-                                       {},
-                                       bre,
-                                       TrackType::FiveFret,
-                                       global_data});
+        NoteTrack note_track {note_set,   sp_phrases, std::move(solos),
+                              {},         {},         TrackType::FiveFret,
+                              global_data};
+        note_track.bre(bre);
+        note_tracks.emplace(diff, std::move(note_track));
     }
 
     return note_tracks;

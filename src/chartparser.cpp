@@ -407,15 +407,10 @@ NoteTrack note_track_from_section(const ChartSection& section,
         disco_flips.push_back({start, end - start});
     }
 
-    return {std::move(notes),
-            sp,
-            std::move(solos),
-            std::move(fills),
-            std::move(disco_flips),
-            {},
-            track_type,
-            std::move(global_data),
-            max_hopo_gap};
+    return {std::move(notes),       sp,
+            std::move(solos),       std::move(fills),
+            std::move(disco_flips), track_type,
+            std::move(global_data), max_hopo_gap};
 }
 
 TrackType track_type_from_instrument(Instrument instrument)

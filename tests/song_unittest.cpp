@@ -29,11 +29,9 @@ BOOST_AUTO_TEST_CASE(instruments_returns_the_supported_instruments)
                             {},
                             {},
                             {},
-                            {},
                             TrackType::FiveFret,
                             std::make_shared<SongGlobalData>()};
     NoteTrack drum_track {{make_drum_note(192)},
-                          {},
                           {},
                           {},
                           {},
@@ -60,11 +58,9 @@ BOOST_AUTO_TEST_CASE(difficulties_returns_the_difficulties_for_an_instrument)
                             {},
                             {},
                             {},
-                            {},
                             TrackType::FiveFret,
                             std::make_shared<SongGlobalData>()};
     NoteTrack drum_track {{make_drum_note(192)},
-                          {},
                           {},
                           {},
                           {},
@@ -99,7 +95,6 @@ BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
         {},
         {},
         {},
-        {},
         TrackType::FiveFret,
         std::make_shared<SongGlobalData>()};
     // Note the first phrase has a different length than the other instruments.
@@ -110,7 +105,6 @@ BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
                           {},
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     // The 768 phrase is absent for drums: this is to test that unison bonuses
@@ -118,7 +112,6 @@ BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
     // the first phrase on RB3 Last Dance guitar, the phrase is missing on bass.
     NoteTrack drum_track {{make_drum_note(768), make_drum_note(4096)},
                           {{Tick {4096}, Tick {100}}},
-                          {},
                           {},
                           {},
                           {},
