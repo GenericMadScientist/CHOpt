@@ -407,9 +407,10 @@ NoteTrack note_track_from_section(const ChartSection& section,
         disco_flips.push_back({start, end - start});
     }
 
-    NoteTrack note_track {std::move(notes), sp,         std::move(solos),
-                          std::move(fills), track_type, std::move(global_data),
-                          max_hopo_gap};
+    NoteTrack note_track {std::move(notes),       sp,
+                          std::move(solos),       track_type,
+                          std::move(global_data), max_hopo_gap};
+    note_track.drum_fills(std::move(fills));
     note_track.disco_flips(std::move(disco_flips));
     return note_track;
 }
