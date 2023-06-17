@@ -37,7 +37,6 @@ BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -73,7 +72,6 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -104,7 +102,6 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_even_started_mid_hold)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -133,7 +130,6 @@ BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
                                     {Tick {1344}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -172,7 +168,6 @@ BOOST_AUTO_TEST_CASE(sp_does_not_exceed_full_bar)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -201,7 +196,6 @@ BOOST_AUTO_TEST_CASE(
                                     {Tick {1344}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -233,7 +227,6 @@ BOOST_AUTO_TEST_CASE(unison_bonuses_are_taken_account_of)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -261,7 +254,6 @@ BOOST_AUTO_TEST_CASE(
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -287,7 +279,6 @@ BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
     std::vector<StarPower> phrases {{Tick {0}, Tick {100}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -318,7 +309,6 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
                           {},
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -337,8 +327,8 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
     TempoMap tempo_map {{{Tick {0}, 3, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
-    NoteTrack second_note_track {
-        notes, {}, {}, {}, {}, TrackType::FiveFret, global_data};
+    NoteTrack second_note_track {notes,      {}, {}, {}, TrackType::FiveFret,
+                                 global_data};
     ProcessedSong second_track {second_note_track,
                                 {tempo_map, SpMode::Measure},
                                 SqueezeSettings::default_settings(),
@@ -367,7 +357,6 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
                           {},
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -386,8 +375,8 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
     TempoMap tempo_map {{{Tick {0}, 3, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
-    NoteTrack second_note_track {
-        notes, {}, {}, {}, {}, TrackType::FiveFret, global_data};
+    NoteTrack second_note_track {notes,      {}, {}, {}, TrackType::FiveFret,
+                                 global_data};
     ProcessedSong second_track {second_note_track,
                                 {tempo_map, SpMode::Measure},
                                 SqueezeSettings::default_settings(),
@@ -416,7 +405,6 @@ BOOST_AUTO_TEST_CASE(below_half_bar_never_works)
                           {},
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -441,7 +429,6 @@ BOOST_AUTO_TEST_CASE(check_next_point_needs_to_not_lie_in_activation)
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
                              make_note(6144)};
     NoteTrack note_track {notes,
-                          {},
                           {},
                           {},
                           {},
@@ -473,7 +460,6 @@ BOOST_AUTO_TEST_CASE(check_intermediate_sp_is_accounted_for)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -500,7 +486,6 @@ BOOST_AUTO_TEST_CASE(check_only_reached_intermediate_sp_is_accounted_for)
     std::vector<StarPower> phrases {{Tick {6000}, Tick {100}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -531,7 +516,6 @@ BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -559,7 +543,6 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -584,7 +567,6 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
                              make_note(6144)};
     NoteTrack note_track {notes,
-                          {},
                           {},
                           {},
                           {},
@@ -622,7 +604,7 @@ BOOST_AUTO_TEST_CASE(
         make_chord(384, {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}}),
         make_note(5088), make_note(5136)};
     std::vector<StarPower> phrases {{Tick {384}, Tick {1}}};
-    NoteTrack note_track {notes,      phrases, {}, {}, {}, TrackType::FiveFret,
+    NoteTrack note_track {notes,      phrases, {}, {}, TrackType::FiveFret,
                           global_data};
     ProcessedSong track {note_track,
                          {tempo_map, SpMode::Measure},
@@ -656,7 +638,6 @@ BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -683,7 +664,6 @@ BOOST_AUTO_TEST_CASE(last_note_unison_bonus_accounted_for_excess_sp)
     std::vector<StarPower> phrases {{Tick {192}, Tick {1}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -719,7 +699,6 @@ BOOST_AUTO_TEST_CASE(check_whammy_is_counted)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -747,7 +726,6 @@ BOOST_AUTO_TEST_CASE(check_whammy_from_end_of_sp_sustain_before_note_is_counted)
     std::vector<StarPower> phrases {{Tick {0}, Tick {7000}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -782,7 +760,6 @@ BOOST_AUTO_TEST_CASE(
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -809,7 +786,6 @@ BOOST_AUTO_TEST_CASE(check_compressed_activations_are_counted)
     std::vector<StarPower> phrases {{Tick {0}, Tick {7000}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -843,7 +819,6 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_considered)
                           {},
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -867,7 +842,6 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_only_considered_down_to_a_half_bar)
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(2304),
                              make_note(3072), make_note(4608)};
     NoteTrack note_track {notes,
-                          {},
                           {},
                           {},
                           {},
@@ -902,7 +876,6 @@ BOOST_AUTO_TEST_CASE(
                           {},
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -926,7 +899,6 @@ BOOST_AUTO_TEST_CASE(next_note_can_be_squeezed_late_to_avoid_going_too_far)
 {
     std::vector<Note> notes {make_note(0), make_note(3034), make_note(3053)};
     NoteTrack note_track {notes,
-                          {},
                           {},
                           {},
                           {},
@@ -957,7 +929,6 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -983,7 +954,6 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_late)
     std::vector<StarPower> phrases {{Tick {768}, Tick {100}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -1017,7 +987,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
-    NoteTrack note_track {notes,      phrases, {}, {}, {}, TrackType::FiveFret,
+    NoteTrack note_track {notes,      phrases, {}, {}, TrackType::FiveFret,
                           global_data};
     ProcessedSong track {note_track,
                          {tempo_map, SpMode::Measure},
@@ -1042,7 +1012,6 @@ BOOST_AUTO_TEST_CASE(front_end_and_back_end_are_restricted)
 {
     std::vector<Note> notes {make_note(0), make_note(3110)};
     NoteTrack note_track {notes,
-                          {},
                           {},
                           {},
                           {},
@@ -1075,7 +1044,6 @@ BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1103,7 +1071,6 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
     std::vector<StarPower> phrases {{Tick {768}, Tick {100}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -1134,7 +1101,6 @@ BOOST_AUTO_TEST_CASE(next_note_back_end_is_restricted)
                           {},
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1160,7 +1126,6 @@ BOOST_AUTO_TEST_CASE(end_position_is_finite_if_activation_goes_past_last_note)
 {
     std::vector<Note> notes {make_note(0)};
     NoteTrack note_track {notes,
-                          {},
                           {},
                           {},
                           {},
@@ -1197,7 +1162,6 @@ BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1223,7 +1187,6 @@ BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
     std::vector<StarPower> phrases {{Tick {3072}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -1253,7 +1216,6 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1279,7 +1241,6 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
     std::vector<StarPower> phrases {{Tick {0}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -1314,7 +1275,6 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_around_sp_granting_note_doesnt_get_added)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1343,7 +1303,6 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)
     std::vector<StarPower> phrases {{Tick {0}, Tick {3300}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -1381,7 +1340,6 @@ BOOST_AUTO_TEST_CASE(
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1413,7 +1371,6 @@ BOOST_AUTO_TEST_CASE(
         {Tick {0}, Tick {1}}, {Tick {192}, Tick {1}}, {Tick {3456}, Tick {1}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -1449,7 +1406,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
 
     std::vector<Note> notes {make_note(0, 6720)};
     std::vector<StarPower> phrases {{Tick {0}, Tick {1}}};
-    NoteTrack note_track {notes,      phrases, {}, {}, {}, TrackType::FiveFret,
+    NoteTrack note_track {notes,      phrases, {}, {}, TrackType::FiveFret,
                           global_data};
     ProcessedSong track {note_track,
                          {tempo_map, SpMode::Measure},
@@ -1473,7 +1430,6 @@ BOOST_AUTO_TEST_CASE(adjusted_hit_window_functions_return_correct_values)
 {
     std::vector<Note> notes {make_note(0)};
     NoteTrack note_track {notes,
-                          {},
                           {},
                           {},
                           {},
@@ -1513,7 +1469,6 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
                      phrases,
                      {},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ProcessedSong song {track,
@@ -1538,7 +1493,7 @@ BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
     global_data->tempo_map(tempo_map);
 
     std::vector<Note> notes {make_note(768), make_note(3840)};
-    NoteTrack track {notes, {}, {}, {}, {}, TrackType::FiveFret, global_data};
+    NoteTrack track {notes, {}, {}, {}, TrackType::FiveFret, global_data};
     ProcessedSong song {track,
                         {tempo_map, SpMode::Measure},
                         {0.0, 0.0, Second {0.0}, Second {0.1}, Second {0.0}},
@@ -1567,7 +1522,6 @@ BOOST_AUTO_TEST_CASE(false_for_guitar)
                           {},
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1583,13 +1537,8 @@ BOOST_AUTO_TEST_CASE(false_for_guitar)
 
 BOOST_AUTO_TEST_CASE(true_for_drums)
 {
-    NoteTrack note_track {{},
-                          {},
-                          {},
-                          {},
-                          {},
-                          TrackType::Drums,
-                          std::make_shared<SongGlobalData>()};
+    NoteTrack note_track {
+        {}, {}, {}, {}, TrackType::Drums, std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
@@ -1617,7 +1566,6 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
     NoteTrack note_track {notes,
                           phrases,
                           solos,
-                          {},
                           {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
@@ -1655,7 +1603,6 @@ BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
                           phrases,
                           solos,
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1688,7 +1635,6 @@ BOOST_AUTO_TEST_CASE(no_overlap_is_denoted_correctly)
                                     {Tick {6144}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -1726,7 +1672,6 @@ BOOST_AUTO_TEST_CASE(no_es_is_denoted_correctly)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1762,7 +1707,6 @@ BOOST_AUTO_TEST_CASE(no_sp_is_denoted_correctly)
                           {},
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1789,7 +1733,6 @@ BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
                                     {Tick {192}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -1823,7 +1766,6 @@ BOOST_AUTO_TEST_CASE(mid_sustain_activations_noted_correctly)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1854,7 +1796,6 @@ BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_counted_correctly)
                                     {Tick {192}, Tick {50}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -1890,7 +1831,6 @@ BOOST_AUTO_TEST_CASE(
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1922,7 +1862,6 @@ BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
                           phrases,
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1951,7 +1890,6 @@ BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
     std::vector<StarPower> phrases {{Tick {0}, Tick {3300}}};
     NoteTrack note_track {notes,
                           phrases,
-                          {},
                           {},
                           {},
                           TrackType::FiveFret,
@@ -1987,7 +1925,6 @@ BOOST_AUTO_TEST_CASE(average_multiplier_rounds_down)
                           {},
                           {},
                           {},
-                          {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -2015,7 +1952,6 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_drums)
                           {},
                           {},
                           {},
-                          {},
                           TrackType::Drums,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -2039,7 +1975,6 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_zero_notes)
 {
     std::vector<Note> notes {make_drum_note(192, DRUM_DOUBLE_KICK)};
     NoteTrack note_track {notes,
-                          {},
                           {},
                           {},
                           {},
@@ -2072,13 +2007,9 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_is_used_for_drums)
                                     {Tick {192}, Tick {1}},
                                     {Tick {6336}, Tick {1}},
                                     {Tick {6528}, Tick {1}}};
-    NoteTrack note_track {notes,
-                          phrases,
-                          {},
-                          {},
-                          {},
-                          TrackType::Drums,
-                          std::make_shared<SongGlobalData>()};
+    NoteTrack note_track {
+        notes, phrases,          {},
+        {},    TrackType::Drums, std::make_shared<SongGlobalData>()};
     note_track.generate_drum_fills({});
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
@@ -2111,13 +2042,9 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_l_and_e_are_used_for_drums)
                                     {Tick {390}, Tick {1}},
                                     {Tick {5568}, Tick {1}},
                                     {Tick {5755}, Tick {1}}};
-    NoteTrack note_track {notes,
-                          phrases,
-                          {},
-                          {},
-                          {},
-                          TrackType::Drums,
-                          std::make_shared<SongGlobalData>()};
+    NoteTrack note_track {
+        notes, phrases,          {},
+        {},    TrackType::Drums, std::make_shared<SongGlobalData>()};
     note_track.generate_drum_fills({});
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
@@ -2148,7 +2075,6 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_ignored_with_rb)
     NoteTrack note_track {notes,
                           {},
                           solos,
-                          {},
                           {},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};

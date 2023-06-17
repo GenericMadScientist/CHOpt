@@ -29,7 +29,6 @@ BOOST_AUTO_TEST_CASE(notes_are_sorted)
                      {},
                      {},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     std::vector<Note> sorted_notes {make_note(384), make_note(768)};
@@ -45,7 +44,6 @@ BOOST_AUTO_TEST_CASE(notes_of_the_same_colour_and_position_are_merged)
                      {},
                      {},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     std::vector<Note> required_notes {make_note(768, 768)};
@@ -56,7 +54,6 @@ BOOST_AUTO_TEST_CASE(notes_of_the_same_colour_and_position_are_merged)
 
     std::vector<Note> second_notes {make_note(768, 768), make_note(768, 0)};
     NoteTrack second_track {second_notes,
-                            {},
                             {},
                             {},
                             {},
@@ -78,7 +75,6 @@ BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_dealt_with_separately)
                      {},
                      {},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     std::vector<Note> required_notes {
@@ -95,7 +91,6 @@ BOOST_AUTO_TEST_CASE(open_and_non_open_notes_of_same_pos_and_length_are_merged)
                              make_note(768, 1, FIVE_FRET_RED),
                              make_note(768, 0, FIVE_FRET_OPEN)};
     NoteTrack track {notes,
-                     {},
                      {},
                      {},
                      {},
@@ -125,7 +120,6 @@ BOOST_AUTO_TEST_CASE(empty_sp_phrases_are_culled)
                      phrases,
                      {},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     std::vector<StarPower> required_phrases {{Tick {700}, Tick {100}}};
@@ -142,7 +136,6 @@ BOOST_AUTO_TEST_CASE(sp_phrases_are_sorted)
                                     {Tick {768}, Tick {1}}};
     NoteTrack track {notes,
                      phrases,
-                     {},
                      {},
                      {},
                      TrackType::FiveFret,
@@ -164,7 +157,6 @@ BOOST_AUTO_TEST_CASE(sp_phrases_do_not_overlap)
                      phrases,
                      {},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     std::vector<StarPower> required_phrases {{Tick {768}, Tick {282}},
@@ -183,7 +175,6 @@ BOOST_AUTO_TEST_CASE(solos_are_sorted)
     NoteTrack track {notes,
                      {},
                      solos,
-                     {},
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
@@ -210,7 +201,6 @@ BOOST_AUTO_TEST_CASE(solos_do_take_into_account_drum_settings)
                      {},
                      solos,
                      {},
-                     {},
                      TrackType::Drums,
                      std::make_shared<SongGlobalData>()};
     std::vector<Solo> required_solos {{Tick {0}, Tick {1}, 100}};
@@ -229,7 +219,6 @@ BOOST_AUTO_TEST_CASE(automatic_zones_are_created)
                              make_drum_note(2304), make_drum_note(3072),
                              make_drum_note(3840)};
     NoteTrack track {notes,
-                     {},
                      {},
                      {},
                      {},
@@ -253,7 +242,6 @@ BOOST_AUTO_TEST_CASE(automatic_zones_have_250ms_of_leniency)
                      {},
                      {},
                      {},
-                     {},
                      TrackType::Drums,
                      std::make_shared<SongGlobalData>()};
     std::vector<DrumFill> fills {{Tick {384}, Tick {384}},
@@ -270,7 +258,6 @@ BOOST_AUTO_TEST_CASE(automatic_zones_handle_skipped_measures_correctly)
 {
     std::vector<Note> notes {make_drum_note(768), make_drum_note(4608)};
     NoteTrack track {notes,
-                     {},
                      {},
                      {},
                      {},
@@ -293,7 +280,6 @@ BOOST_AUTO_TEST_CASE(the_last_automatic_zone_exists_even_if_the_note_is_early)
                      {},
                      {},
                      {},
-                     {},
                      TrackType::Drums,
                      std::make_shared<SongGlobalData>()};
     std::vector<DrumFill> fills {{Tick {384}, Tick {384}}};
@@ -313,7 +299,7 @@ BOOST_AUTO_TEST_CASE(automatic_zones_are_half_a_measure_according_to_seconds)
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
-    NoteTrack track {notes, {}, {}, {}, {}, TrackType::Drums, global_data};
+    NoteTrack track {notes, {}, {}, {}, TrackType::Drums, global_data};
     std::vector<DrumFill> fills {{Tick {576}, Tick {192}}};
 
     track.generate_drum_fills(tempo_map);
@@ -329,7 +315,6 @@ BOOST_AUTO_TEST_CASE(fill_ends_remain_snapped_to_measure)
                              make_drum_note(3830), make_drum_note(3860),
                              make_drum_note(6900), make_drum_note(6924)};
     NoteTrack track {notes,
-                     {},
                      {},
                      {},
                      {},
@@ -360,7 +345,6 @@ BOOST_AUTO_TEST_CASE(base_score_is_correct_for_songs_without_sustains)
                      {},
                      {},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
 
@@ -377,18 +361,15 @@ BOOST_AUTO_TEST_CASE(base_score_is_correct_for_songs_with_sustains)
                          {},
                          {},
                          {},
-                         {},
                          TrackType::FiveFret,
                          std::make_shared<SongGlobalData>()};
     NoteTrack track_two {notes_two,
                          {},
                          {},
                          {},
-                         {},
                          TrackType::FiveFret,
                          std::make_shared<SongGlobalData>()};
     NoteTrack track_three {notes_three,
-                           {},
                            {},
                            {},
                            {},
@@ -409,7 +390,6 @@ BOOST_AUTO_TEST_CASE(base_score_is_correct_for_songs_with_chord_sustains)
                      {},
                      {},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
 
@@ -421,7 +401,7 @@ BOOST_AUTO_TEST_CASE(base_score_is_correct_for_other_resolutions)
     std::vector<Note> notes {make_note(192, 192)};
 
     NoteTrack track {
-        notes, {}, {}, {}, {}, TrackType::FiveFret, make_resolution(480)};
+        notes, {}, {}, {}, TrackType::FiveFret, make_resolution(480)};
 
     BOOST_CHECK_EQUAL(track.base_score(), 60);
 }
@@ -431,7 +411,6 @@ BOOST_AUTO_TEST_CASE(fractional_ticks_from_multiple_holds_are_added_correctly)
     std::vector<Note> notes {make_note(0, 100), make_note(192, 100)};
 
     NoteTrack track {notes,
-                     {},
                      {},
                      {},
                      {},
@@ -451,7 +430,6 @@ BOOST_AUTO_TEST_CASE(disjoint_chords_are_handled_correctly)
                      {},
                      {},
                      {},
-                     {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
 
@@ -463,7 +441,6 @@ BOOST_AUTO_TEST_CASE(base_score_is_correctly_handled_with_open_note_merging)
     std::vector<Note> notes {make_note(0, 0), make_note(0, 0, FIVE_FRET_OPEN)};
 
     NoteTrack track {notes,
-                     {},
                      {},
                      {},
                      {},
@@ -486,7 +463,6 @@ BOOST_AUTO_TEST_CASE(all_kicks_gives_correct_answer)
                      {},
                      {},
                      {},
-                     {},
                      TrackType::Drums,
                      std::make_shared<SongGlobalData>()};
     DrumSettings settings {true, false, true, false};
@@ -500,7 +476,6 @@ BOOST_AUTO_TEST_CASE(only_single_kicks_gives_correct_answer)
                              make_drum_note(192, DRUM_KICK),
                              make_drum_note(384, DRUM_DOUBLE_KICK)};
     NoteTrack track {notes,
-                     {},
                      {},
                      {},
                      {},
@@ -520,7 +495,6 @@ BOOST_AUTO_TEST_CASE(no_kicks_gives_correct_answer)
                      {},
                      {},
                      {},
-                     {},
                      TrackType::Drums,
                      std::make_shared<SongGlobalData>()};
     DrumSettings settings {false, true, true, false};
@@ -535,7 +509,7 @@ BOOST_AUTO_TEST_CASE(trim_sustains_is_correct)
     const std::vector<Note> notes {make_note(0, 65), make_note(200, 70),
                                    make_note(400, 140)};
     const NoteTrack track {
-        notes, {}, {}, {}, {}, TrackType::FiveFret, make_resolution(200)};
+        notes, {}, {}, {}, TrackType::FiveFret, make_resolution(200)};
     const auto new_track = track.trim_sustains();
     const auto& new_notes = new_track.notes();
 
@@ -552,7 +526,7 @@ BOOST_AUTO_TEST_CASE(no_snapping)
     const std::vector<Note> notes {make_note(0, 0, FIVE_FRET_GREEN),
                                    make_note(5, 0, FIVE_FRET_RED)};
     const NoteTrack track {
-        notes, {}, {}, {}, {}, TrackType::FiveFret, make_resolution(480)};
+        notes, {}, {}, {}, TrackType::FiveFret, make_resolution(480)};
     auto new_track = track.snap_chords(Tick {0});
     const auto& new_notes = new_track.notes();
 
@@ -565,7 +539,7 @@ BOOST_AUTO_TEST_CASE(hmx_gh_snapping)
     const std::vector<Note> notes {make_note(0, 0, FIVE_FRET_GREEN),
                                    make_note(5, 0, FIVE_FRET_RED)};
     const NoteTrack track {
-        notes, {}, {}, {}, {}, TrackType::FiveFret, make_resolution(480)};
+        notes, {}, {}, {}, TrackType::FiveFret, make_resolution(480)};
     auto new_track = track.snap_chords(Tick {10});
     const auto& new_notes = new_track.notes();
 
@@ -582,7 +556,6 @@ BOOST_AUTO_TEST_CASE(disable_dynamics_is_correct)
                                    make_drum_note(192, DRUM_RED, FLAGS_GHOST),
                                    make_drum_note(384, DRUM_RED, FLAGS_ACCENT)};
     NoteTrack track {notes,
-                     {},
                      {},
                      {},
                      {},

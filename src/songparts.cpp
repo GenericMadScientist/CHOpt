@@ -189,11 +189,10 @@ void NoteTrack::add_hopos(Tick max_hopo_gap)
 NoteTrack::NoteTrack(std::vector<Note> notes,
                      const std::vector<StarPower>& sp_phrases,
                      std::vector<Solo> solos, std::vector<DrumFill> drum_fills,
-                     std::vector<DiscoFlip> disco_flips, TrackType track_type,
+                     TrackType track_type,
                      std::shared_ptr<SongGlobalData> global_data,
                      Tick max_hopo_gap)
     : m_drum_fills {std::move(drum_fills)}
-    , m_disco_flips {std::move(disco_flips)}
     , m_track_type {track_type}
     , m_global_data {std::move(global_data)}
     , m_base_score_ticks {0}

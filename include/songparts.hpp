@@ -29,6 +29,7 @@
 #include <stdexcept>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "drumsettings.hpp"
@@ -207,8 +208,7 @@ private:
 public:
     NoteTrack(std::vector<Note> notes, const std::vector<StarPower>& sp_phrases,
               std::vector<Solo> solos, std::vector<DrumFill> drum_fills,
-              std::vector<DiscoFlip> disco_flips, TrackType track_type,
-              std::shared_ptr<SongGlobalData> global_data,
+              TrackType track_type, std::shared_ptr<SongGlobalData> global_data,
               Tick max_hopo_gap = Tick {65});
     void generate_drum_fills(const TempoMap& tempo_map);
     void disable_dynamics();
@@ -223,9 +223,14 @@ public:
     {
         return m_drum_fills;
     }
+
     [[nodiscard]] const std::vector<DiscoFlip>& disco_flips() const
     {
         return m_disco_flips;
+    }
+    void disco_flips(std::vector<DiscoFlip> disco_flips)
+    {
+        m_disco_flips = std::move(disco_flips);
     }
 
     [[nodiscard]] std::optional<BigRockEnding> bre() const { return m_bre; }
