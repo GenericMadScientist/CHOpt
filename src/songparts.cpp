@@ -169,19 +169,22 @@ void NoteTrack::add_hopos(Tick max_hopo_gap)
         return;
     }
 
-    for (auto i = 1U; i < m_notes.size(); ++i) {
-        if (is_chord(m_notes[i])) {
-            continue;
-        }
-        if (m_notes[i].colours() == m_notes[i - 1].colours()) {
-            continue;
-        }
+    for (auto i = 0U; i < m_notes.size(); ++i) {
         if ((m_notes[i].flags & FLAGS_TAP) != 0) {
             continue;
         }
-        if (m_notes[i].position - m_notes[i - 1].position <= max_hopo_gap) {
+        bool is_hopo = m_notes[i].flags & FLAGS_FORCE_FLIP;
+        if (i != 0U) {
+            const auto note_gap = m_notes[i].position - m_notes[i - 1].position;
+            if (!is_chord(m_notes[i])
+                && m_notes[i].colours() != m_notes[i - 1].colours()
+                && note_gap <= max_hopo_gap) {
+                is_hopo = !is_hopo;
+            }
+        }
+        if (is_hopo) {
             m_notes[i].flags
-                = static_cast<NoteFlags>(m_notes[i].flags ^ FLAGS_HOPO);
+                = static_cast<NoteFlags>(m_notes[i].flags | FLAGS_HOPO);
         }
     }
 }

@@ -299,7 +299,8 @@ public:
             if (m_tap_positions.contains(note.position.value())) {
                 note.flags = static_cast<NoteFlags>(note.flags | FLAGS_TAP);
             } else if (m_forcing_positions.contains(note.position.value())) {
-                note.flags = static_cast<NoteFlags>(note.flags | FLAGS_HOPO);
+                note.flags
+                    = static_cast<NoteFlags>(note.flags | FLAGS_FORCE_FLIP);
             }
         }
     }

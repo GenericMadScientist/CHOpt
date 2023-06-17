@@ -664,8 +664,10 @@ BOOST_AUTO_TEST_CASE(forcing_is_handled_correctly)
     const auto notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
-    BOOST_CHECK_EQUAL(notes[0].flags, FLAGS_HOPO | FLAGS_FIVE_FRET_GUITAR);
-    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_FIVE_FRET_GUITAR);
+    BOOST_CHECK_EQUAL(notes[0].flags,
+                      FLAGS_FORCE_FLIP | FLAGS_HOPO | FLAGS_FIVE_FRET_GUITAR);
+    BOOST_CHECK_EQUAL(notes[1].flags,
+                      FLAGS_FORCE_FLIP | FLAGS_FIVE_FRET_GUITAR);
 }
 
 BOOST_AUTO_TEST_CASE(chords_are_not_hopos_due_to_proximity)
@@ -689,7 +691,8 @@ BOOST_AUTO_TEST_CASE(chords_can_be_forced)
     const auto notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
-    BOOST_CHECK_EQUAL(notes[1].flags, FLAGS_HOPO | FLAGS_FIVE_FRET_GUITAR);
+    BOOST_CHECK_EQUAL(notes[1].flags,
+                      FLAGS_FORCE_FLIP | FLAGS_HOPO | FLAGS_FIVE_FRET_GUITAR);
 }
 
 BOOST_AUTO_TEST_CASE(taps_are_read)
