@@ -173,7 +173,7 @@ void NoteTrack::add_hopos(Tick max_hopo_gap)
         if ((m_notes[i].flags & FLAGS_TAP) != 0) {
             continue;
         }
-        bool is_hopo = m_notes[i].flags & FLAGS_FORCE_FLIP;
+        bool is_hopo = (m_notes[i].flags & FLAGS_FORCE_FLIP) != 0U;
         if (i != 0U) {
             const auto note_gap = m_notes[i].position - m_notes[i - 1].position;
             if (!is_chord(m_notes[i])
