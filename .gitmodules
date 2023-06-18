@@ -1,0 +1,3 @@
+[submodule "extern/sightread"]
+	path = extern/sightread
+	url = https://github.com//GenericMadScientist/SightRead

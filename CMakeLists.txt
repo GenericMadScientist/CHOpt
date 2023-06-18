@@ -40,6 +40,7 @@ find_package(
   Boost 1.77 REQUIRED
   COMPONENTS nowide program_options
   OPTIONAL_COMPONENTS json unit_test_framework)
+add_subdirectory("extern/sightread")
 
 cmake_policy(SET CMP0083 NEW)
 include(CheckPIESupported)
@@ -78,7 +79,7 @@ target_include_directories(
   chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
 target_link_directories(chopt PRIVATE ${Boost_LIBRARY_DIRS})
 target_link_libraries(chopt PRIVATE Boost::nowide Boost::program_options
-  ${PNG_LIBRARIES})
+  ${PNG_LIBRARIES} sightread)
 
 set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 set_cpp_standard(chopt)
@@ -135,7 +136,7 @@ if(BUILD_GUI)
   target_link_directories(choptgui PRIVATE ${Boost_LIBRARY_DIRS})
   target_link_libraries(
     choptgui PRIVATE Boost::json Boost::nowide Boost::program_options ${PNG_LIBRARIES}
-    Qt6::Widgets)
+    Qt6::Widgets sightread)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 
@@ -196,7 +197,7 @@ if(PACKAGE_TESTS)
     PRIVATE "${PROJECT_SOURCE_DIR}/include")
   target_link_directories(chopt_tests PRIVATE ${Boost_LIBRARY_DIRS})
   target_link_libraries(chopt_tests PRIVATE Boost::nowide Boost::program_options
-    Boost::unit_test_framework)
+    Boost::unit_test_framework sightread)
   add_test(NAME chopt_tests COMMAND chopt_tests)
   set_cpp_standard(chopt_tests)
   set_warnings(chopt_tests)
