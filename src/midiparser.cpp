@@ -223,16 +223,16 @@ std::optional<Difficulty> difficulty_from_key(std::uint8_t key,
     std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges;
     switch (track_type) {
     case TrackType::FiveFret:
-        diff_ranges = {{{96, 100, Difficulty::Expert}, // NOLINT
-                        {84, 88, Difficulty::Hard}, // NOLINT
-                        {72, 76, Difficulty::Medium}, // NOLINT
-                        {60, 64, Difficulty::Easy}}}; // NOLINT
+        diff_ranges = {{{96, 102, Difficulty::Expert}, // NOLINT
+                        {84, 90, Difficulty::Hard}, // NOLINT
+                        {72, 78, Difficulty::Medium}, // NOLINT
+                        {60, 66, Difficulty::Easy}}}; // NOLINT
         break;
     case TrackType::SixFret:
-        diff_ranges = {{{94, 100, Difficulty::Expert}, // NOLINT
-                        {82, 88, Difficulty::Hard}, // NOLINT
-                        {70, 76, Difficulty::Medium}, // NOLINT
-                        {58, 64, Difficulty::Easy}}}; // NOLINT
+        diff_ranges = {{{94, 102, Difficulty::Expert}, // NOLINT
+                        {82, 90, Difficulty::Hard}, // NOLINT
+                        {70, 78, Difficulty::Medium}, // NOLINT
+                        {58, 66, Difficulty::Easy}}}; // NOLINT
         break;
     case TrackType::Drums:
         diff_ranges = {{{95, 101, Difficulty::Expert}, // NOLINT
@@ -382,6 +382,16 @@ public:
     std::vector<std::tuple<int, int>> solo_off_events;
     std::vector<std::tuple<int, int>> sp_on_events;
     std::vector<std::tuple<int, int>> sp_off_events;
+    std::vector<std::tuple<int, int>> tap_on_events;
+    std::vector<std::tuple<int, int>> tap_off_events;
+    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+        force_hopo_on_events;
+    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+        force_hopo_off_events;
+    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+        force_strum_on_events;
+    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+        force_strum_off_events;
     std::vector<std::tuple<int, int>> fill_on_events;
     std::vector<std::tuple<int, int>> fill_off_events;
     std::map<Difficulty, std::vector<std::tuple<int, int>>>
@@ -447,6 +457,26 @@ void append_disco_flip(InstrumentMidiTrack& event_track,
     }
 }
 
+bool force_hopo_key(std::uint8_t key, TrackType track_type)
+{
+    constexpr std::array FORCE_HOPO_KEYS {65, 77, 89, 101};
+    if (track_type == TrackType::Drums) {
+        return false;
+    }
+    return std::find(FORCE_HOPO_KEYS.cbegin(), FORCE_HOPO_KEYS.cend(), key)
+        != FORCE_HOPO_KEYS.cend();
+}
+
+bool force_strum_key(std::uint8_t key, TrackType track_type)
+{
+    constexpr std::array FORCE_STRUM_KEYS {66, 78, 90, 102};
+    if (track_type == TrackType::Drums) {
+        return false;
+    }
+    return std::find(FORCE_STRUM_KEYS.cbegin(), FORCE_STRUM_KEYS.cend(), key)
+        != FORCE_STRUM_KEYS.cend();
+}
+
 void add_note_off_event(InstrumentMidiTrack& track,
                         const std::array<std::uint8_t, 2>& data, int time,
                         int rank, bool from_five_lane, TrackType track_type)
@@ -456,13 +486,20 @@ void add_note_off_event(InstrumentMidiTrack& track,
     constexpr int GREEN_TOM_ID = 112;
     constexpr int SOLO_NOTE_ID = 103;
     constexpr int SP_NOTE_ID = 116;
+    constexpr int TAP_NOTE_ID = 104;
     constexpr int DRUM_FILL_ID = 120;
 
     const auto diff = difficulty_from_key(data[0], track_type);
     if (diff.has_value()) {
-        const auto colour
-            = colour_from_key(data[0], track_type, from_five_lane);
-        track.note_off_events[{*diff, colour}].emplace_back(time, rank);
+        if (force_hopo_key(data[0], track_type)) {
+            track.force_hopo_off_events[*diff].emplace_back(time, rank);
+        } else if (force_strum_key(data[0], track_type)) {
+            track.force_strum_off_events[*diff].emplace_back(time, rank);
+        } else {
+            const auto colour
+                = colour_from_key(data[0], track_type, from_five_lane);
+            track.note_off_events[{*diff, colour}].emplace_back(time, rank);
+        }
     } else if (data[0] == YELLOW_TOM_ID) {
         track.yellow_tom_off_events.emplace_back(time, rank);
     } else if (data[0] == BLUE_TOM_ID) {
@@ -473,6 +510,8 @@ void add_note_off_event(InstrumentMidiTrack& track,
         track.solo_off_events.emplace_back(time, rank);
     } else if (data[0] == SP_NOTE_ID) {
         track.sp_off_events.emplace_back(time, rank);
+    } else if (data[0] == TAP_NOTE_ID) {
+        track.tap_off_events.emplace_back(time, rank);
     } else if (data[0] == DRUM_FILL_ID) {
         track.fill_off_events.emplace_back(time, rank);
     }
@@ -488,6 +527,7 @@ void add_note_on_event(InstrumentMidiTrack& track,
     constexpr int GREEN_TOM_ID = 112;
     constexpr int SOLO_NOTE_ID = 103;
     constexpr int SP_NOTE_ID = 116;
+    constexpr int TAP_NOTE_ID = 104;
     constexpr int DRUM_FILL_ID = 120;
 
     // Velocity 0 Note On events are counted as Note Off events.
@@ -498,18 +538,25 @@ void add_note_on_event(InstrumentMidiTrack& track,
 
     const auto diff = difficulty_from_key(data[0], track_type);
     if (diff.has_value()) {
-        auto colour = colour_from_key(data[0], track_type, from_five_lane);
-        auto flags = flags_from_track_type(track_type);
-        if (track_type == TrackType::Drums) {
-            if (is_cymbal_key(data[0], from_five_lane)) {
-                flags = static_cast<NoteFlags>(flags | FLAGS_CYMBAL);
+        if (force_hopo_key(data[0], track_type)) {
+            track.force_hopo_on_events[*diff].emplace_back(time, rank);
+        } else if (force_strum_key(data[0], track_type)) {
+            track.force_strum_on_events[*diff].emplace_back(time, rank);
+        } else {
+            auto colour = colour_from_key(data[0], track_type, from_five_lane);
+            auto flags = flags_from_track_type(track_type);
+            if (track_type == TrackType::Drums) {
+                if (is_cymbal_key(data[0], from_five_lane)) {
+                    flags = static_cast<NoteFlags>(flags | FLAGS_CYMBAL);
+                }
+                if (parse_dynamics) {
+                    flags = static_cast<NoteFlags>(
+                        flags | dynamics_flags_from_velocity(data[1]));
+                }
             }
-            if (parse_dynamics) {
-                flags = static_cast<NoteFlags>(
-                    flags | dynamics_flags_from_velocity(data[1]));
-            }
+            track.note_on_events[{*diff, colour, flags}].emplace_back(time,
+                                                                      rank);
         }
-        track.note_on_events[{*diff, colour, flags}].emplace_back(time, rank);
     } else if (data[0] == YELLOW_TOM_ID) {
         track.yellow_tom_on_events.emplace_back(time, rank);
     } else if (data[0] == BLUE_TOM_ID) {
@@ -520,6 +567,8 @@ void add_note_on_event(InstrumentMidiTrack& track,
         track.solo_on_events.emplace_back(time, rank);
     } else if (data[0] == SP_NOTE_ID) {
         track.sp_on_events.emplace_back(time, rank);
+    } else if (data[0] == TAP_NOTE_ID) {
+        track.tap_on_events.emplace_back(time, rank);
     } else if (data[0] == DRUM_FILL_ID) {
         track.fill_on_events.emplace_back(time, rank);
     }
@@ -531,6 +580,8 @@ InstrumentMidiTrack read_instrument_midi_track(const MidiTrack& midi_track,
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
+    constexpr std::array DIFFICULTIES {Difficulty::Easy, Difficulty::Medium,
+                                       Difficulty::Hard, Difficulty::Expert};
 
     const bool from_five_lane = track_type == TrackType::Drums
         && has_five_lane_green_notes(midi_track);
@@ -538,14 +589,14 @@ InstrumentMidiTrack read_instrument_midi_track(const MidiTrack& midi_track,
         && has_enable_chart_dynamics(midi_track);
 
     InstrumentMidiTrack event_track;
-    event_track.disco_flip_on_events[Difficulty::Easy] = {};
-    event_track.disco_flip_off_events[Difficulty::Easy] = {};
-    event_track.disco_flip_on_events[Difficulty::Medium] = {};
-    event_track.disco_flip_off_events[Difficulty::Medium] = {};
-    event_track.disco_flip_on_events[Difficulty::Hard] = {};
-    event_track.disco_flip_off_events[Difficulty::Hard] = {};
-    event_track.disco_flip_on_events[Difficulty::Expert] = {};
-    event_track.disco_flip_off_events[Difficulty::Expert] = {};
+    for (auto d : DIFFICULTIES) {
+        event_track.disco_flip_on_events[d] = {};
+        event_track.disco_flip_off_events[d] = {};
+        event_track.force_hopo_on_events[d] = {};
+        event_track.force_hopo_off_events[d] = {};
+        event_track.force_strum_on_events[d] = {};
+        event_track.force_strum_off_events[d] = {};
+    }
 
     int rank = 0;
     for (const auto& event : midi_track.events) {
@@ -597,11 +648,38 @@ InstrumentMidiTrack read_instrument_midi_track(const MidiTrack& midi_track,
     return event_track;
 }
 
+bool position_in_event_spans(
+    const std::vector<std::tuple<int, int>>& event_spans, int position)
+{
+    for (const auto& [pos, end] : event_spans) {
+        if (position >= pos && position < end) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::map<Difficulty, std::vector<Note>> notes_from_event_track(
     const InstrumentMidiTrack& event_track,
     const std::map<Difficulty, std::vector<std::tuple<int, int>>>& open_events,
     TrackType track_type)
 {
+    constexpr std::array DIFFICULTIES {Difficulty::Easy, Difficulty::Medium,
+                                       Difficulty::Hard, Difficulty::Expert};
+
+    const auto tap_events = combine_note_on_off_events(
+        event_track.tap_on_events, event_track.tap_off_events);
+    std::map<Difficulty, std::vector<std::tuple<int, int>>> force_hopo_events;
+    std::map<Difficulty, std::vector<std::tuple<int, int>>> force_strum_events;
+    for (auto d : DIFFICULTIES) {
+        force_hopo_events[d] = combine_note_on_off_events(
+            event_track.force_hopo_on_events.at(d),
+            event_track.force_hopo_off_events.at(d));
+        force_strum_events[d] = combine_note_on_off_events(
+            event_track.force_strum_on_events.at(d),
+            event_track.force_strum_off_events.at(d));
+    }
+
     std::map<Difficulty, std::vector<Note>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour, flags] = key;
@@ -615,19 +693,27 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
             auto note_colour = colour;
             if (track_type == TrackType::FiveFret) {
                 const auto open_events_iter = open_events.find(diff);
-                if (open_events_iter != open_events.cend()) {
-                    for (const auto& [open_start, open_end] :
-                         open_events_iter->second) {
-                        if (pos >= open_start && pos < open_end) {
-                            note_colour = FIVE_FRET_OPEN;
-                        }
-                    }
+                if (open_events_iter != open_events.cend()
+                    && position_in_event_spans(open_events_iter->second, pos)) {
+                    note_colour = FIVE_FRET_OPEN;
                 }
             }
             Note note;
             note.position = Tick {pos};
             note.lengths.at(note_colour) = Tick {note_length};
             note.flags = flags_from_track_type(track_type);
+            if (position_in_event_spans(tap_events, pos)
+                && track_type != TrackType::Drums) {
+                note.flags = static_cast<NoteFlags>(note.flags | FLAGS_TAP);
+            }
+            if (position_in_event_spans(force_hopo_events[diff], pos)) {
+                note.flags
+                    = static_cast<NoteFlags>(note.flags | FLAGS_FORCE_HOPO);
+            }
+            if (position_in_event_spans(force_strum_events[diff], pos)) {
+                note.flags
+                    = static_cast<NoteFlags>(note.flags | FLAGS_FORCE_STRUM);
+            }
             notes[diff].push_back(note);
         }
     }
@@ -638,6 +724,7 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
 std::map<Difficulty, NoteTrack>
 ghl_note_tracks_from_midi(const MidiTrack& midi_track,
                           const std::shared_ptr<SongGlobalData>& global_data,
+                          const HopoThreshold& hopo_threshold,
                           bool permit_solos)
 {
     const auto event_track
@@ -669,8 +756,9 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track,
         if (!permit_solos) {
             solos.clear();
         }
-        NoteTrack note_track {note_set, sp_phrases, TrackType::SixFret,
-                              global_data};
+        NoteTrack note_track {
+            note_set, sp_phrases, TrackType::SixFret, global_data,
+            hopo_threshold.midi_max_hopo_gap(global_data->resolution())};
         note_track.solos(std::move(solos));
         note_tracks.emplace(diff, std::move(note_track));
     }
@@ -856,7 +944,7 @@ std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
 std::map<Difficulty, NoteTrack>
 note_tracks_from_midi(const MidiTrack& midi_track,
                       const std::shared_ptr<SongGlobalData>& global_data,
-                      bool permit_solos)
+                      const HopoThreshold& hopo_threshold, bool permit_solos)
 {
     const auto event_track
         = read_instrument_midi_track(midi_track, TrackType::FiveFret);
@@ -897,8 +985,9 @@ note_tracks_from_midi(const MidiTrack& midi_track,
         if (!permit_solos) {
             solos.clear();
         }
-        NoteTrack note_track {note_set, sp_phrases, TrackType::FiveFret,
-                              global_data};
+        NoteTrack note_track {
+            note_set, sp_phrases, TrackType::FiveFret, global_data,
+            hopo_threshold.midi_max_hopo_gap(global_data->resolution())};
         note_track.solos(std::move(solos));
         note_track.bre(bre);
         note_tracks.emplace(diff, std::move(note_track));
@@ -912,9 +1001,16 @@ MidiParser::MidiParser(const IniValues& ini)
     : m_song_name {ini.name}
     , m_artist {ini.artist}
     , m_charter {ini.charter}
+    , m_hopo_threshold {HopoThresholdType::Resolution, Tick {0}}
     , m_permitted_instruments {all_instruments()}
     , m_permit_solos {true}
 {
+}
+
+MidiParser& MidiParser::hopo_threshold(HopoThreshold hopo_threshold)
+{
+    m_hopo_threshold = hopo_threshold;
+    return *this;
 }
 
 MidiParser&
@@ -964,8 +1060,9 @@ Song MidiParser::from_midi(const Midi& midi) const
             continue;
         }
         if (is_six_fret_instrument(*inst)) {
-            auto tracks = ghl_note_tracks_from_midi(
-                track, song.global_data_ptr(), m_permit_solos);
+            auto tracks
+                = ghl_note_tracks_from_midi(track, song.global_data_ptr(),
+                                            m_hopo_threshold, m_permit_solos);
             for (auto& [diff, note_track] : tracks) {
                 song.add_note_track(*inst, diff, std::move(note_track));
             }
@@ -977,8 +1074,9 @@ Song MidiParser::from_midi(const Midi& midi) const
                                     std::move(note_track));
             }
         } else {
-            auto tracks = note_tracks_from_midi(track, song.global_data_ptr(),
-                                                m_permit_solos);
+            auto tracks
+                = note_tracks_from_midi(track, song.global_data_ptr(),
+                                        m_hopo_threshold, m_permit_solos);
             for (auto& [diff, note_track] : tracks) {
                 song.add_note_track(*inst, diff, std::move(note_track));
             }

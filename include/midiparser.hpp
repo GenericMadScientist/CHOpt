@@ -24,6 +24,7 @@
 #include <span>
 #include <string>
 
+#include "hopothreshold.hpp"
 #include "ini.hpp"
 #include "midi.hpp"
 #include "song.hpp"
@@ -34,11 +35,13 @@ private:
     std::string m_song_name;
     std::string m_artist;
     std::string m_charter;
+    HopoThreshold m_hopo_threshold;
     std::set<Instrument> m_permitted_instruments;
     bool m_permit_solos;
 
 public:
     explicit MidiParser(const IniValues& ini);
+    MidiParser& hopo_threshold(HopoThreshold hopo_threshold);
     MidiParser& permit_instruments(std::set<Instrument> permitted_instruments);
     MidiParser& parse_solos(bool permit_solos);
     Song from_midi(const Midi& midi) const;

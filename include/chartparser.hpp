@@ -24,16 +24,10 @@
 #include <string_view>
 
 #include "chart.hpp"
+#include "hopothreshold.hpp"
 #include "ini.hpp"
 #include "song.hpp"
 #include "songparts.hpp"
-
-enum class HopoThresholdType { Resolution, HopoFrequency, EighthNote };
-
-struct HopoThreshold {
-    HopoThresholdType threshold_type;
-    Tick hopo_frequency;
-};
 
 class ChartParser {
 private:
@@ -45,7 +39,6 @@ private:
     bool m_permit_solos;
 
     Song from_chart(const Chart& chart) const;
-    Tick max_hopo_gap(int resolution) const;
 
 public:
     explicit ChartParser(const IniValues& ini);

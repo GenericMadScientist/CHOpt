@@ -627,7 +627,7 @@ BOOST_AUTO_TEST_CASE(solos_ignored_from_charts_if_not_permitted)
     BOOST_CHECK(parsed_solos.empty());
 }
 
-BOOST_AUTO_TEST_SUITE(hopos_and_taps)
+BOOST_AUTO_TEST_SUITE(chart_hopos_and_taps)
 
 BOOST_AUTO_TEST_CASE(automatically_set_based_on_distance)
 {

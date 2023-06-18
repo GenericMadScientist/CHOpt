@@ -170,7 +170,7 @@ void NoteTrack::add_hopos(Tick max_hopo_gap)
     }
 
     for (auto i = 0U; i < m_notes.size(); ++i) {
-        if ((m_notes[i].flags & FLAGS_TAP) != 0) {
+        if ((m_notes[i].flags & (FLAGS_TAP | FLAGS_FORCE_STRUM)) != 0U) {
             continue;
         }
         bool is_hopo = (m_notes[i].flags & FLAGS_FORCE_FLIP) != 0U;
@@ -181,6 +181,9 @@ void NoteTrack::add_hopos(Tick max_hopo_gap)
                 && note_gap <= max_hopo_gap) {
                 is_hopo = !is_hopo;
             }
+        }
+        if ((m_notes[i].flags & FLAGS_FORCE_HOPO) != 0U) {
+            is_hopo = true;
         }
         if (is_hopo) {
             m_notes[i].flags
