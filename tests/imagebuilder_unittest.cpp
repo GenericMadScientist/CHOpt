@@ -103,7 +103,8 @@ BOOST_AUTO_TEST_CASE(five_fret_gets_the_right_track_type)
     NoteTrack track {
         {}, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
 
     BOOST_CHECK_EQUAL(builder.track_type(), TrackType::FiveFret);
 }
@@ -113,7 +114,8 @@ BOOST_AUTO_TEST_CASE(six_fret_gets_the_right_track_type)
     NoteTrack track {
         {}, {}, TrackType::SixFret, std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
 
     BOOST_CHECK_EQUAL(builder.track_type(), TrackType::SixFret);
 }
@@ -123,7 +125,8 @@ BOOST_AUTO_TEST_CASE(drums_gets_the_right_track_type)
     NoteTrack track {
         {}, {}, TrackType::Drums, std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
 
     BOOST_CHECK_EQUAL(builder.track_type(), TrackType::Drums);
 }
@@ -139,7 +142,8 @@ BOOST_AUTO_TEST_CASE(non_sp_non_sustains_are_handled_correctly)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<DrawnNote> expected_notes {
         make_drawn_note(0), make_drawn_note(4, 0, FIVE_FRET_RED)};
 
@@ -155,7 +159,8 @@ BOOST_AUTO_TEST_CASE(sustains_are_handled_correctly)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<DrawnNote> expected_notes {make_drawn_note(0, 0.5)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -170,7 +175,8 @@ BOOST_AUTO_TEST_CASE(sp_notes_are_recorded)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<DrawnNote> expected_notes {make_drawn_note(0),
                                            make_drawn_sp_note(4)};
 
@@ -187,7 +193,8 @@ BOOST_AUTO_TEST_CASE(six_fret_notes_are_handled_correctly)
         TrackType::SixFret,
         std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<DrawnNote> expected_notes {
         make_drawn_ghl_note(0), make_drawn_ghl_note(4, 0, SIX_FRET_BLACK_HIGH)};
 
@@ -204,7 +211,8 @@ BOOST_AUTO_TEST_CASE(drum_notes_are_handled_correctly)
         TrackType::Drums,
         std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<DrawnNote> expected_notes {
         make_drawn_drum_note(0),
         make_drawn_drum_note(4, DRUM_YELLOW, FLAGS_CYMBAL)};
@@ -225,7 +233,8 @@ BOOST_AUTO_TEST_CASE(simple_four_four_is_handled_correctly)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<DrawnRow> expected_rows {{0.0, 16.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -247,7 +256,8 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
 
     NoteTrack track {{make_note(2450)}, {}, TrackType::FiveFret, global_data};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<DrawnRow> expected_rows {{0.0, 12.5}, {12.5, 16.5}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -267,7 +277,8 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
 
     NoteTrack track {{make_note(768)}, {}, TrackType::FiveFret, global_data};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<DrawnRow> expected_rows {{0.0, 7.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -283,7 +294,8 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
 
     NoteTrack track {{make_note(0)}, {}, TrackType::FiveFret, global_data};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<DrawnRow> expected_rows {{0.0, 16.0}, {16.0, 17.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -298,7 +310,8 @@ BOOST_AUTO_TEST_CASE(enough_rows_are_drawn_for_end_of_song_sustains)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
 
     BOOST_CHECK_EQUAL(builder.rows().size(), 2);
 }
@@ -314,7 +327,8 @@ BOOST_AUTO_TEST_CASE(four_four_works_fine)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<double> expected_half_beat_lines {0.5, 1.5, 2.5, 3.5};
     std::vector<double> expected_beat_lines {1.0, 2.0, 3.0};
     std::vector<double> expected_measure_lines {0.0, 4.0};
@@ -338,7 +352,8 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
 
     NoteTrack track {{make_note(767)}, {}, TrackType::FiveFret, global_data};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<double> expected_half_beat_lines {0.25, 0.75, 1.25, 1.75,
                                                   2.25, 2.75, 3.25, 3.75};
     std::vector<double> expected_beat_lines {0.5, 1.0, 1.5, 2.5, 3.0, 3.5};
@@ -363,7 +378,8 @@ BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
 
     NoteTrack track {{make_note(1151)}, {}, TrackType::FiveFret, global_data};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     std::vector<double> expected_half_beat_lines {0.5,  1.5,  2.5,  3.5,
                                                   4.25, 4.75, 5.25, 5.75};
     std::vector<double> expected_beat_lines {1.0, 2.0, 3.0, 4.5, 5.0, 5.5};
@@ -392,7 +408,8 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
 
     NoteTrack track {{make_note(1920)}, {}, TrackType::FiveFret, global_data};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_time_sigs(tempo_map);
     std::vector<std::tuple<double, int, int>> expected_time_sigs {{0.0, 4, 4},
                                                                   {4.0, 4, 8}};
@@ -410,7 +427,8 @@ BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
 
     NoteTrack track {{make_note(768)}, {}, TrackType::FiveFret, global_data};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_time_sigs(tempo_map);
 
     BOOST_CHECK_EQUAL(builder.time_sigs().size(), 1);
@@ -432,7 +450,8 @@ BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
 
     NoteTrack track {{make_note(1920)}, {}, TrackType::FiveFret, global_data};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_bpms(tempo_map);
     std::vector<std::tuple<double, double>> expected_bpms {
         {0.0, 150.0}, {2.0, 120.0}, {4.0, 200.0}};
@@ -451,7 +470,8 @@ BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
 
     NoteTrack track {{make_note(768)}, {}, TrackType::FiveFret, global_data};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_bpms(tempo_map);
 
     BOOST_CHECK_EQUAL(builder.bpms().size(), 1);
@@ -470,7 +490,8 @@ BOOST_AUTO_TEST_CASE(normal_speed)
     global_data.artist("GMS");
     global_data.charter("NotGMS");
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
 
     builder.add_song_header(global_data);
 
@@ -488,7 +509,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
@@ -505,7 +527,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_phrases(track, {}, Path {});
 
     std::vector<std::tuple<double, double>> expected_green_ranges {{4.0, 4.1}};
@@ -522,7 +545,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
                      TrackType::SixFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
@@ -539,7 +563,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
                      TrackType::Drums,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.1}};
@@ -559,10 +584,11 @@ BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      Gh1Engine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, false};
+                          SightRead::DrumSettings::default_settings(), false,
+                          false};
     Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {0.05},
                  Beat {4.01}, Beat {20.01}}},
                100};
@@ -581,7 +607,8 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)
                      std::make_shared<SongGlobalData>()};
     track.drum_fills({{Tick {192}, Tick {96}}});
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_drum_fills(track);
 
     std::vector<std::tuple<double, double>> expected_fill_ranges {{1.0, 1.5}};
@@ -599,7 +626,8 @@ BOOST_AUTO_TEST_CASE(drum_fills_cannot_be_cancelled_by_a_kick)
                      std::make_shared<SongGlobalData>()};
     track.drum_fills({{Tick {192}, Tick {96}}});
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_drum_fills(track);
 
     BOOST_CHECK_EQUAL(builder.fill_ranges().size(), 1);
@@ -658,7 +686,8 @@ BOOST_AUTO_TEST_CASE(disco_flip_matters_only_with_pro_drums_on)
     ImageBuilder normal_builder {
         track, Difficulty::Expert, {true, false, false, false}, false, true};
     ImageBuilder pro_builder {track, Difficulty::Expert,
-                              DrumSettings::default_settings(), false, true};
+                              SightRead::DrumSettings::default_settings(),
+                              false, true};
 
     BOOST_CHECK_EQUAL(normal_builder.notes().size(), 2);
     BOOST_CHECK_EQUAL(normal_builder.notes().front().note_flags, FLAGS_DRUMS);
@@ -675,7 +704,8 @@ BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_phrases(track, {{Tick {768}, Tick {384}}}, Path {});
     std::vector<std::tuple<double, double>> expected_unison_ranges {{5.0, 5.1}};
 
@@ -696,10 +726,11 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},
                0};
@@ -733,10 +764,11 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25}, Beat {0.1},
                  Beat {1.1}},
                 {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
@@ -762,10 +794,11 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
                  Beat {0.0}, Beat {5.0}}},
                0};
@@ -787,10 +820,11 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
                  Beat {16.0}}},
                0};
@@ -813,10 +847,11 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                      {{}, SpMode::Measure},
                      {},
                      {1.0, 1.0, Second(0.0), Second(0.05), Second(0.0)},
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25}, Beat {0.1},
                  Beat {1.1}},
                 {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
@@ -848,10 +883,11 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      Gh1Engine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, false};
+                          SightRead::DrumSettings::default_settings(), false,
+                          false};
     Path path {{{points.cbegin() + 1, points.cend() - 1, Beat {0.05},
                  Beat {0.1}, Beat {0.9}}},
                0};
@@ -874,10 +910,11 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      Gh1Engine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, false};
+                          SightRead::DrumSettings::default_settings(), false,
+                          false};
     Path path {{{points.cbegin() + 1, points.cbegin() + 1, Beat {0.05},
                  Beat {4.01}, Beat {20.01}}},
                50};
@@ -902,10 +939,11 @@ BOOST_AUTO_TEST_CASE(
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      Gh1Engine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, false};
+                          SightRead::DrumSettings::default_settings(), false,
+                          false};
     Path path {{{points.cbegin() + 1, points.cend() - 2, Beat {0.05},
                  Beat {0.1}, Beat {0.9}}},
                0};
@@ -929,10 +967,11 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      Gh1Engine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, false};
+                          SightRead::DrumSettings::default_settings(), false,
+                          false};
     Path path {{{points.cbegin() + 1, points.cend() - 1, Beat {0.05},
                  Beat {0.1}, Beat {0.9}}},
                0};
@@ -956,9 +995,10 @@ BOOST_AUTO_TEST_CASE(add_solo_sections_add_correct_ranges)
                      std::make_shared<SongGlobalData>()};
     track.solos({{Tick {192}, Tick {384}, 0}});
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
-    builder.add_solo_sections(track.solos(DrumSettings::default_settings()),
-                              {});
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
+    builder.add_solo_sections(
+        track.solos(SightRead::DrumSettings::default_settings()), {});
     std::vector<std::tuple<double, double>> expected_solo_ranges {{1.0, 2.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -978,11 +1018,12 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {50, 100};
@@ -1006,11 +1047,12 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_score_values {100, 250};
 
@@ -1032,11 +1074,12 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path;
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_score_values {100};
 
@@ -1056,13 +1099,14 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path {
         {{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}},
         100};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_score_values {200, 300};
 
@@ -1081,13 +1125,14 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
                      {{}, SpMode::Measure},
                      {},
                      {1.0, 1.0, Second {0.0}, Second {-0.1}, Second {0.0}},
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     Path path {
         {{points.cbegin() + 1, points.cbegin() + 1, Beat {0.0}, Beat {0.0}}},
         50};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {50, 150};
@@ -1114,7 +1159,8 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_values(sp_data, ChGuitarEngine());
     std::vector<double> expected_sp_values {3.14, 1.0};
 
@@ -1133,10 +1179,11 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
                  Beat {0.9}}},
                50};
@@ -1152,9 +1199,11 @@ BOOST_AUTO_TEST_CASE(difficulty_is_handled)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder hard_builder {track, Difficulty::Hard,
-                               DrumSettings::default_settings(), false, true};
+                               SightRead::DrumSettings::default_settings(),
+                               false, true};
     ImageBuilder expert_builder {track, Difficulty::Expert,
-                                 DrumSettings::default_settings(), false, true};
+                                 SightRead::DrumSettings::default_settings(),
+                                 false, true};
 
     BOOST_CHECK_EQUAL(hard_builder.difficulty(), Difficulty::Hard);
     BOOST_CHECK_EQUAL(expert_builder.difficulty(), Difficulty::Expert);
@@ -1167,9 +1216,11 @@ BOOST_AUTO_TEST_CASE(lefty_flip_is_handled)
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder lefty_builder {track, Difficulty::Expert,
-                                DrumSettings::default_settings(), true, true};
+                                SightRead::DrumSettings::default_settings(),
+                                true, true};
     ImageBuilder righty_builder {track, Difficulty::Expert,
-                                 DrumSettings::default_settings(), false, true};
+                                 SightRead::DrumSettings::default_settings(),
+                                 false, true};
 
     BOOST_TEST(lefty_builder.is_lefty_flip());
     BOOST_TEST(!righty_builder.is_lefty_flip());
@@ -1192,7 +1243,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
@@ -1204,7 +1255,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                0};
 
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
     std::vector<double> expected_percents {
         0.0,    0.5,    0.75,   0.75,   0.75,   1.0,    1.0,    1.0, 1.0,
@@ -1233,7 +1285,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
@@ -1245,7 +1297,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                0};
 
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
     std::vector<double> expected_percents {
         0.0, 0.5, 0.75, 0.75, 0.75, 1.0, 1.0,    1.0,  1.0,
@@ -1268,7 +1321,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
@@ -1280,7 +1333,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                0};
 
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.5359166667, 0.49425};
@@ -1303,7 +1357,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
@@ -1315,7 +1369,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                0};
 
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.4025833333, 0.2775833333};
@@ -1342,7 +1397,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
@@ -1356,7 +1411,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                0};
 
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
     std::vector<double> expected_percents {
         0.0,          0.25,         0.5275833333, 0.4025833333, 0.2775833333,
@@ -1384,7 +1440,7 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                      {{}, SpMode::Measure},
                      {},
                      SqueezeSettings::default_settings(),
-                     DrumSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
@@ -1396,7 +1452,8 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                50};
 
     ImageBuilder builder {track, Difficulty::Expert,
-                          DrumSettings::default_settings(), false, true};
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
     std::vector<double> expected_percents {0.40299375, 0.27799375, 0.15299375,
                                            0.02799375, 0.25};

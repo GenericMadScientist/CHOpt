@@ -63,7 +63,8 @@ public:
     PointSet(const NoteTrack& track, const SpTimeMap& time_map,
              const std::vector<Tick>& unison_phrases,
              const SqueezeSettings& squeeze_settings,
-             const DrumSettings& drum_settings, const Engine& engine);
+             const SightRead::DrumSettings& drum_settings,
+             const Engine& engine);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
     // Designed for engines without SP overlap, so the next activation is not

@@ -346,8 +346,9 @@ BOOST_AUTO_TEST_CASE(expected_solos_are_read_properly)
                                       {Tick {300}, Tick {400}, 200}};
 
     const auto song = ChartParser({}).parse(chart_file);
-    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
-                                  .solos(DrumSettings::default_settings());
+    const auto parsed_solos
+        = song.track(Instrument::Guitar, Difficulty::Expert)
+              .solos(SightRead::DrumSettings::default_settings());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_solos.cbegin(), parsed_solos.cend(),
                                   required_solos.cbegin(),
@@ -362,8 +363,9 @@ BOOST_AUTO_TEST_CASE(chords_are_not_counted_double)
     std::vector<Solo> required_solos {{Tick {0}, Tick {200}, 100}};
 
     const auto song = ChartParser({}).parse(chart_file);
-    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
-                                  .solos(DrumSettings::default_settings());
+    const auto parsed_solos
+        = song.track(Instrument::Guitar, Difficulty::Expert)
+              .solos(SightRead::DrumSettings::default_settings());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_solos.cbegin(), parsed_solos.cend(),
                                   required_solos.cbegin(),
@@ -378,7 +380,7 @@ BOOST_AUTO_TEST_CASE(empty_solos_are_ignored)
     const auto song = ChartParser({}).parse(chart_file);
 
     BOOST_TEST(song.track(Instrument::Guitar, Difficulty::Expert)
-                   .solos(DrumSettings::default_settings())
+                   .solos(SightRead::DrumSettings::default_settings())
                    .empty());
 }
 
@@ -390,8 +392,9 @@ BOOST_AUTO_TEST_CASE(repeated_solo_starts_and_ends_dont_matter)
     std::vector<Solo> required_solos {{Tick {0}, Tick {200}, 100}};
 
     const auto song = ChartParser({}).parse(chart_file);
-    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
-                                  .solos(DrumSettings::default_settings());
+    const auto parsed_solos
+        = song.track(Instrument::Guitar, Difficulty::Expert)
+              .solos(SightRead::DrumSettings::default_settings());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_solos.cbegin(), parsed_solos.cend(),
                                   required_solos.cbegin(),
@@ -405,8 +408,9 @@ BOOST_AUTO_TEST_CASE(solo_markers_are_sorted)
     std::vector<Solo> required_solos {{Tick {0}, Tick {384}, 100}};
 
     const auto song = ChartParser({}).parse(chart_file);
-    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
-                                  .solos(DrumSettings::default_settings());
+    const auto parsed_solos
+        = song.track(Instrument::Guitar, Difficulty::Expert)
+              .solos(SightRead::DrumSettings::default_settings());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_solos.cbegin(), parsed_solos.cend(),
                                   required_solos.cbegin(),
@@ -421,7 +425,7 @@ BOOST_AUTO_TEST_CASE(solos_with_no_soloend_event_are_ignored)
     const auto song = ChartParser({}).parse(chart_file);
 
     BOOST_TEST(song.track(Instrument::Guitar, Difficulty::Expert)
-                   .solos(DrumSettings::default_settings())
+                   .solos(SightRead::DrumSettings::default_settings())
                    .empty());
 }
 
@@ -571,8 +575,8 @@ BOOST_AUTO_TEST_CASE(drum_solos_are_read_correctly_from_chart)
     const auto song = ChartParser({}).parse(chart_file);
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
-    BOOST_CHECK_EQUAL(track.solos(DrumSettings::default_settings())[0].value,
-                      200);
+    BOOST_CHECK_EQUAL(
+        track.solos(SightRead::DrumSettings::default_settings())[0].value, 200);
 }
 
 BOOST_AUTO_TEST_CASE(fifth_lane_notes_are_read_correctly_from_chart)
@@ -650,8 +654,9 @@ BOOST_AUTO_TEST_CASE(solos_ignored_from_charts_if_not_permitted)
 
     const auto parser = ChartParser({}).parse_solos(false);
     const auto song = parser.parse(chart_file);
-    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
-                                  .solos(DrumSettings::default_settings());
+    const auto parsed_solos
+        = song.track(Instrument::Guitar, Difficulty::Expert)
+              .solos(SightRead::DrumSettings::default_settings());
 
     BOOST_CHECK(parsed_solos.empty());
 }

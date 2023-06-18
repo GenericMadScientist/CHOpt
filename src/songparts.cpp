@@ -108,7 +108,7 @@ bool Note::is_kick_note() const
             || lengths[DRUM_DOUBLE_KICK] != Tick {-1});
 }
 
-bool Note::is_skipped_kick(const DrumSettings& settings) const
+bool Note::is_skipped_kick(const SightRead::DrumSettings& settings) const
 {
     if (!is_kick_note()) {
         return false;
@@ -331,7 +331,8 @@ void NoteTrack::disable_dynamics()
     }
 }
 
-std::vector<Solo> NoteTrack::solos(const DrumSettings& drum_settings) const
+std::vector<Solo>
+NoteTrack::solos(const SightRead::DrumSettings& drum_settings) const
 {
     constexpr int SOLO_NOTE_VALUE = 100;
 
@@ -367,7 +368,7 @@ void NoteTrack::solos(std::vector<Solo> solos)
     m_solos = std::move(solos);
 }
 
-int NoteTrack::base_score(DrumSettings drum_settings) const
+int NoteTrack::base_score(SightRead::DrumSettings drum_settings) const
 {
     constexpr int BASE_NOTE_VALUE = 50;
 

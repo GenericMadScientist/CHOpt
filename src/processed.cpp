@@ -59,7 +59,7 @@ SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
 
 ProcessedSong::ProcessedSong(const NoteTrack& track, SpTimeMap time_map,
                              const SqueezeSettings& squeeze_settings,
-                             const DrumSettings& drum_settings,
+                             const SightRead::DrumSettings& drum_settings,
                              const Engine& engine,
                              const std::vector<Tick>& od_beats,
                              const std::vector<Tick>& unison_phrases)

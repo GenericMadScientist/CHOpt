@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)
     ProcessedSong song {note_track,
                         {{}, SpMode::Measure},
                         SqueezeSettings::default_settings(),
-                        DrumSettings::default_settings(),
+                        SightRead::DrumSettings::default_settings(),
                         ChGuitarEngine(),
                         {},
                         {}};
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly)
     ProcessedSong song {note_track,
                         {{}, SpMode::Measure},
                         SqueezeSettings::default_settings(),
-                        DrumSettings::default_settings(),
+                        SightRead::DrumSettings::default_settings(),
                         ChGuitarEngine(),
                         {},
                         {}};
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_even_started_mid_hold)
     ProcessedSong song {note_track,
                         {{}, SpMode::Measure},
                         SqueezeSettings::default_settings(),
-                        DrumSettings::default_settings(),
+                        SightRead::DrumSettings::default_settings(),
                         ChGuitarEngine(),
                         {},
                         {}};
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
     ProcessedSong song {note_track,
                         {{}, SpMode::Measure},
                         SqueezeSettings::default_settings(),
-                        DrumSettings::default_settings(),
+                        SightRead::DrumSettings::default_settings(),
                         ChGuitarEngine(),
                         {},
                         {}};
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(sp_does_not_exceed_full_bar)
     ProcessedSong song {note_track,
                         {{}, SpMode::Measure},
                         SqueezeSettings::default_settings(),
-                        DrumSettings::default_settings(),
+                        SightRead::DrumSettings::default_settings(),
                         ChGuitarEngine(),
                         {},
                         {}};
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(
     ProcessedSong song {note_track,
                         {{}, SpMode::Measure},
                         SqueezeSettings::default_settings(),
-                        DrumSettings::default_settings(),
+                        SightRead::DrumSettings::default_settings(),
                         ChGuitarEngine(),
                         {},
                         {}};
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(unison_bonuses_are_taken_account_of)
     ProcessedSong song {note_track,
                         {{}, SpMode::OdBeat},
                         SqueezeSettings::default_settings(),
-                        DrumSettings::default_settings(),
+                        SightRead::DrumSettings::default_settings(),
                         Rb3Engine(),
                         {},
                         {{Tick {0}, Tick {50}}}};
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(
     ProcessedSong song {note_track,
                         {{}, SpMode::Measure},
                         SqueezeSettings::default_settings(),
-                        DrumSettings::default_settings(),
+                        SightRead::DrumSettings::default_settings(),
                         ChGuitarEngine(),
                         {},
                         {}};
@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
     ProcessedSong song {note_track,
                         {{}, SpMode::OdBeat},
                         SqueezeSettings::default_settings(),
-                        DrumSettings::default_settings(),
+                        SightRead::DrumSettings::default_settings(),
                         Rb3Engine(),
                         {},
                         {Tick {0}}};
@@ -274,7 +274,7 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
     ProcessedSong second_track {second_note_track,
                                 {tempo_map, SpMode::Measure},
                                 SqueezeSettings::default_settings(),
-                                DrumSettings::default_settings(),
+                                SightRead::DrumSettings::default_settings(),
                                 ChGuitarEngine(),
                                 {},
                                 {}};
@@ -317,7 +317,7 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
     ProcessedSong second_track {second_note_track,
                                 {tempo_map, SpMode::Measure},
                                 SqueezeSettings::default_settings(),
-                                DrumSettings::default_settings(),
+                                SightRead::DrumSettings::default_settings(),
                                 ChGuitarEngine(),
                                 {},
                                 {}};
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE(below_half_bar_never_works)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -383,7 +383,7 @@ BOOST_AUTO_TEST_CASE(check_next_point_needs_to_not_lie_in_activation)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -407,7 +407,7 @@ BOOST_AUTO_TEST_CASE(check_intermediate_sp_is_accounted_for)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -431,7 +431,7 @@ BOOST_AUTO_TEST_CASE(check_only_reached_intermediate_sp_is_accounted_for)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -455,7 +455,7 @@ BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -478,7 +478,7 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -501,7 +501,7 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -534,7 +534,7 @@ BOOST_AUTO_TEST_CASE(
     ProcessedSong track {note_track,
                          {tempo_map, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -564,7 +564,7 @@ BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
     ProcessedSong track {note_track,
                          {{}, SpMode::OdBeat},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          Rb3Engine(),
                          {},
                          {Tick {192}}};
@@ -588,7 +588,7 @@ BOOST_AUTO_TEST_CASE(last_note_unison_bonus_accounted_for_excess_sp)
     ProcessedSong track {note_track,
                          {{}, SpMode::OdBeat},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          Rb3Engine(),
                          {},
                          {Tick {192}}};
@@ -617,7 +617,7 @@ BOOST_AUTO_TEST_CASE(check_whammy_is_counted)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -642,7 +642,7 @@ BOOST_AUTO_TEST_CASE(check_whammy_from_end_of_sp_sustain_before_note_is_counted)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -670,7 +670,7 @@ BOOST_AUTO_TEST_CASE(
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -694,7 +694,7 @@ BOOST_AUTO_TEST_CASE(check_compressed_activations_are_counted)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -721,7 +721,7 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_considered)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -743,7 +743,7 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_only_considered_down_to_a_half_bar)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -770,7 +770,7 @@ BOOST_AUTO_TEST_CASE(
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -792,7 +792,7 @@ BOOST_AUTO_TEST_CASE(next_note_can_be_squeezed_late_to_avoid_going_too_far)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -815,7 +815,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -838,7 +838,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_late)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -868,7 +868,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
     ProcessedSong track {note_track,
                          {tempo_map, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -892,7 +892,7 @@ BOOST_AUTO_TEST_CASE(front_end_and_back_end_are_restricted)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -917,7 +917,7 @@ BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -942,7 +942,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -966,7 +966,7 @@ BOOST_AUTO_TEST_CASE(next_note_back_end_is_restricted)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -990,7 +990,7 @@ BOOST_AUTO_TEST_CASE(end_position_is_finite_if_activation_goes_past_last_note)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1019,7 +1019,7 @@ BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          Gh1Engine(),
                          {},
                          {}};
@@ -1042,7 +1042,7 @@ BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          Gh1Engine(),
                          {},
                          {}};
@@ -1065,7 +1065,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          Gh1Engine(),
                          {},
                          {}};
@@ -1088,7 +1088,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          Gh1Engine(),
                          {},
                          {}};
@@ -1116,7 +1116,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_around_sp_granting_note_doesnt_get_added)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          Gh1Engine(),
                          {},
                          {}};
@@ -1142,7 +1142,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1173,7 +1173,7 @@ BOOST_AUTO_TEST_CASE(
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1202,7 +1202,7 @@ BOOST_AUTO_TEST_CASE(
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1234,7 +1234,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
     ProcessedSong track {note_track,
                          {tempo_map, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1257,7 +1257,7 @@ BOOST_AUTO_TEST_CASE(adjusted_hit_window_functions_return_correct_values)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1289,7 +1289,7 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
     ProcessedSong song {track,
                         {{}, SpMode::Measure},
                         {0.0, 0.0, Second {0.0}, Second {-0.1}, Second {0.0}},
-                        DrumSettings::default_settings(),
+                        SightRead::DrumSettings::default_settings(),
                         ChGuitarEngine(),
                         {},
                         {}};
@@ -1312,7 +1312,7 @@ BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
     ProcessedSong song {track,
                         {tempo_map, SpMode::Measure},
                         {0.0, 0.0, Second {0.0}, Second {0.1}, Second {0.0}},
-                        DrumSettings::default_settings(),
+                        SightRead::DrumSettings::default_settings(),
                         ChGuitarEngine(),
                         {},
                         {}};
@@ -1338,7 +1338,7 @@ BOOST_AUTO_TEST_CASE(false_for_guitar)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChDrumEngine(),
                          {},
                          {}};
@@ -1353,7 +1353,7 @@ BOOST_AUTO_TEST_CASE(true_for_drums)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChDrumEngine(),
                          {},
                          {}};
@@ -1380,7 +1380,7 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1413,7 +1413,7 @@ BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          Gh1Engine(),
                          {},
                          {}};
@@ -1443,7 +1443,7 @@ BOOST_AUTO_TEST_CASE(no_overlap_is_denoted_correctly)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1474,7 +1474,7 @@ BOOST_AUTO_TEST_CASE(no_es_is_denoted_correctly)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1505,7 +1505,7 @@ BOOST_AUTO_TEST_CASE(no_sp_is_denoted_correctly)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1529,7 +1529,7 @@ BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1556,7 +1556,7 @@ BOOST_AUTO_TEST_CASE(mid_sustain_activations_noted_correctly)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1584,7 +1584,7 @@ BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_counted_correctly)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1613,7 +1613,7 @@ BOOST_AUTO_TEST_CASE(
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1640,7 +1640,7 @@ BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1666,7 +1666,7 @@ BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1695,7 +1695,7 @@ BOOST_AUTO_TEST_CASE(average_multiplier_rounds_down)
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          ChGuitarEngine(),
                          {},
                          {}};
@@ -1833,7 +1833,7 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_ignored_with_rb)
     ProcessedSong track {note_track,
                          {{}, SpMode::OdBeat},
                          SqueezeSettings::default_settings(),
-                         DrumSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
                          RbEngine(),
                          {},
                          {}};

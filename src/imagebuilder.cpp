@@ -104,7 +104,7 @@ bool is_in_disco_flips(const std::vector<DiscoFlip>& disco_flips, Tick position)
 }
 
 std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
-                                   const DrumSettings& drum_settings)
+                                   const SightRead::DrumSettings& drum_settings)
 {
     std::vector<DrawnNote> notes;
 
@@ -322,7 +322,7 @@ ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
 }
 
 ImageBuilder::ImageBuilder(const NoteTrack& track, Difficulty difficulty,
-                           const DrumSettings& drum_settings,
+                           const SightRead::DrumSettings& drum_settings,
                            bool is_lefty_flip, bool is_overlap_engine)
     : m_track_type {track.track_type()}
     , m_difficulty {difficulty}

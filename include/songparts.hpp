@@ -112,7 +112,8 @@ public:
     void merge_non_opens_into_open();
     void disable_dynamics();
     [[nodiscard]] bool is_kick_note() const;
-    [[nodiscard]] bool is_skipped_kick(const DrumSettings& settings) const;
+    [[nodiscard]] bool
+    is_skipped_kick(const SightRead::DrumSettings& settings) const;
 };
 
 struct StarPower {
@@ -223,7 +224,7 @@ public:
     }
 
     [[nodiscard]] std::vector<Solo>
-    solos(const DrumSettings& drum_settings) const;
+    solos(const SightRead::DrumSettings& drum_settings) const;
     void solos(std::vector<Solo> solos);
 
     [[nodiscard]] const std::vector<DrumFill>& drum_fills() const
@@ -252,8 +253,9 @@ public:
     {
         return *m_global_data;
     }
-    [[nodiscard]] int base_score(DrumSettings drum_settings
-                                 = DrumSettings::default_settings()) const;
+    [[nodiscard]] int
+    base_score(SightRead::DrumSettings drum_settings
+               = SightRead::DrumSettings::default_settings()) const;
     [[nodiscard]] NoteTrack trim_sustains() const;
     [[nodiscard]] NoteTrack snap_chords(Tick snap_gap) const;
 };

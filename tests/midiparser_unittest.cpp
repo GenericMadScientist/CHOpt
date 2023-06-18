@@ -368,8 +368,9 @@ BOOST_AUTO_TEST_CASE(solos_are_read_from_mids_correctly)
     const std::vector<Solo> solos {{Tick {768}, Tick {900}, 100}};
 
     const auto song = MidiParser({}).from_midi(midi);
-    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
-                                  .solos(DrumSettings::default_settings());
+    const auto parsed_solos
+        = song.track(Instrument::Guitar, Difficulty::Expert)
+              .solos(SightRead::DrumSettings::default_settings());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(parsed_solos.cbegin(), parsed_solos.cend(),
                                   solos.cbegin(), solos.cend());
@@ -425,7 +426,8 @@ BOOST_AUTO_TEST_CASE(mids_with_multiple_solos_and_no_sp_have_solos_read_as_sp)
     const auto song = MidiParser({}).from_midi(midi);
     const auto& track = song.track(Instrument::Guitar, Difficulty::Expert);
 
-    BOOST_TEST(track.solos(DrumSettings::default_settings()).empty());
+    BOOST_TEST(
+        track.solos(SightRead::DrumSettings::default_settings()).empty());
     BOOST_CHECK_EQUAL(track.sp_phrases().size(), 2);
 }
 
@@ -979,8 +981,9 @@ BOOST_AUTO_TEST_CASE(solos_ignored_from_midis_if_not_permitted)
 
     const auto parser = MidiParser({}).parse_solos(false);
     const auto song = parser.from_midi(midi);
-    const auto parsed_solos = song.track(Instrument::Guitar, Difficulty::Expert)
-                                  .solos(DrumSettings::default_settings());
+    const auto parsed_solos
+        = song.track(Instrument::Guitar, Difficulty::Expert)
+              .solos(SightRead::DrumSettings::default_settings());
 
     BOOST_CHECK(parsed_solos.empty());
 }

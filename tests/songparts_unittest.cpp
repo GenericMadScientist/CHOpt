@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(solos_are_sorted)
     std::vector<Solo> required_solos {{Tick {0}, Tick {100}, 100},
                                       {Tick {768}, Tick {868}, 100}};
     std::vector<Solo> solo_output
-        = track.solos(DrumSettings::default_settings());
+        = track.solos(SightRead::DrumSettings::default_settings());
 
     BOOST_CHECK_EQUAL_COLLECTIONS(solo_output.cbegin(), solo_output.cend(),
                                   required_solos.cbegin(),
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE(all_kicks_gives_correct_answer)
                              make_drum_note(384, DRUM_DOUBLE_KICK)};
     NoteTrack track {
         notes, {}, TrackType::Drums, std::make_shared<SongGlobalData>()};
-    DrumSettings settings {true, false, true, false};
+    SightRead::DrumSettings settings {true, false, true, false};
 
     BOOST_CHECK_EQUAL(track.base_score(settings), 150);
 }
@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE(only_single_kicks_gives_correct_answer)
                              make_drum_note(384, DRUM_DOUBLE_KICK)};
     NoteTrack track {
         notes, {}, TrackType::Drums, std::make_shared<SongGlobalData>()};
-    DrumSettings settings {false, false, true, false};
+    SightRead::DrumSettings settings {false, false, true, false};
 
     BOOST_CHECK_EQUAL(track.base_score(settings), 100);
 }
@@ -398,7 +398,7 @@ BOOST_AUTO_TEST_CASE(no_kicks_gives_correct_answer)
                              make_drum_note(384, DRUM_DOUBLE_KICK)};
     NoteTrack track {
         notes, {}, TrackType::Drums, std::make_shared<SongGlobalData>()};
-    DrumSettings settings {false, true, true, false};
+    SightRead::DrumSettings settings {false, true, true, false};
 
     BOOST_CHECK_EQUAL(track.base_score(settings), 50);
 }

@@ -89,7 +89,8 @@ void append_sustain_points(OutputIt points, Tick position, Tick sust_length,
     }
 }
 
-int get_chord_size(const Note& note, const DrumSettings& drum_settings)
+int get_chord_size(const Note& note,
+                   const SightRead::DrumSettings& drum_settings)
 {
     if (note.is_skipped_kick(drum_settings)) {
         return 0;
@@ -109,7 +110,7 @@ void append_note_points(std::vector<Note>::const_iterator note,
                         const SpTimeMap& time_map, int resolution,
                         bool is_note_sp_ender, bool is_unison_sp_ender,
                         double squeeze, const Engine& engine,
-                        const DrumSettings& drum_settings)
+                        const SightRead::DrumSettings& drum_settings)
 {
     auto note_value = engine.base_note_value();
     if (note->flags & FLAGS_DRUMS) {
@@ -293,12 +294,12 @@ void apply_multiplier(std::vector<Point>& points, const Engine& engine)
     }
 }
 
-std::vector<Point> unmultiplied_points(const NoteTrack& track,
-                                       const SpTimeMap& time_map,
-                                       const std::vector<Tick>& unison_phrases,
-                                       const SqueezeSettings& squeeze_settings,
-                                       const DrumSettings& drum_settings,
-                                       const Engine& engine)
+std::vector<Point>
+unmultiplied_points(const NoteTrack& track, const SpTimeMap& time_map,
+                    const std::vector<Tick>& unison_phrases,
+                    const SqueezeSettings& squeeze_settings,
+                    const SightRead::DrumSettings& drum_settings,
+                    const Engine& engine)
 {
     const auto& notes = track.notes();
     const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
@@ -361,9 +362,9 @@ std::vector<Point> non_drum_points(const NoteTrack& track,
                                    const SqueezeSettings& squeeze_settings,
                                    const Engine& engine)
 {
-    auto points
-        = unmultiplied_points(track, time_map, unison_phrases, squeeze_settings,
-                              DrumSettings::default_settings(), engine);
+    auto points = unmultiplied_points(
+        track, time_map, unison_phrases, squeeze_settings,
+        SightRead::DrumSettings::default_settings(), engine);
     apply_multiplier(points, engine);
     shift_points_by_video_lag(points, time_map, squeeze_settings.video_lag);
     return points;
@@ -466,12 +467,12 @@ std::vector<std::string> note_colours(const std::vector<Note>& notes,
     return colours;
 }
 
-std::vector<Point> points_from_track(const NoteTrack& track,
-                                     const SpTimeMap& time_map,
-                                     const std::vector<Tick>& unison_phrases,
-                                     const SqueezeSettings& squeeze_settings,
-                                     const DrumSettings& drum_settings,
-                                     const Engine& engine)
+std::vector<Point>
+points_from_track(const NoteTrack& track, const SpTimeMap& time_map,
+                  const std::vector<Tick>& unison_phrases,
+                  const SqueezeSettings& squeeze_settings,
+                  const SightRead::DrumSettings& drum_settings,
+                  const Engine& engine)
 {
     if (track.track_type() != TrackType::Drums) {
         return non_drum_points(track, time_map, unison_phrases,
@@ -529,7 +530,8 @@ solo_boosts_from_solos(const std::vector<Solo>& solos,
 PointSet::PointSet(const NoteTrack& track, const SpTimeMap& time_map,
                    const std::vector<Tick>& unison_phrases,
                    const SqueezeSettings& squeeze_settings,
-                   const DrumSettings& drum_settings, const Engine& engine)
+                   const SightRead::DrumSettings& drum_settings,
+                   const Engine& engine)
     : m_points {points_from_track(track, time_map, unison_phrases,
                                   squeeze_settings, drum_settings, engine)}
     , m_first_after_current_sp {first_after_current_sp_vector(m_points, track,

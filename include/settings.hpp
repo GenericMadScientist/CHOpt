@@ -63,7 +63,7 @@ struct Settings {
     bool is_lefty_flip;
     Game game;
     std::unique_ptr<Engine> engine;
-    DrumSettings drum_settings;
+    SightRead::DrumSettings drum_settings;
     float opacity;
 };
 
