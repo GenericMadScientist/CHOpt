@@ -15,6 +15,9 @@ environment:
 matrix:
   fast_finish: true
 
+install:
+  - ps: git submodule update --init --recursive
+
 before_build:
   - ps: mkdir artifacts
   - ps: mkdir build
