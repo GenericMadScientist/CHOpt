@@ -22,10 +22,10 @@
 #include "test_helpers.hpp"
 
 namespace {
-MetaEvent part_guitar()
+MetaEvent part_event(std::string_view name)
 {
-    return MetaEvent {
-        3, {0x50, 0x41, 0x52, 0x54, 0x20, 0x47, 0x55, 0x49, 0x54, 0x41, 0x52}};
+    std::vector<std::uint8_t> bytes {name.cbegin(), name.cend()};
+    return MetaEvent {3, bytes};
 }
 }
 
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_SUITE(notes_are_read_from_mids_correctly)
 
 BOOST_AUTO_TEST_CASE(notes_of_every_difficulty_are_read)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
                            {768, {MidiEvent {0x90, {84, 64}}}},
                            {768, {MidiEvent {0x90, {72, 64}}}},
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(notes_are_read_from_part_guitar)
 {
     MidiTrack other_track {{{768, {MidiEvent {0x90, {96, 64}}}},
                             {960, {MidiEvent {0x80, {96, 0}}}}}};
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {97, 64}}}},
                            {960, {MidiEvent {0x80, {97, 0}}}}}};
     const Midi midi {192, {other_track, note_track}};
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(part_guitar_event_need_not_be_the_first_event)
 {
     MidiTrack note_track {
         {{0, {MetaEvent {0x7F, {0x05, 0x0F, 0x09, 0x08, 0x40}}}},
-         {0, {part_guitar()}},
+         {0, {part_event("PART GUITAR")}},
          {768, {MidiEvent {0x90, {97, 64}}}},
          {960, {MidiEvent {0x80, {97, 0}}}}}};
     const Midi midi {192, {note_track}};
@@ -207,10 +207,9 @@ BOOST_AUTO_TEST_CASE(guitar_notes_are_also_read_from_t1_gems)
 {
     MidiTrack other_track {{{768, {MidiEvent {0x90, {96, 64}}}},
                             {960, {MidiEvent {0x80, {96, 0}}}}}};
-    MidiTrack note_track {
-        {{0, {MetaEvent {3, {0x54, 0x31, 0x20, 0x47, 0x45, 0x4D, 0x53}}}},
-         {768, {MidiEvent {0x90, {97, 64}}}},
-         {960, {MidiEvent {0x80, {97, 0}}}}}};
+    MidiTrack note_track {{{0, {part_event("T1 GEMS")}},
+                           {768, {MidiEvent {0x90, {97, 64}}}},
+                           {960, {MidiEvent {0x80, {97, 0}}}}}};
     const Midi midi {192, {other_track, note_track}};
 
     const auto song = MidiParser({}).from_midi(midi);
@@ -222,7 +221,7 @@ BOOST_AUTO_TEST_CASE(guitar_notes_are_also_read_from_t1_gems)
 
 BOOST_AUTO_TEST_CASE(note_on_events_must_have_a_corresponding_note_off_event)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
                            {960, {MidiEvent {0x80, {96, 64}}}},
                            {1152, {MidiEvent {0x90, {96, 64}}}}}};
@@ -235,7 +234,7 @@ BOOST_AUTO_TEST_CASE(note_on_events_must_have_a_corresponding_note_off_event)
 BOOST_AUTO_TEST_CASE(corresponding_note_off_events_are_after_note_on_events)
 {
     MidiTrack note_track {{
-        {0, {part_guitar()}},
+        {0, {part_event("PART GUITAR")}},
         {480, {MidiEvent {0x80, {96, 64}}}},
         {480, {MidiEvent {0x90, {96, 64}}}},
         {960, {MidiEvent {0x80, {96, 64}}}},
@@ -254,7 +253,7 @@ BOOST_AUTO_TEST_CASE(corresponding_note_off_events_are_after_note_on_events)
 
 BOOST_AUTO_TEST_CASE(note_on_events_with_velocity_zero_count_as_note_off_events)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
                            {960, {MidiEvent {0x90, {96, 0}}}}}};
     const Midi midi {192, {note_track}};
@@ -266,7 +265,7 @@ BOOST_AUTO_TEST_CASE(note_on_events_with_velocity_zero_count_as_note_off_events)
 BOOST_AUTO_TEST_CASE(
     note_on_events_with_no_intermediate_note_off_events_are_not_merged)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
                            {769, {MidiEvent {0x90, {96, 64}}}},
                            {800, {MidiEvent {0x80, {96, 64}}}},
@@ -282,7 +281,7 @@ BOOST_AUTO_TEST_CASE(
 
 BOOST_AUTO_TEST_CASE(each_note_on_event_consumes_the_following_note_off_event)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
                            {769, {MidiEvent {0x90, {96, 64}}}},
                            {800, {MidiEvent {0x80, {96, 64}}}},
@@ -299,7 +298,7 @@ BOOST_AUTO_TEST_CASE(each_note_on_event_consumes_the_following_note_off_event)
 
 BOOST_AUTO_TEST_CASE(note_off_events_can_be_zero_ticks_after_the_note_on_events)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
                            {768, {MidiEvent {0x80, {96, 64}}}}}};
     const Midi midi {192, {note_track}};
@@ -314,8 +313,8 @@ BOOST_AUTO_TEST_CASE(note_off_events_can_be_zero_ticks_after_the_note_on_events)
 BOOST_AUTO_TEST_CASE(
     parseerror_thrown_if_note_on_has_no_corresponding_note_off_track)
 {
-    MidiTrack note_track {
-        {{0, {part_guitar()}}, {768, {MidiEvent {0x90, {96, 64}}}}}};
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
+                           {768, {MidiEvent {0x90, {96, 64}}}}}};
     const Midi midi {192, {note_track}};
     const MidiParser parser {{}};
 
@@ -325,7 +324,7 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(open_notes_are_read_correctly)
 {
     MidiTrack note_track {
-        {{0, {part_guitar()}},
+        {{0, {part_event("PART GUITAR")}},
          {768, {MidiEvent {0x90, {96, 64}}}},
          {768, {SysexEvent {{0x50, 0x53, 0, 0, 3, 1, 1, 0xF7}}}},
          {770, {SysexEvent {{0x50, 0x53, 0, 0, 3, 1, 0, 0xF7}}}},
@@ -342,7 +341,7 @@ BOOST_AUTO_TEST_CASE(open_notes_are_read_correctly)
 BOOST_AUTO_TEST_CASE(parseerror_thrown_if_open_note_ons_have_no_note_offs)
 {
     MidiTrack note_track {
-        {{0, {part_guitar()}},
+        {{0, {part_event("PART GUITAR")}},
          {768, {MidiEvent {0x90, {96, 64}}}},
          {768, {SysexEvent {{0x50, 0x53, 0, 0, 3, 1, 1, 0xF7}}}},
          {960, {MidiEvent {0x90, {96, 0}}}}}};
@@ -358,7 +357,7 @@ BOOST_AUTO_TEST_SUITE_END()
 // the solo for a .mid, but it is for a .chart.
 BOOST_AUTO_TEST_CASE(solos_are_read_from_mids_correctly)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {103, 64}}}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
                            {900, {MidiEvent {0x90, {97, 64}}}},
@@ -380,7 +379,7 @@ BOOST_AUTO_TEST_SUITE(star_power_is_read)
 
 BOOST_AUTO_TEST_CASE(a_single_phrase_is_read)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {116, 64}}}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
                            {900, {MidiEvent {0x80, {116, 64}}}},
@@ -398,7 +397,7 @@ BOOST_AUTO_TEST_CASE(a_single_phrase_is_read)
 
 BOOST_AUTO_TEST_CASE(note_off_event_is_required_for_every_phrase)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {116, 64}}}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
                            {960, {MidiEvent {0x80, {96, 0}}}}}};
@@ -412,7 +411,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(mids_with_multiple_solos_and_no_sp_have_solos_read_as_sp)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {103, 64}}}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
                            {800, {MidiEvent {0x80, {96, 64}}}},
@@ -433,7 +432,7 @@ BOOST_AUTO_TEST_CASE(mids_with_multiple_solos_and_no_sp_have_solos_read_as_sp)
 // This should be done by NoteTrack's trim_sustains method.
 BOOST_AUTO_TEST_CASE(short_midi_sustains_are_not_trimmed)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {0, {MidiEvent {0x90, {96, 64}}}},
                            {65, {MidiEvent {0x80, {96, 0}}}},
                            {100, {MidiEvent {0x90, {96, 64}}}},
@@ -452,7 +451,7 @@ BOOST_AUTO_TEST_SUITE(midi_hopos_and_taps)
 BOOST_AUTO_TEST_CASE(automatically_set_based_on_distance)
 {
     MidiTrack note_track {{
-        {0, {part_guitar()}},
+        {0, {part_event("PART GUITAR")}},
         {0, {MidiEvent {0x90, {96, 64}}}},
         {1, {MidiEvent {0x80, {96, 0}}}},
         {161, {MidiEvent {0x90, {97, 64}}}},
@@ -473,7 +472,7 @@ BOOST_AUTO_TEST_CASE(automatically_set_based_on_distance)
 
 BOOST_AUTO_TEST_CASE(does_not_do_it_on_same_note)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {0, {MidiEvent {0x90, {96, 64}}}},
                            {1, {MidiEvent {0x80, {96, 0}}}},
                            {161, {MidiEvent {0x90, {96, 64}}}},
@@ -489,7 +488,7 @@ BOOST_AUTO_TEST_CASE(does_not_do_it_on_same_note)
 
 BOOST_AUTO_TEST_CASE(forcing_is_handled_correctly)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {0, {MidiEvent {0x90, {96, 64}}}},
                            {0, {MidiEvent {0x90, {101, 64}}}},
                            {1, {MidiEvent {0x80, {96, 0}}}},
@@ -512,7 +511,7 @@ BOOST_AUTO_TEST_CASE(forcing_is_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(chords_are_not_hopos_due_to_proximity)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {0, {MidiEvent {0x90, {96, 64}}}},
                            {1, {MidiEvent {0x80, {96, 0}}}},
                            {161, {MidiEvent {0x90, {97, 64}}}},
@@ -530,7 +529,7 @@ BOOST_AUTO_TEST_CASE(chords_are_not_hopos_due_to_proximity)
 
 BOOST_AUTO_TEST_CASE(chords_can_be_forced)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {0, {MidiEvent {0x90, {96, 64}}}},
                            {1, {MidiEvent {0x80, {96, 0}}}},
                            {161, {MidiEvent {0x90, {97, 64}}}},
@@ -551,7 +550,7 @@ BOOST_AUTO_TEST_CASE(chords_can_be_forced)
 
 BOOST_AUTO_TEST_CASE(taps_are_read)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {0, {MidiEvent {0x90, {96, 64}}}},
                            {0, {MidiEvent {0x90, {104, 64}}}},
                            {1, {MidiEvent {0x80, {96, 0}}}},
@@ -567,7 +566,7 @@ BOOST_AUTO_TEST_CASE(taps_are_read)
 
 BOOST_AUTO_TEST_CASE(taps_take_precedence_over_hopos)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {0, {MidiEvent {0x90, {96, 64}}}},
                            {1, {MidiEvent {0x80, {96, 0}}}},
                            {161, {MidiEvent {0x90, {97, 64}}}},
@@ -585,7 +584,7 @@ BOOST_AUTO_TEST_CASE(taps_take_precedence_over_hopos)
 
 BOOST_AUTO_TEST_CASE(chords_can_be_taps)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {0, {MidiEvent {0x90, {96, 64}}}},
                            {1, {MidiEvent {0x80, {96, 0}}}},
                            {160, {MidiEvent {0x90, {97, 64}}}},
@@ -606,7 +605,7 @@ BOOST_AUTO_TEST_CASE(chords_can_be_taps)
 BOOST_AUTO_TEST_CASE(other_resolutions_are_handled_correctly)
 {
     MidiTrack note_track {{
-        {0, {part_guitar()}},
+        {0, {part_event("PART GUITAR")}},
         {0, {MidiEvent {0x90, {96, 64}}}},
         {1, {MidiEvent {0x80, {96, 0}}}},
         {65, {MidiEvent {0x90, {97, 64}}}},
@@ -627,7 +626,7 @@ BOOST_AUTO_TEST_CASE(other_resolutions_are_handled_correctly)
 BOOST_AUTO_TEST_CASE(custom_hopo_threshold_is_handled_correctly)
 {
     MidiTrack note_track {{
-        {0, {part_guitar()}},
+        {0, {part_event("PART GUITAR")}},
         {0, {MidiEvent {0x90, {96, 64}}}},
         {1, {MidiEvent {0x80, {96, 0}}}},
         {161, {MidiEvent {0x90, {97, 64}}}},
@@ -650,10 +649,7 @@ BOOST_AUTO_TEST_CASE(custom_hopo_threshold_is_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(not_done_on_drums)
 {
-    MidiTrack note_track {{{0,
-                            {MetaEvent {3,
-                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x44,
-                                         0x52, 0x55, 0x4D, 0x53}}}},
+    MidiTrack note_track {{{0, {part_event("PART DRUMS")}},
                            {0, {MidiEvent {0x90, {97, 64}}}},
                            {1, {MidiEvent {0x80, {97, 64}}}},
                            {161, {MidiEvent {0x90, {98, 64}}}},
@@ -673,13 +669,9 @@ BOOST_AUTO_TEST_SUITE(other_five_fret_instruments_are_read_from_mid)
 
 BOOST_AUTO_TEST_CASE(guitar_coop_is_read)
 {
-    MidiTrack note_track {
-        {{0,
-          {MetaEvent {3,
-                      {0x50, 0x41, 0x52, 0x54, 0x20, 0x47, 0x55, 0x49, 0x54,
-                       0x41, 0x52, 0x20, 0x43, 0x4F, 0x4F, 0x50}}}},
-         {0, {MidiEvent {0x90, {96, 64}}}},
-         {65, {MidiEvent {0x80, {96, 0}}}}}};
+    MidiTrack note_track {{{0, {part_event("PART GUITAR COOP")}},
+                           {0, {MidiEvent {0x90, {96, 64}}}},
+                           {65, {MidiEvent {0x80, {96, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = MidiParser({}).from_midi(midi);
 
@@ -690,12 +682,9 @@ BOOST_AUTO_TEST_CASE(guitar_coop_is_read)
 
 BOOST_AUTO_TEST_CASE(bass_is_read)
 {
-    MidiTrack note_track {
-        {{0,
-          {MetaEvent {3,
-                      {0x50, 0x41, 0x52, 0x54, 0x20, 0x42, 0x41, 0x53, 0x53}}}},
-         {0, {MidiEvent {0x90, {96, 64}}}},
-         {65, {MidiEvent {0x80, {96, 0}}}}}};
+    MidiTrack note_track {{{0, {part_event("PART BASS")}},
+                           {0, {MidiEvent {0x90, {96, 64}}}},
+                           {65, {MidiEvent {0x80, {96, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = MidiParser({}).from_midi(midi);
 
@@ -705,10 +694,7 @@ BOOST_AUTO_TEST_CASE(bass_is_read)
 
 BOOST_AUTO_TEST_CASE(rhythm_is_read)
 {
-    MidiTrack note_track {{{0,
-                            {MetaEvent {3,
-                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x52,
-                                         0x48, 0x59, 0x54, 0x48, 0x4D}}}},
+    MidiTrack note_track {{{0, {part_event("PART RHYTHM")}},
                            {0, {MidiEvent {0x90, {96, 64}}}},
                            {65, {MidiEvent {0x80, {96, 0}}}}}};
     const Midi midi {192, {note_track}};
@@ -720,12 +706,9 @@ BOOST_AUTO_TEST_CASE(rhythm_is_read)
 
 BOOST_AUTO_TEST_CASE(keys_is_read)
 {
-    MidiTrack note_track {
-        {{0,
-          {MetaEvent {3,
-                      {0x50, 0x41, 0x52, 0x54, 0x20, 0x4B, 0x45, 0x59, 0x53}}}},
-         {0, {MidiEvent {0x90, {96, 64}}}},
-         {65, {MidiEvent {0x80, {96, 0}}}}}};
+    MidiTrack note_track {{{0, {part_event("PART KEYS")}},
+                           {0, {MidiEvent {0x90, {96, 64}}}},
+                           {65, {MidiEvent {0x80, {96, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = MidiParser({}).from_midi(midi);
 
@@ -739,13 +722,9 @@ BOOST_AUTO_TEST_SUITE(six_fret_instruments_are_read_correctly_from_mid)
 
 BOOST_AUTO_TEST_CASE(six_fret_guitar_is_read_correctly)
 {
-    MidiTrack note_track {
-        {{0,
-          {MetaEvent {3,
-                      {0x50, 0x41, 0x52, 0x54, 0x20, 0x47, 0x55, 0x49, 0x54,
-                       0x41, 0x52, 0x20, 0x47, 0x48, 0x4C}}}},
-         {0, {MidiEvent {0x90, {94, 64}}}},
-         {65, {MidiEvent {0x80, {94, 0}}}}}};
+    MidiTrack note_track {{{0, {part_event("PART GUITAR GHL")}},
+                           {0, {MidiEvent {0x90, {94, 64}}}},
+                           {65, {MidiEvent {0x80, {94, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = MidiParser({}).from_midi(midi);
     const auto& track = song.track(Instrument::GHLGuitar, Difficulty::Expert);
@@ -758,13 +737,9 @@ BOOST_AUTO_TEST_CASE(six_fret_guitar_is_read_correctly)
 
 BOOST_AUTO_TEST_CASE(six_fret_bass_is_read_correctly)
 {
-    MidiTrack note_track {
-        {{0,
-          {MetaEvent {3,
-                      {0x50, 0x41, 0x52, 0x54, 0x20, 0x42, 0x41, 0x53, 0x53,
-                       0x20, 0x47, 0x48, 0x4C}}}},
-         {0, {MidiEvent {0x90, {94, 64}}}},
-         {65, {MidiEvent {0x80, {94, 0}}}}}};
+    MidiTrack note_track {{{0, {part_event("PART BASS GHL")}},
+                           {0, {MidiEvent {0x90, {94, 64}}}},
+                           {65, {MidiEvent {0x80, {94, 0}}}}}};
     const Midi midi {192, {note_track}};
     const auto song = MidiParser({}).from_midi(midi);
     const auto& track = song.track(Instrument::GHLBass, Difficulty::Expert);
@@ -779,10 +754,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(drums_are_read_correctly_from_mid)
 {
-    MidiTrack note_track {{{0,
-                            {MetaEvent {3,
-                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x44,
-                                         0x52, 0x55, 0x4D, 0x53}}}},
+    MidiTrack note_track {{{0, {part_event("PART DRUMS")}},
                            {0, {MidiEvent {0x90, {98, 64}}}},
                            {0, {MidiEvent {0x90, {110, 64}}}},
                            {65, {MidiEvent {0x80, {98, 0}}}},
@@ -799,10 +771,7 @@ BOOST_AUTO_TEST_CASE(drums_are_read_correctly_from_mid)
 
 BOOST_AUTO_TEST_CASE(double_kicks_are_read_correctly_from_mid)
 {
-    MidiTrack note_track {{{0,
-                            {MetaEvent {3,
-                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x44,
-                                         0x52, 0x55, 0x4D, 0x53}}}},
+    MidiTrack note_track {{{0, {part_event("PART DRUMS")}},
                            {0, {MidiEvent {0x90, {95, 64}}}},
                            {65, {MidiEvent {0x80, {95, 0}}}}}};
     const Midi midi {192, {note_track}};
@@ -817,10 +786,7 @@ BOOST_AUTO_TEST_CASE(double_kicks_are_read_correctly_from_mid)
 
 BOOST_AUTO_TEST_CASE(drum_fills_are_read_correctly_from_mid)
 {
-    MidiTrack note_track {{{0,
-                            {MetaEvent {3,
-                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x44,
-                                         0x52, 0x55, 0x4D, 0x53}}}},
+    MidiTrack note_track {{{0, {part_event("PART DRUMS")}},
                            {0, {MidiEvent {0x90, {98, 64}}}},
                            {45, {MidiEvent {0x90, {120, 64}}}},
                            {65, {MidiEvent {0x80, {98, 0}}}},
@@ -839,10 +805,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_read_correctly_from_mid)
 BOOST_AUTO_TEST_CASE(disco_flips_are_read_correctly_from_mid)
 {
     MidiTrack note_track {
-        {{0,
-          {MetaEvent {
-              3,
-              {0x50, 0x41, 0x52, 0x54, 0x20, 0x44, 0x52, 0x55, 0x4D, 0x53}}}},
+        {{0, {part_event("PART DRUMS")}},
          {15,
           {MetaEvent {1,
                       {0x5B, 0x6D, 0x69, 0x78, 0x20, 0x33, 0x20, 0x64, 0x72,
@@ -867,10 +830,7 @@ BOOST_AUTO_TEST_CASE(disco_flips_are_read_correctly_from_mid)
 BOOST_AUTO_TEST_CASE(missing_disco_flip_end_event_just_ends_at_max_int)
 {
     MidiTrack note_track {
-        {{0,
-          {MetaEvent {
-              3,
-              {0x50, 0x41, 0x52, 0x54, 0x20, 0x44, 0x52, 0x55, 0x4D, 0x53}}}},
+        {{0, {part_event("PART DRUMS")}},
          {15,
           {MetaEvent {1,
                       {0x5B, 0x6D, 0x69, 0x78, 0x20, 0x33, 0x20, 0x64, 0x72,
@@ -890,10 +850,7 @@ BOOST_AUTO_TEST_CASE(missing_disco_flip_end_event_just_ends_at_max_int)
 
 BOOST_AUTO_TEST_CASE(drum_five_lane_to_four_lane_conversion_is_done_from_mid)
 {
-    MidiTrack note_track {{{0,
-                            {MetaEvent {3,
-                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x44,
-                                         0x52, 0x55, 0x4D, 0x53}}}},
+    MidiTrack note_track {{{0, {part_event("PART DRUMS")}},
                            {0, {MidiEvent {0x90, {101, 64}}}},
                            {1, {MidiEvent {0x80, {101, 0}}}},
                            {2, {MidiEvent {0x90, {100, 64}}}},
@@ -918,10 +875,7 @@ BOOST_AUTO_TEST_CASE(drum_five_lane_to_four_lane_conversion_is_done_from_mid)
 BOOST_AUTO_TEST_CASE(dynamics_are_parsed_from_mid)
 {
     MidiTrack note_track {
-        {{0,
-          {MetaEvent {
-              3,
-              {0x50, 0x41, 0x52, 0x54, 0x20, 0x44, 0x52, 0x55, 0x4D, 0x53}}}},
+        {{0, {part_event("PART DRUMS")}},
          {0, {MetaEvent {1, {0x5B, 0x45, 0x4E, 0x41, 0x42, 0x4C, 0x45, 0x5F,
                              0x43, 0x48, 0x41, 0x52, 0x54, 0x5F, 0x44, 0x59,
                              0x4E, 0x41, 0x4D, 0x49, 0x43, 0x53, 0x5D}}}},
@@ -945,10 +899,7 @@ BOOST_AUTO_TEST_CASE(dynamics_are_parsed_from_mid)
 
 BOOST_AUTO_TEST_CASE(dynamics_not_parsed_from_mid_without_ENABLE_CHART_DYNAMICS)
 {
-    MidiTrack note_track {{{0,
-                            {MetaEvent {3,
-                                        {0x50, 0x41, 0x52, 0x54, 0x20, 0x44,
-                                         0x52, 0x55, 0x4D, 0x53}}}},
+    MidiTrack note_track {{{0, {part_event("PART DRUMS")}},
                            {0, {MidiEvent {0x90, {97, 1}}}},
                            {1, {MidiEvent {0x80, {97, 0}}}},
                            {2, {MidiEvent {0x90, {97, 64}}}},
@@ -969,15 +920,12 @@ BOOST_AUTO_TEST_CASE(dynamics_not_parsed_from_mid_without_ENABLE_CHART_DYNAMICS)
 
 BOOST_AUTO_TEST_CASE(instruments_not_permitted_are_dropped_from_midis)
 {
-    MidiTrack guitar_track {{{0, {part_guitar()}},
+    MidiTrack guitar_track {{{0, {part_event("PART GUITAR")}},
                              {768, {MidiEvent {0x90, {97, 64}}}},
                              {960, {MidiEvent {0x80, {97, 0}}}}}};
-    MidiTrack bass_track {
-        {{0,
-          {MetaEvent {3,
-                      {0x50, 0x41, 0x52, 0x54, 0x20, 0x42, 0x41, 0x53, 0x53}}}},
-         {0, {MidiEvent {0x90, {96, 64}}}},
-         {65, {MidiEvent {0x80, {96, 0}}}}}};
+    MidiTrack bass_track {{{0, {part_event("PART BASS")}},
+                           {0, {MidiEvent {0x90, {96, 64}}}},
+                           {65, {MidiEvent {0x80, {96, 0}}}}}};
     const Midi midi {192, {guitar_track, bass_track}};
     const std::vector<Instrument> expected_instruments {Instrument::Guitar};
 
@@ -989,7 +937,7 @@ BOOST_AUTO_TEST_CASE(instruments_not_permitted_are_dropped_from_midis)
 
 BOOST_AUTO_TEST_CASE(solos_ignored_from_midis_if_not_permitted)
 {
-    MidiTrack note_track {{{0, {part_guitar()}},
+    MidiTrack note_track {{{0, {part_event("PART GUITAR")}},
                            {768, {MidiEvent {0x90, {103, 64}}}},
                            {768, {MidiEvent {0x90, {96, 64}}}},
                            {900, {MidiEvent {0x90, {97, 64}}}},
