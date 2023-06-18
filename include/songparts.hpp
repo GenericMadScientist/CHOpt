@@ -46,6 +46,8 @@ enum class Instrument {
     Keys,
     GHLGuitar,
     GHLBass,
+    GHLRhythm,
+    GHLGuitarCoop,
     Drums
 };
 

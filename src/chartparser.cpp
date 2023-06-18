@@ -56,12 +56,12 @@ diff_inst_from_header(const std::string& header)
 {
     using namespace std::literals;
 
-    static const std::array<std::tuple<std::string_view, Difficulty>, 4>
+    constexpr std::array<std::tuple<std::string_view, Difficulty>, 4>
         DIFFICULTIES {std::tuple {"Easy"sv, Difficulty::Easy},
                       {"Medium"sv, Difficulty::Medium},
                       {"Hard"sv, Difficulty::Hard},
                       {"Expert"sv, Difficulty::Expert}};
-    static const std::array<std::tuple<std::string_view, Instrument>, 8>
+    constexpr std::array<std::tuple<std::string_view, Instrument>, 10>
         INSTRUMENTS {std::tuple {"Single"sv, Instrument::Guitar},
                      {"DoubleGuitar"sv, Instrument::GuitarCoop},
                      {"DoubleBass"sv, Instrument::Bass},
@@ -69,6 +69,8 @@ diff_inst_from_header(const std::string& header)
                      {"Keyboard"sv, Instrument::Keys},
                      {"GHLGuitar"sv, Instrument::GHLGuitar},
                      {"GHLBass"sv, Instrument::GHLBass},
+                     {"GHLRhythm"sv, Instrument::GHLRhythm},
+                     {"GHLCoop"sv, Instrument::GHLGuitarCoop},
                      {"Drums"sv, Instrument::Drums}};
     // NOLINT is required because following clang-tidy here causes the VS2017
     // compile to fail.
@@ -427,6 +429,8 @@ TrackType track_type_from_instrument(Instrument instrument)
         return TrackType::FiveFret;
     case Instrument::GHLGuitar:
     case Instrument::GHLBass:
+    case Instrument::GHLRhythm:
+    case Instrument::GHLGuitarCoop:
         return TrackType::SixFret;
     case Instrument::Drums:
         return TrackType::Drums;

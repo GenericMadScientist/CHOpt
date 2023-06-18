@@ -22,8 +22,12 @@
 
 bool is_six_fret_instrument(Instrument instrument)
 {
-    return instrument == Instrument::GHLGuitar
-        || instrument == Instrument::GHLBass;
+    constexpr std::array SIX_FRET_INSTRUMENTS {
+        Instrument::GHLGuitar, Instrument::GHLBass, Instrument::GHLRhythm,
+        Instrument::GHLGuitarCoop};
+    return std::find(SIX_FRET_INSTRUMENTS.cbegin(), SIX_FRET_INSTRUMENTS.cend(),
+                     instrument)
+        != SIX_FRET_INSTRUMENTS.cend();
 }
 
 std::vector<std::tuple<Tick, Tick>>

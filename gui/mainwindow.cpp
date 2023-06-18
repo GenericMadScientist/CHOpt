@@ -426,6 +426,8 @@ void MainWindow::on_engineComboBox_currentIndexChanged(int index)
         {Instrument::Keys, "Keys"},
         {Instrument::GHLGuitar, "GHL Guitar"},
         {Instrument::GHLBass, "GHL Bass"},
+        {Instrument::GHLRhythm, "GHL Rhythm"},
+        {Instrument::GHLGuitarCoop, "GHL Guitar Co-op"},
         {Instrument::Drums, "Drums"}};
     const auto game = m_ui->engineComboBox->currentData().value<Game>();
     for (auto inst : m_loaded_file->load_song(game).instruments()) {

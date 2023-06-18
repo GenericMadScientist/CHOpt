@@ -50,9 +50,11 @@ bool is_chord(const Note& note)
 
 std::set<Instrument> all_instruments()
 {
-    return {Instrument::Guitar,  Instrument::GuitarCoop, Instrument::Bass,
-            Instrument::Rhythm,  Instrument::Keys,       Instrument::GHLGuitar,
-            Instrument::GHLBass, Instrument::Drums};
+    return {Instrument::Guitar,        Instrument::GuitarCoop,
+            Instrument::Bass,          Instrument::Rhythm,
+            Instrument::Keys,          Instrument::GHLGuitar,
+            Instrument::GHLBass,       Instrument::GHLRhythm,
+            Instrument::GHLGuitarCoop, Instrument::Drums};
 }
 
 int Note::open_index() const

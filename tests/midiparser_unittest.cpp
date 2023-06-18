@@ -750,6 +750,37 @@ BOOST_AUTO_TEST_CASE(six_fret_bass_is_read_correctly)
                                   notes.cbegin(), notes.cend());
 }
 
+BOOST_AUTO_TEST_CASE(six_fret_rhythm_is_read_correctly)
+{
+    MidiTrack note_track {{{0, {part_event("PART RHYTHM GHL")}},
+                           {0, {MidiEvent {0x90, {94, 64}}}},
+                           {65, {MidiEvent {0x80, {94, 0}}}}}};
+    const Midi midi {192, {note_track}};
+    const auto song = MidiParser({}).from_midi(midi);
+    const auto& track = song.track(Instrument::GHLRhythm, Difficulty::Expert);
+
+    std::vector<Note> notes {make_ghl_note(0, 65, SIX_FRET_OPEN)};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
+                                  notes.cbegin(), notes.cend());
+}
+
+BOOST_AUTO_TEST_CASE(six_fret_guitar_coop_is_read_correctly)
+{
+    MidiTrack note_track {{{0, {part_event("PART GUITAR COOP GHL")}},
+                           {0, {MidiEvent {0x90, {94, 64}}}},
+                           {65, {MidiEvent {0x80, {94, 0}}}}}};
+    const Midi midi {192, {note_track}};
+    const auto song = MidiParser({}).from_midi(midi);
+    const auto& track
+        = song.track(Instrument::GHLGuitarCoop, Difficulty::Expert);
+
+    std::vector<Note> notes {make_ghl_note(0, 65, SIX_FRET_OPEN)};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
+                                  notes.cbegin(), notes.cend());
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(drums_are_read_correctly_from_mid)

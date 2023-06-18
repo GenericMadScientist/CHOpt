@@ -121,6 +121,8 @@ std::optional<Instrument> midi_section_instrument(const std::string& track_name)
         {"PART KEYS", Instrument::Keys},
         {"PART GUITAR GHL", Instrument::GHLGuitar},
         {"PART BASS GHL", Instrument::GHLBass},
+        {"PART RHYTHM GHL", Instrument::GHLRhythm},
+        {"PART GUITAR COOP GHL", Instrument::GHLGuitarCoop},
         {"PART DRUMS", Instrument::Drums}};
 
     const auto iter = INSTRUMENTS.find(track_name);

@@ -502,6 +502,35 @@ BOOST_AUTO_TEST_CASE(six_fret_bass_is_read_correctly)
                                   notes.cbegin(), notes.cend());
 }
 
+BOOST_AUTO_TEST_CASE(six_fret_rhythm_is_read_correctly)
+{
+    const auto chart_file
+        = section_string("ExpertGHLRhythm", {{192, 0, 0}, {384, 3, 0}});
+    const std::vector<Note> notes {make_ghl_note(192, 0, SIX_FRET_WHITE_LOW),
+                                   make_ghl_note(384, 0, SIX_FRET_BLACK_LOW)};
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto& track = song.track(Instrument::GHLRhythm, Difficulty::Expert);
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
+                                  notes.cbegin(), notes.cend());
+}
+
+BOOST_AUTO_TEST_CASE(six_fret_guitar_coop_is_read_correctly)
+{
+    const auto chart_file
+        = section_string("ExpertGHLCoop", {{192, 0, 0}, {384, 3, 0}});
+    const std::vector<Note> notes {make_ghl_note(192, 0, SIX_FRET_WHITE_LOW),
+                                   make_ghl_note(384, 0, SIX_FRET_BLACK_LOW)};
+
+    const auto song = ChartParser({}).parse(chart_file);
+    const auto& track
+        = song.track(Instrument::GHLGuitarCoop, Difficulty::Expert);
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(track.notes().cbegin(), track.notes().cend(),
+                                  notes.cbegin(), notes.cend());
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(drum_notes_are_read_correctly_from_chart)

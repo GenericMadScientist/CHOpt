@@ -74,6 +74,12 @@ Instrument string_to_inst(std::string_view text)
     if (text == "ghlbass") {
         return Instrument::GHLBass;
     }
+    if (text == "ghlrhythm") {
+        return Instrument::GHLRhythm;
+    }
+    if (text == "ghlcoop") {
+        return Instrument::GHLGuitarCoop;
+    }
     if (text == "drums") {
         return Instrument::Drums;
     }
@@ -145,7 +151,7 @@ std::optional<Settings> from_args(int argc, char** argv)
     add_option("instrument,i",
                po::value<std::string>()->default_value("guitar"),
                "instrument, options are guitar, coop, bass, rhythm, keys, ghl, "
-               "ghlbass, drums");
+               "ghlbass, ghlrhythm, ghlcoop, drums");
     add_option("squeeze,sqz", po::value<int>()->default_value(MAX_PERCENT),
                "squeeze% (0 to 100)");
     add_option("early-whammy,ew", po::value<int>(),
