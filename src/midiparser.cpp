@@ -651,12 +651,11 @@ InstrumentMidiTrack read_instrument_midi_track(const MidiTrack& midi_track,
 bool position_in_event_spans(
     const std::vector<std::tuple<int, int>>& event_spans, int position)
 {
-    for (const auto& [pos, end] : event_spans) {
-        if (position >= pos && position < end) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(event_spans.cbegin(), event_spans.cend(),
+                       [&](const auto& span) {
+                           return position >= std::get<0>(span)
+                               && position < std::get<1>(span);
+                       });
 }
 
 std::map<Difficulty, std::vector<Note>> notes_from_event_track(
