@@ -16,7 +16,8 @@ matrix:
   fast_finish: true
 
 install:
-  - ps: git submodule update --init --recursive
+  - sh: git submodule update --init --recursive
+  - cmd: git submodule update --init --recursive
 
 before_build:
   - ps: mkdir artifacts
