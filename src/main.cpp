@@ -22,11 +22,12 @@
 #include <boost/nowide/args.hpp>
 #include <boost/nowide/iostream.hpp>
 
+#include "sightread/time.hpp"
+
 #include "image.hpp"
 #include "optimiser.hpp"
 #include "settings.hpp"
 #include "songfile.hpp"
-#include "time.hpp"
 
 int main(int argc, char** argv)
 {

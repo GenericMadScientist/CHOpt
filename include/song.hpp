@@ -24,8 +24,9 @@
 #include <tuple>
 #include <vector>
 
+#include "sightread/time.hpp"
+
 #include "songparts.hpp"
-#include "time.hpp"
 
 class Song {
 private:

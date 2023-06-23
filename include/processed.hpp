@@ -25,6 +25,7 @@
 #include <tuple>
 #include <vector>
 
+#include "sightread/time.hpp"
 #include <sightread/drumsettings.hpp>
 
 #include "points.hpp"
@@ -33,7 +34,6 @@
 #include "sp.hpp"
 #include "sptimemap.hpp"
 #include "tempomap.hpp"
-#include "time.hpp"
 
 struct ActivationCandidate {
     PointPtr act_start;

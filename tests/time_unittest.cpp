@@ -18,7 +18,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "time.hpp"
+#include "sightread/time.hpp"
 
 BOOST_AUTO_TEST_SUITE(beat_operations)
 

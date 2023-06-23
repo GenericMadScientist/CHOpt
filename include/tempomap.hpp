@@ -23,7 +23,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "time.hpp"
+#include "sightread/time.hpp"
 
 class ParseError : public std::runtime_error {
 public:

@@ -24,12 +24,13 @@
 #include <tuple>
 #include <vector>
 
+#include "sightread/time.hpp"
+
 #include "engine.hpp"
 #include "settings.hpp"
 #include "songparts.hpp"
 #include "sptimemap.hpp"
 #include "tempomap.hpp"
-#include "time.hpp"
 
 // Represents the minimum and maximum SP possible at a given time.
 class SpBar {

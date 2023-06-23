@@ -21,8 +21,9 @@
 
 #include <algorithm>
 
+#include "sightread/time.hpp"
+
 #include "sptimemap.hpp"
-#include "time.hpp"
 
 enum class SustainRoundingPolicy { RoundUp, RoundToNearest };
 

@@ -27,9 +27,10 @@
 #include <tuple>
 #include <vector>
 
+#include "sightread/time.hpp"
+
 #include "points.hpp"
 #include "processed.hpp"
-#include "time.hpp"
 
 // The class that stores extra information needed on top of a ProcessedSong for
 // the purposes of optimisation, and finds the optimal path. The song passed to

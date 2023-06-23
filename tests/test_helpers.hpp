@@ -29,6 +29,8 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include "sightread/time.hpp"
+
 #include "chart.hpp"
 #include "imagebuilder.hpp"
 #include "midi.hpp"
@@ -36,7 +38,6 @@
 #include "processed.hpp"
 #include "songparts.hpp"
 #include "sp.hpp"
-#include "time.hpp"
 
 template <typename Iter>
 inline std::ostream& print_container(std::ostream& stream, Iter begin, Iter end)

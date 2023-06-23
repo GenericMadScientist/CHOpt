@@ -24,11 +24,11 @@
 #include <set>
 #include <string>
 
+#include "sightread/time.hpp"
 #include <sightread/drumsettings.hpp>
 
 #include "engine.hpp"
 #include "songparts.hpp"
-#include "time.hpp"
 
 enum class Game { CloneHero, GuitarHeroOne, RockBand, RockBandThree };
 
