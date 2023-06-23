@@ -72,21 +72,12 @@ inline std::ostream& operator<<(std::ostream& stream, ActValidity validity)
     return stream;
 }
 
-inline bool operator==(const SightRead::Beat& lhs, const SightRead::Beat& rhs)
-{
-    return std::abs(lhs.value() - rhs.value()) < 0.01;
-}
-
-inline bool operator!=(const SightRead::Beat& lhs, const SightRead::Beat& rhs)
-{
-    return std::abs(lhs.value() - rhs.value()) >= 0.01;
-}
-
 inline bool operator!=(const Activation& lhs, const Activation& rhs)
 {
     return std::tie(lhs.act_start, lhs.act_end)
         != std::tie(rhs.act_start, rhs.act_end)
-        || lhs.sp_start != rhs.sp_start || lhs.sp_end != rhs.sp_end;
+        || std::abs(lhs.sp_start.value() - rhs.sp_start.value()) >= 0.01
+        || std::abs(lhs.sp_end.value() - rhs.sp_end.value()) >= 0.01;
 }
 
 inline std::ostream& operator<<(std::ostream& stream, const Activation& act)
@@ -213,12 +204,6 @@ inline std::ostream& operator<<(std::ostream& stream, Instrument instrument)
     return stream;
 }
 
-inline bool operator==(const SightRead::Measure& lhs,
-                       const SightRead::Measure& rhs)
-{
-    return std::abs(lhs.value() - rhs.value()) < 0.000001;
-}
-
 inline bool operator==(const MetaEvent& lhs, const MetaEvent& rhs)
 {
     return std::tie(lhs.type, lhs.data) == std::tie(rhs.type, rhs.data);
@@ -279,12 +264,6 @@ inline std::ostream& operator<<(std::ostream& stream, PointPtr addr)
     return stream;
 }
 
-inline bool operator==(const SightRead::Second& lhs,
-                       const SightRead::Second& rhs)
-{
-    return std::abs(lhs.value() - rhs.value()) < 0.01;
-}
-
 inline bool operator!=(const Solo& lhs, const Solo& rhs)
 {
     return std::tie(lhs.start, lhs.end, lhs.value)
@@ -336,7 +315,8 @@ inline std::ostream& operator<<(std::ostream& stream, SpMeasure measure)
 
 inline bool operator==(const SpPosition& lhs, const SpPosition& rhs)
 {
-    return lhs.beat == rhs.beat && lhs.sp_measure == rhs.sp_measure;
+    return std::abs(lhs.beat.value() - rhs.beat.value()) <= 0.01
+        && lhs.sp_measure == rhs.sp_measure;
 }
 
 inline std::ostream& operator<<(std::ostream& stream,
