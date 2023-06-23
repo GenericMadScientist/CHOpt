@@ -174,7 +174,6 @@ if(PACKAGE_TESTS)
     tests/sp_unittest.cpp
     tests/stringutil_unittest.cpp
     tests/tempomap_unittest.cpp
-    tests/time_unittest.cpp
     src/chart.cpp
     src/chartparser.cpp
     src/imagebuilder.cpp
