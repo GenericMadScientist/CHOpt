@@ -43,5 +43,5 @@ jobs:
           sudo apt-get install -y clang-format-16
       - name: Format
         run: |
-          clang-format-16 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp
+          clang-format-16 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp tests/*.hpp
           git diff --color --exit-code
