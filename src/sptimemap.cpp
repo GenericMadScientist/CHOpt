@@ -20,39 +20,39 @@
 
 #include "sptimemap.hpp"
 
-Beat SpTimeMap::to_beats(Second seconds) const
+SightRead::Beat SpTimeMap::to_beats(SightRead::Second seconds) const
 {
     return m_tempo_map.to_beats(seconds);
 }
 
-Beat SpTimeMap::to_beats(SpMeasure measures) const
+SightRead::Beat SpTimeMap::to_beats(SpMeasure measures) const
 {
     switch (m_sp_mode) {
     case SpMode::Measure:
-        return m_tempo_map.to_beats(Measure {measures.value()});
+        return m_tempo_map.to_beats(SightRead::Measure {measures.value()});
     case SpMode::OdBeat:
-        return m_tempo_map.to_beats(OdBeat {measures.value()});
+        return m_tempo_map.to_beats(SightRead::OdBeat {measures.value()});
     default:
         throw std::runtime_error("Invalid SpMode value");
     }
 }
 
-Beat SpTimeMap::to_beats(Tick ticks) const
+SightRead::Beat SpTimeMap::to_beats(SightRead::Tick ticks) const
 {
     return m_tempo_map.to_beats(ticks);
 }
 
-Second SpTimeMap::to_seconds(Beat beats) const
+SightRead::Second SpTimeMap::to_seconds(SightRead::Beat beats) const
 {
     return m_tempo_map.to_seconds(beats);
 }
 
-Second SpTimeMap::to_seconds(SpMeasure sp_measures) const
+SightRead::Second SpTimeMap::to_seconds(SpMeasure sp_measures) const
 {
     return to_seconds(to_beats(sp_measures));
 }
 
-SpMeasure SpTimeMap::to_sp_measures(Beat beats) const
+SpMeasure SpTimeMap::to_sp_measures(SightRead::Beat beats) const
 {
     switch (m_sp_mode) {
     case SpMode::Measure:
@@ -64,7 +64,7 @@ SpMeasure SpTimeMap::to_sp_measures(Beat beats) const
     }
 }
 
-SpMeasure SpTimeMap::to_sp_measures(Second seconds) const
+SpMeasure SpTimeMap::to_sp_measures(SightRead::Second seconds) const
 {
     return to_sp_measures(m_tempo_map.to_beats(seconds));
 }

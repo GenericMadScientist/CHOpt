@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(sustains_are_handled_correctly)
 BOOST_AUTO_TEST_CASE(sp_notes_are_recorded)
 {
     NoteTrack track {{make_note(0), make_note(768)},
-                     {{Tick {768}, Tick {100}}},
+                     {{SightRead::Tick {768}, SightRead::Tick {100}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
@@ -244,10 +244,10 @@ BOOST_AUTO_TEST_CASE(simple_four_four_is_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
 {
-    TempoMap tempo_map {{{Tick {0}, 4, 4},
-                         {Tick {768}, 3, 4},
-                         {Tick {1344}, 3, 8},
-                         {Tick {1632}, 4, 4}},
+    TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4},
+                         {SightRead::Tick {768}, 3, 4},
+                         {SightRead::Tick {1344}, 3, 8},
+                         {SightRead::Tick {1632}, 4, 4}},
                         {},
                         {},
                         192};
@@ -267,11 +267,12 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
 
 BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
 {
-    TempoMap tempo_map {
-        {{Tick {0}, 4, 4}, {Tick {767}, 3, 4}, {Tick {1344}, 3, 8}},
-        {},
-        {},
-        192};
+    TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4},
+                         {SightRead::Tick {767}, 3, 4},
+                         {SightRead::Tick {1344}, 3, 8}},
+                        {},
+                        {},
+                        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -288,7 +289,7 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
 
 BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
 {
-    TempoMap tempo_map {{{Tick {0}, 17, 4}}, {}, {}, 192};
+    TempoMap tempo_map {{{SightRead::Tick {0}, 17, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -346,7 +347,7 @@ BOOST_AUTO_TEST_CASE(four_four_works_fine)
 
 BOOST_AUTO_TEST_CASE(four_eight_works_fine)
 {
-    TempoMap tempo_map {{{Tick {0}, 4, 8}}, {}, {}, 192};
+    TempoMap tempo_map {{{SightRead::Tick {0}, 4, 8}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -372,7 +373,11 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
 
 BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
 {
-    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {768}, 4, 8}}, {}, {}, 192};
+    TempoMap tempo_map {
+        {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {768}, 4, 8}},
+        {},
+        {},
+        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -402,7 +407,11 @@ BOOST_AUTO_TEST_SUITE(time_signatures_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
 {
-    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {768}, 4, 8}}, {}, {}, 192};
+    TempoMap tempo_map {
+        {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {768}, 4, 8}},
+        {},
+        {},
+        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -421,7 +430,11 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
 {
-    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {1920}, 3, 4}}, {}, {}, 192};
+    TempoMap tempo_map {
+        {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {1920}, 3, 4}},
+        {},
+        {},
+        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -440,11 +453,12 @@ BOOST_AUTO_TEST_SUITE(tempos_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
 {
-    TempoMap tempo_map {
-        {},
-        {{Tick {0}, 150000}, {Tick {384}, 120000}, {Tick {768}, 200000}},
-        {},
-        192};
+    TempoMap tempo_map {{},
+                        {{SightRead::Tick {0}, 150000},
+                         {SightRead::Tick {384}, 120000},
+                         {SightRead::Tick {768}, 200000}},
+                        {},
+                        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -464,7 +478,10 @@ BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
 BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
 {
     TempoMap tempo_map {
-        {}, {{Tick {0}, 120000}, {Tick {1920}, 200000}}, {}, 192};
+        {},
+        {{SightRead::Tick {0}, 120000}, {SightRead::Tick {1920}, 200000}},
+        {},
+        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -505,7 +522,8 @@ BOOST_AUTO_TEST_SUITE(green_sp_ranges)
 BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
 {
     NoteTrack track {{make_note(960), make_note(1344, 96)},
-                     {{Tick {768}, Tick {384}}, {Tick {1200}, Tick {150}}},
+                     {{SightRead::Tick {768}, SightRead::Tick {384}},
+                      {SightRead::Tick {1200}, SightRead::Tick {150}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
@@ -523,7 +541,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
 BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
 {
     NoteTrack track {{make_note(768)},
-                     {{Tick {768}, Tick {384}}},
+                     {{SightRead::Tick {768}, SightRead::Tick {384}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
@@ -541,7 +559,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
 BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
 {
     NoteTrack track {{make_ghl_note(960), make_ghl_note(1344, 96)},
-                     {{Tick {768}, Tick {384}}, {Tick {1200}, Tick {150}}},
+                     {{SightRead::Tick {768}, SightRead::Tick {384}},
+                      {SightRead::Tick {1200}, SightRead::Tick {150}}},
                      TrackType::SixFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
@@ -559,7 +578,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
 BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
 {
     NoteTrack track {{make_drum_note(960), make_drum_note(1344)},
-                     {{Tick {768}, Tick {384}}, {Tick {1200}, Tick {150}}},
+                     {{SightRead::Tick {768}, SightRead::Tick {384}},
+                      {SightRead::Tick {1200}, SightRead::Tick {150}}},
                      TrackType::Drums,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
@@ -577,7 +597,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
 BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
 {
     NoteTrack track {{make_note(0), make_note(768), make_note(3840)},
-                     {{Tick {3840}, Tick {192}}},
+                     {{SightRead::Tick {3840}, SightRead::Tick {192}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -589,9 +609,10 @@ BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           false};
-    Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {0.05},
-                 Beat {4.01}, Beat {20.01}}},
-               100};
+    Path path {
+        {{points.cbegin() + 1, points.cbegin() + 2, SightRead::Beat {0.05},
+          SightRead::Beat {4.01}, SightRead::Beat {20.01}}},
+        100};
     builder.add_sp_phrases(track, {}, path);
 
     BOOST_TEST(builder.green_ranges().empty());
@@ -605,7 +626,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)
                      {},
                      TrackType::Drums,
                      std::make_shared<SongGlobalData>()};
-    track.drum_fills({{Tick {192}, Tick {96}}});
+    track.drum_fills({{SightRead::Tick {192}, SightRead::Tick {96}}});
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -624,7 +645,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_cannot_be_cancelled_by_a_kick)
                      {},
                      TrackType::Drums,
                      std::make_shared<SongGlobalData>()};
-    track.drum_fills({{Tick {192}, Tick {96}}});
+    track.drum_fills({{SightRead::Tick {192}, SightRead::Tick {96}}});
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -682,7 +703,7 @@ BOOST_AUTO_TEST_CASE(disco_flip_matters_only_with_pro_drums_on)
                      {},
                      TrackType::Drums,
                      std::make_shared<SongGlobalData>()};
-    track.disco_flips({{Tick {192}, Tick {192}}});
+    track.disco_flips({{SightRead::Tick {192}, SightRead::Tick {192}}});
     ImageBuilder normal_builder {
         track, Difficulty::Expert, {true, false, false, false}, false, true};
     ImageBuilder pro_builder {track, Difficulty::Expert,
@@ -700,13 +721,15 @@ BOOST_AUTO_TEST_CASE(disco_flip_matters_only_with_pro_drums_on)
 BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
 {
     NoteTrack track {{make_note(960), make_note(1344, 96)},
-                     {{Tick {768}, Tick {384}}, {Tick {1200}, Tick {150}}},
+                     {{SightRead::Tick {768}, SightRead::Tick {384}},
+                      {SightRead::Tick {1200}, SightRead::Tick {150}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    builder.add_sp_phrases(track, {{Tick {768}, Tick {384}}}, Path {});
+    builder.add_sp_phrases(
+        track, {{SightRead::Tick {768}, SightRead::Tick {384}}}, Path {});
     std::vector<std::tuple<double, double>> expected_unison_ranges {{5.0, 5.1}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -719,7 +742,7 @@ BOOST_AUTO_TEST_SUITE(add_sp_acts_adds_correct_ranges)
 BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
 {
     NoteTrack track {{make_note(0, 96), make_note(192)},
-                     {{Tick {0}, Tick {50}}},
+                     {{SightRead::Tick {0}, SightRead::Tick {50}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -731,8 +754,8 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
-                 Beat {0.9}}},
+    Path path {{{points.cbegin(), points.cend() - 1, SightRead::Beat {0.25},
+                 SightRead::Beat {0.1}, SightRead::Beat {0.9}}},
                0};
     builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, {}, path);
@@ -769,11 +792,12 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25}, Beat {0.1},
-                 Beat {1.1}},
-                {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
-                 Beat {2.0}, Beat {2.9}}},
-               0};
+    Path path {
+        {{points.cbegin(), points.cbegin() + 1, SightRead::Beat {0.25},
+          SightRead::Beat {0.1}, SightRead::Beat {1.1}},
+         {points.cbegin() + 2, points.cbegin() + 3, SightRead::Beat {0.25},
+          SightRead::Beat {2.0}, SightRead::Beat {2.9}}},
+        0};
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_red_ranges {{0.0, 0.1},
                                                                  {2.9, 3.0}};
@@ -799,9 +823,10 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    Path path {{{points.cbegin() + 1, points.cbegin() + 2, Beat {5.0},
-                 Beat {0.0}, Beat {5.0}}},
-               0};
+    Path path {
+        {{points.cbegin() + 1, points.cbegin() + 2, SightRead::Beat {5.0},
+          SightRead::Beat {0.0}, SightRead::Beat {5.0}}},
+        0};
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_blue_ranges {{1.0, 4.0}};
 
@@ -825,8 +850,8 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    Path path {{{points.cbegin(), points.cbegin(), Beat {0.0}, Beat {0.0},
-                 Beat {16.0}}},
+    Path path {{{points.cbegin(), points.cbegin(), SightRead::Beat {0.0},
+                 SightRead::Beat {0.0}, SightRead::Beat {16.0}}},
                0};
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_blue_ranges {{0.0, 4.0}};
@@ -846,19 +871,21 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
-                     {1.0, 1.0, Second(0.0), Second(0.05), Second(0.0)},
+                     {1.0, 1.0, SightRead::Second(0.0), SightRead::Second(0.05),
+                      SightRead::Second(0.0)},
                      SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    Path path {{{points.cbegin(), points.cbegin() + 1, Beat {0.25}, Beat {0.1},
-                 Beat {1.1}},
-                {points.cbegin() + 2, points.cbegin() + 3, Beat {0.25},
-                 Beat {2.0}, Beat {2.9}},
-                {points.cbegin() + 5, points.cbegin() + 5, Beat {0.25},
-                 Beat {7.0}, Beat {23.0}}},
-               0};
+    Path path {
+        {{points.cbegin(), points.cbegin() + 1, SightRead::Beat {0.25},
+          SightRead::Beat {0.1}, SightRead::Beat {1.1}},
+         {points.cbegin() + 2, points.cbegin() + 3, SightRead::Beat {0.25},
+          SightRead::Beat {2.0}, SightRead::Beat {2.9}},
+         {points.cbegin() + 5, points.cbegin() + 5, SightRead::Beat {0.25},
+          SightRead::Beat {7.0}, SightRead::Beat {23.0}}},
+        0};
     std::vector<std::tuple<double, double>> expected_blue_ranges {
         {0.0, 1.0}, {1.9, 2.8}, {6.9, 8.0}};
     std::vector<std::tuple<double, double>> expected_red_ranges {{2.8, 3.0}};
@@ -876,7 +903,7 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
 BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
 {
     NoteTrack track {{make_note(0, 96), make_note(192)},
-                     {{Tick {0}, Tick {50}}},
+                     {{SightRead::Tick {0}, SightRead::Tick {50}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -888,8 +915,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           false};
-    Path path {{{points.cbegin() + 1, points.cend() - 1, Beat {0.05},
-                 Beat {0.1}, Beat {0.9}}},
+    Path path {{{points.cbegin() + 1, points.cend() - 1, SightRead::Beat {0.05},
+                 SightRead::Beat {0.1}, SightRead::Beat {0.9}}},
                0};
     builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, {}, path);
@@ -903,7 +930,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
 BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
 {
     NoteTrack track {{make_note(0), make_note(768), make_note(3840)},
-                     {{Tick {3840}, Tick {192}}},
+                     {{SightRead::Tick {3840}, SightRead::Tick {192}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -915,9 +942,10 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           false};
-    Path path {{{points.cbegin() + 1, points.cbegin() + 1, Beat {0.05},
-                 Beat {4.01}, Beat {20.01}}},
-               50};
+    Path path {
+        {{points.cbegin() + 1, points.cbegin() + 1, SightRead::Beat {0.05},
+          SightRead::Beat {4.01}, SightRead::Beat {20.01}}},
+        50};
     builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_green_ranges {
@@ -932,7 +960,8 @@ BOOST_AUTO_TEST_CASE(
     extra_green_ranges_are_not_discarded_for_no_overlap_engines)
 {
     NoteTrack track {{make_note(0, 96), make_note(192), make_note(3840)},
-                     {{Tick {0}, Tick {50}}, {Tick {3840}, Tick {192}}},
+                     {{SightRead::Tick {0}, SightRead::Tick {50}},
+                      {SightRead::Tick {3840}, SightRead::Tick {192}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -944,8 +973,8 @@ BOOST_AUTO_TEST_CASE(
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           false};
-    Path path {{{points.cbegin() + 1, points.cend() - 2, Beat {0.05},
-                 Beat {0.1}, Beat {0.9}}},
+    Path path {{{points.cbegin() + 1, points.cend() - 2, SightRead::Beat {0.05},
+                 SightRead::Beat {0.1}, SightRead::Beat {0.9}}},
                0};
     builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, {}, path);
@@ -960,7 +989,7 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
 {
     NoteTrack track {{make_note(0, 96), make_note(192)},
-                     {{Tick {0}, Tick {50}}},
+                     {{SightRead::Tick {0}, SightRead::Tick {50}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -972,8 +1001,8 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           false};
-    Path path {{{points.cbegin() + 1, points.cend() - 1, Beat {0.05},
-                 Beat {0.1}, Beat {0.9}}},
+    Path path {{{points.cbegin() + 1, points.cend() - 1, SightRead::Beat {0.05},
+                 SightRead::Beat {0.1}, SightRead::Beat {0.9}}},
                0};
     builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, {}, path);
@@ -993,7 +1022,7 @@ BOOST_AUTO_TEST_CASE(add_solo_sections_add_correct_ranges)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    track.solos({{Tick {192}, Tick {384}, 0}});
+    track.solos({{SightRead::Tick {192}, SightRead::Tick {384}, 0}});
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -1042,7 +1071,8 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    track.solos({{Tick {0}, Tick {100}, 100}, {Tick {200}, Tick {800}, 100}});
+    track.solos({{SightRead::Tick {0}, SightRead::Tick {100}, 100},
+                 {SightRead::Tick {200}, SightRead::Tick {800}, 100}});
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -1069,7 +1099,7 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
                      {},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
-    track.solos({{Tick {0}, Tick {1600}, 50}});
+    track.solos({{SightRead::Tick {0}, SightRead::Tick {1600}, 50}});
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
@@ -1101,9 +1131,9 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
                      SqueezeSettings::default_settings(),
                      SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    Path path {
-        {{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}},
-        100};
+    Path path {{{points.cbegin() + 2, points.cbegin() + 3,
+                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
+               100};
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -1124,12 +1154,13 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
-                     {1.0, 1.0, Second {0.0}, Second {-0.1}, Second {0.0}},
+                     {1.0, 1.0, SightRead::Second {0.0},
+                      SightRead::Second {-0.1}, SightRead::Second {0.0}},
                      SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
-    Path path {
-        {{points.cbegin() + 1, points.cbegin() + 1, Beat {0.0}, Beat {0.0}}},
-        50};
+    Path path {{{points.cbegin() + 1, points.cbegin() + 1,
+                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
+               50};
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -1150,7 +1181,7 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
 {
     NoteTrack track {{make_note(0), make_note(192, 768)},
-                     {{Tick {192}, Tick {50}}},
+                     {{SightRead::Tick {192}, SightRead::Tick {50}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     SpData sp_data {track,
@@ -1172,7 +1203,7 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
 BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
 {
     NoteTrack track {{make_note(0), make_note(192)},
-                     {{Tick {0}, Tick {50}}},
+                     {{SightRead::Tick {0}, SightRead::Tick {50}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -1184,10 +1215,11 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    Path path {{{points.cbegin(), points.cend() - 1, Beat {0.25}, Beat {0.1},
-                 Beat {0.9}}},
+    Path path {{{points.cbegin(), points.cend() - 1, SightRead::Beat {0.25},
+                 SightRead::Beat {0.1}, SightRead::Beat {0.9}}},
                50};
-    builder.set_total_score(points, {{Tick {0}, Tick {1}, 100}}, path);
+    builder.set_total_score(
+        points, {{SightRead::Tick {0}, SightRead::Tick {1}, 100}}, path);
 
     BOOST_CHECK_EQUAL(builder.total_score(), 250);
 }
@@ -1232,11 +1264,11 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
 {
     NoteTrack track {{make_note(960), make_note(1080), make_note(1920),
                       make_note(3840), make_note(4050), make_note(19200)},
-                     {{Tick {960}, Tick {10}},
-                      {Tick {1080}, Tick {10}},
-                      {Tick {1920}, Tick {10}},
-                      {Tick {3840}, Tick {10}},
-                      {Tick {4050}, Tick {10}}},
+                     {{SightRead::Tick {960}, SightRead::Tick {10}},
+                      {SightRead::Tick {1080}, SightRead::Tick {10}},
+                      {SightRead::Tick {1920}, SightRead::Tick {10}},
+                      {SightRead::Tick {3840}, SightRead::Tick {10}},
+                      {SightRead::Tick {4050}, SightRead::Tick {10}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -1250,8 +1282,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                     {},
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};
-    Path path {{{points.cbegin() + 5, points.cend(), Beat {1000.0}, Beat {70.0},
-                 Beat {102.0}}},
+    Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
+                 SightRead::Beat {70.0}, SightRead::Beat {102.0}}},
                0};
 
     ImageBuilder builder {track, Difficulty::Expert,
@@ -1273,12 +1305,12 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
 {
     NoteTrack track {{make_note(960), make_note(1080), make_note(1920),
                       make_note(3840), make_note(4050), make_note(19200)},
-                     {{Tick {960}, Tick {10}},
-                      {Tick {1080}, Tick {10}},
-                      {Tick {1920}, Tick {10}},
-                      {Tick {3840}, Tick {10}},
-                      {Tick {4050}, Tick {10}},
-                      {Tick {19200}, Tick {10}}},
+                     {{SightRead::Tick {960}, SightRead::Tick {10}},
+                      {SightRead::Tick {1080}, SightRead::Tick {10}},
+                      {SightRead::Tick {1920}, SightRead::Tick {10}},
+                      {SightRead::Tick {3840}, SightRead::Tick {10}},
+                      {SightRead::Tick {4050}, SightRead::Tick {10}},
+                      {SightRead::Tick {19200}, SightRead::Tick {10}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -1292,8 +1324,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                     {},
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};
-    Path path {{{points.cbegin() + 5, points.cend(), Beat {1000.0}, Beat {98.0},
-                 Beat {132.0}}},
+    Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
+                 SightRead::Beat {98.0}, SightRead::Beat {132.0}}},
                0};
 
     ImageBuilder builder {track, Difficulty::Expert,
@@ -1314,7 +1346,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
 BOOST_AUTO_TEST_CASE(whammy_is_added)
 {
     NoteTrack track {{make_note(960), make_note(1632, 1920)},
-                     {{Tick {960}, Tick {10}}, {Tick {1632}, Tick {10}}},
+                     {{SightRead::Tick {960}, SightRead::Tick {10}},
+                      {SightRead::Tick {1632}, SightRead::Tick {10}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -1328,8 +1361,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                     {},
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};
-    Path path {{{points.cbegin() + 5, points.cend(), Beat {1000.0}, Beat {9.0},
-                 Beat {22.0}}},
+    Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
+                 SightRead::Beat {9.0}, SightRead::Beat {22.0}}},
                0};
 
     ImageBuilder builder {track, Difficulty::Expert,
@@ -1350,7 +1383,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
 BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
 {
     NoteTrack track {{make_note(960), make_note(1632, 1920)},
-                     {{Tick {960}, Tick {10}}, {Tick {1632}, Tick {10}}},
+                     {{SightRead::Tick {960}, SightRead::Tick {10}},
+                      {SightRead::Tick {1632}, SightRead::Tick {10}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -1364,8 +1398,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                     {},
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};
-    Path path {{{points.cbegin() + 5, points.cend(), Beat {12.0}, Beat {9.0},
-                 Beat {22.0}}},
+    Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {12.0},
+                 SightRead::Beat {9.0}, SightRead::Beat {22.0}}},
                0};
 
     ImageBuilder builder {track, Difficulty::Expert,
@@ -1387,10 +1421,10 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
 {
     NoteTrack track {{make_note(960), make_note(1632, 1920), make_note(6336),
                       make_note(6528), make_note(7104)},
-                     {{Tick {960}, Tick {10}},
-                      {Tick {1632}, Tick {10}},
-                      {Tick {6336}, Tick {10}},
-                      {Tick {6528}, Tick {10}}},
+                     {{SightRead::Tick {960}, SightRead::Tick {10}},
+                      {SightRead::Tick {1632}, SightRead::Tick {10}},
+                      {SightRead::Tick {6336}, SightRead::Tick {10}},
+                      {SightRead::Tick {6528}, SightRead::Tick {10}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -1404,10 +1438,10 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                     {},
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};
-    Path path {{{points.cbegin() + 5, points.cend() - 3, Beat {12.0},
-                 Beat {9.0}, Beat {28.8827}},
-                {points.cend() - 1, points.cend(), Beat {1000.0}, Beat {37.0},
-                 Beat {53.0}}},
+    Path path {{{points.cbegin() + 5, points.cend() - 3, SightRead::Beat {12.0},
+                 SightRead::Beat {9.0}, SightRead::Beat {28.8827}},
+                {points.cend() - 1, points.cend(), SightRead::Beat {1000.0},
+                 SightRead::Beat {37.0}, SightRead::Beat {53.0}}},
                0};
 
     ImageBuilder builder {track, Difficulty::Expert,
@@ -1431,9 +1465,9 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
 {
     NoteTrack track {{make_note(0), make_note(192), make_note(384),
                       make_note(3224), make_note(3456)},
-                     {{Tick {0}, Tick {10}},
-                      {Tick {192}, Tick {10}},
-                      {Tick {3224}, Tick {10}}},
+                     {{SightRead::Tick {0}, SightRead::Tick {10}},
+                      {SightRead::Tick {192}, SightRead::Tick {10}},
+                      {SightRead::Tick {3224}, SightRead::Tick {10}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -1447,9 +1481,10 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                     {},
                     SqueezeSettings::default_settings(),
                     ChGuitarEngine()};
-    Path path {{{points.cbegin() + 2, points.cbegin() + 2, Beat {17.0},
-                 Beat {0.8958}, Beat {16.8958}}},
-               50};
+    Path path {
+        {{points.cbegin() + 2, points.cbegin() + 2, SightRead::Beat {17.0},
+          SightRead::Beat {0.8958}, SightRead::Beat {16.8958}}},
+        50};
 
     ImageBuilder builder {track, Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,

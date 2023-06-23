@@ -73,9 +73,9 @@ const NoteTrack& Song::track(Instrument instrument, Difficulty difficulty) const
     return m_tracks.at({instrument, difficulty});
 }
 
-std::vector<Tick> Song::unison_phrase_positions() const
+std::vector<SightRead::Tick> Song::unison_phrase_positions() const
 {
-    std::map<Tick, std::set<Instrument>> phrase_by_instrument;
+    std::map<SightRead::Tick, std::set<Instrument>> phrase_by_instrument;
     for (const auto& [key, value] : m_tracks) {
         const auto instrument = std::get<0>(key);
         if (is_six_fret_instrument(instrument)) {
@@ -86,7 +86,7 @@ std::vector<Tick> Song::unison_phrase_positions() const
         }
     }
 
-    std::vector<Tick> unison_starts;
+    std::vector<SightRead::Tick> unison_starts;
     for (const auto& [key, value] : phrase_by_instrument) {
         if (value.size() > 1) {
             unison_starts.push_back(key);

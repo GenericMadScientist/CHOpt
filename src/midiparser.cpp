@@ -44,7 +44,8 @@ TempoMap read_first_midi_track(const MidiTrack& track, int resolution)
             const auto us_per_quarter = meta_event->data[0] << 16
                 | meta_event->data[1] << 8 | meta_event->data[2];
             const auto bpm = 60000000000 / us_per_quarter;
-            tempos.push_back({Tick {event.time}, static_cast<int>(bpm)});
+            tempos.push_back(
+                {SightRead::Tick {event.time}, static_cast<int>(bpm)});
             break;
         }
         case TIME_SIG_ID:
@@ -54,7 +55,8 @@ TempoMap read_first_midi_track(const MidiTrack& track, int resolution)
             if (meta_event->data[1] >= (CHAR_BIT * sizeof(int))) {
                 throw ParseError("Time sig denominator too large");
             }
-            time_sigs.push_back({Tick {event.time}, meta_event->data[0],
+            time_sigs.push_back({SightRead::Tick {event.time},
+                                 meta_event->data[0],
                                  1 << meta_event->data[1]});
             break;
         }
@@ -81,14 +83,14 @@ std::optional<std::string> midi_track_name(const MidiTrack& track)
     return std::nullopt;
 }
 
-std::vector<Tick> od_beats_from_track(const MidiTrack& track)
+std::vector<SightRead::Tick> od_beats_from_track(const MidiTrack& track)
 {
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
     constexpr int BEAT_LOW_KEY = 12;
     constexpr int BEAT_HIGH_KEY = 13;
 
-    std::vector<Tick> od_beats;
+    std::vector<SightRead::Tick> od_beats;
 
     for (const auto& event : track.events) {
         const auto* midi_event = std::get_if<MidiEvent>(&event.event);
@@ -700,8 +702,8 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
                 }
             }
             Note note;
-            note.position = Tick {pos};
-            note.lengths.at(note_colour) = Tick {note_length};
+            note.position = SightRead::Tick {pos};
+            note.lengths.at(note_colour) = SightRead::Tick {note_length};
             note.flags = flags_from_track_type(track_type);
             if (position_in_event_spans(tap_events, pos)
                 && track_type != TrackType::Drums) {
@@ -737,7 +739,8 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track,
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.sp_on_events, event_track.sp_off_events)) {
-        sp_phrases.push_back({Tick {start}, Tick {end - start}});
+        sp_phrases.push_back(
+            {SightRead::Tick {start}, SightRead::Tick {end - start}});
     }
 
     std::map<Difficulty, NoteTrack> note_tracks;
@@ -813,17 +816,17 @@ public:
 // cymbal + B tom. This combination cannot happen from a four lane chart.
 void fix_double_greens(std::vector<Note>& notes)
 {
-    std::set<Tick> green_cymbal_positions;
+    std::set<SightRead::Tick> green_cymbal_positions;
 
     for (const auto& note : notes) {
-        if ((note.lengths.at(DRUM_GREEN) != Tick {-1})
+        if ((note.lengths.at(DRUM_GREEN) != SightRead::Tick {-1})
             && ((note.flags & FLAGS_CYMBAL) != 0U)) {
             green_cymbal_positions.insert(note.position);
         }
     }
 
     for (auto& note : notes) {
-        if ((note.lengths.at(DRUM_GREEN) == Tick {-1})
+        if ((note.lengths.at(DRUM_GREEN) == SightRead::Tick {-1})
             || ((note.flags & FLAGS_CYMBAL) != 0U)) {
             continue;
         }
@@ -854,8 +857,8 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
         for (const auto& [pos, end] :
              combine_note_on_off_events(note_ons, note_offs)) {
             Note note;
-            note.position = Tick {pos};
-            note.lengths.at(colour) = Tick {0};
+            note.position = SightRead::Tick {pos};
+            note.lengths.at(colour) = SightRead::Tick {0};
             note.flags = flags;
             if (tom_events.force_tom(colour, pos)) {
                 note.flags = static_cast<NoteFlags>(note.flags & ~FLAGS_CYMBAL);
@@ -868,13 +871,15 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.sp_on_events, event_track.sp_off_events)) {
-        sp_phrases.push_back({Tick {start}, Tick {end - start}});
+        sp_phrases.push_back(
+            {SightRead::Tick {start}, SightRead::Tick {end - start}});
     }
 
     std::vector<DrumFill> drum_fills;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.fill_on_events, event_track.fill_off_events)) {
-        drum_fills.push_back({Tick {start}, Tick {end - start}});
+        drum_fills.push_back(
+            {SightRead::Tick {start}, SightRead::Tick {end - start}});
     }
 
     std::map<Difficulty, NoteTrack> note_tracks;
@@ -893,7 +898,8 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
         for (const auto& [start, end] : combine_note_on_off_events(
                  event_track.disco_flip_on_events.at(diff),
                  event_track.disco_flip_off_events.at(diff))) {
-            disco_flips.push_back({Tick {start}, Tick {end - start}});
+            disco_flips.push_back(
+                {SightRead::Tick {start}, SightRead::Tick {end - start}});
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
                                       TrackType::Drums, true);
@@ -918,7 +924,7 @@ std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
-    Tick bre_start {0};
+    SightRead::Tick bre_start {0};
 
     for (const auto& event : midi_track.events) {
         const auto* midi_event = std::get_if<MidiEvent>(&event.event);
@@ -931,11 +937,11 @@ std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
         const auto event_type = midi_event->status & UPPER_NIBBLE_MASK;
         if (event_type == NOTE_OFF_ID
             || (event_type == NOTE_ON_ID && midi_event->data[1] == 0)) {
-            const Tick bre_end {event.time};
+            const SightRead::Tick bre_end {event.time};
             return {{bre_start, bre_end}};
         }
         if (event_type == NOTE_ON_ID) {
-            bre_start = Tick {event.time};
+            bre_start = SightRead::Tick {event.time};
         }
     }
 
@@ -966,7 +972,8 @@ note_tracks_from_midi(const MidiTrack& midi_track,
     std::vector<StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.sp_on_events, event_track.sp_off_events)) {
-        sp_phrases.push_back({Tick {start}, Tick {end - start}});
+        sp_phrases.push_back(
+            {SightRead::Tick {start}, SightRead::Tick {end - start}});
     }
 
     std::map<Difficulty, NoteTrack> note_tracks;
@@ -1002,7 +1009,7 @@ MidiParser::MidiParser(const IniValues& ini)
     : m_song_name {ini.name}
     , m_artist {ini.artist}
     , m_charter {ini.charter}
-    , m_hopo_threshold {HopoThresholdType::Resolution, Tick {0}}
+    , m_hopo_threshold {HopoThresholdType::Resolution, SightRead::Tick {0}}
     , m_permitted_instruments {all_instruments()}
     , m_permit_solos {true}
 {

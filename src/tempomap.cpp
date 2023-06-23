@@ -21,7 +21,7 @@
 #include "tempomap.hpp"
 
 TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
-                   std::vector<Tick> od_beats, int resolution)
+                   std::vector<SightRead::Tick> od_beats, int resolution)
     : m_od_beats {std::move(od_beats)}
     , m_resolution {resolution}
 {
@@ -45,7 +45,7 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
     std::stable_sort(
         bpms.begin(), bpms.end(),
         [](const auto& x, const auto& y) { return x.position < y.position; });
-    BPM prev_bpm {Tick {0}, DEFAULT_BPM};
+    BPM prev_bpm {SightRead::Tick {0}, DEFAULT_BPM};
     for (auto p = bpms.cbegin(); p < bpms.cend(); ++p) {
         if (p->position != prev_bpm.position) {
             m_bpms.push_back(prev_bpm);
@@ -57,7 +57,7 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
     std::stable_sort(
         time_sigs.begin(), time_sigs.end(),
         [](const auto& x, const auto& y) { return x.position < y.position; });
-    TimeSignature prev_ts {Tick {0}, 4, 4};
+    TimeSignature prev_ts {SightRead::Tick {0}, 4, 4};
     for (auto p = time_sigs.cbegin(); p < time_sigs.cend(); ++p) {
         if (p->position != prev_ts.position) {
             m_time_sigs.push_back(prev_ts);
@@ -66,7 +66,7 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
     }
     m_time_sigs.push_back(prev_ts);
 
-    Tick last_tick {0};
+    SightRead::Tick last_tick {0};
     auto last_bpm = DEFAULT_BPM;
     auto last_time = 0.0;
 
@@ -74,14 +74,14 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
         last_time += to_beats(bpm.position - last_tick).value()
             * (MS_PER_MINUTE / static_cast<double>(last_bpm));
         const auto beat = to_beats(bpm.position);
-        m_beat_timestamps.push_back({beat, Second(last_time)});
+        m_beat_timestamps.push_back({beat, SightRead::Second(last_time)});
         last_bpm = bpm.bpm;
         last_tick = bpm.position;
     }
 
     m_last_bpm = last_bpm;
 
-    last_tick = Tick {0};
+    last_tick = SightRead::Tick {0};
     auto last_beat_rate = DEFAULT_BEAT_RATE;
     auto last_measure = 0.0;
 
@@ -89,7 +89,8 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
         last_measure += to_beats(ts.position - last_tick).value()
             / static_cast<double>(last_beat_rate);
         const auto beat = to_beats(ts.position);
-        m_measure_timestamps.push_back({Measure(last_measure), beat});
+        m_measure_timestamps.push_back(
+            {SightRead::Measure(last_measure), beat});
         last_beat_rate = (ts.numerator * DEFAULT_BEAT_RATE) / ts.denominator;
         last_tick = ts.position;
     }
@@ -100,10 +101,11 @@ TempoMap::TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
         for (auto i = 0U; i < m_od_beats.size(); ++i) {
             const auto beat = to_beats(m_od_beats[i]);
             m_od_beat_timestamps.push_back(
-                {OdBeat(i / DEFAULT_BEAT_RATE), beat});
+                {SightRead::OdBeat(i / DEFAULT_BEAT_RATE), beat});
         }
     } else {
-        m_od_beat_timestamps.push_back({OdBeat(0.0), Beat(0.0)});
+        m_od_beat_timestamps.push_back(
+            {SightRead::OdBeat(0.0), SightRead::Beat(0.0)});
     }
 
     m_last_od_beat_rate = DEFAULT_BEAT_RATE;
@@ -127,7 +129,7 @@ TempoMap TempoMap::speedup(int speed) const
     return speedup;
 }
 
-Beat TempoMap::to_beats(Measure measures) const
+SightRead::Beat TempoMap::to_beats(SightRead::Measure measures) const
 {
     const auto pos = std::lower_bound(
         m_measure_timestamps.cbegin(), m_measure_timestamps.cend(), measures,
@@ -145,7 +147,7 @@ Beat TempoMap::to_beats(Measure measures) const
         * ((measures - prev->measure) / (pos->measure - prev->measure));
 }
 
-Beat TempoMap::to_beats(OdBeat od_beats) const
+SightRead::Beat TempoMap::to_beats(SightRead::OdBeat od_beats) const
 {
     const auto pos = std::lower_bound(
         m_od_beat_timestamps.cbegin(), m_od_beat_timestamps.cend(), od_beats,
@@ -164,7 +166,7 @@ Beat TempoMap::to_beats(OdBeat od_beats) const
         * ((od_beats - prev->od_beat) / (pos->od_beat - prev->od_beat));
 }
 
-Beat TempoMap::to_beats(Second seconds) const
+SightRead::Beat TempoMap::to_beats(SightRead::Second seconds) const
 {
     const auto pos = std::lower_bound(
         m_beat_timestamps.cbegin(), m_beat_timestamps.cend(), seconds,
@@ -182,7 +184,7 @@ Beat TempoMap::to_beats(Second seconds) const
         * ((seconds - prev->time) / (pos->time - prev->time));
 }
 
-Measure TempoMap::to_measures(Beat beats) const
+SightRead::Measure TempoMap::to_measures(SightRead::Beat beats) const
 {
     const auto pos = std::lower_bound(
         m_measure_timestamps.cbegin(), m_measure_timestamps.cend(), beats,
@@ -200,12 +202,12 @@ Measure TempoMap::to_measures(Beat beats) const
         * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
-Measure TempoMap::to_measures(Second seconds) const
+SightRead::Measure TempoMap::to_measures(SightRead::Second seconds) const
 {
     return to_measures(to_beats(seconds));
 }
 
-OdBeat TempoMap::to_od_beats(Beat beats) const
+SightRead::OdBeat TempoMap::to_od_beats(SightRead::Beat beats) const
 {
     const auto pos = std::lower_bound(
         m_od_beat_timestamps.cbegin(), m_od_beat_timestamps.cend(), beats,
@@ -213,12 +215,13 @@ OdBeat TempoMap::to_od_beats(Beat beats) const
     if (pos == m_od_beat_timestamps.cend()) {
         const auto& back = m_od_beat_timestamps.back();
         return back.od_beat
-            + OdBeat(
+            + SightRead::OdBeat(
                    (beats - back.beat).to_measure(m_last_od_beat_rate).value());
     }
     if (pos == m_od_beat_timestamps.cbegin()) {
         return pos->od_beat
-            - OdBeat((pos->beat - beats).to_measure(DEFAULT_BEAT_RATE).value());
+            - SightRead::OdBeat(
+                   (pos->beat - beats).to_measure(DEFAULT_BEAT_RATE).value());
     }
     const auto prev = pos - 1;
     return prev->od_beat
@@ -226,7 +229,7 @@ OdBeat TempoMap::to_od_beats(Beat beats) const
         * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
-Second TempoMap::to_seconds(Beat beats) const
+SightRead::Second TempoMap::to_seconds(SightRead::Beat beats) const
 {
     const auto pos = std::lower_bound(
         m_beat_timestamps.cbegin(), m_beat_timestamps.cend(), beats,
@@ -244,17 +247,17 @@ Second TempoMap::to_seconds(Beat beats) const
         * ((beats - prev->beat) / (pos->beat - prev->beat));
 }
 
-Second TempoMap::to_seconds(Measure measures) const
+SightRead::Second TempoMap::to_seconds(SightRead::Measure measures) const
 {
     return to_seconds(to_beats(measures));
 }
 
-Second TempoMap::to_seconds(Tick ticks) const
+SightRead::Second TempoMap::to_seconds(SightRead::Tick ticks) const
 {
     return to_seconds(to_beats(ticks));
 }
 
-Tick TempoMap::to_ticks(Second seconds) const
+SightRead::Tick TempoMap::to_ticks(SightRead::Second seconds) const
 {
     return to_ticks(to_beats(seconds));
 }

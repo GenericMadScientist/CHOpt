@@ -27,6 +27,8 @@
 #include <tuple>
 #include <vector>
 
+#include <boost/test/unit_test.hpp>
+
 #include "chart.hpp"
 #include "imagebuilder.hpp"
 #include "midi.hpp"
@@ -70,26 +72,21 @@ inline std::ostream& operator<<(std::ostream& stream, ActValidity validity)
     return stream;
 }
 
-inline bool operator==(const Beat& lhs, const Beat& rhs)
+inline bool operator==(const SightRead::Beat& lhs, const SightRead::Beat& rhs)
 {
     return std::abs(lhs.value() - rhs.value()) < 0.01;
 }
 
-inline bool operator!=(const Beat& lhs, const Beat& rhs)
+inline bool operator!=(const SightRead::Beat& lhs, const SightRead::Beat& rhs)
 {
-    return !(lhs == rhs);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, Beat beat)
-{
-    stream << beat.value() << 'b';
-    return stream;
+    return std::abs(lhs.value() - rhs.value()) >= 0.01;
 }
 
 inline bool operator!=(const Activation& lhs, const Activation& rhs)
 {
-    return std::tie(lhs.act_start, lhs.act_end, lhs.sp_start, lhs.sp_end)
-        != std::tie(rhs.act_start, rhs.act_end, rhs.sp_start, rhs.sp_end);
+    return std::tie(lhs.act_start, lhs.act_end)
+        != std::tie(rhs.act_start, rhs.act_end)
+        || lhs.sp_start != rhs.sp_start || lhs.sp_end != rhs.sp_end;
 }
 
 inline std::ostream& operator<<(std::ostream& stream, const Activation& act)
@@ -97,12 +94,6 @@ inline std::ostream& operator<<(std::ostream& stream, const Activation& act)
     stream << "{Start " << &(*act.act_start) << ", End " << &(*act.act_end)
            << ", SPStart " << act.sp_start.value() << "b, SPEnd "
            << act.sp_end.value() << "b}";
-    return stream;
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const Tick& tick)
-{
-    stream << tick.value();
     return stream;
 }
 
@@ -222,15 +213,10 @@ inline std::ostream& operator<<(std::ostream& stream, Instrument instrument)
     return stream;
 }
 
-inline bool operator==(const Measure& lhs, const Measure& rhs)
+inline bool operator==(const SightRead::Measure& lhs,
+                       const SightRead::Measure& rhs)
 {
     return std::abs(lhs.value() - rhs.value()) < 0.000001;
-}
-
-inline std::ostream& operator<<(std::ostream& stream, Measure measure)
-{
-    stream << measure.value() << 'm';
-    return stream;
 }
 
 inline bool operator==(const MetaEvent& lhs, const MetaEvent& rhs)
@@ -265,7 +251,7 @@ inline std::ostream& operator<<(std::ostream& stream, const Note& note)
 {
     stream << "{Pos " << note.position << ", ";
     for (auto i = 0; i < 7; ++i) {
-        if (note.lengths[i] != Tick {-1}) {
+        if (note.lengths[i] != SightRead::Tick {-1}) {
             stream << "Colour " << i << " with Length " << note.lengths[i]
                    << ", ";
         }
@@ -293,15 +279,10 @@ inline std::ostream& operator<<(std::ostream& stream, PointPtr addr)
     return stream;
 }
 
-inline bool operator==(const Second& lhs, const Second& rhs)
+inline bool operator==(const SightRead::Second& lhs,
+                       const SightRead::Second& rhs)
 {
     return std::abs(lhs.value() - rhs.value()) < 0.01;
-}
-
-inline std::ostream& operator<<(std::ostream& stream, Second second)
-{
-    stream << second.value() << 's';
-    return stream;
 }
 
 inline bool operator!=(const Solo& lhs, const Solo& rhs)
@@ -355,8 +336,7 @@ inline std::ostream& operator<<(std::ostream& stream, SpMeasure measure)
 
 inline bool operator==(const SpPosition& lhs, const SpPosition& rhs)
 {
-    return std::tie(lhs.beat, lhs.sp_measure)
-        == std::tie(rhs.beat, rhs.sp_measure);
+    return lhs.beat == rhs.beat && lhs.sp_measure == rhs.sp_measure;
 }
 
 inline std::ostream& operator<<(std::ostream& stream,
@@ -452,9 +432,9 @@ inline Note make_note(int position, int length = 0,
                       FiveFretNotes colour = FIVE_FRET_GREEN)
 {
     Note note;
-    note.position = Tick {position};
+    note.position = SightRead::Tick {position};
     note.flags = FLAGS_FIVE_FRET_GUITAR;
-    note.lengths[colour] = Tick {length};
+    note.lengths[colour] = SightRead::Tick {length};
 
     return note;
 }
@@ -464,10 +444,10 @@ make_chord(int position,
            const std::vector<std::tuple<FiveFretNotes, int>>& lengths)
 {
     Note note;
-    note.position = Tick {position};
+    note.position = SightRead::Tick {position};
     note.flags = FLAGS_FIVE_FRET_GUITAR;
     for (auto& [lane, length] : lengths) {
-        note.lengths[lane] = Tick {length};
+        note.lengths[lane] = SightRead::Tick {length};
     }
 
     return note;
@@ -477,9 +457,9 @@ inline Note make_ghl_note(int position, int length = 0,
                           SixFretNotes colour = SIX_FRET_WHITE_LOW)
 {
     Note note;
-    note.position = Tick {position};
+    note.position = SightRead::Tick {position};
     note.flags = FLAGS_SIX_FRET_GUITAR;
-    note.lengths[colour] = Tick {length};
+    note.lengths[colour] = SightRead::Tick {length};
 
     return note;
 }
@@ -489,10 +469,10 @@ make_ghl_chord(int position,
                const std::vector<std::tuple<SixFretNotes, int>>& lengths)
 {
     Note note;
-    note.position = Tick {position};
+    note.position = SightRead::Tick {position};
     note.flags = FLAGS_SIX_FRET_GUITAR;
     for (auto& [lane, length] : lengths) {
-        note.lengths[lane] = Tick {length};
+        note.lengths[lane] = SightRead::Tick {length};
     }
 
     return note;
@@ -502,9 +482,9 @@ inline Note make_drum_note(int position, DrumNotes colour = DRUM_RED,
                            NoteFlags flags = FLAGS_NONE)
 {
     Note note;
-    note.position = Tick {position};
+    note.position = SightRead::Tick {position};
     note.flags = static_cast<NoteFlags>(flags | FLAGS_DRUMS);
-    note.lengths[colour] = Tick {0};
+    note.lengths[colour] = SightRead::Tick {0};
 
     return note;
 }

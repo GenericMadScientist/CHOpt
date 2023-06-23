@@ -66,7 +66,8 @@ BOOST_AUTO_TEST_CASE(tempos_are_read_correctly)
     MidiTrack tempo_track {{{0, {MetaEvent {0x51, {6, 0x1A, 0x80}}}},
                             {1920, {MetaEvent {0x51, {4, 0x93, 0xE0}}}}}};
     const Midi midi {192, {tempo_track}};
-    const std::vector<BPM> bpms {{Tick {0}, 150000}, {Tick {1920}, 200000}};
+    const std::vector<BPM> bpms {{SightRead::Tick {0}, 150000},
+                                 {SightRead::Tick {1920}, 200000}};
 
     const auto song = MidiParser({}).from_midi(midi);
     const auto& tempo_map = song.global_data().tempo_map();
@@ -90,8 +91,8 @@ BOOST_AUTO_TEST_CASE(time_signatures_are_read_correctly)
     MidiTrack ts_track {{{0, {MetaEvent {0x58, {6, 2, 24, 8}}}},
                          {1920, {MetaEvent {0x58, {3, 3, 24, 8}}}}}};
     const Midi midi {192, {ts_track}};
-    const std::vector<TimeSignature> tses {{Tick {0}, 6, 4},
-                                           {Tick {1920}, 3, 8}};
+    const std::vector<TimeSignature> tses {{SightRead::Tick {0}, 6, 4},
+                                           {SightRead::Tick {1920}, 3, 8}};
 
     const auto song = MidiParser({}).from_midi(midi);
     const auto& tempo_map = song.global_data().tempo_map();
@@ -248,7 +249,7 @@ BOOST_AUTO_TEST_CASE(corresponding_note_off_events_are_after_note_on_events)
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(notes.size(), 2);
-    BOOST_CHECK_EQUAL(notes[0].lengths[0], Tick {480});
+    BOOST_CHECK_EQUAL(notes[0].lengths[0], SightRead::Tick {480});
 }
 
 BOOST_AUTO_TEST_CASE(note_on_events_with_velocity_zero_count_as_note_off_events)
@@ -293,7 +294,7 @@ BOOST_AUTO_TEST_CASE(each_note_on_event_consumes_the_following_note_off_event)
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
     BOOST_CHECK_EQUAL(notes.size(), 2);
-    BOOST_CHECK_GT(notes[1].lengths[0], Tick {0});
+    BOOST_CHECK_GT(notes[1].lengths[0], SightRead::Tick {0});
 }
 
 BOOST_AUTO_TEST_CASE(note_off_events_can_be_zero_ticks_after_the_note_on_events)
@@ -365,7 +366,8 @@ BOOST_AUTO_TEST_CASE(solos_are_read_from_mids_correctly)
                            {960, {MidiEvent {0x80, {96, 0}}}},
                            {960, {MidiEvent {0x80, {97, 64}}}}}};
     const Midi midi {192, {note_track}};
-    const std::vector<Solo> solos {{Tick {768}, Tick {900}, 100}};
+    const std::vector<Solo> solos {
+        {SightRead::Tick {768}, SightRead::Tick {900}, 100}};
 
     const auto song = MidiParser({}).from_midi(midi);
     const auto parsed_solos
@@ -386,7 +388,8 @@ BOOST_AUTO_TEST_CASE(a_single_phrase_is_read)
                            {900, {MidiEvent {0x80, {116, 64}}}},
                            {960, {MidiEvent {0x80, {96, 0}}}}}};
     const Midi midi {192, {note_track}};
-    const std::vector<StarPower> sp_phrases {{Tick {768}, Tick {132}}};
+    const std::vector<StarPower> sp_phrases {
+        {SightRead::Tick {768}, SightRead::Tick {132}}};
 
     const auto song = MidiParser({}).from_midi(midi);
     const auto& parsed_sp
@@ -444,8 +447,8 @@ BOOST_AUTO_TEST_CASE(short_midi_sustains_are_not_trimmed)
     const auto& notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
-    BOOST_CHECK_EQUAL(notes[0].lengths[0], Tick {65});
-    BOOST_CHECK_EQUAL(notes[1].lengths[0], Tick {70});
+    BOOST_CHECK_EQUAL(notes[0].lengths[0], SightRead::Tick {65});
+    BOOST_CHECK_EQUAL(notes[1].lengths[0], SightRead::Tick {70});
 }
 
 BOOST_AUTO_TEST_SUITE(midi_hopos_and_taps)
@@ -638,10 +641,10 @@ BOOST_AUTO_TEST_CASE(custom_hopo_threshold_is_handled_correctly)
     }};
     const Midi midi {480, {note_track}};
 
-    const auto song
-        = MidiParser({})
-              .hopo_threshold({HopoThresholdType::HopoFrequency, Tick {240}})
-              .from_midi(midi);
+    const auto song = MidiParser({})
+                          .hopo_threshold({HopoThresholdType::HopoFrequency,
+                                           SightRead::Tick {240}})
+                          .from_midi(midi);
     const auto notes
         = song.track(Instrument::Guitar, Difficulty::Expert).notes();
 
@@ -828,7 +831,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_read_correctly_from_mid)
     const auto song = MidiParser({}).from_midi(midi);
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
-    std::vector<DrumFill> fills {{Tick {45}, Tick {30}}};
+    std::vector<DrumFill> fills {{SightRead::Tick {45}, SightRead::Tick {30}}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.drum_fills().cbegin(),
                                   track.drum_fills().cend(), fills.cbegin(),
@@ -853,7 +856,7 @@ BOOST_AUTO_TEST_CASE(disco_flips_are_read_correctly_from_mid)
     const auto song = MidiParser({}).from_midi(midi);
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
-    std::vector<DiscoFlip> flips {{Tick {15}, Tick {60}}};
+    std::vector<DiscoFlip> flips {{SightRead::Tick {15}, SightRead::Tick {60}}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.disco_flips().cbegin(),
                                   track.disco_flips().cend(), flips.cbegin(),
@@ -874,7 +877,8 @@ BOOST_AUTO_TEST_CASE(missing_disco_flip_end_event_just_ends_at_max_int)
     const auto song = MidiParser({}).from_midi(midi);
     const auto& track = song.track(Instrument::Drums, Difficulty::Expert);
 
-    std::vector<DiscoFlip> flips {{Tick {15}, Tick {2147483632}}};
+    std::vector<DiscoFlip> flips {
+        {SightRead::Tick {15}, SightRead::Tick {2147483632}}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(track.disco_flips().cbegin(),
                                   track.disco_flips().cend(), flips.cbegin(),

@@ -77,23 +77,24 @@ BOOST_AUTO_TEST_CASE(difficulties_returns_the_difficulties_for_an_instrument)
 
 BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
 {
-    NoteTrack guitar_track {
-        {make_note(768), make_note(1024)},
-        {{Tick {768}, Tick {100}}, {Tick {1024}, Tick {100}}},
-        TrackType::FiveFret,
-        std::make_shared<SongGlobalData>()};
+    NoteTrack guitar_track {{make_note(768), make_note(1024)},
+                            {{SightRead::Tick {768}, SightRead::Tick {100}},
+                             {SightRead::Tick {1024}, SightRead::Tick {100}}},
+                            TrackType::FiveFret,
+                            std::make_shared<SongGlobalData>()};
     // Note the first phrase has a different length than the other instruments.
     // It should still be a unison phrase: this happens in Roundabout, with the
     // key phrases being a slightly different length.
     NoteTrack bass_track {{make_note(768), make_note(2048)},
-                          {{Tick {768}, Tick {99}}, {Tick {2048}, Tick {100}}},
+                          {{SightRead::Tick {768}, SightRead::Tick {99}},
+                           {SightRead::Tick {2048}, SightRead::Tick {100}}},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     // The 768 phrase is absent for drums: this is to test that unison bonuses
     // can apply when at least 2 instruments have the phrase. This happens with
     // the first phrase on RB3 Last Dance guitar, the phrase is missing on bass.
     NoteTrack drum_track {{make_drum_note(768), make_drum_note(4096)},
-                          {{Tick {4096}, Tick {100}}},
+                          {{SightRead::Tick {4096}, SightRead::Tick {100}}},
                           TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     Song song;
@@ -101,12 +102,11 @@ BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
     song.add_note_track(Instrument::Bass, Difficulty::Expert, bass_track);
     song.add_note_track(Instrument::Drums, Difficulty::Expert, drum_track);
 
-    const std::vector<Tick> expected_unison_phrases {Tick {768}};
-    const std::vector<Tick> unison_phrases = song.unison_phrase_positions();
+    const std::vector<SightRead::Tick> unison_phrases
+        = song.unison_phrase_positions();
 
-    BOOST_CHECK_EQUAL_COLLECTIONS(
-        unison_phrases.cbegin(), unison_phrases.cend(),
-        expected_unison_phrases.cbegin(), expected_unison_phrases.cend());
+    BOOST_CHECK_EQUAL(unison_phrases.size(), 1);
+    BOOST_CHECK_EQUAL(unison_phrases[0], SightRead::Tick {768});
 }
 
 BOOST_AUTO_TEST_SUITE(speedup)

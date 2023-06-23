@@ -45,7 +45,7 @@ public:
     virtual bool merge_uneven_sustains() const = 0;
     virtual bool overlaps() const = 0;
     virtual bool round_tick_gap() const = 0;
-    virtual Tick snap_gap() const = 0;
+    virtual SightRead::Tick snap_gap() const = 0;
     virtual SpMode sp_mode() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
@@ -80,7 +80,7 @@ public:
     bool merge_uneven_sustains() const override { return false; }
     bool overlaps() const override { return true; }
     bool round_tick_gap() const override { return true; }
-    Tick snap_gap() const override { return Tick {0}; }
+    SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; }
     double sp_gain_rate() const override { return 1 / 30.0; }
     SpMode sp_mode() const override { return SpMode::Measure; }
     int sust_points_per_beat() const override { return 25; }
@@ -165,7 +165,7 @@ public:
     bool merge_uneven_sustains() const override { return true; }
     bool overlaps() const override { return false; }
     bool round_tick_gap() const override { return false; }
-    Tick snap_gap() const override { return Tick {2}; }
+    SightRead::Tick snap_gap() const override { return SightRead::Tick {2}; }
     double sp_gain_rate() const override { return 0.034; }
     SpMode sp_mode() const override { return SpMode::Measure; }
     int sust_points_per_beat() const override { return 25; }
@@ -202,7 +202,7 @@ public:
     bool merge_uneven_sustains() const override { return true; }
     bool overlaps() const override { return true; }
     bool round_tick_gap() const override { return false; }
-    Tick snap_gap() const override { return Tick {2}; }
+    SightRead::Tick snap_gap() const override { return SightRead::Tick {2}; }
     double sp_gain_rate() const override { return 0.034; }
     SpMode sp_mode() const override { return SpMode::OdBeat; }
     int sust_points_per_beat() const override { return 12; }

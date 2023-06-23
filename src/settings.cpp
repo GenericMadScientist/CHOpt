@@ -244,9 +244,9 @@ std::optional<Settings> from_args(int argc, char** argv)
     settings.squeeze_settings.squeeze = squeeze / 100.0;
     settings.squeeze_settings.early_whammy = early_whammy / 100.0;
     settings.squeeze_settings.lazy_whammy
-        = Second {lazy_whammy / MS_PER_SECOND};
+        = SightRead::Second {lazy_whammy / MS_PER_SECOND};
     settings.squeeze_settings.whammy_delay
-        = Second {whammy_delay / MS_PER_SECOND};
+        = SightRead::Second {whammy_delay / MS_PER_SECOND};
 
     const auto video_lag = vm["video-lag"].as<int>();
     if (video_lag < -MAX_VIDEO_LAG || video_lag > MAX_VIDEO_LAG) {
@@ -254,7 +254,8 @@ std::optional<Settings> from_args(int argc, char** argv)
             "Video lag setting unsupported by Clone Hero");
     }
 
-    settings.squeeze_settings.video_lag = Second {video_lag / MS_PER_SECOND};
+    settings.squeeze_settings.video_lag
+        = SightRead::Second {video_lag / MS_PER_SECOND};
 
     const auto precision_mode = vm.count("precision-mode") != 0;
     const auto engine_name = vm["engine"].as<std::string>();

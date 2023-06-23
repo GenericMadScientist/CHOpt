@@ -38,7 +38,7 @@ TempoMap tempo_map_from_section(const ChartSection& section, int resolution)
     std::vector<BPM> bpms;
     bpms.reserve(section.bpm_events.size());
     for (const auto& bpm : section.bpm_events) {
-        bpms.push_back({Tick {bpm.position}, bpm.bpm});
+        bpms.push_back({SightRead::Tick {bpm.position}, bpm.bpm});
     }
     std::vector<TimeSignature> tses;
     for (const auto& ts : section.ts_events) {
@@ -46,7 +46,8 @@ TempoMap tempo_map_from_section(const ChartSection& section, int resolution)
             >= (CHAR_BIT * sizeof(int))) {
             throw ParseError("Invalid Time Signature denominator");
         }
-        tses.push_back({Tick {ts.position}, ts.numerator, 1 << ts.denominator});
+        tses.push_back(
+            {SightRead::Tick {ts.position}, ts.numerator, 1 << ts.denominator});
     }
     return {std::move(tses), std::move(bpms), {}, resolution};
 }
@@ -99,8 +100,8 @@ note_from_colour_key_map(const std::map<int, int>& colour_map, int position,
         return std::nullopt;
     }
     Note note;
-    note.position = Tick {position};
-    note.lengths.at(colour_iter->second) = Tick {length};
+    note.position = SightRead::Tick {position};
+    note.lengths.at(colour_iter->second) = SightRead::Tick {length};
     note.flags = flags;
     return note;
 }
@@ -148,9 +149,9 @@ add_fifth_lane_greens(std::vector<Note> notes,
 {
     constexpr int FIVE_LANE_GREEN = 5;
 
-    std::set<Tick> green_positions;
+    std::set<SightRead::Tick> green_positions;
     for (const auto& note : notes) {
-        if (note.lengths[3] != Tick {-1}) {
+        if (note.lengths[3] != SightRead::Tick {-1}) {
             green_positions.insert(note.position);
         }
     }
@@ -159,12 +160,12 @@ add_fifth_lane_greens(std::vector<Note> notes,
             continue;
         }
         Note note;
-        note.position = Tick {note_event.position};
+        note.position = SightRead::Tick {note_event.position};
         note.flags = FLAGS_DRUMS;
-        if (green_positions.contains(Tick {note_event.position})) {
-            note.lengths[DRUM_BLUE] = Tick {0};
+        if (green_positions.contains(SightRead::Tick {note_event.position})) {
+            note.lengths[DRUM_BLUE] = SightRead::Tick {0};
         } else {
-            note.lengths[DRUM_GREEN] = Tick {0};
+            note.lengths[DRUM_GREEN] = SightRead::Tick {0};
         }
         notes.push_back(note);
     }
@@ -210,16 +211,16 @@ std::vector<Note> apply_cymbal_events(const std::vector<Note>& notes)
 
 int no_dynamics_lane_colour(const Note& note)
 {
-    if (note.lengths[DRUM_RED] != Tick {-1}) {
+    if (note.lengths[DRUM_RED] != SightRead::Tick {-1}) {
         return 0;
     }
-    if (note.lengths[DRUM_YELLOW] != Tick {-1}) {
+    if (note.lengths[DRUM_YELLOW] != SightRead::Tick {-1}) {
         return 1;
     }
-    if (note.lengths[DRUM_BLUE] != Tick {-1}) {
+    if (note.lengths[DRUM_BLUE] != SightRead::Tick {-1}) {
         return 2;
     }
-    if (note.lengths[DRUM_GREEN] != Tick {-1}) {
+    if (note.lengths[DRUM_GREEN] != SightRead::Tick {-1}) {
         return 3;
     }
     return -1;
@@ -233,19 +234,19 @@ apply_dynamics_events(std::vector<Note> notes,
     constexpr int ACCENT_BASE = 40;
     constexpr int LANE_COUNT = 4;
 
-    std::set<std::tuple<Tick, int>> accent_events;
-    std::set<std::tuple<Tick, int>> ghost_events;
+    std::set<std::tuple<SightRead::Tick, int>> accent_events;
+    std::set<std::tuple<SightRead::Tick, int>> ghost_events;
 
     for (const auto& event : note_events) {
         if (event.fret > ACCENT_BASE + LANE_COUNT || event.fret < GHOST_BASE) {
             continue;
         }
         if (event.fret < GHOST_BASE + LANE_COUNT) {
-            accent_events.emplace(Tick {event.position},
+            accent_events.emplace(SightRead::Tick {event.position},
                                   event.fret - GHOST_BASE);
         }
         if (event.fret >= ACCENT_BASE) {
-            ghost_events.emplace(Tick {event.position},
+            ghost_events.emplace(SightRead::Tick {event.position},
                                  event.fret - ACCENT_BASE);
         }
     }
@@ -332,7 +333,7 @@ std::vector<Note> apply_drum_events(std::vector<Note> notes,
 NoteTrack note_track_from_section(const ChartSection& section,
                                   std::shared_ptr<SongGlobalData> global_data,
                                   TrackType track_type, bool permit_solos,
-                                  Tick max_hopo_gap)
+                                  SightRead::Tick max_hopo_gap)
 {
     constexpr int DISCO_FLIP_START_SIZE = 13;
     constexpr int DISCO_FLIP_END_SIZE = 12;
@@ -360,11 +361,11 @@ NoteTrack note_track_from_section(const ChartSection& section,
     std::vector<StarPower> sp;
     for (const auto& phrase : section.special_events) {
         if (phrase.key == 2) {
-            sp.push_back(
-                StarPower {Tick {phrase.position}, Tick {phrase.length}});
+            sp.push_back(StarPower {SightRead::Tick {phrase.position},
+                                    SightRead::Tick {phrase.length}});
         } else if (phrase.key == DRUM_FILL_KEY) {
-            fills.push_back(
-                DrumFill {Tick {phrase.position}, Tick {phrase.length}});
+            fills.push_back(DrumFill {SightRead::Tick {phrase.position},
+                                      SightRead::Tick {phrase.length}});
         }
     }
     if (track_type != TrackType::Drums) {
@@ -444,7 +445,7 @@ ChartParser::ChartParser(const IniValues& ini)
     : m_song_name {ini.name}
     , m_artist {ini.artist}
     , m_charter {ini.charter}
-    , m_hopo_threshold {HopoThresholdType::Resolution, Tick {0}}
+    , m_hopo_threshold {HopoThresholdType::Resolution, SightRead::Tick {0}}
     , m_permitted_instruments {all_instruments()}
     , m_permit_solos {true}
 {

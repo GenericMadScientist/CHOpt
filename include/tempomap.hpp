@@ -34,13 +34,13 @@ public:
 };
 
 struct TimeSignature {
-    Tick position;
+    SightRead::Tick position;
     int numerator;
     int denominator;
 };
 
 struct BPM {
-    Tick position;
+    SightRead::Tick position;
     // Larger int type is needed to handle speedups.
     std::int64_t bpm;
 };
@@ -55,18 +55,18 @@ struct BPM {
 class TempoMap {
 private:
     struct BeatTimestamp {
-        Beat beat;
-        Second time;
+        SightRead::Beat beat;
+        SightRead::Second time;
     };
 
     struct MeasureTimestamp {
-        Measure measure;
-        Beat beat;
+        SightRead::Measure measure;
+        SightRead::Beat beat;
     };
 
     struct OdBeatTimestamp {
-        OdBeat od_beat;
-        Beat beat;
+        SightRead::OdBeat od_beat;
+        SightRead::Beat beat;
     };
 
     static constexpr double DEFAULT_BEAT_RATE = 4.0;
@@ -75,7 +75,7 @@ private:
 
     std::vector<TimeSignature> m_time_sigs;
     std::vector<BPM> m_bpms;
-    std::vector<Tick> m_od_beats;
+    std::vector<SightRead::Tick> m_od_beats;
     int m_resolution;
 
     std::vector<BeatTimestamp> m_beat_timestamps;
@@ -93,7 +93,7 @@ public:
     {
     }
     TempoMap(std::vector<TimeSignature> time_sigs, std::vector<BPM> bpms,
-             std::vector<Tick> od_beats, int resolution);
+             std::vector<SightRead::Tick> od_beats, int resolution);
     [[nodiscard]] const std::vector<TimeSignature>& time_sigs() const
     {
         return m_time_sigs;
@@ -103,28 +103,31 @@ public:
     // Return the TempoMap for a speedup of speed% (normal speed is 100).
     [[nodiscard]] TempoMap speedup(int speed) const;
 
-    [[nodiscard]] Beat to_beats(Measure measures) const;
-    [[nodiscard]] Beat to_beats(OdBeat od_beats) const;
-    [[nodiscard]] Beat to_beats(Second seconds) const;
-    [[nodiscard]] Beat to_beats(Tick ticks) const
+    [[nodiscard]] SightRead::Beat to_beats(SightRead::Measure measures) const;
+    [[nodiscard]] SightRead::Beat to_beats(SightRead::OdBeat od_beats) const;
+    [[nodiscard]] SightRead::Beat to_beats(SightRead::Second seconds) const;
+    [[nodiscard]] SightRead::Beat to_beats(SightRead::Tick ticks) const
     {
-        return Beat {ticks.value() / static_cast<double>(m_resolution)};
+        return SightRead::Beat {ticks.value()
+                                / static_cast<double>(m_resolution)};
     }
 
-    [[nodiscard]] Measure to_measures(Beat beats) const;
-    [[nodiscard]] Measure to_measures(Second seconds) const;
+    [[nodiscard]] SightRead::Measure to_measures(SightRead::Beat beats) const;
+    [[nodiscard]] SightRead::Measure
+    to_measures(SightRead::Second seconds) const;
 
-    [[nodiscard]] OdBeat to_od_beats(Beat beats) const;
+    [[nodiscard]] SightRead::OdBeat to_od_beats(SightRead::Beat beats) const;
 
-    [[nodiscard]] Second to_seconds(Beat beats) const;
-    [[nodiscard]] Second to_seconds(Measure measures) const;
-    [[nodiscard]] Second to_seconds(Tick ticks) const;
+    [[nodiscard]] SightRead::Second to_seconds(SightRead::Beat beats) const;
+    [[nodiscard]] SightRead::Second
+    to_seconds(SightRead::Measure measures) const;
+    [[nodiscard]] SightRead::Second to_seconds(SightRead::Tick ticks) const;
 
-    [[nodiscard]] Tick to_ticks(Beat beats) const
+    [[nodiscard]] SightRead::Tick to_ticks(SightRead::Beat beats) const
     {
-        return Tick {static_cast<int>(beats.value() * m_resolution)};
+        return SightRead::Tick {static_cast<int>(beats.value() * m_resolution)};
     }
-    [[nodiscard]] Tick to_ticks(Second seconds) const;
+    [[nodiscard]] SightRead::Tick to_ticks(SightRead::Second seconds) const;
 };
 
 #endif

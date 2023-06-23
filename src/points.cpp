@@ -27,7 +27,7 @@
 #include "points.hpp"
 
 namespace {
-bool phrase_contains_pos(const StarPower& phrase, Tick position)
+bool phrase_contains_pos(const StarPower& phrase, SightRead::Tick position)
 {
     if (position < phrase.position) {
         return false;
@@ -46,9 +46,10 @@ double song_tick_gap(int resolution, const Engine& engine)
 }
 
 template <typename OutputIt>
-void append_sustain_points(OutputIt points, Tick position, Tick sust_length,
-                           int resolution, int chord_size,
-                           const SpTimeMap& time_map, const Engine& engine)
+void append_sustain_points(OutputIt points, SightRead::Tick position,
+                           SightRead::Tick sust_length, int resolution,
+                           int chord_size, const SpTimeMap& time_map,
+                           const Engine& engine)
 {
     constexpr double HALF_RES_OFFSET = 0.5;
 
@@ -75,14 +76,14 @@ void append_sustain_points(OutputIt points, Tick position, Tick sust_length,
            && sust_ticks > 0) {
         float_pos += tick_gap;
         float_sust_len -= tick_gap;
-        const Beat beat {(float_pos - HALF_RES_OFFSET) / float_res};
+        const SightRead::Beat beat {(float_pos - HALF_RES_OFFSET) / float_res};
         const auto meas = time_map.to_sp_measures(beat);
         --sust_ticks;
         *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, {}, 1, 1,
                      true,         false,        false};
     }
     if (sust_ticks > 0) {
-        const Beat beat {(float_pos + HALF_RES_OFFSET) / float_res};
+        const SightRead::Beat beat {(float_pos + HALF_RES_OFFSET) / float_res};
         const auto meas = time_map.to_sp_measures(beat);
         *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, {},   sust_ticks,
                      sust_ticks,   true,         false,        false};
@@ -97,7 +98,7 @@ int get_chord_size(const Note& note,
     }
     int note_count = 0;
     for (auto length : note.lengths) {
-        if (length != Tick {-1}) {
+        if (length != SightRead::Tick {-1}) {
             ++note_count;
         }
     }
@@ -142,10 +143,10 @@ void append_note_points(std::vector<Note>::const_iterator note,
         late_gap = (next_note_seconds - note_seconds).value();
     }
 
-    const Second early_window {engine.early_timing_window(early_gap, late_gap)
-                               * squeeze};
-    const Second late_window {engine.late_timing_window(early_gap, late_gap)
-                              * squeeze};
+    const SightRead::Second early_window {
+        engine.early_timing_window(early_gap, late_gap) * squeeze};
+    const SightRead::Second late_window {
+        engine.late_timing_window(early_gap, late_gap) * squeeze};
 
     const auto early_beat = time_map.to_beats(note_seconds - early_window);
     const auto early_meas = time_map.to_sp_measures(early_beat);
@@ -156,10 +157,10 @@ void append_note_points(std::vector<Note>::const_iterator note,
            {},           note_value * chord_size,  note_value * chord_size,
            false,        is_note_sp_ender,         is_unison_sp_ender};
 
-    Tick min_length {std::numeric_limits<int>::max()};
-    Tick max_length {0};
+    SightRead::Tick min_length {std::numeric_limits<int>::max()};
+    SightRead::Tick max_length {0};
     for (auto length : note->lengths) {
-        if (length == Tick {-1}) {
+        if (length == SightRead::Tick {-1}) {
             continue;
         }
         min_length = std::min(length, min_length);
@@ -171,7 +172,7 @@ void append_note_points(std::vector<Note>::const_iterator note,
                               time_map, engine);
     } else {
         for (auto length : note->lengths) {
-            if (length != Tick {-1}) {
+            if (length != SightRead::Tick {-1}) {
                 append_sustain_points(points, pos, length, resolution,
                                       chord_size, time_map, engine);
             }
@@ -180,7 +181,7 @@ void append_note_points(std::vector<Note>::const_iterator note,
 }
 
 std::vector<Point>::iterator closest_point(std::vector<Point>& points,
-                                           Beat fill_end)
+                                           SightRead::Beat fill_end)
 {
     assert(!points.empty()); // NOLINT
     auto nearest = points.begin();
@@ -215,7 +216,8 @@ void add_drum_activation_points(const NoteTrack& track,
 }
 
 void shift_points_by_video_lag(std::vector<Point>& points,
-                               const SpTimeMap& time_map, Second video_lag)
+                               const SpTimeMap& time_map,
+                               SightRead::Second video_lag)
 {
     const auto add_video_lag = [&](auto& position) {
         auto seconds = time_map.to_seconds(position.beat);
@@ -296,7 +298,7 @@ void apply_multiplier(std::vector<Point>& points, const Engine& engine)
 
 std::vector<Point>
 unmultiplied_points(const NoteTrack& track, const SpTimeMap& time_map,
-                    const std::vector<Tick>& unison_phrases,
+                    const std::vector<SightRead::Tick>& unison_phrases,
                     const SqueezeSettings& squeeze_settings,
                     const SightRead::DrumSettings& drum_settings,
                     const Engine& engine)
@@ -356,11 +358,10 @@ unmultiplied_points(const NoteTrack& track, const SpTimeMap& time_map,
     return points;
 }
 
-std::vector<Point> non_drum_points(const NoteTrack& track,
-                                   const SpTimeMap& time_map,
-                                   const std::vector<Tick>& unison_phrases,
-                                   const SqueezeSettings& squeeze_settings,
-                                   const Engine& engine)
+std::vector<Point>
+non_drum_points(const NoteTrack& track, const SpTimeMap& time_map,
+                const std::vector<SightRead::Tick>& unison_phrases,
+                const SqueezeSettings& squeeze_settings, const Engine& engine)
 {
     auto points = unmultiplied_points(
         track, time_map, unison_phrases, squeeze_settings,
@@ -378,7 +379,7 @@ std::string colours_string(const Note& note)
         const std::array<std::string, 6> COLOUR_NAMES {"G", "R", "Y",
                                                        "B", "O", "open"};
         for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
-            if (note.lengths.at(i) != Tick {-1}) {
+            if (note.lengths.at(i) != SightRead::Tick {-1}) {
                 colours += COLOUR_NAMES.at(i);
             }
         }
@@ -388,7 +389,7 @@ std::string colours_string(const Note& note)
         const std::array<std::string, 7> COLOUR_NAMES {"W1", "W2", "W3",  "B1",
                                                        "B2", "B3", "open"};
         for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
-            if (note.lengths.at(i) != Tick {-1}) {
+            if (note.lengths.at(i) != SightRead::Tick {-1}) {
                 colours += COLOUR_NAMES.at(i);
             }
         }
@@ -397,7 +398,7 @@ std::string colours_string(const Note& note)
         const std::array<std::string, 6> COLOUR_NAMES {"R", "Y",    "B",
                                                        "G", "kick", "kick"};
         for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
-            if (note.lengths.at(i) != Tick {-1}) {
+            if (note.lengths.at(i) != SightRead::Tick {-1}) {
                 colours += COLOUR_NAMES.at(i);
             }
         }
@@ -428,8 +429,8 @@ first_after_current_sp_vector(const std::vector<Point>& points,
                   return tempo_map.to_beats(sp.position + sp.length)
                       > p->position.beat;
               });
-        Beat sp_start {std::numeric_limits<double>::infinity()};
-        Beat sp_end {std::numeric_limits<double>::infinity()};
+        SightRead::Beat sp_start {std::numeric_limits<double>::infinity()};
+        SightRead::Beat sp_end {std::numeric_limits<double>::infinity()};
         if (current_sp != track.sp_phrases().cend()) {
             sp_start = tempo_map.to_beats(current_sp->position);
             sp_end
@@ -469,7 +470,7 @@ std::vector<std::string> note_colours(const std::vector<Note>& notes,
 
 std::vector<Point>
 points_from_track(const NoteTrack& track, const SpTimeMap& time_map,
-                  const std::vector<Tick>& unison_phrases,
+                  const std::vector<SightRead::Tick>& unison_phrases,
                   const SqueezeSettings& squeeze_settings,
                   const SightRead::DrumSettings& drum_settings,
                   const Engine& engine)
@@ -528,7 +529,7 @@ solo_boosts_from_solos(const std::vector<Solo>& solos,
 }
 
 PointSet::PointSet(const NoteTrack& track, const SpTimeMap& time_map,
-                   const std::vector<Tick>& unison_phrases,
+                   const std::vector<SightRead::Tick>& unison_phrases,
                    const SqueezeSettings& squeeze_settings,
                    const SightRead::DrumSettings& drum_settings,
                    const Engine& engine)

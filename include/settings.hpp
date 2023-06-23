@@ -38,13 +38,14 @@ std::unique_ptr<Engine> game_to_engine(Game game, Instrument instrument,
 struct SqueezeSettings {
     double squeeze;
     double early_whammy;
-    Second lazy_whammy {0.0};
-    Second video_lag {0.0};
-    Second whammy_delay {0.0};
+    SightRead::Second lazy_whammy {0.0};
+    SightRead::Second video_lag {0.0};
+    SightRead::Second whammy_delay {0.0};
 
     static SqueezeSettings default_settings()
     {
-        return {1.0, 1.0, Second(0.0), Second(0.0), Second(0.0)};
+        return {1.0, 1.0, SightRead::Second(0.0), SightRead::Second(0.0),
+                SightRead::Second(0.0)};
     }
 };
 

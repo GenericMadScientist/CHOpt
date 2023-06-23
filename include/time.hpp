@@ -1,27 +1,11 @@
-/*
- * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2023 Raymond Wright
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
-#ifndef CHOPT_TIME_HPP
-#define CHOPT_TIME_HPP
+#ifndef SIGHTREAD_TIME_HPP
+#define SIGHTREAD_TIME_HPP
 
 #include <compare>
 #include <cstdint>
+#include <ostream>
 
+namespace SightRead {
 class Measure;
 class Second;
 
@@ -37,6 +21,7 @@ public:
     [[nodiscard]] int value() const { return m_value; }
 
     std::strong_ordering operator<=>(const Tick&) const = default;
+    bool operator==(const Tick&) const = default;
 
     Tick& operator+=(const Tick& rhs)
     {
@@ -58,6 +43,12 @@ public:
     {
         lhs -= rhs;
         return lhs;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Tick& tick)
+    {
+        os << tick.value() << " ticks";
+        return os;
     }
 };
 
@@ -118,6 +109,12 @@ public:
     friend double operator/(const Beat& lhs, const Beat& rhs)
     {
         return lhs.m_value / rhs.m_value;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Beat& beats)
+    {
+        os << beats.value() << 'b';
+        return os;
     }
 };
 
@@ -180,6 +177,12 @@ public:
     friend double operator/(const Measure& lhs, const Measure& rhs)
     {
         return lhs.m_value / rhs.m_value;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Measure& measures)
+    {
+        os << measures.value() << 'm';
+        return os;
     }
 };
 
@@ -306,6 +309,12 @@ public:
     {
         return lhs.m_value / rhs.m_value;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const Second& seconds)
+    {
+        os << seconds.value() << 's';
+        return os;
+    }
 };
 
 inline Measure Beat::to_measure(double beat_rate) const
@@ -317,6 +326,7 @@ inline Second Beat::to_second(std::int64_t bpm) const
 {
     constexpr double MS_PER_MINUTE = 60000.0;
     return Second(m_value * MS_PER_MINUTE / bpm);
+}
 }
 
 #endif

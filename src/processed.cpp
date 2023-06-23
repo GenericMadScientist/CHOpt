@@ -61,8 +61,8 @@ ProcessedSong::ProcessedSong(const NoteTrack& track, SpTimeMap time_map,
                              const SqueezeSettings& squeeze_settings,
                              const SightRead::DrumSettings& drum_settings,
                              const Engine& engine,
-                             const std::vector<Tick>& od_beats,
-                             const std::vector<Tick>& unison_phrases)
+                             const std::vector<SightRead::Tick>& od_beats,
+                             const std::vector<SightRead::Tick>& unison_phrases)
     : m_time_map {std::move(time_map)}
     , m_points {track,         m_time_map, unison_phrases, squeeze_settings,
                 drum_settings, engine}
@@ -79,9 +79,9 @@ ProcessedSong::ProcessedSong(const NoteTrack& track, SpTimeMap time_map,
         [](const auto x, const auto& y) { return x + y.value; });
 }
 
-SpBar ProcessedSong::total_available_sp(Beat start, PointPtr first_point,
-                                        PointPtr act_start,
-                                        Beat required_whammy_end) const
+SpBar ProcessedSong::total_available_sp(
+    SightRead::Beat start, PointPtr first_point, PointPtr act_start,
+    SightRead::Beat required_whammy_end) const
 {
     auto sp_bar = sp_from_phrases(first_point, act_start);
 
@@ -108,10 +108,10 @@ SpBar ProcessedSong::total_available_sp(Beat start, PointPtr first_point,
 
 std::tuple<SpBar, SpPosition>
 ProcessedSong::total_available_sp_with_earliest_pos(
-    Beat start, PointPtr first_point, PointPtr act_start,
+    SightRead::Beat start, PointPtr first_point, PointPtr act_start,
     SpPosition earliest_potential_pos) const
 {
-    const Beat BEAT_EPSILON {0.0001};
+    const SightRead::Beat BEAT_EPSILON {0.0001};
 
     auto sp_bar = sp_from_phrases(first_point, act_start);
 
@@ -230,7 +230,7 @@ public:
                           SpPosition required_whammy_end)
     {
         if (!m_overlap_engine) {
-            required_whammy_end = {Beat {0.0}, SpMeasure {0.0}};
+            required_whammy_end = {SightRead::Beat {0.0}, SpMeasure {0.0}};
         }
         m_sp = sp_data.propagate_sp_over_whammy_min(m_position, sp_note_start,
                                                     m_sp, required_whammy_end);
@@ -270,7 +270,7 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
 {
     static constexpr double MEASURES_PER_BAR = 8.0;
     static constexpr double MINIMUM_SP_AMOUNT = 0.5;
-    const SpPosition null_position {Beat(0.0), SpMeasure(0.0)};
+    const SpPosition null_position {SightRead::Beat(0.0), SpMeasure(0.0)};
 
     if (!activation.sp_bar.full_enough_to_activate()) {
         return {null_position, ActValidity::insufficient_sp};
@@ -464,10 +464,10 @@ ProcessedSong::drum_act_summaries(const Path& path) const
         const auto early_fill_point
             = m_time_map.to_seconds(
                   std::prev(start_point)->hit_window_start.beat)
-            + Second(2.0);
+            + SightRead::Second(2.0);
         const auto late_fill_point
             = m_time_map.to_seconds(std::prev(start_point)->hit_window_end.beat)
-            + Second(2.0);
+            + SightRead::Second(2.0);
         const auto skipped_fills
             = std::count_if(start_point, act.act_start, [&](const auto& p) {
                   return p.fill_start.has_value()

@@ -47,9 +47,9 @@ std::vector<int> set_base_values(const PointSet& points)
     return base_values;
 }
 
-std::vector<Beat> set_position_beats(const PointSet& points)
+std::vector<SightRead::Beat> set_position_beats(const PointSet& points)
 {
-    std::vector<Beat> values;
+    std::vector<SightRead::Beat> values;
     values.reserve(static_cast<std::size_t>(
         std::distance(points.cbegin(), points.cend())));
     for (auto p = points.cbegin(); p < points.cend(); ++p) {
@@ -139,7 +139,8 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
                            SightRead::DrumSettings::default_settings(),
                            ChGuitarEngine()};
     std::vector<int> first_expected_values {50, 3};
-    std::vector<Beat> first_expected_beats {Beat(4.0), Beat(4.0026)};
+    std::vector<SightRead::Beat> first_expected_beats {SightRead::Beat(4.0),
+                                                       SightRead::Beat(4.0026)};
     NoteTrack second_track {
         {make_note(768, 15)}, {}, TrackType::FiveFret, make_resolution(200)};
     PointSet second_points {
@@ -150,25 +151,31 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
         SightRead::DrumSettings::default_settings(),
         ChGuitarEngine()};
     std::vector<int> second_expected_values {50, 2};
-    std::vector<Beat> second_expected_beats {Beat(3.84), Beat(3.8425)};
+    std::vector<SightRead::Beat> second_expected_beats {
+        SightRead::Beat(3.84), SightRead::Beat(3.8425)};
 
     std::vector<int> first_values = set_values(first_points);
-    std::vector<Beat> first_beats = set_position_beats(first_points);
+    std::vector<SightRead::Beat> first_beats = set_position_beats(first_points);
     std::vector<int> second_values = set_values(second_points);
-    std::vector<Beat> second_beats = set_position_beats(second_points);
+    std::vector<SightRead::Beat> second_beats
+        = set_position_beats(second_points);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(first_values.cbegin(), first_values.cend(),
                                   first_expected_values.cbegin(),
                                   first_expected_values.cend());
-    BOOST_CHECK_EQUAL_COLLECTIONS(first_beats.cbegin(), first_beats.cend(),
-                                  first_expected_beats.cbegin(),
-                                  first_expected_beats.cend());
+    BOOST_CHECK_EQUAL(first_beats.size(), first_expected_beats.size());
+    for (auto i = 0U; i < first_beats.size(); ++i) {
+        BOOST_CHECK_CLOSE(first_beats[i].value(),
+                          first_expected_beats[i].value(), 0.0001);
+    }
     BOOST_CHECK_EQUAL_COLLECTIONS(second_values.cbegin(), second_values.cend(),
                                   second_expected_values.cbegin(),
                                   second_expected_values.cend());
-    BOOST_CHECK_EQUAL_COLLECTIONS(second_beats.cbegin(), second_beats.cend(),
-                                  second_expected_beats.cbegin(),
-                                  second_expected_beats.cend());
+    BOOST_CHECK_EQUAL(second_beats.size(), second_expected_beats.size());
+    for (auto i = 0U; i < second_beats.size(); ++i) {
+        BOOST_CHECK_CLOSE(second_beats[i].value(),
+                          second_expected_beats[i].value(), 0.0001);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
@@ -185,16 +192,18 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
                      SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     std::vector<int> expected_values {100, 2};
-    std::vector<Beat> expected_beats {Beat(4.0), Beat(4.0026)};
+    std::vector<SightRead::Beat> expected_beats {SightRead::Beat(4.0),
+                                                 SightRead::Beat(4.0026)};
     std::vector<int> values = set_values(points);
-    std::vector<Beat> beats = set_position_beats(points);
+    std::vector<SightRead::Beat> beats = set_position_beats(points);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(values.cbegin(), values.cend(),
                                   expected_values.cbegin(),
                                   expected_values.cend());
-    BOOST_CHECK_EQUAL_COLLECTIONS(beats.cbegin(), beats.cend(),
-                                  expected_beats.cbegin(),
-                                  expected_beats.cend());
+    BOOST_CHECK_EQUAL(beats.size(), expected_beats.size());
+    for (auto i = 0U; i < beats.size(); ++i) {
+        BOOST_CHECK_CLOSE(beats[i].value(), expected_beats[i].value(), 0.0001);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(resolutions_below_25_do_not_enter_an_infinite_loop)
@@ -381,9 +390,9 @@ BOOST_AUTO_TEST_CASE(points_are_sorted)
 BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)
 {
     NoteTrack track {{make_note(768), make_note(960), make_note(1152)},
-                     {{Tick {768}, Tick {1}},
-                      {Tick {900}, Tick {50}},
-                      {Tick {1100}, Tick {53}}},
+                     {{SightRead::Tick {768}, SightRead::Tick {1}},
+                      {SightRead::Tick {900}, SightRead::Tick {50}},
+                      {SightRead::Tick {1100}, SightRead::Tick {53}}},
                      TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     PointSet points {track,
@@ -394,7 +403,7 @@ BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)
                      ChGuitarEngine()};
     PointSet unison_points {track,
                             {{}, SpMode::Measure},
-                            {{Tick {1100}, Tick {53}}},
+                            {{SightRead::Tick {1100}, SightRead::Tick {53}}},
                             SqueezeSettings::default_settings(),
                             SightRead::DrumSettings::default_settings(),
                             Rb3Engine()};
@@ -475,7 +484,7 @@ BOOST_AUTO_TEST_CASE(later_sustain_points_in_extended_sustains_are_multiplied)
     for (int i = 0; i < 10; ++i) {
         notes.push_back(make_note(192 * i));
     }
-    notes[0].lengths[0] = Tick {2000};
+    notes[0].lengths[0] = SightRead::Tick {2000};
 
     NoteTrack track {
         notes, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
@@ -537,7 +546,10 @@ BOOST_AUTO_TEST_SUITE(hit_window_start_and_hit_window_end_are_set_correctly)
 BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
 {
     TempoMap tempo_map {
-        {}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, {}, 192};
+        {},
+        {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
+        {},
+        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -559,7 +571,10 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
 BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
 {
     TempoMap tempo_map {
-        {}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, {}, 192};
+        {},
+        {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
+        {},
+        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -581,7 +596,10 @@ BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
 BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
 {
     TempoMap tempo_map {
-        {}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, {}, 192};
+        {},
+        {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
+        {},
+        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -595,15 +613,20 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
                      ChGuitarEngine()};
 
     for (auto p = std::next(points.cbegin()); p < points.cend(); ++p) {
-        BOOST_CHECK_EQUAL(p->position.beat, p->hit_window_start.beat);
-        BOOST_CHECK_EQUAL(p->position.beat, p->hit_window_end.beat);
+        BOOST_CHECK_CLOSE(p->position.beat.value(),
+                          p->hit_window_start.beat.value(), 0.0001);
+        BOOST_CHECK_CLOSE(p->position.beat.value(),
+                          p->hit_window_end.beat.value(), 0.0001);
     }
 }
 
 BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
 {
     TempoMap tempo_map {
-        {}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, {}, 192};
+        {},
+        {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
+        {},
+        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -612,7 +635,8 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
     PointSet points {track,
                      {tempo_map, SpMode::Measure},
                      {},
-                     {0.5, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
+                     {0.5, 1.0, SightRead::Second {0.0},
+                      SightRead::Second {0.0}, SightRead::Second {0.0}},
                      SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
 
@@ -625,7 +649,10 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
 BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
 {
     TempoMap tempo_map {
-        {}, {{Tick {0}, 150000}, {Tick {768}, 200000}}, {}, 192};
+        {},
+        {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
+        {},
+        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -637,13 +664,14 @@ BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
                      SqueezeSettings::default_settings(),
                      SightRead::DrumSettings::default_settings(),
                      RbEngine()};
-    PointSet fifty_sqz_points {
-        track,
-        {{}, SpMode::Measure},
-        {},
-        {0.5, 1.0, Second {0.0}, Second {0.0}, Second {0.0}},
-        SightRead::DrumSettings::default_settings(),
-        RbEngine()};
+    PointSet fifty_sqz_points {track,
+                               {{}, SpMode::Measure},
+                               {},
+                               {0.5, 1.0, SightRead::Second {0.0},
+                                SightRead::Second {0.0},
+                                SightRead::Second {0.0}},
+                               SightRead::DrumSettings::default_settings(),
+                               RbEngine()};
 
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_end.beat.value(), 1.125,
                       0.0001);
@@ -686,7 +714,8 @@ BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
-                     {1.0, 1.0, Second {0.0}, Second {-0.20}, Second {0.0}},
+                     {1.0, 1.0, SightRead::Second {0.0},
+                      SightRead::Second {-0.20}, SightRead::Second {0.0}},
                      SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
 
@@ -707,7 +736,8 @@ BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
-                     {1.0, 1.0, Second {0.0}, Second {0.20}, Second {0.0}},
+                     {1.0, 1.0, SightRead::Second {0.0},
+                      SightRead::Second {0.20}, SightRead::Second {0.0}},
                      SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
 
@@ -731,7 +761,8 @@ BOOST_AUTO_TEST_CASE(tick_points_are_not_multiplied_prematurely)
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
-                     {1.0, 1.0, Second {0.0}, Second {-0.40}, Second {0.0}},
+                     {1.0, 1.0, SightRead::Second {0.0},
+                      SightRead::Second {-0.40}, SightRead::Second {0.0}},
                      SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
 
@@ -764,8 +795,9 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
 {
     std::vector<Note> notes {make_note(100, 0), make_note(200, 100),
                              make_note(400, 0)};
-    std::vector<StarPower> phrases {{Tick {200}, Tick {1}},
-                                    {Tick {400}, Tick {1}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {200}, SightRead::Tick {1}},
+        {SightRead::Tick {400}, SightRead::Tick {1}}};
     NoteTrack track {notes, phrases, TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
 
@@ -787,8 +819,9 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
 
 BOOST_AUTO_TEST_CASE(solo_sections_are_added)
 {
-    std::vector<Solo> solos {{Tick {0}, Tick {576}, 100},
-                             {Tick {768}, Tick {1152}, 200}};
+    std::vector<Solo> solos {
+        {SightRead::Tick {0}, SightRead::Tick {576}, 100},
+        {SightRead::Tick {768}, SightRead::Tick {1152}, 200}};
     NoteTrack track {
         {}, {}, TrackType::FiveFret, std::make_unique<SongGlobalData>()};
     track.solos(solos);
@@ -799,8 +832,8 @@ BOOST_AUTO_TEST_CASE(solo_sections_are_added)
                      SightRead::DrumSettings::default_settings(),
                      ChGuitarEngine()};
     std::vector<std::tuple<SpPosition, int>> expected_solo_boosts {
-        {{Beat(3.0), SpMeasure(0.75)}, 100},
-        {{Beat(6.0), SpMeasure(1.5)}, 200}};
+        {{SightRead::Beat(3.0), SpMeasure(0.75)}, 100},
+        {{SightRead::Beat(6.0), SpMeasure(1.5)}, 200}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         points.solo_boosts().cbegin(), points.solo_boosts().cend(),
@@ -937,7 +970,8 @@ BOOST_AUTO_TEST_CASE(disable_kick_doesnt_kill_sp_phrases)
 {
     std::vector<Note> notes {make_drum_note(0, DRUM_RED),
                              make_drum_note(192, DRUM_KICK)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {200}}};
     NoteTrack track {notes, phrases, TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
@@ -954,7 +988,8 @@ BOOST_AUTO_TEST_CASE(double_kicks_dont_kill_phrases)
 {
     std::vector<Note> notes {make_drum_note(0, DRUM_RED),
                              make_drum_note(192, DRUM_DOUBLE_KICK)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {200}}};
     NoteTrack track {notes, phrases, TrackType::Drums,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
@@ -971,7 +1006,7 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(192),
                              make_drum_note(385), make_drum_note(576)};
-    std::vector<DrumFill> fills {{Tick {384}, Tick {5}}};
+    std::vector<DrumFill> fills {{SightRead::Tick {384}, SightRead::Tick {5}}};
     NoteTrack track {
         notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
@@ -992,7 +1027,7 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
 BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_not_killed)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(1, DRUM_KICK)};
-    std::vector<DrumFill> fills {{Tick {0}, Tick {2}}};
+    std::vector<DrumFill> fills {{SightRead::Tick {0}, SightRead::Tick {2}}};
     NoteTrack track {
         notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
@@ -1012,7 +1047,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_not_killed)
 {
     std::vector<Note> notes {make_drum_note(0),
                              make_drum_note(1, DRUM_DOUBLE_KICK)};
-    std::vector<DrumFill> fills {{Tick {0}, Tick {2}}};
+    std::vector<DrumFill> fills {{SightRead::Tick {0}, SightRead::Tick {2}}};
     NoteTrack track {
         notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
@@ -1032,7 +1067,7 @@ BOOST_AUTO_TEST_CASE(
     fills_ending_in_a_multi_note_have_the_activation_attached_to_the_first_note)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(0, DRUM_KICK)};
-    std::vector<DrumFill> fills {{Tick {0}, Tick {2}}};
+    std::vector<DrumFill> fills {{SightRead::Tick {0}, SightRead::Tick {2}}};
     NoteTrack track {
         notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
@@ -1052,8 +1087,9 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(192),
                              make_drum_note(370), make_drum_note(384)};
-    std::vector<DrumFill> fills {
-        {Tick {0}, Tick {2}}, {Tick {193}, Tick {5}}, {Tick {377}, Tick {4}}};
+    std::vector<DrumFill> fills {{SightRead::Tick {0}, SightRead::Tick {2}},
+                                 {SightRead::Tick {193}, SightRead::Tick {5}},
+                                 {SightRead::Tick {377}, SightRead::Tick {4}}};
     NoteTrack track {
         notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
@@ -1074,7 +1110,7 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
 BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
 {
     std::vector<Note> notes {make_drum_note(0), make_drum_note(192)};
-    std::vector<DrumFill> fills {{Tick {0}, Tick {96}}};
+    std::vector<DrumFill> fills {{SightRead::Tick {0}, SightRead::Tick {96}}};
     NoteTrack track {
         notes, {}, TrackType::Drums, std::make_unique<SongGlobalData>()};
     track.drum_fills(fills);
@@ -1157,7 +1193,8 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
 BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {200}}};
     NoteTrack track {notes, phrases, TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,
@@ -1174,7 +1211,8 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
 BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {200}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {200}}};
     NoteTrack track {notes, phrases, TrackType::FiveFret,
                      std::make_unique<SongGlobalData>()};
     PointSet points {track,

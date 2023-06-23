@@ -39,7 +39,7 @@ struct Point {
     SpPosition position;
     SpPosition hit_window_start;
     SpPosition hit_window_end;
-    std::optional<Second> fill_start;
+    std::optional<SightRead::Second> fill_start;
     int value;
     int base_value;
     bool is_hold_point;
@@ -57,12 +57,12 @@ private:
     std::vector<PointPtr> m_next_sp_granting_note;
     std::vector<std::tuple<SpPosition, int>> m_solo_boosts;
     std::vector<int> m_cumulative_score_totals;
-    Second m_video_lag;
+    SightRead::Second m_video_lag;
     std::vector<std::string> m_colours;
 
 public:
     PointSet(const NoteTrack& track, const SpTimeMap& time_map,
-             const std::vector<Tick>& unison_phrases,
+             const std::vector<SightRead::Tick>& unison_phrases,
              const SqueezeSettings& squeeze_settings,
              const SightRead::DrumSettings& drum_settings,
              const Engine& engine);
@@ -86,7 +86,7 @@ public:
     {
         return m_solo_boosts;
     }
-    [[nodiscard]] Second video_lag() const { return m_video_lag; }
+    [[nodiscard]] SightRead::Second video_lag() const { return m_video_lag; }
 };
 
 #endif

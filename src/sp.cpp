@@ -23,7 +23,7 @@
 #include "sp.hpp"
 
 namespace {
-bool phrase_contains_pos(const StarPower& phrase, Tick position)
+bool phrase_contains_pos(const StarPower& phrase, SightRead::Tick position)
 {
     if (position < phrase.position) {
         return false;
@@ -39,11 +39,12 @@ double sp_deduction(SpPosition start, SpPosition end)
     return meas_diff.value() / MEASURES_PER_BAR;
 }
 
-std::vector<std::tuple<Tick, Tick, Second>>
+std::vector<std::tuple<SightRead::Tick, SightRead::Tick, SightRead::Second>>
 note_spans(const NoteTrack& track, double early_whammy, const Engine& engine)
 {
     const auto& tempo_map = track.global_data().tempo_map();
-    std::vector<std::tuple<Tick, Tick, Second>> spans;
+    std::vector<std::tuple<SightRead::Tick, SightRead::Tick, SightRead::Second>>
+        spans;
     for (auto note = track.notes().cbegin(); note < track.notes().cend();
          ++note) {
         auto early_gap = std::numeric_limits<double>::infinity();
@@ -59,10 +60,11 @@ note_spans(const NoteTrack& track, double early_whammy, const Engine& engine)
                 - current_note_time;
         }
         for (auto length : note->lengths) {
-            if (length != Tick {-1}) {
+            if (length != SightRead::Tick {-1}) {
                 spans.emplace_back(
                     note->position, length,
-                    Second {engine.early_timing_window(early_gap, late_gap)}
+                    SightRead::Second {
+                        engine.early_timing_window(early_gap, late_gap)}
                         * early_whammy);
             }
         }
@@ -73,7 +75,8 @@ note_spans(const NoteTrack& track, double early_whammy, const Engine& engine)
 
 std::vector<SpData::BeatRate>
 SpData::form_beat_rates(const TempoMap& tempo_map,
-                        const std::vector<Tick>& od_beats, const Engine& engine)
+                        const std::vector<SightRead::Tick>& od_beats,
+                        const Engine& engine)
 {
     constexpr double DEFAULT_BEAT_RATE = 4.0;
 
@@ -101,14 +104,15 @@ SpData::form_beat_rates(const TempoMap& tempo_map,
         }
     } else {
         beat_rates.push_back(
-            {Beat(0.0), engine.sp_gain_rate() - 1 / DEFAULT_BEATS_PER_BAR});
+            {SightRead::Beat(0.0),
+             engine.sp_gain_rate() - 1 / DEFAULT_BEATS_PER_BAR});
     }
 
     return beat_rates;
 }
 
 SpData::SpData(const NoteTrack& track, SpTimeMap time_map,
-               const std::vector<Tick>& od_beats,
+               const std::vector<SightRead::Tick>& od_beats,
                const SqueezeSettings& squeeze_settings, const Engine& engine)
     : m_time_map {std::move(time_map)}
     , m_beat_rates {form_beat_rates(track.global_data().tempo_map(), od_beats,
@@ -117,10 +121,11 @@ SpData::SpData(const NoteTrack& track, SpTimeMap time_map,
     , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
 {
     // Elements are (whammy start, whammy end, note).
-    std::vector<std::tuple<Beat, Beat, Beat>> ranges;
+    std::vector<std::tuple<SightRead::Beat, SightRead::Beat, SightRead::Beat>>
+        ranges;
     for (const auto& [position, length, early_timing_window] :
          note_spans(track, squeeze_settings.early_whammy, engine)) {
-        if (length == Tick {0}) {
+        if (length == SightRead::Tick {0}) {
             continue;
         }
         const auto pos_copy = position;
@@ -149,7 +154,8 @@ SpData::SpData(const NoteTrack& track, SpTimeMap time_map,
 
     std::sort(ranges.begin(), ranges.end());
 
-    std::vector<std::tuple<Beat, Beat, Beat>> merged_ranges;
+    std::vector<std::tuple<SightRead::Beat, SightRead::Beat, SightRead::Beat>>
+        merged_ranges;
     auto pair = ranges[0];
     for (auto p = std::next(ranges.cbegin()); p < ranges.cend(); ++p) {
         if (std::get<0>(*p) <= std::get<1>(pair)) {
@@ -182,21 +188,21 @@ SpData::SpData(const NoteTrack& track, SpTimeMap time_map,
 }
 
 std::vector<SpData::WhammyRange>::const_iterator
-SpData::first_whammy_range_after(Beat pos) const
+SpData::first_whammy_range_after(SightRead::Beat pos) const
 {
     if (m_last_whammy_point <= pos) {
         return m_whammy_ranges.cend();
     }
     const auto index = static_cast<std::size_t>(pos.value());
-    const auto begin = (pos < Beat(0.0)) ? m_whammy_ranges.cbegin()
-                                         : m_initial_guesses[index];
+    const auto begin = (pos < SightRead::Beat(0.0)) ? m_whammy_ranges.cbegin()
+                                                    : m_initial_guesses[index];
 
     return std::find_if_not(begin, m_whammy_ranges.cend(),
                             [=](const auto& x) { return x.end.beat <= pos; });
 }
 
 SpData::WhammyPropagationState
-SpData::initial_whammy_prop_state(Beat start, Beat end,
+SpData::initial_whammy_prop_state(SightRead::Beat start, SightRead::Beat end,
                                   double sp_bar_amount) const
 {
     auto p = std::lower_bound(
@@ -266,7 +272,8 @@ SpData::propagate_sp_over_whammy_min(SpPosition start, SpPosition end,
     return sp;
 }
 
-double SpData::propagate_over_whammy_range(Beat start, Beat end,
+double SpData::propagate_over_whammy_range(SightRead::Beat start,
+                                           SightRead::Beat end,
                                            double sp_bar_amount) const
 {
     auto state = initial_whammy_prop_state(start, end, sp_bar_amount);
@@ -289,7 +296,7 @@ double SpData::propagate_over_whammy_range(Beat start, Beat end,
     return state.current_sp;
 }
 
-bool SpData::is_in_whammy_ranges(Beat beat) const
+bool SpData::is_in_whammy_ranges(SightRead::Beat beat) const
 {
     const auto p = first_whammy_range_after(beat);
     if (p == m_whammy_ranges.cend()) {
@@ -298,7 +305,8 @@ bool SpData::is_in_whammy_ranges(Beat beat) const
     return p->start.beat <= beat;
 }
 
-double SpData::available_whammy(Beat start, Beat end) const
+double SpData::available_whammy(SightRead::Beat start,
+                                SightRead::Beat end) const
 {
     double total_whammy {0.0};
 
@@ -315,7 +323,8 @@ double SpData::available_whammy(Beat start, Beat end) const
     return total_whammy;
 }
 
-double SpData::available_whammy(Beat start, Beat end, Beat note_pos) const
+double SpData::available_whammy(SightRead::Beat start, SightRead::Beat end,
+                                SightRead::Beat note_pos) const
 {
     double total_whammy {0.0};
 
@@ -380,8 +389,9 @@ SpPosition SpData::activation_end_point(SpPosition start, SpPosition end,
 
 // Return the point whammy runs out if all of the range [start, end) is
 // whammied.
-Beat SpData::whammy_propagation_endpoint(Beat start, Beat end,
-                                         double sp_bar_amount) const
+SightRead::Beat SpData::whammy_propagation_endpoint(SightRead::Beat start,
+                                                    SightRead::Beat end,
+                                                    double sp_bar_amount) const
 {
     auto state = initial_whammy_prop_state(start, end, sp_bar_amount);
     while (state.current_position < end) {
@@ -394,8 +404,8 @@ Beat SpData::whammy_propagation_endpoint(Beat start, Beat end,
             * state.current_beat_rate->net_sp_gain_rate;
         if (state.current_sp + sp_gain < 0.0) {
             return state.current_position
-                + Beat(-state.current_sp
-                       / state.current_beat_rate->net_sp_gain_rate);
+                + SightRead::Beat(-state.current_sp
+                                  / state.current_beat_rate->net_sp_gain_rate);
         }
         state.current_sp += sp_gain;
         state.current_sp = std::min(state.current_sp, 1.0);

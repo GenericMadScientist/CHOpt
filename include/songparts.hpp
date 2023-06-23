@@ -104,9 +104,11 @@ private:
     int open_index() const;
 
 public:
-    Tick position {0};
-    std::array<Tick, 7> lengths {{Tick {-1}, Tick {-1}, Tick {-1}, Tick {-1},
-                                  Tick {-1}, Tick {-1}, Tick {-1}}};
+    SightRead::Tick position {0};
+    std::array<SightRead::Tick, 7> lengths {
+        {SightRead::Tick {-1}, SightRead::Tick {-1}, SightRead::Tick {-1},
+         SightRead::Tick {-1}, SightRead::Tick {-1}, SightRead::Tick {-1},
+         SightRead::Tick {-1}}};
     NoteFlags flags {0};
 
     [[nodiscard]] int colours() const;
@@ -118,29 +120,29 @@ public:
 };
 
 struct StarPower {
-    Tick position;
-    Tick length;
+    SightRead::Tick position;
+    SightRead::Tick length;
 };
 
 struct Solo {
-    Tick start;
-    Tick end;
+    SightRead::Tick start;
+    SightRead::Tick end;
     int value;
 };
 
 struct DrumFill {
-    Tick position;
-    Tick length;
+    SightRead::Tick position;
+    SightRead::Tick length;
 };
 
 struct DiscoFlip {
-    Tick position;
-    Tick length;
+    SightRead::Tick position;
+    SightRead::Tick length;
 };
 
 struct BigRockEnding {
-    Tick start;
-    Tick end;
+    SightRead::Tick start;
+    SightRead::Tick end;
 };
 
 // Invariants:
@@ -155,7 +157,7 @@ private:
     std::string m_artist;
     std::string m_charter;
     TempoMap m_tempo_map;
-    std::vector<Tick> m_od_beats;
+    std::vector<SightRead::Tick> m_od_beats;
 
 public:
     SongGlobalData() = default;
@@ -167,7 +169,7 @@ public:
     [[nodiscard]] const std::string& charter() const { return m_charter; }
     [[nodiscard]] TempoMap& tempo_map() { return m_tempo_map; }
     [[nodiscard]] const TempoMap& tempo_map() const { return m_tempo_map; }
-    [[nodiscard]] const std::vector<Tick>& od_beats() const
+    [[nodiscard]] const std::vector<SightRead::Tick>& od_beats() const
     {
         return m_od_beats;
     }
@@ -184,7 +186,10 @@ public:
     void artist(std::string value) { m_artist = std::move(value); }
     void charter(std::string value) { m_charter = std::move(value); }
     void tempo_map(TempoMap value) { m_tempo_map = std::move(value); }
-    void od_beats(std::vector<Tick> value) { m_od_beats = std::move(value); }
+    void od_beats(std::vector<SightRead::Tick> value)
+    {
+        m_od_beats = std::move(value);
+    }
 };
 
 // Invariants:
@@ -210,12 +215,12 @@ private:
 
     void compute_base_score_ticks();
     void merge_same_time_notes();
-    void add_hopos(Tick max_hopo_gap);
+    void add_hopos(SightRead::Tick max_hopo_gap);
 
 public:
     NoteTrack(std::vector<Note> notes, const std::vector<StarPower>& sp_phrases,
               TrackType track_type, std::shared_ptr<SongGlobalData> global_data,
-              Tick max_hopo_gap = Tick {65});
+              SightRead::Tick max_hopo_gap = SightRead::Tick {65});
     void generate_drum_fills(const TempoMap& tempo_map);
     void disable_dynamics();
     [[nodiscard]] const std::vector<Note>& notes() const { return m_notes; }
@@ -258,7 +263,7 @@ public:
     base_score(SightRead::DrumSettings drum_settings
                = SightRead::DrumSettings::default_settings()) const;
     [[nodiscard]] NoteTrack trim_sustains() const;
-    [[nodiscard]] NoteTrack snap_chords(Tick snap_gap) const;
+    [[nodiscard]] NoteTrack snap_chords(SightRead::Tick snap_gap) const;
 };
 
 #endif

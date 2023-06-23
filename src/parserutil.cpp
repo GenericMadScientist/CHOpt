@@ -30,11 +30,11 @@ bool is_six_fret_instrument(Instrument instrument)
         != SIX_FRET_INSTRUMENTS.cend();
 }
 
-std::vector<std::tuple<Tick, Tick>>
+std::vector<std::tuple<SightRead::Tick, SightRead::Tick>>
 combine_solo_events(const std::vector<int>& on_events,
                     const std::vector<int>& off_events)
 {
-    std::vector<std::tuple<Tick, Tick>> ranges;
+    std::vector<std::tuple<SightRead::Tick, SightRead::Tick>> ranges;
 
     auto on_iter = on_events.cbegin();
     auto off_iter = off_events.cbegin();
@@ -64,7 +64,7 @@ std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
 
     for (auto [start, end] :
          combine_solo_events(solo_on_events, solo_off_events)) {
-        std::set<Tick> positions_in_solo;
+        std::set<SightRead::Tick> positions_in_solo;
         auto note_count = 0;
         for (const auto& note : notes) {
             if ((note.position >= start && note.position < end)

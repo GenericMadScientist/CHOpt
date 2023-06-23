@@ -27,7 +27,7 @@ Note combined_note(std::vector<Note>::const_iterator begin,
     while (begin < end) {
         for (auto i = 0U; i < note.lengths.size(); ++i) {
             const auto new_length = begin->lengths.at(i);
-            if (new_length != Tick {-1}) {
+            if (new_length != SightRead::Tick {-1}) {
                 note.lengths.at(i) = new_length;
             }
         }
@@ -40,7 +40,7 @@ bool is_chord(const Note& note)
 {
     auto count = 0;
     for (auto length : note.lengths) {
-        if (length != Tick {-1}) {
+        if (length != SightRead::Tick {-1}) {
             ++count;
         }
     }
@@ -72,7 +72,7 @@ int Note::colours() const
 {
     auto colour_flags = 0;
     for (auto i = 0U; i < lengths.size(); ++i) {
-        if (lengths.at(i) != Tick {-1}) {
+        if (lengths.at(i) != SightRead::Tick {-1}) {
             colour_flags |= 1 << i;
         }
     }
@@ -86,12 +86,12 @@ void Note::merge_non_opens_into_open()
         return;
     }
     const auto open_length = lengths.at(index);
-    if (open_length == Tick {-1}) {
+    if (open_length == SightRead::Tick {-1}) {
         return;
     }
     for (auto i = 0; i < static_cast<int>(lengths.size()); ++i) {
         if (i != index && lengths.at(i) == open_length) {
-            lengths.at(i) = Tick {-1};
+            lengths.at(i) = SightRead::Tick {-1};
         }
     }
 }
@@ -104,8 +104,8 @@ void Note::disable_dynamics()
 bool Note::is_kick_note() const
 {
     return ((flags & FLAGS_DRUMS) != 0U)
-        && (lengths[DRUM_KICK] != Tick {-1}
-            || lengths[DRUM_DOUBLE_KICK] != Tick {-1});
+        && (lengths[DRUM_KICK] != SightRead::Tick {-1}
+            || lengths[DRUM_DOUBLE_KICK] != SightRead::Tick {-1});
 }
 
 bool Note::is_skipped_kick(const SightRead::DrumSettings& settings) const
@@ -113,7 +113,7 @@ bool Note::is_skipped_kick(const SightRead::DrumSettings& settings) const
     if (!is_kick_note()) {
         return false;
     }
-    if (lengths[DRUM_KICK] != Tick {-1}) {
+    if (lengths[DRUM_KICK] != SightRead::Tick {-1}) {
         return settings.disable_kick;
     }
     return !settings.enable_double_kick;
@@ -123,11 +123,11 @@ void NoteTrack::compute_base_score_ticks()
 {
     constexpr int BASE_SUSTAIN_DENSITY = 25;
 
-    Tick total_ticks {0};
+    SightRead::Tick total_ticks {0};
     for (const auto& note : m_notes) {
-        std::vector<Tick> constituent_lengths;
+        std::vector<SightRead::Tick> constituent_lengths;
         for (auto length : note.lengths) {
-            if (length != Tick {-1}) {
+            if (length != SightRead::Tick {-1}) {
                 constituent_lengths.push_back(length);
             }
         }
@@ -165,7 +165,7 @@ void NoteTrack::merge_same_time_notes()
     m_notes = std::move(notes);
 }
 
-void NoteTrack::add_hopos(Tick max_hopo_gap)
+void NoteTrack::add_hopos(SightRead::Tick max_hopo_gap)
 {
     if (m_track_type == TrackType::Drums) {
         return;
@@ -198,7 +198,7 @@ NoteTrack::NoteTrack(std::vector<Note> notes,
                      const std::vector<StarPower>& sp_phrases,
                      TrackType track_type,
                      std::shared_ptr<SongGlobalData> global_data,
-                     Tick max_hopo_gap)
+                     SightRead::Tick max_hopo_gap)
     : m_track_type {track_type}
     , m_global_data {std::move(global_data)}
     , m_base_score_ticks {0}
@@ -224,8 +224,8 @@ NoteTrack::NoteTrack(std::vector<Note> notes,
         m_notes.push_back(*prev_note);
     }
 
-    std::vector<Tick> sp_starts;
-    std::vector<Tick> sp_ends;
+    std::vector<SightRead::Tick> sp_starts;
+    std::vector<SightRead::Tick> sp_ends;
     sp_starts.reserve(sp_phrases.size());
     sp_ends.reserve(sp_phrases.size());
 
@@ -274,32 +274,32 @@ NoteTrack::NoteTrack(std::vector<Note> notes,
 
 void NoteTrack::generate_drum_fills(const TempoMap& tempo_map)
 {
-    const Second FILL_DELAY {0.25};
-    const Measure FILL_GAP {4.0};
+    const SightRead::Second FILL_DELAY {0.25};
+    const SightRead::Measure FILL_GAP {4.0};
 
     if (m_notes.empty()) {
         return;
     }
 
-    std::vector<std::tuple<Second, Tick>> note_times;
+    std::vector<std::tuple<SightRead::Second, SightRead::Tick>> note_times;
     for (const auto& n : m_notes) {
         const auto seconds = tempo_map.to_seconds(n.position);
         note_times.emplace_back(seconds, n.position);
     }
     const auto final_note_s = tempo_map.to_seconds(m_notes.back().position);
     const auto measure_bound = tempo_map.to_measures(final_note_s + FILL_DELAY);
-    Measure m {1.0};
+    SightRead::Measure m {1.0};
     while (m <= measure_bound) {
         const auto fill_seconds = tempo_map.to_seconds(m);
         const auto measure_ticks = tempo_map.to_ticks(tempo_map.to_beats(m));
         bool exists_close_note = false;
-        Tick close_note_position {0};
+        SightRead::Tick close_note_position {0};
         for (const auto& [s, pos] : note_times) {
             const auto s_diff = s - fill_seconds;
             if (s_diff > FILL_DELAY) {
                 break;
             }
-            if (s_diff + FILL_DELAY < Second {0}) {
+            if (s_diff + FILL_DELAY < SightRead::Second {0}) {
                 continue;
             }
             if (!exists_close_note) {
@@ -311,11 +311,12 @@ void NoteTrack::generate_drum_fills(const TempoMap& tempo_map)
             }
         }
         if (!exists_close_note) {
-            m += Measure(1.0);
+            m += SightRead::Measure(1.0);
             continue;
         }
         const auto m_seconds = tempo_map.to_seconds(m);
-        const auto prev_m_seconds = tempo_map.to_seconds(m - Measure(1.0));
+        const auto prev_m_seconds
+            = tempo_map.to_seconds(m - SightRead::Measure(1.0));
         const auto mid_m_seconds = (m_seconds + prev_m_seconds) * 0.5;
         const auto fill_start = tempo_map.to_ticks(mid_m_seconds);
         m_drum_fills.push_back(
@@ -378,7 +379,7 @@ int NoteTrack::base_score(SightRead::DrumSettings drum_settings) const
             continue;
         }
         for (auto l : note.lengths) {
-            if (l != Tick {-1}) {
+            if (l != SightRead::Tick {-1}) {
                 ++note_count;
             }
         }
@@ -394,13 +395,13 @@ NoteTrack NoteTrack::trim_sustains() const
 
     auto trimmed_track = *this;
     const auto resolution = m_global_data->resolution();
-    const Tick sust_cutoff {(DEFAULT_SUST_CUTOFF * resolution)
-                            / DEFAULT_RESOLUTION};
+    const SightRead::Tick sust_cutoff {(DEFAULT_SUST_CUTOFF * resolution)
+                                       / DEFAULT_RESOLUTION};
 
     for (auto& note : trimmed_track.m_notes) {
         for (auto& length : note.lengths) {
-            if (length != Tick {-1} && length <= sust_cutoff) {
-                length = Tick {0};
+            if (length != SightRead::Tick {-1} && length <= sust_cutoff) {
+                length = SightRead::Tick {0};
             }
         }
     }
@@ -410,7 +411,7 @@ NoteTrack NoteTrack::trim_sustains() const
     return trimmed_track;
 }
 
-NoteTrack NoteTrack::snap_chords(Tick snap_gap) const
+NoteTrack NoteTrack::snap_chords(SightRead::Tick snap_gap) const
 {
     auto new_track = *this;
     auto& new_notes = new_track.m_notes;

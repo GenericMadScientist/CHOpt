@@ -25,7 +25,7 @@
 constexpr int MAX_BEATS_PER_LINE = 16;
 
 namespace {
-double get_beat_rate(const TempoMap& tempo_map, Beat beat)
+double get_beat_rate(const TempoMap& tempo_map, SightRead::Beat beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
@@ -39,7 +39,7 @@ double get_beat_rate(const TempoMap& tempo_map, Beat beat)
     return BASE_BEAT_RATE * ts->numerator / ts->denominator;
 }
 
-int get_numer(const TempoMap& tempo_map, Beat beat)
+int get_numer(const TempoMap& tempo_map, SightRead::Beat beat)
 {
     constexpr int BASE_NUMERATOR = 4;
 
@@ -53,7 +53,7 @@ int get_numer(const TempoMap& tempo_map, Beat beat)
     return ts->numerator;
 }
 
-double get_denom(const TempoMap& tempo_map, Beat beat)
+double get_denom(const TempoMap& tempo_map, SightRead::Beat beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
@@ -75,7 +75,7 @@ DrawnNote note_to_drawn_note(const Note& note, const NoteTrack& track)
 
     std::array<double, COLOURS_SIZE> lengths {};
     for (auto i = 0; i < COLOURS_SIZE; ++i) {
-        if (note.lengths.at(i) == Tick {-1}) {
+        if (note.lengths.at(i) == SightRead::Tick {-1}) {
             lengths.at(i) = -1;
         } else {
             lengths.at(i) = tempo_map.to_beats(note.lengths.at(i)).value();
@@ -94,7 +94,8 @@ DrawnNote note_to_drawn_note(const Note& note, const NoteTrack& track)
     return {beat.value(), lengths, note.flags, is_sp_note};
 }
 
-bool is_in_disco_flips(const std::vector<DiscoFlip>& disco_flips, Tick position)
+bool is_in_disco_flips(const std::vector<DiscoFlip>& disco_flips,
+                       SightRead::Tick position)
 {
     return std::any_of(disco_flips.cbegin(), disco_flips.cend(),
                        [&](const auto& flip) {
@@ -117,12 +118,12 @@ std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
             drawn_note.note_flags
                 = static_cast<NoteFlags>(drawn_note.note_flags & ~FLAGS_CYMBAL);
         } else if (is_in_disco_flips(track.disco_flips(), note.position)) {
-            if (note.lengths[DRUM_RED] != Tick {-1}) {
+            if (note.lengths[DRUM_RED] != SightRead::Tick {-1}) {
                 std::swap(drawn_note.lengths[DRUM_RED],
                           drawn_note.lengths[DRUM_YELLOW]);
                 drawn_note.note_flags = static_cast<NoteFlags>(
                     drawn_note.note_flags | FLAGS_CYMBAL);
-            } else if (note.lengths[DRUM_YELLOW] != Tick {-1}
+            } else if (note.lengths[DRUM_YELLOW] != SightRead::Tick {-1}
                        && (note.flags & FLAGS_CYMBAL) != 0U) {
                 std::swap(drawn_note.lengths[DRUM_RED],
                           drawn_note.lengths[DRUM_YELLOW]);
@@ -138,7 +139,7 @@ std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
 
 std::vector<DrawnRow> drawn_rows(const NoteTrack& track)
 {
-    Tick max_pos {0};
+    SightRead::Tick max_pos {0};
     for (const auto& note : track.notes()) {
         const auto length
             = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
@@ -154,8 +155,8 @@ std::vector<DrawnRow> drawn_rows(const NoteTrack& track)
     while (current_beat <= max_beat) {
         auto row_length = 0.0;
         while (true) {
-            auto contribution
-                = get_beat_rate(tempo_map, Beat {current_beat + row_length});
+            auto contribution = get_beat_rate(
+                tempo_map, SightRead::Beat {current_beat + row_length});
             if (contribution > MAX_BEATS_PER_LINE && row_length == 0.0) {
                 // Break up a measure that spans more than a full row.
                 while (contribution > MAX_BEATS_PER_LINE) {
@@ -185,13 +186,14 @@ std::vector<DrawnRow> drawn_rows(const NoteTrack& track)
 // the activation if the activation is not an overlap.
 enum class SpDrainEventType { Measure, ActStart, ActEnd, WhammyEnd, SpPhrase };
 
-std::vector<std::tuple<Beat, SpDrainEventType>>
+std::vector<std::tuple<SightRead::Beat, SpDrainEventType>>
 form_events(const std::vector<double>& measure_lines, const PointSet& points,
             const Path& path)
 {
-    std::vector<std::tuple<Beat, SpDrainEventType>> events;
+    std::vector<std::tuple<SightRead::Beat, SpDrainEventType>> events;
     for (std::size_t i = 1; i < measure_lines.size(); ++i) {
-        events.emplace_back(Beat {measure_lines[i]}, SpDrainEventType::Measure);
+        events.emplace_back(SightRead::Beat {measure_lines[i]},
+                            SpDrainEventType::Measure);
     }
     for (auto p = points.cbegin(); p < points.cend(); ++p) {
         if (!p->is_sp_granting_note) {
@@ -246,11 +248,13 @@ relative_complement(std::vector<std::tuple<double, double>> parent_set,
     return result;
 }
 
-Beat subtract_video_lag(Beat beat, Second video_lag, const TempoMap& tempo_map)
+SightRead::Beat subtract_video_lag(SightRead::Beat beat,
+                                   SightRead::Second video_lag,
+                                   const TempoMap& tempo_map)
 {
     const auto seconds = tempo_map.to_seconds(beat) - video_lag;
     if (seconds.value() < 0.0) {
-        return Beat {0.0};
+        return SightRead::Beat {0.0};
     }
     return tempo_map.to_beats(seconds);
 }
@@ -263,9 +267,10 @@ void ImageBuilder::form_beat_lines(const TempoMap& tempo_map)
     for (const auto& row : m_rows) {
         auto start = row.start;
         while (start < row.end) {
-            auto meas_length = get_beat_rate(tempo_map, Beat {start});
-            auto numer = get_numer(tempo_map, Beat {start});
-            auto denom = get_denom(tempo_map, Beat {start});
+            auto meas_length
+                = get_beat_rate(tempo_map, SightRead::Beat {start});
+            auto numer = get_numer(tempo_map, SightRead::Beat {start});
+            auto denom = get_denom(tempo_map, SightRead::Beat {start});
             m_measure_lines.push_back(start);
             m_half_beat_lines.push_back(start + HALF_BEAT * denom);
             for (int i = 1; i < numer; ++i) {
@@ -278,7 +283,8 @@ void ImageBuilder::form_beat_lines(const TempoMap& tempo_map)
     m_measure_lines.push_back(m_rows.back().end);
 }
 
-bool ImageBuilder::is_neutralised_phrase(Beat note_pos, const Path& path)
+bool ImageBuilder::is_neutralised_phrase(SightRead::Beat note_pos,
+                                         const Path& path)
 {
     for (const auto& act : path.activations) {
         if (act.act_start->position.beat > note_pos) {
@@ -303,13 +309,14 @@ ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
     }
     const auto& tempo_map = track.global_data().tempo_map();
     const auto start = tempo_map.to_beats(p->position).value();
-    if (!m_overlap_engine && is_neutralised_phrase(Beat {start}, path)) {
+    if (!m_overlap_engine
+        && is_neutralised_phrase(SightRead::Beat {start}, path)) {
         return {-1, -1};
     }
     const auto phrase_end = phrase.position + phrase.length;
     auto end = start;
     while (p < track.notes().cend() && p->position < phrase_end) {
-        Tick max_length {0};
+        SightRead::Tick max_length {0};
         for (auto length : p->lengths) {
             max_length = std::max(max_length, length);
         }
@@ -482,7 +489,8 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
             blue_end
                 = std::min(blue_end, std::next(act.act_end)->position.beat);
         }
-        blue_end = std::min(shifted_beat(blue_end), Beat {m_rows.back().end});
+        blue_end = std::min(shifted_beat(blue_end),
+                            SightRead::Beat {m_rows.back().end});
         m_blue_ranges.emplace_back(shifted_beat(blue_start).value(),
                                    blue_end.value());
         if (act.sp_start > act.act_start->position.beat) {
@@ -532,15 +540,15 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
 
     const auto events = form_events(m_measure_lines, points, path);
     auto is_sp_active = false;
-    Beat whammy_end {std::numeric_limits<double>::infinity()};
-    Beat position {0.0};
+    SightRead::Beat whammy_end {std::numeric_limits<double>::infinity()};
+    SightRead::Beat position {0.0};
 
     double total_sp = 0.0;
     for (auto [event_pos, event_type] : events) {
         if (is_sp_active) {
             SpPosition start_pos {position, time_map.to_sp_measures(position)};
             SpPosition end_pos {event_pos, time_map.to_sp_measures(event_pos)};
-            SpPosition whammy_pos {Beat {0.0}, SpMeasure {0.0}};
+            SpPosition whammy_pos {SightRead::Beat {0.0}, SpMeasure {0.0}};
             if (m_overlap_engine) {
                 whammy_pos = {whammy_end, time_map.to_sp_measures(whammy_end)};
             }
@@ -556,7 +564,8 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
             break;
         case SpDrainEventType::ActEnd:
             is_sp_active = false;
-            whammy_end = Beat {std::numeric_limits<double>::infinity()};
+            whammy_end
+                = SightRead::Beat {std::numeric_limits<double>::infinity()};
             total_sp = 0.0;
             break;
         case SpDrainEventType::SpPhrase:
@@ -576,9 +585,9 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
     assert(m_sp_percent_values.size() == m_measure_lines.size() - 1); // NOLINT
 }
 
-void ImageBuilder::add_sp_phrases(const NoteTrack& track,
-                                  const std::vector<Tick>& unison_phrases,
-                                  const Path& path)
+void ImageBuilder::add_sp_phrases(
+    const NoteTrack& track, const std::vector<SightRead::Tick>& unison_phrases,
+    const Path& path)
 {
     for (const auto& phrase : track.sp_phrases()) {
         const auto range = sp_phrase_bounds(phrase, track, path);
@@ -600,10 +609,10 @@ void ImageBuilder::add_sp_values(const SpData& sp_data, const Engine& engine)
     m_sp_values.resize(m_measure_lines.size() - 1);
 
     for (std::size_t i = 0; i < m_measure_lines.size() - 1; ++i) {
-        Beat start {m_measure_lines[i]};
-        Beat end {std::numeric_limits<double>::infinity()};
+        SightRead::Beat start {m_measure_lines[i]};
+        SightRead::Beat end {std::numeric_limits<double>::infinity()};
         if (i < m_measure_lines.size() - 1) {
-            end = Beat {m_measure_lines[i + 1]};
+            end = SightRead::Beat {m_measure_lines[i + 1]};
         }
         m_sp_values[i]
             = sp_data.available_whammy(start, end) / engine.sp_gain_rate();
@@ -680,7 +689,7 @@ ImageBuilder make_builder(Song& song, const NoteTrack& track,
 
     const auto unison_positions = (settings.engine->has_unison_bonuses())
         ? song.unison_phrase_positions()
-        : std::vector<Tick> {};
+        : std::vector<SightRead::Tick> {};
 
     // The 0.1% squeeze minimum is to get around dumb floating point rounding
     // issues that visibly affect the path at 0% squeeze.

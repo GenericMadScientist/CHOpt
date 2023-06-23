@@ -45,7 +45,7 @@ private:
     // already full SP there.
     struct CacheKey {
         PointPtr point;
-        SpPosition position {Beat(0.0), SpMeasure(0.0)};
+        SpPosition position {SightRead::Beat(0.0), SpMeasure(0.0)};
 
         friend bool operator<(const CacheKey& lhs, const CacheKey& rhs)
         {
@@ -128,8 +128,8 @@ private:
     static constexpr double BASE_DRUM_FILL_DELAY = 2.0 * 100;
     const ProcessedSong* m_song;
     const std::atomic<bool>* m_terminate;
-    const Second m_drum_fill_delay;
-    Second m_whammy_delay;
+    const SightRead::Second m_drum_fill_delay;
+    SightRead::Second m_whammy_delay;
     std::vector<PointPtr> m_next_candidate_points;
 
     [[nodiscard]] PointPtr next_candidate_point(PointPtr point) const;
@@ -147,11 +147,11 @@ private:
     [[nodiscard]] SpPosition forced_whammy_end(ProtoActivation act,
                                                CacheKey key,
                                                double sqz_level) const;
-    [[nodiscard]] std::tuple<Beat, Beat>
+    [[nodiscard]] std::tuple<SightRead::Beat, SightRead::Beat>
     act_duration(ProtoActivation act, CacheKey key, double sqz_level,
                  SpPosition min_whammy_force) const;
-    [[nodiscard]] Second earliest_fill_appearance(CacheKey key,
-                                                  bool has_full_sp) const;
+    [[nodiscard]] SightRead::Second
+    earliest_fill_appearance(CacheKey key, bool has_full_sp) const;
     void complete_subpath(
         PointPtr p, SpPosition starting_pos, SpBar sp_bar,
         PointPtrRangeSet& attained_act_ends, Cache& cache,
@@ -160,7 +160,7 @@ private:
 
 public:
     Optimiser(const ProcessedSong* song, const std::atomic<bool>* terminate,
-              int speed, Second whammy_delay);
+              int speed, SightRead::Second whammy_delay);
     // Return the optimal Star Power path.
     [[nodiscard]] Path optimal_path() const;
 };

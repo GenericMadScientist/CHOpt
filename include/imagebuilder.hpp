@@ -80,7 +80,8 @@ private:
     bool m_overlap_engine {true};
 
     void form_beat_lines(const TempoMap& tempo_map);
-    static bool is_neutralised_phrase(Beat note_pos, const Path& path);
+    static bool is_neutralised_phrase(SightRead::Beat note_pos,
+                                      const Path& path);
     std::tuple<double, double> sp_phrase_bounds(const StarPower& phrase,
                                                 const NoteTrack& track,
                                                 const Path& path) const;
@@ -102,7 +103,7 @@ public:
     void add_sp_percent_values(const SpData& sp_data, const SpTimeMap& time_map,
                                const PointSet& points, const Path& path);
     void add_sp_phrases(const NoteTrack& track,
-                        const std::vector<Tick>& unison_phrases,
+                        const std::vector<SightRead::Tick>& unison_phrases,
                         const Path& path);
     void add_sp_values(const SpData& sp_data, const Engine& engine);
     void add_time_sigs(const TempoMap& tempo_map);

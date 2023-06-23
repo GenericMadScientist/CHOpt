@@ -255,7 +255,7 @@ Settings MainWindow::get_settings() const
     settings.squeeze_settings.early_whammy
         = m_ui->earlyWhammySlider->value() / 100.0;
     settings.squeeze_settings.video_lag
-        = Second {m_ui->videoLagSlider->value() / 1000.0};
+        = SightRead::Second {m_ui->videoLagSlider->value() / 1000.0};
     settings.game = m_ui->engineComboBox->currentData().value<Game>();
     const auto precision_mode = m_ui->precisionModeCheckBox->isChecked();
     settings.engine
@@ -268,18 +268,18 @@ Settings MainWindow::get_settings() const
     auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok, 10);
     if (ok) {
         settings.squeeze_settings.lazy_whammy
-            = Second {lazy_whammy_ms / 1000.0};
+            = SightRead::Second {lazy_whammy_ms / 1000.0};
     } else {
-        settings.squeeze_settings.lazy_whammy = Second {0.0};
+        settings.squeeze_settings.lazy_whammy = SightRead::Second {0.0};
     }
 
     const auto whammy_delay_text = m_ui->whammyDelayLineEdit->text();
     auto whammy_delay_ms = whammy_delay_text.toInt(&ok, 10);
     if (ok) {
         settings.squeeze_settings.whammy_delay
-            = Second {whammy_delay_ms / 1000.0};
+            = SightRead::Second {whammy_delay_ms / 1000.0};
     } else {
-        settings.squeeze_settings.whammy_delay = Second {0.0};
+        settings.squeeze_settings.whammy_delay = SightRead::Second {0.0};
     }
 
     const auto speed_text = m_ui->speedLineEdit->text();

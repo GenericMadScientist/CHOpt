@@ -25,9 +25,9 @@ enum class HopoThresholdType { Resolution, HopoFrequency, EighthNote };
 
 struct HopoThreshold {
     HopoThresholdType threshold_type;
-    Tick hopo_frequency;
+    SightRead::Tick hopo_frequency;
 
-    Tick chart_max_hopo_gap(int resolution) const
+    SightRead::Tick chart_max_hopo_gap(int resolution) const
     {
         constexpr int DEFAULT_HOPO_GAP = 65;
         constexpr int DEFAULT_RESOLUTION = 192;
@@ -36,21 +36,22 @@ struct HopoThreshold {
         case HopoThresholdType::HopoFrequency:
             return hopo_frequency;
         case HopoThresholdType::EighthNote:
-            return Tick {(resolution + 3) / 2};
+            return SightRead::Tick {(resolution + 3) / 2};
         default:
-            return Tick {(DEFAULT_HOPO_GAP * resolution) / DEFAULT_RESOLUTION};
+            return SightRead::Tick {(DEFAULT_HOPO_GAP * resolution)
+                                    / DEFAULT_RESOLUTION};
         }
     }
 
-    Tick midi_max_hopo_gap(int resolution) const
+    SightRead::Tick midi_max_hopo_gap(int resolution) const
     {
         switch (threshold_type) {
         case HopoThresholdType::HopoFrequency:
             return hopo_frequency;
         case HopoThresholdType::EighthNote:
-            return Tick {(resolution + 3) / 2};
+            return SightRead::Tick {(resolution + 3) / 2};
         default:
-            return Tick {resolution / 3 + 1};
+            return SightRead::Tick {resolution / 3 + 1};
         }
     }
 };

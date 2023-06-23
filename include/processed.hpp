@@ -38,7 +38,7 @@
 struct ActivationCandidate {
     PointPtr act_start;
     PointPtr act_end;
-    SpPosition earliest_activation_point {Beat(0.0), SpMeasure(0.0)};
+    SpPosition earliest_activation_point {SightRead::Beat(0.0), SpMeasure(0.0)};
     SpBar sp_bar {0.0, 0.0};
 };
 
@@ -50,9 +50,9 @@ struct ProtoActivation {
 struct Activation {
     PointPtr act_start;
     PointPtr act_end;
-    Beat whammy_end {0.0};
-    Beat sp_start {0.0};
-    Beat sp_end {0.0};
+    SightRead::Beat whammy_end {0.0};
+    SightRead::Beat sp_start {0.0};
+    SightRead::Beat sp_end {0.0};
 };
 
 // Part of the return value of ProcessedSong::is_candidate_valid. Says if an
@@ -100,33 +100,35 @@ public:
     ProcessedSong(const NoteTrack& track, SpTimeMap time_map,
                   const SqueezeSettings& squeeze_settings,
                   const SightRead::DrumSettings& drum_settings,
-                  const Engine& engine, const std::vector<Tick>& od_beats,
-                  const std::vector<Tick>& unison_phrases);
+                  const Engine& engine,
+                  const std::vector<SightRead::Tick>& od_beats,
+                  const std::vector<SightRead::Tick>& unison_phrases);
 
     // Return the minimum and maximum amount of SP can be acquired between two
     // points. Does not include SP from the point act_start. first_point is
     // given for the purposes of counting SP grantings notes, e.g. if start is
     // after the middle of first_point's timing window. All whammy up to
     // required_whammy_end is mandatory.
-    [[nodiscard]] SpBar
-    total_available_sp(Beat start, PointPtr first_point, PointPtr act_start,
-                       Beat required_whammy_end = Beat {NEG_INF}) const;
+    [[nodiscard]] SpBar total_available_sp(SightRead::Beat start,
+                                           PointPtr first_point,
+                                           PointPtr act_start,
+                                           SightRead::Beat required_whammy_end
+                                           = SightRead::Beat {NEG_INF}) const;
     // Similar to total_available_sp, but no whammy is required and if it is
     // possible to get a half bar then the earliest position >=
     // earliest_potential_pos that grants a half bar is returned along with the
     // SP only up to that position.
     [[nodiscard]] std::tuple<SpBar, SpPosition>
     total_available_sp_with_earliest_pos(
-        Beat start, PointPtr first_point, PointPtr act_start,
+        SightRead::Beat start, PointPtr first_point, PointPtr act_start,
         SpPosition earliest_potential_pos) const;
     // Returns an ActResult which says if an activation is valid, and if so the
     // earliest position it can end. Checks squeezes against the given amount
     // only.
-    [[nodiscard]] ActResult
-    is_candidate_valid(const ActivationCandidate& activation,
-                       double squeeze = 1.0,
-                       SpPosition required_whammy_end
-                       = {Beat {NEG_INF}, SpMeasure {NEG_INF}}) const;
+    [[nodiscard]] ActResult is_candidate_valid(
+        const ActivationCandidate& activation, double squeeze = 1.0,
+        SpPosition required_whammy_end
+        = {SightRead::Beat {NEG_INF}, SpMeasure {NEG_INF}}) const;
     // Return the summary of a path.
     [[nodiscard]] std::string path_summary(const Path& path) const;
 

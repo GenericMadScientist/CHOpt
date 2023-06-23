@@ -30,7 +30,7 @@ bool is_six_fret_instrument(Instrument instrument);
 // Takes a sequence of points where some note type/event is turned on, and a
 // sequence where said type is turned off, and returns a tuple of intervals
 // where the event is on.
-std::vector<std::tuple<Tick, Tick>>
+std::vector<std::tuple<SightRead::Tick, SightRead::Tick>>
 combine_solo_events(const std::vector<int>& on_events,
                     const std::vector<int>& off_events);
 

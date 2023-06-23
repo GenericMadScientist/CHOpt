@@ -24,7 +24,7 @@
 
 Optimiser::Optimiser(const ProcessedSong* song,
                      const std::atomic<bool>* terminate, int speed,
-                     Second whammy_delay)
+                     SightRead::Second whammy_delay)
     : m_song {song}
     , m_terminate {terminate}
     , m_drum_fill_delay {BASE_DRUM_FILL_DELAY / speed}
@@ -224,10 +224,11 @@ void Optimiser::complete_subpath(
     }
 }
 
-Second Optimiser::earliest_fill_appearance(CacheKey key, bool has_full_sp) const
+SightRead::Second Optimiser::earliest_fill_appearance(CacheKey key,
+                                                      bool has_full_sp) const
 {
     if (!m_song->is_drums() || has_full_sp) {
-        return Second(0.0);
+        return SightRead::Second(0.0);
     }
 
     int sp_count = 0;
@@ -242,7 +243,7 @@ Second Optimiser::earliest_fill_appearance(CacheKey key, bool has_full_sp) const
         }
     }
 
-    return Second(0.0);
+    return SightRead::Second(0.0);
 }
 
 Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
@@ -267,7 +268,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             continue;
         }
         SpBar sp_bar {1.0, 1.0};
-        SpPosition starting_pos {Beat {NEG_INF}, SpMeasure {NEG_INF}};
+        SpPosition starting_pos {SightRead::Beat {NEG_INF},
+                                 SpMeasure {NEG_INF}};
         if (p != m_song->points().cbegin()) {
             starting_pos = std::prev(p)->hit_window_start;
         }
@@ -325,7 +327,7 @@ Path Optimiser::optimal_path() const
 {
     Cache cache;
     CacheKey start_key {m_song->points().cbegin(),
-                        {Beat(NEG_INF), SpMeasure(NEG_INF)}};
+                        {SightRead::Beat(NEG_INF), SpMeasure(NEG_INF)}};
     start_key = advance_cache_key(start_key);
 
     const auto best_score_boost = get_partial_path(start_key, cache);
@@ -406,7 +408,7 @@ SpPosition Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
     auto next_point = std::next(act.act_end);
 
     if (next_point == m_song->points().cend()) {
-        return {Beat {POS_INF}, SpMeasure {POS_INF}};
+        return {SightRead::Beat {POS_INF}, SpMeasure {POS_INF}};
     }
 
     auto prev_point = std::prev(act.act_start);
@@ -434,7 +436,7 @@ SpPosition Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
     return min_whammy_force;
 }
 
-std::tuple<Beat, Beat>
+std::tuple<SightRead::Beat, SightRead::Beat>
 Optimiser::act_duration(ProtoActivation act, CacheKey key, double sqz_level,
                         SpPosition min_whammy_force) const
 {

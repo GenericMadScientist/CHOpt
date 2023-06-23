@@ -29,10 +29,11 @@ BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)
     std::vector<Note> notes {
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {768}, Tick {400}},
-                                    {Tick {1344}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {768}, SightRead::Tick {400}},
+        {SightRead::Tick {1344}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -44,13 +45,16 @@ BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)
                         {}};
     const auto& points = song.points();
 
-    BOOST_CHECK_EQUAL(song.total_available_sp(Beat(0.0), points.cbegin(),
+    BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
+                                              points.cbegin(),
                                               points.cbegin() + 1),
                       SpBar(0.25, 0.25));
-    BOOST_CHECK_EQUAL(song.total_available_sp(Beat(0.0), points.cbegin(),
+    BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
+                                              points.cbegin(),
                                               points.cbegin() + 2),
                       SpBar(0.25, 0.25));
-    BOOST_CHECK_EQUAL(song.total_available_sp(Beat(0.5), points.cbegin() + 2,
+    BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.5),
+                                              points.cbegin() + 2,
                                               points.cbegin() + 3),
                       SpBar(0.25, 0.25));
 }
@@ -60,10 +64,11 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly)
     std::vector<Note> notes {
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {768}, Tick {400}},
-                                    {Tick {1344}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {768}, SightRead::Tick {400}},
+        {SightRead::Tick {1344}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -74,8 +79,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly)
                         {},
                         {}};
     const auto& points = song.points();
-    auto result = song.total_available_sp(Beat(4.0), points.cbegin() + 4,
-                                          points.cbegin() + 5);
+    auto result = song.total_available_sp(
+        SightRead::Beat(4.0), points.cbegin() + 4, points.cbegin() + 5);
 
     BOOST_CHECK_CLOSE(result.min(), 0.0, 0.0001);
     BOOST_CHECK_CLOSE(result.max(), 0.001128472, 0.0001);
@@ -86,10 +91,11 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_even_started_mid_hold)
     std::vector<Note> notes {
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {768}, Tick {400}},
-                                    {Tick {1344}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {768}, SightRead::Tick {400}},
+        {SightRead::Tick {1344}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -100,8 +106,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_even_started_mid_hold)
                         {},
                         {}};
     const auto& points = song.points();
-    auto result = song.total_available_sp(Beat(4.5), points.cend() - 3,
-                                          points.cend() - 3);
+    auto result = song.total_available_sp(SightRead::Beat(4.5),
+                                          points.cend() - 3, points.cend() - 3);
 
     BOOST_CHECK_CLOSE(result.min(), 0.0, 0.0001);
     BOOST_CHECK_CLOSE(result.max(), 0.01666667, 0.0001);
@@ -112,10 +118,11 @@ BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
     std::vector<Note> notes {
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {768}, Tick {400}},
-                                    {Tick {1344}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {768}, SightRead::Tick {400}},
+        {SightRead::Tick {1344}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -126,14 +133,16 @@ BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
                         {},
                         {}};
     const auto& points = song.points();
-    auto result = song.total_available_sp(Beat(4.0), points.cbegin() + 4,
-                                          points.cbegin() + 5, Beat(4.02));
+    auto result
+        = song.total_available_sp(SightRead::Beat(4.0), points.cbegin() + 4,
+                                  points.cbegin() + 5, SightRead::Beat(4.02));
 
     BOOST_CHECK_CLOSE(result.min(), 0.000666667, 0.0001);
     BOOST_CHECK_CLOSE(result.max(), 0.001128472, 0.0001);
 
-    result = song.total_available_sp(Beat(4.0), points.cbegin() + 4,
-                                     points.cbegin() + 5, Beat(4.10));
+    result
+        = song.total_available_sp(SightRead::Beat(4.0), points.cbegin() + 4,
+                                  points.cbegin() + 5, SightRead::Beat(4.10));
 
     BOOST_CHECK_CLOSE(result.min(), 0.001128472, 0.0001);
     BOOST_CHECK_CLOSE(result.max(), 0.001128472, 0.0001);
@@ -144,10 +153,11 @@ BOOST_AUTO_TEST_CASE(sp_does_not_exceed_full_bar)
     std::vector<Note> notes {
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {768}, Tick {400}},
-                                    {Tick {1344}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {768}, SightRead::Tick {400}},
+        {SightRead::Tick {1344}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -159,9 +169,10 @@ BOOST_AUTO_TEST_CASE(sp_does_not_exceed_full_bar)
                         {}};
     const auto& points = song.points();
 
-    BOOST_CHECK_EQUAL(
-        song.total_available_sp(Beat(0.0), points.cbegin(), points.cend() - 1),
-        SpBar(1.0, 1.0));
+    BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
+                                              points.cbegin(),
+                                              points.cend() - 1),
+                      SpBar(1.0, 1.0));
 }
 
 BOOST_AUTO_TEST_CASE(
@@ -170,10 +181,11 @@ BOOST_AUTO_TEST_CASE(
     std::vector<Note> notes {
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {768}, Tick {400}},
-                                    {Tick {1344}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {768}, SightRead::Tick {400}},
+        {SightRead::Tick {1344}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -185,7 +197,8 @@ BOOST_AUTO_TEST_CASE(
                         {}};
     const auto& points = song.points();
 
-    BOOST_CHECK_EQUAL(song.total_available_sp(Beat(0.05), points.cbegin(),
+    BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.05),
+                                              points.cbegin(),
                                               points.cbegin() + 1),
                       SpBar(0.25, 0.25));
 }
@@ -195,10 +208,11 @@ BOOST_AUTO_TEST_CASE(unison_bonuses_are_taken_account_of)
     std::vector<Note> notes {
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {768}, Tick {400}},
-                                    {Tick {1344}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {768}, SightRead::Tick {400}},
+        {SightRead::Tick {1344}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -207,10 +221,11 @@ BOOST_AUTO_TEST_CASE(unison_bonuses_are_taken_account_of)
                         SightRead::DrumSettings::default_settings(),
                         Rb3Engine(),
                         {},
-                        {{Tick {0}, Tick {50}}}};
+                        {{SightRead::Tick {0}, SightRead::Tick {50}}}};
     const auto& points = song.points();
 
-    BOOST_CHECK_EQUAL(song.total_available_sp(Beat(0.0), points.cbegin(),
+    BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
+                                              points.cbegin(),
                                               points.cbegin() + 1),
                       SpBar(0.5, 0.5));
 }
@@ -221,7 +236,8 @@ BOOST_AUTO_TEST_CASE(
     total_available_sp_with_earliest_pos_counts_sp_correctly_and_gives_earliest_posiiton)
 {
     std::vector<Note> notes {make_note(0, 1459), make_note(1459)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {100}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {100}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -234,7 +250,7 @@ BOOST_AUTO_TEST_CASE(
     const auto& points = song.points();
 
     const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
-        Beat(0.0), points.cbegin(), std::prev(points.cend()),
+        SightRead::Beat(0.0), points.cbegin(), std::prev(points.cend()),
         std::prev(points.cend(), 2)->position);
 
     BOOST_CHECK_CLOSE(sp_bar.max(), 0.5, 0.001);
@@ -244,7 +260,8 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
 {
     std::vector<Note> notes {make_note(0), make_note(192)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {100}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {100}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong song {note_track,
@@ -253,12 +270,12 @@ BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
                         SightRead::DrumSettings::default_settings(),
                         Rb3Engine(),
                         {},
-                        {Tick {0}}};
+                        {SightRead::Tick {0}}};
     const auto& points = song.points();
 
     const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
-        Beat(0.0), points.cbegin(), std::next(points.cbegin()),
-        {Beat(0.0), SpMeasure(0.0)});
+        SightRead::Beat(0.0), points.cbegin(), std::next(points.cbegin()),
+        {SightRead::Beat(0.0), SpMeasure(0.0)});
 
     BOOST_CHECK_CLOSE(sp_bar.max(), 0.5, 0.0001);
 }
@@ -281,10 +298,10 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
 
-    TempoMap tempo_map {{{Tick {0}, 3, 4}}, {}, {}, 192};
+    TempoMap tempo_map {{{SightRead::Tick {0}, 3, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
     NoteTrack second_note_track {notes, {}, TrackType::FiveFret, global_data};
@@ -296,10 +313,11 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
                                 {},
                                 {}};
     const auto& second_points = second_track.points();
-    ActivationCandidate second_candidate {second_points.cbegin(),
-                                          second_points.cbegin() + 3,
-                                          {Beat(0.0), SpMeasure(0.0)},
-                                          {1.0, 1.0}};
+    ActivationCandidate second_candidate {
+        second_points.cbegin(),
+        second_points.cbegin() + 3,
+        {SightRead::Beat(0.0), SpMeasure(0.0)},
+        {1.0, 1.0}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -324,10 +342,10 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
-    TempoMap tempo_map {{{Tick {0}, 3, 4}}, {}, {}, 192};
+    TempoMap tempo_map {{{SightRead::Tick {0}, 3, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
     NoteTrack second_note_track {notes, {}, TrackType::FiveFret, global_data};
@@ -339,10 +357,11 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
                                 {},
                                 {}};
     const auto& second_points = second_track.points();
-    ActivationCandidate second_candidate {second_points.cbegin(),
-                                          second_points.cbegin() + 2,
-                                          {Beat(0.0), SpMeasure(0.0)},
-                                          {0.5, 0.5}};
+    ActivationCandidate second_candidate {
+        second_points.cbegin(),
+        second_points.cbegin() + 2,
+        {SightRead::Beat(0.0), SpMeasure(0.0)},
+        {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -367,7 +386,7 @@ BOOST_AUTO_TEST_CASE(below_half_bar_never_works)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.25, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -390,7 +409,7 @@ BOOST_AUTO_TEST_CASE(check_next_point_needs_to_not_lie_in_activation)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.6, 0.6}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -401,7 +420,8 @@ BOOST_AUTO_TEST_CASE(check_intermediate_sp_is_accounted_for)
 {
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
                              make_note(6144)};
-    std::vector<StarPower> phrases {{Tick {3000}, Tick {100}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {3000}, SightRead::Tick {100}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -414,7 +434,7 @@ BOOST_AUTO_TEST_CASE(check_intermediate_sp_is_accounted_for)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.8, 0.8}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -425,7 +445,8 @@ BOOST_AUTO_TEST_CASE(check_only_reached_intermediate_sp_is_accounted_for)
 {
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(6000),
                              make_note(6144)};
-    std::vector<StarPower> phrases {{Tick {6000}, Tick {100}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {6000}, SightRead::Tick {100}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -438,7 +459,7 @@ BOOST_AUTO_TEST_CASE(check_only_reached_intermediate_sp_is_accounted_for)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.8, 0.8}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -449,7 +470,8 @@ BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
 {
     std::vector<Note> notes {make_note(0), make_note(1536), make_note(3072),
                              make_note(4000)};
-    std::vector<StarPower> phrases {{Tick {3072}, Tick {100}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {3072}, SightRead::Tick {100}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -462,7 +484,7 @@ BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -472,7 +494,8 @@ BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
 BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
 {
     std::vector<Note> notes {make_note(0), make_note(2), make_note(7000)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {1}}, {Tick {2}, Tick {1}}};
+    std::vector<StarPower> phrases {{SightRead::Tick {0}, SightRead::Tick {1}},
+                                    {SightRead::Tick {2}, SightRead::Tick {1}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -485,7 +508,7 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -508,7 +531,7 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(-2.0), SpMeasure(-0.5)},
+                                   {SightRead::Beat(-2.0), SpMeasure(-0.5)},
                                    {0.53125, 0.53125}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -522,14 +545,18 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
 BOOST_AUTO_TEST_CASE(
     activations_starting_on_an_sp_granting_note_have_the_correct_end)
 {
-    TempoMap tempo_map {{{Tick {0}, 4, 4}}, {{Tick {0}, 300000}}, {}, 192};
+    TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4}},
+                        {{SightRead::Tick {0}, 300000}},
+                        {},
+                        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
     std::vector<Note> notes {
         make_chord(384, {{FIVE_FRET_GREEN, 0}, {FIVE_FRET_RED, 0}}),
         make_note(5088), make_note(5136)};
-    std::vector<StarPower> phrases {{Tick {384}, Tick {1}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {384}, SightRead::Tick {1}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret, global_data};
     ProcessedSong track {note_track,
                          {tempo_map, SpMode::Measure},
@@ -541,11 +568,11 @@ BOOST_AUTO_TEST_CASE(
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(2.24), SpMeasure(0.56)},
+                                   {SightRead::Beat(2.24), SpMeasure(0.56)},
                                    {0.5, 0.5}};
 
-    const auto result = track.is_candidate_valid(candidate, 1.0,
-                                                 {Beat {27}, SpMeasure {6.75}});
+    const auto result = track.is_candidate_valid(
+        candidate, 1.0, {SightRead::Beat {27}, SpMeasure {6.75}});
 
     BOOST_CHECK_EQUAL(result.validity, ActValidity::success);
     BOOST_CHECK_LT(result.ending_position.beat.value(), 26.5);
@@ -558,7 +585,8 @@ BOOST_AUTO_TEST_SUITE(is_candidate_valid_acknowledges_unison_bonuses)
 BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
 {
     std::vector<Note> notes {make_note(192), make_note(5376)};
-    std::vector<StarPower> phrases {{Tick {192}, Tick {1}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {192}, SightRead::Tick {1}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -567,11 +595,11 @@ BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
                          SightRead::DrumSettings::default_settings(),
                          Rb3Engine(),
                          {},
-                         {Tick {192}}};
+                         {SightRead::Tick {192}}};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     const auto result = track.is_candidate_valid(candidate);
@@ -582,7 +610,8 @@ BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
 BOOST_AUTO_TEST_CASE(last_note_unison_bonus_accounted_for_excess_sp)
 {
     std::vector<Note> notes {make_note(192), make_note(5376)};
-    std::vector<StarPower> phrases {{Tick {192}, Tick {1}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {192}, SightRead::Tick {1}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -591,11 +620,11 @@ BOOST_AUTO_TEST_CASE(last_note_unison_bonus_accounted_for_excess_sp)
                          SightRead::DrumSettings::default_settings(),
                          Rb3Engine(),
                          {},
-                         {Tick {192}}};
+                         {SightRead::Tick {192}}};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin(),
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     const auto result = track.is_candidate_valid(candidate);
@@ -611,7 +640,8 @@ BOOST_AUTO_TEST_CASE(check_whammy_is_counted)
 {
     std::vector<Note> notes {make_note(0, 960), make_note(3840),
                              make_note(6144)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {7000}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {7000}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -624,7 +654,7 @@ BOOST_AUTO_TEST_CASE(check_whammy_is_counted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -636,7 +666,8 @@ BOOST_AUTO_TEST_CASE(check_whammy_from_end_of_sp_sustain_before_note_is_counted)
 {
     std::vector<Note> notes {make_note(0, 960), make_note(2880),
                              make_note(6144)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {7000}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {7000}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -649,7 +680,7 @@ BOOST_AUTO_TEST_CASE(check_whammy_from_end_of_sp_sustain_before_note_is_counted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cend() - 2,
                                    points.cend() - 1,
-                                   {Beat(1.0), SpMeasure(0.25)},
+                                   {SightRead::Beat(1.0), SpMeasure(0.25)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -664,7 +695,8 @@ BOOST_AUTO_TEST_CASE(
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384, 192),
                              make_note(5260)};
-    std::vector<StarPower> phrases {{Tick {384}, Tick {1}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {384}, SightRead::Tick {1}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -677,7 +709,7 @@ BOOST_AUTO_TEST_CASE(
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 2,
                                    points.cend() - 1,
-                                   {Beat(1.0), SpMeasure(0.25)},
+                                   {SightRead::Beat(1.0), SpMeasure(0.25)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -688,7 +720,8 @@ BOOST_AUTO_TEST_CASE(check_compressed_activations_are_counted)
 {
     std::vector<Note> notes {make_note(0, 960), make_note(3840),
                              make_note(6144)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {7000}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {7000}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -701,7 +734,7 @@ BOOST_AUTO_TEST_CASE(check_compressed_activations_are_counted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.9}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -728,7 +761,7 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_considered)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 1.0}};
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -750,7 +783,7 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_only_considered_down_to_a_half_bar)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.25, 1.0}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -777,7 +810,7 @@ BOOST_AUTO_TEST_CASE(
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -799,7 +832,7 @@ BOOST_AUTO_TEST_CASE(next_note_can_be_squeezed_late_to_avoid_going_too_far)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -809,7 +842,8 @@ BOOST_AUTO_TEST_CASE(next_note_can_be_squeezed_late_to_avoid_going_too_far)
 BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
 {
     std::vector<Note> notes {make_note(0), make_note(3102), make_note(4608)};
-    std::vector<StarPower> phrases {{Tick {3100}, Tick {100}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {3100}, SightRead::Tick {100}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -822,7 +856,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -832,7 +866,8 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
 BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_late)
 {
     std::vector<Note> notes {make_note(0), make_note(768), make_note(6942)};
-    std::vector<StarPower> phrases {{Tick {768}, Tick {100}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {768}, SightRead::Tick {100}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -845,7 +880,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_late)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -858,8 +893,9 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(768),
                              make_note(4608), make_note(5376)};
-    std::vector<StarPower> phrases {{Tick {4608}, Tick {50}}};
-    TempoMap tempo_map {{}, {{Tick {3840}, 4000000}}, {}, 192};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {4608}, SightRead::Tick {50}}};
+    TempoMap tempo_map {{}, {{SightRead::Tick {3840}, 4000000}}, {}, 192};
 
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
@@ -875,7 +911,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 2,
                                    points.cbegin() + 4,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
@@ -899,7 +935,7 @@ BOOST_AUTO_TEST_CASE(front_end_and_back_end_are_restricted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
@@ -911,7 +947,8 @@ BOOST_AUTO_TEST_CASE(front_end_and_back_end_are_restricted)
 BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
 {
     std::vector<Note> notes {make_note(0), make_note(3102), make_note(4608)};
-    std::vector<StarPower> phrases {{Tick {3100}, Tick {100}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {3100}, SightRead::Tick {100}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -924,7 +961,7 @@ BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
@@ -936,7 +973,8 @@ BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
 BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
 {
     std::vector<Note> notes {make_note(0), make_note(768), make_note(6942)};
-    std::vector<StarPower> phrases {{Tick {768}, Tick {100}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {768}, SightRead::Tick {100}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -949,7 +987,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
@@ -973,7 +1011,7 @@ BOOST_AUTO_TEST_CASE(next_note_back_end_is_restricted)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
@@ -997,7 +1035,7 @@ BOOST_AUTO_TEST_CASE(end_position_is_finite_if_activation_goes_past_last_note)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin(),
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
     auto result = track.is_candidate_valid(candidate, 1.0);
 
@@ -1013,7 +1051,8 @@ BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
 {
     std::vector<Note> notes {make_note(0), make_note(2688), make_note(3072),
                              make_note(3840)};
-    std::vector<StarPower> phrases {{Tick {2688}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {2688}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1026,7 +1065,7 @@ BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
@@ -1036,7 +1075,8 @@ BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
 BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
 {
     std::vector<Note> notes {make_note(0), make_note(3072), make_note(3840)};
-    std::vector<StarPower> phrases {{Tick {3072}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {3072}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1049,7 +1089,7 @@ BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
@@ -1059,7 +1099,8 @@ BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
 BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
 {
     std::vector<Note> notes {make_note(0, 1920), make_note(3456)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1072,7 +1113,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
@@ -1082,7 +1123,8 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
 BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
 {
     std::vector<Note> notes {make_note(0, 2304)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1095,13 +1137,15 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
-    BOOST_CHECK_EQUAL(
-        track.is_candidate_valid(candidate, 0.0, {Beat {1.0}, SpMeasure {0.25}})
-            .ending_position.beat,
-        Beat {16.0});
+    BOOST_CHECK_CLOSE(
+        track
+            .is_candidate_valid(candidate, 0.0,
+                                {SightRead::Beat {1.0}, SpMeasure {0.25}})
+            .ending_position.beat.value(),
+        16.0, 0.0001);
 }
 
 // This happened in GH1 Cheat on the Church second act, causing CHOpt to think
@@ -1110,7 +1154,8 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_around_sp_granting_note_doesnt_get_added)
 {
     std::vector<Note> notes {make_note(0), make_note(768, 192),
                              make_note(3168)};
-    std::vector<StarPower> phrases {{Tick {768}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {768}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1123,7 +1168,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_around_sp_granting_note_doesnt_get_added)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
@@ -1136,7 +1181,8 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)
 {
     std::vector<Note> notes {make_note(0, 768), make_note(3072),
                              make_note(3264)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {3300}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {3300}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1149,15 +1195,19 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(
-        track.is_candidate_valid(candidate, 1.0, {Beat(0.0), SpMeasure(0.0)})
+        track
+            .is_candidate_valid(candidate, 1.0,
+                                {SightRead::Beat(0.0), SpMeasure(0.0)})
             .validity,
         ActValidity::success);
     BOOST_CHECK_EQUAL(
-        track.is_candidate_valid(candidate, 1.0, {Beat(4.0), SpMeasure(1.0)})
+        track
+            .is_candidate_valid(candidate, 1.0,
+                                {SightRead::Beat(4.0), SpMeasure(1.0)})
             .validity,
         ActValidity::surplus_sp);
 }
@@ -1167,7 +1217,8 @@ BOOST_AUTO_TEST_CASE(
 {
     std::vector<Note> notes {make_note(0, 960), make_note(2880),
                              make_note(6144)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {7000}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {7000}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1180,7 +1231,7 @@ BOOST_AUTO_TEST_CASE(
     const auto& points = track.points();
     ActivationCandidate candidate {points.cend() - 2,
                                    points.cend() - 1,
-                                   {Beat(1.0), SpMeasure(0.25)},
+                                   {SightRead::Beat(1.0), SpMeasure(0.25)},
                                    {0.5, 0.5}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.0).validity,
@@ -1196,7 +1247,9 @@ BOOST_AUTO_TEST_CASE(
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(3456, 192)};
     std::vector<StarPower> phrases {
-        {Tick {0}, Tick {1}}, {Tick {192}, Tick {1}}, {Tick {3456}, Tick {1}}};
+        {SightRead::Tick {0}, SightRead::Tick {1}},
+        {SightRead::Tick {192}, SightRead::Tick {1}},
+        {SightRead::Tick {3456}, SightRead::Tick {1}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1209,7 +1262,7 @@ BOOST_AUTO_TEST_CASE(
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 2,
                                    points.cend() - 1,
-                                   {Beat(1.0), SpMeasure(0.25)},
+                                   {SightRead::Beat(1.0), SpMeasure(0.25)},
                                    {0.5, 0.5}};
 
     auto result = track.is_candidate_valid(candidate, 0.0);
@@ -1224,12 +1277,12 @@ BOOST_AUTO_TEST_CASE(
 // caused the endpoint to be too early.
 BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
 {
-    TempoMap tempo_map {{{Tick {0}, 1, 4}}, {}, {}, 192};
+    TempoMap tempo_map {{{SightRead::Tick {0}, 1, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
     std::vector<Note> notes {make_note(0, 6720)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {1}}};
+    std::vector<StarPower> phrases {{SightRead::Tick {0}, SightRead::Tick {1}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret, global_data};
     ProcessedSong track {note_track,
                          {tempo_map, SpMode::Measure},
@@ -1241,7 +1294,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin() + 500,
                                    points.cbegin() + 750,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
 
     auto result = track.is_candidate_valid(candidate, 0.0);
@@ -1283,19 +1336,21 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
 {
     std::vector<Note> notes {make_note(192), make_note(384, 192),
                              make_note(768)};
-    std::vector<StarPower> phrases {{Tick {384}, Tick {1}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {384}, SightRead::Tick {1}}};
     NoteTrack track {notes, phrases, TrackType::FiveFret,
                      std::make_shared<SongGlobalData>()};
     ProcessedSong song {track,
                         {{}, SpMode::Measure},
-                        {0.0, 0.0, Second {0.0}, Second {-0.1}, Second {0.0}},
+                        {0.0, 0.0, SightRead::Second {0.0},
+                         SightRead::Second {-0.1}, SightRead::Second {0.0}},
                         SightRead::DrumSettings::default_settings(),
                         ChGuitarEngine(),
                         {},
                         {}};
     const auto& points = song.points();
 
-    auto result = song.total_available_sp(Beat(0.0), points.cbegin(),
+    auto result = song.total_available_sp(SightRead::Beat(0.0), points.cbegin(),
                                           std::prev(points.cend()));
 
     BOOST_CHECK_CLOSE(result.max(), 0.29, 0.0001);
@@ -1303,7 +1358,11 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
 
 BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
 {
-    TempoMap tempo_map {{{Tick {0}, 4, 4}, {Tick {3840}, 2, 4}}, {}, {}, 192};
+    TempoMap tempo_map {
+        {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {3840}, 2, 4}},
+        {},
+        {},
+        192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -1311,7 +1370,8 @@ BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
     NoteTrack track {notes, {}, TrackType::FiveFret, global_data};
     ProcessedSong song {track,
                         {tempo_map, SpMode::Measure},
-                        {0.0, 0.0, Second {0.0}, Second {0.1}, Second {0.0}},
+                        {0.0, 0.0, SightRead::Second {0.0},
+                         SightRead::Second {0.1}, SightRead::Second {0.0}},
                         SightRead::DrumSettings::default_settings(),
                         ChGuitarEngine(),
                         {},
@@ -1319,7 +1379,7 @@ BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
     const auto& points = song.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
-                                   {Beat(0.0), SpMeasure(0.0)},
+                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
     auto result = song.is_candidate_valid(candidate);
@@ -1369,11 +1429,12 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(576), make_note(6144)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {192}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {6144}, Tick {50}}};
-    std::vector<Solo> solos {{Tick {0}, Tick {50}, 50}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {192}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {6144}, SightRead::Tick {50}}};
+    std::vector<Solo> solos {{SightRead::Tick {0}, SightRead::Tick {50}, 50}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     note_track.solos(solos);
@@ -1385,9 +1446,9 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {
-        {{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}},
-        100};
+    Path path {{{points.cbegin() + 2, points.cbegin() + 3,
+                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
+               100};
 
     const char* desired_path_output = "Path: 2(+1)-ES1\n"
                                       "No SP score: 300\n"
@@ -1402,11 +1463,12 @@ BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(576), make_note(6144)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {192}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {6144}, Tick {50}}};
-    std::vector<Solo> solos {{Tick {0}, Tick {50}, 50}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {192}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {6144}, SightRead::Tick {50}}};
+    std::vector<Solo> solos {{SightRead::Tick {0}, SightRead::Tick {50}, 50}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     note_track.solos(solos);
@@ -1418,9 +1480,9 @@ BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {
-        {{points.cbegin() + 2, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}},
-        100};
+    Path path {{{points.cbegin() + 2, points.cbegin() + 3,
+                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
+               100};
 
     const char* desired_path_output = "Path: 2-S1-ES1\n"
                                       "No SP score: 300\n"
@@ -1434,10 +1496,11 @@ BOOST_AUTO_TEST_CASE(no_overlap_is_denoted_correctly)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(576), make_note(6144)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {192}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {6144}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {192}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {6144}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1448,9 +1511,9 @@ BOOST_AUTO_TEST_CASE(no_overlap_is_denoted_correctly)
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {
-        {{points.cbegin() + 3, points.cbegin() + 3, Beat {0.0}, Beat {0.0}}},
-        50};
+    Path path {{{points.cbegin() + 3, points.cbegin() + 3,
+                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
+               50};
 
     const char* desired_path_output = "Path: 3-ES1\n"
                                       "No SP score: 250\n"
@@ -1465,10 +1528,11 @@ BOOST_AUTO_TEST_CASE(no_es_is_denoted_correctly)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(576), make_note(6144)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {192}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {6144}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {192}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {6144}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1479,9 +1543,9 @@ BOOST_AUTO_TEST_CASE(no_es_is_denoted_correctly)
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {
-        {{points.cbegin() + 4, points.cbegin() + 4, Beat {0.0}, Beat {0.0}}},
-        50};
+    Path path {{{points.cbegin() + 4, points.cbegin() + 4,
+                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
+               50};
 
     const char* desired_path_output = "Path: 3(+1)\n"
                                       "No SP score: 250\n"
@@ -1496,10 +1560,11 @@ BOOST_AUTO_TEST_CASE(no_sp_is_denoted_correctly)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(576), make_note(6144)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {192}, Tick {50}},
-                                    {Tick {384}, Tick {50}},
-                                    {Tick {6144}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {192}, SightRead::Tick {50}},
+        {SightRead::Tick {384}, SightRead::Tick {50}},
+        {SightRead::Tick {6144}, SightRead::Tick {50}}};
     NoteTrack note_track {
         notes, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1522,8 +1587,9 @@ BOOST_AUTO_TEST_CASE(no_sp_is_denoted_correctly)
 BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
 {
     std::vector<Note> notes {make_note(0), make_note(192, 192), make_note(768)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {192}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {192}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1534,7 +1600,8 @@ BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {{{points.cend() - 1, points.cend() - 1, Beat {0.0}, Beat {0.0}}},
+    Path path {{{points.cend() - 1, points.cend() - 1, SightRead::Beat {0.0},
+                 SightRead::Beat {0.0}}},
                50};
 
     const char* desired_path_output = "Path: 2\n"
@@ -1549,8 +1616,9 @@ BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
 BOOST_AUTO_TEST_CASE(mid_sustain_activations_noted_correctly)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(768, 192)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {192}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {192}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1561,8 +1629,9 @@ BOOST_AUTO_TEST_CASE(mid_sustain_activations_noted_correctly)
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {
-        {{points.cbegin() + 3, points.cend() - 1, Beat {0.0}, Beat {0.0}}}, 28};
+    Path path {{{points.cbegin() + 3, points.cend() - 1, SightRead::Beat {0.0},
+                 SightRead::Beat {0.0}}},
+               28};
 
     const char* desired_path_output = "Path: 2\n"
                                       "No SP score: 178\n"
@@ -1577,8 +1646,9 @@ BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_counted_correctly)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(768),
                              make_note(960, 0, FIVE_FRET_RED)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {192}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {192}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1589,7 +1659,8 @@ BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_counted_correctly)
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {{{points.cend() - 1, points.cend() - 1, Beat {0.0}, Beat {0.0}}},
+    Path path {{{points.cend() - 1, points.cend() - 1, SightRead::Beat {0.0},
+                 SightRead::Beat {0.0}}},
                50};
 
     const char* desired_path_output = "Path: 2\n"
@@ -1606,8 +1677,9 @@ BOOST_AUTO_TEST_CASE(
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(768, 96),
                              make_note(960, 0, FIVE_FRET_RED)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {192}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {192}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1618,7 +1690,8 @@ BOOST_AUTO_TEST_CASE(
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {{{points.cend() - 1, points.cend() - 1, Beat {0.0}, Beat {0.0}}},
+    Path path {{{points.cend() - 1, points.cend() - 1, SightRead::Beat {0.0},
+                 SightRead::Beat {0.0}}},
                50};
 
     const char* desired_path_output = "Path: 2\n"
@@ -1633,8 +1706,9 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
 {
     std::vector<Note> notes {make_note(0), make_note(192, 192)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {50}},
-                                    {Tick {192}, Tick {50}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}},
+        {SightRead::Tick {192}, SightRead::Tick {50}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1645,8 +1719,9 @@ BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {
-        {{points.cbegin() + 2, points.cend() - 1, Beat {0.0}, Beat {0.0}}}, 28};
+    Path path {{{points.cbegin() + 2, points.cend() - 1, SightRead::Beat {0.0},
+                 SightRead::Beat {0.0}}},
+               28};
 
     const char* desired_path_output = "Path: 2\n"
                                       "No SP score: 128\n"
@@ -1660,7 +1735,8 @@ BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
 BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
 {
     std::vector<Note> notes {make_note(0, 3072), make_note(3264)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {3300}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {3300}}};
     NoteTrack note_track {notes, phrases, TrackType::FiveFret,
                           std::make_shared<SongGlobalData>()};
     ProcessedSong track {note_track,
@@ -1671,7 +1747,8 @@ BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {{{points.cend() - 3, points.cend() - 3, Beat {0.0}, Beat {0.0}}},
+    Path path {{{points.cend() - 3, points.cend() - 3, SightRead::Beat {0.0},
+                 SightRead::Beat {0.0}}},
                1};
 
     const char* desired_path_output = "Path: 0-ES1\n"
@@ -1760,10 +1837,11 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_is_used_for_drums)
                              make_drum_note(1536), make_drum_note(6336),
                              make_drum_note(6528), make_drum_note(6912),
                              make_drum_note(9984), make_drum_note(13056)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {1}},
-                                    {Tick {192}, Tick {1}},
-                                    {Tick {6336}, Tick {1}},
-                                    {Tick {6528}, Tick {1}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {1}},
+        {SightRead::Tick {192}, SightRead::Tick {1}},
+        {SightRead::Tick {6336}, SightRead::Tick {1}},
+        {SightRead::Tick {6528}, SightRead::Tick {1}}};
     NoteTrack note_track {notes, phrases, TrackType::Drums,
                           std::make_shared<SongGlobalData>()};
     note_track.generate_drum_fills({});
@@ -1775,10 +1853,11 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_is_used_for_drums)
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {
-        {{points.cbegin() + 2, points.cbegin() + 2, Beat {8.0}, Beat {24.0}},
-         {points.cend() - 1, points.cend() - 1, Beat {68.0}, Beat {84.0}}},
-        100};
+    Path path {{{points.cbegin() + 2, points.cbegin() + 2,
+                 SightRead::Beat {8.0}, SightRead::Beat {24.0}},
+                {points.cend() - 1, points.cend() - 1, SightRead::Beat {68.0},
+                 SightRead::Beat {84.0}}},
+               100};
 
     const char* desired_path_output = "Path: 0-1\n"
                                       "No SP score: 400\n"
@@ -1794,10 +1873,11 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_l_and_e_are_used_for_drums)
                              make_drum_note(1536), make_drum_note(5568),
                              make_drum_note(5755), make_drum_note(6912),
                              make_drum_note(9984), make_drum_note(13056)};
-    std::vector<StarPower> phrases {{Tick {0}, Tick {1}},
-                                    {Tick {390}, Tick {1}},
-                                    {Tick {5568}, Tick {1}},
-                                    {Tick {5755}, Tick {1}}};
+    std::vector<StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {1}},
+        {SightRead::Tick {390}, SightRead::Tick {1}},
+        {SightRead::Tick {5568}, SightRead::Tick {1}},
+        {SightRead::Tick {5755}, SightRead::Tick {1}}};
     NoteTrack note_track {notes, phrases, TrackType::Drums,
                           std::make_shared<SongGlobalData>()};
     note_track.generate_drum_fills({});
@@ -1809,10 +1889,11 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_l_and_e_are_used_for_drums)
                          {},
                          {}};
     const auto& points = track.points();
-    Path path {
-        {{points.cbegin() + 2, points.cbegin() + 2, Beat {8.0}, Beat {24.0}},
-         {points.cend() - 1, points.cend() - 1, Beat {68.0}, Beat {84.0}}},
-        100};
+    Path path {{{points.cbegin() + 2, points.cbegin() + 2,
+                 SightRead::Beat {8.0}, SightRead::Beat {24.0}},
+                {points.cend() - 1, points.cend() - 1, SightRead::Beat {68.0},
+                 SightRead::Beat {84.0}}},
+               100};
 
     const char* desired_path_output = "Path: 0(E)-1(L)\n"
                                       "No SP score: 400\n"
@@ -1826,7 +1907,7 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_ignored_with_rb)
 {
     std::vector<Note> notes {make_note(0), make_note(192), make_note(384),
                              make_note(576), make_note(6144)};
-    std::vector<Solo> solos {{Tick {0}, Tick {50}, 100}};
+    std::vector<Solo> solos {{SightRead::Tick {0}, SightRead::Tick {50}, 100}};
     NoteTrack note_track {
         notes, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
     note_track.solos(solos);

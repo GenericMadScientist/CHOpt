@@ -33,9 +33,9 @@ public:
     {
     }
     [[nodiscard]] double value() const { return m_value; }
-    [[nodiscard]] Beat to_beat(double beat_rate) const
+    [[nodiscard]] SightRead::Beat to_beat(double beat_rate) const
     {
-        return Beat(m_value * beat_rate);
+        return SightRead::Beat(m_value * beat_rate);
     }
 
     std::partial_ordering operator<=>(const SpMeasure& rhs) const
@@ -86,7 +86,7 @@ public:
 };
 
 struct SpPosition {
-    Beat beat;
+    SightRead::Beat beat;
     SpMeasure sp_measure;
 };
 
@@ -104,15 +104,15 @@ public:
     {
     }
 
-    [[nodiscard]] Beat to_beats(Second seconds) const;
-    [[nodiscard]] Beat to_beats(SpMeasure sp_measures) const;
-    [[nodiscard]] Beat to_beats(Tick ticks) const;
+    [[nodiscard]] SightRead::Beat to_beats(SightRead::Second seconds) const;
+    [[nodiscard]] SightRead::Beat to_beats(SpMeasure sp_measures) const;
+    [[nodiscard]] SightRead::Beat to_beats(SightRead::Tick ticks) const;
 
-    [[nodiscard]] Second to_seconds(Beat beats) const;
-    [[nodiscard]] Second to_seconds(SpMeasure sp_measures) const;
+    [[nodiscard]] SightRead::Second to_seconds(SightRead::Beat beats) const;
+    [[nodiscard]] SightRead::Second to_seconds(SpMeasure sp_measures) const;
 
-    [[nodiscard]] SpMeasure to_sp_measures(Beat beats) const;
-    [[nodiscard]] SpMeasure to_sp_measures(Second seconds) const;
+    [[nodiscard]] SpMeasure to_sp_measures(SightRead::Beat beats) const;
+    [[nodiscard]] SpMeasure to_sp_measures(SightRead::Second seconds) const;
 };
 
 #endif
