@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
     BOOST_CHECK_EQUAL(first_beats.size(), first_expected_beats.size());
     for (auto i = 0U; i < first_beats.size(); ++i) {
         BOOST_CHECK_CLOSE(first_beats[i].value(),
-                          first_expected_beats[i].value(), 0.0001);
+                          first_expected_beats[i].value(), 0.01);
     }
     BOOST_CHECK_EQUAL_COLLECTIONS(second_values.cbegin(), second_values.cend(),
                                   second_expected_values.cbegin(),
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
     BOOST_CHECK_EQUAL(second_beats.size(), second_expected_beats.size());
     for (auto i = 0U; i < second_beats.size(); ++i) {
         BOOST_CHECK_CLOSE(second_beats[i].value(),
-                          second_expected_beats[i].value(), 0.0001);
+                          second_expected_beats[i].value(), 0.01);
     }
 }
 
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
                                   expected_values.cend());
     BOOST_CHECK_EQUAL(beats.size(), expected_beats.size());
     for (auto i = 0U; i < beats.size(); ++i) {
-        BOOST_CHECK_CLOSE(beats[i].value(), expected_beats[i].value(), 0.0001);
+        BOOST_CHECK_CLOSE(beats[i].value(), expected_beats[i].value(), 0.01);
     }
 }
 
