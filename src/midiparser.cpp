@@ -776,8 +776,8 @@ std::map<SightRead::Difficulty, SightRead::NoteTrack> ghl_note_tracks_from_midi(
         for (const auto& [pos, rank] : event_track.solo_off_events) {
             solo_offs.push_back(pos);
         }
-        auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
-                                      SightRead::TrackType::SixFret, true);
+        auto solos = SightRead::Detail::form_solo_vector(
+            solo_ons, solo_offs, note_set, SightRead::TrackType::SixFret, true);
         if (!permit_solos) {
             solos.clear();
         }
@@ -926,8 +926,8 @@ drum_note_tracks_from_midi(
             disco_flips.push_back(
                 {SightRead::Tick {start}, SightRead::Tick {end - start}});
         }
-        auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
-                                      SightRead::TrackType::Drums, true);
+        auto solos = SightRead::Detail::form_solo_vector(
+            solo_ons, solo_offs, note_set, SightRead::TrackType::Drums, true);
         if (!permit_solos) {
             solos.clear();
         }
@@ -1014,8 +1014,9 @@ std::map<SightRead::Difficulty, SightRead::NoteTrack> note_tracks_from_midi(
         for (const auto& [pos, rank] : event_track.solo_off_events) {
             solo_offs.push_back(pos);
         }
-        auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
-                                      SightRead::TrackType::FiveFret, true);
+        auto solos = SightRead::Detail::form_solo_vector(
+            solo_ons, solo_offs, note_set, SightRead::TrackType::FiveFret,
+            true);
         if (!permit_solos) {
             solos.clear();
         }
@@ -1093,7 +1094,7 @@ Song MidiParser::from_midi(const Midi& midi) const
         if (!inst.has_value() || !m_permitted_instruments.contains(*inst)) {
             continue;
         }
-        if (is_six_fret_instrument(*inst)) {
+        if (SightRead::Detail::is_six_fret_instrument(*inst)) {
             auto tracks
                 = ghl_note_tracks_from_midi(track, song.global_data_ptr(),
                                             m_hopo_threshold, m_permit_solos);

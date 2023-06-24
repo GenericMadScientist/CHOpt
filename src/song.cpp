@@ -82,7 +82,7 @@ std::vector<SightRead::Tick> Song::unison_phrase_positions() const
         phrase_by_instrument;
     for (const auto& [key, value] : m_tracks) {
         const auto instrument = std::get<0>(key);
-        if (is_six_fret_instrument(instrument)) {
+        if (SightRead::Detail::is_six_fret_instrument(instrument)) {
             continue;
         }
         for (const auto& phrase : value.sp_phrases()) {

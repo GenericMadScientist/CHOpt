@@ -422,16 +422,16 @@ note_track_from_section(const ChartSection& section,
     }
     std::sort(solo_on_events.begin(), solo_on_events.end());
     std::sort(solo_off_events.begin(), solo_off_events.end());
-    auto solos = form_solo_vector(solo_on_events, solo_off_events, notes,
-                                  track_type, false);
+    auto solos = SightRead::Detail::form_solo_vector(
+        solo_on_events, solo_off_events, notes, track_type, false);
     if (!permit_solos) {
         solos.clear();
     }
     std::sort(disco_flip_on_events.begin(), disco_flip_on_events.end());
     std::sort(disco_flip_off_events.begin(), disco_flip_off_events.end());
     std::vector<SightRead::DiscoFlip> disco_flips;
-    for (auto [start, end] :
-         combine_solo_events(disco_flip_on_events, disco_flip_off_events)) {
+    for (auto [start, end] : SightRead::Detail::combine_solo_events(
+             disco_flip_on_events, disco_flip_off_events)) {
         disco_flips.push_back({start, end - start});
     }
 
