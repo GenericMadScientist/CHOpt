@@ -21,7 +21,7 @@
 
 #include <utility>
 
-#include "tempomap.hpp"
+#include <sightread/tempomap.hpp>
 
 class SpMeasure {
 private:

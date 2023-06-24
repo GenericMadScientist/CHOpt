@@ -26,6 +26,7 @@
 #include <vector>
 
 #include <sightread/drumsettings.hpp>
+#include <sightread/tempomap.hpp>
 
 #include "engine.hpp"
 #include "points.hpp"
@@ -34,7 +35,6 @@
 #include "songparts.hpp"
 #include "sp.hpp"
 #include "sptimemap.hpp"
-#include "tempomap.hpp"
 
 struct DrawnRow {
     double start;

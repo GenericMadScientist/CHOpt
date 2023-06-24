@@ -33,9 +33,8 @@
 #include <vector>
 
 #include <sightread/drumsettings.hpp>
+#include <sightread/tempomap.hpp>
 #include <sightread/time.hpp>
-
-#include "tempomap.hpp"
 
 enum class Difficulty { Easy = 0, Medium = 1, Hard = 2, Expert = 3 };
 
