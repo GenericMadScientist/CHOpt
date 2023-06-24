@@ -19,8 +19,9 @@
 #include <charconv>
 #include <optional>
 
+#include <sightread/songparts.hpp>
+
 #include "chart.hpp"
-#include "songparts.hpp"
 #include "stringutil.hpp"
 
 namespace {

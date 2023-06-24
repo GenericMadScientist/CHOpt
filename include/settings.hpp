@@ -25,10 +25,10 @@
 #include <string>
 
 #include <sightread/drumsettings.hpp>
+#include <sightread/songparts.hpp>
 #include <sightread/time.hpp>
 
 #include "engine.hpp"
-#include "songparts.hpp"
 
 enum class Game { CloneHero, GuitarHeroOne, RockBand, RockBandThree };
 

@@ -20,8 +20,9 @@
 #include <cstddef>
 #include <utility>
 
+#include <sightread/songparts.hpp>
+
 #include "midi.hpp"
-#include "songparts.hpp"
 
 namespace {
 void throw_on_insufficient_bytes()

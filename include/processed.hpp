@@ -26,12 +26,12 @@
 #include <vector>
 
 #include <sightread/drumsettings.hpp>
+#include <sightread/songparts.hpp>
 #include <sightread/tempomap.hpp>
 #include <sightread/time.hpp>
 
 #include "points.hpp"
 #include "settings.hpp"
-#include "songparts.hpp"
 #include "sp.hpp"
 #include "sptimemap.hpp"
 

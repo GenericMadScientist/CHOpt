@@ -24,11 +24,12 @@
 #include <span>
 #include <string>
 
+#include <sightread/songparts.hpp>
+
 #include "hopothreshold.hpp"
 #include "ini.hpp"
 #include "midi.hpp"
 #include "song.hpp"
-#include "songparts.hpp"
 
 class MidiParser {
 private:

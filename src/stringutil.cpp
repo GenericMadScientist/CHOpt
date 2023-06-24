@@ -33,7 +33,8 @@
 #include <locale>
 #endif
 
-#include "songparts.hpp"
+#include <sightread/songparts.hpp>
+
 #include "stringutil.hpp"
 
 std::string_view break_off_newline(std::string_view& input)

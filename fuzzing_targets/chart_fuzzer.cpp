@@ -18,8 +18,9 @@
 
 #include <cstddef>
 
+#include <sightread/songparts.hpp>
+
 #include "chart.hpp"
-#include "songparts.hpp"
 
 extern "C" int LLVMFuzzerTestOneInput(const char* data, size_t size)
 {

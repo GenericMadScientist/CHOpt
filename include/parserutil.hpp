@@ -22,9 +22,8 @@
 #include <tuple>
 #include <vector>
 
+#include <sightread/songparts.hpp>
 #include <sightread/time.hpp>
-
-#include "songparts.hpp"
 
 bool is_six_fret_instrument(SightRead::Instrument instrument);
 

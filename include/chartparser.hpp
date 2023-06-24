@@ -23,11 +23,12 @@
 #include <string>
 #include <string_view>
 
+#include <sightread/songparts.hpp>
+
 #include "chart.hpp"
 #include "hopothreshold.hpp"
 #include "ini.hpp"
 #include "song.hpp"
-#include "songparts.hpp"
 
 class ChartParser {
 private:

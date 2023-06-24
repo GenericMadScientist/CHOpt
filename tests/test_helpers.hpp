@@ -29,6 +29,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <sightread/songparts.hpp>
 #include <sightread/time.hpp>
 
 #include "chart.hpp"
@@ -36,7 +37,6 @@
 #include "midi.hpp"
 #include "points.hpp"
 #include "processed.hpp"
-#include "songparts.hpp"
 #include "sp.hpp"
 
 template <typename Iter>

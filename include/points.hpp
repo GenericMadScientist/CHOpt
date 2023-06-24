@@ -26,11 +26,11 @@
 #include <vector>
 
 #include <sightread/drumsettings.hpp>
+#include <sightread/songparts.hpp>
 #include <sightread/time.hpp>
 
 #include "engine.hpp"
 #include "settings.hpp"
-#include "songparts.hpp"
 #include "sptimemap.hpp"
 
 // fill_start is used for Drums, giving the start of the fill that makes a point
