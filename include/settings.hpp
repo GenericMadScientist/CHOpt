@@ -24,8 +24,8 @@
 #include <set>
 #include <string>
 
-#include "sightread/time.hpp"
 #include <sightread/drumsettings.hpp>
+#include <sightread/time.hpp>
 
 #include "engine.hpp"
 #include "songparts.hpp"

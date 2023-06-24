@@ -21,7 +21,7 @@
 
 #include <algorithm>
 
-#include "sightread/time.hpp"
+#include <sightread/time.hpp>
 
 #include "sptimemap.hpp"
 

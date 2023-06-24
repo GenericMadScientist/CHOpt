@@ -25,7 +25,7 @@
 #include <tuple>
 #include <vector>
 
-#include "sightread/drumsettings.hpp"
+#include <sightread/drumsettings.hpp>
 
 #include "engine.hpp"
 #include "points.hpp"

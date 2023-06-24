@@ -32,8 +32,8 @@
 #include <utility>
 #include <vector>
 
-#include "sightread/drumsettings.hpp"
-#include "sightread/time.hpp"
+#include <sightread/drumsettings.hpp>
+#include <sightread/time.hpp>
 
 #include "tempomap.hpp"
 

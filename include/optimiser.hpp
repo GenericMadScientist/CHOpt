@@ -27,7 +27,7 @@
 #include <tuple>
 #include <vector>
 
-#include "sightread/time.hpp"
+#include <sightread/time.hpp>
 
 #include "points.hpp"
 #include "processed.hpp"

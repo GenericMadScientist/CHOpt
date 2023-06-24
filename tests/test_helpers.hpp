@@ -29,7 +29,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "sightread/time.hpp"
+#include <sightread/time.hpp>
 
 #include "chart.hpp"
 #include "imagebuilder.hpp"

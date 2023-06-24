@@ -19,7 +19,7 @@
 #ifndef CHOPT_HOPOTHRESHOLD_HPP
 #define CHOPT_HOPOTHRESHOLD_HPP
 
-#include "sightread/time.hpp"
+#include <sightread/time.hpp>
 
 enum class HopoThresholdType { Resolution, HopoFrequency, EighthNote };
 

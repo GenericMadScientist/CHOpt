@@ -24,7 +24,7 @@
 #include <tuple>
 #include <vector>
 
-#include "sightread/time.hpp"
+#include <sightread/time.hpp>
 
 #include "songparts.hpp"
 
