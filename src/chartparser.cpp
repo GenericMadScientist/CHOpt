@@ -20,8 +20,9 @@
 #include <climits>
 #include <set>
 
+#include <sightread/detail/parserutil.hpp>
+
 #include "chartparser.hpp"
-#include "parserutil.hpp"
 
 namespace {
 std::string get_with_default(const std::map<std::string, std::string>& map,

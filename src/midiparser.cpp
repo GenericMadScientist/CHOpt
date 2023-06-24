@@ -21,8 +21,9 @@
 #include <limits>
 #include <set>
 
+#include <sightread/detail/parserutil.hpp>
+
 #include "midiparser.hpp"
-#include "parserutil.hpp"
 
 namespace {
 SightRead::TempoMap read_first_midi_track(const MidiTrack& track,

@@ -22,7 +22,8 @@
 #include <string>
 #include <utility>
 
-#include "parserutil.hpp"
+#include <sightread/detail/parserutil.hpp>
+
 #include "song.hpp"
 
 void Song::add_note_track(SightRead::Instrument instrument,
