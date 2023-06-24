@@ -26,7 +26,7 @@ jobs:
           ./bootstrap.sh --with-libraries=json,nowide,program_options,test --prefix=.
           ./b2 install > /dev/null
       - name: Application files
-        run: clang-tidy-16 src/*.cpp gui/json_settings.cpp -- -Iinclude -Ilibs -Iextern/sightread/include -I$HOME/boost_1_81_0 -std=c++20
+        run: clang-tidy-16 src/*.cpp gui/json_settings.cpp -- -Iinclude -Ilibs -Iextern/sightread/include -Iextern/sightread/src/detail -I$HOME/boost_1_81_0 -std=c++20
       - name: Test files
         run: clang-tidy-16 tests/*_unittest.cpp -checks=-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers -- -Iinclude -Iextern/sightread/include -I$HOME/boost_1_81_0 -std=c++20
 
