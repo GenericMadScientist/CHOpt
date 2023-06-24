@@ -545,7 +545,7 @@ BOOST_AUTO_TEST_SUITE(hit_window_start_and_hit_window_end_are_set_correctly)
 
 BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
 {
-    TempoMap tempo_map {
+    SightRead::TempoMap tempo_map {
         {},
         {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
         {},
@@ -570,7 +570,7 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
 
 BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
 {
-    TempoMap tempo_map {
+    SightRead::TempoMap tempo_map {
         {},
         {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
         {},
@@ -595,7 +595,7 @@ BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
 
 BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
 {
-    TempoMap tempo_map {
+    SightRead::TempoMap tempo_map {
         {},
         {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
         {},
@@ -622,7 +622,7 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
 
 BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
 {
-    TempoMap tempo_map {
+    SightRead::TempoMap tempo_map {
         {},
         {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
         {},
@@ -648,7 +648,7 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
 
 BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
 {
-    TempoMap tempo_map {
+    SightRead::TempoMap tempo_map {
         {},
         {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
         {},

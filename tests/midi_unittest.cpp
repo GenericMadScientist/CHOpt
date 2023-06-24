@@ -53,7 +53,8 @@ BOOST_AUTO_TEST_CASE(parse_midi_reads_header_correctly)
 
     BOOST_CHECK_EQUAL(midi.ticks_per_quarter_note, 0x1E0);
     BOOST_TEST(midi.tracks.empty());
-    BOOST_CHECK_THROW([&] { return parse_midi(bad_data); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parse_midi(bad_data); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(division_must_not_be_in_smpte_format)
@@ -61,7 +62,8 @@ BOOST_AUTO_TEST_CASE(division_must_not_be_in_smpte_format)
     std::vector<std::uint8_t> bad_data {0x4D, 0x54, 0x68, 0x64, 0, 0,    0,
                                         6,    0,    1,    0,    0, 0x80, 0};
 
-    BOOST_CHECK_THROW([&] { return parse_midi(bad_data); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parse_midi(bad_data); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(track_lengths_are_read_correctly)
@@ -83,7 +85,8 @@ BOOST_AUTO_TEST_CASE(track_magic_number_is_checked)
     std::vector<std::uint8_t> bad_track {0x40, 0x54, 0x72, 0x6B, 0, 0, 0, 0};
     auto data = midi_from_tracks({bad_track});
 
-    BOOST_CHECK_THROW([&] { return parse_midi(data); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parse_midi(data); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(extra_tracks_in_header_are_ignored)
@@ -131,7 +134,8 @@ BOOST_AUTO_TEST_CASE(five_byte_multi_byte_delta_times_throw)
                                      0x8F, 0x8F, 0x8F, 0x8F, 0x10, 0xFF, 2, 0};
     const auto data = midi_from_tracks({track});
 
-    BOOST_CHECK_THROW([&] { return parse_midi(data); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parse_midi(data); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -173,7 +177,8 @@ BOOST_AUTO_TEST_CASE(too_long_meta_events_throw)
                                      100,  8,    0x6B, 0xC3};
     const auto data = midi_from_tracks({track});
 
-    BOOST_CHECK_THROW([&] { return parse_midi(data); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parse_midi(data); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -246,7 +251,8 @@ BOOST_AUTO_TEST_CASE(midi_events_with_status_byte_high_nibble_f_throw)
                                      0,    4,    0,    0xF0, 0, 0};
     auto data = midi_from_tracks({track});
 
-    BOOST_CHECK_THROW([&] { return parse_midi(data); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parse_midi(data); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -287,7 +293,8 @@ BOOST_AUTO_TEST_CASE(sysex_event_with_too_high_length_throws)
                                      6,    0x0,  0xF0, 100,  1, 2, 3};
     const auto data = midi_from_tracks({track});
 
-    BOOST_CHECK_THROW([&] { return parse_midi(data); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parse_midi(data); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

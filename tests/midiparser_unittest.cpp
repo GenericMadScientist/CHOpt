@@ -54,7 +54,8 @@ BOOST_AUTO_TEST_CASE(resolution_gt_zero_invariant_is_upheld)
     const Midi midi {0, {}};
     const MidiParser parser {{}};
 
-    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -66,8 +67,8 @@ BOOST_AUTO_TEST_CASE(tempos_are_read_correctly)
     MidiTrack tempo_track {{{0, {MetaEvent {0x51, {6, 0x1A, 0x80}}}},
                             {1920, {MetaEvent {0x51, {4, 0x93, 0xE0}}}}}};
     const Midi midi {192, {tempo_track}};
-    const std::vector<BPM> bpms {{SightRead::Tick {0}, 150000},
-                                 {SightRead::Tick {1920}, 200000}};
+    const std::vector<SightRead::BPM> bpms {{SightRead::Tick {0}, 150000},
+                                            {SightRead::Tick {1920}, 200000}};
 
     const auto song = MidiParser({}).from_midi(midi);
     const auto& tempo_map = song.global_data().tempo_map();
@@ -83,7 +84,8 @@ BOOST_AUTO_TEST_CASE(too_short_tempo_events_cause_an_exception)
     const Midi midi {192, {tempo_track}};
     const MidiParser parser {{}};
 
-    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(time_signatures_are_read_correctly)
@@ -91,8 +93,8 @@ BOOST_AUTO_TEST_CASE(time_signatures_are_read_correctly)
     MidiTrack ts_track {{{0, {MetaEvent {0x58, {6, 2, 24, 8}}}},
                          {1920, {MetaEvent {0x58, {3, 3, 24, 8}}}}}};
     const Midi midi {192, {ts_track}};
-    const std::vector<TimeSignature> tses {{SightRead::Tick {0}, 6, 4},
-                                           {SightRead::Tick {1920}, 3, 8}};
+    const std::vector<SightRead::TimeSignature> tses {
+        {SightRead::Tick {0}, 6, 4}, {SightRead::Tick {1920}, 3, 8}};
 
     const auto song = MidiParser({}).from_midi(midi);
     const auto& tempo_map = song.global_data().tempo_map();
@@ -108,7 +110,8 @@ BOOST_AUTO_TEST_CASE(time_signatures_with_large_denominators_cause_an_exception)
     const Midi midi {192, {ts_track}};
     const MidiParser parser {{}};
 
-    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(too_short_time_sig_events_cause_an_exception)
@@ -117,7 +120,8 @@ BOOST_AUTO_TEST_CASE(too_short_time_sig_events_cause_an_exception)
     const Midi midi {192, {ts_track}};
     const MidiParser parser {{}};
 
-    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(song_name_is_not_read_from_midi)
@@ -229,7 +233,8 @@ BOOST_AUTO_TEST_CASE(note_on_events_must_have_a_corresponding_note_off_event)
     const Midi midi {192, {note_track}};
     const MidiParser parser {{}};
 
-    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(corresponding_note_off_events_are_after_note_on_events)
@@ -319,7 +324,8 @@ BOOST_AUTO_TEST_CASE(
     const Midi midi {192, {note_track}};
     const MidiParser parser {{}};
 
-    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(open_notes_are_read_correctly)
@@ -349,7 +355,8 @@ BOOST_AUTO_TEST_CASE(parseerror_thrown_if_open_note_ons_have_no_note_offs)
     const Midi midi {192, {note_track}};
     const MidiParser parser {{}};
 
-    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -408,7 +415,8 @@ BOOST_AUTO_TEST_CASE(note_off_event_is_required_for_every_phrase)
     const Midi midi {192, {note_track}};
     const MidiParser parser {{}};
 
-    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parser.from_midi(midi); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

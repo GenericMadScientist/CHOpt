@@ -74,7 +74,7 @@ note_spans(const NoteTrack& track, double early_whammy, const Engine& engine)
 }
 
 std::vector<SpData::BeatRate>
-SpData::form_beat_rates(const TempoMap& tempo_map,
+SpData::form_beat_rates(const SightRead::TempoMap& tempo_map,
                         const std::vector<SightRead::Tick>& od_beats,
                         const Engine& engine)
 {

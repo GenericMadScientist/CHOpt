@@ -55,8 +55,9 @@ BOOST_AUTO_TEST_SUITE(propagate_sp_over_whammy_works_correctly)
 
 BOOST_AUTO_TEST_CASE(works_correctly_over_four_four)
 {
-    std::vector<TimeSignature> time_sigs {{SightRead::Tick {0}, 4, 4}};
-    TempoMap tempo_map {time_sigs, {}, {}, 192};
+    std::vector<SightRead::TimeSignature> time_sigs {
+        {SightRead::Tick {0}, 4, 4}};
+    SightRead::TempoMap tempo_map {time_sigs, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -83,8 +84,9 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_four_four)
 
 BOOST_AUTO_TEST_CASE(works_correctly_over_three_four)
 {
-    std::vector<TimeSignature> time_sigs {{SightRead::Tick {0}, 3, 4}};
-    TempoMap tempo_map {time_sigs, {}, {}, 192};
+    std::vector<SightRead::TimeSignature> time_sigs {
+        {SightRead::Tick {0}, 3, 4}};
+    SightRead::TempoMap tempo_map {time_sigs, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -111,9 +113,9 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_three_four)
 
 BOOST_AUTO_TEST_CASE(works_correctly_over_changing_time_signatures)
 {
-    std::vector<TimeSignature> time_sigs {{SightRead::Tick {0}, 4, 4},
-                                          {SightRead::Tick {384}, 3, 4}};
-    TempoMap tempo_map {time_sigs, {}, {}, 192};
+    std::vector<SightRead::TimeSignature> time_sigs {
+        {SightRead::Tick {0}, 4, 4}, {SightRead::Tick {384}, 3, 4}};
+    SightRead::TempoMap tempo_map {time_sigs, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -140,9 +142,9 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_changing_time_signatures)
 
 BOOST_AUTO_TEST_CASE(returns_negative_one_if_sp_runs_out)
 {
-    std::vector<TimeSignature> time_sigs {{SightRead::Tick {0}, 3, 4},
-                                          {SightRead::Tick {384}, 4, 4}};
-    TempoMap tempo_map {time_sigs, {}, {}, 192};
+    std::vector<SightRead::TimeSignature> time_sigs {
+        {SightRead::Tick {0}, 3, 4}, {SightRead::Tick {384}, 4, 4}};
+    SightRead::TempoMap tempo_map {time_sigs, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -471,7 +473,7 @@ BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_insufficient)
 
 BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_accumulation_is_too_slow)
 {
-    TempoMap tempo_map {{{SightRead::Tick {0}, 2, 4}}, {}, {}, 192};
+    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 2, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 

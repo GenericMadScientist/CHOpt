@@ -156,7 +156,7 @@ private:
     std::string m_name;
     std::string m_artist;
     std::string m_charter;
-    TempoMap m_tempo_map;
+    SightRead::TempoMap m_tempo_map;
     std::vector<SightRead::Tick> m_od_beats;
 
 public:
@@ -167,8 +167,11 @@ public:
     [[nodiscard]] const std::string& name() const { return m_name; }
     [[nodiscard]] const std::string& artist() const { return m_artist; }
     [[nodiscard]] const std::string& charter() const { return m_charter; }
-    [[nodiscard]] TempoMap& tempo_map() { return m_tempo_map; }
-    [[nodiscard]] const TempoMap& tempo_map() const { return m_tempo_map; }
+    [[nodiscard]] SightRead::TempoMap& tempo_map() { return m_tempo_map; }
+    [[nodiscard]] const SightRead::TempoMap& tempo_map() const
+    {
+        return m_tempo_map;
+    }
     [[nodiscard]] const std::vector<SightRead::Tick>& od_beats() const
     {
         return m_od_beats;
@@ -178,14 +181,17 @@ public:
     void resolution(int value)
     {
         if (value <= 0) {
-            throw ParseError("Resolution non-positive");
+            throw SightRead::ParseError("Resolution non-positive");
         }
         m_resolution = value;
     }
     void name(std::string value) { m_name = std::move(value); }
     void artist(std::string value) { m_artist = std::move(value); }
     void charter(std::string value) { m_charter = std::move(value); }
-    void tempo_map(TempoMap value) { m_tempo_map = std::move(value); }
+    void tempo_map(SightRead::TempoMap value)
+    {
+        m_tempo_map = std::move(value);
+    }
     void od_beats(std::vector<SightRead::Tick> value)
     {
         m_od_beats = std::move(value);
@@ -221,7 +227,7 @@ public:
     NoteTrack(std::vector<Note> notes, const std::vector<StarPower>& sp_phrases,
               TrackType track_type, std::shared_ptr<SongGlobalData> global_data,
               SightRead::Tick max_hopo_gap = SightRead::Tick {65});
-    void generate_drum_fills(const TempoMap& tempo_map);
+    void generate_drum_fills(const SightRead::TempoMap& tempo_map);
     void disable_dynamics();
     [[nodiscard]] const std::vector<Note>& notes() const { return m_notes; }
     [[nodiscard]] const std::vector<StarPower>& sp_phrases() const

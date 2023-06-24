@@ -244,13 +244,13 @@ BOOST_AUTO_TEST_CASE(simple_four_four_is_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
 {
-    TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4},
-                         {SightRead::Tick {768}, 3, 4},
-                         {SightRead::Tick {1344}, 3, 8},
-                         {SightRead::Tick {1632}, 4, 4}},
-                        {},
-                        {},
-                        192};
+    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4},
+                                    {SightRead::Tick {768}, 3, 4},
+                                    {SightRead::Tick {1344}, 3, 8},
+                                    {SightRead::Tick {1632}, 4, 4}},
+                                   {},
+                                   {},
+                                   192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -267,12 +267,12 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
 
 BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
 {
-    TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4},
-                         {SightRead::Tick {767}, 3, 4},
-                         {SightRead::Tick {1344}, 3, 8}},
-                        {},
-                        {},
-                        192};
+    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4},
+                                    {SightRead::Tick {767}, 3, 4},
+                                    {SightRead::Tick {1344}, 3, 8}},
+                                   {},
+                                   {},
+                                   192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
 
 BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
 {
-    TempoMap tempo_map {{{SightRead::Tick {0}, 17, 4}}, {}, {}, 192};
+    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 17, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(four_four_works_fine)
 
 BOOST_AUTO_TEST_CASE(four_eight_works_fine)
 {
-    TempoMap tempo_map {{{SightRead::Tick {0}, 4, 8}}, {}, {}, 192};
+    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 4, 8}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -373,7 +373,7 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
 
 BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
 {
-    TempoMap tempo_map {
+    SightRead::TempoMap tempo_map {
         {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {768}, 4, 8}},
         {},
         {},
@@ -407,7 +407,7 @@ BOOST_AUTO_TEST_SUITE(time_signatures_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
 {
-    TempoMap tempo_map {
+    SightRead::TempoMap tempo_map {
         {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {768}, 4, 8}},
         {},
         {},
@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
 {
-    TempoMap tempo_map {
+    SightRead::TempoMap tempo_map {
         {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {1920}, 3, 4}},
         {},
         {},
@@ -453,12 +453,12 @@ BOOST_AUTO_TEST_SUITE(tempos_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
 {
-    TempoMap tempo_map {{},
-                        {{SightRead::Tick {0}, 150000},
-                         {SightRead::Tick {384}, 120000},
-                         {SightRead::Tick {768}, 200000}},
-                        {},
-                        192};
+    SightRead::TempoMap tempo_map {{},
+                                   {{SightRead::Tick {0}, 150000},
+                                    {SightRead::Tick {384}, 120000},
+                                    {SightRead::Tick {768}, 200000}},
+                                   {},
+                                   192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -477,7 +477,7 @@ BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
 {
-    TempoMap tempo_map {
+    SightRead::TempoMap tempo_map {
         {},
         {{SightRead::Tick {0}, 120000}, {SightRead::Tick {1920}, 200000}},
         {},

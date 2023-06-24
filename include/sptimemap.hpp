@@ -94,11 +94,11 @@ enum class SpMode { Measure, OdBeat };
 
 class SpTimeMap {
 private:
-    TempoMap m_tempo_map;
+    SightRead::TempoMap m_tempo_map;
     SpMode m_sp_mode;
 
 public:
-    SpTimeMap(TempoMap tempo_map, SpMode sp_mode)
+    SpTimeMap(SightRead::TempoMap tempo_map, SpMode sp_mode)
         : m_tempo_map {std::move(tempo_map)}
         , m_sp_mode {sp_mode}
     {

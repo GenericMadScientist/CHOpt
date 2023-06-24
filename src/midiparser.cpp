@@ -24,13 +24,14 @@
 #include "parserutil.hpp"
 
 namespace {
-TempoMap read_first_midi_track(const MidiTrack& track, int resolution)
+SightRead::TempoMap read_first_midi_track(const MidiTrack& track,
+                                          int resolution)
 {
     constexpr int SET_TEMPO_ID = 0x51;
     constexpr int TIME_SIG_ID = 0x58;
 
-    std::vector<BPM> tempos;
-    std::vector<TimeSignature> time_sigs;
+    std::vector<SightRead::BPM> tempos;
+    std::vector<SightRead::TimeSignature> time_sigs;
     for (const auto& event : track.events) {
         const auto* meta_event = std::get_if<MetaEvent>(&event.event);
         if (meta_event == nullptr) {
@@ -39,7 +40,7 @@ TempoMap read_first_midi_track(const MidiTrack& track, int resolution)
         switch (meta_event->type) {
         case SET_TEMPO_ID: {
             if (meta_event->data.size() < 3) {
-                throw ParseError("Tempo meta event too short");
+                throw SightRead::ParseError("Tempo meta event too short");
             }
             const auto us_per_quarter = meta_event->data[0] << 16
                 | meta_event->data[1] << 8 | meta_event->data[2];
@@ -50,10 +51,10 @@ TempoMap read_first_midi_track(const MidiTrack& track, int resolution)
         }
         case TIME_SIG_ID:
             if (meta_event->data.size() < 2) {
-                throw ParseError("Tempo meta event too short");
+                throw SightRead::ParseError("Tempo meta event too short");
             }
             if (meta_event->data[1] >= (CHAR_BIT * sizeof(int))) {
-                throw ParseError("Time sig denominator too large");
+                throw SightRead::ParseError("Time sig denominator too large");
             }
             time_sigs.push_back({SightRead::Tick {event.time},
                                  meta_event->data[0],
@@ -259,7 +260,7 @@ T colour_from_key_and_bounds(std::uint8_t key,
         }
     }
 
-    throw ParseError("Invalid key for note");
+    throw SightRead::ParseError("Invalid key for note");
 }
 
 int colour_from_key(std::uint8_t key, TrackType track_type, bool from_five_lane)
@@ -361,7 +362,7 @@ combine_note_on_off_events(const std::vector<std::tuple<int, int>>& on_events,
     }
 
     if (on_iter != on_events.cend()) {
-        throw ParseError("on event has no corresponding off event");
+        throw SightRead::ParseError("on event has no corresponding off event");
     }
 
     return ranges;
@@ -687,7 +688,7 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour, flags] = key;
         if (!event_track.note_off_events.contains({diff, colour})) {
-            throw ParseError("No corresponding Note Off events");
+            throw SightRead::ParseError("No corresponding Note Off events");
         }
         const auto& note_offs = event_track.note_off_events.at({diff, colour});
         for (const auto& [pos, end] :
@@ -851,7 +852,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
         const auto& [diff, colour, flags] = key;
         const std::tuple<Difficulty, int> no_flags_key {diff, colour};
         if (!event_track.note_off_events.contains(no_flags_key)) {
-            throw ParseError("No corresponding Note Off events");
+            throw SightRead::ParseError("No corresponding Note Off events");
         }
         const auto& note_offs = event_track.note_off_events.at(no_flags_key);
         for (const auto& [pos, end] :
@@ -960,7 +961,7 @@ note_tracks_from_midi(const MidiTrack& midi_track,
     std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
     for (const auto& [diff, open_ons] : event_track.open_on_events) {
         if (!event_track.open_off_events.contains(diff)) {
-            throw ParseError("No open Note Off events");
+            throw SightRead::ParseError("No open Note Off events");
         }
         const auto& open_offs = event_track.open_off_events.at(diff);
         open_events[diff] = combine_note_on_off_events(open_ons, open_offs);
@@ -1037,7 +1038,7 @@ MidiParser& MidiParser::parse_solos(bool permit_solos)
 Song MidiParser::from_midi(const Midi& midi) const
 {
     if (midi.ticks_per_quarter_note == 0) {
-        throw ParseError("Resolution must be > 0");
+        throw SightRead::ParseError("Resolution must be > 0");
     }
 
     Song song;
@@ -1094,8 +1095,9 @@ Song MidiParser::from_midi(const Midi& midi) const
     const auto& od_beats = song.global_data().od_beats();
     if (!od_beats.empty()) {
         auto old_tempo_map = song.global_data().tempo_map();
-        TempoMap new_tempo_map {old_tempo_map.time_sigs(), old_tempo_map.bpms(),
-                                od_beats, midi.ticks_per_quarter_note};
+        SightRead::TempoMap new_tempo_map {old_tempo_map.time_sigs(),
+                                           old_tempo_map.bpms(), od_beats,
+                                           midi.ticks_per_quarter_note};
         song.global_data().tempo_map(new_tempo_map);
     }
 

@@ -24,7 +24,10 @@
 #include "songparts.hpp"
 
 namespace {
-void throw_on_insufficient_bytes() { throw ParseError("insufficient bytes"); }
+void throw_on_insufficient_bytes()
+{
+    throw SightRead::ParseError("insufficient bytes");
+}
 
 std::uint8_t pop_front(std::span<const std::uint8_t>& data)
 {
@@ -76,12 +79,12 @@ MidiHeader read_midi_header(std::span<const std::uint8_t>& data)
     const auto first_ten_bytes = data.subspan(0, MAGIC_NUMBER.size());
     if (!std::equal(first_ten_bytes.begin(), first_ten_bytes.end(),
                     MAGIC_NUMBER.cbegin())) {
-        throw ParseError("Invalid MIDI file");
+        throw SightRead::ParseError("Invalid MIDI file");
     }
     const auto num_of_tracks = read_two_byte_be(data, TRACK_COUNT_OFFSET);
     const auto division = read_two_byte_be(data, TICKS_OFFSET);
     if ((division & DIVISION_NEGATIVE_SMPTE_MASK) != 0) {
-        throw ParseError("Only ticks per quarter-note is supported");
+        throw SightRead::ParseError("Only ticks per quarter-note is supported");
     }
     data = data.subspan(FIRST_TRACK_OFFSET);
     return {division, num_of_tracks};
@@ -98,7 +101,7 @@ int read_variable_length_num(std::span<const std::uint8_t>& data)
     while (!data.empty() && ((data.front() & VARIABLE_LENGTH_HIGH_MASK) != 0)) {
         ++bytes_read;
         if (bytes_read >= 4) {
-            throw ParseError("Too long variable length number");
+            throw SightRead::ParseError("Too long variable length number");
         }
         number <<= VARIABLE_LENGTH_DATA_SIZE;
         number |= pop_front(data) & VARIABLE_LENGTH_DATA_MASK;
@@ -117,7 +120,7 @@ MetaEvent read_meta_event(std::span<const std::uint8_t>& data)
     event.type = pop_front(data);
     const auto data_length = read_variable_length_num(data);
     if (static_cast<std::size_t>(data_length) > data.size()) {
-        throw ParseError("Meta Event too long");
+        throw SightRead::ParseError("Meta Event too long");
     }
     event.data
         = std::vector<std::uint8_t> {data.begin(), data.begin() + data_length};
@@ -143,12 +146,13 @@ MidiEvent read_midi_event(std::span<const std::uint8_t>& data,
     } else if (prev_status_byte != -1) {
         event_type = static_cast<std::uint8_t>(prev_status_byte);
     } else {
-        throw ParseError(
+        throw SightRead::ParseError(
             "MIDI Event has no status byte and there is no running status");
     }
 
     if ((event_type & UPPER_NIBBLE_MASK) == SYSTEM_COMMON_MSG_ID) {
-        throw ParseError("MIDI Events with high nibble 0xF are not supported");
+        throw SightRead::ParseError(
+            "MIDI Events with high nibble 0xF are not supported");
     }
     std::array<std::uint8_t, 2> event_data {pop_front(data), 0};
     if ((event_type & UPPER_NIBBLE_MASK) != PROGRAM_CHANGE_ID
@@ -163,7 +167,7 @@ SysexEvent read_sysex_event(std::span<const std::uint8_t>& data)
 {
     const auto data_length = read_variable_length_num(data);
     if (static_cast<std::size_t>(data_length) > data.size()) {
-        throw ParseError("Sysex Event too long");
+        throw SightRead::ParseError("Sysex Event too long");
     }
     SysexEvent event;
     event.data
@@ -180,7 +184,7 @@ MidiTrack read_midi_track(std::span<const std::uint8_t>& data)
     constexpr int TRACK_HEADER_SIZE = 8;
 
     if (read_four_byte_be(data, 0) != TRACK_HEADER_MAGIC_NUMBER) {
-        throw ParseError("Invalid MIDI file");
+        throw SightRead::ParseError("Invalid MIDI file");
     }
     const auto track_size = read_four_byte_be(data, 4);
     data = data.subspan(TRACK_HEADER_SIZE);

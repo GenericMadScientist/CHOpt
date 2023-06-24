@@ -79,7 +79,7 @@ private:
     int m_total_score {0};
     bool m_overlap_engine {true};
 
-    void form_beat_lines(const TempoMap& tempo_map);
+    void form_beat_lines(const SightRead::TempoMap& tempo_map);
     static bool is_neutralised_phrase(SightRead::Beat note_pos,
                                       const Path& path);
     std::tuple<double, double> sp_phrase_bounds(const StarPower& phrase,
@@ -90,23 +90,25 @@ public:
     ImageBuilder(const NoteTrack& track, Difficulty difficulty,
                  const SightRead::DrumSettings& drum_settings,
                  bool is_lefty_flip, bool is_overlap_engine);
-    void add_bpms(const TempoMap& tempo_map);
-    void add_bre(const BigRockEnding& bre, const TempoMap& tempo_map);
+    void add_bpms(const SightRead::TempoMap& tempo_map);
+    void add_bre(const BigRockEnding& bre,
+                 const SightRead::TempoMap& tempo_map);
     void add_drum_fills(const NoteTrack& track);
-    void add_measure_values(const PointSet& points, const TempoMap& tempo_map,
+    void add_measure_values(const PointSet& points,
+                            const SightRead::TempoMap& tempo_map,
                             const Path& path);
     void add_solo_sections(const std::vector<Solo>& solos,
-                           const TempoMap& tempo_map);
+                           const SightRead::TempoMap& tempo_map);
     void add_song_header(const SongGlobalData& global_data);
-    void add_sp_acts(const PointSet& points, const TempoMap& tempo_map,
-                     const Path& path);
+    void add_sp_acts(const PointSet& points,
+                     const SightRead::TempoMap& tempo_map, const Path& path);
     void add_sp_percent_values(const SpData& sp_data, const SpTimeMap& time_map,
                                const PointSet& points, const Path& path);
     void add_sp_phrases(const NoteTrack& track,
                         const std::vector<SightRead::Tick>& unison_phrases,
                         const Path& path);
     void add_sp_values(const SpData& sp_data, const Engine& engine);
-    void add_time_sigs(const TempoMap& tempo_map);
+    void add_time_sigs(const SightRead::TempoMap& tempo_map);
     void set_total_score(const PointSet& points, const std::vector<Solo>& solos,
                          const Path& path);
 

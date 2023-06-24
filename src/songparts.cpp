@@ -272,7 +272,7 @@ NoteTrack::NoteTrack(std::vector<Note> notes,
     add_hopos(max_hopo_gap);
 }
 
-void NoteTrack::generate_drum_fills(const TempoMap& tempo_map)
+void NoteTrack::generate_drum_fills(const SightRead::TempoMap& tempo_map)
 {
     const SightRead::Second FILL_DELAY {0.25};
     const SightRead::Measure FILL_GAP {4.0};

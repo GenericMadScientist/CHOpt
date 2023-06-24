@@ -100,7 +100,7 @@ private:
     const double m_default_net_sp_gain_rate;
 
     static std::vector<BeatRate>
-    form_beat_rates(const TempoMap& tempo_map,
+    form_beat_rates(const SightRead::TempoMap& tempo_map,
                     const std::vector<SightRead::Tick>& od_beats,
                     const Engine& engine);
 

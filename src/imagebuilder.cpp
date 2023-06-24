@@ -25,7 +25,7 @@
 constexpr int MAX_BEATS_PER_LINE = 16;
 
 namespace {
-double get_beat_rate(const TempoMap& tempo_map, SightRead::Beat beat)
+double get_beat_rate(const SightRead::TempoMap& tempo_map, SightRead::Beat beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
@@ -39,7 +39,7 @@ double get_beat_rate(const TempoMap& tempo_map, SightRead::Beat beat)
     return BASE_BEAT_RATE * ts->numerator / ts->denominator;
 }
 
-int get_numer(const TempoMap& tempo_map, SightRead::Beat beat)
+int get_numer(const SightRead::TempoMap& tempo_map, SightRead::Beat beat)
 {
     constexpr int BASE_NUMERATOR = 4;
 
@@ -53,7 +53,7 @@ int get_numer(const TempoMap& tempo_map, SightRead::Beat beat)
     return ts->numerator;
 }
 
-double get_denom(const TempoMap& tempo_map, SightRead::Beat beat)
+double get_denom(const SightRead::TempoMap& tempo_map, SightRead::Beat beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
@@ -250,7 +250,7 @@ relative_complement(std::vector<std::tuple<double, double>> parent_set,
 
 SightRead::Beat subtract_video_lag(SightRead::Beat beat,
                                    SightRead::Second video_lag,
-                                   const TempoMap& tempo_map)
+                                   const SightRead::TempoMap& tempo_map)
 {
     const auto seconds = tempo_map.to_seconds(beat) - video_lag;
     if (seconds.value() < 0.0) {
@@ -260,7 +260,7 @@ SightRead::Beat subtract_video_lag(SightRead::Beat beat,
 }
 }
 
-void ImageBuilder::form_beat_lines(const TempoMap& tempo_map)
+void ImageBuilder::form_beat_lines(const SightRead::TempoMap& tempo_map)
 {
     constexpr double HALF_BEAT = 0.5;
 
@@ -341,7 +341,7 @@ ImageBuilder::ImageBuilder(const NoteTrack& track, Difficulty difficulty,
     form_beat_lines(track.global_data().tempo_map());
 }
 
-void ImageBuilder::add_bpms(const TempoMap& tempo_map)
+void ImageBuilder::add_bpms(const SightRead::TempoMap& tempo_map)
 {
     constexpr double MS_PER_SECOND = 1000.0;
 
@@ -356,7 +356,8 @@ void ImageBuilder::add_bpms(const TempoMap& tempo_map)
     }
 }
 
-void ImageBuilder::add_bre(const BigRockEnding& bre, const TempoMap& tempo_map)
+void ImageBuilder::add_bre(const BigRockEnding& bre,
+                           const SightRead::TempoMap& tempo_map)
 {
     const auto seconds_start = tempo_map.to_seconds(bre.start);
     const auto seconds_end = tempo_map.to_seconds(bre.end);
@@ -381,7 +382,7 @@ void ImageBuilder::add_drum_fills(const NoteTrack& track)
 }
 
 void ImageBuilder::add_measure_values(const PointSet& points,
-                                      const TempoMap& tempo_map,
+                                      const SightRead::TempoMap& tempo_map,
                                       const Path& path)
 {
     // This is needed below because the subtract_video_lag calculation can
@@ -453,7 +454,7 @@ void ImageBuilder::add_measure_values(const PointSet& points,
 }
 
 void ImageBuilder::add_solo_sections(const std::vector<Solo>& solos,
-                                     const TempoMap& tempo_map)
+                                     const SightRead::TempoMap& tempo_map)
 {
     for (const auto& solo : solos) {
         const auto start = tempo_map.to_beats(solo.start).value();
@@ -470,7 +471,8 @@ void ImageBuilder::add_song_header(const SongGlobalData& global_data)
 }
 
 void ImageBuilder::add_sp_acts(const PointSet& points,
-                               const TempoMap& tempo_map, const Path& path)
+                               const SightRead::TempoMap& tempo_map,
+                               const Path& path)
 {
     std::vector<std::tuple<double, double>> no_whammy_ranges;
 
@@ -619,7 +621,7 @@ void ImageBuilder::add_sp_values(const SpData& sp_data, const Engine& engine)
     }
 }
 
-void ImageBuilder::add_time_sigs(const TempoMap& tempo_map)
+void ImageBuilder::add_time_sigs(const SightRead::TempoMap& tempo_map)
 {
     for (const auto& ts : tempo_map.time_sigs()) {
         const auto pos = tempo_map.to_beats(ts.position).value();

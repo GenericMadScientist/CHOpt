@@ -39,7 +39,7 @@
 std::string_view break_off_newline(std::string_view& input)
 {
     if (input.empty()) {
-        throw ParseError("No lines left");
+        throw SightRead::ParseError("No lines left");
     }
 
     const auto newline_location

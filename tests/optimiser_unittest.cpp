@@ -725,7 +725,7 @@ BOOST_AUTO_TEST_CASE(drum_activation_delay_is_affected_by_speed)
     std::vector<DrumFill> fills {{SightRead::Tick {800}, SightRead::Tick {1}},
                                  {SightRead::Tick {1000}, SightRead::Tick {1}}};
 
-    auto tempo_map = TempoMap().speedup(200);
+    auto tempo_map = SightRead::TempoMap().speedup(200);
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 

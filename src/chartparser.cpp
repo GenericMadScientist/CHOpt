@@ -33,18 +33,19 @@ std::string get_with_default(const std::map<std::string, std::string>& map,
     return iter->second;
 }
 
-TempoMap tempo_map_from_section(const ChartSection& section, int resolution)
+SightRead::TempoMap tempo_map_from_section(const ChartSection& section,
+                                           int resolution)
 {
-    std::vector<BPM> bpms;
+    std::vector<SightRead::BPM> bpms;
     bpms.reserve(section.bpm_events.size());
     for (const auto& bpm : section.bpm_events) {
         bpms.push_back({SightRead::Tick {bpm.position}, bpm.bpm});
     }
-    std::vector<TimeSignature> tses;
+    std::vector<SightRead::TimeSignature> tses;
     for (const auto& ts : section.ts_events) {
         if (static_cast<std::size_t>(ts.denominator)
             >= (CHAR_BIT * sizeof(int))) {
-            throw ParseError("Invalid Time Signature denominator");
+            throw SightRead::ParseError("Invalid Time Signature denominator");
         }
         tses.push_back(
             {SightRead::Tick {ts.position}, ts.numerator, 1 << ts.denominator});
@@ -517,7 +518,7 @@ Song ChartParser::from_chart(const Chart& chart) const
     }
 
     if (song.instruments().empty()) {
-        throw ParseError("Chart has no notes");
+        throw SightRead::ParseError("Chart has no notes");
     }
 
     return song;

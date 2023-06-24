@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {1.0, 1.0}};
 
-    TempoMap tempo_map {{{SightRead::Tick {0}, 3, 4}}, {}, {}, 192};
+    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 3, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
     NoteTrack second_note_track {notes, {}, TrackType::FiveFret, global_data};
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
                                    {0.5, 0.5}};
 
-    TempoMap tempo_map {{{SightRead::Tick {0}, 3, 4}}, {}, {}, 192};
+    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 3, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
     NoteTrack second_note_track {notes, {}, TrackType::FiveFret, global_data};
@@ -545,10 +545,10 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
 BOOST_AUTO_TEST_CASE(
     activations_starting_on_an_sp_granting_note_have_the_correct_end)
 {
-    TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4}},
-                        {{SightRead::Tick {0}, 300000}},
-                        {},
-                        192};
+    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4}},
+                                   {{SightRead::Tick {0}, 300000}},
+                                   {},
+                                   192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -895,7 +895,8 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
                              make_note(4608), make_note(5376)};
     std::vector<StarPower> phrases {
         {SightRead::Tick {4608}, SightRead::Tick {50}}};
-    TempoMap tempo_map {{}, {{SightRead::Tick {3840}, 4000000}}, {}, 192};
+    SightRead::TempoMap tempo_map {
+        {}, {{SightRead::Tick {3840}, 4000000}}, {}, 192};
 
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
@@ -1277,7 +1278,7 @@ BOOST_AUTO_TEST_CASE(
 // caused the endpoint to be too early.
 BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
 {
-    TempoMap tempo_map {{{SightRead::Tick {0}, 1, 4}}, {}, {}, 192};
+    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 1, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -1358,7 +1359,7 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
 
 BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
 {
-    TempoMap tempo_map {
+    SightRead::TempoMap tempo_map {
         {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {3840}, 2, 4}},
         {},
         {},

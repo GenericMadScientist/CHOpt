@@ -187,9 +187,9 @@ BOOST_AUTO_TEST_CASE(chart_reads_sync_track_correctly)
     const auto guitar_track = section_string("ExpertSingle", {{768, 0, 0}});
     const auto chart_file = sync_track + '\n' + guitar_track;
 
-    std::vector<TimeSignature> time_sigs {{SightRead::Tick {0}, 4, 4},
-                                          {SightRead::Tick {768}, 4, 2}};
-    std::vector<BPM> bpms {{SightRead::Tick {0}, 200000}};
+    std::vector<SightRead::TimeSignature> time_sigs {
+        {SightRead::Tick {0}, 4, 4}, {SightRead::Tick {768}, 4, 2}};
+    std::vector<SightRead::BPM> bpms {{SightRead::Tick {0}, 200000}};
 
     const auto global_data = ChartParser({}).parse(chart_file).global_data();
     const auto& tempo_map = global_data.tempo_map();
@@ -210,7 +210,8 @@ BOOST_AUTO_TEST_CASE(large_time_sig_denominators_cause_an_exception)
 
     const ChartParser parser {{}};
 
-    BOOST_CHECK_THROW([&] { return parser.parse(chart_file); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parser.parse(chart_file); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(easy_note_track_read_correctly)
@@ -275,8 +276,10 @@ BOOST_AUTO_TEST_CASE(at_least_one_nonempty_note_section_must_be_present)
 
     const ChartParser parser {{}};
 
-    BOOST_CHECK_THROW([&] { return parser.parse({}); }(), ParseError);
-    BOOST_CHECK_THROW([&] { return parser.parse(chart_file); }(), ParseError);
+    BOOST_CHECK_THROW([&] { return parser.parse({}); }(),
+                      SightRead::ParseError);
+    BOOST_CHECK_THROW([&] { return parser.parse(chart_file); }(),
+                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
@@ -287,7 +290,7 @@ BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
     const auto chart_file = sync_track + '\n' + guitar_track + '\n' + header;
 
     std::vector<Note> notes {make_note(768)};
-    std::vector<BPM> expected_bpms {{SightRead::Tick {0}, 200000}};
+    std::vector<SightRead::BPM> expected_bpms {{SightRead::Tick {0}, 200000}};
 
     const auto song = ChartParser({}).parse(chart_file);
     const auto& parsed_notes

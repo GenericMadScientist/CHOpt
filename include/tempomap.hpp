@@ -1,23 +1,5 @@
-/*
- * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023 Raymond Wright
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
-#ifndef CHOPT_TEMPOMAP_HPP
-#define CHOPT_TEMPOMAP_HPP
+#ifndef SIGHTREAD_TEMPOMAP_HPP
+#define SIGHTREAD_TEMPOMAP_HPP
 
 #include <cstdint>
 #include <stdexcept>
@@ -25,6 +7,7 @@
 
 #include <sightread/time.hpp>
 
+namespace SightRead {
 class ParseError : public std::runtime_error {
 public:
     explicit ParseError(const char* what)
@@ -129,5 +112,6 @@ public:
     }
     [[nodiscard]] SightRead::Tick to_ticks(SightRead::Second seconds) const;
 };
+}
 
 #endif

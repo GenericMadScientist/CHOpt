@@ -27,7 +27,7 @@ namespace {
 std::string_view strip_square_brackets(std::string_view input)
 {
     if (input.empty()) {
-        throw ParseError("Header string empty");
+        throw SightRead::ParseError("Header string empty");
     }
     return input.substr(1, input.size() - 2);
 }
@@ -71,12 +71,12 @@ NoteEvent convert_line_to_note(int position,
     constexpr int MAX_NORMAL_EVENT_SIZE = 5;
 
     if (split_line.size() < MAX_NORMAL_EVENT_SIZE) {
-        throw ParseError("Line incomplete");
+        throw SightRead::ParseError("Line incomplete");
     }
     const auto fret = string_view_to_int(split_line[3]);
     const auto length = string_view_to_int(split_line[4]);
     if (!fret.has_value() || !length.has_value()) {
-        throw ParseError("Bad note event");
+        throw SightRead::ParseError("Bad note event");
     }
     return {position, *fret, *length};
 }
@@ -88,12 +88,12 @@ convert_line_to_special(int position,
     constexpr int MAX_NORMAL_EVENT_SIZE = 5;
 
     if (split_line.size() < MAX_NORMAL_EVENT_SIZE) {
-        throw ParseError("Line incomplete");
+        throw SightRead::ParseError("Line incomplete");
     }
     const auto sp_key = string_view_to_int(split_line[3]);
     const auto length = string_view_to_int(split_line[4]);
     if (!sp_key.has_value() || !length.has_value()) {
-        throw ParseError("Bad SP event");
+        throw SightRead::ParseError("Bad SP event");
     }
     return {position, *sp_key, *length};
 }
@@ -102,11 +102,11 @@ BpmEvent convert_line_to_bpm(int position,
                              const std::vector<std::string_view>& split_line)
 {
     if (split_line.size() < 4) {
-        throw ParseError("Line incomplete");
+        throw SightRead::ParseError("Line incomplete");
     }
     const auto bpm = string_view_to_int(split_line[3]);
     if (!bpm.has_value()) {
-        throw ParseError("Bad BPM event");
+        throw SightRead::ParseError("Bad BPM event");
     }
     return {position, *bpm};
 }
@@ -118,7 +118,7 @@ convert_line_to_timesig(int position,
     constexpr int MAX_NORMAL_EVENT_SIZE = 5;
 
     if (split_line.size() < 4) {
-        throw ParseError("Line incomplete");
+        throw SightRead::ParseError("Line incomplete");
     }
     const auto numer = string_view_to_int(split_line[3]);
     std::optional<int> denom = 2;
@@ -126,7 +126,7 @@ convert_line_to_timesig(int position,
         denom = string_view_to_int(split_line[4]);
     }
     if (!numer.has_value() || !denom.has_value()) {
-        throw ParseError("Bad TS event");
+        throw SightRead::ParseError("Bad TS event");
     }
     return {position, *numer, *denom};
 }
@@ -135,7 +135,7 @@ Event convert_line_to_event(int position,
                             const std::vector<std::string_view>& split_line)
 {
     if (split_line.size() < 4) {
-        throw ParseError("Line incomplete");
+        throw SightRead::ParseError("Line incomplete");
     }
     return {position, std::string {split_line[3]}};
 }
@@ -146,7 +146,7 @@ ChartSection read_section(std::string_view& input)
     section.name = strip_square_brackets(break_off_newline(input));
 
     if (break_off_newline(input) != "{") {
-        throw ParseError("Section does not open with {");
+        throw SightRead::ParseError("Section does not open with {");
     }
 
     while (true) {
@@ -156,7 +156,7 @@ ChartSection read_section(std::string_view& input)
         }
         const auto separated_line = split_by_space(next_line);
         if (separated_line.size() < 3) {
-            throw ParseError("Line incomplete");
+            throw SightRead::ParseError("Line incomplete");
         }
         const auto key = separated_line[0];
         const auto key_val = string_view_to_int(key);
@@ -199,7 +199,7 @@ Chart parse_chart(std::string_view data)
     try {
         u8_string = to_utf8_string(data);
     } catch (const std::invalid_argument& e) {
-        throw ParseError(e.what());
+        throw SightRead::ParseError(e.what());
     }
 
     data = u8_string;

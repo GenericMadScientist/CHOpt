@@ -89,15 +89,17 @@ inline std::ostream& operator<<(std::ostream& stream, const Activation& act)
     return stream;
 }
 
-inline bool operator!=(const BPM& lhs, const BPM& rhs)
+namespace SightRead {
+inline bool operator!=(const SightRead::BPM& lhs, const SightRead::BPM& rhs)
 {
     return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
 }
 
-inline std::ostream& operator<<(std::ostream& stream, const BPM& bpm)
+inline std::ostream& operator<<(std::ostream& stream, const SightRead::BPM& bpm)
 {
     stream << "{Pos " << bpm.position << ", BPM " << bpm.bpm << '}';
     return stream;
+}
 }
 
 inline bool operator!=(const BpmEvent& lhs, const BpmEvent& rhs)
@@ -390,17 +392,21 @@ inline std::ostream& operator<<(std::ostream& stream, const TimeSigEvent& ts)
     return stream;
 }
 
-inline bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
+namespace SightRead {
+inline bool operator!=(const SightRead::TimeSignature& lhs,
+                       const SightRead::TimeSignature& rhs)
 {
     return std::tie(lhs.position, lhs.numerator, lhs.denominator)
         != std::tie(rhs.position, rhs.numerator, rhs.denominator);
 }
 
-inline std::ostream& operator<<(std::ostream& stream, const TimeSignature& ts)
+inline std::ostream& operator<<(std::ostream& stream,
+                                const SightRead::TimeSignature& ts)
 {
     stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
            << ts.denominator << '}';
     return stream;
+}
 }
 
 inline std::ostream& operator<<(std::ostream& stream, TrackType track_type)
