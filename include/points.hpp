@@ -61,7 +61,7 @@ private:
     std::vector<std::string> m_colours;
 
 public:
-    PointSet(const NoteTrack& track, const SpTimeMap& time_map,
+    PointSet(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
              const std::vector<SightRead::Tick>& unison_phrases,
              const SqueezeSettings& squeeze_settings,
              const SightRead::DrumSettings& drum_settings,

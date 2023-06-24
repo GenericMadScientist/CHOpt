@@ -44,23 +44,24 @@ constexpr int TOP_MARGIN = 125;
 constexpr int DIST_BETWEEN_MEASURES = MEASURE_HEIGHT + MARGIN;
 
 namespace {
-const char* diff_to_str(Difficulty difficulty)
+const char* diff_to_str(SightRead::Difficulty difficulty)
 {
     switch (difficulty) {
-    case Difficulty::Easy:
+    case SightRead::Difficulty::Easy:
         return "Easy";
-    case Difficulty::Medium:
+    case SightRead::Difficulty::Medium:
         return "Medium";
-    case Difficulty::Hard:
+    case SightRead::Difficulty::Hard:
         return "Hard";
-    case Difficulty::Expert:
+    case SightRead::Difficulty::Expert:
         return "Expert";
     default:
         throw std::runtime_error("Invalid difficulty to diff_to_str");
     }
 }
 
-std::array<unsigned char, 3> note_colour_to_colour(FiveFretNotes colour)
+std::array<unsigned char, 3>
+note_colour_to_colour(SightRead::FiveFretNotes colour)
 {
     constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
     constexpr std::array<unsigned char, 3> RED {255, 0, 0};
@@ -70,24 +71,24 @@ std::array<unsigned char, 3> note_colour_to_colour(FiveFretNotes colour)
     constexpr std::array<unsigned char, 3> PURPLE {128, 0, 128};
 
     switch (colour) {
-    case FIVE_FRET_GREEN:
+    case SightRead::FIVE_FRET_GREEN:
         return GREEN;
-    case FIVE_FRET_RED:
+    case SightRead::FIVE_FRET_RED:
         return RED;
-    case FIVE_FRET_YELLOW:
+    case SightRead::FIVE_FRET_YELLOW:
         return YELLOW;
-    case FIVE_FRET_BLUE:
+    case SightRead::FIVE_FRET_BLUE:
         return BLUE;
-    case FIVE_FRET_ORANGE:
+    case SightRead::FIVE_FRET_ORANGE:
         return ORANGE;
-    case FIVE_FRET_OPEN:
+    case SightRead::FIVE_FRET_OPEN:
         return PURPLE;
     }
 
     throw std::invalid_argument("Invalid colour to note_colour_to_colour");
 }
 
-std::array<unsigned char, 3> note_colour_to_colour(DrumNotes colour)
+std::array<unsigned char, 3> note_colour_to_colour(SightRead::DrumNotes colour)
 {
     constexpr std::array<unsigned char, 3> RED {255, 0, 0};
     constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
@@ -96,23 +97,23 @@ std::array<unsigned char, 3> note_colour_to_colour(DrumNotes colour)
     constexpr std::array<unsigned char, 3> ORANGE {255, 165, 0};
 
     switch (colour) {
-    case DRUM_RED:
+    case SightRead::DRUM_RED:
         return RED;
-    case DRUM_YELLOW:
+    case SightRead::DRUM_YELLOW:
         return YELLOW;
-    case DRUM_BLUE:
+    case SightRead::DRUM_BLUE:
         return BLUE;
-    case DRUM_GREEN:
+    case SightRead::DRUM_GREEN:
         return GREEN;
-    case DRUM_KICK:
-    case DRUM_DOUBLE_KICK:
+    case SightRead::DRUM_KICK:
+    case SightRead::DRUM_DOUBLE_KICK:
         return ORANGE;
     }
 
     throw std::invalid_argument("Invalid colour to note_colour_to_colour");
 }
 
-int note_colour_to_offset(FiveFretNotes colour, bool is_lefty_flip)
+int note_colour_to_offset(SightRead::FiveFretNotes colour, bool is_lefty_flip)
 {
     constexpr int GREEN_OFFSET = 0;
     constexpr int RED_OFFSET = 15;
@@ -122,22 +123,22 @@ int note_colour_to_offset(FiveFretNotes colour, bool is_lefty_flip)
 
     int offset = 0;
     switch (colour) {
-    case FIVE_FRET_GREEN:
+    case SightRead::FIVE_FRET_GREEN:
         offset = GREEN_OFFSET;
         break;
-    case FIVE_FRET_RED:
+    case SightRead::FIVE_FRET_RED:
         offset = RED_OFFSET;
         break;
-    case FIVE_FRET_YELLOW:
+    case SightRead::FIVE_FRET_YELLOW:
         offset = YELLOW_OFFSET;
         break;
-    case FIVE_FRET_BLUE:
+    case SightRead::FIVE_FRET_BLUE:
         offset = BLUE_OFFSET;
         break;
-    case FIVE_FRET_ORANGE:
+    case SightRead::FIVE_FRET_ORANGE:
         offset = ORANGE_OFFSET;
         break;
-    case FIVE_FRET_OPEN:
+    case SightRead::FIVE_FRET_OPEN:
         offset = YELLOW_OFFSET;
         break;
     default:
@@ -150,7 +151,7 @@ int note_colour_to_offset(FiveFretNotes colour, bool is_lefty_flip)
     return offset;
 }
 
-int note_colour_to_offset(SixFretNotes colour, bool is_lefty_flip)
+int note_colour_to_offset(SightRead::SixFretNotes colour, bool is_lefty_flip)
 {
     constexpr int LOW_OFFSET = 0;
     constexpr int MID_OFFSET = 30;
@@ -158,17 +159,17 @@ int note_colour_to_offset(SixFretNotes colour, bool is_lefty_flip)
 
     int offset = 0;
     switch (colour) {
-    case SIX_FRET_BLACK_LOW:
-    case SIX_FRET_WHITE_LOW:
+    case SightRead::SIX_FRET_BLACK_LOW:
+    case SightRead::SIX_FRET_WHITE_LOW:
         offset = LOW_OFFSET;
         break;
-    case SIX_FRET_BLACK_MID:
-    case SIX_FRET_WHITE_MID:
-    case SIX_FRET_OPEN:
+    case SightRead::SIX_FRET_BLACK_MID:
+    case SightRead::SIX_FRET_WHITE_MID:
+    case SightRead::SIX_FRET_OPEN:
         offset = MID_OFFSET;
         break;
-    case SIX_FRET_BLACK_HIGH:
-    case SIX_FRET_WHITE_HIGH:
+    case SightRead::SIX_FRET_BLACK_HIGH:
+    case SightRead::SIX_FRET_WHITE_HIGH:
         offset = HIGH_OFFSET;
         break;
     default:
@@ -181,7 +182,7 @@ int note_colour_to_offset(SixFretNotes colour, bool is_lefty_flip)
     return offset;
 }
 
-int note_colour_to_offset(DrumNotes colour, bool is_lefty_flip)
+int note_colour_to_offset(SightRead::DrumNotes colour, bool is_lefty_flip)
 {
     constexpr int RED_OFFSET = 0;
     constexpr int YELLOW_OFFSET = 20;
@@ -191,20 +192,20 @@ int note_colour_to_offset(DrumNotes colour, bool is_lefty_flip)
 
     int offset = 0;
     switch (colour) {
-    case DRUM_RED:
+    case SightRead::DRUM_RED:
         offset = RED_OFFSET;
         break;
-    case DRUM_YELLOW:
+    case SightRead::DRUM_YELLOW:
         offset = YELLOW_OFFSET;
         break;
-    case DRUM_BLUE:
+    case SightRead::DRUM_BLUE:
         offset = BLUE_OFFSET;
         break;
-    case DRUM_GREEN:
+    case SightRead::DRUM_GREEN:
         offset = GREEN_OFFSET;
         break;
-    case DRUM_KICK:
-    case DRUM_DOUBLE_KICK:
+    case SightRead::DRUM_KICK:
+    case SightRead::DRUM_DOUBLE_KICK:
         offset = KICK_OFFSET;
         break;
     default:
@@ -228,14 +229,14 @@ std::tuple<int, int> get_xy(const ImageBuilder& builder, double pos)
     return {x, y};
 }
 
-int numb_of_fret_lines(TrackType track_type)
+int numb_of_fret_lines(SightRead::TrackType track_type)
 {
     switch (track_type) {
-    case TrackType::FiveFret:
+    case SightRead::TrackType::FiveFret:
         return 4;
-    case TrackType::SixFret:
+    case SightRead::TrackType::SixFret:
         return 2;
-    case TrackType::Drums:
+    case SightRead::TrackType::Drums:
         return 3;
     }
 
@@ -248,29 +249,29 @@ int numb_of_fret_lines(TrackType track_type)
 // 2 - Black note
 // 3 - White and black note
 std::array<int, 3>
-ghl_note_colour_codes(const std::set<SixFretNotes>& note_colours)
+ghl_note_colour_codes(const std::set<SightRead::SixFretNotes>& note_colours)
 {
     std::array<int, 3> codes {0, 0, 0};
     for (const auto& colour : note_colours) {
         switch (colour) {
-        case SIX_FRET_OPEN:
+        case SightRead::SIX_FRET_OPEN:
             return {0, 0, 0};
-        case SIX_FRET_WHITE_LOW:
+        case SightRead::SIX_FRET_WHITE_LOW:
             codes[0] |= 1;
             break;
-        case SIX_FRET_WHITE_MID:
+        case SightRead::SIX_FRET_WHITE_MID:
             codes[1] |= 1;
             break;
-        case SIX_FRET_WHITE_HIGH:
+        case SightRead::SIX_FRET_WHITE_HIGH:
             codes[2] |= 1;
             break;
-        case SIX_FRET_BLACK_LOW:
+        case SightRead::SIX_FRET_BLACK_LOW:
             codes[0] |= 2;
             break;
-        case SIX_FRET_BLACK_MID:
+        case SightRead::SIX_FRET_BLACK_MID:
             codes[1] |= 2;
             break;
-        case SIX_FRET_BLACK_HIGH:
+        case SightRead::SIX_FRET_BLACK_HIGH:
             codes[2] |= 2;
             break;
         }
@@ -287,8 +288,8 @@ void validate_snprintf_rc(int snprintf_rc)
 
 bool is_kick_note(const DrawnNote& note)
 {
-    return note.lengths[DRUM_KICK] != -1
-        || note.lengths[DRUM_DOUBLE_KICK] != -1;
+    return note.lengths[SightRead::DRUM_KICK] != -1
+        || note.lengths[SightRead::DRUM_DOUBLE_KICK] != -1;
 }
 }
 
@@ -296,16 +297,18 @@ class ImageImpl {
 private:
     CImg<unsigned char> m_image;
 
-    void draw_note_circle(int x, int y, FiveFretNotes note_colour,
+    void draw_note_circle(int x, int y, SightRead::FiveFretNotes note_colour,
                           bool is_lefty_flip);
-    void draw_note_star(int x, int y, FiveFretNotes colour, bool is_lefty_flip);
+    void draw_note_star(int x, int y, SightRead::FiveFretNotes colour,
+                        bool is_lefty_flip);
     void draw_note_sustain(const ImageBuilder& builder, const DrawnNote& note);
-    void draw_ghl_note(int x, int y, const std::set<SixFretNotes>& note_colours,
+    void draw_ghl_note(int x, int y,
+                       const std::set<SightRead::SixFretNotes>& note_colours,
                        bool is_lefty_flip);
     void draw_ghl_note_sustain(const ImageBuilder& builder,
                                const DrawnNote& note);
-    void draw_drum_note(int x, int y, DrumNotes note_colour, NoteFlags flags,
-                        bool is_lefty_flip);
+    void draw_drum_note(int x, int y, SightRead::DrumNotes note_colour,
+                        SightRead::NoteFlags flags, bool is_lefty_flip);
     void draw_quarter_note(int x, int y);
     void draw_text_backwards(int x, int y, const char* text,
                              const unsigned char* color, float opacity,
@@ -543,7 +546,7 @@ void ImageImpl::draw_notes(const ImageBuilder& builder)
             if (note.lengths.at(i) == -1) {
                 continue;
             }
-            const auto colour = static_cast<FiveFretNotes>(i);
+            const auto colour = static_cast<SightRead::FiveFretNotes>(i);
             if (note.is_sp_note) {
                 draw_note_star(x, y, colour, builder.is_lefty_flip());
             } else {
@@ -565,10 +568,10 @@ void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
         }
 
         const auto [x, y] = get_xy(builder, note.beat);
-        std::set<SixFretNotes> colours;
+        std::set<SightRead::SixFretNotes> colours;
         for (auto i = 0; i < SIX_FRET_COLOUR_COUNT; ++i) {
             if (note.lengths.at(i) != -1) {
-                colours.insert(static_cast<SixFretNotes>(i));
+                colours.insert(static_cast<SightRead::SixFretNotes>(i));
             }
         }
         draw_ghl_note(x, y, colours, builder.is_lefty_flip());
@@ -590,7 +593,7 @@ void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
             if (note.lengths.at(i) == -1) {
                 continue;
             }
-            const auto colour = static_cast<DrumNotes>(i);
+            const auto colour = static_cast<SightRead::DrumNotes>(i);
             draw_drum_note(x, y, colour, note.note_flags,
                            builder.is_lefty_flip());
         }
@@ -605,14 +608,15 @@ void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
             if (note.lengths.at(i) == -1) {
                 continue;
             }
-            const auto colour = static_cast<DrumNotes>(i);
+            const auto colour = static_cast<SightRead::DrumNotes>(i);
             draw_drum_note(x, y, colour, note.note_flags,
                            builder.is_lefty_flip());
         }
     }
 }
 
-void ImageImpl::draw_note_circle(int x, int y, FiveFretNotes note_colour,
+void ImageImpl::draw_note_circle(int x, int y,
+                                 SightRead::FiveFretNotes note_colour,
                                  bool is_lefty_flip)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
@@ -621,7 +625,7 @@ void ImageImpl::draw_note_circle(int x, int y, FiveFretNotes note_colour,
     auto colour = note_colour_to_colour(note_colour);
     auto offset = note_colour_to_offset(note_colour, is_lefty_flip);
 
-    if (note_colour == FIVE_FRET_OPEN) {
+    if (note_colour == SightRead::FIVE_FRET_OPEN) {
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                colour.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
@@ -632,9 +636,9 @@ void ImageImpl::draw_note_circle(int x, int y, FiveFretNotes note_colour,
     }
 }
 
-void ImageImpl::draw_ghl_note(int x, int y,
-                              const std::set<SixFretNotes>& note_colours,
-                              bool is_lefty_flip)
+void ImageImpl::draw_ghl_note(
+    int x, int y, const std::set<SightRead::SixFretNotes>& note_colours,
+    bool is_lefty_flip)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr std::array<unsigned char, 3> grey {30, 30, 30};
@@ -642,7 +646,7 @@ void ImageImpl::draw_ghl_note(int x, int y,
     constexpr int FRET_GAP = 30;
     constexpr int RADIUS = 5;
 
-    if (note_colours.contains(SIX_FRET_OPEN)) {
+    if (note_colours.contains(SightRead::SIX_FRET_OPEN)) {
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                white.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
@@ -677,8 +681,8 @@ void ImageImpl::draw_ghl_note(int x, int y,
     }
 }
 
-void ImageImpl::draw_drum_note(int x, int y, DrumNotes note_colour,
-                               NoteFlags flags, bool is_lefty_flip)
+void ImageImpl::draw_drum_note(int x, int y, SightRead::DrumNotes note_colour,
+                               SightRead::NoteFlags flags, bool is_lefty_flip)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
     constexpr int RADIUS = 5;
@@ -686,12 +690,13 @@ void ImageImpl::draw_drum_note(int x, int y, DrumNotes note_colour,
     auto colour = note_colour_to_colour(note_colour);
     auto offset = note_colour_to_offset(note_colour, is_lefty_flip);
 
-    if (note_colour == DRUM_KICK || note_colour == DRUM_DOUBLE_KICK) {
+    if (note_colour == SightRead::DRUM_KICK
+        || note_colour == SightRead::DRUM_DOUBLE_KICK) {
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                colour.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                black.data(), 1.0, ~0U);
-    } else if ((flags & FLAGS_CYMBAL) != 0U) {
+    } else if ((flags & SightRead::FLAGS_CYMBAL) != 0U) {
         m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
                               y + offset + RADIUS, x + RADIUS,
                               y + offset + RADIUS, colour.data());
@@ -704,7 +709,8 @@ void ImageImpl::draw_drum_note(int x, int y, DrumNotes note_colour,
     }
 }
 
-void ImageImpl::draw_note_star(int x, int y, FiveFretNotes note_colour,
+void ImageImpl::draw_note_star(int x, int y,
+                               SightRead::FiveFretNotes note_colour,
                                bool is_lefty_flip)
 {
     constexpr std::array<unsigned char, 3> black {0, 0, 0};
@@ -721,7 +727,7 @@ void ImageImpl::draw_note_star(int x, int y, FiveFretNotes note_colour,
         points(i, 1) = coords[2 * i + 1] + y + offset; // NOLINT
     }
 
-    if (note_colour == FIVE_FRET_OPEN) {
+    if (note_colour == SightRead::FIVE_FRET_OPEN) {
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
                                colour.data(), OPEN_NOTE_OPACITY);
         m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
@@ -743,14 +749,14 @@ void ImageImpl::draw_note_sustain(const ImageBuilder& builder,
         if (length == -1) {
             continue;
         }
-        const auto note_colour = static_cast<FiveFretNotes>(i);
+        const auto note_colour = static_cast<SightRead::FiveFretNotes>(i);
         auto colour = note_colour_to_colour(note_colour);
         std::tuple<double, double> x_range {note.beat, note.beat + length};
         auto offset
             = note_colour_to_offset(note_colour, builder.is_lefty_flip());
         std::tuple<int, int> y_range {offset - 3, offset + 3};
         float opacity = 1.0F;
-        if (note_colour == FIVE_FRET_OPEN) {
+        if (note_colour == SightRead::FIVE_FRET_OPEN) {
             y_range = OPEN_NOTE_Y_RANGE;
             opacity = OPEN_NOTE_OPACITY;
         }
@@ -771,12 +777,12 @@ void ImageImpl::draw_ghl_note_sustain(const ImageBuilder& builder,
             continue;
         }
         std::tuple<double, double> x_range {note.beat, note.beat + length};
-        const auto note_colour = static_cast<SixFretNotes>(i);
+        const auto note_colour = static_cast<SightRead::SixFretNotes>(i);
         auto offset
             = note_colour_to_offset(note_colour, builder.is_lefty_flip());
         std::tuple<int, int> y_range {offset - 3, offset + 3};
         float opacity = 1.0F;
-        if (note_colour == SIX_FRET_OPEN) {
+        if (note_colour == SightRead::SIX_FRET_OPEN) {
             y_range = OPEN_NOTE_Y_RANGE;
             opacity = OPEN_NOTE_OPACITY;
         }
@@ -882,13 +888,13 @@ Image::Image(const ImageBuilder& builder)
     }
 
     switch (builder.track_type()) {
-    case TrackType::FiveFret:
+    case SightRead::TrackType::FiveFret:
         m_impl->draw_notes(builder);
         break;
-    case TrackType::SixFret:
+    case SightRead::TrackType::SixFret:
         m_impl->draw_ghl_notes(builder);
         break;
-    case TrackType::Drums:
+    case SightRead::TrackType::Drums:
         m_impl->draw_drum_notes(builder);
         break;
     }

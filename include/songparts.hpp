@@ -1,34 +1,12 @@
-/*
- * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2023 Raymond Wright
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+#ifndef SIGHTREAD_SONGPARTS_HPP
+#define SIGHTREAD_SONGPARTS_HPP
 
-#ifndef CHOPT_SONGPARTS_HPP
-#define CHOPT_SONGPARTS_HPP
-
-#include <algorithm>
 #include <array>
 #include <cstdint>
-#include <cstdlib>
 #include <memory>
 #include <optional>
 #include <set>
-#include <stdexcept>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -36,6 +14,7 @@
 #include <sightread/tempomap.hpp>
 #include <sightread/time.hpp>
 
+namespace SightRead {
 enum class Difficulty { Easy = 0, Medium = 1, Hard = 2, Expert = 3 };
 
 enum class Instrument {
@@ -197,15 +176,6 @@ public:
     }
 };
 
-// Invariants:
-// notes() will always return a vector of sorted notes.
-// notes() will not return a vector with two notes of the same colour with the
-// same position.
-// resolution() will be greater than zero.
-// sp_phrases() will always return a vector of sorted SP phrases.
-// sp_phrases() will only return phrases with a note in their range.
-// sp_phrases() will return non-overlapping phrases.
-// solos() will always return a vector of sorted solos.
 class NoteTrack {
 private:
     std::vector<Note> m_notes;
@@ -270,5 +240,6 @@ public:
     [[nodiscard]] NoteTrack trim_sustains() const;
     [[nodiscard]] NoteTrack snap_chords(SightRead::Tick snap_gap) const;
 };
+}
 
 #endif

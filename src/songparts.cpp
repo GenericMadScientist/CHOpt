@@ -1,28 +1,16 @@
-/*
- * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023 Raymond Wright
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+#include <algorithm>
+#include <cstdlib>
+#include <stdexcept>
+#include <tuple>
 
 #include "songparts.hpp"
 
 namespace {
-Note combined_note(std::vector<Note>::const_iterator begin,
-                   std::vector<Note>::const_iterator end)
+SightRead::Note
+combined_note(std::vector<SightRead::Note>::const_iterator begin,
+              std::vector<SightRead::Note>::const_iterator end)
 {
-    Note note = *begin;
+    SightRead::Note note = *begin;
     ++begin;
     while (begin < end) {
         for (auto i = 0U; i < note.lengths.size(); ++i) {
@@ -36,7 +24,7 @@ Note combined_note(std::vector<Note>::const_iterator begin,
     return note;
 }
 
-bool is_chord(const Note& note)
+bool is_chord(const SightRead::Note& note)
 {
     auto count = 0;
     for (auto length : note.lengths) {
@@ -48,16 +36,19 @@ bool is_chord(const Note& note)
 }
 }
 
+namespace SightRead {
 std::set<Instrument> all_instruments()
 {
-    return {Instrument::Guitar,        Instrument::GuitarCoop,
-            Instrument::Bass,          Instrument::Rhythm,
-            Instrument::Keys,          Instrument::GHLGuitar,
-            Instrument::GHLBass,       Instrument::GHLRhythm,
-            Instrument::GHLGuitarCoop, Instrument::Drums};
+    return {
+        SightRead::Instrument::Guitar,        SightRead::Instrument::GuitarCoop,
+        SightRead::Instrument::Bass,          SightRead::Instrument::Rhythm,
+        SightRead::Instrument::Keys,          SightRead::Instrument::GHLGuitar,
+        SightRead::Instrument::GHLBass,       SightRead::Instrument::GHLRhythm,
+        SightRead::Instrument::GHLGuitarCoop, SightRead::Instrument::Drums};
+}
 }
 
-int Note::open_index() const
+int SightRead::Note::open_index() const
 {
     if ((flags & FLAGS_FIVE_FRET_GUITAR) != 0U) {
         return FIVE_FRET_OPEN;
@@ -68,7 +59,7 @@ int Note::open_index() const
     return -1;
 }
 
-int Note::colours() const
+int SightRead::Note::colours() const
 {
     auto colour_flags = 0;
     for (auto i = 0U; i < lengths.size(); ++i) {
@@ -79,7 +70,7 @@ int Note::colours() const
     return colour_flags;
 }
 
-void Note::merge_non_opens_into_open()
+void SightRead::Note::merge_non_opens_into_open()
 {
     const auto index = open_index();
     if (index == -1) {
@@ -96,19 +87,20 @@ void Note::merge_non_opens_into_open()
     }
 }
 
-void Note::disable_dynamics()
+void SightRead::Note::disable_dynamics()
 {
     flags = static_cast<NoteFlags>(flags & ~(FLAGS_GHOST | FLAGS_ACCENT));
 }
 
-bool Note::is_kick_note() const
+bool SightRead::Note::is_kick_note() const
 {
     return ((flags & FLAGS_DRUMS) != 0U)
         && (lengths[DRUM_KICK] != SightRead::Tick {-1}
             || lengths[DRUM_DOUBLE_KICK] != SightRead::Tick {-1});
 }
 
-bool Note::is_skipped_kick(const SightRead::DrumSettings& settings) const
+bool SightRead::Note::is_skipped_kick(
+    const SightRead::DrumSettings& settings) const
 {
     if (!is_kick_note()) {
         return false;
@@ -119,7 +111,7 @@ bool Note::is_skipped_kick(const SightRead::DrumSettings& settings) const
     return !settings.enable_double_kick;
 }
 
-void NoteTrack::compute_base_score_ticks()
+void SightRead::NoteTrack::compute_base_score_ticks()
 {
     constexpr int BASE_SUSTAIN_DENSITY = 25;
 
@@ -147,7 +139,7 @@ void NoteTrack::compute_base_score_ticks()
         / resolution;
 }
 
-void NoteTrack::merge_same_time_notes()
+void SightRead::NoteTrack::merge_same_time_notes()
 {
     if (m_track_type == TrackType::Drums) {
         return;
@@ -165,7 +157,7 @@ void NoteTrack::merge_same_time_notes()
     m_notes = std::move(notes);
 }
 
-void NoteTrack::add_hopos(SightRead::Tick max_hopo_gap)
+void SightRead::NoteTrack::add_hopos(SightRead::Tick max_hopo_gap)
 {
     if (m_track_type == TrackType::Drums) {
         return;
@@ -194,11 +186,11 @@ void NoteTrack::add_hopos(SightRead::Tick max_hopo_gap)
     }
 }
 
-NoteTrack::NoteTrack(std::vector<Note> notes,
-                     const std::vector<StarPower>& sp_phrases,
-                     TrackType track_type,
-                     std::shared_ptr<SongGlobalData> global_data,
-                     SightRead::Tick max_hopo_gap)
+SightRead::NoteTrack::NoteTrack(std::vector<Note> notes,
+                                const std::vector<StarPower>& sp_phrases,
+                                TrackType track_type,
+                                std::shared_ptr<SongGlobalData> global_data,
+                                SightRead::Tick max_hopo_gap)
     : m_track_type {track_type}
     , m_global_data {std::move(global_data)}
     , m_base_score_ticks {0}
@@ -272,7 +264,8 @@ NoteTrack::NoteTrack(std::vector<Note> notes,
     add_hopos(max_hopo_gap);
 }
 
-void NoteTrack::generate_drum_fills(const SightRead::TempoMap& tempo_map)
+void SightRead::NoteTrack::generate_drum_fills(
+    const SightRead::TempoMap& tempo_map)
 {
     const SightRead::Second FILL_DELAY {0.25};
     const SightRead::Measure FILL_GAP {4.0};
@@ -325,15 +318,15 @@ void NoteTrack::generate_drum_fills(const SightRead::TempoMap& tempo_map)
     }
 }
 
-void NoteTrack::disable_dynamics()
+void SightRead::NoteTrack::disable_dynamics()
 {
     for (auto& n : m_notes) {
         n.disable_dynamics();
     }
 }
 
-std::vector<Solo>
-NoteTrack::solos(const SightRead::DrumSettings& drum_settings) const
+std::vector<SightRead::Solo>
+SightRead::NoteTrack::solos(const SightRead::DrumSettings& drum_settings) const
 {
     constexpr int SOLO_NOTE_VALUE = 100;
 
@@ -361,7 +354,7 @@ NoteTrack::solos(const SightRead::DrumSettings& drum_settings) const
     return solos;
 }
 
-void NoteTrack::solos(std::vector<Solo> solos)
+void SightRead::NoteTrack::solos(std::vector<Solo> solos)
 {
     std::stable_sort(
         solos.begin(), solos.end(),
@@ -369,7 +362,8 @@ void NoteTrack::solos(std::vector<Solo> solos)
     m_solos = std::move(solos);
 }
 
-int NoteTrack::base_score(SightRead::DrumSettings drum_settings) const
+int SightRead::NoteTrack::base_score(
+    SightRead::DrumSettings drum_settings) const
 {
     constexpr int BASE_NOTE_VALUE = 50;
 
@@ -388,7 +382,7 @@ int NoteTrack::base_score(SightRead::DrumSettings drum_settings) const
     return BASE_NOTE_VALUE * note_count + m_base_score_ticks;
 }
 
-NoteTrack NoteTrack::trim_sustains() const
+SightRead::NoteTrack SightRead::NoteTrack::trim_sustains() const
 {
     constexpr int DEFAULT_RESOLUTION = 192;
     constexpr int DEFAULT_SUST_CUTOFF = 64;
@@ -411,7 +405,8 @@ NoteTrack NoteTrack::trim_sustains() const
     return trimmed_track;
 }
 
-NoteTrack NoteTrack::snap_chords(SightRead::Tick snap_gap) const
+SightRead::NoteTrack
+SightRead::NoteTrack::snap_chords(SightRead::Tick snap_gap) const
 {
     auto new_track = *this;
     auto& new_notes = new_track.m_notes;

@@ -113,6 +113,7 @@ inline std::ostream& operator<<(std::ostream& stream, const BpmEvent& event)
     return stream;
 }
 
+namespace SightRead {
 inline std::ostream& operator<<(std::ostream& stream, Difficulty difficulty)
 {
     stream << static_cast<int>(difficulty);
@@ -134,6 +135,7 @@ inline std::ostream& operator<<(std::ostream& stream, const DiscoFlip& flip)
 {
     stream << "{Pos " << flip.position << ", Length " << flip.length << '}';
     return stream;
+}
 }
 
 inline bool operator!=(const DrawnNote& lhs, const DrawnNote& rhs)
@@ -173,6 +175,7 @@ inline std::ostream& operator<<(std::ostream& stream, const DrawnRow& row)
     return stream;
 }
 
+namespace SightRead {
 inline bool operator==(const DrumFill& lhs, const DrumFill& rhs)
 {
     return std::tie(lhs.position, lhs.length)
@@ -189,6 +192,7 @@ inline std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
     stream << "{Pos " << fill.position << ", Length " << fill.length << '}';
     return stream;
 }
+}
 
 inline bool operator!=(const Event& lhs, const Event& rhs)
 {
@@ -201,10 +205,12 @@ inline std::ostream& operator<<(std::ostream& stream, const Event& event)
     return stream;
 }
 
+namespace SightRead {
 inline std::ostream& operator<<(std::ostream& stream, Instrument instrument)
 {
     stream << static_cast<int>(instrument);
     return stream;
+}
 }
 
 inline bool operator==(const MetaEvent& lhs, const MetaEvent& rhs)
@@ -229,6 +235,7 @@ inline std::ostream& operator<<(std::ostream& stream, const MidiEvent& event)
     return stream;
 }
 
+namespace SightRead {
 inline bool operator!=(const Note& lhs, const Note& rhs)
 {
     return std::tie(lhs.position, lhs.lengths, lhs.flags)
@@ -246,6 +253,7 @@ inline std::ostream& operator<<(std::ostream& stream, const Note& note)
     }
     stream << "Flags " << std::hex << note.flags << std::dec << '}';
     return stream;
+}
 }
 
 inline bool operator!=(const NoteEvent& lhs, const NoteEvent& rhs)
@@ -267,6 +275,7 @@ inline std::ostream& operator<<(std::ostream& stream, PointPtr addr)
     return stream;
 }
 
+namespace SightRead {
 inline bool operator!=(const Solo& lhs, const Solo& rhs)
 {
     return std::tie(lhs.start, lhs.end, lhs.value)
@@ -278,6 +287,7 @@ inline std::ostream& operator<<(std::ostream& stream, const Solo& solo)
     stream << "{Start " << solo.start << ", End " << solo.end << ", Value "
            << solo.value << '}';
     return stream;
+}
 }
 
 inline bool operator==(const SpBar& lhs, const SpBar& rhs)
@@ -337,6 +347,7 @@ inline std::ostream& operator<<(std::ostream& stream,
     return stream;
 }
 
+namespace SightRead {
 inline bool operator!=(const StarPower& lhs, const StarPower& rhs)
 {
     return std::tie(lhs.position, lhs.length)
@@ -347,6 +358,7 @@ inline std::ostream& operator<<(std::ostream& stream, const StarPower& sp)
 {
     stream << "{Pos " << sp.position << ", Length " << sp.length << '}';
     return stream;
+}
 }
 
 inline bool operator==(const SysexEvent& lhs, const SysexEvent& rhs)
@@ -393,20 +405,17 @@ inline std::ostream& operator<<(std::ostream& stream, const TimeSigEvent& ts)
 }
 
 namespace SightRead {
-inline bool operator!=(const SightRead::TimeSignature& lhs,
-                       const SightRead::TimeSignature& rhs)
+inline bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
 {
     return std::tie(lhs.position, lhs.numerator, lhs.denominator)
         != std::tie(rhs.position, rhs.numerator, rhs.denominator);
 }
 
-inline std::ostream& operator<<(std::ostream& stream,
-                                const SightRead::TimeSignature& ts)
+inline std::ostream& operator<<(std::ostream& stream, const TimeSignature& ts)
 {
     stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
            << ts.denominator << '}';
     return stream;
-}
 }
 
 inline std::ostream& operator<<(std::ostream& stream, TrackType track_type)
@@ -414,25 +423,27 @@ inline std::ostream& operator<<(std::ostream& stream, TrackType track_type)
     stream << static_cast<int>(track_type);
     return stream;
 }
+}
 
-inline Note make_note(int position, int length = 0,
-                      FiveFretNotes colour = FIVE_FRET_GREEN)
+inline SightRead::Note make_note(int position, int length = 0,
+                                 SightRead::FiveFretNotes colour
+                                 = SightRead::FIVE_FRET_GREEN)
 {
-    Note note;
+    SightRead::Note note;
     note.position = SightRead::Tick {position};
-    note.flags = FLAGS_FIVE_FRET_GUITAR;
+    note.flags = SightRead::FLAGS_FIVE_FRET_GUITAR;
     note.lengths[colour] = SightRead::Tick {length};
 
     return note;
 }
 
-inline Note
-make_chord(int position,
-           const std::vector<std::tuple<FiveFretNotes, int>>& lengths)
+inline SightRead::Note make_chord(
+    int position,
+    const std::vector<std::tuple<SightRead::FiveFretNotes, int>>& lengths)
 {
-    Note note;
+    SightRead::Note note;
     note.position = SightRead::Tick {position};
-    note.flags = FLAGS_FIVE_FRET_GUITAR;
+    note.flags = SightRead::FLAGS_FIVE_FRET_GUITAR;
     for (auto& [lane, length] : lengths) {
         note.lengths[lane] = SightRead::Tick {length};
     }
@@ -440,24 +451,25 @@ make_chord(int position,
     return note;
 }
 
-inline Note make_ghl_note(int position, int length = 0,
-                          SixFretNotes colour = SIX_FRET_WHITE_LOW)
+inline SightRead::Note make_ghl_note(int position, int length = 0,
+                                     SightRead::SixFretNotes colour
+                                     = SightRead::SIX_FRET_WHITE_LOW)
 {
-    Note note;
+    SightRead::Note note;
     note.position = SightRead::Tick {position};
-    note.flags = FLAGS_SIX_FRET_GUITAR;
+    note.flags = SightRead::FLAGS_SIX_FRET_GUITAR;
     note.lengths[colour] = SightRead::Tick {length};
 
     return note;
 }
 
-inline Note
-make_ghl_chord(int position,
-               const std::vector<std::tuple<SixFretNotes, int>>& lengths)
+inline SightRead::Note make_ghl_chord(
+    int position,
+    const std::vector<std::tuple<SightRead::SixFretNotes, int>>& lengths)
 {
-    Note note;
+    SightRead::Note note;
     note.position = SightRead::Tick {position};
-    note.flags = FLAGS_SIX_FRET_GUITAR;
+    note.flags = SightRead::FLAGS_SIX_FRET_GUITAR;
     for (auto& [lane, length] : lengths) {
         note.lengths[lane] = SightRead::Tick {length};
     }
@@ -465,20 +477,23 @@ make_ghl_chord(int position,
     return note;
 }
 
-inline Note make_drum_note(int position, DrumNotes colour = DRUM_RED,
-                           NoteFlags flags = FLAGS_NONE)
+inline SightRead::Note
+make_drum_note(int position, SightRead::DrumNotes colour = SightRead::DRUM_RED,
+               SightRead::NoteFlags flags = SightRead::FLAGS_NONE)
 {
-    Note note;
+    SightRead::Note note;
     note.position = SightRead::Tick {position};
-    note.flags = static_cast<NoteFlags>(flags | FLAGS_DRUMS);
+    note.flags
+        = static_cast<SightRead::NoteFlags>(flags | SightRead::FLAGS_DRUMS);
     note.lengths[colour] = SightRead::Tick {0};
 
     return note;
 }
 
-inline std::shared_ptr<SongGlobalData> make_resolution(int resolution)
+inline std::shared_ptr<SightRead::SongGlobalData>
+make_resolution(int resolution)
 {
-    auto data = std::make_shared<SongGlobalData>();
+    auto data = std::make_shared<SightRead::SongGlobalData>();
     data->resolution(resolution);
     data->tempo_map({{}, {}, {}, resolution});
     return data;

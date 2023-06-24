@@ -118,7 +118,7 @@ private:
     SpPosition sp_drain_end_point(SpPosition start, double sp_bar_amount) const;
 
 public:
-    SpData(const NoteTrack& track, SpTimeMap time_map,
+    SpData(const SightRead::NoteTrack& track, SpTimeMap time_map,
            const std::vector<SightRead::Tick>& od_beats,
            const SqueezeSettings& squeeze_settings, const Engine& engine);
     // Return the maximum amount of SP available at the end after propagating

@@ -26,7 +26,7 @@
 
 #include "songparts.hpp"
 
-bool is_six_fret_instrument(Instrument instrument);
+bool is_six_fret_instrument(SightRead::Instrument instrument);
 
 // Takes a sequence of points where some note type/event is turned on, and a
 // sequence where said type is turned off, and returns a tuple of intervals
@@ -35,9 +35,10 @@ std::vector<std::tuple<SightRead::Tick, SightRead::Tick>>
 combine_solo_events(const std::vector<int>& on_events,
                     const std::vector<int>& off_events);
 
-std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
-                                   const std::vector<int>& solo_off_events,
-                                   const std::vector<Note>& notes,
-                                   TrackType track_type, bool is_midi);
+std::vector<SightRead::Solo>
+form_solo_vector(const std::vector<int>& solo_on_events,
+                 const std::vector<int>& solo_off_events,
+                 const std::vector<SightRead::Note>& notes,
+                 SightRead::TrackType track_type, bool is_midi);
 
 #endif

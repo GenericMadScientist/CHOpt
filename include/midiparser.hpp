@@ -36,13 +36,14 @@ private:
     std::string m_artist;
     std::string m_charter;
     HopoThreshold m_hopo_threshold;
-    std::set<Instrument> m_permitted_instruments;
+    std::set<SightRead::Instrument> m_permitted_instruments;
     bool m_permit_solos;
 
 public:
     explicit MidiParser(const IniValues& ini);
     MidiParser& hopo_threshold(HopoThreshold hopo_threshold);
-    MidiParser& permit_instruments(std::set<Instrument> permitted_instruments);
+    MidiParser&
+    permit_instruments(std::set<SightRead::Instrument> permitted_instruments);
     MidiParser& parse_solos(bool permit_solos);
     Song from_midi(const Midi& midi) const;
     Song parse(std::span<const std::uint8_t> data) const;

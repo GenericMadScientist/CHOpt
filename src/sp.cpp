@@ -23,7 +23,8 @@
 #include "sp.hpp"
 
 namespace {
-bool phrase_contains_pos(const StarPower& phrase, SightRead::Tick position)
+bool phrase_contains_pos(const SightRead::StarPower& phrase,
+                         SightRead::Tick position)
 {
     if (position < phrase.position) {
         return false;
@@ -40,7 +41,8 @@ double sp_deduction(SpPosition start, SpPosition end)
 }
 
 std::vector<std::tuple<SightRead::Tick, SightRead::Tick, SightRead::Second>>
-note_spans(const NoteTrack& track, double early_whammy, const Engine& engine)
+note_spans(const SightRead::NoteTrack& track, double early_whammy,
+           const Engine& engine)
 {
     const auto& tempo_map = track.global_data().tempo_map();
     std::vector<std::tuple<SightRead::Tick, SightRead::Tick, SightRead::Second>>
@@ -111,7 +113,7 @@ SpData::form_beat_rates(const SightRead::TempoMap& tempo_map,
     return beat_rates;
 }
 
-SpData::SpData(const NoteTrack& track, SpTimeMap time_map,
+SpData::SpData(const SightRead::NoteTrack& track, SpTimeMap time_map,
                const std::vector<SightRead::Tick>& od_beats,
                const SqueezeSettings& squeeze_settings, const Engine& engine)
     : m_time_map {std::move(time_map)}

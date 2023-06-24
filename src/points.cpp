@@ -27,7 +27,8 @@
 #include "points.hpp"
 
 namespace {
-bool phrase_contains_pos(const StarPower& phrase, SightRead::Tick position)
+bool phrase_contains_pos(const SightRead::StarPower& phrase,
+                         SightRead::Tick position)
 {
     if (position < phrase.position) {
         return false;
@@ -90,7 +91,7 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
     }
 }
 
-int get_chord_size(const Note& note,
+int get_chord_size(const SightRead::Note& note,
                    const SightRead::DrumSettings& drum_settings)
 {
     if (note.is_skipped_kick(drum_settings)) {
@@ -106,19 +107,20 @@ int get_chord_size(const Note& note,
 }
 
 template <typename OutputIt>
-void append_note_points(std::vector<Note>::const_iterator note,
-                        const std::vector<Note>& notes, OutputIt points,
-                        const SpTimeMap& time_map, int resolution,
-                        bool is_note_sp_ender, bool is_unison_sp_ender,
-                        double squeeze, const Engine& engine,
+void append_note_points(std::vector<SightRead::Note>::const_iterator note,
+                        const std::vector<SightRead::Note>& notes,
+                        OutputIt points, const SpTimeMap& time_map,
+                        int resolution, bool is_note_sp_ender,
+                        bool is_unison_sp_ender, double squeeze,
+                        const Engine& engine,
                         const SightRead::DrumSettings& drum_settings)
 {
     auto note_value = engine.base_note_value();
-    if (note->flags & FLAGS_DRUMS) {
-        if (note->flags & FLAGS_CYMBAL) {
+    if (note->flags & SightRead::FLAGS_DRUMS) {
+        if (note->flags & SightRead::FLAGS_CYMBAL) {
             note_value = engine.base_cymbal_value();
         }
-        if (note->flags & (FLAGS_GHOST | FLAGS_ACCENT)) {
+        if (note->flags & (SightRead::FLAGS_GHOST | SightRead::FLAGS_ACCENT)) {
             note_value *= 2;
         }
     }
@@ -200,7 +202,7 @@ std::vector<Point>::iterator closest_point(std::vector<Point>& points,
     return nearest;
 }
 
-void add_drum_activation_points(const NoteTrack& track,
+void add_drum_activation_points(const SightRead::NoteTrack& track,
                                 std::vector<Point>& points)
 {
     if (points.empty()) {
@@ -296,12 +298,11 @@ void apply_multiplier(std::vector<Point>& points, const Engine& engine)
     }
 }
 
-std::vector<Point>
-unmultiplied_points(const NoteTrack& track, const SpTimeMap& time_map,
-                    const std::vector<SightRead::Tick>& unison_phrases,
-                    const SqueezeSettings& squeeze_settings,
-                    const SightRead::DrumSettings& drum_settings,
-                    const Engine& engine)
+std::vector<Point> unmultiplied_points(
+    const SightRead::NoteTrack& track, const SpTimeMap& time_map,
+    const std::vector<SightRead::Tick>& unison_phrases,
+    const SqueezeSettings& squeeze_settings,
+    const SightRead::DrumSettings& drum_settings, const Engine& engine)
 {
     const auto& notes = track.notes();
     const auto has_relevant_bre = track.bre().has_value() && engine.has_bres();
@@ -310,7 +311,7 @@ unmultiplied_points(const NoteTrack& track, const SpTimeMap& time_map,
     auto current_phrase = track.sp_phrases().cbegin();
 
     for (auto p = notes.cbegin(); p != notes.cend();) {
-        if (track.track_type() == TrackType::Drums) {
+        if (track.track_type() == SightRead::TrackType::Drums) {
             if (p->is_skipped_kick(drum_settings)) {
                 ++p;
                 continue;
@@ -320,10 +321,11 @@ unmultiplied_points(const NoteTrack& track, const SpTimeMap& time_map,
             break;
         }
         const auto search_start
-            = track.track_type() == TrackType::Drums ? std::next(p) : p;
+            = track.track_type() == SightRead::TrackType::Drums ? std::next(p)
+                                                                : p;
         const auto q = std::find_if_not(
             search_start, notes.cend(), [=](const auto& note) {
-                if (track.track_type() == TrackType::Drums) {
+                if (track.track_type() == SightRead::TrackType::Drums) {
                     return note.is_skipped_kick(drum_settings);
                 }
                 return note.position == p->position;
@@ -359,7 +361,7 @@ unmultiplied_points(const NoteTrack& track, const SpTimeMap& time_map,
 }
 
 std::vector<Point>
-non_drum_points(const NoteTrack& track, const SpTimeMap& time_map,
+non_drum_points(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
                 const std::vector<SightRead::Tick>& unison_phrases,
                 const SqueezeSettings& squeeze_settings, const Engine& engine)
 {
@@ -371,11 +373,11 @@ non_drum_points(const NoteTrack& track, const SpTimeMap& time_map,
     return points;
 }
 
-std::string colours_string(const Note& note)
+std::string colours_string(const SightRead::Note& note)
 {
     std::string colours;
 
-    if ((note.flags & FLAGS_FIVE_FRET_GUITAR) != 0U) {
+    if ((note.flags & SightRead::FLAGS_FIVE_FRET_GUITAR) != 0U) {
         const std::array<std::string, 6> COLOUR_NAMES {"G", "R", "Y",
                                                        "B", "O", "open"};
         for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
@@ -385,7 +387,7 @@ std::string colours_string(const Note& note)
         }
         return colours;
     }
-    if ((note.flags & FLAGS_SIX_FRET_GUITAR) != 0U) {
+    if ((note.flags & SightRead::FLAGS_SIX_FRET_GUITAR) != 0U) {
         const std::array<std::string, 7> COLOUR_NAMES {"W1", "W2", "W3",  "B1",
                                                        "B2", "B3", "open"};
         for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
@@ -394,7 +396,7 @@ std::string colours_string(const Note& note)
             }
         }
     }
-    if ((note.flags & FLAGS_DRUMS) != 0U) {
+    if ((note.flags & SightRead::FLAGS_DRUMS) != 0U) {
         const std::array<std::string, 6> COLOUR_NAMES {"R", "Y",    "B",
                                                        "G", "kick", "kick"};
         for (auto i = 0U; i < COLOUR_NAMES.size(); ++i) {
@@ -402,13 +404,13 @@ std::string colours_string(const Note& note)
                 colours += COLOUR_NAMES.at(i);
             }
         }
-        if ((note.flags & FLAGS_GHOST) != 0U) {
+        if ((note.flags & SightRead::FLAGS_GHOST) != 0U) {
             colours += " ghost";
         }
-        if ((note.flags & FLAGS_ACCENT) != 0U) {
+        if ((note.flags & SightRead::FLAGS_ACCENT) != 0U) {
             colours += " accent";
         }
-        if ((note.flags & FLAGS_CYMBAL) != 0U) {
+        if ((note.flags & SightRead::FLAGS_CYMBAL) != 0U) {
             colours += " cymbal";
         }
     }
@@ -418,7 +420,8 @@ std::string colours_string(const Note& note)
 
 std::vector<PointPtr>
 first_after_current_sp_vector(const std::vector<Point>& points,
-                              const NoteTrack& track, const Engine& engine)
+                              const SightRead::NoteTrack& track,
+                              const Engine& engine)
 {
     std::vector<PointPtr> results;
     const auto& tempo_map = track.global_data().tempo_map();
@@ -451,7 +454,7 @@ first_after_current_sp_vector(const std::vector<Point>& points,
     return results;
 }
 
-std::vector<std::string> note_colours(const std::vector<Note>& notes,
+std::vector<std::string> note_colours(const std::vector<SightRead::Note>& notes,
                                       const std::vector<Point>& points)
 {
     std::vector<std::string> colours;
@@ -469,13 +472,13 @@ std::vector<std::string> note_colours(const std::vector<Note>& notes,
 }
 
 std::vector<Point>
-points_from_track(const NoteTrack& track, const SpTimeMap& time_map,
+points_from_track(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
                   const std::vector<SightRead::Tick>& unison_phrases,
                   const SqueezeSettings& squeeze_settings,
                   const SightRead::DrumSettings& drum_settings,
                   const Engine& engine)
 {
-    if (track.track_type() != TrackType::Drums) {
+    if (track.track_type() != SightRead::TrackType::Drums) {
         return non_drum_points(track, time_map, unison_phrases,
                                squeeze_settings, engine);
     }
@@ -513,7 +516,7 @@ std::vector<int> score_totals(const std::vector<Point>& points)
 }
 
 std::vector<std::tuple<SpPosition, int>>
-solo_boosts_from_solos(const std::vector<Solo>& solos,
+solo_boosts_from_solos(const std::vector<SightRead::Solo>& solos,
                        const SpTimeMap& time_map)
 {
     std::vector<std::tuple<SpPosition, int>> solo_boosts;
@@ -528,7 +531,7 @@ solo_boosts_from_solos(const std::vector<Solo>& solos,
 }
 }
 
-PointSet::PointSet(const NoteTrack& track, const SpTimeMap& time_map,
+PointSet::PointSet(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
                    const std::vector<SightRead::Tick>& unison_phrases,
                    const SqueezeSettings& squeeze_settings,
                    const SightRead::DrumSettings& drum_settings,

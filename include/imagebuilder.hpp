@@ -44,14 +44,14 @@ struct DrawnRow {
 struct DrawnNote {
     double beat;
     std::array<double, 7> lengths;
-    NoteFlags note_flags;
+    SightRead::NoteFlags note_flags;
     bool is_sp_note;
 };
 
 class ImageBuilder {
 private:
-    TrackType m_track_type;
-    Difficulty m_difficulty;
+    SightRead::TrackType m_track_type;
+    SightRead::Difficulty m_difficulty;
     bool m_is_lefty_flip;
     std::vector<DrawnRow> m_rows;
     std::vector<double> m_half_beat_lines;
@@ -82,34 +82,36 @@ private:
     void form_beat_lines(const SightRead::TempoMap& tempo_map);
     static bool is_neutralised_phrase(SightRead::Beat note_pos,
                                       const Path& path);
-    std::tuple<double, double> sp_phrase_bounds(const StarPower& phrase,
-                                                const NoteTrack& track,
-                                                const Path& path) const;
+    std::tuple<double, double>
+    sp_phrase_bounds(const SightRead::StarPower& phrase,
+                     const SightRead::NoteTrack& track, const Path& path) const;
 
 public:
-    ImageBuilder(const NoteTrack& track, Difficulty difficulty,
+    ImageBuilder(const SightRead::NoteTrack& track,
+                 SightRead::Difficulty difficulty,
                  const SightRead::DrumSettings& drum_settings,
                  bool is_lefty_flip, bool is_overlap_engine);
     void add_bpms(const SightRead::TempoMap& tempo_map);
-    void add_bre(const BigRockEnding& bre,
+    void add_bre(const SightRead::BigRockEnding& bre,
                  const SightRead::TempoMap& tempo_map);
-    void add_drum_fills(const NoteTrack& track);
+    void add_drum_fills(const SightRead::NoteTrack& track);
     void add_measure_values(const PointSet& points,
                             const SightRead::TempoMap& tempo_map,
                             const Path& path);
-    void add_solo_sections(const std::vector<Solo>& solos,
+    void add_solo_sections(const std::vector<SightRead::Solo>& solos,
                            const SightRead::TempoMap& tempo_map);
-    void add_song_header(const SongGlobalData& global_data);
+    void add_song_header(const SightRead::SongGlobalData& global_data);
     void add_sp_acts(const PointSet& points,
                      const SightRead::TempoMap& tempo_map, const Path& path);
     void add_sp_percent_values(const SpData& sp_data, const SpTimeMap& time_map,
                                const PointSet& points, const Path& path);
-    void add_sp_phrases(const NoteTrack& track,
+    void add_sp_phrases(const SightRead::NoteTrack& track,
                         const std::vector<SightRead::Tick>& unison_phrases,
                         const Path& path);
     void add_sp_values(const SpData& sp_data, const Engine& engine);
     void add_time_sigs(const SightRead::TempoMap& tempo_map);
-    void set_total_score(const PointSet& points, const std::vector<Solo>& solos,
+    void set_total_score(const PointSet& points,
+                         const std::vector<SightRead::Solo>& solos,
                          const Path& path);
 
     [[nodiscard]] const std::string& artist() const { return m_artist; }
@@ -187,7 +189,10 @@ public:
     {
         return m_time_sigs;
     }
-    [[nodiscard]] TrackType track_type() const { return m_track_type; }
+    [[nodiscard]] SightRead::TrackType track_type() const
+    {
+        return m_track_type;
+    }
     [[nodiscard]] const std::vector<std::tuple<double, double>>&
     unison_ranges() const
     {
@@ -204,11 +209,14 @@ public:
     }
     float& activation_opacity() { return m_activation_opacity; }
     [[nodiscard]] int total_score() const { return m_total_score; }
-    [[nodiscard]] Difficulty difficulty() const { return m_difficulty; }
+    [[nodiscard]] SightRead::Difficulty difficulty() const
+    {
+        return m_difficulty;
+    }
     [[nodiscard]] bool is_lefty_flip() const { return m_is_lefty_flip; }
 };
 
-ImageBuilder make_builder(Song& song, const NoteTrack& track,
+ImageBuilder make_builder(Song& song, const SightRead::NoteTrack& track,
                           const Settings& settings,
                           const std::function<void(const char*)>& write,
                           const std::atomic<bool>* terminate);

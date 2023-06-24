@@ -27,17 +27,18 @@
 #include "songfile.hpp"
 
 namespace {
-std::set<Instrument> permitted_instruments(Game game)
+std::set<SightRead::Instrument> permitted_instruments(Game game)
 {
     switch (game) {
     case Game::CloneHero:
-        return all_instruments();
+        return SightRead::all_instruments();
     case Game::GuitarHeroOne:
-        return {Instrument::Guitar};
+        return {SightRead::Instrument::Guitar};
     case Game::RockBand:
-        return {Instrument::Guitar, Instrument::Bass};
+        return {SightRead::Instrument::Guitar, SightRead::Instrument::Bass};
     case Game::RockBandThree:
-        return {Instrument::Guitar, Instrument::Bass, Instrument::Keys};
+        return {SightRead::Instrument::Guitar, SightRead::Instrument::Bass,
+                SightRead::Instrument::Keys};
     default:
         throw std::invalid_argument("Invalid Game");
     }

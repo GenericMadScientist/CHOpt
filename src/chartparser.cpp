@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <climits>
 #include <set>
 
@@ -53,27 +54,28 @@ SightRead::TempoMap tempo_map_from_section(const ChartSection& section,
     return {std::move(tses), std::move(bpms), {}, resolution};
 }
 
-std::optional<std::tuple<Difficulty, Instrument>>
+std::optional<std::tuple<SightRead::Difficulty, SightRead::Instrument>>
 diff_inst_from_header(const std::string& header)
 {
     using namespace std::literals;
 
-    constexpr std::array<std::tuple<std::string_view, Difficulty>, 4>
-        DIFFICULTIES {std::tuple {"Easy"sv, Difficulty::Easy},
-                      {"Medium"sv, Difficulty::Medium},
-                      {"Hard"sv, Difficulty::Hard},
-                      {"Expert"sv, Difficulty::Expert}};
-    constexpr std::array<std::tuple<std::string_view, Instrument>, 10>
-        INSTRUMENTS {std::tuple {"Single"sv, Instrument::Guitar},
-                     {"DoubleGuitar"sv, Instrument::GuitarCoop},
-                     {"DoubleBass"sv, Instrument::Bass},
-                     {"DoubleRhythm"sv, Instrument::Rhythm},
-                     {"Keyboard"sv, Instrument::Keys},
-                     {"GHLGuitar"sv, Instrument::GHLGuitar},
-                     {"GHLBass"sv, Instrument::GHLBass},
-                     {"GHLRhythm"sv, Instrument::GHLRhythm},
-                     {"GHLCoop"sv, Instrument::GHLGuitarCoop},
-                     {"Drums"sv, Instrument::Drums}};
+    constexpr std::array<std::tuple<std::string_view, SightRead::Difficulty>, 4>
+        DIFFICULTIES {std::tuple {"Easy"sv, SightRead::Difficulty::Easy},
+                      {"Medium"sv, SightRead::Difficulty::Medium},
+                      {"Hard"sv, SightRead::Difficulty::Hard},
+                      {"Expert"sv, SightRead::Difficulty::Expert}};
+    constexpr std::array<std::tuple<std::string_view, SightRead::Instrument>,
+                         10>
+        INSTRUMENTS {std::tuple {"Single"sv, SightRead::Instrument::Guitar},
+                     {"DoubleGuitar"sv, SightRead::Instrument::GuitarCoop},
+                     {"DoubleBass"sv, SightRead::Instrument::Bass},
+                     {"DoubleRhythm"sv, SightRead::Instrument::Rhythm},
+                     {"Keyboard"sv, SightRead::Instrument::Keys},
+                     {"GHLGuitar"sv, SightRead::Instrument::GHLGuitar},
+                     {"GHLBass"sv, SightRead::Instrument::GHLBass},
+                     {"GHLRhythm"sv, SightRead::Instrument::GHLRhythm},
+                     {"GHLCoop"sv, SightRead::Instrument::GHLGuitarCoop},
+                     {"Drums"sv, SightRead::Instrument::Drums}};
     // NOLINT is required because following clang-tidy here causes the VS2017
     // compile to fail.
     auto diff_iter = std::find_if( // NOLINT
@@ -92,50 +94,62 @@ diff_inst_from_header(const std::string& header)
     return std::tuple {std::get<1>(*diff_iter), std::get<1>(*inst_iter)};
 }
 
-std::optional<Note>
+std::optional<SightRead::Note>
 note_from_colour_key_map(const std::map<int, int>& colour_map, int position,
-                         int length, int fret_type, NoteFlags flags)
+                         int length, int fret_type, SightRead::NoteFlags flags)
 {
     const auto colour_iter = colour_map.find(fret_type);
     if (colour_iter == colour_map.end()) {
         return std::nullopt;
     }
-    Note note;
+    SightRead::Note note;
     note.position = SightRead::Tick {position};
     note.lengths.at(colour_iter->second) = SightRead::Tick {length};
     note.flags = flags;
     return note;
 }
 
-std::optional<Note> note_from_note_colour(int position, int length,
-                                          int fret_type, TrackType track_type)
+std::optional<SightRead::Note>
+note_from_note_colour(int position, int length, int fret_type,
+                      SightRead::TrackType track_type)
 {
     std::map<int, int> colours;
     switch (track_type) {
-    case TrackType::FiveFret:
-        colours = {{0, FIVE_FRET_GREEN},  {1, FIVE_FRET_RED},
-                   {2, FIVE_FRET_YELLOW}, {3, FIVE_FRET_BLUE},
-                   {4, FIVE_FRET_ORANGE}, {7, FIVE_FRET_OPEN}}; // NOLINT
+    case SightRead::TrackType::FiveFret:
+        colours = {{0, SightRead::FIVE_FRET_GREEN},
+                   {1, SightRead::FIVE_FRET_RED},
+                   {2, SightRead::FIVE_FRET_YELLOW},
+                   {3, SightRead::FIVE_FRET_BLUE},
+                   {4, SightRead::FIVE_FRET_ORANGE},
+                   {7, SightRead::FIVE_FRET_OPEN}}; // NOLINT
         return note_from_colour_key_map(colours, position, length, fret_type,
-                                        FLAGS_FIVE_FRET_GUITAR);
-    case TrackType::SixFret:
-        colours = {{0, SIX_FRET_WHITE_LOW},  {1, SIX_FRET_WHITE_MID},
-                   {2, SIX_FRET_WHITE_HIGH}, {3, SIX_FRET_BLACK_LOW},
-                   {4, SIX_FRET_BLACK_MID},  {7, SIX_FRET_OPEN}, // NOLINT
-                   {8, SIX_FRET_BLACK_HIGH}}; // NOLINT
+                                        SightRead::FLAGS_FIVE_FRET_GUITAR);
+    case SightRead::TrackType::SixFret:
+        colours = {{0, SightRead::SIX_FRET_WHITE_LOW},
+                   {1, SightRead::SIX_FRET_WHITE_MID},
+                   {2, SightRead::SIX_FRET_WHITE_HIGH},
+                   {3, SightRead::SIX_FRET_BLACK_LOW},
+                   {4, SightRead::SIX_FRET_BLACK_MID},
+                   {7, SightRead::SIX_FRET_OPEN}, // NOLINT
+                   {8, SightRead::SIX_FRET_BLACK_HIGH}}; // NOLINT
         return note_from_colour_key_map(colours, position, length, fret_type,
-                                        FLAGS_SIX_FRET_GUITAR);
-    case TrackType::Drums: {
+                                        SightRead::FLAGS_SIX_FRET_GUITAR);
+    case SightRead::TrackType::Drums: {
         constexpr int CYMBAL_THRESHOLD = 64;
-        colours = {{0, DRUM_KICK},    {1, DRUM_RED},
-                   {2, DRUM_YELLOW},  {3, DRUM_BLUE},
-                   {4, DRUM_GREEN},   {32, DRUM_DOUBLE_KICK}, // NOLINT
-                   {66, DRUM_YELLOW}, {67, DRUM_BLUE}, // NOLINT
-                   {68, DRUM_GREEN}}; // NOLINT
+        colours = {{0, SightRead::DRUM_KICK},
+                   {1, SightRead::DRUM_RED},
+                   {2, SightRead::DRUM_YELLOW},
+                   {3, SightRead::DRUM_BLUE},
+                   {4, SightRead::DRUM_GREEN},
+                   {32, SightRead::DRUM_DOUBLE_KICK}, // NOLINT
+                   {66, SightRead::DRUM_YELLOW},
+                   {67, SightRead::DRUM_BLUE}, // NOLINT
+                   {68, SightRead::DRUM_GREEN}}; // NOLINT
         auto note = note_from_colour_key_map(colours, position, length,
-                                             fret_type, FLAGS_DRUMS);
+                                             fret_type, SightRead::FLAGS_DRUMS);
         if (note.has_value() && fret_type >= CYMBAL_THRESHOLD) {
-            note->flags = static_cast<NoteFlags>(note->flags | FLAGS_CYMBAL);
+            note->flags = static_cast<SightRead::NoteFlags>(
+                note->flags | SightRead::FLAGS_CYMBAL);
         }
         return note;
     }
@@ -144,8 +158,8 @@ std::optional<Note> note_from_note_colour(int position, int length,
     }
 }
 
-std::vector<Note>
-add_fifth_lane_greens(std::vector<Note> notes,
+std::vector<SightRead::Note>
+add_fifth_lane_greens(std::vector<SightRead::Note> notes,
                       const std::vector<NoteEvent>& note_events)
 {
     constexpr int FIVE_LANE_GREEN = 5;
@@ -160,25 +174,26 @@ add_fifth_lane_greens(std::vector<Note> notes,
         if (note_event.fret != FIVE_LANE_GREEN) {
             continue;
         }
-        Note note;
+        SightRead::Note note;
         note.position = SightRead::Tick {note_event.position};
-        note.flags = FLAGS_DRUMS;
+        note.flags = SightRead::FLAGS_DRUMS;
         if (green_positions.contains(SightRead::Tick {note_event.position})) {
-            note.lengths[DRUM_BLUE] = SightRead::Tick {0};
+            note.lengths[SightRead::DRUM_BLUE] = SightRead::Tick {0};
         } else {
-            note.lengths[DRUM_GREEN] = SightRead::Tick {0};
+            note.lengths[SightRead::DRUM_GREEN] = SightRead::Tick {0};
         }
         notes.push_back(note);
     }
     return notes;
 }
 
-std::vector<Note> apply_cymbal_events(const std::vector<Note>& notes)
+std::vector<SightRead::Note>
+apply_cymbal_events(const std::vector<SightRead::Note>& notes)
 {
     std::set<unsigned int> deletion_spots;
     for (auto i = 0U; i < notes.size(); ++i) {
         const auto& cymbal_note = notes[i];
-        if ((cymbal_note.flags & FLAGS_CYMBAL) == 0U) {
+        if ((cymbal_note.flags & SightRead::FLAGS_CYMBAL) == 0U) {
             continue;
         }
         bool delete_cymbal = true;
@@ -201,7 +216,7 @@ std::vector<Note> apply_cymbal_events(const std::vector<Note>& notes)
         }
     }
 
-    std::vector<Note> new_notes;
+    std::vector<SightRead::Note> new_notes;
     for (auto i = 0U; i < notes.size(); ++i) {
         if (!deletion_spots.contains(i)) {
             new_notes.push_back(notes[i]);
@@ -210,25 +225,25 @@ std::vector<Note> apply_cymbal_events(const std::vector<Note>& notes)
     return new_notes;
 }
 
-int no_dynamics_lane_colour(const Note& note)
+int no_dynamics_lane_colour(const SightRead::Note& note)
 {
-    if (note.lengths[DRUM_RED] != SightRead::Tick {-1}) {
+    if (note.lengths[SightRead::DRUM_RED] != SightRead::Tick {-1}) {
         return 0;
     }
-    if (note.lengths[DRUM_YELLOW] != SightRead::Tick {-1}) {
+    if (note.lengths[SightRead::DRUM_YELLOW] != SightRead::Tick {-1}) {
         return 1;
     }
-    if (note.lengths[DRUM_BLUE] != SightRead::Tick {-1}) {
+    if (note.lengths[SightRead::DRUM_BLUE] != SightRead::Tick {-1}) {
         return 2;
     }
-    if (note.lengths[DRUM_GREEN] != SightRead::Tick {-1}) {
+    if (note.lengths[SightRead::DRUM_GREEN] != SightRead::Tick {-1}) {
         return 3;
     }
     return -1;
 }
 
-std::vector<Note>
-apply_dynamics_events(std::vector<Note> notes,
+std::vector<SightRead::Note>
+apply_dynamics_events(std::vector<SightRead::Note> notes,
                       const std::vector<NoteEvent>& note_events)
 {
     constexpr int GHOST_BASE = 34;
@@ -257,9 +272,11 @@ apply_dynamics_events(std::vector<Note> notes,
         }
         const auto lane = no_dynamics_lane_colour(note);
         if (accent_events.contains({note.position, lane})) {
-            note.flags = static_cast<NoteFlags>(note.flags | FLAGS_ACCENT);
+            note.flags = static_cast<SightRead::NoteFlags>(
+                note.flags | SightRead::FLAGS_ACCENT);
         } else if (ghost_events.contains({note.position, lane})) {
-            note.flags = static_cast<NoteFlags>(note.flags | FLAGS_GHOST);
+            note.flags = static_cast<SightRead::NoteFlags>(
+                note.flags | SightRead::FLAGS_GHOST);
         }
     }
     return notes;
@@ -270,26 +287,26 @@ private:
     std::set<int> m_forcing_positions;
     std::set<int> m_tap_positions;
 
-    static bool is_forcing_key(int fret_type, TrackType track_type)
+    static bool is_forcing_key(int fret_type, SightRead::TrackType track_type)
     {
         constexpr int HOPO_FORCE_KEY = 5;
 
         switch (track_type) {
-        case TrackType::FiveFret:
-        case TrackType::SixFret:
+        case SightRead::TrackType::FiveFret:
+        case SightRead::TrackType::SixFret:
             return fret_type == HOPO_FORCE_KEY;
         default:
             return false;
         }
     }
 
-    static bool is_tap_key(int fret_type, TrackType track_type)
+    static bool is_tap_key(int fret_type, SightRead::TrackType track_type)
     {
         constexpr int TAP_FORCE_KEY = 6;
 
         switch (track_type) {
-        case TrackType::FiveFret:
-        case TrackType::SixFret:
+        case SightRead::TrackType::FiveFret:
+        case SightRead::TrackType::SixFret:
             return fret_type == TAP_FORCE_KEY;
         default:
             return false;
@@ -297,19 +314,21 @@ private:
     }
 
 public:
-    void apply_forcing(std::vector<Note>& notes) const
+    void apply_forcing(std::vector<SightRead::Note>& notes) const
     {
         for (auto& note : notes) {
             if (m_tap_positions.contains(note.position.value())) {
-                note.flags = static_cast<NoteFlags>(note.flags | FLAGS_TAP);
+                note.flags = static_cast<SightRead::NoteFlags>(
+                    note.flags | SightRead::FLAGS_TAP);
             } else if (m_forcing_positions.contains(note.position.value())) {
-                note.flags
-                    = static_cast<NoteFlags>(note.flags | FLAGS_FORCE_FLIP);
+                note.flags = static_cast<SightRead::NoteFlags>(
+                    note.flags | SightRead::FLAGS_FORCE_FLIP);
             }
         }
     }
 
-    void add_force_event(const NoteEvent& event, TrackType track_type)
+    void add_force_event(const NoteEvent& event,
+                         SightRead::TrackType track_type)
     {
         if (is_forcing_key(event.fret, track_type)) {
             m_forcing_positions.insert(event.position);
@@ -319,11 +338,12 @@ public:
     }
 };
 
-std::vector<Note> apply_drum_events(std::vector<Note> notes,
-                                    const std::vector<NoteEvent>& note_events,
-                                    TrackType track_type)
+std::vector<SightRead::Note>
+apply_drum_events(std::vector<SightRead::Note> notes,
+                  const std::vector<NoteEvent>& note_events,
+                  SightRead::TrackType track_type)
 {
-    if (track_type != TrackType::Drums) {
+    if (track_type != SightRead::TrackType::Drums) {
         return notes;
     }
     notes = add_fifth_lane_greens(std::move(notes), note_events);
@@ -331,10 +351,11 @@ std::vector<Note> apply_drum_events(std::vector<Note> notes,
     return apply_dynamics_events(notes, note_events);
 }
 
-NoteTrack note_track_from_section(const ChartSection& section,
-                                  std::shared_ptr<SongGlobalData> global_data,
-                                  TrackType track_type, bool permit_solos,
-                                  SightRead::Tick max_hopo_gap)
+SightRead::NoteTrack
+note_track_from_section(const ChartSection& section,
+                        std::shared_ptr<SightRead::SongGlobalData> global_data,
+                        SightRead::TrackType track_type, bool permit_solos,
+                        SightRead::Tick max_hopo_gap)
 {
     constexpr int DISCO_FLIP_START_SIZE = 13;
     constexpr int DISCO_FLIP_END_SIZE = 12;
@@ -344,7 +365,7 @@ NoteTrack note_track_from_section(const ChartSection& section,
         {'_', 'd', 'r', 'u', 'm', 's'}};
 
     ForcingEvents forcing_events;
-    std::vector<Note> notes;
+    std::vector<SightRead::Note> notes;
     for (const auto& note_event : section.note_events) {
         const auto note
             = note_from_note_colour(note_event.position, note_event.length,
@@ -358,18 +379,20 @@ NoteTrack note_track_from_section(const ChartSection& section,
     forcing_events.apply_forcing(notes);
     notes = apply_drum_events(notes, section.note_events, track_type);
 
-    std::vector<DrumFill> fills;
-    std::vector<StarPower> sp;
+    std::vector<SightRead::DrumFill> fills;
+    std::vector<SightRead::StarPower> sp;
     for (const auto& phrase : section.special_events) {
         if (phrase.key == 2) {
-            sp.push_back(StarPower {SightRead::Tick {phrase.position},
-                                    SightRead::Tick {phrase.length}});
-        } else if (phrase.key == DRUM_FILL_KEY) {
-            fills.push_back(DrumFill {SightRead::Tick {phrase.position},
+            sp.push_back(
+                SightRead::StarPower {SightRead::Tick {phrase.position},
                                       SightRead::Tick {phrase.length}});
+        } else if (phrase.key == DRUM_FILL_KEY) {
+            fills.push_back(
+                SightRead::DrumFill {SightRead::Tick {phrase.position},
+                                     SightRead::Tick {phrase.length}});
         }
     }
-    if (track_type != TrackType::Drums) {
+    if (track_type != SightRead::TrackType::Drums) {
         fills.clear();
         fills.shrink_to_fit();
     }
@@ -406,36 +429,37 @@ NoteTrack note_track_from_section(const ChartSection& section,
     }
     std::sort(disco_flip_on_events.begin(), disco_flip_on_events.end());
     std::sort(disco_flip_off_events.begin(), disco_flip_off_events.end());
-    std::vector<DiscoFlip> disco_flips;
+    std::vector<SightRead::DiscoFlip> disco_flips;
     for (auto [start, end] :
          combine_solo_events(disco_flip_on_events, disco_flip_off_events)) {
         disco_flips.push_back({start, end - start});
     }
 
-    NoteTrack note_track {std::move(notes), sp, track_type,
-                          std::move(global_data), max_hopo_gap};
+    SightRead::NoteTrack note_track {std::move(notes), sp, track_type,
+                                     std::move(global_data), max_hopo_gap};
     note_track.solos(std::move(solos));
     note_track.drum_fills(std::move(fills));
     note_track.disco_flips(std::move(disco_flips));
     return note_track;
 }
 
-TrackType track_type_from_instrument(Instrument instrument)
+SightRead::TrackType
+track_type_from_instrument(SightRead::Instrument instrument)
 {
     switch (instrument) {
-    case Instrument::Guitar:
-    case Instrument::GuitarCoop:
-    case Instrument::Bass:
-    case Instrument::Rhythm:
-    case Instrument::Keys:
-        return TrackType::FiveFret;
-    case Instrument::GHLGuitar:
-    case Instrument::GHLBass:
-    case Instrument::GHLRhythm:
-    case Instrument::GHLGuitarCoop:
-        return TrackType::SixFret;
-    case Instrument::Drums:
-        return TrackType::Drums;
+    case SightRead::Instrument::Guitar:
+    case SightRead::Instrument::GuitarCoop:
+    case SightRead::Instrument::Bass:
+    case SightRead::Instrument::Rhythm:
+    case SightRead::Instrument::Keys:
+        return SightRead::TrackType::FiveFret;
+    case SightRead::Instrument::GHLGuitar:
+    case SightRead::Instrument::GHLBass:
+    case SightRead::Instrument::GHLRhythm:
+    case SightRead::Instrument::GHLGuitarCoop:
+        return SightRead::TrackType::SixFret;
+    case SightRead::Instrument::Drums:
+        return SightRead::TrackType::Drums;
     default:
         throw std::invalid_argument("Invalid instrument");
     }
@@ -447,7 +471,7 @@ ChartParser::ChartParser(const IniValues& ini)
     , m_artist {ini.artist}
     , m_charter {ini.charter}
     , m_hopo_threshold {HopoThresholdType::Resolution, SightRead::Tick {0}}
-    , m_permitted_instruments {all_instruments()}
+    , m_permitted_instruments {SightRead::all_instruments()}
     , m_permit_solos {true}
 {
 }
@@ -458,8 +482,8 @@ ChartParser& ChartParser::hopo_threshold(HopoThreshold hopo_threshold)
     return *this;
 }
 
-ChartParser&
-ChartParser::permit_instruments(std::set<Instrument> permitted_instruments)
+ChartParser& ChartParser::permit_instruments(
+    std::set<SightRead::Instrument> permitted_instruments)
 {
     m_permitted_instruments = std::move(permitted_instruments);
     return *this;

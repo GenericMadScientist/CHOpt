@@ -34,54 +34,54 @@ bool is_valid_image_path(std::string_view path)
     return path.ends_with(".bmp") || path.ends_with(".png");
 }
 
-Difficulty string_to_diff(std::string_view text)
+SightRead::Difficulty string_to_diff(std::string_view text)
 {
     if (text == "expert") {
-        return Difficulty::Expert;
+        return SightRead::Difficulty::Expert;
     }
     if (text == "hard") {
-        return Difficulty::Hard;
+        return SightRead::Difficulty::Hard;
     }
     if (text == "medium") {
-        return Difficulty::Medium;
+        return SightRead::Difficulty::Medium;
     }
     if (text == "easy") {
-        return Difficulty::Easy;
+        return SightRead::Difficulty::Easy;
     }
     throw std::invalid_argument("Unrecognised difficulty");
 }
 
-Instrument string_to_inst(std::string_view text)
+SightRead::Instrument string_to_inst(std::string_view text)
 {
     if (text == "guitar") {
-        return Instrument::Guitar;
+        return SightRead::Instrument::Guitar;
     }
     if (text == "coop") {
-        return Instrument::GuitarCoop;
+        return SightRead::Instrument::GuitarCoop;
     }
     if (text == "bass") {
-        return Instrument::Bass;
+        return SightRead::Instrument::Bass;
     }
     if (text == "rhythm") {
-        return Instrument::Rhythm;
+        return SightRead::Instrument::Rhythm;
     }
     if (text == "keys") {
-        return Instrument::Keys;
+        return SightRead::Instrument::Keys;
     }
     if (text == "ghl") {
-        return Instrument::GHLGuitar;
+        return SightRead::Instrument::GHLGuitar;
     }
     if (text == "ghlbass") {
-        return Instrument::GHLBass;
+        return SightRead::Instrument::GHLBass;
     }
     if (text == "ghlrhythm") {
-        return Instrument::GHLRhythm;
+        return SightRead::Instrument::GHLRhythm;
     }
     if (text == "ghlcoop") {
-        return Instrument::GHLGuitarCoop;
+        return SightRead::Instrument::GHLGuitarCoop;
     }
     if (text == "drums") {
-        return Instrument::Drums;
+        return SightRead::Instrument::Drums;
     }
     throw std::invalid_argument("Unrecognised instrument");
 }
@@ -97,12 +97,12 @@ Game game_from_string(std::string_view game)
 }
 }
 
-std::unique_ptr<Engine> game_to_engine(Game game, Instrument instrument,
-                                       bool precision_mode)
+std::unique_ptr<Engine>
+game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
 {
     switch (game) {
     case Game::CloneHero:
-        if (instrument == Instrument::Drums) {
+        if (instrument == SightRead::Instrument::Drums) {
             if (precision_mode) {
                 return std::make_unique<ChPrecisionDrumEngine>();
             }
@@ -115,12 +115,12 @@ std::unique_ptr<Engine> game_to_engine(Game game, Instrument instrument,
     case Game::GuitarHeroOne:
         return std::make_unique<Gh1Engine>();
     case Game::RockBand:
-        if (instrument == Instrument::Bass) {
+        if (instrument == SightRead::Instrument::Bass) {
             return std::make_unique<RbBassEngine>();
         }
         return std::make_unique<RbEngine>();
     case Game::RockBandThree:
-        if (instrument == Instrument::Bass) {
+        if (instrument == SightRead::Instrument::Bass) {
             return std::make_unique<Rb3BassEngine>();
         }
         return std::make_unique<Rb3Engine>();

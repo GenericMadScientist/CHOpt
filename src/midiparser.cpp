@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <climits>
 #include <limits>
 #include <set>
@@ -113,20 +114,21 @@ std::vector<SightRead::Tick> od_beats_from_track(const MidiTrack& track)
     return od_beats;
 }
 
-std::optional<Instrument> midi_section_instrument(const std::string& track_name)
+std::optional<SightRead::Instrument>
+midi_section_instrument(const std::string& track_name)
 {
-    const std::map<std::string, Instrument> INSTRUMENTS {
-        {"PART GUITAR", Instrument::Guitar},
-        {"T1 GEMS", Instrument::Guitar},
-        {"PART GUITAR COOP", Instrument::GuitarCoop},
-        {"PART BASS", Instrument::Bass},
-        {"PART RHYTHM", Instrument::Rhythm},
-        {"PART KEYS", Instrument::Keys},
-        {"PART GUITAR GHL", Instrument::GHLGuitar},
-        {"PART BASS GHL", Instrument::GHLBass},
-        {"PART RHYTHM GHL", Instrument::GHLRhythm},
-        {"PART GUITAR COOP GHL", Instrument::GHLGuitarCoop},
-        {"PART DRUMS", Instrument::Drums}};
+    const std::map<std::string, SightRead::Instrument> INSTRUMENTS {
+        {"PART GUITAR", SightRead::Instrument::Guitar},
+        {"T1 GEMS", SightRead::Instrument::Guitar},
+        {"PART GUITAR COOP", SightRead::Instrument::GuitarCoop},
+        {"PART BASS", SightRead::Instrument::Bass},
+        {"PART RHYTHM", SightRead::Instrument::Rhythm},
+        {"PART KEYS", SightRead::Instrument::Keys},
+        {"PART GUITAR GHL", SightRead::Instrument::GHLGuitar},
+        {"PART BASS GHL", SightRead::Instrument::GHLBass},
+        {"PART RHYTHM GHL", SightRead::Instrument::GHLRhythm},
+        {"PART GUITAR COOP GHL", SightRead::Instrument::GHLGuitarCoop},
+        {"PART DRUMS", SightRead::Instrument::Drums}};
 
     const auto iter = INSTRUMENTS.find(track_name);
     if (iter == INSTRUMENTS.end()) {
@@ -209,9 +211,10 @@ bool is_open_event_sysex(const SysexEvent& event)
         });
 }
 
-std::optional<Difficulty> look_up_difficulty(
-    const std::array<std::tuple<int, int, Difficulty>, 4>& diff_ranges,
-    std::uint8_t key)
+std::optional<SightRead::Difficulty>
+look_up_difficulty(const std::array<std::tuple<int, int, SightRead::Difficulty>,
+                                    4>& diff_ranges,
+                   std::uint8_t key)
 {
     for (const auto& [min, max, diff] : diff_ranges) {
         if (key >= min && key <= max) {
@@ -222,28 +225,28 @@ std::optional<Difficulty> look_up_difficulty(
     return std::nullopt;
 }
 
-std::optional<Difficulty> difficulty_from_key(std::uint8_t key,
-                                              TrackType track_type)
+std::optional<SightRead::Difficulty>
+difficulty_from_key(std::uint8_t key, SightRead::TrackType track_type)
 {
-    std::array<std::tuple<int, int, Difficulty>, 4> diff_ranges;
+    std::array<std::tuple<int, int, SightRead::Difficulty>, 4> diff_ranges;
     switch (track_type) {
-    case TrackType::FiveFret:
-        diff_ranges = {{{96, 102, Difficulty::Expert}, // NOLINT
-                        {84, 90, Difficulty::Hard}, // NOLINT
-                        {72, 78, Difficulty::Medium}, // NOLINT
-                        {60, 66, Difficulty::Easy}}}; // NOLINT
+    case SightRead::TrackType::FiveFret:
+        diff_ranges = {{{96, 102, SightRead::Difficulty::Expert}, // NOLINT
+                        {84, 90, SightRead::Difficulty::Hard}, // NOLINT
+                        {72, 78, SightRead::Difficulty::Medium}, // NOLINT
+                        {60, 66, SightRead::Difficulty::Easy}}}; // NOLINT
         break;
-    case TrackType::SixFret:
-        diff_ranges = {{{94, 102, Difficulty::Expert}, // NOLINT
-                        {82, 90, Difficulty::Hard}, // NOLINT
-                        {70, 78, Difficulty::Medium}, // NOLINT
-                        {58, 66, Difficulty::Easy}}}; // NOLINT
+    case SightRead::TrackType::SixFret:
+        diff_ranges = {{{94, 102, SightRead::Difficulty::Expert}, // NOLINT
+                        {82, 90, SightRead::Difficulty::Hard}, // NOLINT
+                        {70, 78, SightRead::Difficulty::Medium}, // NOLINT
+                        {58, 66, SightRead::Difficulty::Easy}}}; // NOLINT
         break;
-    case TrackType::Drums:
-        diff_ranges = {{{95, 101, Difficulty::Expert}, // NOLINT
-                        {83, 89, Difficulty::Hard}, // NOLINT
-                        {71, 77, Difficulty::Medium}, // NOLINT
-                        {59, 65, Difficulty::Easy}}}; // NOLINT
+    case SightRead::TrackType::Drums:
+        diff_ranges = {{{95, 101, SightRead::Difficulty::Expert}, // NOLINT
+                        {83, 89, SightRead::Difficulty::Hard}, // NOLINT
+                        {71, 77, SightRead::Difficulty::Medium}, // NOLINT
+                        {59, 65, SightRead::Difficulty::Easy}}}; // NOLINT
         break;
     }
     return look_up_difficulty(diff_ranges, key);
@@ -263,33 +266,39 @@ T colour_from_key_and_bounds(std::uint8_t key,
     throw SightRead::ParseError("Invalid key for note");
 }
 
-int colour_from_key(std::uint8_t key, TrackType track_type, bool from_five_lane)
+int colour_from_key(std::uint8_t key, SightRead::TrackType track_type,
+                    bool from_five_lane)
 {
     std::array<unsigned int, 4> diff_ranges {};
     switch (track_type) {
-    case TrackType::FiveFret: {
+    case SightRead::TrackType::FiveFret: {
         diff_ranges = {96, 84, 72, 60}; // NOLINT
-        constexpr std::array NOTE_COLOURS {FIVE_FRET_GREEN, FIVE_FRET_RED,
-                                           FIVE_FRET_YELLOW, FIVE_FRET_BLUE,
-                                           FIVE_FRET_ORANGE};
+        constexpr std::array NOTE_COLOURS {
+            SightRead::FIVE_FRET_GREEN, SightRead::FIVE_FRET_RED,
+            SightRead::FIVE_FRET_YELLOW, SightRead::FIVE_FRET_BLUE,
+            SightRead::FIVE_FRET_ORANGE};
         return colour_from_key_and_bounds(key, diff_ranges, NOTE_COLOURS);
     }
-    case TrackType::SixFret: {
+    case SightRead::TrackType::SixFret: {
         diff_ranges = {94, 82, 70, 58}; // NOLINT
         constexpr std::array GHL_NOTE_COLOURS {
-            SIX_FRET_OPEN,       SIX_FRET_WHITE_LOW, SIX_FRET_WHITE_MID,
-            SIX_FRET_WHITE_HIGH, SIX_FRET_BLACK_LOW, SIX_FRET_BLACK_MID,
-            SIX_FRET_BLACK_HIGH};
+            SightRead::SIX_FRET_OPEN,      SightRead::SIX_FRET_WHITE_LOW,
+            SightRead::SIX_FRET_WHITE_MID, SightRead::SIX_FRET_WHITE_HIGH,
+            SightRead::SIX_FRET_BLACK_LOW, SightRead::SIX_FRET_BLACK_MID,
+            SightRead::SIX_FRET_BLACK_HIGH};
         return colour_from_key_and_bounds(key, diff_ranges, GHL_NOTE_COLOURS);
     }
-    case TrackType::Drums: {
+    case SightRead::TrackType::Drums: {
         diff_ranges = {95, 83, 71, 59}; // NOLINT
-        constexpr std::array DRUM_NOTE_COLOURS {DRUM_DOUBLE_KICK, DRUM_KICK,
-                                                DRUM_RED,         DRUM_YELLOW,
-                                                DRUM_BLUE,        DRUM_GREEN};
+        constexpr std::array DRUM_NOTE_COLOURS {
+            SightRead::DRUM_DOUBLE_KICK, SightRead::DRUM_KICK,
+            SightRead::DRUM_RED,         SightRead::DRUM_YELLOW,
+            SightRead::DRUM_BLUE,        SightRead::DRUM_GREEN};
         constexpr std::array FIVE_LANE_COLOURS {
-            DRUM_DOUBLE_KICK, DRUM_KICK,  DRUM_RED,  DRUM_YELLOW,
-            DRUM_BLUE,        DRUM_GREEN, DRUM_GREEN};
+            SightRead::DRUM_DOUBLE_KICK, SightRead::DRUM_KICK,
+            SightRead::DRUM_RED,         SightRead::DRUM_YELLOW,
+            SightRead::DRUM_BLUE,        SightRead::DRUM_GREEN,
+            SightRead::DRUM_GREEN};
         if (from_five_lane) {
             return colour_from_key_and_bounds(key, diff_ranges,
                                               FIVE_LANE_COLOURS);
@@ -301,15 +310,15 @@ int colour_from_key(std::uint8_t key, TrackType track_type, bool from_five_lane)
     }
 }
 
-NoteFlags flags_from_track_type(TrackType track_type)
+SightRead::NoteFlags flags_from_track_type(SightRead::TrackType track_type)
 {
     switch (track_type) {
-    case TrackType::FiveFret:
-        return FLAGS_FIVE_FRET_GUITAR;
-    case TrackType::SixFret:
-        return FLAGS_SIX_FRET_GUITAR;
-    case TrackType::Drums:
-        return FLAGS_DRUMS;
+    case SightRead::TrackType::FiveFret:
+        return SightRead::FLAGS_FIVE_FRET_GUITAR;
+    case SightRead::TrackType::SixFret:
+        return SightRead::FLAGS_SIX_FRET_GUITAR;
+    case SightRead::TrackType::Drums:
+        return SightRead::FLAGS_DRUMS;
     default:
         throw std::invalid_argument("Invalid track type");
     }
@@ -324,17 +333,17 @@ bool is_cymbal_key(std::uint8_t key, bool from_five_lane)
     return index == 3 || index == 4 || index == 5; // NOLINT
 }
 
-NoteFlags dynamics_flags_from_velocity(std::uint8_t velocity)
+SightRead::NoteFlags dynamics_flags_from_velocity(std::uint8_t velocity)
 {
     constexpr std::uint8_t MIN_ACCENT_VELOCITY = 127;
 
     if (velocity == 1) {
-        return FLAGS_GHOST;
+        return SightRead::FLAGS_GHOST;
     }
     if (velocity >= MIN_ACCENT_VELOCITY) {
-        return FLAGS_ACCENT;
+        return SightRead::FLAGS_ACCENT;
     }
-    return static_cast<NoteFlags>(0);
+    return static_cast<SightRead::NoteFlags>(0);
 }
 
 // Like combine_solo_events, but never skips on events to suit Midi parsing and
@@ -370,13 +379,16 @@ combine_note_on_off_events(const std::vector<std::tuple<int, int>>& on_events,
 
 struct InstrumentMidiTrack {
 public:
-    std::map<std::tuple<Difficulty, int, NoteFlags>,
+    std::map<std::tuple<SightRead::Difficulty, int, SightRead::NoteFlags>,
              std::vector<std::tuple<int, int>>>
         note_on_events;
-    std::map<std::tuple<Difficulty, int>, std::vector<std::tuple<int, int>>>
+    std::map<std::tuple<SightRead::Difficulty, int>,
+             std::vector<std::tuple<int, int>>>
         note_off_events;
-    std::map<Difficulty, std::vector<std::tuple<int, int>>> open_on_events;
-    std::map<Difficulty, std::vector<std::tuple<int, int>>> open_off_events;
+    std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>
+        open_on_events;
+    std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>
+        open_off_events;
     std::vector<std::tuple<int, int>> yellow_tom_on_events;
     std::vector<std::tuple<int, int>> yellow_tom_off_events;
     std::vector<std::tuple<int, int>> blue_tom_on_events;
@@ -389,19 +401,19 @@ public:
     std::vector<std::tuple<int, int>> sp_off_events;
     std::vector<std::tuple<int, int>> tap_on_events;
     std::vector<std::tuple<int, int>> tap_off_events;
-    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+    std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>
         force_hopo_on_events;
-    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+    std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>
         force_hopo_off_events;
-    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+    std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>
         force_strum_on_events;
-    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+    std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>
         force_strum_off_events;
     std::vector<std::tuple<int, int>> fill_on_events;
     std::vector<std::tuple<int, int>> fill_off_events;
-    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+    std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>
         disco_flip_on_events;
-    std::map<Difficulty, std::vector<std::tuple<int, int>>>
+    std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>
         disco_flip_off_events;
 
     InstrumentMidiTrack() = default;
@@ -410,15 +422,15 @@ public:
 void add_sysex_event(InstrumentMidiTrack& track, const SysexEvent& event,
                      int time, int rank)
 {
-    constexpr std::array<Difficulty, 4> OPEN_EVENT_DIFFS {
-        Difficulty::Easy, Difficulty::Medium, Difficulty::Hard,
-        Difficulty::Expert};
+    constexpr std::array<SightRead::Difficulty, 4> OPEN_EVENT_DIFFS {
+        SightRead::Difficulty::Easy, SightRead::Difficulty::Medium,
+        SightRead::Difficulty::Hard, SightRead::Difficulty::Expert};
     constexpr int SYSEX_ON_INDEX = 6;
 
     if (!is_open_event_sysex(event)) {
         return;
     }
-    const Difficulty diff = OPEN_EVENT_DIFFS.at(event.data[4]);
+    const auto diff = OPEN_EVENT_DIFFS.at(event.data[4]);
     if (event.data[SYSEX_ON_INDEX] == 0) {
         track.open_off_events[diff].emplace_back(time, rank);
     } else {
@@ -451,7 +463,7 @@ void append_disco_flip(InstrumentMidiTrack& event_track,
         return;
     }
     const auto diff
-        = static_cast<Difficulty>(meta_event.data[MIX.size()] - '0');
+        = static_cast<SightRead::Difficulty>(meta_event.data[MIX.size()] - '0');
     if (meta_event.data.size() == FLIP_END_SIZE
         && meta_event.data[FLIP_END_SIZE - 1] == ']') {
         event_track.disco_flip_off_events[diff].emplace_back(time, rank);
@@ -462,20 +474,20 @@ void append_disco_flip(InstrumentMidiTrack& event_track,
     }
 }
 
-bool force_hopo_key(std::uint8_t key, TrackType track_type)
+bool force_hopo_key(std::uint8_t key, SightRead::TrackType track_type)
 {
     constexpr std::array FORCE_HOPO_KEYS {65, 77, 89, 101};
-    if (track_type == TrackType::Drums) {
+    if (track_type == SightRead::TrackType::Drums) {
         return false;
     }
     return std::find(FORCE_HOPO_KEYS.cbegin(), FORCE_HOPO_KEYS.cend(), key)
         != FORCE_HOPO_KEYS.cend();
 }
 
-bool force_strum_key(std::uint8_t key, TrackType track_type)
+bool force_strum_key(std::uint8_t key, SightRead::TrackType track_type)
 {
     constexpr std::array FORCE_STRUM_KEYS {66, 78, 90, 102};
-    if (track_type == TrackType::Drums) {
+    if (track_type == SightRead::TrackType::Drums) {
         return false;
     }
     return std::find(FORCE_STRUM_KEYS.cbegin(), FORCE_STRUM_KEYS.cend(), key)
@@ -484,7 +496,8 @@ bool force_strum_key(std::uint8_t key, TrackType track_type)
 
 void add_note_off_event(InstrumentMidiTrack& track,
                         const std::array<std::uint8_t, 2>& data, int time,
-                        int rank, bool from_five_lane, TrackType track_type)
+                        int rank, bool from_five_lane,
+                        SightRead::TrackType track_type)
 {
     constexpr int YELLOW_TOM_ID = 110;
     constexpr int BLUE_TOM_ID = 111;
@@ -525,7 +538,7 @@ void add_note_off_event(InstrumentMidiTrack& track,
 void add_note_on_event(InstrumentMidiTrack& track,
                        const std::array<std::uint8_t, 2>& data, int time,
                        int rank, bool from_five_lane, bool parse_dynamics,
-                       TrackType track_type)
+                       SightRead::TrackType track_type)
 {
     constexpr int YELLOW_TOM_ID = 110;
     constexpr int BLUE_TOM_ID = 111;
@@ -550,12 +563,13 @@ void add_note_on_event(InstrumentMidiTrack& track,
         } else {
             auto colour = colour_from_key(data[0], track_type, from_five_lane);
             auto flags = flags_from_track_type(track_type);
-            if (track_type == TrackType::Drums) {
+            if (track_type == SightRead::TrackType::Drums) {
                 if (is_cymbal_key(data[0], from_five_lane)) {
-                    flags = static_cast<NoteFlags>(flags | FLAGS_CYMBAL);
+                    flags = static_cast<SightRead::NoteFlags>(
+                        flags | SightRead::FLAGS_CYMBAL);
                 }
                 if (parse_dynamics) {
-                    flags = static_cast<NoteFlags>(
+                    flags = static_cast<SightRead::NoteFlags>(
                         flags | dynamics_flags_from_velocity(data[1]));
                 }
             }
@@ -580,17 +594,18 @@ void add_note_on_event(InstrumentMidiTrack& track,
 }
 
 InstrumentMidiTrack read_instrument_midi_track(const MidiTrack& midi_track,
-                                               TrackType track_type)
+                                               SightRead::TrackType track_type)
 {
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
-    constexpr std::array DIFFICULTIES {Difficulty::Easy, Difficulty::Medium,
-                                       Difficulty::Hard, Difficulty::Expert};
+    constexpr std::array DIFFICULTIES {
+        SightRead::Difficulty::Easy, SightRead::Difficulty::Medium,
+        SightRead::Difficulty::Hard, SightRead::Difficulty::Expert};
 
-    const bool from_five_lane = track_type == TrackType::Drums
+    const bool from_five_lane = track_type == SightRead::TrackType::Drums
         && has_five_lane_green_notes(midi_track);
-    const bool parse_dynamics = track_type == TrackType::Drums
+    const bool parse_dynamics = track_type == SightRead::TrackType::Drums
         && has_enable_chart_dynamics(midi_track);
 
     InstrumentMidiTrack event_track;
@@ -613,7 +628,7 @@ InstrumentMidiTrack read_instrument_midi_track(const MidiTrack& midi_track,
                 add_sysex_event(event_track, *sysex_event, event.time, rank);
                 continue;
             }
-            if (track_type == TrackType::Drums) {
+            if (track_type == SightRead::TrackType::Drums) {
                 const auto* meta_event = std::get_if<MetaEvent>(&event.event);
                 if (meta_event != nullptr) {
                     append_disco_flip(event_track, *meta_event, event.time,
@@ -635,13 +650,13 @@ InstrumentMidiTrack read_instrument_midi_track(const MidiTrack& midi_track,
         }
     }
 
-    event_track.disco_flip_off_events.at(Difficulty::Easy)
+    event_track.disco_flip_off_events.at(SightRead::Difficulty::Easy)
         .emplace_back(std::numeric_limits<int>::max(), ++rank);
-    event_track.disco_flip_off_events.at(Difficulty::Medium)
+    event_track.disco_flip_off_events.at(SightRead::Difficulty::Medium)
         .emplace_back(std::numeric_limits<int>::max(), ++rank);
-    event_track.disco_flip_off_events.at(Difficulty::Hard)
+    event_track.disco_flip_off_events.at(SightRead::Difficulty::Hard)
         .emplace_back(std::numeric_limits<int>::max(), ++rank);
-    event_track.disco_flip_off_events.at(Difficulty::Expert)
+    event_track.disco_flip_off_events.at(SightRead::Difficulty::Expert)
         .emplace_back(std::numeric_limits<int>::max(), ++rank);
 
     if (event_track.sp_on_events.empty()
@@ -663,18 +678,23 @@ bool position_in_event_spans(
                        });
 }
 
-std::map<Difficulty, std::vector<Note>> notes_from_event_track(
+std::map<SightRead::Difficulty, std::vector<SightRead::Note>>
+notes_from_event_track(
     const InstrumentMidiTrack& event_track,
-    const std::map<Difficulty, std::vector<std::tuple<int, int>>>& open_events,
-    TrackType track_type)
+    const std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>&
+        open_events,
+    SightRead::TrackType track_type)
 {
-    constexpr std::array DIFFICULTIES {Difficulty::Easy, Difficulty::Medium,
-                                       Difficulty::Hard, Difficulty::Expert};
+    constexpr std::array DIFFICULTIES {
+        SightRead::Difficulty::Easy, SightRead::Difficulty::Medium,
+        SightRead::Difficulty::Hard, SightRead::Difficulty::Expert};
 
     const auto tap_events = combine_note_on_off_events(
         event_track.tap_on_events, event_track.tap_off_events);
-    std::map<Difficulty, std::vector<std::tuple<int, int>>> force_hopo_events;
-    std::map<Difficulty, std::vector<std::tuple<int, int>>> force_strum_events;
+    std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>
+        force_hopo_events;
+    std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>
+        force_strum_events;
     for (auto d : DIFFICULTIES) {
         force_hopo_events[d] = combine_note_on_off_events(
             event_track.force_hopo_on_events.at(d),
@@ -684,7 +704,7 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
             event_track.force_strum_off_events.at(d));
     }
 
-    std::map<Difficulty, std::vector<Note>> notes;
+    std::map<SightRead::Difficulty, std::vector<SightRead::Note>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour, flags] = key;
         if (!event_track.note_off_events.contains({diff, colour})) {
@@ -695,28 +715,29 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
              combine_note_on_off_events(note_ons, note_offs)) {
             const auto note_length = end - pos;
             auto note_colour = colour;
-            if (track_type == TrackType::FiveFret) {
+            if (track_type == SightRead::TrackType::FiveFret) {
                 const auto open_events_iter = open_events.find(diff);
                 if (open_events_iter != open_events.cend()
                     && position_in_event_spans(open_events_iter->second, pos)) {
-                    note_colour = FIVE_FRET_OPEN;
+                    note_colour = SightRead::FIVE_FRET_OPEN;
                 }
             }
-            Note note;
+            SightRead::Note note;
             note.position = SightRead::Tick {pos};
             note.lengths.at(note_colour) = SightRead::Tick {note_length};
             note.flags = flags_from_track_type(track_type);
             if (position_in_event_spans(tap_events, pos)
-                && track_type != TrackType::Drums) {
-                note.flags = static_cast<NoteFlags>(note.flags | FLAGS_TAP);
+                && track_type != SightRead::TrackType::Drums) {
+                note.flags = static_cast<SightRead::NoteFlags>(
+                    note.flags | SightRead::FLAGS_TAP);
             }
             if (position_in_event_spans(force_hopo_events[diff], pos)) {
-                note.flags
-                    = static_cast<NoteFlags>(note.flags | FLAGS_FORCE_HOPO);
+                note.flags = static_cast<SightRead::NoteFlags>(
+                    note.flags | SightRead::FLAGS_FORCE_HOPO);
             }
             if (position_in_event_spans(force_strum_events[diff], pos)) {
-                note.flags
-                    = static_cast<NoteFlags>(note.flags | FLAGS_FORCE_STRUM);
+                note.flags = static_cast<SightRead::NoteFlags>(
+                    note.flags | SightRead::FLAGS_FORCE_STRUM);
             }
             notes[diff].push_back(note);
         }
@@ -725,26 +746,25 @@ std::map<Difficulty, std::vector<Note>> notes_from_event_track(
     return notes;
 }
 
-std::map<Difficulty, NoteTrack>
-ghl_note_tracks_from_midi(const MidiTrack& midi_track,
-                          const std::shared_ptr<SongGlobalData>& global_data,
-                          const HopoThreshold& hopo_threshold,
-                          bool permit_solos)
+std::map<SightRead::Difficulty, SightRead::NoteTrack> ghl_note_tracks_from_midi(
+    const MidiTrack& midi_track,
+    const std::shared_ptr<SightRead::SongGlobalData>& global_data,
+    const HopoThreshold& hopo_threshold, bool permit_solos)
 {
     const auto event_track
-        = read_instrument_midi_track(midi_track, TrackType::SixFret);
+        = read_instrument_midi_track(midi_track, SightRead::TrackType::SixFret);
 
-    const auto notes
-        = notes_from_event_track(event_track, {}, TrackType::SixFret);
+    const auto notes = notes_from_event_track(event_track, {},
+                                              SightRead::TrackType::SixFret);
 
-    std::vector<StarPower> sp_phrases;
+    std::vector<SightRead::StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.sp_on_events, event_track.sp_off_events)) {
         sp_phrases.push_back(
             {SightRead::Tick {start}, SightRead::Tick {end - start}});
     }
 
-    std::map<Difficulty, NoteTrack> note_tracks;
+    std::map<SightRead::Difficulty, SightRead::NoteTrack> note_tracks;
     for (const auto& [diff, note_set] : notes) {
         std::vector<int> solo_ons;
         std::vector<int> solo_offs;
@@ -757,12 +777,12 @@ ghl_note_tracks_from_midi(const MidiTrack& midi_track,
             solo_offs.push_back(pos);
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
-                                      TrackType::SixFret, true);
+                                      SightRead::TrackType::SixFret, true);
         if (!permit_solos) {
             solos.clear();
         }
-        NoteTrack note_track {
-            note_set, sp_phrases, TrackType::SixFret, global_data,
+        SightRead::NoteTrack note_track {
+            note_set, sp_phrases, SightRead::TrackType::SixFret, global_data,
             hopo_threshold.midi_max_hopo_gap(global_data->resolution())};
         note_track.solos(std::move(solos));
         note_tracks.emplace(diff, std::move(note_track));
@@ -790,19 +810,19 @@ public:
 
     [[nodiscard]] bool force_tom(int colour, int pos) const
     {
-        if (colour == DRUM_YELLOW) {
+        if (colour == SightRead::DRUM_YELLOW) {
             for (const auto& [open_start, open_end] : m_yellow_tom_events) {
                 if (pos >= open_start && pos < open_end) {
                     return true;
                 }
             }
-        } else if (colour == DRUM_BLUE) {
+        } else if (colour == SightRead::DRUM_BLUE) {
             for (const auto& [open_start, open_end] : m_blue_tom_events) {
                 if (pos >= open_start && pos < open_end) {
                     return true;
                 }
             }
-        } else if (colour == DRUM_GREEN) {
+        } else if (colour == SightRead::DRUM_GREEN) {
             for (const auto& [open_start, open_end] : m_green_tom_events) {
                 if (pos >= open_start && pos < open_end) {
                     return true;
@@ -815,75 +835,79 @@ public:
 
 // This is to deal with G cymbal + G tom from five lane being turned into G
 // cymbal + B tom. This combination cannot happen from a four lane chart.
-void fix_double_greens(std::vector<Note>& notes)
+void fix_double_greens(std::vector<SightRead::Note>& notes)
 {
     std::set<SightRead::Tick> green_cymbal_positions;
 
     for (const auto& note : notes) {
-        if ((note.lengths.at(DRUM_GREEN) != SightRead::Tick {-1})
-            && ((note.flags & FLAGS_CYMBAL) != 0U)) {
+        if ((note.lengths.at(SightRead::DRUM_GREEN) != SightRead::Tick {-1})
+            && ((note.flags & SightRead::FLAGS_CYMBAL) != 0U)) {
             green_cymbal_positions.insert(note.position);
         }
     }
 
     for (auto& note : notes) {
-        if ((note.lengths.at(DRUM_GREEN) == SightRead::Tick {-1})
-            || ((note.flags & FLAGS_CYMBAL) != 0U)) {
+        if ((note.lengths.at(SightRead::DRUM_GREEN) == SightRead::Tick {-1})
+            || ((note.flags & SightRead::FLAGS_CYMBAL) != 0U)) {
             continue;
         }
         if (green_cymbal_positions.contains(note.position)) {
-            std::swap(note.lengths[DRUM_BLUE], note.lengths[DRUM_GREEN]);
+            std::swap(note.lengths[SightRead::DRUM_BLUE],
+                      note.lengths[SightRead::DRUM_GREEN]);
         }
     }
 }
 
-std::map<Difficulty, NoteTrack>
-drum_note_tracks_from_midi(const MidiTrack& midi_track,
-                           const std::shared_ptr<SongGlobalData>& global_data,
-                           bool permit_solos)
+std::map<SightRead::Difficulty, SightRead::NoteTrack>
+drum_note_tracks_from_midi(
+    const MidiTrack& midi_track,
+    const std::shared_ptr<SightRead::SongGlobalData>& global_data,
+    bool permit_solos)
 {
     const auto event_track
-        = read_instrument_midi_track(midi_track, TrackType::Drums);
+        = read_instrument_midi_track(midi_track, SightRead::TrackType::Drums);
 
     const TomEvents tom_events {event_track};
 
-    std::map<Difficulty, std::vector<Note>> notes;
+    std::map<SightRead::Difficulty, std::vector<SightRead::Note>> notes;
     for (const auto& [key, note_ons] : event_track.note_on_events) {
         const auto& [diff, colour, flags] = key;
-        const std::tuple<Difficulty, int> no_flags_key {diff, colour};
+        const std::tuple<SightRead::Difficulty, int> no_flags_key {diff,
+                                                                   colour};
         if (!event_track.note_off_events.contains(no_flags_key)) {
             throw SightRead::ParseError("No corresponding Note Off events");
         }
         const auto& note_offs = event_track.note_off_events.at(no_flags_key);
         for (const auto& [pos, end] :
              combine_note_on_off_events(note_ons, note_offs)) {
-            Note note;
+            SightRead::Note note;
             note.position = SightRead::Tick {pos};
             note.lengths.at(colour) = SightRead::Tick {0};
             note.flags = flags;
             if (tom_events.force_tom(colour, pos)) {
-                note.flags = static_cast<NoteFlags>(note.flags & ~FLAGS_CYMBAL);
+                note.flags = static_cast<SightRead::NoteFlags>(
+                    note.flags & ~SightRead::FLAGS_CYMBAL);
             }
             notes[diff].push_back(note);
         }
         fix_double_greens(notes[diff]);
     }
 
-    std::vector<StarPower> sp_phrases;
+    std::vector<SightRead::StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.sp_on_events, event_track.sp_off_events)) {
         sp_phrases.push_back(
             {SightRead::Tick {start}, SightRead::Tick {end - start}});
     }
 
-    std::vector<DrumFill> drum_fills;
+    std::vector<SightRead::DrumFill> drum_fills;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.fill_on_events, event_track.fill_off_events)) {
         drum_fills.push_back(
             {SightRead::Tick {start}, SightRead::Tick {end - start}});
     }
 
-    std::map<Difficulty, NoteTrack> note_tracks;
+    std::map<SightRead::Difficulty, SightRead::NoteTrack> note_tracks;
     for (const auto& [diff, note_set] : notes) {
         std::vector<int> solo_ons;
         std::vector<int> solo_offs;
@@ -895,7 +919,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
         for (const auto& [pos, rank] : event_track.solo_off_events) {
             solo_offs.push_back(pos);
         }
-        std::vector<DiscoFlip> disco_flips;
+        std::vector<SightRead::DiscoFlip> disco_flips;
         for (const auto& [start, end] : combine_note_on_off_events(
                  event_track.disco_flip_on_events.at(diff),
                  event_track.disco_flip_off_events.at(diff))) {
@@ -903,12 +927,12 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
                 {SightRead::Tick {start}, SightRead::Tick {end - start}});
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
-                                      TrackType::Drums, true);
+                                      SightRead::TrackType::Drums, true);
         if (!permit_solos) {
             solos.clear();
         }
-        NoteTrack note_track {note_set, sp_phrases, TrackType::Drums,
-                              global_data};
+        SightRead::NoteTrack note_track {
+            note_set, sp_phrases, SightRead::TrackType::Drums, global_data};
         note_track.solos(std::move(solos));
         note_track.drum_fills(drum_fills);
         note_track.disco_flips(std::move(disco_flips));
@@ -918,7 +942,7 @@ drum_note_tracks_from_midi(const MidiTrack& midi_track,
     return note_tracks;
 }
 
-std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
+std::optional<SightRead::BigRockEnding> read_bre(const MidiTrack& midi_track)
 {
     constexpr int BRE_KEY = 120;
     constexpr int NOTE_OFF_ID = 0x80;
@@ -949,16 +973,17 @@ std::optional<BigRockEnding> read_bre(const MidiTrack& midi_track)
     return std::nullopt;
 }
 
-std::map<Difficulty, NoteTrack>
-note_tracks_from_midi(const MidiTrack& midi_track,
-                      const std::shared_ptr<SongGlobalData>& global_data,
-                      const HopoThreshold& hopo_threshold, bool permit_solos)
+std::map<SightRead::Difficulty, SightRead::NoteTrack> note_tracks_from_midi(
+    const MidiTrack& midi_track,
+    const std::shared_ptr<SightRead::SongGlobalData>& global_data,
+    const HopoThreshold& hopo_threshold, bool permit_solos)
 {
-    const auto event_track
-        = read_instrument_midi_track(midi_track, TrackType::FiveFret);
+    const auto event_track = read_instrument_midi_track(
+        midi_track, SightRead::TrackType::FiveFret);
     const auto bre = read_bre(midi_track);
 
-    std::map<Difficulty, std::vector<std::tuple<int, int>>> open_events;
+    std::map<SightRead::Difficulty, std::vector<std::tuple<int, int>>>
+        open_events;
     for (const auto& [diff, open_ons] : event_track.open_on_events) {
         if (!event_track.open_off_events.contains(diff)) {
             throw SightRead::ParseError("No open Note Off events");
@@ -967,17 +992,17 @@ note_tracks_from_midi(const MidiTrack& midi_track,
         open_events[diff] = combine_note_on_off_events(open_ons, open_offs);
     }
 
-    const auto notes
-        = notes_from_event_track(event_track, open_events, TrackType::FiveFret);
+    const auto notes = notes_from_event_track(event_track, open_events,
+                                              SightRead::TrackType::FiveFret);
 
-    std::vector<StarPower> sp_phrases;
+    std::vector<SightRead::StarPower> sp_phrases;
     for (const auto& [start, end] : combine_note_on_off_events(
              event_track.sp_on_events, event_track.sp_off_events)) {
         sp_phrases.push_back(
             {SightRead::Tick {start}, SightRead::Tick {end - start}});
     }
 
-    std::map<Difficulty, NoteTrack> note_tracks;
+    std::map<SightRead::Difficulty, SightRead::NoteTrack> note_tracks;
     for (const auto& [diff, note_set] : notes) {
         std::vector<int> solo_ons;
         std::vector<int> solo_offs;
@@ -990,12 +1015,12 @@ note_tracks_from_midi(const MidiTrack& midi_track,
             solo_offs.push_back(pos);
         }
         auto solos = form_solo_vector(solo_ons, solo_offs, note_set,
-                                      TrackType::FiveFret, true);
+                                      SightRead::TrackType::FiveFret, true);
         if (!permit_solos) {
             solos.clear();
         }
-        NoteTrack note_track {
-            note_set, sp_phrases, TrackType::FiveFret, global_data,
+        SightRead::NoteTrack note_track {
+            note_set, sp_phrases, SightRead::TrackType::FiveFret, global_data,
             hopo_threshold.midi_max_hopo_gap(global_data->resolution())};
         note_track.solos(std::move(solos));
         note_track.bre(bre);
@@ -1011,7 +1036,7 @@ MidiParser::MidiParser(const IniValues& ini)
     , m_artist {ini.artist}
     , m_charter {ini.charter}
     , m_hopo_threshold {HopoThresholdType::Resolution, SightRead::Tick {0}}
-    , m_permitted_instruments {all_instruments()}
+    , m_permitted_instruments {SightRead::all_instruments()}
     , m_permit_solos {true}
 {
 }
@@ -1022,8 +1047,8 @@ MidiParser& MidiParser::hopo_threshold(HopoThreshold hopo_threshold)
     return *this;
 }
 
-MidiParser&
-MidiParser::permit_instruments(std::set<Instrument> permitted_instruments)
+MidiParser& MidiParser::permit_instruments(
+    std::set<SightRead::Instrument> permitted_instruments)
 {
     m_permitted_instruments = std::move(permitted_instruments);
     return *this;
@@ -1075,11 +1100,11 @@ Song MidiParser::from_midi(const Midi& midi) const
             for (auto& [diff, note_track] : tracks) {
                 song.add_note_track(*inst, diff, std::move(note_track));
             }
-        } else if (*inst == Instrument::Drums) {
+        } else if (*inst == SightRead::Instrument::Drums) {
             auto tracks = drum_note_tracks_from_midi(
                 track, song.global_data_ptr(), m_permit_solos);
             for (auto& [diff, note_track] : tracks) {
-                song.add_note_track(Instrument::Drums, diff,
+                song.add_note_track(SightRead::Instrument::Drums, diff,
                                     std::move(note_track));
             }
         } else {

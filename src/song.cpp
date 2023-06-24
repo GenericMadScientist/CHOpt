@@ -25,8 +25,9 @@
 #include "parserutil.hpp"
 #include "song.hpp"
 
-void Song::add_note_track(Instrument instrument, Difficulty difficulty,
-                          NoteTrack note_track)
+void Song::add_note_track(SightRead::Instrument instrument,
+                          SightRead::Difficulty difficulty,
+                          SightRead::NoteTrack note_track)
 {
     if (!note_track.notes().empty()) {
         m_tracks.emplace(std::tuple {instrument, difficulty},
@@ -34,22 +35,23 @@ void Song::add_note_track(Instrument instrument, Difficulty difficulty,
     }
 }
 
-std::vector<Instrument> Song::instruments() const
+std::vector<SightRead::Instrument> Song::instruments() const
 {
-    std::set<Instrument> instrument_set;
+    std::set<SightRead::Instrument> instrument_set;
     for (const auto& [key, val] : m_tracks) {
         instrument_set.insert(std::get<0>(key));
     }
 
-    std::vector<Instrument> instruments {instrument_set.cbegin(),
-                                         instrument_set.cend()};
+    std::vector<SightRead::Instrument> instruments {instrument_set.cbegin(),
+                                                    instrument_set.cend()};
     std::sort(instruments.begin(), instruments.end());
     return instruments;
 }
 
-std::vector<Difficulty> Song::difficulties(Instrument instrument) const
+std::vector<SightRead::Difficulty>
+Song::difficulties(SightRead::Instrument instrument) const
 {
-    std::vector<Difficulty> difficulties;
+    std::vector<SightRead::Difficulty> difficulties;
     for (const auto& [key, val] : m_tracks) {
         if (std::get<0>(key) == instrument) {
             difficulties.push_back(std::get<1>(key));
@@ -59,7 +61,8 @@ std::vector<Difficulty> Song::difficulties(Instrument instrument) const
     return difficulties;
 }
 
-const NoteTrack& Song::track(Instrument instrument, Difficulty difficulty) const
+const SightRead::NoteTrack& Song::track(SightRead::Instrument instrument,
+                                        SightRead::Difficulty difficulty) const
 {
     const auto insts = instruments();
     if (std::find(insts.cbegin(), insts.cend(), instrument) == insts.cend()) {
@@ -75,7 +78,8 @@ const NoteTrack& Song::track(Instrument instrument, Difficulty difficulty) const
 
 std::vector<SightRead::Tick> Song::unison_phrase_positions() const
 {
-    std::map<SightRead::Tick, std::set<Instrument>> phrase_by_instrument;
+    std::map<SightRead::Tick, std::set<SightRead::Instrument>>
+        phrase_by_instrument;
     for (const auto& [key, value] : m_tracks) {
         const auto instrument = std::get<0>(key);
         if (is_six_fret_instrument(instrument)) {

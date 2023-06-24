@@ -26,7 +26,7 @@
 #include "stringutil.hpp"
 
 namespace {
-int bre_boost(const NoteTrack& track, const Engine& engine)
+int bre_boost(const SightRead::NoteTrack& track, const Engine& engine)
 {
     constexpr int INITIAL_BRE_VALUE = 750;
     constexpr int BRE_VALUE_PER_SECOND = 500;
@@ -57,7 +57,8 @@ SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
     return sp_bar;
 }
 
-ProcessedSong::ProcessedSong(const NoteTrack& track, SpTimeMap time_map,
+ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
+                             SpTimeMap time_map,
                              const SqueezeSettings& squeeze_settings,
                              const SightRead::DrumSettings& drum_settings,
                              const Engine& engine,
@@ -70,7 +71,7 @@ ProcessedSong::ProcessedSong(const NoteTrack& track, SpTimeMap time_map,
     , m_total_bre_boost {bre_boost(track, engine)}
     , m_base_score {track.base_score(drum_settings)}
     , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
-    , m_is_drums {track.track_type() == TrackType::Drums}
+    , m_is_drums {track.track_type() == SightRead::TrackType::Drums}
     , m_overlaps {engine.overlaps()}
 {
     const auto solos = track.solos(drum_settings);

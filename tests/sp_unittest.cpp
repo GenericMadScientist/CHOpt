@@ -58,14 +58,15 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_four_four)
     std::vector<SightRead::TimeSignature> time_sigs {
         {SightRead::Tick {0}, 4, 4}};
     SightRead::TempoMap tempo_map {time_sigs, {}, {}, 192};
-    auto global_data = std::make_shared<SongGlobalData>();
+    auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
-                             make_note(3000)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920),
+                                        make_note(2112, 576), make_note(3000)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret, global_data};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                global_data};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -87,14 +88,15 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_three_four)
     std::vector<SightRead::TimeSignature> time_sigs {
         {SightRead::Tick {0}, 3, 4}};
     SightRead::TempoMap tempo_map {time_sigs, {}, {}, 192};
-    auto global_data = std::make_shared<SongGlobalData>();
+    auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
-                             make_note(3000)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920),
+                                        make_note(2112, 576), make_note(3000)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret, global_data};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                global_data};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -116,14 +118,15 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_changing_time_signatures)
     std::vector<SightRead::TimeSignature> time_sigs {
         {SightRead::Tick {0}, 4, 4}, {SightRead::Tick {384}, 3, 4}};
     SightRead::TempoMap tempo_map {time_sigs, {}, {}, 192};
-    auto global_data = std::make_shared<SongGlobalData>();
+    auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
-                             make_note(3000)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920),
+                                        make_note(2112, 576), make_note(3000)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret, global_data};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                global_data};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -145,14 +148,15 @@ BOOST_AUTO_TEST_CASE(returns_negative_one_if_sp_runs_out)
     std::vector<SightRead::TimeSignature> time_sigs {
         {SightRead::Tick {0}, 3, 4}, {SightRead::Tick {384}, 4, 4}};
     SightRead::TempoMap tempo_map {time_sigs, {}, {}, 192};
-    auto global_data = std::make_shared<SongGlobalData>();
+    auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
-                             make_note(3000)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920),
+                                        make_note(2112, 576), make_note(3000)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret, global_data};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                global_data};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -171,12 +175,12 @@ BOOST_AUTO_TEST_CASE(returns_negative_one_if_sp_runs_out)
 
 BOOST_AUTO_TEST_CASE(works_even_if_some_of_the_range_isnt_whammyable)
 {
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
-                             make_note(3000)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920),
+                                        make_note(2112, 576), make_note(3000)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -191,12 +195,12 @@ BOOST_AUTO_TEST_CASE(works_even_if_some_of_the_range_isnt_whammyable)
 
 BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
 {
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
-                             make_note(3000)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920),
+                                        make_note(2112, 576), make_note(3000)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -215,10 +219,12 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
 
 BOOST_AUTO_TEST_CASE(sustains_not_in_a_phrase_do_not_contribute_sp)
 {
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
-                             make_note(3000)};
-    NoteTrack track {
-        notes, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
+    std::vector<SightRead::Note> notes {make_note(0, 1920),
+                                        make_note(2112, 576), make_note(3000)};
+    SightRead::NoteTrack track {notes,
+                                {},
+                                SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -233,12 +239,12 @@ BOOST_AUTO_TEST_CASE(sustains_not_in_a_phrase_do_not_contribute_sp)
 
 BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
 {
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112, 576),
-                             make_note(3000)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920),
+                                        make_note(2112, 576), make_note(3000)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -257,11 +263,11 @@ BOOST_AUTO_TEST_CASE(
 {
     constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
 
-    std::vector<Note> notes {make_note(0, 768), make_note(3072)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 768), make_note(3072)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3100}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -279,12 +285,12 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(is_in_whammy_ranges_works_correctly)
 {
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920), make_note(2112)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {2000}},
         {SightRead::Tick {2112}, SightRead::Tick {50}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -299,12 +305,12 @@ BOOST_AUTO_TEST_SUITE(available_whammy_works_correctly)
 
 BOOST_AUTO_TEST_CASE(max_early_whammy)
 {
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112),
-                             make_note(2304, 768)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920), make_note(2112),
+                                        make_note(2304, 768)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -324,12 +330,12 @@ BOOST_AUTO_TEST_CASE(max_early_whammy)
 
 BOOST_AUTO_TEST_CASE(mid_early_whammy)
 {
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112),
-                             make_note(2304, 768)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920), make_note(2112),
+                                        make_note(2304, 768)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -350,12 +356,12 @@ BOOST_AUTO_TEST_CASE(mid_early_whammy)
 
 BOOST_AUTO_TEST_CASE(negative_early_whammy)
 {
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112),
-                             make_note(2304, 768)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920), make_note(2112),
+                                        make_note(2304, 768)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -373,12 +379,12 @@ BOOST_AUTO_TEST_CASE(negative_early_whammy)
 
 BOOST_AUTO_TEST_CASE(three_argument_version_works_correctly)
 {
-    std::vector<Note> notes {make_note(0, 1920), make_note(2112),
-                             make_note(2304, 768)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 1920), make_note(2112),
+                                        make_note(2304, 768)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -397,9 +403,11 @@ BOOST_AUTO_TEST_SUITE(activation_end_point_works_correctly)
 
 BOOST_AUTO_TEST_CASE(works_when_sp_is_sufficient)
 {
-    std::vector<Note> notes {make_note(0)};
-    NoteTrack track {
-        notes, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
+    std::vector<SightRead::Note> notes {make_note(0)};
+    SightRead::NoteTrack track {notes,
+                                {},
+                                SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -415,9 +423,11 @@ BOOST_AUTO_TEST_CASE(works_when_sp_is_sufficient)
 
 BOOST_AUTO_TEST_CASE(works_when_sp_is_insufficient)
 {
-    std::vector<Note> notes {make_note(0)};
-    NoteTrack track {
-        notes, {}, TrackType::FiveFret, std::make_shared<SongGlobalData>()};
+    std::vector<SightRead::Note> notes {make_note(0)};
+    SightRead::NoteTrack track {notes,
+                                {},
+                                SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -433,11 +443,11 @@ BOOST_AUTO_TEST_CASE(works_when_sp_is_insufficient)
 
 BOOST_AUTO_TEST_CASE(works_when_adding_whammy_makes_sp_sufficient)
 {
-    std::vector<Note> notes {make_note(0, 192), make_note(950)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 192), make_note(950)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {1000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -453,11 +463,11 @@ BOOST_AUTO_TEST_CASE(works_when_adding_whammy_makes_sp_sufficient)
 
 BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_insufficient)
 {
-    std::vector<Note> notes {make_note(0, 192), make_note(950)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 192), make_note(950)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {1000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret,
-                     std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -474,13 +484,14 @@ BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_insufficient)
 BOOST_AUTO_TEST_CASE(works_when_whammy_is_present_but_accumulation_is_too_slow)
 {
     SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 2, 4}}, {}, {}, 192};
-    auto global_data = std::make_shared<SongGlobalData>();
+    auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
-    std::vector<Note> notes {make_note(0, 192), make_note(950)};
-    std::vector<StarPower> phrases {
+    std::vector<SightRead::Note> notes {make_note(0, 192), make_note(950)};
+    std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {1000}}};
-    NoteTrack track {notes, phrases, TrackType::FiveFret, global_data};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                global_data};
     SpData sp_data {track,
                     {{}, SpMode::Measure},
                     {},
@@ -500,11 +511,12 @@ BOOST_AUTO_TEST_SUITE(video_lag_is_taken_account_of)
 
 BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
 {
-    const std::vector<Note> notes {make_note(192, 192)};
-    const std::vector<StarPower> phrases {
+    const std::vector<SightRead::Note> notes {make_note(192, 192)};
+    const std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {384}}};
-    const NoteTrack track {notes, phrases, TrackType::FiveFret,
-                           std::make_shared<SongGlobalData>()};
+    const SightRead::NoteTrack track {
+        notes, phrases, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
 
     SpData sp_data {track,
                     {{}, SpMode::Measure},
@@ -518,11 +530,12 @@ BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
 {
-    const std::vector<Note> notes {make_note(192, 192)};
-    const std::vector<StarPower> phrases {
+    const std::vector<SightRead::Note> notes {make_note(192, 192)};
+    const std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {384}}};
-    const NoteTrack track {notes, phrases, TrackType::FiveFret,
-                           std::make_shared<SongGlobalData>()};
+    const SightRead::NoteTrack track {
+        notes, phrases, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
 
     SpData sp_data {track,
                     {{}, SpMode::Measure},

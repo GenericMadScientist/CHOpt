@@ -20,11 +20,11 @@
 
 #include "parserutil.hpp"
 
-bool is_six_fret_instrument(Instrument instrument)
+bool is_six_fret_instrument(SightRead::Instrument instrument)
 {
     constexpr std::array SIX_FRET_INSTRUMENTS {
-        Instrument::GHLGuitar, Instrument::GHLBass, Instrument::GHLRhythm,
-        Instrument::GHLGuitarCoop};
+        SightRead::Instrument::GHLGuitar, SightRead::Instrument::GHLBass,
+        SightRead::Instrument::GHLRhythm, SightRead::Instrument::GHLGuitarCoop};
     return std::find(SIX_FRET_INSTRUMENTS.cbegin(), SIX_FRET_INSTRUMENTS.cend(),
                      instrument)
         != SIX_FRET_INSTRUMENTS.cend();
@@ -53,14 +53,15 @@ combine_solo_events(const std::vector<int>& on_events,
     return ranges;
 }
 
-std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
-                                   const std::vector<int>& solo_off_events,
-                                   const std::vector<Note>& notes,
-                                   TrackType track_type, bool is_midi)
+std::vector<SightRead::Solo>
+form_solo_vector(const std::vector<int>& solo_on_events,
+                 const std::vector<int>& solo_off_events,
+                 const std::vector<SightRead::Note>& notes,
+                 SightRead::TrackType track_type, bool is_midi)
 {
     constexpr int SOLO_NOTE_VALUE = 100;
 
-    std::vector<Solo> solos;
+    std::vector<SightRead::Solo> solos;
 
     for (auto [start, end] :
          combine_solo_events(solo_on_events, solo_off_events)) {
@@ -76,7 +77,7 @@ std::vector<Solo> form_solo_vector(const std::vector<int>& solo_on_events,
         if (positions_in_solo.empty()) {
             continue;
         }
-        if (track_type != TrackType::Drums) {
+        if (track_type != SightRead::TrackType::Drums) {
             note_count = static_cast<int>(positions_in_solo.size());
         }
         solos.push_back({start, end, SOLO_NOTE_VALUE * note_count});

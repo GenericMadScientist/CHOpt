@@ -247,10 +247,10 @@ Settings MainWindow::get_settings() const
     settings.drum_settings.pro_drums = m_ui->proDrumsCheckBox->isChecked();
     settings.drum_settings.enable_dynamics
         = m_ui->dynamicsCheckBox->isChecked();
-    settings.difficulty
-        = m_ui->difficultyComboBox->currentData().value<Difficulty>();
-    settings.instrument
-        = m_ui->instrumentComboBox->currentData().value<Instrument>();
+    settings.difficulty = m_ui->difficultyComboBox->currentData()
+                              .value<SightRead::Difficulty>();
+    settings.instrument = m_ui->instrumentComboBox->currentData()
+                              .value<SightRead::Instrument>();
     settings.squeeze_settings.squeeze = m_ui->squeezeSlider->value() / 100.0;
     settings.squeeze_settings.early_whammy
         = m_ui->earlyWhammySlider->value() / 100.0;
@@ -418,17 +418,17 @@ void MainWindow::on_engineComboBox_currentIndexChanged(int index)
     if (index == -1) {
         return;
     }
-    const std::map<Instrument, QString> INST_NAMES {
-        {Instrument::Guitar, "Guitar"},
-        {Instrument::GuitarCoop, "Guitar Co-op"},
-        {Instrument::Bass, "Bass"},
-        {Instrument::Rhythm, "Rhythm"},
-        {Instrument::Keys, "Keys"},
-        {Instrument::GHLGuitar, "GHL Guitar"},
-        {Instrument::GHLBass, "GHL Bass"},
-        {Instrument::GHLRhythm, "GHL Rhythm"},
-        {Instrument::GHLGuitarCoop, "GHL Guitar Co-op"},
-        {Instrument::Drums, "Drums"}};
+    const std::map<SightRead::Instrument, QString> INST_NAMES {
+        {SightRead::Instrument::Guitar, "Guitar"},
+        {SightRead::Instrument::GuitarCoop, "Guitar Co-op"},
+        {SightRead::Instrument::Bass, "Bass"},
+        {SightRead::Instrument::Rhythm, "Rhythm"},
+        {SightRead::Instrument::Keys, "Keys"},
+        {SightRead::Instrument::GHLGuitar, "GHL Guitar"},
+        {SightRead::Instrument::GHLBass, "GHL Bass"},
+        {SightRead::Instrument::GHLRhythm, "GHL Rhythm"},
+        {SightRead::Instrument::GHLGuitarCoop, "GHL Guitar Co-op"},
+        {SightRead::Instrument::Drums, "Drums"}};
     const auto game = m_ui->engineComboBox->currentData().value<Game>();
     for (auto inst : m_loaded_file->load_song(game).instruments()) {
         m_ui->instrumentComboBox->addItem(INST_NAMES.at(inst),
@@ -444,13 +444,13 @@ void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
     if (index == -1) {
         return;
     }
-    const std::map<Difficulty, QString> DIFF_NAMES {
-        {Difficulty::Easy, "Easy"},
-        {Difficulty::Medium, "Medium"},
-        {Difficulty::Hard, "Hard"},
-        {Difficulty::Expert, "Expert"}};
-    const auto inst
-        = m_ui->instrumentComboBox->currentData().value<Instrument>();
+    const std::map<SightRead::Difficulty, QString> DIFF_NAMES {
+        {SightRead::Difficulty::Easy, "Easy"},
+        {SightRead::Difficulty::Medium, "Medium"},
+        {SightRead::Difficulty::Hard, "Hard"},
+        {SightRead::Difficulty::Expert, "Expert"}};
+    const auto inst = m_ui->instrumentComboBox->currentData()
+                          .value<SightRead::Instrument>();
     const auto game = m_ui->engineComboBox->currentData().value<Game>();
     for (auto diff : m_loaded_file->load_song(game).difficulties(inst)) {
         m_ui->difficultyComboBox->addItem(DIFF_NAMES.at(diff),

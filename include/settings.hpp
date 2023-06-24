@@ -32,7 +32,8 @@
 
 enum class Game { CloneHero, GuitarHeroOne, RockBand, RockBandThree };
 
-std::unique_ptr<Engine> game_to_engine(Game game, Instrument instrument,
+std::unique_ptr<Engine> game_to_engine(Game game,
+                                       SightRead::Instrument instrument,
                                        bool precision_mode);
 
 struct SqueezeSettings {
@@ -58,8 +59,8 @@ struct Settings {
     bool draw_bpms;
     bool draw_solos;
     bool draw_time_sigs;
-    Difficulty difficulty;
-    Instrument instrument;
+    SightRead::Difficulty difficulty;
+    SightRead::Instrument instrument;
     SqueezeSettings squeeze_settings;
     int speed;
     bool is_lefty_flip;

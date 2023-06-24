@@ -1,4 +1,4 @@
-/*
+/* FLAGS_
  * CHOpt - Star Power optimiser for Clone Hero
  * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
@@ -24,19 +24,24 @@
 
 BOOST_AUTO_TEST_CASE(instruments_returns_the_supported_instruments)
 {
-    NoteTrack guitar_track {{make_note(192)},
-                            {},
-                            TrackType::FiveFret,
-                            std::make_shared<SongGlobalData>()};
-    NoteTrack drum_track {{make_drum_note(192)},
-                          {},
-                          TrackType::Drums,
-                          std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack guitar_track {
+        {make_note(192)},
+        {},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    SightRead::NoteTrack drum_track {
+        {make_drum_note(192)},
+        {},
+        SightRead::TrackType::Drums,
+        std::make_shared<SightRead::SongGlobalData>()};
     Song song;
-    song.add_note_track(Instrument::Guitar, Difficulty::Expert, guitar_track);
-    song.add_note_track(Instrument::Drums, Difficulty::Expert, drum_track);
+    song.add_note_track(SightRead::Instrument::Guitar,
+                        SightRead::Difficulty::Expert, guitar_track);
+    song.add_note_track(SightRead::Instrument::Drums,
+                        SightRead::Difficulty::Expert, drum_track);
 
-    std::vector<Instrument> instruments {Instrument::Guitar, Instrument::Drums};
+    std::vector<SightRead::Instrument> instruments {
+        SightRead::Instrument::Guitar, SightRead::Instrument::Drums};
 
     const auto parsed_instruments = song.instruments();
 
@@ -47,25 +52,31 @@ BOOST_AUTO_TEST_CASE(instruments_returns_the_supported_instruments)
 
 BOOST_AUTO_TEST_CASE(difficulties_returns_the_difficulties_for_an_instrument)
 {
-    NoteTrack guitar_track {{make_note(192)},
-                            {},
-                            TrackType::FiveFret,
-                            std::make_shared<SongGlobalData>()};
-    NoteTrack drum_track {{make_drum_note(192)},
-                          {},
-                          TrackType::Drums,
-                          std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack guitar_track {
+        {make_note(192)},
+        {},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    SightRead::NoteTrack drum_track {
+        {make_drum_note(192)},
+        {},
+        SightRead::TrackType::Drums,
+        std::make_shared<SightRead::SongGlobalData>()};
     Song song;
-    song.add_note_track(Instrument::Guitar, Difficulty::Expert, guitar_track);
-    song.add_note_track(Instrument::Guitar, Difficulty::Hard, guitar_track);
-    song.add_note_track(Instrument::Drums, Difficulty::Expert, drum_track);
+    song.add_note_track(SightRead::Instrument::Guitar,
+                        SightRead::Difficulty::Expert, guitar_track);
+    song.add_note_track(SightRead::Instrument::Guitar,
+                        SightRead::Difficulty::Hard, guitar_track);
+    song.add_note_track(SightRead::Instrument::Drums,
+                        SightRead::Difficulty::Expert, drum_track);
 
-    std::vector<Difficulty> guitar_difficulties {Difficulty::Hard,
-                                                 Difficulty::Expert};
-    std::vector<Difficulty> drum_difficulties {Difficulty::Expert};
+    std::vector<SightRead::Difficulty> guitar_difficulties {
+        SightRead::Difficulty::Hard, SightRead::Difficulty::Expert};
+    std::vector<SightRead::Difficulty> drum_difficulties {
+        SightRead::Difficulty::Expert};
 
-    const auto guitar_diffs = song.difficulties(Instrument::Guitar);
-    const auto drum_diffs = song.difficulties(Instrument::Drums);
+    const auto guitar_diffs = song.difficulties(SightRead::Instrument::Guitar);
+    const auto drum_diffs = song.difficulties(SightRead::Instrument::Drums);
 
     BOOST_CHECK_EQUAL_COLLECTIONS(guitar_diffs.cbegin(), guitar_diffs.cend(),
                                   guitar_difficulties.cbegin(),
@@ -77,30 +88,37 @@ BOOST_AUTO_TEST_CASE(difficulties_returns_the_difficulties_for_an_instrument)
 
 BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
 {
-    NoteTrack guitar_track {{make_note(768), make_note(1024)},
-                            {{SightRead::Tick {768}, SightRead::Tick {100}},
-                             {SightRead::Tick {1024}, SightRead::Tick {100}}},
-                            TrackType::FiveFret,
-                            std::make_shared<SongGlobalData>()};
-    // Note the first phrase has a different length than the other instruments.
-    // It should still be a unison phrase: this happens in Roundabout, with the
-    // key phrases being a slightly different length.
-    NoteTrack bass_track {{make_note(768), make_note(2048)},
-                          {{SightRead::Tick {768}, SightRead::Tick {99}},
-                           {SightRead::Tick {2048}, SightRead::Tick {100}}},
-                          TrackType::FiveFret,
-                          std::make_shared<SongGlobalData>()};
+    SightRead::NoteTrack guitar_track {
+        {make_note(768), make_note(1024)},
+        {{SightRead::Tick {768}, SightRead::Tick {100}},
+         {SightRead::Tick {1024}, SightRead::Tick {100}}},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    // Note the first phrase has a different length than the other
+    // SightRead::Instruments. It should still be a unison phrase: this happens
+    // in Roundabout, with the key phrases being a slightly different length.
+    SightRead::NoteTrack bass_track {
+        {make_note(768), make_note(2048)},
+        {{SightRead::Tick {768}, SightRead::Tick {99}},
+         {SightRead::Tick {2048}, SightRead::Tick {100}}},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
     // The 768 phrase is absent for drums: this is to test that unison bonuses
-    // can apply when at least 2 instruments have the phrase. This happens with
-    // the first phrase on RB3 Last Dance guitar, the phrase is missing on bass.
-    NoteTrack drum_track {{make_drum_note(768), make_drum_note(4096)},
-                          {{SightRead::Tick {4096}, SightRead::Tick {100}}},
-                          TrackType::FiveFret,
-                          std::make_shared<SongGlobalData>()};
+    // can apply when at least 2 SightRead::Instruments have the phrase. This
+    // happens with the first phrase on RB3 Last Dance guitar, the phrase is
+    // missing on bass.
+    SightRead::NoteTrack drum_track {
+        {make_drum_note(768), make_drum_note(4096)},
+        {{SightRead::Tick {4096}, SightRead::Tick {100}}},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
     Song song;
-    song.add_note_track(Instrument::Guitar, Difficulty::Expert, guitar_track);
-    song.add_note_track(Instrument::Bass, Difficulty::Expert, bass_track);
-    song.add_note_track(Instrument::Drums, Difficulty::Expert, drum_track);
+    song.add_note_track(SightRead::Instrument::Guitar,
+                        SightRead::Difficulty::Expert, guitar_track);
+    song.add_note_track(SightRead::Instrument::Bass,
+                        SightRead::Difficulty::Expert, bass_track);
+    song.add_note_track(SightRead::Instrument::Drums,
+                        SightRead::Difficulty::Expert, drum_track);
 
     const std::vector<SightRead::Tick> unison_phrases
         = song.unison_phrase_positions();

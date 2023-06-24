@@ -67,7 +67,8 @@ double get_denom(const SightRead::TempoMap& tempo_map, SightRead::Beat beat)
     return BASE_BEAT_RATE / ts->denominator;
 }
 
-DrawnNote note_to_drawn_note(const Note& note, const NoteTrack& track)
+DrawnNote note_to_drawn_note(const SightRead::Note& note,
+                             const SightRead::NoteTrack& track)
 {
     constexpr auto COLOURS_SIZE = 7;
     const auto& tempo_map = track.global_data().tempo_map();
@@ -94,7 +95,7 @@ DrawnNote note_to_drawn_note(const Note& note, const NoteTrack& track)
     return {beat.value(), lengths, note.flags, is_sp_note};
 }
 
-bool is_in_disco_flips(const std::vector<DiscoFlip>& disco_flips,
+bool is_in_disco_flips(const std::vector<SightRead::DiscoFlip>& disco_flips,
                        SightRead::Tick position)
 {
     return std::any_of(disco_flips.cbegin(), disco_flips.cend(),
@@ -104,7 +105,7 @@ bool is_in_disco_flips(const std::vector<DiscoFlip>& disco_flips,
                        });
 }
 
-std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
+std::vector<DrawnNote> drawn_notes(const SightRead::NoteTrack& track,
                                    const SightRead::DrumSettings& drum_settings)
 {
     std::vector<DrawnNote> notes;
@@ -115,20 +116,21 @@ std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
         }
         auto drawn_note = note_to_drawn_note(note, track);
         if (!drum_settings.pro_drums) {
-            drawn_note.note_flags
-                = static_cast<NoteFlags>(drawn_note.note_flags & ~FLAGS_CYMBAL);
+            drawn_note.note_flags = static_cast<SightRead::NoteFlags>(
+                drawn_note.note_flags & ~SightRead::FLAGS_CYMBAL);
         } else if (is_in_disco_flips(track.disco_flips(), note.position)) {
-            if (note.lengths[DRUM_RED] != SightRead::Tick {-1}) {
-                std::swap(drawn_note.lengths[DRUM_RED],
-                          drawn_note.lengths[DRUM_YELLOW]);
-                drawn_note.note_flags = static_cast<NoteFlags>(
-                    drawn_note.note_flags | FLAGS_CYMBAL);
-            } else if (note.lengths[DRUM_YELLOW] != SightRead::Tick {-1}
-                       && (note.flags & FLAGS_CYMBAL) != 0U) {
-                std::swap(drawn_note.lengths[DRUM_RED],
-                          drawn_note.lengths[DRUM_YELLOW]);
-                drawn_note.note_flags = static_cast<NoteFlags>(
-                    drawn_note.note_flags & ~FLAGS_CYMBAL);
+            if (note.lengths[SightRead::DRUM_RED] != SightRead::Tick {-1}) {
+                std::swap(drawn_note.lengths[SightRead::DRUM_RED],
+                          drawn_note.lengths[SightRead::DRUM_YELLOW]);
+                drawn_note.note_flags = static_cast<SightRead::NoteFlags>(
+                    drawn_note.note_flags | SightRead::FLAGS_CYMBAL);
+            } else if (note.lengths[SightRead::DRUM_YELLOW]
+                           != SightRead::Tick {-1}
+                       && (note.flags & SightRead::FLAGS_CYMBAL) != 0U) {
+                std::swap(drawn_note.lengths[SightRead::DRUM_RED],
+                          drawn_note.lengths[SightRead::DRUM_YELLOW]);
+                drawn_note.note_flags = static_cast<SightRead::NoteFlags>(
+                    drawn_note.note_flags & ~SightRead::FLAGS_CYMBAL);
             }
         }
         notes.push_back(drawn_note);
@@ -137,7 +139,7 @@ std::vector<DrawnNote> drawn_notes(const NoteTrack& track,
     return notes;
 }
 
-std::vector<DrawnRow> drawn_rows(const NoteTrack& track)
+std::vector<DrawnRow> drawn_rows(const SightRead::NoteTrack& track)
 {
     SightRead::Tick max_pos {0};
     for (const auto& note : track.notes()) {
@@ -218,7 +220,7 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
     return events;
 }
 
-ImageBuilder build_with_engine_params(const NoteTrack& track,
+ImageBuilder build_with_engine_params(const SightRead::NoteTrack& track,
                                       const Settings& settings)
 {
     return {track, settings.difficulty, settings.drum_settings,
@@ -298,7 +300,8 @@ bool ImageBuilder::is_neutralised_phrase(SightRead::Beat note_pos,
 }
 
 std::tuple<double, double>
-ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
+ImageBuilder::sp_phrase_bounds(const SightRead::StarPower& phrase,
+                               const SightRead::NoteTrack& track,
                                const Path& path) const
 {
     constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
@@ -328,7 +331,8 @@ ImageBuilder::sp_phrase_bounds(const StarPower& phrase, const NoteTrack& track,
     return {start, end};
 }
 
-ImageBuilder::ImageBuilder(const NoteTrack& track, Difficulty difficulty,
+ImageBuilder::ImageBuilder(const SightRead::NoteTrack& track,
+                           SightRead::Difficulty difficulty,
                            const SightRead::DrumSettings& drum_settings,
                            bool is_lefty_flip, bool is_overlap_engine)
     : m_track_type {track.track_type()}
@@ -356,7 +360,7 @@ void ImageBuilder::add_bpms(const SightRead::TempoMap& tempo_map)
     }
 }
 
-void ImageBuilder::add_bre(const BigRockEnding& bre,
+void ImageBuilder::add_bre(const SightRead::BigRockEnding& bre,
                            const SightRead::TempoMap& tempo_map)
 {
     const auto seconds_start = tempo_map.to_seconds(bre.start);
@@ -371,7 +375,7 @@ void ImageBuilder::add_bre(const BigRockEnding& bre,
                               tempo_map.to_beats(bre.end).value());
 }
 
-void ImageBuilder::add_drum_fills(const NoteTrack& track)
+void ImageBuilder::add_drum_fills(const SightRead::NoteTrack& track)
 {
     const auto& tempo_map = track.global_data().tempo_map();
     for (auto fill : track.drum_fills()) {
@@ -453,7 +457,7 @@ void ImageBuilder::add_measure_values(const PointSet& points,
     }
 }
 
-void ImageBuilder::add_solo_sections(const std::vector<Solo>& solos,
+void ImageBuilder::add_solo_sections(const std::vector<SightRead::Solo>& solos,
                                      const SightRead::TempoMap& tempo_map)
 {
     for (const auto& solo : solos) {
@@ -463,7 +467,7 @@ void ImageBuilder::add_solo_sections(const std::vector<Solo>& solos,
     }
 }
 
-void ImageBuilder::add_song_header(const SongGlobalData& global_data)
+void ImageBuilder::add_song_header(const SightRead::SongGlobalData& global_data)
 {
     m_song_name = global_data.name();
     m_artist = global_data.artist();
@@ -588,8 +592,8 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
 }
 
 void ImageBuilder::add_sp_phrases(
-    const NoteTrack& track, const std::vector<SightRead::Tick>& unison_phrases,
-    const Path& path)
+    const SightRead::NoteTrack& track,
+    const std::vector<SightRead::Tick>& unison_phrases, const Path& path)
 {
     for (const auto& phrase : track.sp_phrases()) {
         const auto range = sp_phrase_bounds(phrase, track, path);
@@ -634,7 +638,7 @@ void ImageBuilder::add_time_sigs(const SightRead::TempoMap& tempo_map)
 }
 
 void ImageBuilder::set_total_score(const PointSet& points,
-                                   const std::vector<Solo>& solos,
+                                   const std::vector<SightRead::Solo>& solos,
                                    const Path& path)
 {
     auto no_sp_score = std::accumulate(
@@ -646,7 +650,7 @@ void ImageBuilder::set_total_score(const PointSet& points,
     m_total_score = no_sp_score + path.score_boost;
 }
 
-ImageBuilder make_builder(Song& song, const NoteTrack& track,
+ImageBuilder make_builder(Song& song, const SightRead::NoteTrack& track,
                           const Settings& settings,
                           const std::function<void(const char*)>& write,
                           const std::atomic<bool>* terminate)
@@ -656,7 +660,7 @@ ImageBuilder make_builder(Song& song, const NoteTrack& track,
         new_track = track.trim_sustains();
     }
     new_track = new_track.snap_chords(settings.engine->snap_gap());
-    if (track.track_type() == TrackType::Drums) {
+    if (track.track_type() == SightRead::TrackType::Drums) {
         if (!settings.engine->is_rock_band()
             && new_track.drum_fills().empty()) {
             new_track.generate_drum_fills(song.global_data().tempo_map());
@@ -672,7 +676,7 @@ ImageBuilder make_builder(Song& song, const NoteTrack& track,
     auto builder = build_with_engine_params(new_track, settings);
     builder.add_song_header(song.global_data());
 
-    if (track.track_type() == TrackType::Drums) {
+    if (track.track_type() == SightRead::TrackType::Drums) {
         builder.add_drum_fills(new_track);
     }
 
@@ -709,7 +713,8 @@ ImageBuilder make_builder(Song& song, const NoteTrack& track,
     Path path;
 
     if (!settings.blank) {
-        const auto is_rb_drums = track.track_type() == TrackType::Drums
+        const auto is_rb_drums
+            = track.track_type() == SightRead::TrackType::Drums
             && settings.engine->is_rock_band();
         if (is_rb_drums) {
             write("Optimisation disabled for Rock Band drums, planned for a "

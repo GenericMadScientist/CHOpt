@@ -97,7 +97,7 @@ private:
                            const std::string& act_summary) const;
 
 public:
-    ProcessedSong(const NoteTrack& track, SpTimeMap time_map,
+    ProcessedSong(const SightRead::NoteTrack& track, SpTimeMap time_map,
                   const SqueezeSettings& squeeze_settings,
                   const SightRead::DrumSettings& drum_settings,
                   const Engine& engine,
