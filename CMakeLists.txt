@@ -59,7 +59,6 @@ add_executable(
   src/image.cpp
   src/imagebuilder.cpp
   src/ini.cpp
-  src/midi.cpp
   src/midiparser.cpp
   src/optimiser.cpp
   src/points.cpp
@@ -110,7 +109,6 @@ if(BUILD_GUI)
     src/image.cpp
     src/imagebuilder.cpp
     src/ini.cpp
-    src/midi.cpp
     src/midiparser.cpp
     src/optimiser.cpp
     src/points.cpp
@@ -156,7 +154,6 @@ if(PACKAGE_TESTS)
     tests/chartparser_unittest.cpp
     tests/imagebuilder_unittest.cpp
     tests/ini_unittest.cpp
-    tests/midi_unittest.cpp
     tests/midiparser_unittest.cpp
     tests/optimiser_unittest.cpp
     tests/points_unittest.cpp
@@ -167,7 +164,6 @@ if(PACKAGE_TESTS)
     src/chartparser.cpp
     src/imagebuilder.cpp
     src/ini.cpp
-    src/midi.cpp
     src/midiparser.cpp
     src/optimiser.cpp
     src/points.cpp
