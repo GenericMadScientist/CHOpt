@@ -1,21 +1,3 @@
-/*
- * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023 Raymond Wright
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 #include <boost/test/unit_test.hpp>
 
 #include "chartparser.hpp"
@@ -109,7 +91,7 @@ BOOST_AUTO_TEST_CASE(chart_to_song_has_correct_value_for_is_from_midi)
 {
     const auto chart_file = section_string("ExpertSingle", {{768, 0, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
 
     BOOST_TEST(!song.global_data().is_from_midi());
 }
@@ -120,7 +102,8 @@ BOOST_AUTO_TEST_CASE(default_is_192_resolution)
 {
     const auto chart_file = section_string("ExpertSingle", {{768, 0, 0}});
 
-    const auto global_data = ChartParser({}).parse(chart_file).global_data();
+    const auto global_data
+        = SightRead::ChartParser({}).parse(chart_file).global_data();
     const auto resolution = global_data.resolution();
 
     BOOST_CHECK_EQUAL(resolution, 192);
@@ -133,7 +116,8 @@ BOOST_AUTO_TEST_CASE(default_is_overriden_by_specified_value)
     const auto guitar_track = section_string("ExpertSingle", {{768, 0, 0}});
     const auto chart_file = header + '\n' + guitar_track;
 
-    const auto global_data = ChartParser({}).parse(chart_file).global_data();
+    const auto global_data
+        = SightRead::ChartParser({}).parse(chart_file).global_data();
     const auto resolution = global_data.resolution();
 
     BOOST_CHECK_EQUAL(resolution, 200);
@@ -145,7 +129,8 @@ BOOST_AUTO_TEST_CASE(bad_values_are_ignored)
     const auto guitar_track = section_string("ExpertSingle", {{768, 0, 0}});
     const auto chart_file = header + '\n' + guitar_track;
 
-    const auto global_data = ChartParser({}).parse(chart_file).global_data();
+    const auto global_data
+        = SightRead::ChartParser({}).parse(chart_file).global_data();
     const auto resolution = global_data.resolution();
 
     BOOST_CHECK_EQUAL(resolution, 192);
@@ -161,7 +146,7 @@ BOOST_AUTO_TEST_CASE(chart_header_values_besides_resolution_are_discarded)
     const auto guitar_track = section_string("ExpertSingle", {{768, 0, 0}});
     const auto chart_file = header + '\n' + guitar_track;
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
 
     BOOST_CHECK_NE(song.global_data().name(), "TestName");
     BOOST_CHECK_NE(song.global_data().artist(), "GMS");
@@ -175,7 +160,7 @@ BOOST_AUTO_TEST_CASE(ini_values_are_used_for_converting_from_chart_files)
     const auto chart_file = header + '\n' + guitar_track;
     const SightRead::Metadata metadata {"TestName", "GMS", "NotGMS"};
 
-    const auto song = ChartParser(metadata).parse(chart_file);
+    const auto song = SightRead::ChartParser(metadata).parse(chart_file);
 
     BOOST_CHECK_EQUAL(song.global_data().name(), "TestName");
     BOOST_CHECK_EQUAL(song.global_data().artist(), "GMS");
@@ -193,7 +178,8 @@ BOOST_AUTO_TEST_CASE(chart_reads_sync_track_correctly)
         {SightRead::Tick {0}, 4, 4}, {SightRead::Tick {768}, 4, 2}};
     std::vector<SightRead::BPM> bpms {{SightRead::Tick {0}, 200000}};
 
-    const auto global_data = ChartParser({}).parse(chart_file).global_data();
+    const auto global_data
+        = SightRead::ChartParser({}).parse(chart_file).global_data();
     const auto& tempo_map = global_data.tempo_map();
 
     BOOST_CHECK_EQUAL_COLLECTIONS(tempo_map.time_sigs().cbegin(),
@@ -210,7 +196,7 @@ BOOST_AUTO_TEST_CASE(large_time_sig_denominators_cause_an_exception)
     const auto guitar_track = section_string("ExpertSingle", {{768, 0, 0}});
     const auto chart_file = sync_track + '\n' + guitar_track;
 
-    const ChartParser parser {{}};
+    const SightRead::ChartParser parser {{}};
 
     BOOST_CHECK_THROW([&] { return parser.parse(chart_file); }(),
                       SightRead::ParseError);
@@ -225,7 +211,7 @@ BOOST_AUTO_TEST_CASE(easy_note_track_read_correctly)
     std::vector<SightRead::StarPower> sp_phrases {
         {SightRead::Tick {768}, SightRead::Tick {100}}};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::Guitar,
                                    SightRead::Difficulty::Easy);
 
@@ -244,7 +230,7 @@ BOOST_AUTO_TEST_CASE(invalid_note_values_are_ignored)
     std::vector<SightRead::Note> notes {
         make_note(768, 0, SightRead::FIVE_FRET_GREEN)};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& parsed_notes = song.track(SightRead::Instrument::Guitar,
                                           SightRead::Difficulty::Expert)
                                    .notes();
@@ -258,7 +244,7 @@ BOOST_AUTO_TEST_CASE(non_sp_phrase_special_events_are_ignored)
     const auto chart_file
         = section_string("ExpertSingle", {{768, 0, 0}}, {{768, 1, 100}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
 
     BOOST_TEST(
         song.track(SightRead::Instrument::Guitar, SightRead::Difficulty::Expert)
@@ -272,7 +258,7 @@ BOOST_AUTO_TEST_CASE(non_note_sections_need_not_be_present)
 {
     const auto chart_file = section_string("ExpertSingle", {{768, 0, 0}});
 
-    const ChartParser parser {{}};
+    const SightRead::ChartParser parser {{}};
 
     BOOST_CHECK_NO_THROW([&] { return parser.parse(chart_file); }());
 }
@@ -281,7 +267,7 @@ BOOST_AUTO_TEST_CASE(at_least_one_nonempty_note_section_must_be_present)
 {
     const auto chart_file = section_string("ExpertSingle", {}, {{768, 2, 100}});
 
-    const ChartParser parser {{}};
+    const SightRead::ChartParser parser {{}};
 
     BOOST_CHECK_THROW([&] { return parser.parse({}); }(),
                       SightRead::ParseError);
@@ -299,7 +285,7 @@ BOOST_AUTO_TEST_CASE(non_note_sections_can_be_in_any_order)
     std::vector<SightRead::Note> notes {make_note(768)};
     std::vector<SightRead::BPM> expected_bpms {{SightRead::Tick {0}, 200000}};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& parsed_notes = song.track(SightRead::Instrument::Guitar,
                                           SightRead::Difficulty::Expert)
                                    .notes();
@@ -324,7 +310,7 @@ BOOST_AUTO_TEST_CASE(later_nonempty_sections_are_ignored)
     std::vector<SightRead::Note> notes {
         make_note(768, 0, SightRead::FIVE_FRET_GREEN)};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& parsed_notes = song.track(SightRead::Instrument::Guitar,
                                           SightRead::Difficulty::Expert)
                                    .notes();
@@ -341,7 +327,7 @@ BOOST_AUTO_TEST_CASE(leading_empty_sections_are_ignored)
     std::vector<SightRead::Note> notes {
         make_note(768, 0, SightRead::FIVE_FRET_RED)};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& parsed_notes = song.track(SightRead::Instrument::Guitar,
                                           SightRead::Difficulty::Expert)
                                    .notes();
@@ -363,7 +349,7 @@ BOOST_AUTO_TEST_CASE(expected_solos_are_read_properly)
         {SightRead::Tick {0}, SightRead::Tick {200}, 100},
         {SightRead::Tick {300}, SightRead::Tick {400}, 200}};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto parsed_solos
         = song.track(SightRead::Instrument::Guitar,
                      SightRead::Difficulty::Expert)
@@ -382,7 +368,7 @@ BOOST_AUTO_TEST_CASE(chords_are_not_counted_double)
     std::vector<SightRead::Solo> required_solos {
         {SightRead::Tick {0}, SightRead::Tick {200}, 100}};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto parsed_solos
         = song.track(SightRead::Instrument::Guitar,
                      SightRead::Difficulty::Expert)
@@ -398,7 +384,7 @@ BOOST_AUTO_TEST_CASE(empty_solos_are_ignored)
     const auto chart_file = section_string("ExpertSingle", {{0, 0, 0}}, {},
                                            {{100, "solo"}, {200, "soloend"}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
 
     BOOST_TEST(
         song.track(SightRead::Instrument::Guitar, SightRead::Difficulty::Expert)
@@ -414,7 +400,7 @@ BOOST_AUTO_TEST_CASE(repeated_solo_starts_and_ends_dont_matter)
     std::vector<SightRead::Solo> required_solos {
         {SightRead::Tick {0}, SightRead::Tick {200}, 100}};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto parsed_solos
         = song.track(SightRead::Instrument::Guitar,
                      SightRead::Difficulty::Expert)
@@ -432,7 +418,7 @@ BOOST_AUTO_TEST_CASE(solo_markers_are_sorted)
     std::vector<SightRead::Solo> required_solos {
         {SightRead::Tick {0}, SightRead::Tick {384}, 100}};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto parsed_solos
         = song.track(SightRead::Instrument::Guitar,
                      SightRead::Difficulty::Expert)
@@ -448,7 +434,7 @@ BOOST_AUTO_TEST_CASE(solos_with_no_soloend_event_are_ignored)
     const auto chart_file
         = section_string("ExpertSingle", {{192, 0, 0}}, {}, {{0, "solo"}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
 
     BOOST_TEST(
         song.track(SightRead::Instrument::Guitar, SightRead::Difficulty::Expert)
@@ -464,7 +450,7 @@ BOOST_AUTO_TEST_CASE(guitar_coop_is_read)
 {
     const auto chart_file = section_string("ExpertDoubleGuitar", {{192, 0, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
 
     BOOST_CHECK_NO_THROW([&] {
         return song.track(SightRead::Instrument::GuitarCoop,
@@ -476,7 +462,7 @@ BOOST_AUTO_TEST_CASE(bass_is_read)
 {
     const auto chart_file = section_string("ExpertDoubleBass", {{192, 0, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
 
     BOOST_CHECK_NO_THROW([&] {
         return song.track(SightRead::Instrument::Bass,
@@ -488,7 +474,7 @@ BOOST_AUTO_TEST_CASE(rhythm_is_read)
 {
     const auto chart_file = section_string("ExpertDoubleRhythm", {{192, 0, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
 
     BOOST_CHECK_NO_THROW([&] {
         return song.track(SightRead::Instrument::Rhythm,
@@ -500,7 +486,7 @@ BOOST_AUTO_TEST_CASE(keys_is_read)
 {
     const auto chart_file = section_string("ExpertKeyboard", {{192, 0, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
 
     BOOST_CHECK_NO_THROW([&] {
         return song.track(SightRead::Instrument::Keys,
@@ -520,7 +506,7 @@ BOOST_AUTO_TEST_CASE(six_fret_guitar_is_read_correctly)
         make_ghl_note(192, 0, SightRead::SIX_FRET_WHITE_LOW),
         make_ghl_note(384, 0, SightRead::SIX_FRET_BLACK_LOW)};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::GHLGuitar,
                                    SightRead::Difficulty::Expert);
 
@@ -536,7 +522,7 @@ BOOST_AUTO_TEST_CASE(six_fret_bass_is_read_correctly)
         make_ghl_note(192, 0, SightRead::SIX_FRET_WHITE_LOW),
         make_ghl_note(384, 0, SightRead::SIX_FRET_BLACK_LOW)};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::GHLBass,
                                    SightRead::Difficulty::Expert);
 
@@ -552,7 +538,7 @@ BOOST_AUTO_TEST_CASE(six_fret_rhythm_is_read_correctly)
         make_ghl_note(192, 0, SightRead::SIX_FRET_WHITE_LOW),
         make_ghl_note(384, 0, SightRead::SIX_FRET_BLACK_LOW)};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::GHLRhythm,
                                    SightRead::Difficulty::Expert);
 
@@ -568,7 +554,7 @@ BOOST_AUTO_TEST_CASE(six_fret_guitar_coop_is_read_correctly)
         make_ghl_note(192, 0, SightRead::SIX_FRET_WHITE_LOW),
         make_ghl_note(384, 0, SightRead::SIX_FRET_BLACK_LOW)};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::GHLGuitarCoop,
                                    SightRead::Difficulty::Expert);
 
@@ -587,7 +573,7 @@ BOOST_AUTO_TEST_CASE(drum_notes_are_read_correctly_from_chart)
         make_drum_note(384, SightRead::DRUM_YELLOW, SightRead::FLAGS_CYMBAL),
         make_drum_note(768, SightRead::DRUM_DOUBLE_KICK)};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::Drums,
                                    SightRead::Difficulty::Expert);
 
@@ -603,7 +589,7 @@ BOOST_AUTO_TEST_CASE(dynamics_are_read_correctly_from_chart)
         make_drum_note(192, SightRead::DRUM_RED, SightRead::FLAGS_ACCENT),
         make_drum_note(384, SightRead::DRUM_RED, SightRead::FLAGS_GHOST)};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::Drums,
                                    SightRead::Difficulty::Expert);
 
@@ -617,7 +603,7 @@ BOOST_AUTO_TEST_CASE(drum_solos_are_read_correctly_from_chart)
         = section_string("ExpertDrums", {{192, 1, 0}, {192, 2, 0}}, {},
                          {{0, "solo"}, {200, "soloend"}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::Drums,
                                    SightRead::Difficulty::Expert);
 
@@ -634,7 +620,7 @@ BOOST_AUTO_TEST_CASE(fifth_lane_notes_are_read_correctly_from_chart)
         make_drum_note(384, SightRead::DRUM_GREEN),
         make_drum_note(384, SightRead::DRUM_BLUE)};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::Drums,
                                    SightRead::Difficulty::Expert);
 
@@ -647,7 +633,7 @@ BOOST_AUTO_TEST_CASE(invalid_drum_notes_are_ignored)
     const auto chart_file
         = section_string("ExpertDrums", {{192, 1, 0}, {192, 6, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::Drums,
                                    SightRead::Difficulty::Expert);
 
@@ -660,7 +646,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_read_from_chart)
         = section_string("ExpertDrums", {{192, 1, 0}}, {{192, 64, 1}});
     const SightRead::DrumFill fill {SightRead::Tick {192}, SightRead::Tick {1}};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::Drums,
                                    SightRead::Difficulty::Expert);
 
@@ -676,7 +662,7 @@ BOOST_AUTO_TEST_CASE(disco_flips_are_read_from_chart)
     const SightRead::DiscoFlip flip {SightRead::Tick {100},
                                      SightRead::Tick {5}};
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto& track = song.track(SightRead::Instrument::Drums,
                                    SightRead::Difficulty::Expert);
 
@@ -692,8 +678,8 @@ BOOST_AUTO_TEST_CASE(instruments_not_permitted_are_dropped_from_charts)
     const std::vector<SightRead::Instrument> expected_instruments {
         SightRead::Instrument::Guitar};
 
-    const auto parser
-        = ChartParser({}).permit_instruments({SightRead::Instrument::Guitar});
+    const auto parser = SightRead::ChartParser({}).permit_instruments(
+        {SightRead::Instrument::Guitar});
     const auto song = parser.parse(chart_file);
     const auto instruments = song.instruments();
 
@@ -708,7 +694,7 @@ BOOST_AUTO_TEST_CASE(solos_ignored_from_charts_if_not_permitted)
         "ExpertSingle", {{100, 0, 0}, {300, 0, 0}, {400, 0, 0}}, {},
         {{0, "solo"}, {200, "soloend"}, {300, "solo"}, {400, "soloend"}});
 
-    const auto parser = ChartParser({}).parse_solos(false);
+    const auto parser = SightRead::ChartParser({}).parse_solos(false);
     const auto song = parser.parse(chart_file);
     const auto parsed_solos
         = song.track(SightRead::Instrument::Guitar,
@@ -725,7 +711,7 @@ BOOST_AUTO_TEST_CASE(automatically_set_based_on_distance)
     const auto chart_file
         = section_string("ExpertSingle", {{0, 0, 0}, {65, 1, 0}, {131, 2, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto notes = song.track(SightRead::Instrument::Guitar,
                                   SightRead::Difficulty::Expert)
                            .notes();
@@ -742,7 +728,7 @@ BOOST_AUTO_TEST_CASE(does_not_do_it_on_same_note)
     const auto chart_file
         = section_string("ExpertSingle", {{0, 0, 0}, {65, 0, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto notes = song.track(SightRead::Instrument::Guitar,
                                   SightRead::Difficulty::Expert)
                            .notes();
@@ -755,7 +741,7 @@ BOOST_AUTO_TEST_CASE(forcing_is_handled_correctly)
     const auto chart_file = section_string(
         "ExpertSingle", {{0, 0, 0}, {0, 5, 0}, {65, 1, 0}, {65, 5, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto notes = song.track(SightRead::Instrument::Guitar,
                                   SightRead::Difficulty::Expert)
                            .notes();
@@ -773,7 +759,7 @@ BOOST_AUTO_TEST_CASE(chords_are_not_hopos_due_to_proximity)
     const auto chart_file
         = section_string("ExpertSingle", {{0, 0, 0}, {64, 1, 0}, {64, 2, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto notes = song.track(SightRead::Instrument::Guitar,
                                   SightRead::Difficulty::Expert)
                            .notes();
@@ -786,7 +772,7 @@ BOOST_AUTO_TEST_CASE(chords_can_be_forced)
     const auto chart_file = section_string(
         "ExpertSingle", {{0, 0, 0}, {64, 1, 0}, {64, 2, 0}, {64, 5, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto notes = song.track(SightRead::Instrument::Guitar,
                                   SightRead::Difficulty::Expert)
                            .notes();
@@ -801,7 +787,7 @@ BOOST_AUTO_TEST_CASE(taps_are_read)
     const auto chart_file
         = section_string("ExpertSingle", {{0, 0, 0}, {0, 6, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto notes = song.track(SightRead::Instrument::Guitar,
                                   SightRead::Difficulty::Expert)
                            .notes();
@@ -815,7 +801,7 @@ BOOST_AUTO_TEST_CASE(taps_take_precedence_over_hopos)
     const auto chart_file
         = section_string("ExpertSingle", {{0, 0, 0}, {64, 1, 0}, {64, 6, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto notes = song.track(SightRead::Instrument::Guitar,
                                   SightRead::Difficulty::Expert)
                            .notes();
@@ -829,7 +815,7 @@ BOOST_AUTO_TEST_CASE(chords_can_be_taps)
     const auto chart_file = section_string(
         "ExpertSingle", {{0, 0, 0}, {64, 1, 0}, {64, 2, 0}, {64, 6, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto notes = song.track(SightRead::Instrument::Guitar,
                                   SightRead::Difficulty::Expert)
                            .notes();
@@ -845,7 +831,7 @@ BOOST_AUTO_TEST_CASE(other_resolutions_are_handled_correctly)
         = section_string("ExpertSingle", {{0, 0, 0}, {162, 1, 0}, {325, 2, 0}});
     const auto chart_file = header + '\n' + guitar_track;
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto notes = song.track(SightRead::Instrument::Guitar,
                                   SightRead::Difficulty::Expert)
                            .notes();
@@ -862,7 +848,7 @@ BOOST_AUTO_TEST_CASE(custom_hopo_threshold_is_handled_correctly)
         = section_string("ExpertSingle", {{0, 0, 0}, {65, 1, 0}, {131, 2, 0}});
 
     const auto song
-        = ChartParser({})
+        = SightRead::ChartParser({})
               .hopo_threshold({SightRead::HopoThresholdType::HopoFrequency,
                                SightRead::Tick {96}})
               .parse(chart_file);
@@ -883,7 +869,7 @@ BOOST_AUTO_TEST_CASE(not_done_on_drums)
     const auto chart_file = section_string(
         "ExpertDrums", {{0, 0, 0}, {65, 1, 0}, {131, 2, 0}, {131, 6, 0}});
 
-    const auto song = ChartParser({}).parse(chart_file);
+    const auto song = SightRead::ChartParser({}).parse(chart_file);
     const auto notes = song.track(SightRead::Instrument::Drums,
                                   SightRead::Difficulty::Expert)
                            .notes();

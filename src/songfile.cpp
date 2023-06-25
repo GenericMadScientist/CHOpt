@@ -93,7 +93,7 @@ SightRead::Song SongFile::load_song(Game game) const
         } catch (const std::invalid_argument& e) {
             throw SightRead::ParseError(e.what());
         }
-        ChartParser parser {m_metadata};
+        SightRead::ChartParser parser {m_metadata};
         parser.permit_instruments(permitted_instruments(game));
         parser.parse_solos(parse_solos(game));
         return parser.parse(u8_string);

@@ -1,23 +1,5 @@
-/*
- * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023 Raymond Wright
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
-#ifndef CHOPT_CHARTPARSER_HPP
-#define CHOPT_CHARTPARSER_HPP
+#ifndef SIGHTREAD_CHARTPARSER_HPP
+#define SIGHTREAD_CHARTPARSER_HPP
 
 #include <set>
 #include <string>
@@ -29,6 +11,7 @@
 #include <sightread/song.hpp>
 #include <sightread/songparts.hpp>
 
+namespace SightRead {
 class ChartParser {
 private:
     std::string m_song_name;
@@ -48,5 +31,6 @@ public:
     ChartParser& parse_solos(bool permit_solos);
     SightRead::Song parse(std::string_view data) const;
 };
+}
 
 #endif

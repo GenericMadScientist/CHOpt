@@ -1,21 +1,3 @@
-/*
- * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023 Raymond Wright
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 #include <algorithm>
 #include <climits>
 #include <set>
@@ -468,7 +450,7 @@ track_type_from_instrument(SightRead::Instrument instrument)
 }
 }
 
-ChartParser::ChartParser(const SightRead::Metadata& metadata)
+SightRead::ChartParser::ChartParser(const SightRead::Metadata& metadata)
     : m_song_name {metadata.name}
     , m_artist {metadata.artist}
     , m_charter {metadata.charter}
@@ -479,33 +461,33 @@ ChartParser::ChartParser(const SightRead::Metadata& metadata)
 {
 }
 
-ChartParser&
-ChartParser::hopo_threshold(SightRead::HopoThreshold hopo_threshold)
+SightRead::ChartParser&
+SightRead::ChartParser::hopo_threshold(SightRead::HopoThreshold hopo_threshold)
 {
     m_hopo_threshold = hopo_threshold;
     return *this;
 }
 
-ChartParser& ChartParser::permit_instruments(
+SightRead::ChartParser& SightRead::ChartParser::permit_instruments(
     std::set<SightRead::Instrument> permitted_instruments)
 {
     m_permitted_instruments = std::move(permitted_instruments);
     return *this;
 }
 
-ChartParser& ChartParser::parse_solos(bool permit_solos)
+SightRead::ChartParser& SightRead::ChartParser::parse_solos(bool permit_solos)
 {
     m_permit_solos = permit_solos;
     return *this;
 }
 
-SightRead::Song ChartParser::parse(std::string_view data) const
+SightRead::Song SightRead::ChartParser::parse(std::string_view data) const
 {
     return from_chart(SightRead::Detail::parse_chart(data));
 }
 
 SightRead::Song
-ChartParser::from_chart(const SightRead::Detail::Chart& chart) const
+SightRead::ChartParser::from_chart(const SightRead::Detail::Chart& chart) const
 {
     SightRead::Song song;
 
