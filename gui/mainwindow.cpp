@@ -86,7 +86,7 @@ class OptimiserThread : public QThread {
 private:
     std::atomic<bool> m_terminate = false;
     Settings m_settings;
-    std::optional<Song> m_song;
+    std::optional<SightRead::Song> m_song;
     QString m_file_name;
 
 public:
@@ -115,7 +115,8 @@ public:
         }
     }
 
-    void set_data(Settings settings, Song song, const QString& file_name)
+    void set_data(Settings settings, SightRead::Song song,
+                  const QString& file_name)
     {
         m_settings = std::move(settings);
         m_song = std::move(song);

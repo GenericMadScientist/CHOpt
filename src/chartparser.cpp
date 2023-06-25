@@ -496,14 +496,14 @@ ChartParser& ChartParser::parse_solos(bool permit_solos)
     return *this;
 }
 
-Song ChartParser::parse(std::string_view data) const
+SightRead::Song ChartParser::parse(std::string_view data) const
 {
     return from_chart(parse_chart(data));
 }
 
-Song ChartParser::from_chart(const Chart& chart) const
+SightRead::Song ChartParser::from_chart(const Chart& chart) const
 {
-    Song song;
+    SightRead::Song song;
 
     song.global_data().is_from_midi(false);
     song.global_data().name(m_song_name);

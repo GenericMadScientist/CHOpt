@@ -650,7 +650,8 @@ void ImageBuilder::set_total_score(const PointSet& points,
     m_total_score = no_sp_score + path.score_boost;
 }
 
-ImageBuilder make_builder(Song& song, const SightRead::NoteTrack& track,
+ImageBuilder make_builder(SightRead::Song& song,
+                          const SightRead::NoteTrack& track,
                           const Settings& settings,
                           const std::function<void(const char*)>& write,
                           const std::atomic<bool>* terminate)

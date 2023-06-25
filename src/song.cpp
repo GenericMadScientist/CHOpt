@@ -1,21 +1,3 @@
-/*
- * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 #include <algorithm>
 #include <set>
 #include <stdexcept>
@@ -26,9 +8,9 @@
 
 #include "song.hpp"
 
-void Song::add_note_track(SightRead::Instrument instrument,
-                          SightRead::Difficulty difficulty,
-                          SightRead::NoteTrack note_track)
+void SightRead::Song::add_note_track(SightRead::Instrument instrument,
+                                     SightRead::Difficulty difficulty,
+                                     SightRead::NoteTrack note_track)
 {
     if (!note_track.notes().empty()) {
         m_tracks.emplace(std::tuple {instrument, difficulty},
@@ -36,7 +18,7 @@ void Song::add_note_track(SightRead::Instrument instrument,
     }
 }
 
-std::vector<SightRead::Instrument> Song::instruments() const
+std::vector<SightRead::Instrument> SightRead::Song::instruments() const
 {
     std::set<SightRead::Instrument> instrument_set;
     for (const auto& [key, val] : m_tracks) {
@@ -50,7 +32,7 @@ std::vector<SightRead::Instrument> Song::instruments() const
 }
 
 std::vector<SightRead::Difficulty>
-Song::difficulties(SightRead::Instrument instrument) const
+SightRead::Song::difficulties(SightRead::Instrument instrument) const
 {
     std::vector<SightRead::Difficulty> difficulties;
     for (const auto& [key, val] : m_tracks) {
@@ -62,8 +44,9 @@ Song::difficulties(SightRead::Instrument instrument) const
     return difficulties;
 }
 
-const SightRead::NoteTrack& Song::track(SightRead::Instrument instrument,
-                                        SightRead::Difficulty difficulty) const
+const SightRead::NoteTrack&
+SightRead::Song::track(SightRead::Instrument instrument,
+                       SightRead::Difficulty difficulty) const
 {
     const auto insts = instruments();
     if (std::find(insts.cbegin(), insts.cend(), instrument) == insts.cend()) {
@@ -77,7 +60,7 @@ const SightRead::NoteTrack& Song::track(SightRead::Instrument instrument,
     return m_tracks.at({instrument, difficulty});
 }
 
-std::vector<SightRead::Tick> Song::unison_phrase_positions() const
+std::vector<SightRead::Tick> SightRead::Song::unison_phrase_positions() const
 {
     std::map<SightRead::Tick, std::set<SightRead::Instrument>>
         phrase_by_instrument;
@@ -100,7 +83,7 @@ std::vector<SightRead::Tick> Song::unison_phrase_positions() const
     return unison_starts;
 }
 
-void Song::speedup(int speed)
+void SightRead::Song::speedup(int speed)
 {
     constexpr int DEFAULT_SPEED = 100;
 

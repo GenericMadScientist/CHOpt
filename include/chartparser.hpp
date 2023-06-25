@@ -39,7 +39,7 @@ private:
     std::set<SightRead::Instrument> m_permitted_instruments;
     bool m_permit_solos;
 
-    Song from_chart(const Chart& chart) const;
+    SightRead::Song from_chart(const Chart& chart) const;
 
 public:
     explicit ChartParser(const IniValues& ini);
@@ -47,7 +47,7 @@ public:
     ChartParser&
     permit_instruments(std::set<SightRead::Instrument> permitted_instruments);
     ChartParser& parse_solos(bool permit_solos);
-    Song parse(std::string_view data) const;
+    SightRead::Song parse(std::string_view data) const;
 };
 
 #endif

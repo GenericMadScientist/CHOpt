@@ -37,7 +37,7 @@ private:
 
 public:
     explicit SongFile(const std::string& filename);
-    Song load_song(Game game) const;
+    SightRead::Song load_song(Game game) const;
 };
 
 #endif

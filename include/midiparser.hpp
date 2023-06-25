@@ -46,8 +46,8 @@ public:
     MidiParser&
     permit_instruments(std::set<SightRead::Instrument> permitted_instruments);
     MidiParser& parse_solos(bool permit_solos);
-    Song from_midi(const Midi& midi) const;
-    Song parse(std::span<const std::uint8_t> data) const;
+    SightRead::Song from_midi(const Midi& midi) const;
+    SightRead::Song parse(std::span<const std::uint8_t> data) const;
 };
 
 #endif

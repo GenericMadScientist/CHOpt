@@ -1,4 +1,4 @@
-/* FLAGS_
+/*
  * CHOpt - Star Power optimiser for Clone Hero
  * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
  *
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(instruments_returns_the_supported_instruments)
         {},
         SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
-    Song song;
+    SightRead::Song song;
     song.add_note_track(SightRead::Instrument::Guitar,
                         SightRead::Difficulty::Expert, guitar_track);
     song.add_note_track(SightRead::Instrument::Drums,
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(difficulties_returns_the_difficulties_for_an_instrument)
         {},
         SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
-    Song song;
+    SightRead::Song song;
     song.add_note_track(SightRead::Instrument::Guitar,
                         SightRead::Difficulty::Expert, guitar_track);
     song.add_note_track(SightRead::Instrument::Guitar,
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(unison_phrase_positions_is_correct)
         {{SightRead::Tick {4096}, SightRead::Tick {100}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
-    Song song;
+    SightRead::Song song;
     song.add_note_track(SightRead::Instrument::Guitar,
                         SightRead::Difficulty::Expert, guitar_track);
     song.add_note_track(SightRead::Instrument::Bass,
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_SUITE(speedup)
 
 BOOST_AUTO_TEST_CASE(song_name_is_updated)
 {
-    Song song;
+    SightRead::Song song;
     song.global_data().name("TestName");
 
     song.speedup(200);
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(song_name_is_updated)
 
 BOOST_AUTO_TEST_CASE(song_name_is_unaffected_by_normal_speed)
 {
-    Song song;
+    SightRead::Song song;
     song.global_data().name("TestName");
 
     song.speedup(100);
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(song_name_is_unaffected_by_normal_speed)
 
 BOOST_AUTO_TEST_CASE(tempo_map_affected_by_speedup)
 {
-    Song song;
+    SightRead::Song song;
 
     song.speedup(200);
     const auto& tempo_map = song.global_data().tempo_map();
@@ -161,14 +161,14 @@ BOOST_AUTO_TEST_CASE(tempo_map_affected_by_speedup)
 
 BOOST_AUTO_TEST_CASE(throws_on_negative_speeds)
 {
-    Song song;
+    SightRead::Song song;
 
     BOOST_CHECK_THROW([&] { song.speedup(-100); }(), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(throws_on_zero_speed)
 {
-    Song song;
+    SightRead::Song song;
 
     BOOST_CHECK_THROW([&] { song.speedup(0); }(), std::invalid_argument);
 }

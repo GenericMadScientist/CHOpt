@@ -216,7 +216,8 @@ public:
     [[nodiscard]] bool is_lefty_flip() const { return m_is_lefty_flip; }
 };
 
-ImageBuilder make_builder(Song& song, const SightRead::NoteTrack& track,
+ImageBuilder make_builder(SightRead::Song& song,
+                          const SightRead::NoteTrack& track,
                           const Settings& settings,
                           const std::function<void(const char*)>& write,
                           const std::atomic<bool>* terminate);

@@ -1062,13 +1062,13 @@ MidiParser& MidiParser::parse_solos(bool permit_solos)
     return *this;
 }
 
-Song MidiParser::from_midi(const Midi& midi) const
+SightRead::Song MidiParser::from_midi(const Midi& midi) const
 {
     if (midi.ticks_per_quarter_note == 0) {
         throw SightRead::ParseError("Resolution must be > 0");
     }
 
-    Song song;
+    SightRead::Song song;
 
     song.global_data().is_from_midi(true);
     song.global_data().resolution(midi.ticks_per_quarter_note);
@@ -1131,7 +1131,7 @@ Song MidiParser::from_midi(const Midi& midi) const
     return song;
 }
 
-Song MidiParser::parse(std::span<const std::uint8_t> data) const
+SightRead::Song MidiParser::parse(std::span<const std::uint8_t> data) const
 {
     return from_midi(parse_midi(data));
 }

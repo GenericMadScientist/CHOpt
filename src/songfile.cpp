@@ -76,7 +76,7 @@ SongFile::SongFile(const std::string& filename)
         std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
 }
 
-Song SongFile::load_song(Game game) const
+SightRead::Song SongFile::load_song(Game game) const
 {
     switch (m_file_type) {
     case FileType::Chart: {
