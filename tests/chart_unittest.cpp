@@ -33,16 +33,6 @@ BOOST_AUTO_TEST_CASE(section_names_are_read)
     BOOST_CHECK_EQUAL(chart.sections[1].name, "SectionB");
 }
 
-BOOST_AUTO_TEST_CASE(parser_skips_utf8_bom)
-{
-    const char* text = "\xEF\xBB\xBF[Song]\n{\n}\n";
-
-    const auto chart = parse_chart(text);
-
-    BOOST_CHECK_EQUAL(chart.sections.size(), 1);
-    BOOST_CHECK_EQUAL(chart.sections[0].name, "Song");
-}
-
 BOOST_AUTO_TEST_CASE(chart_can_end_without_newline)
 {
     const char* text = "[Song]\n{\n}";
@@ -158,31 +148,6 @@ BOOST_AUTO_TEST_CASE(other_events_are_ignored)
     BOOST_TEST(section.bpm_events.empty());
     BOOST_TEST(section.ts_events.empty());
     BOOST_TEST(section.events.empty());
-}
-
-// Yes, these are actually a thing. Clone Hero accepts them, so I have to.
-BOOST_AUTO_TEST_CASE(utf16le_charts_are_read_correctly)
-{
-    const std::string text {
-        "\xFF\xFE\x5B\x00\x53\x00\x6F\x00\x6E\x00\x67\x00\x5D\x00\x0D\x00\x0A"
-        "\x00\x7B\x00\x0D\x00\x0A\x00\x7D\x00",
-        26};
-
-    const auto chart = parse_chart(text);
-
-    BOOST_CHECK_EQUAL(chart.sections.size(), 1);
-    BOOST_CHECK_EQUAL(chart.sections[0].name, "Song");
-}
-
-BOOST_AUTO_TEST_CASE(utf16le_charts_must_be_of_even_length)
-{
-    const std::string text {
-        "\xFF\xFE\x5B\x00\x53\x00\x6F\x00\x6E\x00\x67\x00\x5D\x00\x0D\x00\x0A"
-        "\x00\x7B\x00\x0D\x00\x0A\x00\x7D\x00\x00",
-        27};
-
-    BOOST_CHECK_THROW([&] { return parse_chart(text); }(),
-                      SightRead::ParseError);
 }
 
 BOOST_AUTO_TEST_CASE(single_character_headers_should_throw)

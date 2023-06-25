@@ -195,15 +195,6 @@ ChartSection read_section(std::string_view& input)
 Chart parse_chart(std::string_view data)
 {
     Chart chart;
-    std::string u8_string;
-
-    try {
-        u8_string = to_utf8_string(data);
-    } catch (const std::invalid_argument& e) {
-        throw SightRead::ParseError(e.what());
-    }
-
-    data = u8_string;
 
     while (!data.empty()) {
         chart.sections.push_back(read_section(data));
