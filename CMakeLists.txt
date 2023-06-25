@@ -54,7 +54,6 @@ endif()
 add_executable(
   chopt
   src/main.cpp
-  src/chart.cpp
   src/chartparser.cpp
   src/image.cpp
   src/imagebuilder.cpp
@@ -104,7 +103,6 @@ if(BUILD_GUI)
     gui/main.cpp
     gui/mainwindow.cpp
     gui/mainwindow.ui
-    src/chart.cpp
     src/chartparser.cpp
     src/image.cpp
     src/imagebuilder.cpp
@@ -150,7 +148,6 @@ if(PACKAGE_TESTS)
   add_executable(
     chopt_tests
     tests/test_main.cpp
-    tests/chart_unittest.cpp
     tests/chartparser_unittest.cpp
     tests/imagebuilder_unittest.cpp
     tests/ini_unittest.cpp
@@ -160,7 +157,6 @@ if(PACKAGE_TESTS)
     tests/processed_unittest.cpp
     tests/sp_unittest.cpp
     tests/stringutil_unittest.cpp
-    src/chart.cpp
     src/chartparser.cpp
     src/imagebuilder.cpp
     src/ini.cpp

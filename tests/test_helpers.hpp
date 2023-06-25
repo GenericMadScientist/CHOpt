@@ -29,11 +29,11 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <sightread/detail/chart.hpp>
 #include <sightread/detail/midi.hpp>
 #include <sightread/songparts.hpp>
 #include <sightread/time.hpp>
 
-#include "chart.hpp"
 #include "imagebuilder.hpp"
 #include "points.hpp"
 #include "processed.hpp"
