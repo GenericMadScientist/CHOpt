@@ -25,10 +25,10 @@
 #include <string>
 
 #include <sightread/detail/midi.hpp>
+#include <sightread/hopothreshold.hpp>
 #include <sightread/song.hpp>
 #include <sightread/songparts.hpp>
 
-#include "hopothreshold.hpp"
 #include "ini.hpp"
 
 class MidiParser {
