@@ -702,10 +702,11 @@ BOOST_AUTO_TEST_CASE(custom_hopo_threshold_is_handled_correctly)
     }};
     const SightRead::Detail::Midi midi {480, {note_track}};
 
-    const auto song = MidiParser({})
-                          .hopo_threshold({HopoThresholdType::HopoFrequency,
-                                           SightRead::Tick {240}})
-                          .from_midi(midi);
+    const auto song
+        = MidiParser({})
+              .hopo_threshold({SightRead::HopoThresholdType::HopoFrequency,
+                               SightRead::Tick {240}})
+              .from_midi(midi);
     const auto notes = song.track(SightRead::Instrument::Guitar,
                                   SightRead::Difficulty::Expert)
                            .notes();

@@ -859,10 +859,11 @@ BOOST_AUTO_TEST_CASE(custom_hopo_threshold_is_handled_correctly)
     const auto chart_file
         = section_string("ExpertSingle", {{0, 0, 0}, {65, 1, 0}, {131, 2, 0}});
 
-    const auto song = ChartParser({})
-                          .hopo_threshold({HopoThresholdType::HopoFrequency,
-                                           SightRead::Tick {96}})
-                          .parse(chart_file);
+    const auto song
+        = ChartParser({})
+              .hopo_threshold({SightRead::HopoThresholdType::HopoFrequency,
+                               SightRead::Tick {96}})
+              .parse(chart_file);
     const auto notes = song.track(SightRead::Instrument::Guitar,
                                   SightRead::Difficulty::Expert)
                            .notes();

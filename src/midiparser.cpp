@@ -763,7 +763,7 @@ notes_from_event_track(
 std::map<SightRead::Difficulty, SightRead::NoteTrack> ghl_note_tracks_from_midi(
     const SightRead::Detail::MidiTrack& midi_track,
     const std::shared_ptr<SightRead::SongGlobalData>& global_data,
-    const HopoThreshold& hopo_threshold, bool permit_solos)
+    const SightRead::HopoThreshold& hopo_threshold, bool permit_solos)
 {
     const auto event_track
         = read_instrument_midi_track(midi_track, SightRead::TrackType::SixFret);
@@ -992,7 +992,7 @@ read_bre(const SightRead::Detail::MidiTrack& midi_track)
 std::map<SightRead::Difficulty, SightRead::NoteTrack> note_tracks_from_midi(
     const SightRead::Detail::MidiTrack& midi_track,
     const std::shared_ptr<SightRead::SongGlobalData>& global_data,
-    const HopoThreshold& hopo_threshold, bool permit_solos)
+    const SightRead::HopoThreshold& hopo_threshold, bool permit_solos)
 {
     const auto event_track = read_instrument_midi_track(
         midi_track, SightRead::TrackType::FiveFret);
@@ -1052,13 +1052,14 @@ MidiParser::MidiParser(const IniValues& ini)
     : m_song_name {ini.name}
     , m_artist {ini.artist}
     , m_charter {ini.charter}
-    , m_hopo_threshold {HopoThresholdType::Resolution, SightRead::Tick {0}}
+    , m_hopo_threshold {SightRead::HopoThresholdType::Resolution,
+                        SightRead::Tick {0}}
     , m_permitted_instruments {SightRead::all_instruments()}
     , m_permit_solos {true}
 {
 }
 
-MidiParser& MidiParser::hopo_threshold(HopoThreshold hopo_threshold)
+MidiParser& MidiParser::hopo_threshold(SightRead::HopoThreshold hopo_threshold)
 {
     m_hopo_threshold = hopo_threshold;
     return *this;

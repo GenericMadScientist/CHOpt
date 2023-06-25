@@ -35,7 +35,7 @@ private:
     std::string m_song_name;
     std::string m_artist;
     std::string m_charter;
-    HopoThreshold m_hopo_threshold;
+    SightRead::HopoThreshold m_hopo_threshold;
     std::set<SightRead::Instrument> m_permitted_instruments;
     bool m_permit_solos;
 
@@ -43,7 +43,7 @@ private:
 
 public:
     explicit ChartParser(const IniValues& ini);
-    ChartParser& hopo_threshold(HopoThreshold hopo_threshold);
+    ChartParser& hopo_threshold(SightRead::HopoThreshold hopo_threshold);
     ChartParser&
     permit_instruments(std::set<SightRead::Instrument> permitted_instruments);
     ChartParser& parse_solos(bool permit_solos);

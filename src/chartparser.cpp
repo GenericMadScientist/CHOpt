@@ -471,13 +471,15 @@ ChartParser::ChartParser(const IniValues& ini)
     : m_song_name {ini.name}
     , m_artist {ini.artist}
     , m_charter {ini.charter}
-    , m_hopo_threshold {HopoThresholdType::Resolution, SightRead::Tick {0}}
+    , m_hopo_threshold {SightRead::HopoThresholdType::Resolution,
+                        SightRead::Tick {0}}
     , m_permitted_instruments {SightRead::all_instruments()}
     , m_permit_solos {true}
 {
 }
 
-ChartParser& ChartParser::hopo_threshold(HopoThreshold hopo_threshold)
+ChartParser&
+ChartParser::hopo_threshold(SightRead::HopoThreshold hopo_threshold)
 {
     m_hopo_threshold = hopo_threshold;
     return *this;
