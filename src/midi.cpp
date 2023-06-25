@@ -1,21 +1,3 @@
-/*
- * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2023 Raymond Wright
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 #include <climits>
 #include <cstddef>
 #include <utility>
@@ -112,12 +94,13 @@ int read_variable_length_num(std::span<const std::uint8_t>& data)
     return number;
 }
 
-MetaEvent read_meta_event(std::span<const std::uint8_t>& data)
+SightRead::Detail::MetaEvent
+read_meta_event(std::span<const std::uint8_t>& data)
 {
     if (data.empty()) {
         throw_on_insufficient_bytes();
     }
-    MetaEvent event;
+    SightRead::Detail::MetaEvent event;
     event.type = pop_front(data);
     const auto data_length = read_variable_length_num(data);
     if (static_cast<std::size_t>(data_length) > data.size()) {
@@ -129,8 +112,8 @@ MetaEvent read_meta_event(std::span<const std::uint8_t>& data)
     return event;
 }
 
-MidiEvent read_midi_event(std::span<const std::uint8_t>& data,
-                          int prev_status_byte)
+SightRead::Detail::MidiEvent
+read_midi_event(std::span<const std::uint8_t>& data, int prev_status_byte)
 {
     constexpr int CHANNEL_PRESSURE_ID = 0xD0;
     constexpr int IS_STATUS_BYTE_MASK = 0x80;
@@ -164,20 +147,22 @@ MidiEvent read_midi_event(std::span<const std::uint8_t>& data,
     return {event_type, event_data};
 }
 
-SysexEvent read_sysex_event(std::span<const std::uint8_t>& data)
+SightRead::Detail::SysexEvent
+read_sysex_event(std::span<const std::uint8_t>& data)
 {
     const auto data_length = read_variable_length_num(data);
     if (static_cast<std::size_t>(data_length) > data.size()) {
         throw SightRead::ParseError("Sysex Event too long");
     }
-    SysexEvent event;
+    SightRead::Detail::SysexEvent event;
     event.data
         = std::vector<std::uint8_t> {data.begin(), data.begin() + data_length};
     data = data.subspan(static_cast<std::size_t>(data_length));
     return event;
 }
 
-MidiTrack read_midi_track(std::span<const std::uint8_t>& data)
+SightRead::Detail::MidiTrack
+read_midi_track(std::span<const std::uint8_t>& data)
 {
     constexpr int META_EVENT_ID = 0xFF;
     constexpr int SYSEX_EVENT_ID = 0xF0;
@@ -193,11 +178,11 @@ MidiTrack read_midi_track(std::span<const std::uint8_t>& data)
     const auto final_span_size
         = data.size() - static_cast<std::size_t>(track_size);
     auto prev_status_byte = -1;
-    MidiTrack track;
+    SightRead::Detail::MidiTrack track;
     while (data.size() != final_span_size) {
         const auto delta_time = read_variable_length_num(data);
         absolute_time += delta_time;
-        TimedEvent event {absolute_time, {}};
+        SightRead::Detail::TimedEvent event {absolute_time, {}};
         if (data.empty()) {
             throw_on_insufficient_bytes();
         }
@@ -219,12 +204,14 @@ MidiTrack read_midi_track(std::span<const std::uint8_t>& data)
 }
 }
 
-Midi parse_midi(std::span<const std::uint8_t> data)
+SightRead::Detail::Midi
+SightRead::Detail::parse_midi(std::span<const std::uint8_t> data)
 {
     const auto header = read_midi_header(data);
-    std::vector<MidiTrack> tracks;
+    std::vector<SightRead::Detail::MidiTrack> tracks;
     for (auto i = 0; i < header.num_of_tracks && !data.empty(); ++i) {
         tracks.push_back(read_midi_track(data));
     }
-    return Midi {header.ticks_per_quarter_note, std::move(tracks)};
+    return SightRead::Detail::Midi {header.ticks_per_quarter_note,
+                                    std::move(tracks)};
 }

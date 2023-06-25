@@ -211,31 +211,41 @@ inline std::ostream& operator<<(std::ostream& stream, Instrument instrument)
     stream << static_cast<int>(instrument);
     return stream;
 }
+
+namespace Detail {
+    inline bool operator==(const MetaEvent& lhs, const MetaEvent& rhs)
+    {
+        return std::tie(lhs.type, lhs.data) == std::tie(rhs.type, rhs.data);
+    }
+
+    inline std::ostream& operator<<(std::ostream& stream,
+                                    const MetaEvent& event)
+    {
+        stream << "{Type " << event.type << ", Data {";
+        for (auto i = 0U; i < event.data.size(); ++i) {
+            stream << event.data.at(i);
+            if (i + 1 != event.data.size()) {
+                stream << ", ";
+            }
+        }
+        stream << "}}";
+        return stream;
+    }
+
+    inline bool operator==(const MidiEvent& lhs, const MidiEvent& rhs)
+    {
+        return std::tie(lhs.status, lhs.data) == std::tie(rhs.status, rhs.data);
+    }
+
+    inline std::ostream& operator<<(std::ostream& stream,
+                                    const MidiEvent& event)
+    {
+        stream << "{Status " << event.status << ", Data {";
+        stream << event.data.at(0) << ", " << event.data.at(1) << "}}";
+        return stream;
+    }
 }
 
-inline bool operator==(const MetaEvent& lhs, const MetaEvent& rhs)
-{
-    return std::tie(lhs.type, lhs.data) == std::tie(rhs.type, rhs.data);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const MetaEvent& event)
-{
-    stream << "{Type " << event.type << ", Data " << event.data << '}';
-    return stream;
-}
-
-inline bool operator==(const MidiEvent& lhs, const MidiEvent& rhs)
-{
-    return std::tie(lhs.status, lhs.data) == std::tie(rhs.status, rhs.data);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const MidiEvent& event)
-{
-    stream << "{Status " << event.status << ", Data " << event.data << '}';
-    return stream;
-}
-
-namespace SightRead {
 inline bool operator!=(const Note& lhs, const Note& rhs)
 {
     return std::tie(lhs.position, lhs.lengths, lhs.flags)
@@ -359,36 +369,47 @@ inline std::ostream& operator<<(std::ostream& stream, const StarPower& sp)
     stream << "{Pos " << sp.position << ", Length " << sp.length << '}';
     return stream;
 }
-}
 
-inline bool operator==(const SysexEvent& lhs, const SysexEvent& rhs)
-{
-    return lhs.data == rhs.data;
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const SysexEvent& event)
-{
-    stream << "{Data " << event.data << '}';
-    return stream;
-}
-
-inline bool operator!=(const TimedEvent& lhs, const TimedEvent& rhs)
-{
-    return std::tie(lhs.time, lhs.event) != std::tie(rhs.time, rhs.event);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const TimedEvent& event)
-{
-    stream << "{Time " << event.time << ", ";
-    if (std::holds_alternative<MetaEvent>(event.event)) {
-        stream << "MetaEvent " << std::get<MetaEvent>(event.event);
-    } else if (std::holds_alternative<MidiEvent>(event.event)) {
-        stream << "MidiEvent " << std::get<MidiEvent>(event.event);
-    } else {
-        stream << "SysexEvent " << std::get<SysexEvent>(event.event);
+namespace Detail {
+    inline bool operator==(const SysexEvent& lhs, const SysexEvent& rhs)
+    {
+        return lhs.data == rhs.data;
     }
-    stream << '}';
-    return stream;
+
+    inline std::ostream& operator<<(std::ostream& stream,
+                                    const SysexEvent& event)
+    {
+        stream << "{Data {";
+        for (auto i = 0U; i < event.data.size(); ++i) {
+            stream << event.data.at(i);
+            if (i + 1 != event.data.size()) {
+                stream << ", ";
+            }
+        }
+        stream << "}}";
+        return stream;
+    }
+
+    inline bool operator!=(const TimedEvent& lhs, const TimedEvent& rhs)
+    {
+        return std::tie(lhs.time, lhs.event) != std::tie(rhs.time, rhs.event);
+    }
+
+    inline std::ostream& operator<<(std::ostream& stream,
+                                    const TimedEvent& event)
+    {
+        stream << "{Time " << event.time << ", ";
+        if (std::holds_alternative<MetaEvent>(event.event)) {
+            stream << "MetaEvent " << std::get<MetaEvent>(event.event);
+        } else if (std::holds_alternative<MidiEvent>(event.event)) {
+            stream << "MidiEvent " << std::get<MidiEvent>(event.event);
+        } else {
+            stream << "SysexEvent " << std::get<SysexEvent>(event.event);
+        }
+        stream << '}';
+        return stream;
+    }
+}
 }
 
 inline bool operator!=(const TimeSigEvent& lhs, const TimeSigEvent& rhs)

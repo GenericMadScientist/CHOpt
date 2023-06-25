@@ -26,7 +26,7 @@ extern "C" int LLVMFuzzerTestOneInput(const char* data, size_t size)
 {
     const std::vector<std::uint8_t> input {data, data + size};
     try {
-        parse_midi(input);
+        SightRead::Detail::parse_midi(input);
         return 0;
     } catch (const ParseError&) {
         return 0;

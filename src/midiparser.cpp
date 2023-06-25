@@ -26,8 +26,8 @@
 #include "midiparser.hpp"
 
 namespace {
-SightRead::TempoMap read_first_midi_track(const MidiTrack& track,
-                                          int resolution)
+SightRead::TempoMap
+read_first_midi_track(const SightRead::Detail::MidiTrack& track, int resolution)
 {
     constexpr int SET_TEMPO_ID = 0x51;
     constexpr int TIME_SIG_ID = 0x58;
@@ -35,7 +35,8 @@ SightRead::TempoMap read_first_midi_track(const MidiTrack& track,
     std::vector<SightRead::BPM> tempos;
     std::vector<SightRead::TimeSignature> time_sigs;
     for (const auto& event : track.events) {
-        const auto* meta_event = std::get_if<MetaEvent>(&event.event);
+        const auto* meta_event
+            = std::get_if<SightRead::Detail::MetaEvent>(&event.event);
         if (meta_event == nullptr) {
             continue;
         }
@@ -68,13 +69,15 @@ SightRead::TempoMap read_first_midi_track(const MidiTrack& track,
     return {std::move(time_sigs), std::move(tempos), {}, resolution};
 }
 
-std::optional<std::string> midi_track_name(const MidiTrack& track)
+std::optional<std::string>
+midi_track_name(const SightRead::Detail::MidiTrack& track)
 {
     if (track.events.empty()) {
         return std::nullopt;
     }
     for (const auto& event : track.events) {
-        const auto* meta_event = std::get_if<MetaEvent>(&event.event);
+        const auto* meta_event
+            = std::get_if<SightRead::Detail::MetaEvent>(&event.event);
         if (meta_event == nullptr) {
             continue;
         }
@@ -86,7 +89,8 @@ std::optional<std::string> midi_track_name(const MidiTrack& track)
     return std::nullopt;
 }
 
-std::vector<SightRead::Tick> od_beats_from_track(const MidiTrack& track)
+std::vector<SightRead::Tick>
+od_beats_from_track(const SightRead::Detail::MidiTrack& track)
 {
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
@@ -96,7 +100,8 @@ std::vector<SightRead::Tick> od_beats_from_track(const MidiTrack& track)
     std::vector<SightRead::Tick> od_beats;
 
     for (const auto& event : track.events) {
-        const auto* midi_event = std::get_if<MidiEvent>(&event.event);
+        const auto* midi_event
+            = std::get_if<SightRead::Detail::MidiEvent>(&event.event);
         if (midi_event == nullptr) {
             continue;
         }
@@ -138,14 +143,15 @@ midi_section_instrument(const std::string& track_name)
     return iter->second;
 }
 
-bool is_five_lane_green_note(const TimedEvent& event)
+bool is_five_lane_green_note(const SightRead::Detail::TimedEvent& event)
 {
     constexpr std::array<std::uint8_t, 4> GREEN_LANE_KEYS {65, 77, 89, 101};
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
     constexpr int UPPER_NIBBLE_MASK = 0xF0;
 
-    const auto* midi_event = std::get_if<MidiEvent>(&event.event);
+    const auto* midi_event
+        = std::get_if<SightRead::Detail::MidiEvent>(&event.event);
     if (midi_event == nullptr) {
         return false;
     }
@@ -158,19 +164,20 @@ bool is_five_lane_green_note(const TimedEvent& event)
         != GREEN_LANE_KEYS.cend();
 }
 
-bool has_five_lane_green_notes(const MidiTrack& midi_track)
+bool has_five_lane_green_notes(const SightRead::Detail::MidiTrack& midi_track)
 {
     return std::find_if(midi_track.events.cbegin(), midi_track.events.cend(),
                         is_five_lane_green_note)
         != midi_track.events.cend();
 }
 
-bool is_enable_chart_dynamics(const TimedEvent& event)
+bool is_enable_chart_dynamics(const SightRead::Detail::TimedEvent& event)
 {
     using namespace std::literals;
     constexpr auto ENABLE_DYNAMICS = "[ENABLE_CHART_DYNAMICS]"sv;
 
-    const auto* meta_event = std::get_if<MetaEvent>(&event.event);
+    const auto* meta_event
+        = std::get_if<SightRead::Detail::MetaEvent>(&event.event);
     if (meta_event == nullptr) {
         return false;
     }
@@ -181,14 +188,14 @@ bool is_enable_chart_dynamics(const TimedEvent& event)
                       ENABLE_DYNAMICS.cbegin(), ENABLE_DYNAMICS.cend());
 }
 
-bool has_enable_chart_dynamics(const MidiTrack& midi_track)
+bool has_enable_chart_dynamics(const SightRead::Detail::MidiTrack& midi_track)
 {
     return std::find_if(midi_track.events.cbegin(), midi_track.events.cend(),
                         is_enable_chart_dynamics)
         != midi_track.events.cend();
 }
 
-bool is_open_event_sysex(const SysexEvent& event)
+bool is_open_event_sysex(const SightRead::Detail::SysexEvent& event)
 {
     constexpr std::array<std::tuple<std::size_t, int>, 6> REQUIRED_BYTES {
         std::tuple {0, 0x50}, {1, 0x53}, {2, 0}, {3, 0}, {5, 1}, {7, 0xF7}};
@@ -420,8 +427,9 @@ public:
     InstrumentMidiTrack() = default;
 };
 
-void add_sysex_event(InstrumentMidiTrack& track, const SysexEvent& event,
-                     int time, int rank)
+void add_sysex_event(InstrumentMidiTrack& track,
+                     const SightRead::Detail::SysexEvent& event, int time,
+                     int rank)
 {
     constexpr std::array<SightRead::Difficulty, 4> OPEN_EVENT_DIFFS {
         SightRead::Difficulty::Easy, SightRead::Difficulty::Medium,
@@ -440,7 +448,8 @@ void add_sysex_event(InstrumentMidiTrack& track, const SysexEvent& event,
 }
 
 void append_disco_flip(InstrumentMidiTrack& event_track,
-                       const MetaEvent& meta_event, int time, int rank)
+                       const SightRead::Detail::MetaEvent& meta_event, int time,
+                       int rank)
 {
     constexpr int FLIP_START_SIZE = 15;
     constexpr int FLIP_END_SIZE = 14;
@@ -594,8 +603,9 @@ void add_note_on_event(InstrumentMidiTrack& track,
     }
 }
 
-InstrumentMidiTrack read_instrument_midi_track(const MidiTrack& midi_track,
-                                               SightRead::TrackType track_type)
+InstrumentMidiTrack
+read_instrument_midi_track(const SightRead::Detail::MidiTrack& midi_track,
+                           SightRead::TrackType track_type)
 {
     constexpr int NOTE_OFF_ID = 0x80;
     constexpr int NOTE_ON_ID = 0x90;
@@ -622,15 +632,18 @@ InstrumentMidiTrack read_instrument_midi_track(const MidiTrack& midi_track,
     int rank = 0;
     for (const auto& event : midi_track.events) {
         ++rank;
-        const auto* midi_event = std::get_if<MidiEvent>(&event.event);
+        const auto* midi_event
+            = std::get_if<SightRead::Detail::MidiEvent>(&event.event);
         if (midi_event == nullptr) {
-            const auto* sysex_event = std::get_if<SysexEvent>(&event.event);
+            const auto* sysex_event
+                = std::get_if<SightRead::Detail::SysexEvent>(&event.event);
             if (sysex_event != nullptr) {
                 add_sysex_event(event_track, *sysex_event, event.time, rank);
                 continue;
             }
             if (track_type == SightRead::TrackType::Drums) {
-                const auto* meta_event = std::get_if<MetaEvent>(&event.event);
+                const auto* meta_event
+                    = std::get_if<SightRead::Detail::MetaEvent>(&event.event);
                 if (meta_event != nullptr) {
                     append_disco_flip(event_track, *meta_event, event.time,
                                       rank);
@@ -748,7 +761,7 @@ notes_from_event_track(
 }
 
 std::map<SightRead::Difficulty, SightRead::NoteTrack> ghl_note_tracks_from_midi(
-    const MidiTrack& midi_track,
+    const SightRead::Detail::MidiTrack& midi_track,
     const std::shared_ptr<SightRead::SongGlobalData>& global_data,
     const HopoThreshold& hopo_threshold, bool permit_solos)
 {
@@ -861,7 +874,7 @@ void fix_double_greens(std::vector<SightRead::Note>& notes)
 
 std::map<SightRead::Difficulty, SightRead::NoteTrack>
 drum_note_tracks_from_midi(
-    const MidiTrack& midi_track,
+    const SightRead::Detail::MidiTrack& midi_track,
     const std::shared_ptr<SightRead::SongGlobalData>& global_data,
     bool permit_solos)
 {
@@ -943,7 +956,8 @@ drum_note_tracks_from_midi(
     return note_tracks;
 }
 
-std::optional<SightRead::BigRockEnding> read_bre(const MidiTrack& midi_track)
+std::optional<SightRead::BigRockEnding>
+read_bre(const SightRead::Detail::MidiTrack& midi_track)
 {
     constexpr int BRE_KEY = 120;
     constexpr int NOTE_OFF_ID = 0x80;
@@ -953,7 +967,8 @@ std::optional<SightRead::BigRockEnding> read_bre(const MidiTrack& midi_track)
     SightRead::Tick bre_start {0};
 
     for (const auto& event : midi_track.events) {
-        const auto* midi_event = std::get_if<MidiEvent>(&event.event);
+        const auto* midi_event
+            = std::get_if<SightRead::Detail::MidiEvent>(&event.event);
         if (midi_event == nullptr) {
             continue;
         }
@@ -975,7 +990,7 @@ std::optional<SightRead::BigRockEnding> read_bre(const MidiTrack& midi_track)
 }
 
 std::map<SightRead::Difficulty, SightRead::NoteTrack> note_tracks_from_midi(
-    const MidiTrack& midi_track,
+    const SightRead::Detail::MidiTrack& midi_track,
     const std::shared_ptr<SightRead::SongGlobalData>& global_data,
     const HopoThreshold& hopo_threshold, bool permit_solos)
 {
@@ -1062,7 +1077,7 @@ MidiParser& MidiParser::parse_solos(bool permit_solos)
     return *this;
 }
 
-SightRead::Song MidiParser::from_midi(const Midi& midi) const
+SightRead::Song MidiParser::from_midi(const SightRead::Detail::Midi& midi) const
 {
     if (midi.ticks_per_quarter_note == 0) {
         throw SightRead::ParseError("Resolution must be > 0");
@@ -1133,5 +1148,5 @@ SightRead::Song MidiParser::from_midi(const Midi& midi) const
 
 SightRead::Song MidiParser::parse(std::span<const std::uint8_t> data) const
 {
-    return from_midi(parse_midi(data));
+    return from_midi(SightRead::Detail::parse_midi(data));
 }
