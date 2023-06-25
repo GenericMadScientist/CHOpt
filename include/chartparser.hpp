@@ -28,7 +28,7 @@
 #include <sightread/songparts.hpp>
 
 #include "chart.hpp"
-#include "ini.hpp"
+#include "metadata.hpp"
 
 class ChartParser {
 private:
@@ -42,7 +42,7 @@ private:
     SightRead::Song from_chart(const Chart& chart) const;
 
 public:
-    explicit ChartParser(const IniValues& ini);
+    explicit ChartParser(const SightRead::Metadata& metadata);
     ChartParser& hopo_threshold(SightRead::HopoThreshold hopo_threshold);
     ChartParser&
     permit_instruments(std::set<SightRead::Instrument> permitted_instruments);

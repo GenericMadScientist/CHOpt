@@ -22,7 +22,7 @@
 #include "ini.hpp"
 #include "stringutil.hpp"
 
-IniValues parse_ini(std::string_view data)
+SightRead::Metadata parse_ini(std::string_view data)
 {
     constexpr auto ARTIST_SIZE = 6;
     constexpr auto CHARTER_SIZE = 7;
@@ -32,10 +32,10 @@ IniValues parse_ini(std::string_view data)
     std::string u8_string = to_utf8_string(data);
     data = u8_string;
 
-    IniValues values;
-    values.name = "Unknown Song";
-    values.artist = "Unknown Artist";
-    values.charter = "Unknown Charter";
+    SightRead::Metadata metadata;
+    metadata.name = "Unknown Song";
+    metadata.artist = "Unknown Artist";
+    metadata.charter = "Unknown Charter";
     while (!data.empty()) {
         const auto line = break_off_newline(data);
         if (line.starts_with("name")) {
@@ -44,14 +44,14 @@ IniValues parse_ini(std::string_view data)
                 continue;
             }
             value = skip_whitespace(value.substr(1));
-            values.name = value;
+            metadata.name = value;
         } else if (line.starts_with("artist")) {
             auto value = skip_whitespace(line.substr(ARTIST_SIZE));
             if (value[0] != '=') {
                 continue;
             }
             value = skip_whitespace(value.substr(1));
-            values.artist = value;
+            metadata.artist = value;
         } else if (line.starts_with("charter")) {
             auto value = skip_whitespace(line.substr(CHARTER_SIZE));
             if (value[0] != '=') {
@@ -59,7 +59,7 @@ IniValues parse_ini(std::string_view data)
             }
             value = skip_whitespace(value.substr(1));
             if (!value.empty()) {
-                values.charter = value;
+                metadata.charter = value;
             }
         } else if (line.starts_with("frets")) {
             auto value = skip_whitespace(line.substr(FRETS_SIZE));
@@ -68,9 +68,10 @@ IniValues parse_ini(std::string_view data)
             }
             value = skip_whitespace(value.substr(1));
             if (!value.empty()) {
-                values.charter = value;
+                metadata.charter = value;
             }
         }
     }
-    return values;
+
+    return metadata;
 }

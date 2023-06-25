@@ -1048,10 +1048,10 @@ std::map<SightRead::Difficulty, SightRead::NoteTrack> note_tracks_from_midi(
 }
 }
 
-MidiParser::MidiParser(const IniValues& ini)
-    : m_song_name {ini.name}
-    , m_artist {ini.artist}
-    , m_charter {ini.charter}
+MidiParser::MidiParser(const SightRead::Metadata& metadata)
+    : m_song_name {metadata.name}
+    , m_artist {metadata.artist}
+    , m_charter {metadata.charter}
     , m_hopo_threshold {SightRead::HopoThresholdType::Resolution,
                         SightRead::Tick {0}}
     , m_permitted_instruments {SightRead::all_instruments()}

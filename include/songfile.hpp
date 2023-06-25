@@ -25,7 +25,7 @@
 
 #include <sightread/song.hpp>
 
-#include "ini.hpp"
+#include "metadata.hpp"
 #include "settings.hpp"
 
 class SongFile {
@@ -33,7 +33,7 @@ private:
     enum class FileType { Chart, Midi };
 
     std::vector<std::uint8_t> m_loaded_file;
-    IniValues m_ini_values;
+    SightRead::Metadata m_metadata;
     FileType m_file_type;
 
 public:

@@ -127,9 +127,9 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_CASE(ini_values_are_used_when_converting_mid_files)
 {
     const SightRead::Detail::Midi midi {192, {}};
-    const IniValues ini {"TestName", "GMS", "NotGMS"};
+    const SightRead::Metadata metadata {"TestName", "GMS", "NotGMS"};
 
-    const auto song = MidiParser(ini).from_midi(midi);
+    const auto song = MidiParser(metadata).from_midi(midi);
 
     BOOST_CHECK_EQUAL(song.global_data().name(), "TestName");
     BOOST_CHECK_EQUAL(song.global_data().artist(), "GMS");

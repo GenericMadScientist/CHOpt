@@ -23,6 +23,7 @@
 #include <boost/nowide/fstream.hpp>
 
 #include "chartparser.hpp"
+#include "ini.hpp"
 #include "midiparser.hpp"
 #include "songfile.hpp"
 
@@ -58,7 +59,7 @@ SongFile::SongFile(const std::string& filename)
         ini_file = std::string {std::istreambuf_iterator<char>(ini_in),
                                 std::istreambuf_iterator<char>()};
     }
-    m_ini_values = parse_ini(ini_file);
+    m_metadata = parse_ini(ini_file);
 
     if (filename.ends_with(".chart")) {
         m_file_type = FileType::Chart;
@@ -83,7 +84,7 @@ SightRead::Song SongFile::load_song(Game game) const
         std::string_view chart_buffer {
             reinterpret_cast<const char*>(m_loaded_file.data()), // NOLINT
             m_loaded_file.size()};
-        ChartParser parser {m_ini_values};
+        ChartParser parser {m_metadata};
         parser.permit_instruments(permitted_instruments(game));
         parser.parse_solos(parse_solos(game));
         return parser.parse(chart_buffer);
@@ -91,7 +92,7 @@ SightRead::Song SongFile::load_song(Game game) const
     case FileType::Midi:
         std::span<const std::uint8_t> midi_buffer {m_loaded_file.data(),
                                                    m_loaded_file.size()};
-        MidiParser parser {m_ini_values};
+        MidiParser parser {m_metadata};
         parser.permit_instruments(permitted_instruments(game));
         parser.parse_solos(parse_solos(game));
         return parser.parse(midi_buffer);

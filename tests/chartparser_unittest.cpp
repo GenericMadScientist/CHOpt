@@ -171,9 +171,9 @@ BOOST_AUTO_TEST_CASE(ini_values_are_used_for_converting_from_chart_files)
     const auto header = header_string({});
     const auto guitar_track = section_string("ExpertSingle", {{768, 0, 0}});
     const auto chart_file = header + '\n' + guitar_track;
-    const IniValues ini {"TestName", "GMS", "NotGMS"};
+    const SightRead::Metadata metadata {"TestName", "GMS", "NotGMS"};
 
-    const auto song = ChartParser(ini).parse(chart_file);
+    const auto song = ChartParser(metadata).parse(chart_file);
 
     BOOST_CHECK_EQUAL(song.global_data().name(), "TestName");
     BOOST_CHECK_EQUAL(song.global_data().artist(), "GMS");

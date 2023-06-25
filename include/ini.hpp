@@ -19,16 +19,10 @@
 #ifndef CHOPT_INI_HPP
 #define CHOPT_INI_HPP
 
-#include <string>
 #include <string_view>
 
-// This struct represents the settings from the .ini file.
-struct IniValues {
-    std::string name;
-    std::string artist;
-    std::string charter;
-};
+#include "metadata.hpp"
 
-IniValues parse_ini(std::string_view data);
+SightRead::Metadata parse_ini(std::string_view data);
 
 #endif

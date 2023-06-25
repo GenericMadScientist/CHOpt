@@ -29,7 +29,7 @@
 #include <sightread/song.hpp>
 #include <sightread/songparts.hpp>
 
-#include "ini.hpp"
+#include "metadata.hpp"
 
 class MidiParser {
 private:
@@ -41,7 +41,7 @@ private:
     bool m_permit_solos;
 
 public:
-    explicit MidiParser(const IniValues& ini);
+    explicit MidiParser(const SightRead::Metadata& metadata);
     MidiParser& hopo_threshold(SightRead::HopoThreshold hopo_threshold);
     MidiParser&
     permit_instruments(std::set<SightRead::Instrument> permitted_instruments);
