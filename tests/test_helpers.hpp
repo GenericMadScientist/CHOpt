@@ -19,18 +19,14 @@
 #ifndef CHOPT_TESTHELPERS_HPP
 #define CHOPT_TESTHELPERS_HPP
 
-#include <array>
 #include <cmath>
 #include <iomanip>
-#include <memory>
 #include <ostream>
 #include <tuple>
 #include <vector>
 
 #include <boost/test/unit_test.hpp>
 
-#include <sightread/detail/chart.hpp>
-#include <sightread/detail/midi.hpp>
 #include <sightread/songparts.hpp>
 #include <sightread/time.hpp>
 
@@ -39,46 +35,18 @@
 #include "processed.hpp"
 #include "sp.hpp"
 
-template <typename Iter>
-inline std::ostream& print_container(std::ostream& stream, Iter begin, Iter end)
-{
-    stream << '{';
-    if (begin != end) {
-        stream << *begin++;
-    }
-    while (begin != end) {
-        stream << ", " << *begin++;
-    }
-    stream << '}';
-    return stream;
-}
-
-template <typename T>
-inline std::ostream& operator<<(std::ostream& stream,
-                                const std::vector<T>& values)
-{
-    return print_container(stream, values.cbegin(), values.cend());
-}
-
-template <typename T, std::size_t N>
-inline std::ostream& operator<<(std::ostream& stream,
-                                const std::array<T, N>& values)
-{
-    return print_container(stream, values.cbegin(), values.cend());
-}
-
 inline std::ostream& operator<<(std::ostream& stream, ActValidity validity)
 {
     stream << static_cast<int>(validity);
     return stream;
 }
 
-inline bool operator!=(const Activation& lhs, const Activation& rhs)
+inline bool operator==(const Activation& lhs, const Activation& rhs)
 {
     return std::tie(lhs.act_start, lhs.act_end)
-        != std::tie(rhs.act_start, rhs.act_end)
-        || std::abs(lhs.sp_start.value() - rhs.sp_start.value()) >= 0.01
-        || std::abs(lhs.sp_end.value() - rhs.sp_end.value()) >= 0.01;
+        == std::tie(rhs.act_start, rhs.act_end)
+        && std::abs(lhs.sp_start.value() - rhs.sp_start.value()) < 0.01
+        && std::abs(lhs.sp_end.value() - rhs.sp_end.value()) < 0.01;
 }
 
 inline std::ostream& operator<<(std::ostream& stream, const Activation& act)
@@ -89,66 +57,16 @@ inline std::ostream& operator<<(std::ostream& stream, const Activation& act)
     return stream;
 }
 
-namespace SightRead {
-inline bool operator!=(const SightRead::BPM& lhs, const SightRead::BPM& rhs)
-{
-    return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const SightRead::BPM& bpm)
-{
-    stream << "{Pos " << bpm.position << ", BPM " << bpm.bpm << '}';
-    return stream;
-}
-
-namespace Detail {
-    inline bool operator!=(const BpmEvent& lhs, const BpmEvent& rhs)
-    {
-        return std::tie(lhs.position, lhs.bpm)
-            != std::tie(rhs.position, rhs.bpm);
-    }
-
-    inline std::ostream& operator<<(std::ostream& stream, const BpmEvent& event)
-    {
-        stream << "{Pos " << event.position << ", BPM " << event.bpm << '}';
-        return stream;
-    }
-}
-
-inline std::ostream& operator<<(std::ostream& stream, Difficulty difficulty)
-{
-    stream << static_cast<int>(difficulty);
-    return stream;
-}
-
-inline bool operator==(const DiscoFlip& lhs, const DiscoFlip& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        == std::tie(rhs.position, rhs.length);
-}
-
-inline bool operator!=(const DiscoFlip& lhs, const DiscoFlip& rhs)
-{
-    return !(lhs == rhs);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const DiscoFlip& flip)
-{
-    stream << "{Pos " << flip.position << ", Length " << flip.length << '}';
-    return stream;
-}
-}
-
-inline bool operator!=(const DrawnNote& lhs, const DrawnNote& rhs)
+inline bool operator==(const DrawnNote& lhs, const DrawnNote& rhs)
 {
     for (auto i = 0; i < 7; ++i) {
         if (std::abs(lhs.lengths[i] - rhs.lengths[i]) >= 0.000001) {
-            return true;
+            return false;
         }
     }
-    return std::abs(lhs.beat - rhs.beat) >= 0.000001
-        || std::tie(lhs.note_flags, lhs.is_sp_note)
-        != std::tie(rhs.note_flags, rhs.is_sp_note);
+    return std::abs(lhs.beat - rhs.beat) < 0.000001
+        && std::tie(lhs.note_flags, lhs.is_sp_note)
+        == std::tie(rhs.note_flags, rhs.is_sp_note);
 }
 
 inline std::ostream& operator<<(std::ostream& stream, const DrawnNote& note)
@@ -164,10 +82,10 @@ inline std::ostream& operator<<(std::ostream& stream, const DrawnNote& note)
     return stream;
 }
 
-inline bool operator!=(const DrawnRow& lhs, const DrawnRow& rhs)
+inline bool operator==(const DrawnRow& lhs, const DrawnRow& rhs)
 {
-    return std::abs(lhs.start - rhs.start) >= 0.000001
-        || std::abs(lhs.end - rhs.end) >= 0.000001;
+    return std::abs(lhs.start - rhs.start) < 0.000001
+        && std::abs(lhs.end - rhs.end) < 0.000001;
 }
 
 inline std::ostream& operator<<(std::ostream& stream, const DrawnRow& row)
@@ -176,133 +94,10 @@ inline std::ostream& operator<<(std::ostream& stream, const DrawnRow& row)
     return stream;
 }
 
-namespace SightRead {
-inline bool operator==(const DrumFill& lhs, const DrumFill& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        == std::tie(rhs.position, rhs.length);
-}
-
-inline bool operator!=(const DrumFill& lhs, const DrumFill& rhs)
-{
-    return !(lhs == rhs);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
-{
-    stream << "{Pos " << fill.position << ", Length " << fill.length << '}';
-    return stream;
-}
-
-namespace Detail {
-    inline bool operator!=(const Event& lhs, const Event& rhs)
-    {
-        return std::tie(lhs.position, lhs.data)
-            != std::tie(rhs.position, rhs.data);
-    }
-
-    inline std::ostream& operator<<(std::ostream& stream, const Event& event)
-    {
-        stream << "{Pos " << event.position << ", Data " << event.data << '}';
-        return stream;
-    }
-}
-
-inline std::ostream& operator<<(std::ostream& stream, Instrument instrument)
-{
-    stream << static_cast<int>(instrument);
-    return stream;
-}
-
-namespace Detail {
-    inline bool operator==(const MetaEvent& lhs, const MetaEvent& rhs)
-    {
-        return std::tie(lhs.type, lhs.data) == std::tie(rhs.type, rhs.data);
-    }
-
-    inline std::ostream& operator<<(std::ostream& stream,
-                                    const MetaEvent& event)
-    {
-        stream << "{Type " << event.type << ", Data {";
-        for (auto i = 0U; i < event.data.size(); ++i) {
-            stream << event.data.at(i);
-            if (i + 1 != event.data.size()) {
-                stream << ", ";
-            }
-        }
-        stream << "}}";
-        return stream;
-    }
-
-    inline bool operator==(const MidiEvent& lhs, const MidiEvent& rhs)
-    {
-        return std::tie(lhs.status, lhs.data) == std::tie(rhs.status, rhs.data);
-    }
-
-    inline std::ostream& operator<<(std::ostream& stream,
-                                    const MidiEvent& event)
-    {
-        stream << "{Status " << event.status << ", Data {";
-        stream << event.data.at(0) << ", " << event.data.at(1) << "}}";
-        return stream;
-    }
-}
-
-inline bool operator!=(const Note& lhs, const Note& rhs)
-{
-    return std::tie(lhs.position, lhs.lengths, lhs.flags)
-        != std::tie(rhs.position, rhs.lengths, rhs.flags);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const Note& note)
-{
-    stream << "{Pos " << note.position << ", ";
-    for (auto i = 0; i < 7; ++i) {
-        if (note.lengths[i] != SightRead::Tick {-1}) {
-            stream << "Colour " << i << " with Length " << note.lengths[i]
-                   << ", ";
-        }
-    }
-    stream << "Flags " << std::hex << note.flags << std::dec << '}';
-    return stream;
-}
-
-namespace Detail {
-    inline bool operator!=(const NoteEvent& lhs, const NoteEvent& rhs)
-    {
-        return std::tie(lhs.position, lhs.fret, lhs.length)
-            != std::tie(rhs.position, rhs.fret, rhs.length);
-    }
-
-    inline std::ostream& operator<<(std::ostream& stream,
-                                    const NoteEvent& event)
-    {
-        stream << "{Pos " << event.position << ", Fret " << event.fret
-               << ", Length" << event.length << '}';
-        return stream;
-    }
-}
-}
-
 inline std::ostream& operator<<(std::ostream& stream, PointPtr addr)
 {
     stream << "Point @ " << &(*addr);
     return stream;
-}
-
-namespace SightRead {
-inline bool operator!=(const Solo& lhs, const Solo& rhs)
-{
-    return std::tie(lhs.start, lhs.end, lhs.value)
-        != std::tie(rhs.start, rhs.end, rhs.value);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const Solo& solo)
-{
-    stream << "{Start " << solo.start << ", End " << solo.end << ", Value "
-           << solo.value << '}';
-    return stream;
-}
 }
 
 inline bool operator==(const SpBar& lhs, const SpBar& rhs)
@@ -315,21 +110,6 @@ inline std::ostream& operator<<(std::ostream& stream, const SpBar& sp)
 {
     stream << "{Min " << sp.min() << ", Max " << sp.max() << '}';
     return stream;
-}
-
-namespace SightRead::Detail {
-inline bool operator!=(const SpecialEvent& lhs, const SpecialEvent& rhs)
-{
-    return std::tie(lhs.position, lhs.key, lhs.length)
-        != std::tie(rhs.position, rhs.key, rhs.length);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const SpecialEvent& event)
-{
-    stream << "{Pos " << event.position << ", Key " << event.key << ", Length"
-           << event.length << '}';
-    return stream;
-}
 }
 
 inline bool operator==(const SpMeasure& lhs, const SpMeasure& rhs)
@@ -362,96 +142,6 @@ inline std::ostream& operator<<(std::ostream& stream,
 {
     stream << '{' << std::get<0>(tuple) << ", " << std::get<1>(tuple) << '}';
     return stream;
-}
-
-namespace SightRead {
-inline bool operator!=(const StarPower& lhs, const StarPower& rhs)
-{
-    return std::tie(lhs.position, lhs.length)
-        != std::tie(rhs.position, rhs.length);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const StarPower& sp)
-{
-    stream << "{Pos " << sp.position << ", Length " << sp.length << '}';
-    return stream;
-}
-
-namespace Detail {
-    inline bool operator==(const SysexEvent& lhs, const SysexEvent& rhs)
-    {
-        return lhs.data == rhs.data;
-    }
-
-    inline std::ostream& operator<<(std::ostream& stream,
-                                    const SysexEvent& event)
-    {
-        stream << "{Data {";
-        for (auto i = 0U; i < event.data.size(); ++i) {
-            stream << event.data.at(i);
-            if (i + 1 != event.data.size()) {
-                stream << ", ";
-            }
-        }
-        stream << "}}";
-        return stream;
-    }
-
-    inline bool operator!=(const TimedEvent& lhs, const TimedEvent& rhs)
-    {
-        return std::tie(lhs.time, lhs.event) != std::tie(rhs.time, rhs.event);
-    }
-
-    inline std::ostream& operator<<(std::ostream& stream,
-                                    const TimedEvent& event)
-    {
-        stream << "{Time " << event.time << ", ";
-        if (std::holds_alternative<MetaEvent>(event.event)) {
-            stream << "MetaEvent " << std::get<MetaEvent>(event.event);
-        } else if (std::holds_alternative<MidiEvent>(event.event)) {
-            stream << "MidiEvent " << std::get<MidiEvent>(event.event);
-        } else {
-            stream << "SysexEvent " << std::get<SysexEvent>(event.event);
-        }
-        stream << '}';
-        return stream;
-    }
-}
-
-namespace Detail {
-    inline bool operator!=(const TimeSigEvent& lhs, const TimeSigEvent& rhs)
-    {
-        return std::tie(lhs.position, lhs.numerator, lhs.denominator)
-            != std::tie(rhs.position, rhs.numerator, rhs.denominator);
-    }
-
-    inline std::ostream& operator<<(std::ostream& stream,
-                                    const TimeSigEvent& ts)
-    {
-        stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
-               << ts.denominator << '}';
-        return stream;
-    }
-}
-
-inline bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
-{
-    return std::tie(lhs.position, lhs.numerator, lhs.denominator)
-        != std::tie(rhs.position, rhs.numerator, rhs.denominator);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const TimeSignature& ts)
-{
-    stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
-           << ts.denominator << '}';
-    return stream;
-}
-
-inline std::ostream& operator<<(std::ostream& stream, TrackType track_type)
-{
-    stream << static_cast<int>(track_type);
-    return stream;
-}
 }
 
 inline SightRead::Note make_note(int position, int length = 0,
@@ -492,20 +182,6 @@ inline SightRead::Note make_ghl_note(int position, int length = 0,
     return note;
 }
 
-inline SightRead::Note make_ghl_chord(
-    int position,
-    const std::vector<std::tuple<SightRead::SixFretNotes, int>>& lengths)
-{
-    SightRead::Note note;
-    note.position = SightRead::Tick {position};
-    note.flags = SightRead::FLAGS_SIX_FRET_GUITAR;
-    for (auto& [lane, length] : lengths) {
-        note.lengths[lane] = SightRead::Tick {length};
-    }
-
-    return note;
-}
-
 inline SightRead::Note
 make_drum_note(int position, SightRead::DrumNotes colour = SightRead::DRUM_RED,
                SightRead::NoteFlags flags = SightRead::FLAGS_NONE)
@@ -517,15 +193,6 @@ make_drum_note(int position, SightRead::DrumNotes colour = SightRead::DRUM_RED,
     note.lengths[colour] = SightRead::Tick {0};
 
     return note;
-}
-
-inline std::shared_ptr<SightRead::SongGlobalData>
-make_resolution(int resolution)
-{
-    auto data = std::make_shared<SightRead::SongGlobalData>();
-    data->resolution(resolution);
-    data->tempo_map({{}, {}, {}, resolution});
-    return data;
 }
 
 #endif

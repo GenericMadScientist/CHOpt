@@ -57,6 +57,28 @@ std::vector<SightRead::Beat> set_position_beats(const PointSet& points)
     }
     return values;
 }
+
+SightRead::Note make_ghl_chord(
+    int position,
+    const std::vector<std::tuple<SightRead::SixFretNotes, int>>& lengths)
+{
+    SightRead::Note note;
+    note.position = SightRead::Tick {position};
+    note.flags = SightRead::FLAGS_SIX_FRET_GUITAR;
+    for (auto& [lane, length] : lengths) {
+        note.lengths[lane] = SightRead::Tick {length};
+    }
+
+    return note;
+}
+
+std::shared_ptr<SightRead::SongGlobalData> make_resolution(int resolution)
+{
+    auto data = std::make_shared<SightRead::SongGlobalData>();
+    data->resolution(resolution);
+    data->tempo_map({{}, {}, {}, resolution});
+    return data;
+}
 }
 
 BOOST_AUTO_TEST_SUITE(non_sustain_notes)

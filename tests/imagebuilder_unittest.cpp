@@ -102,6 +102,20 @@ make_drawn_drum_note(double position,
 }
 }
 
+namespace SightRead {
+std::ostream& operator<<(std::ostream& stream, Difficulty difficulty)
+{
+    stream << static_cast<int>(difficulty);
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, TrackType track_type)
+{
+    stream << static_cast<int>(track_type);
+    return stream;
+}
+}
+
 BOOST_AUTO_TEST_SUITE(track_type_is_stored_correctly)
 
 BOOST_AUTO_TEST_CASE(five_fret_gets_the_right_track_type)
