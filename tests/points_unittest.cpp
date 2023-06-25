@@ -65,8 +65,8 @@ SightRead::Note make_ghl_chord(
     SightRead::Note note;
     note.position = SightRead::Tick {position};
     note.flags = SightRead::FLAGS_SIX_FRET_GUITAR;
-    for (auto& [lane, length] : lengths) {
-        note.lengths[lane] = SightRead::Tick {length};
+    for (const auto& [lane, length] : lengths) {
+        note.lengths.at(lane) = SightRead::Tick {length};
     }
 
     return note;
