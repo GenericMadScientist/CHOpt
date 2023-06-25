@@ -26,10 +26,9 @@
 
 #include <sightread/detail/midi.hpp>
 #include <sightread/hopothreshold.hpp>
+#include <sightread/metadata.hpp>
 #include <sightread/song.hpp>
 #include <sightread/songparts.hpp>
-
-#include "metadata.hpp"
 
 class MidiParser {
 private:

@@ -23,9 +23,9 @@
 #include <string>
 #include <vector>
 
+#include <sightread/metadata.hpp>
 #include <sightread/song.hpp>
 
-#include "metadata.hpp"
 #include "settings.hpp"
 
 class SongFile {

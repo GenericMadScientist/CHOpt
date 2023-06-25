@@ -21,7 +21,7 @@
 
 #include <string_view>
 
-#include "metadata.hpp"
+#include <sightread/metadata.hpp>
 
 SightRead::Metadata parse_ini(std::string_view data);
 
