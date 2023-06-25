@@ -22,9 +22,10 @@
 
 #include <boost/nowide/fstream.hpp>
 
+#include <sightread/midiparser.hpp>
+
 #include "chartparser.hpp"
 #include "ini.hpp"
-#include "midiparser.hpp"
 #include "songfile.hpp"
 
 namespace {
