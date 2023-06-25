@@ -1,30 +1,38 @@
-/*
- * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2023 Raymond Wright
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 #include <charconv>
 #include <optional>
 
 #include <sightread/songparts.hpp>
 
 #include "chart.hpp"
-#include "stringutil.hpp"
 
 namespace {
+std::string_view skip_whitespace(std::string_view input)
+{
+    const auto first_non_ws_location = input.find_first_not_of(" \f\n\r\t\v");
+    input.remove_prefix(std::min(first_non_ws_location, input.size()));
+    return input;
+}
+
+std::string_view break_off_newline(std::string_view& input)
+{
+    if (input.empty()) {
+        throw SightRead::ParseError("No lines left");
+    }
+
+    const auto newline_location
+        = std::min(input.find('\n'), input.find("\r\n"));
+    if (newline_location == std::string_view::npos) {
+        const auto line = input;
+        input.remove_prefix(input.size());
+        return line;
+    }
+
+    const auto line = input.substr(0, newline_location);
+    input.remove_prefix(newline_location);
+    input = skip_whitespace(input);
+    return line;
+}
+
 std::string_view strip_square_brackets(std::string_view input)
 {
     if (input.empty()) {
@@ -66,8 +74,9 @@ std::vector<std::string_view> split_by_space(std::string_view input)
     return substrings;
 }
 
-NoteEvent convert_line_to_note(int position,
-                               const std::vector<std::string_view>& split_line)
+SightRead::Detail::NoteEvent
+convert_line_to_note(int position,
+                     const std::vector<std::string_view>& split_line)
 {
     constexpr int MAX_NORMAL_EVENT_SIZE = 5;
 
@@ -82,7 +91,7 @@ NoteEvent convert_line_to_note(int position,
     return {position, *fret, *length};
 }
 
-SpecialEvent
+SightRead::Detail::SpecialEvent
 convert_line_to_special(int position,
                         const std::vector<std::string_view>& split_line)
 {
@@ -99,8 +108,9 @@ convert_line_to_special(int position,
     return {position, *sp_key, *length};
 }
 
-BpmEvent convert_line_to_bpm(int position,
-                             const std::vector<std::string_view>& split_line)
+SightRead::Detail::BpmEvent
+convert_line_to_bpm(int position,
+                    const std::vector<std::string_view>& split_line)
 {
     if (split_line.size() < 4) {
         throw SightRead::ParseError("Line incomplete");
@@ -112,7 +122,7 @@ BpmEvent convert_line_to_bpm(int position,
     return {position, *bpm};
 }
 
-TimeSigEvent
+SightRead::Detail::TimeSigEvent
 convert_line_to_timesig(int position,
                         const std::vector<std::string_view>& split_line)
 {
@@ -132,8 +142,9 @@ convert_line_to_timesig(int position,
     return {position, *numer, *denom};
 }
 
-Event convert_line_to_event(int position,
-                            const std::vector<std::string_view>& split_line)
+SightRead::Detail::Event
+convert_line_to_event(int position,
+                      const std::vector<std::string_view>& split_line)
 {
     if (split_line.size() < 4) {
         throw SightRead::ParseError("Line incomplete");
@@ -141,9 +152,9 @@ Event convert_line_to_event(int position,
     return {position, std::string {split_line[3]}};
 }
 
-ChartSection read_section(std::string_view& input)
+SightRead::Detail::ChartSection read_section(std::string_view& input)
 {
-    ChartSection section;
+    SightRead::Detail::ChartSection section;
     section.name = strip_square_brackets(break_off_newline(input));
 
     if (break_off_newline(input) != "{") {
@@ -192,9 +203,9 @@ ChartSection read_section(std::string_view& input)
 }
 }
 
-Chart parse_chart(std::string_view data)
+SightRead::Detail::Chart SightRead::Detail::parse_chart(std::string_view data)
 {
-    Chart chart;
+    SightRead::Detail::Chart chart;
 
     while (!data.empty()) {
         chart.sections.push_back(read_section(data));

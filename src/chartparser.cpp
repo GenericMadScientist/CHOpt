@@ -36,8 +36,9 @@ std::string get_with_default(const std::map<std::string, std::string>& map,
     return iter->second;
 }
 
-SightRead::TempoMap tempo_map_from_section(const ChartSection& section,
-                                           int resolution)
+SightRead::TempoMap
+tempo_map_from_section(const SightRead::Detail::ChartSection& section,
+                       int resolution)
 {
     std::vector<SightRead::BPM> bpms;
     bpms.reserve(section.bpm_events.size());
@@ -160,9 +161,9 @@ note_from_note_colour(int position, int length, int fret_type,
     }
 }
 
-std::vector<SightRead::Note>
-add_fifth_lane_greens(std::vector<SightRead::Note> notes,
-                      const std::vector<NoteEvent>& note_events)
+std::vector<SightRead::Note> add_fifth_lane_greens(
+    std::vector<SightRead::Note> notes,
+    const std::vector<SightRead::Detail::NoteEvent>& note_events)
 {
     constexpr int FIVE_LANE_GREEN = 5;
 
@@ -244,9 +245,9 @@ int no_dynamics_lane_colour(const SightRead::Note& note)
     return -1;
 }
 
-std::vector<SightRead::Note>
-apply_dynamics_events(std::vector<SightRead::Note> notes,
-                      const std::vector<NoteEvent>& note_events)
+std::vector<SightRead::Note> apply_dynamics_events(
+    std::vector<SightRead::Note> notes,
+    const std::vector<SightRead::Detail::NoteEvent>& note_events)
 {
     constexpr int GHOST_BASE = 34;
     constexpr int ACCENT_BASE = 40;
@@ -329,7 +330,7 @@ public:
         }
     }
 
-    void add_force_event(const NoteEvent& event,
+    void add_force_event(const SightRead::Detail::NoteEvent& event,
                          SightRead::TrackType track_type)
     {
         if (is_forcing_key(event.fret, track_type)) {
@@ -342,7 +343,7 @@ public:
 
 std::vector<SightRead::Note>
 apply_drum_events(std::vector<SightRead::Note> notes,
-                  const std::vector<NoteEvent>& note_events,
+                  const std::vector<SightRead::Detail::NoteEvent>& note_events,
                   SightRead::TrackType track_type)
 {
     if (track_type != SightRead::TrackType::Drums) {
@@ -354,7 +355,7 @@ apply_drum_events(std::vector<SightRead::Note> notes,
 }
 
 SightRead::NoteTrack
-note_track_from_section(const ChartSection& section,
+note_track_from_section(const SightRead::Detail::ChartSection& section,
                         std::shared_ptr<SightRead::SongGlobalData> global_data,
                         SightRead::TrackType track_type, bool permit_solos,
                         SightRead::Tick max_hopo_gap)
@@ -509,10 +510,11 @@ SightRead::Song ChartParser::parse(std::string_view data) const
         throw SightRead::ParseError(e.what());
     }
 
-    return from_chart(parse_chart(u8_string));
+    return from_chart(SightRead::Detail::parse_chart(u8_string));
 }
 
-SightRead::Song ChartParser::from_chart(const Chart& chart) const
+SightRead::Song
+ChartParser::from_chart(const SightRead::Detail::Chart& chart) const
 {
     SightRead::Song song;
 

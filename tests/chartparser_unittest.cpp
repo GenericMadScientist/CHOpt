@@ -22,10 +22,11 @@
 #include "test_helpers.hpp"
 
 namespace {
-std::string section_string(const std::string& section_type,
-                           const std::vector<NoteEvent>& note_events,
-                           const std::vector<SpecialEvent>& special_events = {},
-                           const std::vector<Event>& events = {})
+std::string section_string(
+    const std::string& section_type,
+    const std::vector<SightRead::Detail::NoteEvent>& note_events,
+    const std::vector<SightRead::Detail::SpecialEvent>& special_events = {},
+    const std::vector<SightRead::Detail::Event>& events = {})
 {
     using namespace std::string_literals;
 
@@ -76,8 +77,9 @@ header_string(const std::map<std::string, std::string>& key_value_pairs)
     return section;
 }
 
-std::string sync_track_string(const std::vector<BpmEvent>& bpm_events,
-                              const std::vector<TimeSigEvent>& ts_events)
+std::string
+sync_track_string(const std::vector<SightRead::Detail::BpmEvent>& bpm_events,
+                  const std::vector<SightRead::Detail::TimeSigEvent>& ts_events)
 {
     using namespace std::string_literals;
 

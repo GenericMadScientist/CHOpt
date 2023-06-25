@@ -100,20 +100,21 @@ inline std::ostream& operator<<(std::ostream& stream, const SightRead::BPM& bpm)
     stream << "{Pos " << bpm.position << ", BPM " << bpm.bpm << '}';
     return stream;
 }
+
+namespace Detail {
+    inline bool operator!=(const BpmEvent& lhs, const BpmEvent& rhs)
+    {
+        return std::tie(lhs.position, lhs.bpm)
+            != std::tie(rhs.position, rhs.bpm);
+    }
+
+    inline std::ostream& operator<<(std::ostream& stream, const BpmEvent& event)
+    {
+        stream << "{Pos " << event.position << ", BPM " << event.bpm << '}';
+        return stream;
+    }
 }
 
-inline bool operator!=(const BpmEvent& lhs, const BpmEvent& rhs)
-{
-    return std::tie(lhs.position, lhs.bpm) != std::tie(rhs.position, rhs.bpm);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const BpmEvent& event)
-{
-    stream << "{Pos " << event.position << ", BPM " << event.bpm << '}';
-    return stream;
-}
-
-namespace SightRead {
 inline std::ostream& operator<<(std::ostream& stream, Difficulty difficulty)
 {
     stream << static_cast<int>(difficulty);
@@ -192,20 +193,21 @@ inline std::ostream& operator<<(std::ostream& stream, const DrumFill& fill)
     stream << "{Pos " << fill.position << ", Length " << fill.length << '}';
     return stream;
 }
+
+namespace Detail {
+    inline bool operator!=(const Event& lhs, const Event& rhs)
+    {
+        return std::tie(lhs.position, lhs.data)
+            != std::tie(rhs.position, rhs.data);
+    }
+
+    inline std::ostream& operator<<(std::ostream& stream, const Event& event)
+    {
+        stream << "{Pos " << event.position << ", Data " << event.data << '}';
+        return stream;
+    }
 }
 
-inline bool operator!=(const Event& lhs, const Event& rhs)
-{
-    return std::tie(lhs.position, lhs.data) != std::tie(rhs.position, rhs.data);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const Event& event)
-{
-    stream << "{Pos " << event.position << ", Data " << event.data << '}';
-    return stream;
-}
-
-namespace SightRead {
 inline std::ostream& operator<<(std::ostream& stream, Instrument instrument)
 {
     stream << static_cast<int>(instrument);
@@ -264,19 +266,22 @@ inline std::ostream& operator<<(std::ostream& stream, const Note& note)
     stream << "Flags " << std::hex << note.flags << std::dec << '}';
     return stream;
 }
-}
 
-inline bool operator!=(const NoteEvent& lhs, const NoteEvent& rhs)
-{
-    return std::tie(lhs.position, lhs.fret, lhs.length)
-        != std::tie(rhs.position, rhs.fret, rhs.length);
-}
+namespace Detail {
+    inline bool operator!=(const NoteEvent& lhs, const NoteEvent& rhs)
+    {
+        return std::tie(lhs.position, lhs.fret, lhs.length)
+            != std::tie(rhs.position, rhs.fret, rhs.length);
+    }
 
-inline std::ostream& operator<<(std::ostream& stream, const NoteEvent& event)
-{
-    stream << "{Pos " << event.position << ", Fret " << event.fret << ", Length"
-           << event.length << '}';
-    return stream;
+    inline std::ostream& operator<<(std::ostream& stream,
+                                    const NoteEvent& event)
+    {
+        stream << "{Pos " << event.position << ", Fret " << event.fret
+               << ", Length" << event.length << '}';
+        return stream;
+    }
+}
 }
 
 inline std::ostream& operator<<(std::ostream& stream, PointPtr addr)
@@ -312,6 +317,7 @@ inline std::ostream& operator<<(std::ostream& stream, const SpBar& sp)
     return stream;
 }
 
+namespace SightRead::Detail {
 inline bool operator!=(const SpecialEvent& lhs, const SpecialEvent& rhs)
 {
     return std::tie(lhs.position, lhs.key, lhs.length)
@@ -323,6 +329,7 @@ inline std::ostream& operator<<(std::ostream& stream, const SpecialEvent& event)
     stream << "{Pos " << event.position << ", Key " << event.key << ", Length"
            << event.length << '}';
     return stream;
+}
 }
 
 inline bool operator==(const SpMeasure& lhs, const SpMeasure& rhs)
@@ -410,22 +417,23 @@ namespace Detail {
         return stream;
     }
 }
+
+namespace Detail {
+    inline bool operator!=(const TimeSigEvent& lhs, const TimeSigEvent& rhs)
+    {
+        return std::tie(lhs.position, lhs.numerator, lhs.denominator)
+            != std::tie(rhs.position, rhs.numerator, rhs.denominator);
+    }
+
+    inline std::ostream& operator<<(std::ostream& stream,
+                                    const TimeSigEvent& ts)
+    {
+        stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
+               << ts.denominator << '}';
+        return stream;
+    }
 }
 
-inline bool operator!=(const TimeSigEvent& lhs, const TimeSigEvent& rhs)
-{
-    return std::tie(lhs.position, lhs.numerator, lhs.denominator)
-        != std::tie(rhs.position, rhs.numerator, rhs.denominator);
-}
-
-inline std::ostream& operator<<(std::ostream& stream, const TimeSigEvent& ts)
-{
-    stream << "{Pos " << ts.position << ", " << ts.numerator << '/'
-           << ts.denominator << '}';
-    return stream;
-}
-
-namespace SightRead {
 inline bool operator!=(const TimeSignature& lhs, const TimeSignature& rhs)
 {
     return std::tie(lhs.position, lhs.numerator, lhs.denominator)

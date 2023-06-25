@@ -39,7 +39,7 @@ private:
     std::set<SightRead::Instrument> m_permitted_instruments;
     bool m_permit_solos;
 
-    SightRead::Song from_chart(const Chart& chart) const;
+    SightRead::Song from_chart(const SightRead::Detail::Chart& chart) const;
 
 public:
     explicit ChartParser(const SightRead::Metadata& metadata);
