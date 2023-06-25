@@ -27,6 +27,7 @@
 #include "chartparser.hpp"
 #include "ini.hpp"
 #include "songfile.hpp"
+#include "stringutil.hpp"
 
 namespace {
 std::set<SightRead::Instrument> permitted_instruments(Game game)
@@ -85,10 +86,17 @@ SightRead::Song SongFile::load_song(Game game) const
         std::string_view chart_buffer {
             reinterpret_cast<const char*>(m_loaded_file.data()), // NOLINT
             m_loaded_file.size()};
+        std::string u8_string;
+
+        try {
+            u8_string = to_utf8_string(chart_buffer);
+        } catch (const std::invalid_argument& e) {
+            throw SightRead::ParseError(e.what());
+        }
         ChartParser parser {m_metadata};
         parser.permit_instruments(permitted_instruments(game));
         parser.parse_solos(parse_solos(game));
-        return parser.parse(chart_buffer);
+        return parser.parse(u8_string);
     }
     case FileType::Midi:
         std::span<const std::uint8_t> midi_buffer {m_loaded_file.data(),

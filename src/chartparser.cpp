@@ -23,7 +23,6 @@
 #include <sightread/detail/parserutil.hpp>
 
 #include "chartparser.hpp"
-#include "stringutil.hpp"
 
 namespace {
 std::string get_with_default(const std::map<std::string, std::string>& map,
@@ -502,15 +501,7 @@ ChartParser& ChartParser::parse_solos(bool permit_solos)
 
 SightRead::Song ChartParser::parse(std::string_view data) const
 {
-    std::string u8_string;
-
-    try {
-        u8_string = to_utf8_string(data);
-    } catch (const std::invalid_argument& e) {
-        throw SightRead::ParseError(e.what());
-    }
-
-    return from_chart(SightRead::Detail::parse_chart(u8_string));
+    return from_chart(SightRead::Detail::parse_chart(data));
 }
 
 SightRead::Song
