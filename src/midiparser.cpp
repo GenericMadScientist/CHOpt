@@ -1,25 +1,6 @@
-/*
- * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023 Raymond Wright
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 #include <algorithm>
 #include <climits>
 #include <limits>
-#include <set>
 
 #include <sightread/detail/parserutil.hpp>
 
@@ -1048,7 +1029,7 @@ std::map<SightRead::Difficulty, SightRead::NoteTrack> note_tracks_from_midi(
 }
 }
 
-MidiParser::MidiParser(const SightRead::Metadata& metadata)
+SightRead::MidiParser::MidiParser(const SightRead::Metadata& metadata)
     : m_song_name {metadata.name}
     , m_artist {metadata.artist}
     , m_charter {metadata.charter}
@@ -1059,26 +1040,28 @@ MidiParser::MidiParser(const SightRead::Metadata& metadata)
 {
 }
 
-MidiParser& MidiParser::hopo_threshold(SightRead::HopoThreshold hopo_threshold)
+SightRead::MidiParser&
+SightRead::MidiParser::hopo_threshold(SightRead::HopoThreshold hopo_threshold)
 {
     m_hopo_threshold = hopo_threshold;
     return *this;
 }
 
-MidiParser& MidiParser::permit_instruments(
+SightRead::MidiParser& SightRead::MidiParser::permit_instruments(
     std::set<SightRead::Instrument> permitted_instruments)
 {
     m_permitted_instruments = std::move(permitted_instruments);
     return *this;
 }
 
-MidiParser& MidiParser::parse_solos(bool permit_solos)
+SightRead::MidiParser& SightRead::MidiParser::parse_solos(bool permit_solos)
 {
     m_permit_solos = permit_solos;
     return *this;
 }
 
-SightRead::Song MidiParser::from_midi(const SightRead::Detail::Midi& midi) const
+SightRead::Song
+SightRead::MidiParser::from_midi(const SightRead::Detail::Midi& midi) const
 {
     if (midi.ticks_per_quarter_note == 0) {
         throw SightRead::ParseError("Resolution must be > 0");
@@ -1147,7 +1130,8 @@ SightRead::Song MidiParser::from_midi(const SightRead::Detail::Midi& midi) const
     return song;
 }
 
-SightRead::Song MidiParser::parse(std::span<const std::uint8_t> data) const
+SightRead::Song
+SightRead::MidiParser::parse(std::span<const std::uint8_t> data) const
 {
     return from_midi(SightRead::Detail::parse_midi(data));
 }

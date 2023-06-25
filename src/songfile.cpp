@@ -92,7 +92,7 @@ SightRead::Song SongFile::load_song(Game game) const
     case FileType::Midi:
         std::span<const std::uint8_t> midi_buffer {m_loaded_file.data(),
                                                    m_loaded_file.size()};
-        MidiParser parser {m_metadata};
+        SightRead::MidiParser parser {m_metadata};
         parser.permit_instruments(permitted_instruments(game));
         parser.parse_solos(parse_solos(game));
         return parser.parse(midi_buffer);
