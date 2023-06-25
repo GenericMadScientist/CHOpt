@@ -23,9 +23,10 @@
 #include <string>
 #include <vector>
 
+#include <sightread/song.hpp>
+
 #include "ini.hpp"
 #include "settings.hpp"
-#include "song.hpp"
 
 class SongFile {
 private:

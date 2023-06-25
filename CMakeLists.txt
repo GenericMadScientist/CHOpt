@@ -65,7 +65,6 @@ add_executable(
   src/points.cpp
   src/processed.cpp
   src/settings.cpp
-  src/song.cpp
   src/songfile.cpp
   src/sp.cpp
   src/sptimemap.cpp
@@ -117,7 +116,6 @@ if(BUILD_GUI)
     src/points.cpp
     src/processed.cpp
     src/settings.cpp
-    src/song.cpp
     src/songfile.cpp
     src/sp.cpp
     src/sptimemap.cpp
@@ -163,7 +161,6 @@ if(PACKAGE_TESTS)
     tests/optimiser_unittest.cpp
     tests/points_unittest.cpp
     tests/processed_unittest.cpp
-    tests/song_unittest.cpp
     tests/sp_unittest.cpp
     tests/stringutil_unittest.cpp
     src/chart.cpp
@@ -176,7 +173,6 @@ if(PACKAGE_TESTS)
     src/points.cpp
     src/processed.cpp
     src/settings.cpp
-    src/song.cpp
     src/sp.cpp
     src/sptimemap.cpp
     src/stringutil.cpp)

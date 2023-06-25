@@ -27,8 +27,9 @@
 #include <QString>
 #include <QThread>
 
+#include <sightread/song.hpp>
+
 #include "settings.hpp"
-#include "song.hpp"
 #include "songfile.hpp"
 
 namespace Ui {
