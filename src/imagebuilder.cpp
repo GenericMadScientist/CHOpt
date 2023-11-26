@@ -457,6 +457,16 @@ void ImageBuilder::add_measure_values(const PointSet& points,
     }
 }
 
+void ImageBuilder::add_practice_sections(
+    const std::vector<SightRead::PracticeSection>& practice_sections,
+    const SightRead::TempoMap& tempo_map)
+{
+    for (const auto& section : practice_sections) {
+        const auto pos = tempo_map.to_beats(section.start).value();
+        m_practice_sections.emplace_back(pos, section.name);
+    }
+}
+
 void ImageBuilder::add_solo_sections(const std::vector<SightRead::Solo>& solos,
                                      const SightRead::TempoMap& tempo_map)
 {
@@ -676,6 +686,8 @@ ImageBuilder make_builder(SightRead::Song& song,
 
     auto builder = build_with_engine_params(new_track, settings);
     builder.add_song_header(song.global_data());
+    builder.add_practice_sections(song.global_data().practice_sections(),
+                                  tempo_map);
 
     if (track.track_type() == SightRead::TrackType::Drums) {
         builder.add_drum_fills(new_track);

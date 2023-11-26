@@ -72,6 +72,7 @@ private:
     std::vector<std::tuple<double, double>> m_red_ranges;
     std::vector<std::tuple<double, double>> m_yellow_ranges;
     std::vector<std::tuple<double, double>> m_solo_ranges;
+    std::vector<std::tuple<double, std::string>> m_practice_sections;
     std::vector<std::tuple<double, double>> m_bre_ranges;
     std::vector<std::tuple<double, double>> m_fill_ranges;
     std::vector<std::tuple<double, double>> m_unison_ranges;
@@ -98,6 +99,9 @@ public:
     void add_measure_values(const PointSet& points,
                             const SightRead::TempoMap& tempo_map,
                             const Path& path);
+    void add_practice_sections(
+        const std::vector<SightRead::PracticeSection>& practice_sections,
+        const SightRead::TempoMap& tempo_map);
     void add_solo_sections(const std::vector<SightRead::Solo>& solos,
                            const SightRead::TempoMap& tempo_map);
     void add_song_header(const SightRead::SongGlobalData& global_data);
@@ -159,6 +163,11 @@ public:
     [[nodiscard]] const std::vector<DrawnNote>& notes() const
     {
         return m_notes;
+    }
+    [[nodiscard]] const std::vector<std::tuple<double, std::string>>&
+    practice_sections() const
+    {
+        return m_practice_sections;
     }
     [[nodiscard]] const std::vector<std::tuple<double, double>>&
     red_ranges() const

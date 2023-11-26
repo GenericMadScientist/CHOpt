@@ -32,6 +32,15 @@ template <> struct print_log_value<std::tuple<double, double>> {
     }
 };
 
+template <> struct print_log_value<std::tuple<double, std::string>> {
+    void operator()(std::ostream& stream,
+                    const std::tuple<double, std::string>& tuple)
+    {
+        const auto& [first, second] = tuple;
+        stream << '{' << first << ", " << second << '}';
+    }
+};
+
 template <> struct print_log_value<std::tuple<double, int, int>> {
     void operator()(std::ostream& stream,
                     const std::tuple<double, int, int>& tuple)
@@ -1089,7 +1098,28 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_CASE(add_solo_sections_add_correct_ranges)
+BOOST_AUTO_TEST_CASE(add_practice_sections_adds_correct_ranges)
+{
+    auto global_data = std::make_shared<SightRead::SongGlobalData>();
+    global_data->practice_sections({{"Intro", SightRead::Tick {192}}});
+    SightRead::NoteTrack track {{make_note(0)},
+                                {},
+                                SightRead::TrackType::FiveFret,
+                                std::move(global_data)};
+    ImageBuilder builder {track, SightRead::Difficulty::Expert,
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
+    builder.add_practice_sections(track.global_data().practice_sections(), {});
+    std::vector<std::tuple<double, std::string>> expected_practice_sections {
+        {1.0, "Intro"}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(builder.practice_sections().cbegin(),
+                                  builder.practice_sections().cend(),
+                                  expected_practice_sections.cbegin(),
+                                  expected_practice_sections.cend());
+}
+
+BOOST_AUTO_TEST_CASE(add_solo_sections_adds_correct_ranges)
 {
     SightRead::NoteTrack track {{make_note(0)},
                                 {},
