@@ -10,7 +10,7 @@ environment:
     - job_name: Windows (MSVC)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     - job_name: Mac OSX (Clang)
-      APPVEYOR_BUILD_WORKER_IMAGE: macOS-BigSur
+      APPVEYOR_BUILD_WORKER_IMAGE: macos-monterey
 
 matrix:
   fast_finish: true
