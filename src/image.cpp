@@ -37,7 +37,7 @@ constexpr int VERSION_PATCH = 2;
 constexpr int BEAT_WIDTH = 60;
 constexpr int FONT_HEIGHT = 13;
 constexpr int LEFT_MARGIN = 31;
-constexpr int MARGIN = 80;
+constexpr int MARGIN = 93;
 constexpr int MEASURE_HEIGHT = 61;
 constexpr float OPEN_NOTE_OPACITY = 0.5F;
 constexpr int TOP_MARGIN = 125;
@@ -419,7 +419,7 @@ void ImageImpl::draw_vertical_lines(const ImageBuilder& builder,
 void ImageImpl::draw_tempos(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
-    constexpr int TEMPO_OFFSET = 31;
+    constexpr int TEMPO_OFFSET = 44;
 
     for (const auto& [pos, tempo] : builder.bpms()) {
         auto [x, y] = get_xy(builder, pos);
@@ -841,12 +841,11 @@ void ImageImpl::draw_version()
 void ImageImpl::draw_practice_sections(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
-    constexpr int SECTION_NAME_GAP = 18;
+    constexpr int SECTION_NAME_GAP = 31;
 
     for (const auto& section : builder.practice_sections()) {
         const auto pos = std::get<0>(section);
         auto [x, y] = get_xy(builder, pos);
-        x += BEAT_WIDTH / 2;
         y -= SECTION_NAME_GAP;
         m_image.draw_text(x, y, "%s", BLACK.data(), 0, 1.0, FONT_HEIGHT,
                           std::get<1>(section).c_str());
