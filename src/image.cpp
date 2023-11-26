@@ -339,6 +339,7 @@ public:
     void draw_notes(const ImageBuilder& builder);
     void draw_ghl_notes(const ImageBuilder& builder);
     void draw_drum_notes(const ImageBuilder& builder);
+    void draw_practice_sections(const ImageBuilder& builder);
     void draw_score_totals(const ImageBuilder& builder);
     void draw_tempos(const ImageBuilder& builder);
     void draw_time_sigs(const ImageBuilder& builder);
@@ -837,6 +838,21 @@ void ImageImpl::draw_version()
     }
 }
 
+void ImageImpl::draw_practice_sections(const ImageBuilder& builder)
+{
+    constexpr std::array<unsigned char, 3> BLACK {0, 0, 0};
+    constexpr int SECTION_NAME_GAP = 18;
+
+    for (const auto& section : builder.practice_sections()) {
+        const auto pos = std::get<0>(section);
+        auto [x, y] = get_xy(builder, pos);
+        x += BEAT_WIDTH / 2;
+        y -= SECTION_NAME_GAP;
+        m_image.draw_text(x, y, "%s", BLACK.data(), 0, 1.0, FONT_HEIGHT,
+                          std::get<1>(section).c_str());
+    }
+}
+
 Image::Image(const ImageBuilder& builder)
 {
     constexpr std::array<unsigned char, 3> green {0, 255, 0};
@@ -857,6 +873,7 @@ Image::Image(const ImageBuilder& builder)
     m_impl = std::make_unique<ImageImpl>(IMAGE_WIDTH, height, 1, 3, WHITE);
     m_impl->draw_version();
     m_impl->draw_header(builder);
+    m_impl->draw_practice_sections(builder);
     m_impl->draw_measures(builder);
     m_impl->draw_tempos(builder);
     m_impl->draw_time_sigs(builder);
