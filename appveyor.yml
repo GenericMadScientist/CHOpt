@@ -1,4 +1,4 @@
-version: 1.6.2.{build}-{branch}
+version: 1.7.0.{build}-{branch}
 
 configuration: Debug
 platform: x64
