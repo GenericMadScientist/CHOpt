@@ -1,0 +1,65 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v**'
+
+jobs:
+  determine-version:
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.determine-version.outputs.version }}
+    steps:
+      - id: determine-version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+  windows:
+    runs-on: windows-2022
+    needs: determine-version
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 6.5.*
+
+      - name: Install other dependencies
+        run: vcpkg --triplet x64-windows-static-md install boost-json boost-nowide boost-program-options libpng
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -G "Visual Studio 17 2022" ..
+          cmake --build . --verbose --config Release
+
+      - name: Prepare releases
+        run: |
+          cd build
+          mkdir cli-artifacts
+          mkdir gui-artifacts
+          cd Release
+          Move-Item -Path chopt.exe -Destination ..\cli-artifacts\CHOpt.exe
+          Copy-Item -Path * -Destination ..\cli-artifacts -Recurse
+          del ..\cli-artifacts\choptgui.exe
+          Rename-Item choptgui.exe CHOpt.exe
+          $env:VCINSTALLDIR = "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise\VC"
+          windeployqt --release --no-network --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations CHOpt.exe
+          rm vc_redist.x64.exe
+          Copy-Item -Path * -Destination ..\gui-artifacts -Recurse
+
+      - name: Upload CLI release
+        uses: actions/upload-artifact@v3
+        with:
+          name: "CHOpt CLI ${{ needs.determine-version.outputs.version }} (x64 Windows)"
+          path: build/cli-artifacts/**/*
+
+      - name: Upload GUI release
+        uses: actions/upload-artifact@v3
+        with:
+          name: "CHOpt ${{ needs.determine-version.outputs.version }} (x64 Windows)"
+          path: build/gui-artifacts/**/*

@@ -7,8 +7,6 @@ environment:
   matrix:
     - job_name: Linux (GCC)
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-    - job_name: Windows (MSVC)
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     - job_name: Mac OSX (Clang)
       APPVEYOR_BUILD_WORKER_IMAGE: macos-monterey
 
@@ -17,7 +15,6 @@ matrix:
 
 install:
   - sh: git submodule update --init --recursive
-  - cmd: git submodule update --init --recursive
 
 before_build:
   - ps: mkdir artifacts
@@ -64,43 +61,6 @@ for:
     - sh: zip -r "../artifacts/CHOpt ${RELEASE_NAME} (x64 Linux).zip" CHOpt CHOpt.sh libs platforms
     - sh: appveyor PushArtifact "../artifacts/CHOpt CLI ${RELEASE_NAME} (x64 Linux).zip"
     - sh: appveyor PushArtifact "../artifacts/CHOpt ${RELEASE_NAME} (x64 Linux).zip"
-
-  -
-    matrix:
-      only:
-        - job_name: Windows (MSVC)
-
-    cache: C:\Tools\vcpkg\archives
-
-    environment:
-      VCPKG_DEFAULT_BINARY_CACHE: C:\Tools\vcpkg\archives
-      LOG_DIR: C:\Users\appveyor\AppData\Local\Temp\1\build-cache-logs
-
-    build_script:
-    - ps: if (-Not (Test-Path C:\Tools\vcpkg\archives)) { mkdir C:\Tools\vcpkg\archives }
-    - ps: vcpkg --triplet x64-windows install libpng
-    - ps: cmake -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DPACKAGE_TESTS=OFF -DCMAKE_POLICY_DEFAULT_CMP0144=NEW -DBOOST_ROOT=C:\Libraries\boost_1_83_0 -DBoost_USE_STATIC_LIBS=ON -DQt6_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
-    - ps: cmake --build . --verbose --config $env:CONFIGURATION
-
-    before_deploy:
-    - ps: $RELEASE_NAME = $env:APPVEYOR_REPO_TAG_NAME.TrimStart("v")
-    - ps: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DQt6_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6 -DQt6CoreTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6CoreTools -DQt6GuiTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6GuiTools -DQt6WidgetsTools_DIR=C:\Qt\6.4\msvc2019_64\lib\cmake\Qt6WidgetsTools -G "Visual Studio 17 2022" ..
-    - ps: cmake --build . --verbose --config Release
-    - ps: cd Release
-    - ps: Rename-Item chopt.exe CHOpt.exe
-    - ps: Move-Item choptgui.exe ..\choptgui.exe
-    - ps: 7z a "..\artifacts\CHOpt CLI ${RELEASE_NAME} (x64 Windows).zip" *
-    - ps: del CHOpt.exe
-    - ps: Move-Item ..\choptgui.exe CHOpt.exe
-    - ps: $env:VCINSTALLDIR = "C:\Program Files\Microsoft Visual Studio\2022\Community\VC"
-    - ps: C:\Qt\6.4\msvc2019_64\bin\windeployqt.exe --release --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations CHOpt.exe
-    - ps: rm vc_redist.x64.exe
-    - ps: 7z a "..\artifacts\CHOpt ${RELEASE_NAME} (x64 Windows).zip" *
-    - ps: Push-AppveyorArtifact "..\artifacts\CHOpt CLI ${RELEASE_NAME} (x64 Windows).zip"
-    - ps: Push-AppveyorArtifact "..\artifacts\CHOpt ${RELEASE_NAME} (x64 Windows).zip"
-
-    on_finish:
-    - ps: if (Test-Path -Path $env:LOG_DIR) { Get-ChildItem $env:LOG_DIR\*.log | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } }
 
   -
     matrix:

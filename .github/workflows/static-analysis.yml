@@ -3,12 +3,13 @@ name: static-analysis
 on: push
 
 jobs:
-  clang-tidy-ubuntu:
-    runs-on: ubuntu-latest
+  clang-tidy:
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
+
       - name: Install clang-tidy-16
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
@@ -16,6 +17,7 @@ jobs:
           sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main"
           sudo apt-get update
           sudo apt-get install -y clang-tidy-16
+
       - name: Install Boost 1.81.0
         run: |
           wget -O "$HOME/boost_1_81_0.tar.bz2" https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.bz2
@@ -25,15 +27,18 @@ jobs:
           export CXX=g++-10
           ./bootstrap.sh --with-libraries=json,nowide,program_options,test --prefix=.
           ./b2 install > /dev/null
+
       - name: Application files
         run: clang-tidy-16 src/*.cpp gui/json_settings.cpp -- -Iinclude -Ilibs -Iextern/sightread/include -I$HOME/boost_1_81_0 -std=c++20
+
       - name: Test files
         run: clang-tidy-16 tests/*_unittest.cpp -checks=-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers -- -Iinclude -Iextern/sightread/include -I$HOME/boost_1_81_0 -std=c++20
 
-  clang-format-ubuntu:
-    runs-on: ubuntu-latest
+  clang-format:
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
       - name: Install clang-format-16
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
@@ -41,7 +46,30 @@ jobs:
           sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-16 main"
           sudo apt-get update
           sudo apt-get install -y clang-format-16
+
       - name: Format
         run: |
           clang-format-16 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp tests/*.hpp
           git diff --color --exit-code
+
+  msvc-compiler-warnings:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 6.5.*
+
+      - name: Install other dependencies
+        run: vcpkg --triplet x64-windows install boost-json boost-nowide boost-program-options boost-test libpng
+
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" -G "Visual Studio 17 2022" ..
+          cmake --build . --verbose --config Debug

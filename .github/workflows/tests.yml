@@ -4,11 +4,12 @@ on: push
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
+
       - name: Install Boost 1.81.0
         run: |
           wget -O "$HOME/boost_1_81_0.tar.bz2" https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.bz2
@@ -18,15 +19,18 @@ jobs:
           export CXX=g++-10
           ./bootstrap.sh --with-libraries=json,nowide,program_options,test --prefix=.
           ./b2 install > /dev/null
+
       - name: Build
         run: |
           mkdir build
           cd build
           cmake -DBUILD_GUI=OFF -DCMAKE_CXX_COMPILER=g++-10 -DBOOST_ROOT=$HOME/boost_1_81_0 ..
           cmake --build . --verbose --config Debug
+
       - name: Unit tests
         run: |
           cd build
           ctest --verbose -C Debug
+
       - name: Integration tests
         run: python3 integration_tests/run_integration_tests.py
