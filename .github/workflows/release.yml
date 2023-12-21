@@ -38,8 +38,8 @@ jobs:
           cmake --build . --verbose --config Release
 
       - name: Prepare releases
+        working-directory: build
         run: |
-          cd build
           mkdir cli-artifacts
           mkdir gui-artifacts
           cd Release
@@ -86,8 +86,8 @@ jobs:
           cmake --build . --verbose --config Release
 
       - name: Prepare releases
+        working-directory: build
         run: |
-          cd build
           mkdir cli-artifacts
           mkdir gui-artifacts
           strip -x chopt
@@ -105,9 +105,79 @@ jobs:
         with:
           name: "CHOpt CLI ${{ needs.determine-version.outputs.version }} (x64 Mac)"
           path: build/cli-artifacts/**/*
-  
+
       - name: Upload GUI release
         uses: actions/upload-artifact@v3
         with:
           name: "CHOpt ${{ needs.determine-version.outputs.version }} (x64 Mac)"
+          path: build/gui-artifacts/**/*
+
+  linux:
+    runs-on: ubuntu-22.04
+    needs: determine-version
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 6.5.*
+
+      - name: Install Boost 1.84.0
+        run: |
+          wget -O "$HOME/boost_1_84_0.tar.bz2" https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.bz2
+          tar --bzip2 -xf "$HOME/boost_1_84_0.tar.bz2" -C "$HOME"
+          cd "$HOME/boost_1_84_0"
+          ./bootstrap.sh --with-libraries=json,nowide,program_options,test --prefix=.
+          ./b2 toolset=gcc-13 install > /dev/null
+
+      - name: Make build directory
+        run: mkdir build
+
+      - name: Generate build files
+        working-directory: build
+        env:
+          BOOST_ROOT: ~/boost_1_84_0
+          CXX: g++-13
+        run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON ..
+
+      - name: Build
+        working-directory: build
+        run: cmake --build . --verbose --config Release
+
+      - name: Prepare releases
+        working-directory: build
+        run: |
+          mkdir cli-artifacts
+          mkdir gui-artifacts
+          strip -s chopt
+          strip -s choptgui
+          mv chopt cli-artifacts/CHOpt
+          mv choptgui gui-artifacts/CHOpt
+          mkdir gui-artifacts/libs
+          mkdir gui-artifacts/platforms
+          cp ../resources/CHOpt.sh gui-artifacts/CHOpt.sh
+          cp ${Qt6_DIR}/lib/libicudata.so.56 gui-artifacts/libs/libicudata.so.56
+          cp ${Qt6_DIR}/lib/libicui18n.so.56 gui-artifacts/libs/libicui18n.so.56
+          cp ${Qt6_DIR}/lib/libicuuc.so.56 gui-artifacts/libs/libicuuc.so.56
+          cp ${Qt6_DIR}/lib/libQt6Core.so.6 gui-artifacts/libs/libQt6Core.so.6
+          cp ${Qt6_DIR}/lib/libQt6DBus.so.6 gui-artifacts/libs/libQt6DBus.so.6
+          cp ${Qt6_DIR}/lib/libQt6Gui.so.6 gui-artifacts/libs/libQt6Gui.so.6
+          cp ${Qt6_DIR}/lib/libQt6OpenGL.so.6 gui-artifacts/libs/libQt6OpenGL.so.6
+          cp ${Qt6_DIR}/lib/libQt6Widgets.so.6 gui-artifacts/libs/libQt6Widgets.so.6
+          cp ${Qt6_DIR}/lib/libQt6XcbQpa.so.6 gui-artifacts/libs/libQt6XcbQpa.so.6
+          cp ${QT_PLUGIN_PATH}/platforms/libqxcb.so gui-artifacts/platforms/libqxcb.so
+
+      - name: Upload CLI release
+        uses: actions/upload-artifact@v3
+        with:
+          name: "CHOpt CLI ${{ needs.determine-version.outputs.version }} (x64 Linux)"
+          path: build/cli-artifacts/**/*
+  
+      - name: Upload GUI release
+        uses: actions/upload-artifact@v3
+        with:
+          name: "CHOpt ${{ needs.determine-version.outputs.version }} (x64 Linux)"
           path: build/gui-artifacts/**/*
