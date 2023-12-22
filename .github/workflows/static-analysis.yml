@@ -72,7 +72,7 @@ jobs:
           mkdir build
           cd build
           cmake -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" -G "Visual Studio 17 2022" ..
-          cmake --build . --verbose --config Debug
+          cmake --build . --verbose
 
   apple-clang-compiler-warnings:
     runs-on: macos-12
@@ -94,7 +94,7 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          cmake --build . --verbose --config Debug
+          cmake --build . --verbose
 
   linux-gcc-compiler-warnings:
     runs-on: ubuntu-22.04
