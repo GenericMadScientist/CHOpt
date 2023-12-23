@@ -51,15 +51,21 @@ SightRead::Difficulty string_to_diff(std::string_view text)
     throw std::invalid_argument("Unrecognised difficulty");
 }
 
-SightRead::Instrument string_to_inst(std::string_view text)
+SightRead::Instrument string_to_inst(std::string_view text, Game game)
 {
     if (text == "guitar") {
+        if (game == Game::FortniteFestival) {
+            return SightRead::Instrument::FortniteGuitar;
+        }
         return SightRead::Instrument::Guitar;
     }
     if (text == "coop") {
         return SightRead::Instrument::GuitarCoop;
     }
     if (text == "bass") {
+        if (game == Game::FortniteFestival) {
+            return SightRead::Instrument::FortniteBass;
+        }
         return SightRead::Instrument::Bass;
     }
     if (text == "rhythm") {
@@ -81,7 +87,13 @@ SightRead::Instrument string_to_inst(std::string_view text)
         return SightRead::Instrument::GHLGuitarCoop;
     }
     if (text == "drums") {
+        if (game == Game::FortniteFestival) {
+            return SightRead::Instrument::FortniteDrums;
+        }
         return SightRead::Instrument::Drums;
+    }
+    if (text == "vocals") {
+        return SightRead::Instrument::FortniteVocals;
     }
     throw std::invalid_argument("Unrecognised instrument");
 }
@@ -114,7 +126,8 @@ game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
         }
         return std::make_unique<ChGuitarEngine>();
     case Game::FortniteFestival:
-        if (instrument == SightRead::Instrument::Bass) {
+        if (instrument == SightRead::Instrument::FortniteBass
+            || instrument == SightRead::Instrument::FortniteVocals) {
             return std::make_unique<FortniteBassEngine>();
         }
         return std::make_unique<FortniteGuitarEngine>();
@@ -157,7 +170,7 @@ std::optional<Settings> from_args(int argc, char** argv)
     add_option("instrument,i",
                po::value<std::string>()->default_value("guitar"),
                "instrument, options are guitar, coop, bass, rhythm, keys, ghl, "
-               "ghlbass, ghlrhythm, ghlcoop, drums");
+               "ghlbass, ghlrhythm, ghlcoop, drums, vocals");
     add_option("squeeze,sqz", po::value<int>()->default_value(MAX_PERCENT),
                "squeeze% (0 to 100)");
     add_option("early-whammy,ew", po::value<int>(),
@@ -205,8 +218,16 @@ std::optional<Settings> from_args(int argc, char** argv)
     }
     settings.filename = vm["file"].as<std::string>();
 
+    const auto engine_name = vm["engine"].as<std::string>();
+    settings.game = game_from_string(engine_name);
+
     settings.difficulty = string_to_diff(vm["diff"].as<std::string>());
-    settings.instrument = string_to_inst(vm["instrument"].as<std::string>());
+    settings.instrument
+        = string_to_inst(vm["instrument"].as<std::string>(), settings.game);
+
+    const auto precision_mode = vm.count("precision-mode") != 0;
+    settings.engine
+        = game_to_engine(settings.game, settings.instrument, precision_mode);
 
     settings.image_path = vm["output"].as<std::string>();
     if (!is_valid_image_path(settings.image_path)) {
@@ -262,12 +283,6 @@ std::optional<Settings> from_args(int argc, char** argv)
 
     settings.squeeze_settings.video_lag
         = SightRead::Second {video_lag / MS_PER_SECOND};
-
-    const auto precision_mode = vm.count("precision-mode") != 0;
-    const auto engine_name = vm["engine"].as<std::string>();
-    settings.game = game_from_string(engine_name);
-    settings.engine
-        = game_to_engine(settings.game, settings.instrument, precision_mode);
 
     const auto speed = vm["speed"].as<int>();
     if (speed < MIN_SPEED || speed > MAX_SPEED || speed % MIN_SPEED != 0) {
