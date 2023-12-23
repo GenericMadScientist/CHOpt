@@ -90,7 +90,7 @@ Game game_from_string(std::string_view game)
 {
     const std::map<std::string_view, Game> game_map {
         {"ch", Game::CloneHero},
-        {"ff", Game::FortniteFestival},
+        {"fnf", Game::FortniteFestival},
         {"gh1", Game::GuitarHeroOne},
         {"rb", Game::RockBand},
         {"rb3", Game::RockBandThree}};
