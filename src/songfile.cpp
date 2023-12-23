@@ -61,7 +61,10 @@ std::set<SightRead::Instrument> permitted_instruments(Game game)
     }
 }
 
-bool parse_solos(Game game) { return game != Game::GuitarHeroOne; }
+bool parse_solos(Game game)
+{
+    return game != Game::GuitarHeroOne && game != Game::FortniteFestival;
+}
 }
 
 SongFile::SongFile(const std::string& filename)
