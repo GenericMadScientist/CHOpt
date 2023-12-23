@@ -431,7 +431,11 @@ void MainWindow::on_engineComboBox_currentIndexChanged(int index)
         {SightRead::Instrument::GHLBass, "GHL Bass"},
         {SightRead::Instrument::GHLRhythm, "GHL Rhythm"},
         {SightRead::Instrument::GHLGuitarCoop, "GHL Guitar Co-op"},
-        {SightRead::Instrument::Drums, "Drums"}};
+        {SightRead::Instrument::Drums, "Drums"},
+        {SightRead::Instrument::FortniteGuitar, "Guitar"},
+        {SightRead::Instrument::FortniteBass, "Bass"},
+        {SightRead::Instrument::FortniteDrums, "Drums"},
+        {SightRead::Instrument::FortniteVocals, "Vocals"}};
     const auto game = m_ui->engineComboBox->currentData().value<Game>();
     for (auto inst : m_loaded_file->load_song(game).instruments()) {
         m_ui->instrumentComboBox->addItem(INST_NAMES.at(inst),
