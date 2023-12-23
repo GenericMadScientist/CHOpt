@@ -1,4 +1,4 @@
-name: static-analysis
+name: Static Analysis
 
 on: push
 
@@ -6,7 +6,8 @@ jobs:
   clang-tidy:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -18,26 +19,28 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang-tidy-16
 
-      - name: Install Boost 1.81.0
+      - name: Install Boost 1.84.0
         run: |
-          wget -O "$HOME/boost_1_81_0.tar.bz2" https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.tar.bz2
-          tar --bzip2 -xf "$HOME/boost_1_81_0.tar.bz2" -C "$HOME"
-          cd "$HOME/boost_1_81_0"
-          export CC=gcc-10
-          export CXX=g++-10
+          wget -O "$HOME/boost_1_84_0.tar.bz2" https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.bz2
+          tar --bzip2 -xf "$HOME/boost_1_84_0.tar.bz2" -C "$HOME"
+          cd "$HOME/boost_1_84_0"
           ./bootstrap.sh --with-libraries=json,nowide,program_options,test --prefix=.
-          ./b2 install > /dev/null
+          ./b2 toolset=gcc-13 install > /dev/null
 
       - name: Application files
-        run: clang-tidy-16 src/*.cpp gui/json_settings.cpp -- -Iinclude -Ilibs -Iextern/sightread/include -I$HOME/boost_1_81_0 -std=c++20
+        run: clang-tidy-16 src/*.cpp gui/json_settings.cpp -- -Iinclude -Ilibs -Iextern/sightread/include -isystem $HOME/boost_1_84_0 -std=c++20
 
       - name: Test files
-        run: clang-tidy-16 tests/*_unittest.cpp -checks=-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers -- -Iinclude -Iextern/sightread/include -I$HOME/boost_1_81_0 -std=c++20
+        run: >
+          clang-tidy-16 tests/*_unittest.cpp
+          -checks=-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers
+          -- -Iinclude -Iextern/sightread/include -I$HOME/boost_1_84_0 -std=c++20
 
   clang-format:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install clang-format-16
         run: |
@@ -51,81 +54,3 @@ jobs:
         run: |
           clang-format-16 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp tests/*.hpp
           git diff --color --exit-code
-
-  msvc-compiler-warnings:
-    runs-on: windows-2022
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: 6.5.*
-
-      - name: Install other dependencies
-        run: vcpkg --triplet x64-windows install boost-json boost-nowide boost-program-options boost-test libpng
-
-      - name: Build
-        run: |
-          mkdir build
-          cd build
-          cmake -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" -G "Visual Studio 17 2022" ..
-          cmake --build . --verbose
-
-  apple-clang-compiler-warnings:
-    runs-on: macos-12
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: 6.4.*
-
-      - name: Install other dependencies
-        run: brew install boost
-
-      - name: Build
-        run: |
-          mkdir build
-          cd build
-          cmake ..
-          cmake --build . --verbose
-
-  linux-gcc-compiler-warnings:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: 6.5.*
-
-      - name: Install Boost 1.84.0
-        run: |
-          wget -O "$HOME/boost_1_84_0.tar.bz2" https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.bz2
-          tar --bzip2 -xf "$HOME/boost_1_84_0.tar.bz2" -C "$HOME"
-          cd "$HOME/boost_1_84_0"
-          ./bootstrap.sh --with-libraries=json,nowide,program_options,test --prefix=.
-          ./b2 toolset=gcc-13 install > /dev/null
-
-      - name: Make build directory
-        run: mkdir build
-
-      - name: Generate build files
-        working-directory: build
-        env:
-          BOOST_ROOT: ~/boost_1_84_0
-          CXX: g++-13
-        run: cmake ..
-
-      - name: Build
-        working-directory: build
-        run: cmake --build . --verbose

@@ -1,4 +1,4 @@
-name: release
+name: Release
 
 on:
   push:
@@ -18,7 +18,8 @@ jobs:
     runs-on: windows-2022
     needs: determine-version
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -30,20 +31,30 @@ jobs:
       - name: Install other dependencies
         run: vcpkg --triplet x64-windows-static-md install boost-json boost-nowide boost-program-options libpng
 
-      - name: Build
-        run: |
-          mkdir build
-          cd build
-          cmake -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -G "Visual Studio 17 2022" ..
-          cmake --build . --verbose --config Release
+      - name: Make build directory
+        run: mkdir build
 
-      - name: Prepare releases
+      - name: Generate build files
         working-directory: build
+        env:
+          CMAKE_GENERATOR: "Visual Studio 17 2022"
+          CMAKE_TOOLCHAIN_FILE: "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        run: cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF ..
+
+      - name: Build
+        working-directory: build
+        run: cmake --build . --verbose --config Release
+
+      - name: Prepare CLI release
+        working-directory: build/Release
         run: |
-          mkdir cli-artifacts
-          mkdir gui-artifacts
-          cd Release
+          mkdir ..\cli-artifacts
           Move-Item -Path chopt.exe -Destination ..\cli-artifacts\CHOpt.exe
+
+      - name: Prepare GUI release
+        working-directory: build/Release
+        run: |
+          mkdir ..\gui-artifacts
           Rename-Item choptgui.exe CHOpt.exe
           $env:VCINSTALLDIR = "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise\VC"
           windeployqt --release --no-network --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations CHOpt.exe
@@ -66,7 +77,8 @@ jobs:
     runs-on: macos-12
     needs: determine-version
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -81,29 +93,35 @@ jobs:
       - name: Make build directory
         run: mkdir build
 
-      - name: Build
+      - name: Generate build files
         working-directory: build
         env:
           CMAKE_BUILD_TYPE: Release
-        run: |
-          cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_FIND_FRAMEWORK=LAST ..
-          cmake --build . --verbose
+        run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_FIND_FRAMEWORK=LAST ..
 
-      - name: Prepare releases
+      - name: Build
+        working-directory: build
+        run: cmake --build . --verbose
+
+      - name: Prepare CLI release
         working-directory: build
         run: |
           mkdir cli-artifacts
-          mkdir gui-artifacts
           strip -x chopt
           install_name_tool -change /usr/local/opt/libpng/lib/libpng16.16.dylib @executable_path/libpng16.16.dylib chopt
           mv chopt cli-artifacts/CHOpt
           cp /usr/local/Cellar/libpng/1.6.40/lib/libpng16.16.dylib cli-artifacts/libpng16.16.dylib
+
+      - name: Prepare GUI release
+        working-directory: build
+        run: |
+          mkdir gui-artifacts
           mv choptgui.app CHOpt.app
           mv CHOpt.app/Contents/MacOS/choptgui CHOpt.app/Contents/MacOS/CHOpt
           sed -i "" "s/choptgui/CHOpt/g" CHOpt.app/Contents/Info.plist
           macdeployqt CHOpt.app
           mv CHOpt.app gui-artifacts/CHOpt.app
-  
+
       - name: Upload CLI release
         uses: actions/upload-artifact@v3
         with:
@@ -120,7 +138,8 @@ jobs:
     runs-on: ubuntu-22.04
     needs: determine-version
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -152,17 +171,20 @@ jobs:
         working-directory: build
         run: cmake --build . --verbose
 
-      - name: Prepare releases
+      - name: Prepare CLI release
         working-directory: build
         run: |
           mkdir cli-artifacts
-          mkdir gui-artifacts
           strip -s chopt
-          strip -s choptgui
           mv chopt cli-artifacts/CHOpt
+
+      - name: Prepare GUI release
+        working-directory: build
+        run: |
+          mkdir -p gui-artifacts/libs
+          mkdir -p gui-artifacts/platforms
+          strip -s choptgui
           mv choptgui gui-artifacts/CHOpt
-          mkdir gui-artifacts/libs
-          mkdir gui-artifacts/platforms
           cp ../resources/CHOpt.sh gui-artifacts/CHOpt.sh
           cp ${Qt6_DIR}/lib/libicudata.so.56 gui-artifacts/libs/libicudata.so.56
           cp ${Qt6_DIR}/lib/libicui18n.so.56 gui-artifacts/libs/libicui18n.so.56
