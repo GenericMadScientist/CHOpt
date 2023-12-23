@@ -929,7 +929,7 @@ BOOST_AUTO_TEST_CASE(quarter_bar_activations_are_possible_on_fortnite_engine)
     std::vector<SightRead::StarPower> phrases {
         {SightRead::Tick {0}, SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, phrases, SightRead::TrackType::FortniteFestival,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track,
                          {{}, SpMode::OdBeat},
