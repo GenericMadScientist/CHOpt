@@ -83,7 +83,7 @@ SpData::form_beat_rates(const SightRead::TempoMap& tempo_map,
     constexpr double DEFAULT_BEAT_RATE = 4.0;
 
     std::vector<BeatRate> beat_rates;
-    if (!engine.uses_beat_track()) {
+    if (engine.sp_mode() == SpMode::Measure) {
         beat_rates.reserve(tempo_map.time_sigs().size());
 
         for (const auto& ts : tempo_map.time_sigs()) {

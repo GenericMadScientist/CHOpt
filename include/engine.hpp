@@ -51,7 +51,6 @@ public:
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
     virtual SustainRoundingPolicy sustain_rounding() const = 0;
-    virtual bool uses_beat_track() const = 0;
     virtual ~Engine() = default;
 };
 
@@ -89,7 +88,6 @@ public:
     {
         return SustainRoundingPolicy::RoundUp;
     }
-    bool uses_beat_track() const override { return false; }
 };
 
 class ChGuitarEngine final : public BaseChEngine {
@@ -170,7 +168,6 @@ public:
     {
         return SustainRoundingPolicy::RoundToNearest;
     }
-    bool uses_beat_track() const override { return true; };
 };
 
 class FortniteGuitarEngine final : public BaseFortniteEngine {
@@ -218,7 +215,6 @@ public:
     {
         return SustainRoundingPolicy::RoundToNearest;
     }
-    bool uses_beat_track() const override { return false; }
 };
 
 class BaseRbEngine : public Engine {
@@ -255,7 +251,6 @@ public:
     {
         return SustainRoundingPolicy::RoundToNearest;
     }
-    bool uses_beat_track() const override { return true; }
 };
 
 class RbEngine final : public BaseRbEngine {
