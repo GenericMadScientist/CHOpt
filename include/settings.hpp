@@ -30,7 +30,13 @@
 
 #include "engine.hpp"
 
-enum class Game { CloneHero, GuitarHeroOne, RockBand, RockBandThree };
+enum class Game {
+    CloneHero,
+    FortniteFestival,
+    GuitarHeroOne,
+    RockBand,
+    RockBandThree
+};
 
 std::unique_ptr<Engine> game_to_engine(Game game,
                                        SightRead::Instrument instrument,

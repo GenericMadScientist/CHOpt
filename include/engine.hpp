@@ -137,7 +137,51 @@ protected:
     }
 };
 
-class Gh1Engine : public Engine {
+class BaseFortniteEngine : public Engine {
+public:
+    int base_note_value() const override { return 36; };
+    double burst_size() const override { return 0.0; };
+    bool chords_multiply_sustains() const override { return true; };
+    bool delayed_multiplier() const override { return true; };
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.1;
+    }
+    bool has_bres() const override { return false; };
+    bool has_unison_bonuses() const override { return false; }
+    bool is_rock_band() const override { return false; };
+    bool ignore_average_multiplier() const override { return true; };
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.1;
+    }
+    bool merge_uneven_sustains() const override { return true; };
+    bool overlaps() const override { return true; };
+    bool round_tick_gap() const override { return false; };
+    SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; };
+    SpMode sp_mode() const override { return SpMode::OdBeat; };
+    double sp_gain_rate() const override { return 0.0; };
+    int sust_points_per_beat() const override { return 12; };
+    SustainRoundingPolicy sustain_rounding() const override
+    {
+        return SustainRoundingPolicy::RoundToNearest;
+    }
+    bool uses_beat_track() const override { return true; };
+};
+
+class FortniteGuitarEngine final : public BaseFortniteEngine {
+    int max_multiplier() const override { return 4; };
+};
+
+class FortniteBassEngine final : public BaseFortniteEngine {
+    int max_multiplier() const override { return 6; };
+};
+
+class Gh1Engine final : public Engine {
 private:
     static constexpr double FUDGE_EPSILON = 0.0001;
 

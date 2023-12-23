@@ -38,8 +38,9 @@ private:
 
     static std::set<Game> song_file_games(const SongFile& song_file)
     {
-        const std::set<Game> all_games {Game::CloneHero, Game::GuitarHeroOne,
-                                        Game::RockBand, Game::RockBandThree};
+        const std::set<Game> all_games {Game::CloneHero, Game::FortniteFestival,
+                                        Game::GuitarHeroOne, Game::RockBand,
+                                        Game::RockBandThree};
         std::set<Game> supported_games;
         for (const auto game : all_games) {
             try {
@@ -330,8 +331,9 @@ void MainWindow::load_file(const QString& file_name)
 void MainWindow::populate_games(const std::set<Game>& games)
 {
     m_ui->engineComboBox->clear();
-    const std::array<std::pair<Game, QString>, 4> full_game_set {
+    const std::array<std::pair<Game, QString>, 5> full_game_set {
         {{Game::CloneHero, "Clone Hero"},
+         {Game::FortniteFestival, "Fortnite Festival"},
          {Game::GuitarHeroOne, "Guitar Hero 1"},
          {Game::RockBand, "Rock Band"},
          {Game::RockBandThree, "Rock Band 3"}}};

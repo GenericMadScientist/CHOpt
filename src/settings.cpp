@@ -90,6 +90,7 @@ Game game_from_string(std::string_view game)
 {
     const std::map<std::string_view, Game> game_map {
         {"ch", Game::CloneHero},
+        {"ff", Game::FortniteFestival},
         {"gh1", Game::GuitarHeroOne},
         {"rb", Game::RockBand},
         {"rb3", Game::RockBandThree}};
@@ -112,6 +113,11 @@ game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
             return std::make_unique<ChPrecisionGuitarEngine>();
         }
         return std::make_unique<ChGuitarEngine>();
+    case Game::FortniteFestival:
+        if (instrument == SightRead::Instrument::Bass) {
+            return std::make_unique<FortniteBassEngine>();
+        }
+        return std::make_unique<FortniteGuitarEngine>();
     case Game::GuitarHeroOne:
         return std::make_unique<Gh1Engine>();
     case Game::RockBand:
@@ -171,7 +177,7 @@ std::optional<Settings> from_args(int argc, char** argv)
     add_option("enable-dynamics",
                "enable double points for ghost and accented notes");
     add_option("engine", po::value<std::string>()->default_value("ch"),
-               "engine, options are ch, gh1, rb, and rb3");
+               "engine, options are ch, ff, gh1, rb, and rb3");
     add_option("precision-mode,p", "turn on precision mode for CH");
     add_option("blank,b", "give a blank chart image");
     add_option("no-image", "do not create an image");
