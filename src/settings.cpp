@@ -177,7 +177,7 @@ std::optional<Settings> from_args(int argc, char** argv)
     add_option("enable-dynamics",
                "enable double points for ghost and accented notes");
     add_option("engine", po::value<std::string>()->default_value("ch"),
-               "engine, options are ch, ff, gh1, rb, and rb3");
+               "engine, options are ch, fnf, gh1, rb, and rb3");
     add_option("precision-mode,p", "turn on precision mode for CH");
     add_option("blank,b", "give a blank chart image");
     add_option("no-image", "do not create an image");
