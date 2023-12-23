@@ -60,10 +60,10 @@ public:
         m_max = std::min(m_max, 1.0);
     }
 
-    [[nodiscard]] bool full_enough_to_activate() const
+    [[nodiscard]] bool
+    full_enough_to_activate(double minimum_sp_to_activate) const
     {
-        constexpr double MINIMUM_SP_AMOUNT = 0.5;
-        return m_max >= MINIMUM_SP_AMOUNT;
+        return m_max >= minimum_sp_to_activate;
     }
 };
 

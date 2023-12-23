@@ -82,6 +82,7 @@ private:
     SpTimeMap m_time_map;
     PointSet m_points;
     SpData m_sp_data;
+    double m_minimum_sp_to_activate;
     int m_total_bre_boost;
     int m_total_solo_boost;
     int m_base_score;
@@ -145,6 +146,10 @@ public:
     [[nodiscard]] const SpData& sp_data() const { return m_sp_data; }
     [[nodiscard]] const SpTimeMap& sp_time_map() const { return m_time_map; }
     [[nodiscard]] bool is_drums() const { return m_is_drums; }
+    [[nodiscard]] double minimum_sp_to_activate() const
+    {
+        return m_minimum_sp_to_activate;
+    }
 };
 
 #endif

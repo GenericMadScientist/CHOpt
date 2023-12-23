@@ -68,6 +68,7 @@ ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
     , m_points {track,         m_time_map, unison_phrases, squeeze_settings,
                 drum_settings, engine}
     , m_sp_data {track, m_time_map, od_beats, squeeze_settings, engine}
+    , m_minimum_sp_to_activate {engine.minimum_sp_to_activate()}
     , m_total_bre_boost {bre_boost(track, engine)}
     , m_base_score {track.base_score(drum_settings)}
     , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
@@ -120,11 +121,11 @@ ProcessedSong::total_available_sp_with_earliest_pos(
         start, earliest_potential_pos.beat, act_start->position.beat);
     sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
-    if (sp_bar.full_enough_to_activate()) {
+    if (sp_bar.full_enough_to_activate(m_minimum_sp_to_activate)) {
         return {sp_bar, earliest_potential_pos};
     }
 
-    const auto extra_sp_required = 0.5 - sp_bar.max();
+    const auto extra_sp_required = m_minimum_sp_to_activate - sp_bar.max();
     auto first_beat = earliest_potential_pos.beat;
     auto last_beat = act_start->position.beat;
     if (m_sp_data.available_whammy(first_beat, last_beat,
@@ -270,10 +271,9 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
                                   SpPosition required_whammy_end) const
 {
     static constexpr double MEASURES_PER_BAR = 8.0;
-    static constexpr double MINIMUM_SP_AMOUNT = 0.5;
     const SpPosition null_position {SightRead::Beat(0.0), SpMeasure(0.0)};
 
-    if (!activation.sp_bar.full_enough_to_activate()) {
+    if (!activation.sp_bar.full_enough_to_activate(m_minimum_sp_to_activate)) {
         return {null_position, ActValidity::insufficient_sp};
     }
 
@@ -297,7 +297,8 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
 
     SpStatus status_for_early_end {
         activation.earliest_activation_point,
-        std::max(activation.sp_bar.min(), MINIMUM_SP_AMOUNT), m_overlaps};
+        std::max(activation.sp_bar.min(), m_minimum_sp_to_activate),
+        m_overlaps};
     SpStatus status_for_late_end {late_end_position, late_end_sp, m_overlaps};
 
     for (auto p = m_points.next_sp_granting_note(activation.act_start);

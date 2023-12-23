@@ -44,6 +44,7 @@ public:
         = 0;
     virtual int max_multiplier() const = 0;
     virtual bool merge_uneven_sustains() const = 0;
+    virtual double minimum_sp_to_activate() const = 0;
     virtual bool overlaps() const = 0;
     virtual bool round_tick_gap() const = 0;
     virtual SightRead::Tick snap_gap() const = 0;
@@ -78,6 +79,7 @@ public:
     }
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return false; }
+    double minimum_sp_to_activate() const override { return 0.5; }
     bool overlaps() const override { return true; }
     bool round_tick_gap() const override { return true; }
     SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; }
@@ -158,6 +160,7 @@ public:
         return 0.1;
     }
     bool merge_uneven_sustains() const override { return true; };
+    double minimum_sp_to_activate() const override { return 0.25; }
     bool overlaps() const override { return true; };
     bool round_tick_gap() const override { return false; };
     SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; };
@@ -205,6 +208,7 @@ public:
     }
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return true; }
+    double minimum_sp_to_activate() const override { return 0.5; }
     bool overlaps() const override { return false; }
     bool round_tick_gap() const override { return false; }
     SightRead::Tick snap_gap() const override { return SightRead::Tick {2}; }
@@ -241,6 +245,7 @@ public:
         return std::min(base_timing_window(), late_gap / 2);
     }
     bool merge_uneven_sustains() const override { return true; }
+    double minimum_sp_to_activate() const override { return 0.5; }
     bool overlaps() const override { return true; }
     bool round_tick_gap() const override { return false; }
     SightRead::Tick snap_gap() const override { return SightRead::Tick {2}; }

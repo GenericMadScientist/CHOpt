@@ -286,7 +286,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             starting_pos.sp_measure = std::max(starting_pos.sp_measure,
                                                p->hit_window_start.sp_measure);
         }
-        if (!sp_bar.full_enough_to_activate()) {
+        if (!sp_bar.full_enough_to_activate(m_song->minimum_sp_to_activate())) {
             continue;
         }
         if (p != key.point && sp_bar.min() == 1.0
@@ -305,7 +305,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
         // This skips some points that are too early to be an act end for the
         // earliest possible activation.
         if (!lower_bound_set) {
-            const SpMeasure act_length {8.0 * std::max(sp_bar.min(), 0.5)};
+            const SpMeasure act_length {
+                8.0 * std::max(sp_bar.min(), m_song->minimum_sp_to_activate())};
             const auto earliest_act_end = starting_pos.sp_measure + act_length;
             auto earliest_pt_end = std::find_if_not(
                 std::next(p), m_song->points().cend(), [&](const auto& pt) {

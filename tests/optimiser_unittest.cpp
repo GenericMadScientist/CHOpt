@@ -922,3 +922,31 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_considered_even_with_maxable_sp)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_CASE(quarter_bar_activations_are_possible_on_fortnite_engine)
+{
+    std::vector<SightRead::Note> notes {make_note(0), make_note(192)};
+    std::vector<SightRead::StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {50}}};
+    SightRead::NoteTrack note_track {
+        notes, phrases, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    ProcessedSong track {note_track,
+                         {{}, SpMode::OdBeat},
+                         SqueezeSettings::default_settings(),
+                         SightRead::DrumSettings::default_settings(),
+                         FortniteGuitarEngine(),
+                         {},
+                         {}};
+    Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
+    const auto& points = track.points();
+    std::vector<Activation> optimal_acts {
+        {points.cbegin() + 1, points.cbegin() + 1, SightRead::Beat {0.0},
+         SightRead::Beat {1.0}, SightRead::Beat {9.0}}};
+    const auto opt_path = optimiser.optimal_path();
+
+    BOOST_CHECK_EQUAL(opt_path.score_boost, 36);
+    BOOST_CHECK_EQUAL_COLLECTIONS(opt_path.activations.cbegin(),
+                                  opt_path.activations.cend(),
+                                  optimal_acts.cbegin(), optimal_acts.cend());
+}
