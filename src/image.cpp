@@ -233,6 +233,7 @@ int numb_of_fret_lines(SightRead::TrackType track_type)
 {
     switch (track_type) {
     case SightRead::TrackType::FiveFret:
+    case SightRead::TrackType::FortniteFestival:
         return 4;
     case SightRead::TrackType::SixFret:
         return 2;
@@ -905,6 +906,7 @@ Image::Image(const ImageBuilder& builder)
 
     switch (builder.track_type()) {
     case SightRead::TrackType::FiveFret:
+    case SightRead::TrackType::FortniteFestival:
         m_impl->draw_notes(builder);
         break;
     case SightRead::TrackType::SixFret:
