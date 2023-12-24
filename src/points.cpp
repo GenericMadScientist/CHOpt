@@ -304,6 +304,20 @@ bool has_split_notes(SightRead::TrackType track_type)
         || track_type == SightRead::TrackType::FortniteFestival;
 }
 
+bool is_note_skippable(const SightRead::Note& starting_note,
+                       const SightRead::Note& note_to_test,
+                       SightRead::TrackType track_type,
+                       const SightRead::DrumSettings& drum_settings)
+{
+    if (track_type == SightRead::TrackType::Drums) {
+        return note_to_test.is_skipped_kick(drum_settings);
+    }
+    if (track_type == SightRead::TrackType::FortniteFestival) {
+        return false;
+    }
+    return starting_note.position == note_to_test.position;
+}
+
 std::vector<Point> unmultiplied_points(
     const SightRead::NoteTrack& track, const SpTimeMap& time_map,
     const std::vector<SightRead::Tick>& unison_phrases,
@@ -330,14 +344,8 @@ std::vector<Point> unmultiplied_points(
             = has_split_notes(track.track_type()) ? std::next(p) : p;
         const auto q = std::find_if_not(
             search_start, notes.cend(), [=](const auto& note) {
-                if (track.track_type() == SightRead::TrackType::Drums) {
-                    return note.is_skipped_kick(drum_settings);
-                }
-                if (track.track_type()
-                    == SightRead::TrackType::FortniteFestival) {
-                    return false;
-                }
-                return note.position == p->position;
+                return is_note_skippable(*p, note, track.track_type(),
+                                         drum_settings);
             });
         auto is_note_sp_ender = false;
         auto is_unison_sp_ender = false;
