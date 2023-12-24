@@ -298,6 +298,12 @@ void apply_multiplier(std::vector<Point>& points, const Engine& engine)
     }
 }
 
+bool has_split_notes(SightRead::TrackType track_type)
+{
+    return track_type == SightRead::TrackType::Drums
+        || track_type == SightRead::TrackType::FortniteFestival;
+}
+
 std::vector<Point> unmultiplied_points(
     const SightRead::NoteTrack& track, const SpTimeMap& time_map,
     const std::vector<SightRead::Tick>& unison_phrases,
@@ -321,12 +327,15 @@ std::vector<Point> unmultiplied_points(
             break;
         }
         const auto search_start
-            = track.track_type() == SightRead::TrackType::Drums ? std::next(p)
-                                                                : p;
+            = has_split_notes(track.track_type()) ? std::next(p) : p;
         const auto q = std::find_if_not(
             search_start, notes.cend(), [=](const auto& note) {
                 if (track.track_type() == SightRead::TrackType::Drums) {
                     return note.is_skipped_kick(drum_settings);
+                }
+                if (track.track_type()
+                    == SightRead::TrackType::FortniteFestival) {
+                    return false;
                 }
                 return note.position == p->position;
             });

@@ -567,6 +567,29 @@ BOOST_AUTO_TEST_CASE(drum_notes_have_the_multiplier_handled_correctly)
     BOOST_CHECK_EQUAL(std::prev(points.cend(), 1)->value, 100);
 }
 
+BOOST_AUTO_TEST_CASE(fortnite_notes_have_the_multiplier_handled_correctly)
+{
+    std::vector<SightRead::Note> notes;
+    notes.reserve(11);
+    for (int i = 0; i < 10; ++i) {
+        notes.push_back(make_note(192 * i, 0, SightRead::FIVE_FRET_GREEN));
+    }
+    notes.push_back(make_note(192 * 7, 0, SightRead::FIVE_FRET_RED));
+
+    SightRead::NoteTrack track {notes,
+                                {},
+                                SightRead::TrackType::FortniteFestival,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    PointSet points {track,
+                     {{}, SpMode::OdBeat},
+                     {},
+                     SqueezeSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
+                     FortniteGuitarEngine()};
+
+    BOOST_CHECK_EQUAL(std::prev(points.cend(), 1)->value, 72);
+}
+
 BOOST_AUTO_TEST_CASE(gh1_multiplier_delay_accounted_for)
 {
     std::vector<SightRead::Note> notes {
@@ -1351,3 +1374,23 @@ BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_CASE(fortnite_notes_have_individual_split_points)
+{
+    std::vector<SightRead::Note> notes {
+        make_note(0, 0, SightRead::FIVE_FRET_GREEN),
+        make_note(0, 0, SightRead::FIVE_FRET_RED)};
+
+    SightRead::NoteTrack track {notes,
+                                {},
+                                SightRead::TrackType::FortniteFestival,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    PointSet points {track,
+                     {{}, SpMode::OdBeat},
+                     {},
+                     SqueezeSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
+                     FortniteGuitarEngine()};
+
+    BOOST_CHECK_EQUAL(std::distance(points.cbegin(), points.cend()), 2);
+}
