@@ -126,9 +126,11 @@ game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
         }
         return std::make_unique<ChGuitarEngine>();
     case Game::FortniteFestival:
-        if (instrument == SightRead::Instrument::FortniteBass
-            || instrument == SightRead::Instrument::FortniteVocals) {
+        if (instrument == SightRead::Instrument::FortniteBass) {
             return std::make_unique<FortniteBassEngine>();
+        }
+        if (instrument == SightRead::Instrument::FortniteVocals) {
+            return std::make_unique<FortniteVocalsEngine>();
         }
         return std::make_unique<FortniteGuitarEngine>();
     case Game::GuitarHeroOne:

@@ -166,7 +166,6 @@ public:
     SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; };
     SpMode sp_mode() const override { return SpMode::OdBeat; };
     double sp_gain_rate() const override { return 0.0; };
-    int sust_points_per_beat() const override { return 12; };
     SustainRoundingPolicy sustain_rounding() const override
     {
         return SustainRoundingPolicy::RoundToNearest;
@@ -175,10 +174,17 @@ public:
 
 class FortniteGuitarEngine final : public BaseFortniteEngine {
     int max_multiplier() const override { return 4; };
+    int sust_points_per_beat() const override { return 12; };
 };
 
 class FortniteBassEngine final : public BaseFortniteEngine {
     int max_multiplier() const override { return 6; };
+    int sust_points_per_beat() const override { return 12; };
+};
+
+class FortniteVocalsEngine final : public BaseFortniteEngine {
+    int max_multiplier() const override { return 6; };
+    int sust_points_per_beat() const override { return 25; };
 };
 
 class Gh1Engine final : public Engine {
