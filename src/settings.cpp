@@ -104,14 +104,14 @@ Game game_from_string(std::string_view game)
     return game_map.at(game);
 }
 
-QCommandLineParser arg_parser()
+std::unique_ptr<QCommandLineParser> arg_parser()
 {
-    QCommandLineParser parser;
-    parser.setApplicationDescription(
+    auto parser = std::make_unique<QCommandLineParser>();
+    parser->setApplicationDescription(
         "A program to generate optimal Star Power paths for Clone Hero");
-    parser.addHelpOption();
-    parser.addVersionOption();
-    parser.addOptions(
+    parser->addHelpOption();
+    parser->addVersionOption();
+    parser->addOptions(
         {{{"f", "file"}, "chart filename"},
          {{"o", "output"},
           "location to save output image (must be a .bmp or .png)",
@@ -211,50 +211,51 @@ Settings from_args(const QStringList& args)
     constexpr double MS_PER_SECOND = 1000.0;
 
     auto parser = arg_parser();
-    parser.process(args);
+    parser->process(args);
 
     Settings settings;
 
-    settings.blank = parser.isSet("blank");
-    settings.filename = parser.value("file").toStdString();
+    settings.blank = parser->isSet("blank");
+    settings.filename = parser->value("file").toStdString();
     if (settings.filename.empty()) {
         throw std::invalid_argument("No file was specified");
     }
 
-    const auto engine_name = parser.value("engine").toStdString();
+    const auto engine_name = parser->value("engine").toStdString();
     settings.game = game_from_string(engine_name);
 
-    settings.difficulty = string_to_diff(parser.value("diff").toStdString());
+    settings.difficulty = string_to_diff(parser->value("diff").toStdString());
     settings.instrument = string_to_inst(
-        parser.value("instrument").toStdString(), settings.game);
+        parser->value("instrument").toStdString(), settings.game);
 
-    const auto precision_mode = parser.isSet("precision-mode");
+    const auto precision_mode = parser->isSet("precision-mode");
     settings.engine
         = game_to_engine(settings.game, settings.instrument, precision_mode);
 
-    settings.image_path = parser.value("output").toStdString();
+    settings.image_path = parser->value("output").toStdString();
     if (!is_valid_image_path(settings.image_path)) {
         throw std::invalid_argument(
             "Image output must be a bitmap or png (.bmp / .png)");
     }
 
-    settings.is_lefty_flip = parser.isSet("lefty-flip");
-    settings.draw_image = !parser.isSet("no-image");
-    settings.draw_bpms = !parser.isSet("no-bpms");
-    settings.draw_solos = !parser.isSet("no-solos");
-    settings.draw_time_sigs = !parser.isSet("no-time-sigs");
-    settings.drum_settings.enable_double_kick = !parser.isSet("no-double-kick");
-    settings.drum_settings.disable_kick = parser.isSet("no-kick");
-    settings.drum_settings.pro_drums = !parser.isSet("no-pro-drums");
-    settings.drum_settings.enable_dynamics = parser.isSet("enable-dynamics");
+    settings.is_lefty_flip = parser->isSet("lefty-flip");
+    settings.draw_image = !parser->isSet("no-image");
+    settings.draw_bpms = !parser->isSet("no-bpms");
+    settings.draw_solos = !parser->isSet("no-solos");
+    settings.draw_time_sigs = !parser->isSet("no-time-sigs");
+    settings.drum_settings.enable_double_kick
+        = !parser->isSet("no-double-kick");
+    settings.drum_settings.disable_kick = parser->isSet("no-kick");
+    settings.drum_settings.pro_drums = !parser->isSet("no-pro-drums");
+    settings.drum_settings.enable_dynamics = parser->isSet("enable-dynamics");
 
-    const auto squeeze = parser.value("squeeze").toInt();
+    const auto squeeze = parser->value("squeeze").toInt();
     auto early_whammy = squeeze;
-    if (parser.isSet("early-whammy")) {
-        early_whammy = parser.value("early-whammy").toInt();
+    if (parser->isSet("early-whammy")) {
+        early_whammy = parser->value("early-whammy").toInt();
     }
-    const auto lazy_whammy = parser.value("lazy-whammy").toInt();
-    const auto whammy_delay = parser.value("whammy-delay").toInt();
+    const auto lazy_whammy = parser->value("lazy-whammy").toInt();
+    const auto whammy_delay = parser->value("whammy-delay").toInt();
 
     if (squeeze < 0 || squeeze > MAX_PERCENT) {
         throw std::invalid_argument("Squeeze must lie between 0 and 100");
@@ -278,7 +279,7 @@ Settings from_args(const QStringList& args)
     settings.squeeze_settings.whammy_delay
         = SightRead::Second {whammy_delay / MS_PER_SECOND};
 
-    const auto video_lag = parser.value("video-lag").toInt();
+    const auto video_lag = parser->value("video-lag").toInt();
     if (video_lag < -MAX_VIDEO_LAG || video_lag > MAX_VIDEO_LAG) {
         throw std::invalid_argument(
             "Video lag setting unsupported by Clone Hero");
@@ -287,14 +288,14 @@ Settings from_args(const QStringList& args)
     settings.squeeze_settings.video_lag
         = SightRead::Second {video_lag / MS_PER_SECOND};
 
-    const auto speed = parser.value("speed").toInt();
+    const auto speed = parser->value("speed").toInt();
     if (speed < MIN_SPEED || speed > MAX_SPEED || speed % MIN_SPEED != 0) {
         throw std::invalid_argument("Speed unsupported by Clone Hero");
     }
 
     settings.speed = speed;
 
-    const auto opacity = parser.value("act-opacity").toFloat();
+    const auto opacity = parser->value("act-opacity").toFloat();
     if (opacity < 0.0F || opacity > 1.0F) {
         throw std::invalid_argument(
             "Activation opacity should lie between 0.0 and 1.0");

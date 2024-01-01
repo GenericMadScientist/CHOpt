@@ -44,7 +44,7 @@ int main(int argc, char** argv)
             = song.track(settings.instrument, settings.difficulty);
         const std::atomic<bool> terminate {false};
         const auto builder = make_builder(
-            song, track, *settings,
+            song, track, settings,
             [&](auto p) { boost::nowide::cout << p << '\n'; }, &terminate);
         boost::nowide::cout << std::flush;
         if (settings.draw_image) {
