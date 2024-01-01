@@ -107,7 +107,7 @@ Game game_from_string(std::string_view game)
 QCommandLineParser arg_parser()
 {
     QCommandLineParser parser;
-    parser.setAppicationDescription(
+    parser.setApplicationDescription(
         "A program to generate optimal Star Power paths for Clone Hero");
     parser.addHelpOption();
     parser.addVersionOption();

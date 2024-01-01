@@ -164,7 +164,7 @@ if(PACKAGE_TESTS)
     PRIVATE "${PROJECT_SOURCE_DIR}/include")
   target_link_directories(chopt_tests PRIVATE ${Boost_LIBRARY_DIRS})
   target_link_libraries(chopt_tests PRIVATE Boost::nowide
-    Boost::unit_test_framework sightread)
+    Boost::unit_test_framework Qt6::Core sightread)
   add_test(NAME chopt_tests COMMAND chopt_tests)
   set_cpp_standard(chopt_tests)
   set_warnings(chopt_tests)

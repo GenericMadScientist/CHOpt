@@ -38,21 +38,18 @@ int main(int argc, char** argv)
         QCoreApplication::setApplicationVersion("1.8.1");
 
         const auto settings = from_args(QCoreApplication::arguments());
-        if (!settings.has_value()) {
-            return EXIT_SUCCESS;
-        }
-        const SongFile song_file {settings->filename};
-        auto song = song_file.load_song(settings->game);
+        const SongFile song_file {settings.filename};
+        auto song = song_file.load_song(settings.game);
         const auto& track
-            = song.track(settings->instrument, settings->difficulty);
+            = song.track(settings.instrument, settings.difficulty);
         const std::atomic<bool> terminate {false};
         const auto builder = make_builder(
             song, track, *settings,
             [&](auto p) { boost::nowide::cout << p << '\n'; }, &terminate);
         boost::nowide::cout << std::flush;
-        if (settings->draw_image) {
+        if (settings.draw_image) {
             const Image image {builder};
-            image.save(settings->image_path.c_str());
+            image.save(settings.image_path.c_str());
         }
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
