@@ -38,8 +38,17 @@ endfunction()
 find_package(PNG REQUIRED)
 find_package(
   Boost 1.77 REQUIRED
-  COMPONENTS nowide program_options
+  COMPONENTS nowide
   OPTIONAL_COMPONENTS json unit_test_framework)
+find_package(
+  Qt6 REQUIRED
+  COMPONENTS Core
+  OPTIONAL_COMPONENTS Widgets)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_subdirectory("extern/sightread")
 
 cmake_policy(SET CMP0083 NEW)
@@ -70,8 +79,8 @@ add_executable(
 target_include_directories(
   chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
 target_link_directories(chopt PRIVATE ${Boost_LIBRARY_DIRS})
-target_link_libraries(chopt PRIVATE Boost::nowide Boost::program_options
-  ${PNG_LIBRARIES} sightread)
+target_link_libraries(chopt PRIVATE Boost::nowide
+  ${PNG_LIBRARIES} Qt6::Core sightread)
 
 set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 set_cpp_standard(chopt)
@@ -84,16 +93,6 @@ if(BUILD_GUI)
   if(NOT Boost_json_FOUND)
     message(FATAL_ERROR "GUI version needs Boost::JSON in order to be built")
   endif()
-
-  find_package(
-    Qt6
-    COMPONENTS Widgets
-    REQUIRED)
-
-  set(CMAKE_AUTOMOC ON)
-  set(CMAKE_AUTORCC ON)
-  set(CMAKE_AUTOUIC ON)
-  set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
   add_executable(
     choptgui WIN32
@@ -119,7 +118,7 @@ if(BUILD_GUI)
     choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
   target_link_directories(choptgui PRIVATE ${Boost_LIBRARY_DIRS})
   target_link_libraries(
-    choptgui PRIVATE Boost::json Boost::nowide Boost::program_options ${PNG_LIBRARIES}
+    choptgui PRIVATE Boost::json Boost::nowide ${PNG_LIBRARIES}
     Qt6::Widgets sightread)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
@@ -164,7 +163,7 @@ if(PACKAGE_TESTS)
   target_include_directories(chopt_tests
     PRIVATE "${PROJECT_SOURCE_DIR}/include")
   target_link_directories(chopt_tests PRIVATE ${Boost_LIBRARY_DIRS})
-  target_link_libraries(chopt_tests PRIVATE Boost::nowide Boost::program_options
+  target_link_libraries(chopt_tests PRIVATE Boost::nowide
     Boost::unit_test_framework sightread)
   add_test(NAME chopt_tests COMMAND chopt_tests)
   set_cpp_standard(chopt_tests)

@@ -11,12 +11,17 @@ jobs:
         with:
           submodules: true
 
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 6.5.*
+
       - name: Install Boost 1.84.0
         run: |
           wget -O "$HOME/boost_1_84_0.tar.bz2" https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.bz2
           tar --bzip2 -xf "$HOME/boost_1_84_0.tar.bz2" -C "$HOME"
           cd "$HOME/boost_1_84_0"
-          ./bootstrap.sh --with-libraries=json,nowide,program_options,test --prefix=.
+          ./bootstrap.sh --with-libraries=json,nowide,test --prefix=.
           ./b2 toolset=gcc-13 install > /dev/null
 
       - name: Make build directory
@@ -45,12 +50,17 @@ jobs:
         with:
           submodules: true
 
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 6.5.*
+
       - name: Install Boost 1.84.0
         run: |
           wget -O "$HOME/boost_1_84_0.tar.bz2" https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.bz2
           tar --bzip2 -xf "$HOME/boost_1_84_0.tar.bz2" -C "$HOME"
           cd "$HOME/boost_1_84_0"
-          ./bootstrap.sh --with-libraries=json,nowide,program_options,test --prefix=.
+          ./bootstrap.sh --with-libraries=json,nowide,test --prefix=.
           ./b2 toolset=gcc-13 install > /dev/null
 
       - name: Make build directory

@@ -19,8 +19,9 @@
 #include <exception>
 #include <ostream>
 
-#include <boost/nowide/args.hpp>
 #include <boost/nowide/iostream.hpp>
+
+#include <QCoreApplication>
 
 #include <sightread/time.hpp>
 
@@ -32,8 +33,11 @@
 int main(int argc, char** argv)
 {
     try {
-        boost::nowide::args a(argc, argv);
-        const auto settings = from_args(argc, argv);
+        QCoreApplication app {argc, argv};
+        QCoreApplication::setApplicationName("CHOpt");
+        QCoreApplication::setApplicationVersion("1.8.1");
+
+        const auto settings = from_args(QCoreApplication::arguments());
         if (!settings.has_value()) {
             return EXIT_SUCCESS;
         }
