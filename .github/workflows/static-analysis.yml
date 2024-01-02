@@ -19,6 +19,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang-tidy-16
 
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: 6.5.*
+
       - name: Install Boost 1.84.0
         run: |
           wget -O "$HOME/boost_1_84_0.tar.bz2" https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.bz2
@@ -28,13 +33,15 @@ jobs:
           ./b2 toolset=gcc-13 install > /dev/null
 
       - name: Application files
-        run: clang-tidy-16 src/*.cpp gui/json_settings.cpp -- -Iinclude -Ilibs -Iextern/sightread/include -isystem $HOME/boost_1_84_0 -std=c++20
+        run: >
+          clang-tidy-16 src/*.cpp gui/json_settings.cpp -- -std=c++20
+          -Iinclude -Ilibs -Iextern/sightread/include -I${Qt6_DIR}/include/QtCore -isystem $HOME/boost_1_84_0
 
       - name: Test files
         run: >
           clang-tidy-16 tests/*_unittest.cpp
           -checks=-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers
-          -- -Iinclude -Iextern/sightread/include -I$HOME/boost_1_84_0 -std=c++20
+          -- -Iinclude -Iextern/sightread/include -I${Qt6_DIR}/include/QtCore -I$HOME/boost_1_84_0 -std=c++20
 
   clang-format:
     runs-on: ubuntu-22.04
