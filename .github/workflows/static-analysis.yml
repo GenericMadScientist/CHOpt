@@ -35,13 +35,13 @@ jobs:
       - name: Application files
         run: >
           clang-tidy-16 src/*.cpp gui/json_settings.cpp -- -std=c++20
-          -Iinclude -Ilibs -Iextern/sightread/include -I${Qt6_DIR}/include/QtCore -isystem $HOME/boost_1_84_0
+          -Iinclude -Ilibs -Iextern/sightread/include -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore -isystem $HOME/boost_1_84_0
 
       - name: Test files
         run: >
           clang-tidy-16 tests/*_unittest.cpp
           -checks=-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers
-          -- -Iinclude -Iextern/sightread/include -I${Qt6_DIR}/include/QtCore -I$HOME/boost_1_84_0 -std=c++20
+          -- -Iinclude -Iextern/sightread/include -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore -I$HOME/boost_1_84_0 -std=c++20
 
   clang-format:
     runs-on: ubuntu-22.04
