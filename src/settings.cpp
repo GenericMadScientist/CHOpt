@@ -112,7 +112,7 @@ std::unique_ptr<QCommandLineParser> arg_parser()
     parser->addHelpOption();
     parser->addVersionOption();
     parser->addOptions(
-        {{{"f", "file"}, "chart filename"},
+        {{{"f", "file"}, "chart filename", "file"},
          {{"o", "output"},
           "location to save output image (must be a .bmp or .png)",
           "output",
@@ -128,7 +128,8 @@ std::unique_ptr<QCommandLineParser> arg_parser()
           "guitar"},
          {{"sqz", "squeeze"}, "squeeze% (0 to 100)", "squeeze", "100"},
          {{"ew", "early-whammy"},
-          "early whammy% (0 to 100), <= squeeze, defaults to squeeze"},
+          "early whammy% (0 to 100), <= squeeze, defaults to squeeze",
+          "early-whammy"},
          {{"lazy", "lazy-whammy"},
           "time before whammying starts on sustains in milliseconds",
           "lazy-whammy",

@@ -61,8 +61,8 @@ for song, output in zip(songs, outputs):
     try:
         result.check_returncode()
     except subprocess.CalledProcessError:
-        print(f"stdout: {result.stdout}")
-        print(f"stderr: {result.stderr}")
+        print(f"stdout: {result.stdout.decode('utf-8')}")
+        print(f"stderr: {result.stderr.decode('utf-8')}")
         raise
 
     if result.stdout != output:
