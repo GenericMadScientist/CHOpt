@@ -44,21 +44,26 @@ conn.close()
 
 for song, output in zip(songs, outputs):
     _, file, difficulty, instrument, _, _, _, _, engine = song
-    result = subprocess.run(
-        [
-            program,
-            "-f",
-            f"{song_dir}/{file}",
-            "-d",
-            difficulty,
-            "-i",
-            instrument,
-            "--engine",
-            engine,
-        ],
-        capture_output=True,
-    )
-    result.check_returncode()
+    try:
+        result = subprocess.run(
+            [
+                program,
+                "-f",
+                f"{song_dir}/{file}",
+                "-d",
+                difficulty,
+                "-i",
+                instrument,
+                "--engine",
+                engine,
+            ],
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        print(f"Error: {result.stderr}")
+        raise
+
     if result.stdout != output:
         print(f"Expected output: {output}")
         print(f"Actual output: {result.stdout}")
