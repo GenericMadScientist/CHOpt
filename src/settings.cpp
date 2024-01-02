@@ -109,7 +109,8 @@ std::unique_ptr<QCommandLineParser> arg_parser()
     auto parser = std::make_unique<QCommandLineParser>();
     parser->setApplicationDescription(
         "A program to generate optimal Star Power paths for Clone Hero");
-    parser->addHelpOption();
+    parser->addOption(
+        {{"?", "h", "help"}, "Displays help on commandline options."});
     parser->addVersionOption();
     parser->addOptions(
         {{{"f", "file"}, "chart filename", "file"},
@@ -213,6 +214,10 @@ Settings from_args(const QStringList& args)
 
     auto parser = arg_parser();
     parser->process(args);
+
+    if (parser->isSet("help")) {
+        parser->showHelp();
+    }
 
     Settings settings;
 
