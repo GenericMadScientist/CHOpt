@@ -67,10 +67,12 @@ in cmd then enter to open a command prompt in that folder, then run the command
 
 ## Dependencies
 
-* [Boost](https://www.boost.org) for JSON, Nowide, Program Options and Test
+* [Boost](https://www.boost.org) for JSON, Nowide, and Test
 * [CImg](https://cimg.eu) to produce images
 * [libpng](http://libpng.org/pub/png/libpng.html) to save pngs
 * [Qt 6](https://www.qt.io) for the GUI
+* [SightRead](https://github.com/GenericMadScientist/SightRead) for parsing
+charts and midis
 * [zlib](https://zlib.net) is a dependency of libpng
 
 CImg is vendored in the repo. Boost, libpng, Qt, and zlib will need to be
@@ -80,7 +82,7 @@ if the GUI version is being compiled. libpng and zlib need to be set up so that
 them, and the same is true for Boost and Qt (see
 [this](https://cmake.org/cmake/help/latest/module/FindBoost.html) and
 [this](https://cmake.org/cmake/help/latest/manual/cmake-qt.7.html) page for
-details).
+details). SightRead is included a git submodule.
 
 ## Acknowledgements
 
