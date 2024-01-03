@@ -32,10 +32,33 @@ jobs:
           ./bootstrap.sh --with-libraries=json,nowide,test --prefix=.
           ./b2 toolset=gcc-13 install > /dev/null
 
-      - name: Application files
+      - name: Make build directory
+        run: mkdir build
+
+      - name: Generate build files
+        working-directory: build
+        env:
+          BOOST_ROOT: ~/boost_1_84_0
+          CXX: g++-13
+        run: cmake -DPACKAGE_TESTS=OFF ..
+
+      - name: Build
+        working-directory: build
+        run: cmake --build . --verbose
+
+      - name: Main application files
         run: >
-          clang-tidy-16 src/*.cpp gui/json_settings.cpp -- -std=c++20
-          -Iinclude -Ilibs -Iextern/sightread/include -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore -isystem $HOME/boost_1_84_0
+          clang-tidy-16 src/*.cpp -- -std=c++20
+          -Iinclude -Ilibs -Iextern/sightread/include -isystem $HOME/boost_1_84_0
+          -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore
+
+      - name: GUI frontend files
+        run: >
+          clang-tidy-16 gui/*.cpp -checks=-cppcoreguidelines-owning-memory,-readability-inconsistent-declaration-parameter-name
+          -- -std=c++20
+          -Iinclude -Ilibs -Iextern/sightread/include -isystem $HOME/boost_1_84_0
+          -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore -I${Qt6_DIR}/include/QtGui -I${Qt6_DIR}/include/QtWidgets
+          -Ibuild/choptgui_autogen/include
 
       - name: Test files
         run: >

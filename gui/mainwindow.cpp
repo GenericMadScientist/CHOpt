@@ -137,7 +137,8 @@ MainWindow::MainWindow(QWidget* parent)
     // This is the maximum for our validators instead of MAX_INT because
     // with MAX_INT the user can enter 9,999,999,999 which causes an
     // overflow.
-    constexpr int max_digits_int = 999999999;
+    constexpr auto MAX_DIGITS_INT = 999999999;
+    constexpr auto MIN_LABEL_WIDTH = 30;
 
     m_ui->setupUi(this);
     m_ui->instrumentComboBox->setEnabled(false);
@@ -146,16 +147,16 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->findPathButton->setEnabled(false);
 
     m_ui->lazyWhammyLineEdit->setValidator(
-        new QIntValidator(0, max_digits_int, m_ui->lazyWhammyLineEdit));
+        new QIntValidator(0, MAX_DIGITS_INT, m_ui->lazyWhammyLineEdit));
     m_ui->whammyDelayLineEdit->setValidator(
-        new QIntValidator(0, max_digits_int, m_ui->whammyDelayLineEdit));
+        new QIntValidator(0, MAX_DIGITS_INT, m_ui->whammyDelayLineEdit));
     m_ui->speedLineEdit->setValidator(
-        new QIntValidator(5, 5000, m_ui->speedLineEdit));
+        new QIntValidator(MIN_SPEED, MAX_SPEED, m_ui->speedLineEdit));
 
-    m_ui->squeezeLabel->setMinimumWidth(30);
-    m_ui->earlyWhammyLabel->setMinimumWidth(30);
-    m_ui->videoLagLabel->setMinimumWidth(30);
-    m_ui->opacityLabel->setMinimumWidth(30);
+    m_ui->squeezeLabel->setMinimumWidth(MIN_LABEL_WIDTH);
+    m_ui->earlyWhammyLabel->setMinimumWidth(MIN_LABEL_WIDTH);
+    m_ui->videoLagLabel->setMinimumWidth(MIN_LABEL_WIDTH);
+    m_ui->opacityLabel->setMinimumWidth(MIN_LABEL_WIDTH);
 
     const auto settings = load_saved_settings(
         QCoreApplication::applicationDirPath().toStdString());
@@ -171,22 +172,24 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow()
 {
-    JsonSettings settings;
+    constexpr auto DELAY_IN_MS = 5000;
+
+    JsonSettings settings {};
     settings.squeeze = m_ui->squeezeSlider->value();
     settings.early_whammy = m_ui->earlyWhammySlider->value();
     settings.video_lag = m_ui->videoLagSlider->value();
     settings.is_lefty_flip = m_ui->leftyCheckBox->isChecked();
 
-    bool ok;
+    auto ok = false;
     const auto lazy_whammy_text = m_ui->lazyWhammyLineEdit->text();
-    const auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok, 10);
+    const auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok);
     if (ok) {
         settings.lazy_whammy = lazy_whammy_ms;
     } else {
         settings.lazy_whammy = 0;
     }
     const auto whammy_delay_text = m_ui->whammyDelayLineEdit->text();
-    const auto whammy_delay_ms = whammy_delay_text.toInt(&ok, 10);
+    const auto whammy_delay_ms = whammy_delay_text.toInt(&ok);
     if (ok) {
         settings.whammy_delay = whammy_delay_ms;
     } else {
@@ -197,7 +200,7 @@ MainWindow::~MainWindow()
                   QCoreApplication::applicationDirPath().toStdString());
 
     if (m_thread != nullptr) {
-        auto* opt_thread = dynamic_cast<OptimiserThread*>(m_thread);
+        auto* opt_thread = dynamic_cast<OptimiserThread*>(m_thread.get());
         if (opt_thread != nullptr) {
             opt_thread->end_thread();
         }
@@ -205,7 +208,7 @@ MainWindow::~MainWindow()
         // We give the thread 5 seconds to obey, then kill it. Although all
         // the thread does apart from CPU-bound work is write to a file at
         // the very end, so the call to terminate is not so bad.
-        if (!m_thread->wait(5000)) {
+        if (!m_thread->wait(DELAY_IN_MS)) {
             m_thread->terminate();
             m_thread->wait();
         }
@@ -237,6 +240,10 @@ void MainWindow::write_message(const QString& message)
 
 Settings MainWindow::get_settings() const
 {
+    constexpr auto DEFAULT_SPEED = 100;
+    constexpr auto MS_IN_SECOND = 1000.0;
+    constexpr auto PERCENTAGE_IN_UNIT = 100.0;
+
     Settings settings;
 
     settings.blank = m_ui->blankPathCheckBox->isChecked();
@@ -253,43 +260,45 @@ Settings MainWindow::get_settings() const
                               .value<SightRead::Difficulty>();
     settings.instrument = m_ui->instrumentComboBox->currentData()
                               .value<SightRead::Instrument>();
-    settings.squeeze_settings.squeeze = m_ui->squeezeSlider->value() / 100.0;
+    settings.squeeze_settings.squeeze
+        = m_ui->squeezeSlider->value() / PERCENTAGE_IN_UNIT;
     settings.squeeze_settings.early_whammy
-        = m_ui->earlyWhammySlider->value() / 100.0;
+        = m_ui->earlyWhammySlider->value() / PERCENTAGE_IN_UNIT;
     settings.squeeze_settings.video_lag
-        = SightRead::Second {m_ui->videoLagSlider->value() / 1000.0};
+        = SightRead::Second {m_ui->videoLagSlider->value() / MS_IN_SECOND};
     settings.game = m_ui->engineComboBox->currentData().value<Game>();
     const auto precision_mode = m_ui->precisionModeCheckBox->isChecked();
     settings.engine
         = game_to_engine(settings.game, settings.instrument, precision_mode);
     settings.is_lefty_flip = m_ui->leftyCheckBox->isChecked();
-    settings.opacity = m_ui->opacitySlider->value() / 100.0F;
+    settings.opacity
+        = static_cast<float>(m_ui->opacitySlider->value() / PERCENTAGE_IN_UNIT);
 
     const auto lazy_whammy_text = m_ui->lazyWhammyLineEdit->text();
-    bool ok;
-    auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok, 10);
+    auto ok = false;
+    auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok);
     if (ok) {
         settings.squeeze_settings.lazy_whammy
-            = SightRead::Second {lazy_whammy_ms / 1000.0};
+            = SightRead::Second {lazy_whammy_ms / MS_IN_SECOND};
     } else {
         settings.squeeze_settings.lazy_whammy = SightRead::Second {0.0};
     }
 
     const auto whammy_delay_text = m_ui->whammyDelayLineEdit->text();
-    auto whammy_delay_ms = whammy_delay_text.toInt(&ok, 10);
+    auto whammy_delay_ms = whammy_delay_text.toInt(&ok);
     if (ok) {
         settings.squeeze_settings.whammy_delay
-            = SightRead::Second {whammy_delay_ms / 1000.0};
+            = SightRead::Second {whammy_delay_ms / MS_IN_SECOND};
     } else {
         settings.squeeze_settings.whammy_delay = SightRead::Second {0.0};
     }
 
     const auto speed_text = m_ui->speedLineEdit->text();
-    auto speed = speed_text.toInt(&ok, 10);
+    auto speed = speed_text.toInt(&ok);
     if (ok) {
         settings.speed = speed;
     } else {
-        settings.speed = 100;
+        settings.speed = DEFAULT_SPEED;
     }
 
     return settings;
@@ -306,6 +315,8 @@ void MainWindow::on_selectFileButton_clicked()
     load_file(file_name);
 }
 
+void MainWindow::clear_worker_thread() { m_thread.reset(); }
+
 void MainWindow::load_file(const QString& file_name)
 {
     if (!file_name.endsWith(".chart") && !file_name.endsWith(".mid")) {
@@ -316,16 +327,16 @@ void MainWindow::load_file(const QString& file_name)
     m_ui->selectFileButton->setEnabled(false);
     setAcceptDrops(false);
 
-    auto* worker_thread = new ParserThread(this);
+    auto worker_thread = std::make_unique<ParserThread>(this);
     worker_thread->set_file_name(file_name);
-    connect(worker_thread, &ParserThread::result_ready, this,
+    connect(worker_thread.get(), &ParserThread::result_ready, this,
             &MainWindow::song_read);
-    connect(worker_thread, &ParserThread::parsing_failed, this,
+    connect(worker_thread.get(), &ParserThread::parsing_failed, this,
             &MainWindow::parsing_failed);
-    connect(worker_thread, &ParserThread::finished, worker_thread,
-            &QObject::deleteLater);
-    m_thread = worker_thread;
-    worker_thread->start();
+    connect(worker_thread.get(), &ParserThread::finished, this,
+            &MainWindow::clear_worker_thread);
+    m_thread = std::move(worker_thread);
+    m_thread->start();
 }
 
 void MainWindow::populate_games(const std::set<Game>& games)
@@ -347,10 +358,13 @@ void MainWindow::populate_games(const std::set<Game>& games)
 
 void MainWindow::on_findPathButton_clicked()
 {
+    constexpr auto SPEED_INCREMENT = 5;
+
     const auto speed_text = m_ui->speedLineEdit->text();
-    bool ok;
-    const auto speed = speed_text.toInt(&ok, 10);
-    if (!ok || speed < 5 || speed > 5000 || speed % 5 != 0) {
+    auto ok = false;
+    const auto speed = speed_text.toInt(&ok);
+    if (!ok || speed < MIN_SPEED || speed > MAX_SPEED
+        || speed % SPEED_INCREMENT != 0) {
         write_message("Speed not supported by Clone Hero");
         return;
     }
@@ -368,23 +382,23 @@ void MainWindow::on_findPathButton_clicked()
     m_ui->selectFileButton->setEnabled(false);
     m_ui->findPathButton->setEnabled(false);
 
-    auto* worker_thread = new OptimiserThread(this);
     auto settings = get_settings();
     auto song = m_loaded_file->load_song(settings.game);
+    auto worker_thread = std::make_unique<OptimiserThread>(this);
     worker_thread->set_data(std::move(settings), std::move(song), file_name);
-    connect(worker_thread, &OptimiserThread::write_text, this,
+    connect(worker_thread.get(), &OptimiserThread::write_text, this,
             &MainWindow::write_message);
-    connect(worker_thread, &OptimiserThread::finished, this,
+    connect(worker_thread.get(), &OptimiserThread::finished, this,
             &MainWindow::path_found);
-    connect(worker_thread, &OptimiserThread::finished, worker_thread,
-            &QObject::deleteLater);
-    m_thread = worker_thread;
-    worker_thread->start();
+    connect(worker_thread.get(), &OptimiserThread::finished, this,
+            &MainWindow::clear_worker_thread);
+    m_thread = std::move(worker_thread);
+    m_thread->start();
 }
 
 void MainWindow::parsing_failed(const QString& file_name)
 {
-    m_thread = nullptr;
+    m_thread.reset();
     write_message(file_name + " invalid");
     m_ui->selectFileButton->setEnabled(true);
 }
@@ -392,7 +406,7 @@ void MainWindow::parsing_failed(const QString& file_name)
 void MainWindow::song_read(SongFile loaded_file, const std::set<Game>& games,
                            const QString& file_name)
 {
-    m_thread = nullptr;
+    m_thread.reset();
     m_loaded_file = std::move(loaded_file);
 
     populate_games(games);
@@ -409,7 +423,7 @@ void MainWindow::song_read(SongFile loaded_file, const std::set<Game>& games,
 
 void MainWindow::path_found()
 {
-    m_thread = nullptr;
+    m_thread.reset();
     m_ui->selectFileButton->setEnabled(true);
     m_ui->findPathButton->setEnabled(true);
 }
@@ -484,10 +498,9 @@ void MainWindow::on_videoLagSlider_valueChanged(int value)
 
 void MainWindow::on_opacitySlider_valueChanged(int value)
 {
-    auto text = QString::number(value / 100);
-    text += '.';
-    text += QString::number((value % 100) / 10);
-    text += QString::number(value % 10);
+    constexpr auto PERCENTAGE_IN_UNIT = 100.0;
+
+    const auto text = QString::number(value / PERCENTAGE_IN_UNIT, 'f', 2);
     m_ui->opacityLabel->setText(text);
 }
 

@@ -42,10 +42,12 @@ class MainWindow : public QMainWindow {
 private:
     std::unique_ptr<Ui::MainWindow> m_ui;
     std::optional<SongFile> m_loaded_file;
-    QThread* m_thread = nullptr;
+    std::unique_ptr<QThread> m_thread;
     Settings get_settings() const;
     void load_file(const QString& file_name);
     void populate_games(const std::set<Game>& games);
+    static constexpr int MAX_SPEED = 5000;
+    static constexpr int MIN_SPEED = 5;
 
 protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
@@ -56,17 +58,18 @@ public:
     ~MainWindow();
 
 private slots:
+    void clear_worker_thread();
     void on_earlyWhammySlider_valueChanged(int value);
-    void on_engineComboBox_currentIndexChanged(int value);
+    void on_engineComboBox_currentIndexChanged(int index);
     void on_findPathButton_clicked();
-    void on_instrumentComboBox_currentIndexChanged(int value);
+    void on_instrumentComboBox_currentIndexChanged(int index);
     void on_opacitySlider_valueChanged(int value);
     void on_selectFileButton_clicked();
     void on_squeezeSlider_valueChanged(int value);
     void on_videoLagSlider_valueChanged(int value);
     void parsing_failed(const QString& file_name);
     void path_found();
-    void song_read(SongFile song_file, const std::set<Game>& games,
+    void song_read(SongFile loaded_file, const std::set<Game>& games,
                    const QString& file_name);
     void write_message(const QString& message);
 };
