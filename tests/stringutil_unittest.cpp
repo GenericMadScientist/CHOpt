@@ -63,11 +63,11 @@ BOOST_AUTO_TEST_CASE(to_utf8_string_correctly_converts_from_utf16le_to_utf8)
     BOOST_CHECK_EQUAL(to_utf8_string(text), "name=Test");
 }
 
-BOOST_AUTO_TEST_CASE(to_utf8_string_throws_on_a_string_with_odd_length)
+BOOST_AUTO_TEST_CASE(to_utf8_string_correctly_converts_from_latin_1_strings)
 {
-    const std::string text {"\xFF\xFE\x6E"};
+    const std::string text {"\xE9\x30"};
 
-    BOOST_CHECK_THROW([&] { return to_utf8_string(text); }(), std::exception);
+    BOOST_CHECK_EQUAL(to_utf8_string(text), "é0");
 }
 
 BOOST_AUTO_TEST_CASE(to_ordinal_works_correctly)

@@ -20,18 +20,11 @@
 #include <array>
 #include <stdexcept>
 
-// libc++ is special and doesn't support <cuchar> yet, so we need a different
-// method for the UTF-16le -> UTF-8 conversion. The alternative method isn't
-// general because it uses a feature deprecated in C++17 and Microsoft's STL
-// will complain if we use it.
-#ifndef _LIBCPP_VERSION
-#include <climits>
-#include <cstdint>
-#include <cuchar>
-#else
-#include <codecvt>
-#include <locale>
-#endif
+#include <QByteArrayView>
+#include <QChar>
+#include <QString>
+#include <QStringConverter>
+#include <QStringDecoder>
 
 #include <sightread/songparts.hpp>
 
@@ -64,46 +57,6 @@ std::string_view skip_whitespace(std::string_view input)
     return input;
 }
 
-namespace {
-std::string utf16_to_utf8_string(std::string_view input)
-{
-    if (input.size() % 2 != 0) {
-        throw std::invalid_argument("UTF-16 strings must have even length");
-    }
-
-    // I'm pretty sure I really do need the reinterpret_cast here.
-    std::u16string_view utf16_string_view {
-        reinterpret_cast<const char16_t*>(input.data()), // NOLINT
-        input.size() / 2};
-
-#ifndef _LIBCPP_VERSION
-    std::string u8_string;
-
-    // This conversion method is from the c16rtomb page on cppreference. This
-    // does not handle surrogate pairs, but I've only come across two UTF-16
-    // charts so a proper solution can wait until the C++ standard library gets
-    // a fix or a non-artificial chart comes up that this is a problem for.
-    std::mbstate_t state {};
-    std::array<char, MB_LEN_MAX> out {};
-    for (auto c : utf16_string_view) {
-        auto rc = std::c16rtomb(out.data(), c, &state);
-        if (rc != static_cast<std::size_t>(-1)) {
-            for (auto i = 0U; i < rc; ++i) {
-                u8_string.push_back(out.at(i));
-            }
-        }
-    }
-
-    return u8_string;
-#else
-    // std::codecvt_utf8_utf16 is deprecated in C++17 and Microsoft's STL
-    // complains about it so we can't have this be a general solution.
-    return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> {}
-        .to_bytes(utf16_string_view.cbegin(), utf16_string_view.cend());
-#endif
-}
-}
-
 std::string to_ordinal(int ordinal)
 {
     constexpr int TENS_MODULUS = 10;
@@ -132,15 +85,26 @@ std::string to_ordinal(int ordinal)
 
 std::string to_utf8_string(std::string_view input)
 {
-    if (input.starts_with("\xEF\xBB\xBF")) {
-        // Trim off UTF-8 BOM.
-        input.remove_prefix(3);
-        return std::string(input);
+    const QByteArrayView byte_view {input.data(),
+                                    static_cast<qsizetype>(input.size())};
+
+    QStringDecoder to_utf8 {QStringDecoder::Utf8};
+    QString str = to_utf8(byte_view);
+    if (!to_utf8.hasError()) {
+        return str.toStdString();
     }
-    if (input.starts_with("\xFF\xFE")) {
-        // Trim off UTF-16le BOM.
-        input.remove_prefix(2);
-        return utf16_to_utf8_string(input);
+
+    QStringDecoder to_latin_1 {QStringDecoder::Latin1};
+    str = to_latin_1(byte_view);
+    if (!to_latin_1.hasError() && !str.contains(QChar {0})) {
+        return str.toStdString();
     }
-    return std::string(input);
+
+    QStringDecoder to_utf16_le {QStringDecoder::Utf16LE};
+    str = to_utf16_le(byte_view);
+    if (!to_utf16_le.hasError()) {
+        return str.toStdString();
+    }
+
+    throw std::runtime_error("Unable to determine string encoding");
 }
