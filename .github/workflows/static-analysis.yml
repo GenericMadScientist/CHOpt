@@ -24,13 +24,8 @@ jobs:
         with:
           version: 6.5.*
 
-      - name: Install Boost 1.84.0
-        run: |
-          wget -O "$HOME/boost_1_84_0.tar.bz2" https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.bz2
-          tar --bzip2 -xf "$HOME/boost_1_84_0.tar.bz2" -C "$HOME"
-          cd "$HOME/boost_1_84_0"
-          ./bootstrap.sh --with-libraries=json,nowide,test --prefix=.
-          ./b2 toolset=gcc-13 install > /dev/null
+      - name: Install other dependencies
+        run: vcpkg install boost-json boost-nowide boost-test
 
       - name: Make build directory
         run: mkdir build
@@ -38,7 +33,7 @@ jobs:
       - name: Generate build files
         working-directory: build
         env:
-          BOOST_ROOT: ~/boost_1_84_0
+          CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
           CXX: g++-13
         run: cmake -DPACKAGE_TESTS=OFF ..
 
@@ -49,14 +44,14 @@ jobs:
       - name: Main application files
         run: >
           clang-tidy-16 src/*.cpp -- -std=c++20
-          -Iinclude -Ilibs -Iextern/sightread/include -isystem $HOME/boost_1_84_0
+          -Iinclude -Ilibs -Iextern/sightread/include -isystem ${VCPKG_INSTALLATION_ROOT}/installed/x64-linux/include
           -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore
 
       - name: GUI frontend files
         run: >
           clang-tidy-16 gui/*.cpp -checks=-cppcoreguidelines-owning-memory,-readability-inconsistent-declaration-parameter-name
           -- -std=c++20
-          -Iinclude -Ilibs -Iextern/sightread/include -isystem $HOME/boost_1_84_0
+          -Iinclude -Ilibs -Iextern/sightread/include -isystem ${VCPKG_INSTALLATION_ROOT}/installed/x64-linux/include
           -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore -I${Qt6_DIR}/include/QtGui -I${Qt6_DIR}/include/QtWidgets
           -Ibuild/choptgui_autogen/include
 
@@ -64,7 +59,8 @@ jobs:
         run: >
           clang-tidy-16 tests/*_unittest.cpp
           -checks=-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers
-          -- -Iinclude -Iextern/sightread/include -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore -I$HOME/boost_1_84_0 -std=c++20
+          -- -Iinclude -Iextern/sightread/include -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore
+          -I ${VCPKG_INSTALLATION_ROOT}/installed/x64-linux/include -std=c++20
 
   clang-format:
     runs-on: ubuntu-22.04

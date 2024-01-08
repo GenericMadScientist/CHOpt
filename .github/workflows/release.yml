@@ -154,13 +154,8 @@ jobs:
         with:
           version: 6.5.*
 
-      - name: Install Boost 1.84.0
-        run: |
-          wget -O "$HOME/boost_1_84_0.tar.bz2" https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.bz2
-          tar --bzip2 -xf "$HOME/boost_1_84_0.tar.bz2" -C "$HOME"
-          cd "$HOME/boost_1_84_0"
-          ./bootstrap.sh --with-libraries=json,nowide --prefix=.
-          ./b2 toolset=gcc-13 install > /dev/null
+      - name: Install other dependencies
+        run: vcpkg --triplet x64-linux-static install boost-nowide boost-test
 
       - name: Make build directory
         run: mkdir build
@@ -168,10 +163,10 @@ jobs:
       - name: Generate build files
         working-directory: build
         env:
-          BOOST_ROOT: ~/boost_1_84_0
           CMAKE_BUILD_TYPE: Release
+          CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
           CXX: g++-13
-        run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON ..
+        run: cmake -DVCPKG_TARGET_TRIPLET=x64-linux-static -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF ..
 
       - name: Build
         working-directory: build
