@@ -44,14 +44,14 @@ jobs:
       - name: Main application files
         run: >
           clang-tidy-16 src/*.cpp -- -std=c++20
-          -Iinclude -Ilibs -Iextern/sightread/include -isystem $HOME/boost_1_84_0
+          -Iinclude -Ilibs -Iextern/sightread/include -isystem ${VCPKG_INSTALLATION_ROOT}/installed/x64-linux/include
           -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore
 
       - name: GUI frontend files
         run: >
           clang-tidy-16 gui/*.cpp -checks=-cppcoreguidelines-owning-memory,-readability-inconsistent-declaration-parameter-name
           -- -std=c++20
-          -Iinclude -Ilibs -Iextern/sightread/include -isystem $HOME/boost_1_84_0
+          -Iinclude -Ilibs -Iextern/sightread/include -isystem ${VCPKG_INSTALLATION_ROOT}/installed/x64-linux/include
           -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore -I${Qt6_DIR}/include/QtGui -I${Qt6_DIR}/include/QtWidgets
           -Ibuild/choptgui_autogen/include
 
