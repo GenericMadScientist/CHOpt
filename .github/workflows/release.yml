@@ -56,6 +56,7 @@ jobs:
         run: |
           mkdir ..\cli-artifacts
           Move-Item -Path chopt.exe -Destination ..\cli-artifacts\CHOpt.exe
+          windeployqt --no-translations ..\cli-artifacts\CHOpt.exe
 
       - name: Prepare GUI release
         working-directory: build/Release
@@ -155,7 +156,7 @@ jobs:
           version: 6.5.*
 
       - name: Install other dependencies
-        run: vcpkg --triplet x64-linux-static install boost-nowide boost-test
+        run: vcpkg install boost-json boost-nowide boost-test
 
       - name: Make build directory
         run: mkdir build
@@ -166,7 +167,7 @@ jobs:
           CMAKE_BUILD_TYPE: Release
           CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
           CXX: g++-13
-        run: cmake -DVCPKG_TARGET_TRIPLET=x64-linux-static -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF ..
+        run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF ..
 
       - name: Build
         working-directory: build
@@ -178,6 +179,7 @@ jobs:
           mkdir cli-artifacts
           strip -s chopt
           mv chopt cli-artifacts/CHOpt
+          cp ${Qt6_DIR}/lib/libQt6Core.so.6 cli-artifacts/libQt6Core.so.6
 
       - name: Prepare GUI release
         working-directory: build
