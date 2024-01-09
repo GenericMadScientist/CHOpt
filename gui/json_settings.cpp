@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2022 Raymond Wright
+ * Copyright (C) 2022, 2024 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,10 @@
 
 #include <filesystem>
 
-#include <boost/json.hpp>
 #include <boost/nowide/fstream.hpp>
+
+#include <QJsonDocument>
+#include <QJsonObject>
 
 #include "json_settings.hpp"
 
@@ -34,27 +36,20 @@ struct IntRange {
     int max;
 };
 
-int read_value(const boost::json::object& settings, const char* name,
-               IntRange range, int default_value)
+int read_value(const QJsonObject& settings, const QString& name, IntRange range,
+               int default_value)
 {
-    const auto* it = settings.find(name);
-    if (it != settings.cend() && it->value().is_int64()) {
-        const auto value = it->value().get_int64();
-        if (value >= range.min && value <= range.max) {
-            return static_cast<int>(value);
-        }
+    const auto value = settings.value(name).toInt(default_value);
+    if (value >= range.min && value <= range.max) {
+        return value;
     }
     return default_value;
 }
 
-bool read_json_bool(const boost::json::object& settings, const char* name,
+bool read_json_bool(const QJsonObject& settings, const QString& name,
                     bool default_value)
 {
-    const auto* it = settings.find(name);
-    if (it != settings.cend() && it->value().is_bool()) {
-        return it->value().get_bool();
-    }
-    return default_value;
+    return settings.value(name).toBool(default_value);
 }
 }
 
@@ -79,16 +74,16 @@ JsonSettings load_saved_settings(std::string_view application_dir)
         return settings;
     }
 
-    boost::json::error_code ec;
-    const boost::json::value jv = boost::json::parse(
-        std::string {std::istreambuf_iterator<char>(settings_file),
-                     std::istreambuf_iterator<char>()},
-        ec);
-    if (ec || !jv.is_object()) {
+    const std::string json_file_contents {
+        std::istreambuf_iterator<char>(settings_file),
+        std::istreambuf_iterator<char>()};
+    const auto jv = QJsonDocument::fromJson(
+        QByteArray {json_file_contents.data(), json_file_contents.size()});
+    if (jv.isNull() || !jv.isObject()) {
         return settings;
     }
 
-    const auto& obj = jv.get_object();
+    const auto obj = jv.object();
     settings.squeeze
         = read_value(obj, "squeeze", {0, MAX_PERCENT}, MAX_PERCENT);
     settings.early_whammy
@@ -107,13 +102,13 @@ JsonSettings load_saved_settings(std::string_view application_dir)
 void save_settings(const JsonSettings& settings,
                    std::string_view application_dir)
 {
-    const boost::json::object obj = {{"squeeze", settings.squeeze},
-                                     {"early_whammy", settings.early_whammy},
-                                     {"lazy_whammy", settings.lazy_whammy},
-                                     {"whammy_delay", settings.whammy_delay},
-                                     {"video_lag", settings.video_lag},
-                                     {"lefty_flip", settings.is_lefty_flip}};
+    const QJsonObject obj = {{"squeeze", settings.squeeze},
+                             {"early_whammy", settings.early_whammy},
+                             {"lazy_whammy", settings.lazy_whammy},
+                             {"whammy_delay", settings.whammy_delay},
+                             {"video_lag", settings.video_lag},
+                             {"lefty_flip", settings.is_lefty_flip}};
     const auto path = settings_path(application_dir);
     boost::nowide::ofstream settings_file {path};
-    settings_file << obj;
+    settings_file << QJsonDocument(obj).toJson().toStdString();
 }

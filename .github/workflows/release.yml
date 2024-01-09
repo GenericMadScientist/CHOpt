@@ -35,7 +35,7 @@ jobs:
           version: 6.5.*
 
       - name: Install other dependencies
-        run: vcpkg --triplet x64-windows-static-md install boost-json boost-nowide libpng
+        run: vcpkg --triplet x64-windows-static-md install boost-nowide libpng
 
       - name: Make build directory
         run: mkdir build
@@ -156,7 +156,7 @@ jobs:
           version: 6.5.*
 
       - name: Install other dependencies
-        run: vcpkg install boost-json boost-nowide boost-test
+        run: vcpkg install boost-nowide
 
       - name: Make build directory
         run: mkdir build

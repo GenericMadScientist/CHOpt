@@ -17,7 +17,7 @@ jobs:
           version: 6.5.*
 
       - name: Install other dependencies
-        run: vcpkg install boost-json boost-nowide boost-test
+        run: vcpkg install boost-nowide boost-test
 
       - name: Make build directory
         run: mkdir build
@@ -51,7 +51,7 @@ jobs:
           version: 6.5.*
 
       - name: Install other dependencies
-        run: vcpkg install boost-json boost-nowide boost-test
+        run: vcpkg install boost-nowide
 
       - name: Make build directory
         run: mkdir build
