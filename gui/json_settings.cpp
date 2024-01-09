@@ -77,8 +77,9 @@ JsonSettings load_saved_settings(std::string_view application_dir)
     const std::string json_file_contents {
         std::istreambuf_iterator<char>(settings_file),
         std::istreambuf_iterator<char>()};
-    const auto jv = QJsonDocument::fromJson(
-        QByteArray {json_file_contents.data(), json_file_contents.size()});
+    const QByteArray bytes {json_file_contents.data(),
+                           static_cast<qsizetype>(json_file_contents.size())};
+    const auto jv = QJsonDocument::fromJson(bytes);
     if (jv.isNull() || !jv.isObject()) {
         return settings;
     }
