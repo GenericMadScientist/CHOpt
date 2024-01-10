@@ -67,7 +67,7 @@ in cmd then enter to open a command prompt in that folder, then run the command
 
 ## Dependencies
 
-* [Boost](https://www.boost.org) for Nowide and Test
+* [Boost](https://www.boost.org) for Boost.Test
 * [CImg](https://cimg.eu) to produce images
 * [libpng](http://libpng.org/pub/png/libpng.html) to save pngs
 * [Qt 6](https://www.qt.io) for the GUI and various utility code for both
@@ -77,8 +77,8 @@ charts and midis
 * [zlib](https://zlib.net) is a dependency of libpng
 
 CImg is vendored in the repo. Boost, libpng, Qt, and zlib will need to be
-provided by anyone compiling CHOpt for themselves. libpng and zlib need to be
-set up so that
+provided by anyone compiling CHOpt for themselves. Boost is only required for
+tests. libpng and zlib need to be set up so that
 [FindPNG](https://cmake.org/cmake/help/latest/module/FindPNG.html) can find
 them, and the same is true for Boost and Qt (see
 [this](https://cmake.org/cmake/help/latest/module/FindBoost.html) and

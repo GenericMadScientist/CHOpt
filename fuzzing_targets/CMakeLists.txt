@@ -27,7 +27,6 @@ add_fuzz_target(
   "${SRC}/song.cpp"
   "${SRC}/songparts.cpp"
   "${SRC}/stringutil.cpp")
-target_link_libraries(chart_song_fuzzer PRIVATE nowide)
 
 add_fuzz_target(
   midi_song_fuzzer
@@ -38,4 +37,3 @@ add_fuzz_target(
   "${SRC}/song.cpp"
   "${SRC}/songparts.cpp"
   "${SRC}/stringutil.cpp")
-target_link_libraries(midi_song_fuzzer PRIVATE nowide)

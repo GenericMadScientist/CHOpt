@@ -17,7 +17,7 @@ jobs:
           version: 6.5.*
 
       - name: Install other dependencies
-        run: vcpkg install boost-nowide boost-test libpng
+        run: vcpkg install boost-test libpng
 
       - name: Make build directory
         run: mkdir build
@@ -73,8 +73,8 @@ jobs:
         with:
           version: 6.5.*
 
-      - name: Install other dependencies
-        run: vcpkg install boost-nowide boost-test
+      - name: Install Boost Test
+        run: vcpkg install boost-test
 
       - name: Make build directory
         run: mkdir build

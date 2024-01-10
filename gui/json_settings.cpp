@@ -18,17 +18,12 @@
 
 #include <filesystem>
 
-#include <boost/nowide/fstream.hpp>
-
+#include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QString>
 
 #include "json_settings.hpp"
-
-std::filesystem::path settings_path(std::string_view application_dir)
-{
-    return std::filesystem::path(application_dir) / "settings.json";
-}
 
 namespace {
 struct IntRange {
@@ -51,6 +46,12 @@ bool read_json_bool(const QJsonObject& settings, const QString& name,
 {
     return settings.value(name).toBool(default_value);
 }
+
+QString settings_path(std::string_view application_dir)
+{
+    const auto path = std::filesystem::path(application_dir) / "settings.json";
+    return QString::fromStdString(path.string());
+}
 }
 
 JsonSettings load_saved_settings(std::string_view application_dir)
@@ -68,18 +69,13 @@ JsonSettings load_saved_settings(std::string_view application_dir)
     settings.video_lag = 0;
     settings.is_lefty_flip = false;
 
-    const auto path = settings_path(application_dir);
-    boost::nowide::ifstream settings_file {path};
-    if (!settings_file.is_open()) {
+    QFile settings_file {settings_path(application_dir)};
+    if (!settings_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return settings;
     }
 
-    const std::string json_file_contents {
-        std::istreambuf_iterator<char>(settings_file),
-        std::istreambuf_iterator<char>()};
-    const QByteArray bytes {json_file_contents.data(),
-                            static_cast<qsizetype>(json_file_contents.size())};
-    const auto jv = QJsonDocument::fromJson(bytes);
+    const auto settings_file_bytes = settings_file.readAll();
+    const auto jv = QJsonDocument::fromJson(settings_file_bytes);
     if (jv.isNull() || !jv.isObject()) {
         return settings;
     }
@@ -109,7 +105,8 @@ void save_settings(const JsonSettings& settings,
                              {"whammy_delay", settings.whammy_delay},
                              {"video_lag", settings.video_lag},
                              {"lefty_flip", settings.is_lefty_flip}};
-    const auto path = settings_path(application_dir);
-    boost::nowide::ofstream settings_file {path};
-    settings_file << QJsonDocument(obj).toJson().toStdString();
+    QFile settings_file {settings_path(application_dir)};
+    if (settings_file.open(QIODevice::WriteOnly)) {
+        settings_file.write(QJsonDocument(obj).toJson());
+    }
 }

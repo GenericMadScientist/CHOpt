@@ -16,12 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <atomic>
+#include <cstdio>
 #include <exception>
-#include <ostream>
-
-#include <boost/nowide/iostream.hpp>
 
 #include <QCoreApplication>
+#include <QTextStream>
 
 #include <sightread/time.hpp>
 
@@ -32,6 +32,9 @@
 
 int main(int argc, char** argv)
 {
+    QTextStream q_stdout(stdout);
+    QTextStream q_stderr(stderr);
+
     try {
         QCoreApplication app {argc, argv};
         QCoreApplication::setApplicationName("CHOpt");
@@ -44,19 +47,19 @@ int main(int argc, char** argv)
             = song.track(settings.instrument, settings.difficulty);
         const std::atomic<bool> terminate {false};
         const auto builder = make_builder(
-            song, track, settings,
-            [&](auto p) { boost::nowide::cout << p << '\n'; }, &terminate);
-        boost::nowide::cout << std::flush;
+            song, track, settings, [&](auto p) { q_stdout << p << '\n'; },
+            &terminate);
+        q_stdout.flush();
         if (settings.draw_image) {
             const Image image {builder};
             image.save(settings.image_path.c_str());
         }
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
-        boost::nowide::cerr << "Error: " << e.what() << std::endl;
+        q_stderr << "Error: " << e.what() << '\n';
         return EXIT_FAILURE;
     } catch (...) {
-        boost::nowide::cerr << "Unexpected non-exception error!" << std::endl;
+        q_stderr << "Unexpected non-exception error!" << '\n';
         return EXIT_FAILURE;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023 Raymond Wright
+ * Copyright (C) 2023, 2024 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@
 #include <set>
 #include <string_view>
 
-#include <boost/nowide/fstream.hpp>
+#include <QFile>
+#include <QString>
 
 #include <sightread/chartparser.hpp>
 #include <sightread/midiparser.hpp>
@@ -73,10 +74,9 @@ SongFile::SongFile(const std::string& filename)
     const std::filesystem::path song_path {filename};
     const auto song_directory = song_path.parent_path();
     const auto ini_path = song_directory / "song.ini";
-    boost::nowide::ifstream ini_in {ini_path.string()};
-    if (ini_in.is_open()) {
-        ini_file = std::string {std::istreambuf_iterator<char>(ini_in),
-                                std::istreambuf_iterator<char>()};
+    QFile ini {QString::fromStdString(ini_path.string())};
+    if (ini.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        ini_file = ini.readAll().toStdString();
     }
     m_metadata = parse_ini(ini_file);
 
@@ -88,12 +88,13 @@ SongFile::SongFile(const std::string& filename)
         throw std::invalid_argument("file should be .chart or .mid");
     }
 
-    boost::nowide::ifstream in {filename, std::ios::binary};
-    if (!in.is_open()) {
+    QFile chart {QString::fromStdString(filename)};
+    if (!chart.open(QIODevice::ReadOnly)) {
         throw std::invalid_argument("File did not open");
     }
-    m_loaded_file = std::vector<std::uint8_t> {
-        std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
+    const auto chart_buffer = chart.readAll();
+    m_loaded_file = std::vector<std::uint8_t> {chart_buffer.cbegin(),
+                                               chart_buffer.cend()};
 }
 
 SightRead::Song SongFile::load_song(Game game) const

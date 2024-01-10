@@ -35,7 +35,7 @@ jobs:
           version: 6.5.*
 
       - name: Install other dependencies
-        run: vcpkg --triplet x64-windows-static-md install boost-nowide libpng
+        run: vcpkg --triplet x64-windows-static-md install libpng
 
       - name: Make build directory
         run: mkdir build
@@ -94,9 +94,6 @@ jobs:
         with:
           version: 6.4.*
 
-      - name: Install other dependencies
-        run: brew install boost
-
       - name: Make build directory
         run: mkdir build
 
@@ -104,7 +101,7 @@ jobs:
         working-directory: build
         env:
           CMAKE_BUILD_TYPE: Release
-        run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DBoost_USE_STATIC_LIBS=ON -DCMAKE_FIND_FRAMEWORK=LAST ..
+        run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF -DCMAKE_FIND_FRAMEWORK=LAST ..
 
       - name: Build
         working-directory: build
@@ -155,9 +152,6 @@ jobs:
         with:
           version: 6.5.*
 
-      - name: Install other dependencies
-        run: vcpkg install boost-nowide
-
       - name: Make build directory
         run: mkdir build
 
@@ -165,7 +159,6 @@ jobs:
         working-directory: build
         env:
           CMAKE_BUILD_TYPE: Release
-          CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
           CXX: g++-13
         run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF ..
 
