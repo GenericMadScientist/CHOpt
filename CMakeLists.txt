@@ -38,7 +38,7 @@ endfunction()
 find_package(PNG REQUIRED)
 find_package(
   Qt6 REQUIRED
-  COMPONENTS Core
+  COMPONENTS Core Gui
   OPTIONAL_COMPONENTS Widgets)
 
 set(CMAKE_AUTOMOC ON)
@@ -74,7 +74,7 @@ add_executable(
   resources/resources.rc)
 target_include_directories(
   chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
-target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES} Qt6::Core sightread)
+target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES} Qt6::Core Qt6::Gui sightread)
 
 set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 set_cpp_standard(chopt)
@@ -147,7 +147,7 @@ if(PACKAGE_TESTS)
 
   target_include_directories(chopt_tests
     PRIVATE "${PROJECT_SOURCE_DIR}/include")
-  target_link_libraries(chopt_tests PRIVATE Boost::unit_test_framework Qt6::Core sightread)
+  target_link_libraries(chopt_tests PRIVATE Boost::unit_test_framework Qt6::Core Qt6::Gui sightread)
   add_test(NAME chopt_tests COMMAND chopt_tests)
   set_cpp_standard(chopt_tests)
   set_warnings(chopt_tests)
