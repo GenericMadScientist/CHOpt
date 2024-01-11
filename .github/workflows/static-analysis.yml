@@ -44,7 +44,7 @@ jobs:
         run: >
           clang-tidy-16 src/*.cpp -- -std=c++20
           -Iinclude -Ilibs -Iextern/sightread/include
-          -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore
+          -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore -I${Qt6_DIR}/include/QtGui
 
       - name: GUI frontend files
         run: >

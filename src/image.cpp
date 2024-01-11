@@ -19,7 +19,6 @@
 #include <climits>
 #include <cmath>
 #include <cstdio>
-#include <format>
 #include <iterator>
 #include <set>
 #include <stdexcept>
@@ -633,8 +632,8 @@ void ImageImpl::draw_note_circle(int x, int y,
                                  SightRead::FiveFretNotes note_colour,
                                  bool is_lefty_flip)
 {
-    const auto sprite_path
-        = std::format(":/sprites/{}.png", static_cast<int>(note_colour));
+    const auto sprite_path = QString(":/sprites/")
+        + QString::number(static_cast<int>(note_colour)) + ".png";
     QImage sprite {QString::fromStdString(sprite_path)};
     sprite = sprite.mirrored(false, is_lefty_flip);
 
