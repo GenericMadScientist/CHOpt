@@ -634,7 +634,7 @@ void ImageImpl::draw_note_circle(int x, int y,
 {
     const auto sprite_path = QString(":/sprites/")
         + QString::number(static_cast<int>(note_colour)) + ".png";
-    QImage sprite {QString::fromStdString(sprite_path)};
+    QImage sprite {sprite_path};
     sprite = sprite.mirrored(false, is_lefty_flip);
 
     x -= sprite.width() / 2;
