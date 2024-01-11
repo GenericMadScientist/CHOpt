@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,13 @@
 #include <climits>
 #include <cmath>
 #include <cstdio>
+#include <format>
 #include <iterator>
 #include <set>
 #include <stdexcept>
+
+#include <QImage>
+#include <QString>
 
 #include "cimg_wrapper.hpp"
 
@@ -291,6 +295,14 @@ bool is_kick_note(const DrawnNote& note)
 {
     return note.lengths[SightRead::DRUM_KICK] != -1
         || note.lengths[SightRead::DRUM_DOUBLE_KICK] != -1;
+}
+
+void blend_colour(unsigned char& canvas_value, int sprite_value,
+                  int sprite_alpha)
+{
+    canvas_value
+        = ((255 - sprite_alpha) * canvas_value + sprite_value * sprite_alpha)
+        / 255;
 }
 }
 
@@ -621,20 +633,24 @@ void ImageImpl::draw_note_circle(int x, int y,
                                  SightRead::FiveFretNotes note_colour,
                                  bool is_lefty_flip)
 {
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
-    constexpr int RADIUS = 5;
+    const auto sprite_path
+        = std::format(":/sprites/{}.png", static_cast<int>(note_colour));
+    QImage sprite {QString::fromStdString(sprite_path)};
+    sprite = sprite.mirrored(false, is_lefty_flip);
 
-    auto colour = note_colour_to_colour(note_colour);
-    auto offset = note_colour_to_offset(note_colour, is_lefty_flip);
+    x -= sprite.width() / 2;
+    y -= (sprite.height() - MEASURE_HEIGHT) / 2;
 
-    if (note_colour == SightRead::FIVE_FRET_OPEN) {
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
-                               colour.data(), OPEN_NOTE_OPACITY);
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
-                               black.data(), 1.0, ~0U);
-    } else {
-        m_image.draw_circle(x, y + offset, RADIUS, colour.data());
-        m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
+    for (auto i = 0; i < sprite.height(); ++i) {
+        for (auto j = 0; j < sprite.width(); ++j) {
+            const auto sprite_colour = sprite.pixelColor(i, j);
+            blend_colour(m_image(x + i, y + j, 0), sprite_colour.red(),
+                         sprite_colour.alpha());
+            blend_colour(m_image(x + i, y + j, 1), sprite_colour.green(),
+                         sprite_colour.alpha());
+            blend_colour(m_image(x + i, y + j, 2), sprite_colour.blue(),
+                         sprite_colour.alpha());
+        }
     }
 }
 
