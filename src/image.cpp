@@ -299,9 +299,11 @@ bool is_kick_note(const DrawnNote& note)
 void blend_colour(unsigned char& canvas_value, int sprite_value,
                   int sprite_alpha)
 {
-    canvas_value
-        = ((255 - sprite_alpha) * canvas_value + sprite_value * sprite_alpha)
-        / 255;
+    const auto MAX_OPACITY = 255;
+
+    canvas_value = ((MAX_OPACITY - sprite_alpha) * canvas_value
+                    + sprite_value * sprite_alpha)
+        / MAX_OPACITY;
 }
 }
 
