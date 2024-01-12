@@ -40,7 +40,7 @@ constexpr int VERSION_PATCH = 1;
 constexpr int BEAT_WIDTH = 60;
 constexpr int FONT_HEIGHT = 13;
 constexpr int LEFT_MARGIN = 31;
-constexpr int MARGIN = 93;
+constexpr int MARGIN = 92;
 constexpr int MEASURE_HEIGHT = 61;
 constexpr float OPEN_NOTE_OPACITY = 0.5F;
 constexpr int TOP_MARGIN = 125;
@@ -399,7 +399,7 @@ void ImageImpl::draw_measures(const ImageBuilder& builder)
             m_image.draw_line(LEFT_MARGIN, y + colour_distance * i, x_max,
                               y + colour_distance * i, GREY.data());
         }
-        m_image.draw_rectangle(LEFT_MARGIN, y, x_max, y + MEASURE_HEIGHT,
+        m_image.draw_rectangle(LEFT_MARGIN, y, x_max, y + MEASURE_HEIGHT - 1,
                                BLACK.data(), 1.0, ~0U);
         ++current_row;
     }
@@ -427,7 +427,7 @@ void ImageImpl::draw_vertical_lines(const ImageBuilder& builder,
 {
     for (auto pos : positions) {
         auto [x, y] = get_xy(builder, pos);
-        m_image.draw_line(x, y, x, y + MEASURE_HEIGHT, colour.data());
+        m_image.draw_line(x, y, x, y + MEASURE_HEIGHT - 1, colour.data());
     }
 }
 
@@ -485,7 +485,7 @@ void ImageImpl::draw_score_totals(const ImageBuilder& builder)
     constexpr std::array<unsigned char, 3> GREEN {0, 100, 0};
     constexpr std::array<unsigned char, 3> GREY {160, 160, 160};
 
-    constexpr int BASE_VALUE_MARGIN = 5;
+    constexpr int BASE_VALUE_MARGIN = 4;
     // This is enough room for the max double (below 10^309, a '.', two more
     // digits, then "SP").
     constexpr std::size_t BUFFER_SIZE = 315;
@@ -672,9 +672,9 @@ void ImageImpl::draw_ghl_note(
     constexpr int RADIUS = 5;
 
     if (note_colours.contains(SightRead::SIX_FRET_OPEN)) {
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
                                white.data(), OPEN_NOTE_OPACITY);
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
                                black.data(), 1.0, ~0U);
         return;
     }
@@ -717,9 +717,9 @@ void ImageImpl::draw_drum_note(int x, int y, SightRead::DrumNotes note_colour,
 
     if (note_colour == SightRead::DRUM_KICK
         || note_colour == SightRead::DRUM_DOUBLE_KICK) {
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
                                colour.data(), OPEN_NOTE_OPACITY);
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
                                black.data(), 1.0, ~0U);
     } else if ((flags & SightRead::FLAGS_CYMBAL) != 0U) {
         m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
@@ -753,9 +753,9 @@ void ImageImpl::draw_note_star(int x, int y,
     }
 
     if (note_colour == SightRead::FIVE_FRET_OPEN) {
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
                                colour.data(), OPEN_NOTE_OPACITY);
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 3,
+        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
                                black.data(), 1.0, ~0U);
     } else {
         m_image.draw_polygon(points, colour.data());
@@ -902,29 +902,33 @@ Image::Image(const ImageBuilder& builder)
     m_impl->draw_time_sigs(builder);
 
     for (const auto& range : builder.solo_ranges()) {
-        m_impl->colour_beat_range(builder, solo_blue, range,
-                                  {-SOLO_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT},
-                                  RANGE_OPACITY / 2);
+        m_impl->colour_beat_range(
+            builder, solo_blue, range,
+            {-SOLO_HEIGHT, MEASURE_HEIGHT - 1 + SOLO_HEIGHT},
+            RANGE_OPACITY / 2);
     }
 
     for (const auto& range : builder.bre_ranges()) {
-        m_impl->colour_beat_range(builder, pink, range,
-                                  {-SOLO_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT},
-                                  RANGE_OPACITY / 2);
+        m_impl->colour_beat_range(
+            builder, pink, range,
+            {-SOLO_HEIGHT, MEASURE_HEIGHT - 1 + SOLO_HEIGHT},
+            RANGE_OPACITY / 2);
     }
 
     for (const auto& range : builder.fill_ranges()) {
-        m_impl->colour_beat_range(builder, pink, range,
-                                  {-SOLO_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT},
-                                  RANGE_OPACITY / 2);
+        m_impl->colour_beat_range(
+            builder, pink, range,
+            {-SOLO_HEIGHT, MEASURE_HEIGHT - 1 + SOLO_HEIGHT},
+            RANGE_OPACITY / 2);
     }
 
     for (const auto& range : builder.unison_ranges()) {
-        m_impl->colour_beat_range(builder, yellow, range, {-SOLO_HEIGHT, 0},
+        m_impl->colour_beat_range(builder, yellow, range, {-SOLO_HEIGHT, -1},
                                   RANGE_OPACITY / 2);
         m_impl->colour_beat_range(
             builder, yellow, range,
-            {MEASURE_HEIGHT, MEASURE_HEIGHT + SOLO_HEIGHT}, RANGE_OPACITY / 2);
+            {MEASURE_HEIGHT, MEASURE_HEIGHT - 1 + SOLO_HEIGHT},
+            RANGE_OPACITY / 2);
     }
 
     switch (builder.track_type()) {
@@ -943,19 +947,19 @@ Image::Image(const ImageBuilder& builder)
     m_impl->draw_score_totals(builder);
 
     for (const auto& range : builder.green_ranges()) {
-        m_impl->colour_beat_range(builder, green, range, {0, MEASURE_HEIGHT},
-                                  RANGE_OPACITY);
+        m_impl->colour_beat_range(builder, green, range,
+                                  {0, MEASURE_HEIGHT - 1}, RANGE_OPACITY);
     }
     for (const auto& range : builder.yellow_ranges()) {
-        m_impl->colour_beat_range(builder, yellow, range, {0, MEASURE_HEIGHT},
-                                  RANGE_OPACITY);
+        m_impl->colour_beat_range(builder, yellow, range,
+                                  {0, MEASURE_HEIGHT - 1}, RANGE_OPACITY);
     }
     for (const auto& range : builder.red_ranges()) {
-        m_impl->colour_beat_range(builder, red, range, {0, MEASURE_HEIGHT},
+        m_impl->colour_beat_range(builder, red, range, {0, MEASURE_HEIGHT - 1},
                                   builder.activation_opacity());
     }
     for (const auto& range : builder.blue_ranges()) {
-        m_impl->colour_beat_range(builder, blue, range, {0, MEASURE_HEIGHT},
+        m_impl->colour_beat_range(builder, blue, range, {0, MEASURE_HEIGHT - 1},
                                   builder.activation_opacity());
     }
 }
