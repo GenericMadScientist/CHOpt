@@ -650,10 +650,14 @@ void ImageImpl::draw_note_circle(int x, int y,
                                  SightRead::FiveFretNotes note_colour,
                                  bool is_lefty_flip)
 {
-    const auto sprite_path = QString(":/sprites/")
-        + QString::number(static_cast<int>(note_colour)) + ".png";
-    QImage sprite {sprite_path};
-    sprite = sprite.mirrored(false, is_lefty_flip);
+    QString sprite_path {":/sprites/"};
+    if (is_lefty_flip) {
+        sprite_path += "lefty/";
+    } else {
+        sprite_path += "righty/";
+    }
+    sprite_path += QString::number(static_cast<int>(note_colour)) + ".png";
+    const QImage sprite {sprite_path};
 
     x -= sprite.width() / 2;
     y -= (sprite.height() - MEASURE_HEIGHT) / 2;
