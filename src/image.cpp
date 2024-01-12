@@ -311,6 +311,7 @@ class ImageImpl {
 private:
     CImg<unsigned char> m_image;
 
+    void draw_sprite(const QImage& sprite, int x, int y);
     void draw_note_circle(int x, int y, SightRead::FiveFretNotes note_colour,
                           bool is_lefty_flip);
     void draw_note_star(int x, int y, SightRead::FiveFretNotes colour,
@@ -630,6 +631,21 @@ void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
     }
 }
 
+void ImageImpl::draw_sprite(const QImage& sprite, int x, int y)
+{
+    for (auto i = 0; i < sprite.width(); ++i) {
+        for (auto j = 0; j < sprite.height(); ++j) {
+            const auto sprite_colour = sprite.pixelColor(i, j);
+            blend_colour(m_image(x + i, y + j, 0), sprite_colour.red(),
+                         sprite_colour.alpha());
+            blend_colour(m_image(x + i, y + j, 1), sprite_colour.green(),
+                         sprite_colour.alpha());
+            blend_colour(m_image(x + i, y + j, 2), sprite_colour.blue(),
+                         sprite_colour.alpha());
+        }
+    }
+}
+
 void ImageImpl::draw_note_circle(int x, int y,
                                  SightRead::FiveFretNotes note_colour,
                                  bool is_lefty_flip)
@@ -642,17 +658,7 @@ void ImageImpl::draw_note_circle(int x, int y,
     x -= sprite.width() / 2;
     y -= (sprite.height() - MEASURE_HEIGHT) / 2;
 
-    for (auto i = 0; i < sprite.width(); ++i) {
-        for (auto j = 0; j < sprite.height(); ++j) {
-            const auto sprite_colour = sprite.pixelColor(i, j);
-            blend_colour(m_image(x + i, y + j, 0), sprite_colour.red(),
-                         sprite_colour.alpha());
-            blend_colour(m_image(x + i, y + j, 1), sprite_colour.green(),
-                         sprite_colour.alpha());
-            blend_colour(m_image(x + i, y + j, 2), sprite_colour.blue(),
-                         sprite_colour.alpha());
-        }
-    }
+    draw_sprite(sprite, x, y);
 }
 
 void ImageImpl::draw_ghl_note(
