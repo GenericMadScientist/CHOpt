@@ -71,6 +71,7 @@ add_executable(
   src/sptimemap.cpp
   src/stringutil.cpp
   resources/chopt.exe.manifest
+  resources/resources.qrc
   resources/resources.rc)
 target_include_directories(
   chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})

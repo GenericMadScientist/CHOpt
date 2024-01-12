@@ -642,8 +642,8 @@ void ImageImpl::draw_note_circle(int x, int y,
     x -= sprite.width() / 2;
     y -= (sprite.height() - MEASURE_HEIGHT) / 2;
 
-    for (auto i = 0; i < sprite.height(); ++i) {
-        for (auto j = 0; j < sprite.width(); ++j) {
+    for (auto i = 0; i < sprite.width(); ++i) {
+        for (auto j = 0; j < sprite.height(); ++j) {
             const auto sprite_colour = sprite.pixelColor(i, j);
             blend_colour(m_image(x + i, y + j, 0), sprite_colour.red(),
                          sprite_colour.alpha());
