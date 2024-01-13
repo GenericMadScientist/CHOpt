@@ -1,17 +1,30 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-  <file>icon.png</file>
-  <file>sprites/lefty/0.png</file>
-  <file>sprites/lefty/1.png</file>
-  <file>sprites/lefty/2.png</file>
-  <file>sprites/lefty/3.png</file>
-  <file>sprites/lefty/4.png</file>
-  <file>sprites/lefty/5.png</file>
-  <file>sprites/righty/0.png</file>
-  <file>sprites/righty/1.png</file>
-  <file>sprites/righty/2.png</file>
-  <file>sprites/righty/3.png</file>
-  <file>sprites/righty/4.png</file>
-  <file>sprites/righty/5.png</file>
-</qresource>
+<!DOCTYPE RCC>
+<RCC version="1.0">
+	<qresource>
+		<file>icon.png</file>
+		<file>sprites/lefty/circles/0.png</file>
+		<file>sprites/lefty/circles/1.png</file>
+		<file>sprites/lefty/circles/2.png</file>
+		<file>sprites/lefty/circles/3.png</file>
+		<file>sprites/lefty/circles/4.png</file>
+		<file>sprites/lefty/circles/5.png</file>
+		<file>sprites/lefty/stars/0.png</file>
+		<file>sprites/lefty/stars/1.png</file>
+		<file>sprites/lefty/stars/2.png</file>
+		<file>sprites/lefty/stars/3.png</file>
+		<file>sprites/lefty/stars/4.png</file>
+		<file>sprites/lefty/stars/5.png</file>
+		<file>sprites/righty/circles/0.png</file>
+		<file>sprites/righty/circles/1.png</file>
+		<file>sprites/righty/circles/2.png</file>
+		<file>sprites/righty/circles/3.png</file>
+		<file>sprites/righty/circles/4.png</file>
+		<file>sprites/righty/circles/5.png</file>
+		<file>sprites/righty/stars/0.png</file>
+		<file>sprites/righty/stars/1.png</file>
+		<file>sprites/righty/stars/2.png</file>
+		<file>sprites/righty/stars/3.png</file>
+		<file>sprites/righty/stars/4.png</file>
+		<file>sprites/righty/stars/5.png</file>
+	</qresource>
 </RCC>

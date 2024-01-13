@@ -312,10 +312,6 @@ private:
     CImg<unsigned char> m_image;
 
     void draw_sprite(const QImage& sprite, int x, int y);
-    void draw_note_circle(int x, int y, SightRead::FiveFretNotes note_colour,
-                          bool is_lefty_flip);
-    void draw_note_star(int x, int y, SightRead::FiveFretNotes colour,
-                        bool is_lefty_flip);
     void draw_note_sustain(const ImageBuilder& builder, const DrawnNote& note);
     void draw_ghl_note(int x, int y,
                        const std::set<SightRead::SixFretNotes>& note_colours,
@@ -562,12 +558,21 @@ void ImageImpl::draw_notes(const ImageBuilder& builder)
             if (note.lengths.at(i) == -1) {
                 continue;
             }
-            const auto colour = static_cast<SightRead::FiveFretNotes>(i);
-            if (note.is_sp_note) {
-                draw_note_star(x, y, colour, builder.is_lefty_flip());
+            QString sprite_path {":/sprites/"};
+            if (builder.is_lefty_flip()) {
+                sprite_path += "lefty/";
             } else {
-                draw_note_circle(x, y, colour, builder.is_lefty_flip());
+                sprite_path += "righty/";
             }
+            if (note.is_sp_note) {
+                sprite_path += "stars/";
+            } else {
+                sprite_path += "circles/";
+            }
+            sprite_path += QString::number(i) + ".png";
+            const QImage sprite {sprite_path};
+            draw_sprite(sprite, x - sprite.width() / 2,
+                        y - (sprite.height() - MEASURE_HEIGHT) / 2);
         }
     }
 }
@@ -646,25 +651,6 @@ void ImageImpl::draw_sprite(const QImage& sprite, int x, int y)
     }
 }
 
-void ImageImpl::draw_note_circle(int x, int y,
-                                 SightRead::FiveFretNotes note_colour,
-                                 bool is_lefty_flip)
-{
-    QString sprite_path {":/sprites/"};
-    if (is_lefty_flip) {
-        sprite_path += "lefty/";
-    } else {
-        sprite_path += "righty/";
-    }
-    sprite_path += QString::number(static_cast<int>(note_colour)) + ".png";
-    const QImage sprite {sprite_path};
-
-    x -= sprite.width() / 2;
-    y -= (sprite.height() - MEASURE_HEIGHT) / 2;
-
-    draw_sprite(sprite, x, y);
-}
-
 void ImageImpl::draw_ghl_note(
     int x, int y, const std::set<SightRead::SixFretNotes>& note_colours,
     bool is_lefty_flip)
@@ -735,35 +721,6 @@ void ImageImpl::draw_drum_note(int x, int y, SightRead::DrumNotes note_colour,
     } else {
         m_image.draw_circle(x, y + offset, RADIUS, colour.data());
         m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
-    }
-}
-
-void ImageImpl::draw_note_star(int x, int y,
-                               SightRead::FiveFretNotes note_colour,
-                               bool is_lefty_flip)
-{
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
-
-    auto colour = note_colour_to_colour(note_colour);
-    auto offset = note_colour_to_offset(note_colour, is_lefty_flip);
-
-    constexpr unsigned int POINTS_IN_STAR_POLYGON = 10;
-    CImg<int> points {POINTS_IN_STAR_POLYGON, 2};
-    constexpr std::array<int, 20> coords {0, -6, 1, -2, 5, -2, 2,  1,  3, 5, 0,
-                                          2, -3, 5, -2, 1, -5, -2, -1, -2};
-    for (auto i = 0U; i < POINTS_IN_STAR_POLYGON; ++i) {
-        points(i, 0) = coords[2 * i] + x; // NOLINT
-        points(i, 1) = coords[2 * i + 1] + y + offset; // NOLINT
-    }
-
-    if (note_colour == SightRead::FIVE_FRET_OPEN) {
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
-                               colour.data(), OPEN_NOTE_OPACITY);
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
-                               black.data(), 1.0, ~0U);
-    } else {
-        m_image.draw_polygon(points, colour.data());
-        m_image.draw_polygon(points, black.data(), 1.0, ~0U);
     }
 }
 
