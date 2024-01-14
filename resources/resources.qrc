@@ -2,29 +2,133 @@
 <RCC version="1.0">
 	<qresource>
 		<file>icon.png</file>
-		<file>sprites/lefty/circles/0.png</file>
 		<file>sprites/lefty/circles/1.png</file>
 		<file>sprites/lefty/circles/2.png</file>
 		<file>sprites/lefty/circles/3.png</file>
 		<file>sprites/lefty/circles/4.png</file>
 		<file>sprites/lefty/circles/5.png</file>
-		<file>sprites/lefty/stars/0.png</file>
+		<file>sprites/lefty/circles/6.png</file>
+		<file>sprites/lefty/circles/7.png</file>
+		<file>sprites/lefty/circles/8.png</file>
+		<file>sprites/lefty/circles/9.png</file>
+		<file>sprites/lefty/circles/10.png</file>
+		<file>sprites/lefty/circles/11.png</file>
+		<file>sprites/lefty/circles/12.png</file>
+		<file>sprites/lefty/circles/13.png</file>
+		<file>sprites/lefty/circles/14.png</file>
+		<file>sprites/lefty/circles/15.png</file>
+		<file>sprites/lefty/circles/16.png</file>
+		<file>sprites/lefty/circles/17.png</file>
+		<file>sprites/lefty/circles/18.png</file>
+		<file>sprites/lefty/circles/19.png</file>
+		<file>sprites/lefty/circles/20.png</file>
+		<file>sprites/lefty/circles/21.png</file>
+		<file>sprites/lefty/circles/22.png</file>
+		<file>sprites/lefty/circles/23.png</file>
+		<file>sprites/lefty/circles/24.png</file>
+		<file>sprites/lefty/circles/25.png</file>
+		<file>sprites/lefty/circles/26.png</file>
+		<file>sprites/lefty/circles/27.png</file>
+		<file>sprites/lefty/circles/28.png</file>
+		<file>sprites/lefty/circles/29.png</file>
+		<file>sprites/lefty/circles/30.png</file>
+		<file>sprites/lefty/circles/31.png</file>
+		<file>sprites/lefty/circles/32.png</file>
 		<file>sprites/lefty/stars/1.png</file>
 		<file>sprites/lefty/stars/2.png</file>
 		<file>sprites/lefty/stars/3.png</file>
 		<file>sprites/lefty/stars/4.png</file>
 		<file>sprites/lefty/stars/5.png</file>
-		<file>sprites/righty/circles/0.png</file>
+		<file>sprites/lefty/stars/6.png</file>
+		<file>sprites/lefty/stars/7.png</file>
+		<file>sprites/lefty/stars/8.png</file>
+		<file>sprites/lefty/stars/9.png</file>
+		<file>sprites/lefty/stars/10.png</file>
+		<file>sprites/lefty/stars/11.png</file>
+		<file>sprites/lefty/stars/12.png</file>
+		<file>sprites/lefty/stars/13.png</file>
+		<file>sprites/lefty/stars/14.png</file>
+		<file>sprites/lefty/stars/15.png</file>
+		<file>sprites/lefty/stars/16.png</file>
+		<file>sprites/lefty/stars/17.png</file>
+		<file>sprites/lefty/stars/18.png</file>
+		<file>sprites/lefty/stars/19.png</file>
+		<file>sprites/lefty/stars/20.png</file>
+		<file>sprites/lefty/stars/21.png</file>
+		<file>sprites/lefty/stars/22.png</file>
+		<file>sprites/lefty/stars/23.png</file>
+		<file>sprites/lefty/stars/24.png</file>
+		<file>sprites/lefty/stars/25.png</file>
+		<file>sprites/lefty/stars/26.png</file>
+		<file>sprites/lefty/stars/27.png</file>
+		<file>sprites/lefty/stars/28.png</file>
+		<file>sprites/lefty/stars/29.png</file>
+		<file>sprites/lefty/stars/30.png</file>
+		<file>sprites/lefty/stars/31.png</file>
+		<file>sprites/lefty/stars/32.png</file>
 		<file>sprites/righty/circles/1.png</file>
 		<file>sprites/righty/circles/2.png</file>
 		<file>sprites/righty/circles/3.png</file>
 		<file>sprites/righty/circles/4.png</file>
 		<file>sprites/righty/circles/5.png</file>
-		<file>sprites/righty/stars/0.png</file>
+		<file>sprites/righty/circles/6.png</file>
+		<file>sprites/righty/circles/7.png</file>
+		<file>sprites/righty/circles/8.png</file>
+		<file>sprites/righty/circles/9.png</file>
+		<file>sprites/righty/circles/10.png</file>
+		<file>sprites/righty/circles/11.png</file>
+		<file>sprites/righty/circles/12.png</file>
+		<file>sprites/righty/circles/13.png</file>
+		<file>sprites/righty/circles/14.png</file>
+		<file>sprites/righty/circles/15.png</file>
+		<file>sprites/righty/circles/16.png</file>
+		<file>sprites/righty/circles/17.png</file>
+		<file>sprites/righty/circles/18.png</file>
+		<file>sprites/righty/circles/19.png</file>
+		<file>sprites/righty/circles/20.png</file>
+		<file>sprites/righty/circles/21.png</file>
+		<file>sprites/righty/circles/22.png</file>
+		<file>sprites/righty/circles/23.png</file>
+		<file>sprites/righty/circles/24.png</file>
+		<file>sprites/righty/circles/25.png</file>
+		<file>sprites/righty/circles/26.png</file>
+		<file>sprites/righty/circles/27.png</file>
+		<file>sprites/righty/circles/28.png</file>
+		<file>sprites/righty/circles/29.png</file>
+		<file>sprites/righty/circles/30.png</file>
+		<file>sprites/righty/circles/31.png</file>
+		<file>sprites/righty/circles/32.png</file>
 		<file>sprites/righty/stars/1.png</file>
 		<file>sprites/righty/stars/2.png</file>
 		<file>sprites/righty/stars/3.png</file>
 		<file>sprites/righty/stars/4.png</file>
 		<file>sprites/righty/stars/5.png</file>
+		<file>sprites/righty/stars/6.png</file>
+		<file>sprites/righty/stars/7.png</file>
+		<file>sprites/righty/stars/8.png</file>
+		<file>sprites/righty/stars/9.png</file>
+		<file>sprites/righty/stars/10.png</file>
+		<file>sprites/righty/stars/11.png</file>
+		<file>sprites/righty/stars/12.png</file>
+		<file>sprites/righty/stars/13.png</file>
+		<file>sprites/righty/stars/14.png</file>
+		<file>sprites/righty/stars/15.png</file>
+		<file>sprites/righty/stars/16.png</file>
+		<file>sprites/righty/stars/17.png</file>
+		<file>sprites/righty/stars/18.png</file>
+		<file>sprites/righty/stars/19.png</file>
+		<file>sprites/righty/stars/20.png</file>
+		<file>sprites/righty/stars/21.png</file>
+		<file>sprites/righty/stars/22.png</file>
+		<file>sprites/righty/stars/23.png</file>
+		<file>sprites/righty/stars/24.png</file>
+		<file>sprites/righty/stars/25.png</file>
+		<file>sprites/righty/stars/26.png</file>
+		<file>sprites/righty/stars/27.png</file>
+		<file>sprites/righty/stars/28.png</file>
+		<file>sprites/righty/stars/29.png</file>
+		<file>sprites/righty/stars/30.png</file>
+		<file>sprites/righty/stars/31.png</file>
+		<file>sprites/righty/stars/32.png</file>
 	</qresource>
 </RCC>

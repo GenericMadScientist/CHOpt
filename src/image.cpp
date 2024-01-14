@@ -305,6 +305,17 @@ void blend_colour(unsigned char& canvas_value, int sprite_value,
                     + sprite_value * sprite_alpha)
         / MAX_OPACITY;
 }
+
+int colours(const DrawnNote& note)
+{
+    int colour_flags = 0;
+    for (auto i = 0U; i < static_cast<int>(note.lengths.size()); ++i) {
+        if (note.lengths.at(i) != -1) {
+            colour_flags |= 1 << i;
+        }
+    }
+    return colour_flags;
+}
 }
 
 class ImageImpl {
@@ -544,8 +555,6 @@ void ImageImpl::draw_text_backwards(int x, int y, const char* text,
 
 void ImageImpl::draw_notes(const ImageBuilder& builder)
 {
-    constexpr int FIVE_FRET_COLOUR_COUNT = 6;
-
     for (const auto& note : builder.notes()) {
         const auto max_length
             = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
@@ -554,26 +563,21 @@ void ImageImpl::draw_notes(const ImageBuilder& builder)
         }
 
         const auto [x, y] = get_xy(builder, note.beat);
-        for (auto i = 0; i < FIVE_FRET_COLOUR_COUNT; ++i) {
-            if (note.lengths.at(i) == -1) {
-                continue;
-            }
-            QString sprite_path {":/sprites/"};
-            if (builder.is_lefty_flip()) {
-                sprite_path += "lefty/";
-            } else {
-                sprite_path += "righty/";
-            }
-            if (note.is_sp_note) {
-                sprite_path += "stars/";
-            } else {
-                sprite_path += "circles/";
-            }
-            sprite_path += QString::number(i) + ".png";
-            const QImage sprite {sprite_path};
-            draw_sprite(sprite, x - sprite.width() / 2,
-                        y - (sprite.height() - MEASURE_HEIGHT) / 2);
+        QString sprite_path {":/sprites/"};
+        if (builder.is_lefty_flip()) {
+            sprite_path += "lefty/";
+        } else {
+            sprite_path += "righty/";
         }
+        if (note.is_sp_note) {
+            sprite_path += "stars/";
+        } else {
+            sprite_path += "circles/";
+        }
+        sprite_path += QString::number(colours(note)) + ".png";
+        const QImage sprite {sprite_path};
+        draw_sprite(sprite, x - sprite.width() / 2,
+                    y - (sprite.height() - MEASURE_HEIGHT) / 2);
     }
 }
 
