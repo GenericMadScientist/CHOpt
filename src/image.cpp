@@ -309,7 +309,7 @@ void blend_colour(unsigned char& canvas_value, int sprite_value,
 int colours(const DrawnNote& note)
 {
     int colour_flags = 0;
-    for (auto i = 0U; i < static_cast<int>(note.lengths.size()); ++i) {
+    for (auto i = 0; i < static_cast<int>(note.lengths.size()); ++i) {
         if (note.lengths.at(i) != -1) {
             colour_flags |= 1 << i;
         }
