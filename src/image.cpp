@@ -91,31 +91,6 @@ note_colour_to_colour(SightRead::FiveFretNotes colour)
     throw std::invalid_argument("Invalid colour to note_colour_to_colour");
 }
 
-std::array<unsigned char, 3> note_colour_to_colour(SightRead::DrumNotes colour)
-{
-    constexpr std::array<unsigned char, 3> RED {255, 0, 0};
-    constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
-    constexpr std::array<unsigned char, 3> BLUE {0, 0, 255};
-    constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
-    constexpr std::array<unsigned char, 3> ORANGE {255, 165, 0};
-
-    switch (colour) {
-    case SightRead::DRUM_RED:
-        return RED;
-    case SightRead::DRUM_YELLOW:
-        return YELLOW;
-    case SightRead::DRUM_BLUE:
-        return BLUE;
-    case SightRead::DRUM_GREEN:
-        return GREEN;
-    case SightRead::DRUM_KICK:
-    case SightRead::DRUM_DOUBLE_KICK:
-        return ORANGE;
-    }
-
-    throw std::invalid_argument("Invalid colour to note_colour_to_colour");
-}
-
 int note_colour_to_offset(SightRead::FiveFretNotes colour, bool is_lefty_flip)
 {
     constexpr int GREEN_OFFSET = 0;
@@ -181,42 +156,6 @@ int note_colour_to_offset(SightRead::SixFretNotes colour, bool is_lefty_flip)
 
     if (is_lefty_flip) {
         offset = HIGH_OFFSET - offset;
-    }
-    return offset;
-}
-
-int note_colour_to_offset(SightRead::DrumNotes colour, bool is_lefty_flip)
-{
-    constexpr int RED_OFFSET = 0;
-    constexpr int YELLOW_OFFSET = 20;
-    constexpr int BLUE_OFFSET = 40;
-    constexpr int GREEN_OFFSET = 60;
-    constexpr int KICK_OFFSET = 30;
-
-    int offset = 0;
-    switch (colour) {
-    case SightRead::DRUM_RED:
-        offset = RED_OFFSET;
-        break;
-    case SightRead::DRUM_YELLOW:
-        offset = YELLOW_OFFSET;
-        break;
-    case SightRead::DRUM_BLUE:
-        offset = BLUE_OFFSET;
-        break;
-    case SightRead::DRUM_GREEN:
-        offset = GREEN_OFFSET;
-        break;
-    case SightRead::DRUM_KICK:
-    case SightRead::DRUM_DOUBLE_KICK:
-        offset = KICK_OFFSET;
-        break;
-    default:
-        throw std::invalid_argument("Invalid colour to note_colour_to_offset");
-    }
-
-    if (is_lefty_flip) {
-        offset = GREEN_OFFSET - offset;
     }
     return offset;
 }
