@@ -34,6 +34,18 @@
 		<file>sprites/lefty/circles/30.png</file>
 		<file>sprites/lefty/circles/31.png</file>
 		<file>sprites/lefty/circles/32.png</file>
+		<file>sprites/lefty/cymbals/1.png</file>
+		<file>sprites/lefty/cymbals/2.png</file>
+		<file>sprites/lefty/cymbals/4.png</file>
+		<file>sprites/lefty/cymbals/8.png</file>
+		<file>sprites/lefty/cymbals/16.png</file>
+		<file>sprites/lefty/cymbals/32.png</file>
+		<file>sprites/lefty/drums/1.png</file>
+		<file>sprites/lefty/drums/2.png</file>
+		<file>sprites/lefty/drums/4.png</file>
+		<file>sprites/lefty/drums/8.png</file>
+		<file>sprites/lefty/drums/16.png</file>
+		<file>sprites/lefty/drums/32.png</file>
 		<file>sprites/lefty/stars/1.png</file>
 		<file>sprites/lefty/stars/2.png</file>
 		<file>sprites/lefty/stars/3.png</file>
@@ -98,6 +110,18 @@
 		<file>sprites/righty/circles/30.png</file>
 		<file>sprites/righty/circles/31.png</file>
 		<file>sprites/righty/circles/32.png</file>
+		<file>sprites/righty/cymbals/1.png</file>
+		<file>sprites/righty/cymbals/2.png</file>
+		<file>sprites/righty/cymbals/4.png</file>
+		<file>sprites/righty/cymbals/8.png</file>
+		<file>sprites/righty/cymbals/16.png</file>
+		<file>sprites/righty/cymbals/32.png</file>
+		<file>sprites/righty/drums/1.png</file>
+		<file>sprites/righty/drums/2.png</file>
+		<file>sprites/righty/drums/4.png</file>
+		<file>sprites/righty/drums/8.png</file>
+		<file>sprites/righty/drums/16.png</file>
+		<file>sprites/righty/drums/32.png</file>
 		<file>sprites/righty/stars/1.png</file>
 		<file>sprites/righty/stars/2.png</file>
 		<file>sprites/righty/stars/3.png</file>

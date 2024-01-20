@@ -329,8 +329,7 @@ private:
                        bool is_lefty_flip);
     void draw_ghl_note_sustain(const ImageBuilder& builder,
                                const DrawnNote& note);
-    void draw_drum_note(int x, int y, SightRead::DrumNotes note_colour,
-                        SightRead::NoteFlags flags, bool is_lefty_flip);
+    void draw_drum_note(const ImageBuilder& builder, const DrawnNote& note);
     void draw_quarter_note(int x, int y);
     void draw_text_backwards(int x, int y, const char* text,
                              const unsigned char* color, float opacity,
@@ -605,38 +604,20 @@ void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
 
 void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
 {
-    constexpr int DRUMS_COLOUR_COUNT = 6;
-
     // We draw all the kicks first because we want RYBG to lie on top of the
     // kicks, not underneath.
     for (const auto& note : builder.notes()) {
         if (!is_kick_note(note)) {
             continue;
         }
-        const auto [x, y] = get_xy(builder, note.beat);
-        for (auto i = 0; i < DRUMS_COLOUR_COUNT; ++i) {
-            if (note.lengths.at(i) == -1) {
-                continue;
-            }
-            const auto colour = static_cast<SightRead::DrumNotes>(i);
-            draw_drum_note(x, y, colour, note.note_flags,
-                           builder.is_lefty_flip());
-        }
+        draw_drum_note(builder, note);
     }
 
     for (const auto& note : builder.notes()) {
         if (is_kick_note(note)) {
             continue;
         }
-        const auto [x, y] = get_xy(builder, note.beat);
-        for (auto i = 0; i < DRUMS_COLOUR_COUNT; ++i) {
-            if (note.lengths.at(i) == -1) {
-                continue;
-            }
-            const auto colour = static_cast<SightRead::DrumNotes>(i);
-            draw_drum_note(x, y, colour, note.note_flags,
-                           builder.is_lefty_flip());
-        }
+        draw_drum_note(builder, note);
     }
 }
 
@@ -700,32 +681,25 @@ void ImageImpl::draw_ghl_note(
     }
 }
 
-void ImageImpl::draw_drum_note(int x, int y, SightRead::DrumNotes note_colour,
-                               SightRead::NoteFlags flags, bool is_lefty_flip)
+void ImageImpl::draw_drum_note(const ImageBuilder& builder,
+                               const DrawnNote& note)
 {
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
-    constexpr int RADIUS = 5;
-
-    auto colour = note_colour_to_colour(note_colour);
-    auto offset = note_colour_to_offset(note_colour, is_lefty_flip);
-
-    if (note_colour == SightRead::DRUM_KICK
-        || note_colour == SightRead::DRUM_DOUBLE_KICK) {
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
-                               colour.data(), OPEN_NOTE_OPACITY);
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
-                               black.data(), 1.0, ~0U);
-    } else if ((flags & SightRead::FLAGS_CYMBAL) != 0U) {
-        m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
-                              y + offset + RADIUS, x + RADIUS,
-                              y + offset + RADIUS, colour.data());
-        m_image.draw_triangle(x, y + offset - RADIUS, x - RADIUS,
-                              y + offset + RADIUS, x + RADIUS,
-                              y + offset + RADIUS, black.data(), 1.0, ~0U);
+    const auto [x, y] = get_xy(builder, note.beat);
+    QString sprite_path {":/sprites/"};
+    if (builder.is_lefty_flip()) {
+        sprite_path += "lefty/";
     } else {
-        m_image.draw_circle(x, y + offset, RADIUS, colour.data());
-        m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
+        sprite_path += "righty/";
     }
+    if ((note.note_flags & SightRead::FLAGS_CYMBAL) != 0U) {
+        sprite_path += "cymbals/";
+    } else {
+        sprite_path += "drums/";
+    }
+    sprite_path += QString::number(colours(note)) + ".png";
+    const QImage sprite {sprite_path};
+    draw_sprite(sprite, x - sprite.width() / 2,
+                y - (sprite.height() - MEASURE_HEIGHT) / 2);
 }
 
 void ImageImpl::draw_note_sustain(const ImageBuilder& builder,
