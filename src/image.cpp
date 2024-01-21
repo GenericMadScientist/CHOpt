@@ -219,6 +219,33 @@ int colours(const DrawnNote& note)
     }
     return colour_flags;
 }
+
+const char* orientation_directory(const ImageBuilder& builder)
+{
+    if (builder.is_lefty_flip()) {
+        return "lefty/";
+    }
+    return "righty/";
+}
+
+const char* shape_directory(const ImageBuilder& builder, const DrawnNote& note)
+{
+    switch (builder.track_type()) {
+    case SightRead::TrackType::FiveFret:
+    case SightRead::TrackType::FortniteFestival:
+        if (note.is_sp_note) {
+            return "stars/";
+        }
+        return "circles/";
+    case SightRead::TrackType::SixFret:
+        return "ghl/";
+    case SightRead::TrackType::Drums:
+        if ((note.note_flags & SightRead::FLAGS_CYMBAL) != 0U) {
+            return "cymbals/";
+        }
+        return "drums/";
+    }
+}
 }
 
 class ImageImpl {
@@ -229,7 +256,7 @@ private:
     void draw_note_sustain(const ImageBuilder& builder, const DrawnNote& note);
     void draw_ghl_note_sustain(const ImageBuilder& builder,
                                const DrawnNote& note);
-    void draw_drum_note(const ImageBuilder& builder, const DrawnNote& note);
+    void draw_note(const ImageBuilder& builder, const DrawnNote& note);
     void draw_quarter_note(int x, int y);
     void draw_text_backwards(int x, int y, const char* text,
                              const unsigned char* color, float opacity,
@@ -461,22 +488,7 @@ void ImageImpl::draw_notes(const ImageBuilder& builder)
             draw_note_sustain(builder, note);
         }
 
-        const auto [x, y] = get_xy(builder, note.beat);
-        QString sprite_path {":/sprites/"};
-        if (builder.is_lefty_flip()) {
-            sprite_path += "lefty/";
-        } else {
-            sprite_path += "righty/";
-        }
-        if (note.is_sp_note) {
-            sprite_path += "stars/";
-        } else {
-            sprite_path += "circles/";
-        }
-        sprite_path += QString::number(colours(note)) + ".png";
-        const QImage sprite {sprite_path};
-        draw_sprite(sprite, x - sprite.width() / 2,
-                    y - (sprite.height() - MEASURE_HEIGHT) / 2);
+        draw_note(builder, note);
     }
 }
 
@@ -489,17 +501,7 @@ void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
             draw_ghl_note_sustain(builder, note);
         }
 
-        const auto [x, y] = get_xy(builder, note.beat);
-        QString sprite_path {":/sprites/"};
-        if (builder.is_lefty_flip()) {
-            sprite_path += "lefty/ghl/";
-        } else {
-            sprite_path += "righty/ghl/";
-        }
-        sprite_path += QString::number(colours(note)) + ".png";
-        const QImage sprite {sprite_path};
-        draw_sprite(sprite, x - sprite.width() / 2,
-                    y - (sprite.height() - MEASURE_HEIGHT) / 2);
+        draw_note(builder, note);
     }
 }
 
@@ -511,14 +513,14 @@ void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
         if (!is_kick_note(note)) {
             continue;
         }
-        draw_drum_note(builder, note);
+        draw_note(builder, note);
     }
 
     for (const auto& note : builder.notes()) {
         if (is_kick_note(note)) {
             continue;
         }
-        draw_drum_note(builder, note);
+        draw_note(builder, note);
     }
 }
 
@@ -537,21 +539,12 @@ void ImageImpl::draw_sprite(const QImage& sprite, int x, int y)
     }
 }
 
-void ImageImpl::draw_drum_note(const ImageBuilder& builder,
-                               const DrawnNote& note)
+void ImageImpl::draw_note(const ImageBuilder& builder, const DrawnNote& note)
 {
     const auto [x, y] = get_xy(builder, note.beat);
     QString sprite_path {":/sprites/"};
-    if (builder.is_lefty_flip()) {
-        sprite_path += "lefty/";
-    } else {
-        sprite_path += "righty/";
-    }
-    if ((note.note_flags & SightRead::FLAGS_CYMBAL) != 0U) {
-        sprite_path += "cymbals/";
-    } else {
-        sprite_path += "drums/";
-    }
+    sprite_path += orientation_directory(builder);
+    sprite_path += shape_directory(builder);
     sprite_path += QString::number(colours(note)) + ".png";
     const QImage sprite {sprite_path};
     draw_sprite(sprite, x - sprite.width() / 2,
