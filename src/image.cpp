@@ -65,103 +65,6 @@ const char* diff_to_str(SightRead::Difficulty difficulty)
     }
 }
 
-std::array<unsigned char, 3>
-note_colour_to_colour(SightRead::FiveFretNotes colour)
-{
-    constexpr std::array<unsigned char, 3> GREEN {0, 255, 0};
-    constexpr std::array<unsigned char, 3> RED {255, 0, 0};
-    constexpr std::array<unsigned char, 3> YELLOW {255, 255, 0};
-    constexpr std::array<unsigned char, 3> BLUE {0, 0, 255};
-    constexpr std::array<unsigned char, 3> ORANGE {255, 165, 0};
-    constexpr std::array<unsigned char, 3> PURPLE {128, 0, 128};
-
-    switch (colour) {
-    case SightRead::FIVE_FRET_GREEN:
-        return GREEN;
-    case SightRead::FIVE_FRET_RED:
-        return RED;
-    case SightRead::FIVE_FRET_YELLOW:
-        return YELLOW;
-    case SightRead::FIVE_FRET_BLUE:
-        return BLUE;
-    case SightRead::FIVE_FRET_ORANGE:
-        return ORANGE;
-    case SightRead::FIVE_FRET_OPEN:
-        return PURPLE;
-    }
-
-    throw std::invalid_argument("Invalid colour to note_colour_to_colour");
-}
-
-int note_colour_to_offset(SightRead::FiveFretNotes colour, bool is_lefty_flip)
-{
-    constexpr int GREEN_OFFSET = 0;
-    constexpr int RED_OFFSET = 15;
-    constexpr int YELLOW_OFFSET = 30;
-    constexpr int BLUE_OFFSET = 45;
-    constexpr int ORANGE_OFFSET = 60;
-
-    int offset = 0;
-    switch (colour) {
-    case SightRead::FIVE_FRET_GREEN:
-        offset = GREEN_OFFSET;
-        break;
-    case SightRead::FIVE_FRET_RED:
-        offset = RED_OFFSET;
-        break;
-    case SightRead::FIVE_FRET_YELLOW:
-        offset = YELLOW_OFFSET;
-        break;
-    case SightRead::FIVE_FRET_BLUE:
-        offset = BLUE_OFFSET;
-        break;
-    case SightRead::FIVE_FRET_ORANGE:
-        offset = ORANGE_OFFSET;
-        break;
-    case SightRead::FIVE_FRET_OPEN:
-        offset = YELLOW_OFFSET;
-        break;
-    default:
-        throw std::invalid_argument("Invalid colour to note_colour_to_offset");
-    }
-
-    if (is_lefty_flip) {
-        offset = ORANGE_OFFSET - offset;
-    }
-    return offset;
-}
-
-int note_colour_to_offset(SightRead::SixFretNotes colour, bool is_lefty_flip)
-{
-    constexpr int LOW_OFFSET = 0;
-    constexpr int MID_OFFSET = 30;
-    constexpr int HIGH_OFFSET = 60;
-
-    int offset = 0;
-    switch (colour) {
-    case SightRead::SIX_FRET_BLACK_LOW:
-    case SightRead::SIX_FRET_WHITE_LOW:
-        offset = LOW_OFFSET;
-        break;
-    case SightRead::SIX_FRET_BLACK_MID:
-    case SightRead::SIX_FRET_WHITE_MID:
-    case SightRead::SIX_FRET_OPEN:
-        offset = MID_OFFSET;
-        break;
-    case SightRead::SIX_FRET_BLACK_HIGH:
-    case SightRead::SIX_FRET_WHITE_HIGH:
-        offset = HIGH_OFFSET;
-        break;
-    default:
-        throw std::invalid_argument("Invalid colour to note_colour_to_offset");
-    }
-
-    if (is_lefty_flip) {
-        offset = HIGH_OFFSET - offset;
-    }
-    return offset;
-}
-
 std::tuple<int, int> get_xy(const ImageBuilder& builder, double pos)
 {
     auto row = std::find_if(builder.rows().cbegin(), builder.rows().cend(),
@@ -259,9 +162,6 @@ private:
     std::map<QString, QImage> m_sprite_map;
 
     void draw_sprite(const QImage& sprite, int x, int y);
-    void draw_note_sustain(const ImageBuilder& builder, const DrawnNote& note);
-    void draw_ghl_note_sustain(const ImageBuilder& builder,
-                               const DrawnNote& note);
     void draw_note(const ImageBuilder& builder, const DrawnNote& note);
     void draw_sustain(const ImageBuilder& builder, const DrawnNote& note);
     void draw_quarter_note(int x, int y);
@@ -497,7 +397,6 @@ void ImageImpl::draw_notes(const ImageBuilder& builder)
 
     for (const auto& note : builder.notes()) {
         if (!is_kick_note(builder, note)) {
-            draw_sustain(builder, note);
             draw_note(builder, note);
         }
     }
@@ -537,6 +436,7 @@ const QImage& ImageImpl::load_sprite(const QString& path)
 
 void ImageImpl::draw_note(const ImageBuilder& builder, const DrawnNote& note)
 {
+    draw_sustain(builder, note);
     const auto [x, y] = get_xy(builder, note.beat);
     QString sprite_path {":/sprites/"};
     sprite_path += orientation_directory(builder);
@@ -547,78 +447,53 @@ void ImageImpl::draw_note(const ImageBuilder& builder, const DrawnNote& note)
                 y - (sprite.height() - MEASURE_HEIGHT) / 2);
 }
 
+struct SustainColour {
+    std::array<unsigned char, 3> rgb;
+    float opacity;
+    std::tuple<int, int> y_range;
+};
+
 void ImageImpl::draw_sustain(const ImageBuilder& builder, const DrawnNote& note)
 {
-    const auto max_length
-        = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
-    if (max_length <= 0.0) {
-        return;
-    }
+    const std::map<SightRead::TrackType, std::vector<SustainColour>>
+        colour_map {{SightRead::TrackType::FiveFret,
+                     {{{0, 255, 0}, 1.0F, {-3, 3}},
+                      {{255, 0, 0}, 1.0F, {12, 18}},
+                      {{255, 255, 0}, 1.0F, {27, 33}},
+                      {{0, 0, 255}, 1.0F, {42, 48}},
+                      {{255, 165, 0}, 1.0F, {57, 63}},
+                      {{128, 0, 128}, 0.5F, {7, 53}}}},
+                    {SightRead::TrackType::FortniteFestival,
+                     {{{0, 255, 0}, 1.0F, {-3, 3}},
+                      {{255, 0, 0}, 1.0F, {12, 18}},
+                      {{255, 255, 0}, 1.0F, {27, 33}},
+                      {{0, 0, 255}, 1.0F, {42, 48}},
+                      {{255, 165, 0}, 1.0F, {57, 63}},
+                      {{128, 0, 128}, 0.5F, {7, 53}}}},
+                    {SightRead::TrackType::SixFret,
+                     {{{150, 150, 150}, 1.0F, {-3, 3}},
+                      {{150, 150, 150}, 1.0F, {27, 33}},
+                      {{150, 150, 150}, 1.0F, {57, 63}},
+                      {{150, 150, 150}, 1.0F, {-3, 3}},
+                      {{150, 150, 150}, 1.0F, {27, 33}},
+                      {{150, 150, 150}, 1.0F, {57, 63}},
+                      {{150, 150, 150}, 0.5F, {7, 53}}}},
+                    {SightRead::TrackType::Drums, {}}};
+    const auto& colours = colour_map.at(builder.track_type());
 
-    switch (builder.track_type()) {
-    case SightRead::TrackType::FiveFret:
-    case SightRead::TrackType::FortniteFestival:
-        draw_note_sustain(builder, note);
-        return;
-    case SightRead::TrackType::SixFret:
-        draw_ghl_note_sustain(builder, note);
-        return;
-    case SightRead::TrackType::Drums:
-        return;
-    }
-
-    throw std::invalid_argument("Invalid track type");
-}
-
-void ImageImpl::draw_note_sustain(const ImageBuilder& builder,
-                                  const DrawnNote& note)
-{
-    constexpr int FIVE_FRET_COLOUR_COUNT = 6;
-    constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
-
-    for (auto i = 0; i < FIVE_FRET_COLOUR_COUNT; ++i) {
+    for (auto i = 0U; i < colours.size(); ++i) {
         const auto length = note.lengths.at(i);
-        if (length == -1) {
+        if (length <= 0.0) {
             continue;
         }
-        const auto note_colour = static_cast<SightRead::FiveFretNotes>(i);
-        auto colour = note_colour_to_colour(note_colour);
-        std::tuple<double, double> x_range {note.beat, note.beat + length};
-        auto offset
-            = note_colour_to_offset(note_colour, builder.is_lefty_flip());
-        std::tuple<int, int> y_range {offset - 3, offset + 3};
-        float opacity = 1.0F;
-        if (note_colour == SightRead::FIVE_FRET_OPEN) {
-            y_range = OPEN_NOTE_Y_RANGE;
-            opacity = OPEN_NOTE_OPACITY;
-        }
-        colour_beat_range(builder, colour, x_range, y_range, opacity);
-    }
-}
-
-void ImageImpl::draw_ghl_note_sustain(const ImageBuilder& builder,
-                                      const DrawnNote& note)
-{
-    constexpr int SIX_FRET_COLOUR_COUNT = 7;
-    constexpr std::tuple<int, int> OPEN_NOTE_Y_RANGE {7, 53};
-    constexpr std::array<unsigned char, 3> SUST_COLOUR {150, 150, 150};
-
-    for (auto i = 0; i < SIX_FRET_COLOUR_COUNT; ++i) {
-        const auto length = note.lengths.at(i);
-        if (length == -1) {
-            continue;
+        const auto& colour = colours[i];
+        auto range = colour.y_range;
+        if (builder.is_lefty_flip()) {
+            range = {MEASURE_HEIGHT - 1 - std::get<1>(range),
+                     MEASURE_HEIGHT - 1 - std::get<0>(range)};
         }
         std::tuple<double, double> x_range {note.beat, note.beat + length};
-        const auto note_colour = static_cast<SightRead::SixFretNotes>(i);
-        auto offset
-            = note_colour_to_offset(note_colour, builder.is_lefty_flip());
-        std::tuple<int, int> y_range {offset - 3, offset + 3};
-        float opacity = 1.0F;
-        if (note_colour == SightRead::SIX_FRET_OPEN) {
-            y_range = OPEN_NOTE_Y_RANGE;
-            opacity = OPEN_NOTE_OPACITY;
-        }
-        colour_beat_range(builder, SUST_COLOUR, x_range, y_range, opacity);
+        colour_beat_range(builder, colour.rgb, x_range, range, colour.opacity);
     }
 }
 
