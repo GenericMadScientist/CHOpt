@@ -44,7 +44,6 @@ constexpr int FONT_HEIGHT = 13;
 constexpr int LEFT_MARGIN = 31;
 constexpr int MARGIN = 92;
 constexpr int MEASURE_HEIGHT = 61;
-constexpr float OPEN_NOTE_OPACITY = 0.5F;
 constexpr int TOP_MARGIN = 125;
 constexpr int DIST_BETWEEN_MEASURES = MEASURE_HEIGHT + MARGIN;
 
