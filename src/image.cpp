@@ -186,42 +186,6 @@ int numb_of_fret_lines(SightRead::TrackType track_type)
     throw std::invalid_argument("Invalid TrackType");
 }
 
-// Codes are
-// 0 - No note
-// 1 - White note
-// 2 - Black note
-// 3 - White and black note
-std::array<int, 3>
-ghl_note_colour_codes(const std::set<SightRead::SixFretNotes>& note_colours)
-{
-    std::array<int, 3> codes {0, 0, 0};
-    for (const auto& colour : note_colours) {
-        switch (colour) {
-        case SightRead::SIX_FRET_OPEN:
-            return {0, 0, 0};
-        case SightRead::SIX_FRET_WHITE_LOW:
-            codes[0] |= 1;
-            break;
-        case SightRead::SIX_FRET_WHITE_MID:
-            codes[1] |= 1;
-            break;
-        case SightRead::SIX_FRET_WHITE_HIGH:
-            codes[2] |= 1;
-            break;
-        case SightRead::SIX_FRET_BLACK_LOW:
-            codes[0] |= 2;
-            break;
-        case SightRead::SIX_FRET_BLACK_MID:
-            codes[1] |= 2;
-            break;
-        case SightRead::SIX_FRET_BLACK_HIGH:
-            codes[2] |= 2;
-            break;
-        }
-    }
-    return codes;
-}
-
 void validate_snprintf_rc(int snprintf_rc)
 {
     if (snprintf_rc < 0) {
