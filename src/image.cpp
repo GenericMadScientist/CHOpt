@@ -16,10 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cassert>
 #include <climits>
 #include <cmath>
 #include <cstdio>
 #include <iterator>
+#include <map>
 #include <set>
 #include <stdexcept>
 
@@ -245,12 +247,15 @@ const char* shape_directory(const ImageBuilder& builder, const DrawnNote& note)
         }
         return "drums/";
     }
+
+    throw std::invalid_argument("Invalid track type");
 }
 }
 
 class ImageImpl {
 private:
     CImg<unsigned char> m_image;
+    std::map<QString, QImage> m_sprite_map;
 
     void draw_sprite(const QImage& sprite, int x, int y);
     void draw_note_sustain(const ImageBuilder& builder, const DrawnNote& note);
@@ -264,6 +269,7 @@ private:
     void draw_vertical_lines(const ImageBuilder& builder,
                              const std::vector<double>& positions,
                              std::array<unsigned char, 3> colour);
+    const QImage& load_sprite(const QString& path);
 
 public:
     ImageImpl(unsigned int size_x, unsigned int size_y, unsigned int size_z,
@@ -539,14 +545,31 @@ void ImageImpl::draw_sprite(const QImage& sprite, int x, int y)
     }
 }
 
+const QImage& ImageImpl::load_sprite(const QString& path)
+{
+    const auto it = m_sprite_map.find(path);
+    if (it != m_sprite_map.cend()) {
+        return it->second;
+    }
+
+    const auto& [new_it, is_inserted]
+        = m_sprite_map.emplace(path, QImage {path});
+    assert(is_inserted); // NOLINT
+
+    const auto& image = new_it->second;
+    assert(image.height() > 0); // NOLINT
+    assert(image.width() > 0); // NOLINT
+    return image;
+}
+
 void ImageImpl::draw_note(const ImageBuilder& builder, const DrawnNote& note)
 {
     const auto [x, y] = get_xy(builder, note.beat);
     QString sprite_path {":/sprites/"};
     sprite_path += orientation_directory(builder);
-    sprite_path += shape_directory(builder);
+    sprite_path += shape_directory(builder, note);
     sprite_path += QString::number(colours(note)) + ".png";
-    const QImage sprite {sprite_path};
+    const QImage& sprite = load_sprite(sprite_path);
     draw_sprite(sprite, x - sprite.width() / 2,
                 y - (sprite.height() - MEASURE_HEIGHT) / 2);
 }
