@@ -263,9 +263,6 @@ private:
 
     void draw_sprite(const QImage& sprite, int x, int y);
     void draw_note_sustain(const ImageBuilder& builder, const DrawnNote& note);
-    void draw_ghl_note(int x, int y,
-                       const std::set<SightRead::SixFretNotes>& note_colours,
-                       bool is_lefty_flip);
     void draw_ghl_note_sustain(const ImageBuilder& builder,
                                const DrawnNote& note);
     void draw_drum_note(const ImageBuilder& builder, const DrawnNote& note);
@@ -521,8 +518,6 @@ void ImageImpl::draw_notes(const ImageBuilder& builder)
 
 void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
 {
-    constexpr int SIX_FRET_COLOUR_COUNT = 7;
-
     for (const auto& note : builder.notes()) {
         const auto max_length
             = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
@@ -531,13 +526,16 @@ void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
         }
 
         const auto [x, y] = get_xy(builder, note.beat);
-        std::set<SightRead::SixFretNotes> colours;
-        for (auto i = 0; i < SIX_FRET_COLOUR_COUNT; ++i) {
-            if (note.lengths.at(i) != -1) {
-                colours.insert(static_cast<SightRead::SixFretNotes>(i));
-            }
+        QString sprite_path {":/sprites/"};
+        if (builder.is_lefty_flip()) {
+            sprite_path += "lefty/ghl/";
+        } else {
+            sprite_path += "righty/ghl/";
         }
-        draw_ghl_note(x, y, colours, builder.is_lefty_flip());
+        sprite_path += QString::number(colours(note)) + ".png";
+        const QImage sprite {sprite_path};
+        draw_sprite(sprite, x - sprite.width() / 2,
+                    y - (sprite.height() - MEASURE_HEIGHT) / 2);
     }
 }
 
@@ -571,51 +569,6 @@ void ImageImpl::draw_sprite(const QImage& sprite, int x, int y)
                          sprite_colour.alpha());
             blend_colour(m_image(x + i, y + j, 2), sprite_colour.blue(),
                          sprite_colour.alpha());
-        }
-    }
-}
-
-void ImageImpl::draw_ghl_note(
-    int x, int y, const std::set<SightRead::SixFretNotes>& note_colours,
-    bool is_lefty_flip)
-{
-    constexpr std::array<unsigned char, 3> black {0, 0, 0};
-    constexpr std::array<unsigned char, 3> grey {30, 30, 30};
-    constexpr std::array<unsigned char, 3> white {255, 255, 255};
-    constexpr int FRET_GAP = 30;
-    constexpr int RADIUS = 5;
-
-    if (note_colours.contains(SightRead::SIX_FRET_OPEN)) {
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
-                               white.data(), OPEN_NOTE_OPACITY);
-        m_image.draw_rectangle(x - 3, y - 3, x + 3, y + MEASURE_HEIGHT + 2,
-                               black.data(), 1.0, ~0U);
-        return;
-    }
-
-    const auto codes = ghl_note_colour_codes(note_colours);
-
-    for (auto i = 0U; i < 3; ++i) {
-        auto offset = FRET_GAP * static_cast<int>(i);
-        if (is_lefty_flip) {
-            offset = 2 * FRET_GAP - offset;
-        }
-        if (codes.at(i) == 0) {
-            continue;
-        }
-        if (codes.at(i) == 1) {
-            m_image.draw_circle(x, y + offset, RADIUS, white.data());
-            m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
-        } else if (codes.at(i) == 2) {
-            m_image.draw_circle(x, y + offset, RADIUS, grey.data());
-            m_image.draw_circle(x, y + offset, RADIUS, black.data(), 1.0, ~0U);
-        } else if (codes.at(i) == 3) {
-            m_image.draw_rectangle(x - RADIUS, y + offset - RADIUS, x + RADIUS,
-                                   y + offset, grey.data());
-            m_image.draw_rectangle(x - RADIUS, y + offset, x + RADIUS,
-                                   y + offset + RADIUS, white.data());
-            m_image.draw_rectangle(x - RADIUS, y + offset, x + RADIUS,
-                                   y + offset + RADIUS, black.data(), 1.0, ~0U);
         }
     }
 }

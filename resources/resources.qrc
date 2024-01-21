@@ -46,6 +46,70 @@
 		<file>sprites/lefty/drums/8.png</file>
 		<file>sprites/lefty/drums/16.png</file>
 		<file>sprites/lefty/drums/32.png</file>
+		<file>sprites/lefty/ghl/1.png</file>
+		<file>sprites/lefty/ghl/2.png</file>
+		<file>sprites/lefty/ghl/3.png</file>
+		<file>sprites/lefty/ghl/4.png</file>
+		<file>sprites/lefty/ghl/5.png</file>
+		<file>sprites/lefty/ghl/6.png</file>
+		<file>sprites/lefty/ghl/7.png</file>
+		<file>sprites/lefty/ghl/8.png</file>
+		<file>sprites/lefty/ghl/9.png</file>
+		<file>sprites/lefty/ghl/10.png</file>
+		<file>sprites/lefty/ghl/11.png</file>
+		<file>sprites/lefty/ghl/12.png</file>
+		<file>sprites/lefty/ghl/13.png</file>
+		<file>sprites/lefty/ghl/14.png</file>
+		<file>sprites/lefty/ghl/15.png</file>
+		<file>sprites/lefty/ghl/16.png</file>
+		<file>sprites/lefty/ghl/17.png</file>
+		<file>sprites/lefty/ghl/18.png</file>
+		<file>sprites/lefty/ghl/19.png</file>
+		<file>sprites/lefty/ghl/20.png</file>
+		<file>sprites/lefty/ghl/21.png</file>
+		<file>sprites/lefty/ghl/22.png</file>
+		<file>sprites/lefty/ghl/23.png</file>
+		<file>sprites/lefty/ghl/24.png</file>
+		<file>sprites/lefty/ghl/25.png</file>
+		<file>sprites/lefty/ghl/26.png</file>
+		<file>sprites/lefty/ghl/27.png</file>
+		<file>sprites/lefty/ghl/28.png</file>
+		<file>sprites/lefty/ghl/29.png</file>
+		<file>sprites/lefty/ghl/30.png</file>
+		<file>sprites/lefty/ghl/31.png</file>
+		<file>sprites/lefty/ghl/32.png</file>
+		<file>sprites/lefty/ghl/33.png</file>
+		<file>sprites/lefty/ghl/34.png</file>
+		<file>sprites/lefty/ghl/35.png</file>
+		<file>sprites/lefty/ghl/36.png</file>
+		<file>sprites/lefty/ghl/37.png</file>
+		<file>sprites/lefty/ghl/38.png</file>
+		<file>sprites/lefty/ghl/39.png</file>
+		<file>sprites/lefty/ghl/40.png</file>
+		<file>sprites/lefty/ghl/41.png</file>
+		<file>sprites/lefty/ghl/42.png</file>
+		<file>sprites/lefty/ghl/43.png</file>
+		<file>sprites/lefty/ghl/44.png</file>
+		<file>sprites/lefty/ghl/45.png</file>
+		<file>sprites/lefty/ghl/46.png</file>
+		<file>sprites/lefty/ghl/47.png</file>
+		<file>sprites/lefty/ghl/48.png</file>
+		<file>sprites/lefty/ghl/49.png</file>
+		<file>sprites/lefty/ghl/50.png</file>
+		<file>sprites/lefty/ghl/51.png</file>
+		<file>sprites/lefty/ghl/52.png</file>
+		<file>sprites/lefty/ghl/53.png</file>
+		<file>sprites/lefty/ghl/54.png</file>
+		<file>sprites/lefty/ghl/55.png</file>
+		<file>sprites/lefty/ghl/56.png</file>
+		<file>sprites/lefty/ghl/57.png</file>
+		<file>sprites/lefty/ghl/58.png</file>
+		<file>sprites/lefty/ghl/59.png</file>
+		<file>sprites/lefty/ghl/60.png</file>
+		<file>sprites/lefty/ghl/61.png</file>
+		<file>sprites/lefty/ghl/62.png</file>
+		<file>sprites/lefty/ghl/63.png</file>
+		<file>sprites/lefty/ghl/64.png</file>
 		<file>sprites/lefty/stars/1.png</file>
 		<file>sprites/lefty/stars/2.png</file>
 		<file>sprites/lefty/stars/3.png</file>
@@ -122,6 +186,70 @@
 		<file>sprites/righty/drums/8.png</file>
 		<file>sprites/righty/drums/16.png</file>
 		<file>sprites/righty/drums/32.png</file>
+		<file>sprites/righty/ghl/1.png</file>
+		<file>sprites/righty/ghl/2.png</file>
+		<file>sprites/righty/ghl/3.png</file>
+		<file>sprites/righty/ghl/4.png</file>
+		<file>sprites/righty/ghl/5.png</file>
+		<file>sprites/righty/ghl/6.png</file>
+		<file>sprites/righty/ghl/7.png</file>
+		<file>sprites/righty/ghl/8.png</file>
+		<file>sprites/righty/ghl/9.png</file>
+		<file>sprites/righty/ghl/10.png</file>
+		<file>sprites/righty/ghl/11.png</file>
+		<file>sprites/righty/ghl/12.png</file>
+		<file>sprites/righty/ghl/13.png</file>
+		<file>sprites/righty/ghl/14.png</file>
+		<file>sprites/righty/ghl/15.png</file>
+		<file>sprites/righty/ghl/16.png</file>
+		<file>sprites/righty/ghl/17.png</file>
+		<file>sprites/righty/ghl/18.png</file>
+		<file>sprites/righty/ghl/19.png</file>
+		<file>sprites/righty/ghl/20.png</file>
+		<file>sprites/righty/ghl/21.png</file>
+		<file>sprites/righty/ghl/22.png</file>
+		<file>sprites/righty/ghl/23.png</file>
+		<file>sprites/righty/ghl/24.png</file>
+		<file>sprites/righty/ghl/25.png</file>
+		<file>sprites/righty/ghl/26.png</file>
+		<file>sprites/righty/ghl/27.png</file>
+		<file>sprites/righty/ghl/28.png</file>
+		<file>sprites/righty/ghl/29.png</file>
+		<file>sprites/righty/ghl/30.png</file>
+		<file>sprites/righty/ghl/31.png</file>
+		<file>sprites/righty/ghl/32.png</file>
+		<file>sprites/righty/ghl/33.png</file>
+		<file>sprites/righty/ghl/34.png</file>
+		<file>sprites/righty/ghl/35.png</file>
+		<file>sprites/righty/ghl/36.png</file>
+		<file>sprites/righty/ghl/37.png</file>
+		<file>sprites/righty/ghl/38.png</file>
+		<file>sprites/righty/ghl/39.png</file>
+		<file>sprites/righty/ghl/40.png</file>
+		<file>sprites/righty/ghl/41.png</file>
+		<file>sprites/righty/ghl/42.png</file>
+		<file>sprites/righty/ghl/43.png</file>
+		<file>sprites/righty/ghl/44.png</file>
+		<file>sprites/righty/ghl/45.png</file>
+		<file>sprites/righty/ghl/46.png</file>
+		<file>sprites/righty/ghl/47.png</file>
+		<file>sprites/righty/ghl/48.png</file>
+		<file>sprites/righty/ghl/49.png</file>
+		<file>sprites/righty/ghl/50.png</file>
+		<file>sprites/righty/ghl/51.png</file>
+		<file>sprites/righty/ghl/52.png</file>
+		<file>sprites/righty/ghl/53.png</file>
+		<file>sprites/righty/ghl/54.png</file>
+		<file>sprites/righty/ghl/55.png</file>
+		<file>sprites/righty/ghl/56.png</file>
+		<file>sprites/righty/ghl/57.png</file>
+		<file>sprites/righty/ghl/58.png</file>
+		<file>sprites/righty/ghl/59.png</file>
+		<file>sprites/righty/ghl/60.png</file>
+		<file>sprites/righty/ghl/61.png</file>
+		<file>sprites/righty/ghl/62.png</file>
+		<file>sprites/righty/ghl/63.png</file>
+		<file>sprites/righty/ghl/64.png</file>
 		<file>sprites/righty/stars/1.png</file>
 		<file>sprites/righty/stars/2.png</file>
 		<file>sprites/righty/stars/3.png</file>
