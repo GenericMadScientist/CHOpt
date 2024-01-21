@@ -195,10 +195,11 @@ void validate_snprintf_rc(int snprintf_rc)
     }
 }
 
-bool is_kick_note(const DrawnNote& note)
+bool is_kick_note(const ImageBuilder& builder, const DrawnNote& note)
 {
-    return note.lengths[SightRead::DRUM_KICK] != -1
-        || note.lengths[SightRead::DRUM_DOUBLE_KICK] != -1;
+    return (builder.track_type() == SightRead::TrackType::Drums)
+        && (note.lengths[SightRead::DRUM_KICK] != -1
+            || note.lengths[SightRead::DRUM_DOUBLE_KICK] != -1);
 }
 
 void blend_colour(unsigned char& canvas_value, int sprite_value,
@@ -262,6 +263,7 @@ private:
     void draw_ghl_note_sustain(const ImageBuilder& builder,
                                const DrawnNote& note);
     void draw_note(const ImageBuilder& builder, const DrawnNote& note);
+    void draw_sustain(const ImageBuilder& builder, const DrawnNote& note);
     void draw_quarter_note(int x, int y);
     void draw_text_backwards(int x, int y, const char* text,
                              const unsigned char* color, float opacity,
@@ -291,8 +293,6 @@ public:
     void draw_header(const ImageBuilder& builder);
     void draw_measures(const ImageBuilder& builder);
     void draw_notes(const ImageBuilder& builder);
-    void draw_ghl_notes(const ImageBuilder& builder);
-    void draw_drum_notes(const ImageBuilder& builder);
     void draw_practice_sections(const ImageBuilder& builder);
     void draw_score_totals(const ImageBuilder& builder);
     void draw_tempos(const ImageBuilder& builder);
@@ -487,46 +487,19 @@ void ImageImpl::draw_text_backwards(int x, int y, const char* text,
 
 void ImageImpl::draw_notes(const ImageBuilder& builder)
 {
-    for (const auto& note : builder.notes()) {
-        const auto max_length
-            = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
-        if (max_length > 0.0) {
-            draw_note_sustain(builder, note);
-        }
-
-        draw_note(builder, note);
-    }
-}
-
-void ImageImpl::draw_ghl_notes(const ImageBuilder& builder)
-{
-    for (const auto& note : builder.notes()) {
-        const auto max_length
-            = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
-        if (max_length > 0.0) {
-            draw_ghl_note_sustain(builder, note);
-        }
-
-        draw_note(builder, note);
-    }
-}
-
-void ImageImpl::draw_drum_notes(const ImageBuilder& builder)
-{
     // We draw all the kicks first because we want RYBG to lie on top of the
     // kicks, not underneath.
     for (const auto& note : builder.notes()) {
-        if (!is_kick_note(note)) {
-            continue;
+        if (is_kick_note(builder, note)) {
+            draw_note(builder, note);
         }
-        draw_note(builder, note);
     }
 
     for (const auto& note : builder.notes()) {
-        if (is_kick_note(note)) {
-            continue;
+        if (!is_kick_note(builder, note)) {
+            draw_sustain(builder, note);
+            draw_note(builder, note);
         }
-        draw_note(builder, note);
     }
 }
 
@@ -552,7 +525,7 @@ const QImage& ImageImpl::load_sprite(const QString& path)
         return it->second;
     }
 
-    const auto& [new_it, is_inserted]
+    const auto [new_it, is_inserted]
         = m_sprite_map.emplace(path, QImage {path});
     assert(is_inserted); // NOLINT
 
@@ -572,6 +545,29 @@ void ImageImpl::draw_note(const ImageBuilder& builder, const DrawnNote& note)
     const QImage& sprite = load_sprite(sprite_path);
     draw_sprite(sprite, x - sprite.width() / 2,
                 y - (sprite.height() - MEASURE_HEIGHT) / 2);
+}
+
+void ImageImpl::draw_sustain(const ImageBuilder& builder, const DrawnNote& note)
+{
+    const auto max_length
+        = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
+    if (max_length <= 0.0) {
+        return;
+    }
+
+    switch (builder.track_type()) {
+    case SightRead::TrackType::FiveFret:
+    case SightRead::TrackType::FortniteFestival:
+        draw_note_sustain(builder, note);
+        return;
+    case SightRead::TrackType::SixFret:
+        draw_ghl_note_sustain(builder, note);
+        return;
+    case SightRead::TrackType::Drums:
+        return;
+    }
+
+    throw std::invalid_argument("Invalid track type");
 }
 
 void ImageImpl::draw_note_sustain(const ImageBuilder& builder,
@@ -742,19 +738,7 @@ Image::Image(const ImageBuilder& builder)
             RANGE_OPACITY / 2);
     }
 
-    switch (builder.track_type()) {
-    case SightRead::TrackType::FiveFret:
-    case SightRead::TrackType::FortniteFestival:
-        m_impl->draw_notes(builder);
-        break;
-    case SightRead::TrackType::SixFret:
-        m_impl->draw_ghl_notes(builder);
-        break;
-    case SightRead::TrackType::Drums:
-        m_impl->draw_drum_notes(builder);
-        break;
-    }
-
+    m_impl->draw_notes(builder);
     m_impl->draw_score_totals(builder);
 
     for (const auto& range : builder.green_ranges()) {
