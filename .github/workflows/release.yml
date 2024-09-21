@@ -137,34 +137,39 @@ jobs:
         with:
           name: "CHOpt ${{ needs.determine-version.outputs.version }} (x64 Mac)"
           path: build/gui-artifacts/**/*
+linux:
+  runs-on: ubuntu-22.04
+  needs: determine-version
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: true
 
-  linux:
-    runs-on: ubuntu-22.04
-    needs: determine-version
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: 6.5.*
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: 6.5.*
+    - name: Install g++-13
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt update
+        sudo apt install -y g++-13
 
-      - name: Make build directory
-        run: mkdir build
+    - name: Make build directory
+      run: mkdir build
 
-      - name: Generate build files
-        working-directory: build
-        env:
-          CMAKE_BUILD_TYPE: Release
-          CXX: g++-13
-        run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF ..
+    - name: Generate build files
+      working-directory: build
+      env:
+        CMAKE_BUILD_TYPE: Release
+        CXX: g++-13
+      run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF ..
 
-      - name: Build
-        working-directory: build
-        run: cmake --build . --verbose
+    - name: Build
+      working-directory: build
+      run: cmake --build . --verbose
 
       - name: Prepare CLI release
         working-directory: build
