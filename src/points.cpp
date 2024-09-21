@@ -300,8 +300,7 @@ void apply_multiplier(std::vector<Point>& points, const Engine& engine)
 
 bool has_split_notes(SightRead::TrackType track_type)
 {
-    return track_type == SightRead::TrackType::Drums
-        || track_type == SightRead::TrackType::FortniteFestival;
+    return track_type == SightRead::TrackType::Drums;
 }
 
 bool is_note_skippable(const SightRead::Note& starting_note,
@@ -311,9 +310,6 @@ bool is_note_skippable(const SightRead::Note& starting_note,
 {
     if (track_type == SightRead::TrackType::Drums) {
         return note_to_test.is_skipped_kick(drum_settings);
-    }
-    if (track_type == SightRead::TrackType::FortniteFestival) {
-        return false;
     }
     return starting_note.position == note_to_test.position;
 }
