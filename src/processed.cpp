@@ -455,7 +455,6 @@ ProcessedSong::drum_act_summaries(const Path& path) const
     std::vector<std::string> activation_summaries;
     auto start_point = m_points.cbegin();
     for (const auto& act : path.activations) {
-        assert(act.act_start->fill_start.has_value()); // NOLINT
         int sp_count = 0;
         while (sp_count < 2) {
             if (start_point->is_sp_granting_note) {
@@ -475,15 +474,18 @@ ProcessedSong::drum_act_summaries(const Path& path) const
                   return p.fill_start.has_value()
                       && *p.fill_start >= early_fill_point;
               });
-        if (skipped_fills == 0
-            && late_fill_point > act.act_start->fill_start.value()) {
+        const auto act_start_fill_start = act.act_start->fill_start;
+        assert(act_start_fill_start.has_value()); // NOLINT
+        if (skipped_fills == 0 && late_fill_point > *act_start_fill_start) {
             activation_summaries.emplace_back("0(E)");
         } else if (skipped_fills > 0) {
             while (!start_point->fill_start.has_value()) {
                 ++start_point;
             }
-            const auto fill_start = start_point->fill_start.value();
-            if (late_fill_point > fill_start && early_fill_point < fill_start) {
+            const auto fill_start = start_point->fill_start;
+            assert(fill_start.has_value()); // NOLINT
+            if (late_fill_point > *fill_start
+                && early_fill_point < *fill_start) {
                 activation_summaries.push_back(std::to_string(skipped_fills - 1)
                                                + "(L)");
             } else {
