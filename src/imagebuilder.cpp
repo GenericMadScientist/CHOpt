@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cstdint>
 #include <iterator>
 #include <stdexcept>
 
@@ -186,7 +187,13 @@ std::vector<DrawnRow> drawn_rows(const SightRead::NoteTrack& track)
 // It is important that SpPhrase has a higher value than ActEnd. This is because
 // in form_events we want to push the event for getting a phrase to the end of
 // the activation if the activation is not an overlap.
-enum class SpDrainEventType { Measure, ActStart, ActEnd, WhammyEnd, SpPhrase };
+enum class SpDrainEventType : std::uint8_t {
+    Measure,
+    ActStart,
+    ActEnd,
+    WhammyEnd,
+    SpPhrase
+};
 
 std::vector<std::tuple<SightRead::Beat, SpDrainEventType>>
 form_events(const std::vector<double>& measure_lines, const PointSet& points,
