@@ -764,7 +764,10 @@ ImageBuilder make_builder(SightRead::Song& song,
     }
     builder.set_total_score(processed_track.points(), solos, path);
     if (settings.engine->has_bres() && new_track.bre().has_value()) {
-        builder.add_bre(*(new_track.bre()), tempo_map);
+        const auto bre = new_track.bre();
+        if (bre.has_value()) {
+            builder.add_bre(*bre, tempo_map);
+        }
     }
 
     return builder;

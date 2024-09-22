@@ -31,12 +31,13 @@ int bre_boost(const SightRead::NoteTrack& track, const Engine& engine)
     constexpr int INITIAL_BRE_VALUE = 750;
     constexpr int BRE_VALUE_PER_SECOND = 500;
 
-    if (!engine.has_bres() || !track.bre().has_value()) {
+    const auto bre = track.bre();
+    if (!engine.has_bres() || !bre.has_value()) {
         return 0;
     }
     const auto& tempo_map = track.global_data().tempo_map();
-    const auto seconds_start = tempo_map.to_seconds(track.bre()->start);
-    const auto seconds_end = tempo_map.to_seconds(track.bre()->end);
+    const auto seconds_start = tempo_map.to_seconds(bre->start);
+    const auto seconds_end = tempo_map.to_seconds(bre->end);
     const auto seconds_gap = seconds_end - seconds_start;
     return static_cast<int>(INITIAL_BRE_VALUE
                             + BRE_VALUE_PER_SECOND * seconds_gap.value());
@@ -475,14 +476,14 @@ ProcessedSong::drum_act_summaries(const Path& path) const
                       && *p.fill_start >= early_fill_point;
               });
         if (skipped_fills == 0
-            && late_fill_point > *act.act_start->fill_start) {
+            && late_fill_point > act.act_start->fill_start.value()) {
             activation_summaries.emplace_back("0(E)");
         } else if (skipped_fills > 0) {
             while (!start_point->fill_start.has_value()) {
                 ++start_point;
             }
-            if (late_fill_point > *start_point->fill_start
-                && early_fill_point < *start_point->fill_start) {
+            const auto fill_start = start_point->fill_start.value();
+            if (late_fill_point > fill_start && early_fill_point < fill_start) {
                 activation_summaries.push_back(std::to_string(skipped_fills - 1)
                                                + "(L)");
             } else {
