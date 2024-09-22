@@ -19,7 +19,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.5.*
+          version: 6.7.*
 
       - name: Install Boost Test
         run: vcpkg install boost-test
@@ -58,7 +58,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.5.*
+          version: 6.7.*
 
       - name: Make build directory
         run: mkdir build
