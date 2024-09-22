@@ -155,7 +155,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.7.*
+          version: 6.6.*
 
       - name: Make build directory
         run: mkdir build
