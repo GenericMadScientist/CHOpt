@@ -4,7 +4,7 @@ on: push
 
 jobs:
   unit-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,7 +26,7 @@ jobs:
         working-directory: build
         env:
           CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
-          CXX: g++-13
+          CXX: g++-14
         run: cmake -DBUILD_GUI=OFF ..
 
       - name: Build
@@ -38,7 +38,7 @@ jobs:
         run: ctest --verbose
 
   integration-tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,7 +56,7 @@ jobs:
       - name: Generate build files
         working-directory: build
         env:
-          CXX: g++-13
+          CXX: g++-14
         run: cmake -DBUILD_GUI=OFF -DPACKAGE_TESTS=OFF ..
 
       - name: Build

@@ -4,7 +4,7 @@ on: push
 
 jobs:
   clang-tidy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
       - name: Generate build files
         working-directory: build
         env:
-          CXX: g++-13
+          CXX: g++-14
         run: cmake -DPACKAGE_TESTS=OFF ..
 
       - name: Build
@@ -62,7 +62,7 @@ jobs:
           -I ${VCPKG_INSTALLATION_ROOT}/installed/x64-linux/include -std=c++20
 
   clang-format:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -61,7 +61,7 @@ jobs:
         run: cmake --build . --verbose
 
   linux-gcc:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -83,7 +83,7 @@ jobs:
         working-directory: build
         env:
           CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
-          CXX: g++-13
+          CXX: g++-14
         run: cmake ..
 
       - name: Build

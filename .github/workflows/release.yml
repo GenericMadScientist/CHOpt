@@ -8,7 +8,7 @@ on:
 
 jobs:
   determine-version:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.determine-version.outputs.version }}
     steps:
@@ -139,7 +139,7 @@ jobs:
           path: build/gui-artifacts/**/*
 
   linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: determine-version
     steps:
       - name: Checkout
@@ -159,7 +159,7 @@ jobs:
         working-directory: build
         env:
           CMAKE_BUILD_TYPE: Release
-          CXX: g++-13
+          CXX: g++-14
         run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF ..
 
       - name: Build
