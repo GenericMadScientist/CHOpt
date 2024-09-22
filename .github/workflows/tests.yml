@@ -11,6 +11,11 @@ jobs:
         with:
           submodules: true
 
+      - name: Install libpng
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpng-dev
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
@@ -44,6 +49,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+
+      - name: Install libpng
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpng-dev
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
