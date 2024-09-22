@@ -96,6 +96,10 @@ private:
     void append_activation(std::stringstream& stream,
                            const Activation& activation,
                            const std::string& act_summary) const;
+
+    // This static function is necessary to deal with a bug in MSVC. See
+    // https://developercommunity.visualstudio.com/t/ICE-with-MSVC-1940-with-default-functio/10750601
+    // for details.
     static SpPosition default_position()
     {
         return {SightRead::Beat {NEG_INF}, SpMeasure {NEG_INF}};
