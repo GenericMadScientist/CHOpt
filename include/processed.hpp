@@ -96,6 +96,10 @@ private:
     void append_activation(std::stringstream& stream,
                            const Activation& activation,
                            const std::string& act_summary) const;
+    static SpPosition default_position()
+    {
+        return {SightRead::Beat {NEG_INF}, SpMeasure {NEG_INF}};
+    }
 
 public:
     ProcessedSong(const SightRead::NoteTrack& track, SpTimeMap time_map,
@@ -128,8 +132,7 @@ public:
     // only.
     [[nodiscard]] ActResult is_candidate_valid(
         const ActivationCandidate& activation, double squeeze = 1.0,
-        SpPosition required_whammy_end
-        = {SightRead::Beat {NEG_INF}, SpMeasure {NEG_INF}}) const;
+        SpPosition required_whammy_end = default_position()) const;
     // Return the summary of a path.
     [[nodiscard]] std::string path_summary(const Path& path) const;
 
