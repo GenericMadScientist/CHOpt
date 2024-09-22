@@ -100,6 +100,10 @@ public:
 
     void run() override
     {
+        if (!m_song.has_value()) {
+            throw std::runtime_error("m_song missing value");
+        }
+
         try {
             const auto& track
                 = m_song->track(m_settings.instrument, m_settings.difficulty);
@@ -431,6 +435,10 @@ void MainWindow::path_found()
 
 void MainWindow::on_engineComboBox_currentIndexChanged(int index)
 {
+    if (!m_loaded_file.has_value()) {
+        throw std::runtime_error("No loaded file");
+    }
+
     m_ui->instrumentComboBox->clear();
 
     if (index == -1) {
@@ -461,6 +469,10 @@ void MainWindow::on_engineComboBox_currentIndexChanged(int index)
 
 void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
 {
+    if (!m_loaded_file.has_value()) {
+        throw std::runtime_error("No loaded file");
+    }
+
     m_ui->difficultyComboBox->clear();
 
     if (index == -1) {
