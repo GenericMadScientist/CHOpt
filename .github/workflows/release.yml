@@ -177,7 +177,7 @@ jobs:
           mkdir cli-artifacts
           strip -s chopt
           mv chopt cli-artifacts/CHOpt
-          cp ${Qt6_DIR}/lib/libQt6Core.so.6 cli-artifacts/libQt6Core.so.6
+          cp ${QT_ROOT_DIR}/lib/libQt6Core.so.6 cli-artifacts/libQt6Core.so.6
 
       - name: Prepare GUI release
         working-directory: build
@@ -187,15 +187,15 @@ jobs:
           strip -s choptgui
           mv choptgui gui-artifacts/CHOpt
           cp ../resources/CHOpt.sh gui-artifacts/CHOpt.sh
-          cp ${Qt6_DIR}/lib/libicudata.so.56 gui-artifacts/libs/libicudata.so.56
-          cp ${Qt6_DIR}/lib/libicui18n.so.56 gui-artifacts/libs/libicui18n.so.56
-          cp ${Qt6_DIR}/lib/libicuuc.so.56 gui-artifacts/libs/libicuuc.so.56
-          cp ${Qt6_DIR}/lib/libQt6Core.so.6 gui-artifacts/libs/libQt6Core.so.6
-          cp ${Qt6_DIR}/lib/libQt6DBus.so.6 gui-artifacts/libs/libQt6DBus.so.6
-          cp ${Qt6_DIR}/lib/libQt6Gui.so.6 gui-artifacts/libs/libQt6Gui.so.6
-          cp ${Qt6_DIR}/lib/libQt6OpenGL.so.6 gui-artifacts/libs/libQt6OpenGL.so.6
-          cp ${Qt6_DIR}/lib/libQt6Widgets.so.6 gui-artifacts/libs/libQt6Widgets.so.6
-          cp ${Qt6_DIR}/lib/libQt6XcbQpa.so.6 gui-artifacts/libs/libQt6XcbQpa.so.6
+          cp ${QT_ROOT_DIR}/lib/libicudata.so.56 gui-artifacts/libs/libicudata.so.56
+          cp ${QT_ROOT_DIR}/lib/libicui18n.so.56 gui-artifacts/libs/libicui18n.so.56
+          cp ${QT_ROOT_DIR}/lib/libicuuc.so.56 gui-artifacts/libs/libicuuc.so.56
+          cp ${QT_ROOT_DIR}/lib/libQt6Core.so.6 gui-artifacts/libs/libQt6Core.so.6
+          cp ${QT_ROOT_DIR}/lib/libQt6DBus.so.6 gui-artifacts/libs/libQt6DBus.so.6
+          cp ${QT_ROOT_DIR}/lib/libQt6Gui.so.6 gui-artifacts/libs/libQt6Gui.so.6
+          cp ${QT_ROOT_DIR}/lib/libQt6OpenGL.so.6 gui-artifacts/libs/libQt6OpenGL.so.6
+          cp ${QT_ROOT_DIR}/lib/libQt6Widgets.so.6 gui-artifacts/libs/libQt6Widgets.so.6
+          cp ${QT_ROOT_DIR}/lib/libQt6XcbQpa.so.6 gui-artifacts/libs/libQt6XcbQpa.so.6
           cp ${QT_PLUGIN_PATH}/platforms/libqxcb.so gui-artifacts/platforms/libqxcb.so
 
       - name: Upload CLI release

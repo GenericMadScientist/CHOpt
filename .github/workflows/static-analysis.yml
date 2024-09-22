@@ -49,21 +49,21 @@ jobs:
         run: >
           clang-tidy-16 src/*.cpp -- -std=c++20
           -Iinclude -Ilibs -Iextern/sightread/include
-          -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore -I${Qt6_DIR}/include/QtGui
+          -I${QT_ROOT_DIR}/include -I${QT_ROOT_DIR}/include/QtCore -I${QT_ROOT_DIR}/include/QtGui
 
       - name: GUI frontend files
         run: >
           clang-tidy-16 gui/*.cpp -checks=-cppcoreguidelines-owning-memory,-readability-inconsistent-declaration-parameter-name
           -- -std=c++20
           -Iinclude -Ilibs -Iextern/sightread/include
-          -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore -I${Qt6_DIR}/include/QtGui -I${Qt6_DIR}/include/QtWidgets
+          -I${QT_ROOT_DIR}/include -I${QT_ROOT_DIR}/include/QtCore -I${QT_ROOT_DIR}/include/QtGui -I${QT_ROOT_DIR}/include/QtWidgets
           -Ibuild/choptgui_autogen/include
 
       - name: Test files
         run: >
           clang-tidy-16 tests/*_unittest.cpp
           -checks=-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers
-          -- -Iinclude -Iextern/sightread/include -I${Qt6_DIR}/include -I${Qt6_DIR}/include/QtCore
+          -- -Iinclude -Iextern/sightread/include -I${QT_ROOT_DIR}/include -I${QT_ROOT_DIR}/include/QtCore
           -I ${VCPKG_INSTALLATION_ROOT}/installed/x64-linux/include -std=c++20
 
   clang-format:
