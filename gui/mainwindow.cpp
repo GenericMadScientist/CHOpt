@@ -18,6 +18,7 @@
 
 #include <stdexcept>
 
+#include <QDebug>
 #include <QDesktopServices>
 #include <QDragEnterEvent>
 #include <QFileDialog>
@@ -47,6 +48,7 @@ private:
                 song_file.load_song(game);
                 supported_games.insert(game);
             } catch (const std::exception&) {
+                qDebug() << "Skipping game " << static_cast<int>(game);
             }
         }
         return supported_games;
@@ -111,8 +113,7 @@ public:
             emit write_text("Image saved");
             QDesktopServices::openUrl(QUrl::fromLocalFile(m_file_name));
         } catch (const std::runtime_error&) {
-            // We ignore this exception because it's how we break out of the
-            // computation on program close.
+            qDebug() << "Breaking out of computation";
         }
     }
 
