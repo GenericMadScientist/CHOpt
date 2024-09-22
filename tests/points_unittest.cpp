@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1207,7 +1207,9 @@ BOOST_AUTO_TEST_CASE(
                      ChDrumEngine()};
     const auto begin = points.cbegin();
 
-    BOOST_CHECK_CLOSE(begin->fill_start->value(), 0.0, 0.0001);
+    const auto fill_start = begin->fill_start;
+    BOOST_CHECK(fill_start.has_value());
+    BOOST_CHECK_CLOSE(fill_start->value(), 0.0, 0.0001);
     BOOST_TEST(!(begin + 1)->fill_start.has_value());
 }
 
