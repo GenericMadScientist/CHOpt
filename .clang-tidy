@@ -10,6 +10,7 @@ Checks: >
   -cppcoreguidelines-pro-type-vararg,
   misc-*,
   -misc-const-correctness,
+  -misc-include-cleaner,
   -misc-no-recursion,
   modernize-*,
   -modernize-use-trailing-return-type,
