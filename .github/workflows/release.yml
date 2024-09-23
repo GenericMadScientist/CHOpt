@@ -112,9 +112,9 @@ jobs:
         run: |
           mkdir cli-artifacts
           strip -x chopt
-          install_name_tool -change /usr/local/opt/libpng/lib/libpng16.16.dylib @executable_path/libpng16.16.dylib chopt
+          install_name_tool -change /opt/homebrew/opt/libpng/lib/libpng16.16.dylib @executable_path/libpng.dylib chopt
           mv chopt cli-artifacts/CHOpt
-          cp /usr/local/Cellar/libpng/1.6.40/lib/libpng16.16.dylib cli-artifacts/libpng16.16.dylib
+          cp /opt/homebrew/lib/libpng.dylib cli-artifacts/libpng.dylib
 
       - name: Prepare GUI release
         working-directory: build
