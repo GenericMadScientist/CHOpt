@@ -90,6 +90,12 @@ SightRead::Instrument string_to_inst(std::string_view text, Game game)
     if (text == "vocals") {
         return SightRead::Instrument::FortniteVocals;
     }
+    if (text == "proguitar") {
+        return SightRead::Instrument::FortniteProGuitar;
+    }
+    if (text == "probass") {
+        return SightRead::Instrument::FortniteProBass;
+    }
     throw std::invalid_argument("Unrecognised instrument");
 }
 
@@ -125,7 +131,8 @@ std::unique_ptr<QCommandLineParser> arg_parser()
           "expert"},
          {{"i", "instrument"},
           "Instrument, options are guitar, coop, bass, rhythm, keys, ghl, "
-          "ghlbass, ghlrhythm, ghlcoop, drums, vocals. Default guitar.",
+          "ghlbass, ghlrhythm, ghlcoop, drums, vocals, proguitar, probass. "
+          "Default guitar.",
           "instrument",
           "guitar"},
          {{"sqz", "squeeze"},
@@ -187,7 +194,8 @@ game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
         }
         return std::make_unique<ChGuitarEngine>();
     case Game::FortniteFestival:
-        if (instrument == SightRead::Instrument::FortniteBass) {
+        if (instrument == SightRead::Instrument::FortniteBass
+            || instrument == SightRead::Instrument::FortniteProBass) {
             return std::make_unique<FortniteBassEngine>();
         }
         if (instrument == SightRead::Instrument::FortniteVocals) {
