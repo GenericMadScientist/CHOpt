@@ -36,8 +36,8 @@
 using namespace cimg_library;
 
 constexpr int VERSION_MAJOR = 1;
-constexpr int VERSION_MINOR = 8;
-constexpr int VERSION_PATCH = 1;
+constexpr int VERSION_MINOR = 9;
+constexpr int VERSION_PATCH = 0;
 
 constexpr int BEAT_WIDTH = 60;
 constexpr int FONT_HEIGHT = 13;
