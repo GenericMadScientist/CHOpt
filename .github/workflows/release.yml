@@ -32,7 +32,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.7.*
+          version: 6.7.2
 
       - name: Install other dependencies
         run: vcpkg --triplet x64-windows-static-md install libpng
@@ -92,7 +92,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.7.*
+          version: 6.7.2
 
       - name: Make build directory
         run: mkdir build

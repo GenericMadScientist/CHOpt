@@ -14,7 +14,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.7.*
+          version: 6.7.2
 
       - name: Install other dependencies
         run: vcpkg install boost-test libpng
@@ -44,7 +44,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.7.*
+          version: 6.7.2
 
       - name: Install Boost
         run: brew install boost
