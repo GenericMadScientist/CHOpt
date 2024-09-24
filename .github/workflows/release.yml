@@ -116,8 +116,12 @@ jobs:
           mkdir cli-artifacts
           strip -x chopt
           install_name_tool -change /opt/homebrew/opt/libpng/lib/libpng16.16.dylib @executable_path/libpng.dylib chopt
+          install_name_tool -change @rpath/QtCore.framework/Versions/A/QtCore @executable_path/QtCore chopt
+          install_name_tool -change @rpath/QtGui.framework/Versions/A/QtGui @executable_path/QtGui chopt
           mv chopt cli-artifacts/CHOpt
           cp /opt/homebrew/lib/libpng.dylib cli-artifacts/libpng.dylib
+          cp ${QT_ROOT_DIR}/lib/QtCore.framework/Versions/A/QtCore cli-artifacts/QtCore
+          cp ${QT_ROOT_DIR}/lib/QtGui.framework/Versions/A/QtGui cli-artifacts/QtGui
 
       - name: Prepare GUI release
         working-directory: build
@@ -181,6 +185,7 @@ jobs:
           strip -s chopt
           mv chopt cli-artifacts/CHOpt
           cp ${QT_ROOT_DIR}/lib/libQt6Core.so.6 cli-artifacts/libQt6Core.so.6
+          cp ${QT_ROOT_DIR}/lib/libQt6Gui.so.6 cli-artifacts/libQt6Gui.so.6
 
       - name: Prepare GUI release
         working-directory: build
