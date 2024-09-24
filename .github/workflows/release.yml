@@ -56,7 +56,7 @@ jobs:
         run: |
           mkdir ..\cli-artifacts
           Move-Item -Path chopt.exe -Destination ..\cli-artifacts\CHOpt.exe
-          windeployqt --no-translations ..\cli-artifacts\CHOpt.exe
+          windeployqt --release --no-network --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations ..\cli-artifacts\CHOpt.exe
 
       - name: Prepare GUI release
         working-directory: build/Release
