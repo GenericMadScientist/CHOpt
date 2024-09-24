@@ -57,6 +57,8 @@ jobs:
           mkdir ..\cli-artifacts
           Move-Item -Path chopt.exe -Destination ..\cli-artifacts\CHOpt.exe
           windeployqt --release --no-network --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations ..\cli-artifacts\CHOpt.exe
+          rm -r ..\cli-artifacts\imageformats
+          rm -r ..\cli-artifacts\platforms
 
       - name: Prepare GUI release
         working-directory: build/Release
@@ -66,6 +68,7 @@ jobs:
           $env:VCINSTALLDIR = "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise\VC"
           windeployqt --release --no-network --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations CHOpt.exe
           rm vc_redist.x64.exe
+          rm -r imageformats
           Copy-Item -Path * -Destination ..\gui-artifacts -Recurse
 
       - name: Upload CLI release
