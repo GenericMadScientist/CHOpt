@@ -417,7 +417,7 @@ BOOST_AUTO_TEST_CASE(fortnite_festival_half_od_time_is_handled_correctly)
         track,
         {{{},
           {},
-          {SightRead::Tick {0}, SightRead::Tick {960}, SightRead::Tick {1919}},
+          {SightRead::Tick {0}, SightRead::Tick {960}, SightRead::Tick {1920}},
           480},
          SpMode::OdBeat},
         {},
@@ -429,6 +429,26 @@ BOOST_AUTO_TEST_CASE(fortnite_festival_half_od_time_is_handled_correctly)
         [](const auto& a, const auto& b) { return a + b.value; });
 
     BOOST_CHECK_EQUAL(total_score, 60);
+}
+
+BOOST_AUTO_TEST_CASE(long_fortnite_sustains_are_handled_correctly)
+{
+    SightRead::NoteTrack track {
+        {make_chord(0, {{SightRead::FIVE_FRET_GREEN, 1920}})},
+        {},
+        SightRead::TrackType::FiveFret,
+        make_resolution(480)};
+    PointSet points {track,
+                     {{{}, {}, {}, 480}, SpMode::OdBeat},
+                     {},
+                     SqueezeSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
+                     FortniteVocalsEngine()};
+    const auto total_score = std::accumulate(
+        points.cbegin(), points.cend(), 0,
+        [](const auto& a, const auto& b) { return a + b.value; });
+
+    BOOST_CHECK_EQUAL(total_score, 136);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
