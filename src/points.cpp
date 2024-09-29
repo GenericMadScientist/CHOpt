@@ -47,47 +47,85 @@ double song_tick_gap(int resolution, const Engine& engine)
 }
 
 template <typename OutputIt>
+void append_sustain_point(OutputIt points, SightRead::Beat beat,
+                          SpMeasure measure, int value)
+{
+    *points++ = {{beat, measure},
+                 {beat, measure},
+                 {beat, measure},
+                 {},
+                 value,
+                 value,
+                 true,
+                 false,
+                 false};
+}
+
+template <typename OutputIt>
 void append_sustain_points(OutputIt points, SightRead::Tick position,
                            SightRead::Tick sust_length, int resolution,
                            int chord_size, const SpTimeMap& time_map,
                            const Engine& engine)
 {
     constexpr double HALF_RES_OFFSET = 0.5;
-
     const double float_res = resolution;
     double float_pos = position.value();
-    double float_sust_len = sust_length.value();
     double tick_gap = song_tick_gap(resolution, engine);
-    auto float_sust_ticks = sust_length.value() / tick_gap;
-    switch (engine.sustain_rounding()) {
-    case SustainRoundingPolicy::RoundUp:
-        float_sust_ticks = std::ceil(float_sust_ticks);
-        break;
-    case SustainRoundingPolicy::RoundToNearest:
-        float_sust_ticks = std::round(float_sust_ticks);
-        break;
-    }
-    auto sust_ticks = static_cast<int>(float_sust_ticks);
-    if (engine.chords_multiply_sustains()) {
-        tick_gap /= chord_size;
-        sust_ticks *= chord_size;
-    }
 
-    while (float_sust_len > engine.burst_size() * resolution
-           && sust_ticks > 0) {
-        float_pos += tick_gap;
-        float_sust_len -= tick_gap;
-        const SightRead::Beat beat {(float_pos - HALF_RES_OFFSET) / float_res};
-        const auto meas = time_map.to_sp_measures(beat);
-        --sust_ticks;
-        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, {}, 1, 1,
-                     true,         false,        false};
+    switch (engine.sustain_ticks_metric()) {
+    case SustainTicksMetric::Beat: {
+        double float_sust_len = sust_length.value();
+        auto float_sust_ticks = sust_length.value() / tick_gap;
+        switch (engine.sustain_rounding()) {
+        case SustainRoundingPolicy::RoundUp:
+            float_sust_ticks = std::ceil(float_sust_ticks);
+            break;
+        case SustainRoundingPolicy::RoundToNearest:
+            float_sust_ticks = std::round(float_sust_ticks);
+            break;
+        }
+        auto sust_ticks = static_cast<int>(float_sust_ticks);
+        if (engine.chords_multiply_sustains()) {
+            tick_gap /= chord_size;
+            sust_ticks *= chord_size;
+        }
+
+        while (float_sust_len > engine.burst_size() * resolution
+               && sust_ticks > 0) {
+            float_pos += tick_gap;
+            float_sust_len -= tick_gap;
+            const SightRead::Beat beat {(float_pos - HALF_RES_OFFSET)
+                                        / float_res};
+            const auto meas = time_map.to_sp_measures(beat);
+            --sust_ticks;
+            append_sustain_point(points, beat, meas, 1);
+        }
+        if (sust_ticks > 0) {
+            const SightRead::Beat beat {(float_pos + HALF_RES_OFFSET)
+                                        / float_res};
+            const auto meas = time_map.to_sp_measures(beat);
+            append_sustain_point(points, beat, meas, sust_ticks);
+        }
+        break;
     }
-    if (sust_ticks > 0) {
-        const SightRead::Beat beat {(float_pos + HALF_RES_OFFSET) / float_res};
-        const auto meas = time_map.to_sp_measures(beat);
-        *points++ = {{beat, meas}, {beat, meas}, {beat, meas}, {},   sust_ticks,
-                     sust_ticks,   true,         false,        false};
+    case SustainTicksMetric::OdBeat:
+        const double sustain_end = (position + sust_length).value();
+        tick_gap /= 4.0 * resolution;
+        if (engine.chords_multiply_sustains()) {
+            tick_gap /= chord_size;
+        }
+
+        while (float_pos < sustain_end) {
+            const SightRead::Beat old_beat {(float_pos + HALF_RES_OFFSET)
+                                            / float_res};
+            auto meas = time_map.to_sp_measures(old_beat);
+            meas += SpMeasure {tick_gap};
+            const auto beat = time_map.to_beats(meas);
+            float_pos = beat.value() * float_res;
+            append_sustain_point(points, beat, meas, 1);
+        }
+
+        break;
     }
 }
 

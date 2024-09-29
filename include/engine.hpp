@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2021, 2022, 2023 Raymond Wright
+ * Copyright (C) 2021, 2022, 2023, 2024 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@
 
 enum class SustainRoundingPolicy { RoundUp, RoundToNearest };
 
+enum class SustainTicksMetric { Beat, OdBeat };
+
 class Engine {
 public:
     virtual int base_note_value() const = 0;
@@ -52,6 +54,7 @@ public:
     virtual double sp_gain_rate() const = 0;
     virtual int sust_points_per_beat() const = 0;
     virtual SustainRoundingPolicy sustain_rounding() const = 0;
+    virtual SustainTicksMetric sustain_ticks_metric() const = 0;
     virtual ~Engine() = default;
 };
 
@@ -89,6 +92,10 @@ public:
     SustainRoundingPolicy sustain_rounding() const override
     {
         return SustainRoundingPolicy::RoundUp;
+    }
+    SustainTicksMetric sustain_ticks_metric() const override
+    {
+        return SustainTicksMetric::Beat;
     }
 };
 
@@ -170,6 +177,10 @@ public:
     {
         return SustainRoundingPolicy::RoundToNearest;
     }
+    SustainTicksMetric sustain_ticks_metric() const override
+    {
+        return SustainTicksMetric::OdBeat;
+    }
 };
 
 class FortniteGuitarEngine final : public BaseFortniteEngine {
@@ -225,6 +236,10 @@ public:
     {
         return SustainRoundingPolicy::RoundToNearest;
     }
+    SustainTicksMetric sustain_ticks_metric() const override
+    {
+        return SustainTicksMetric::Beat;
+    }
 };
 
 class BaseRbEngine : public Engine {
@@ -261,6 +276,10 @@ public:
     SustainRoundingPolicy sustain_rounding() const override
     {
         return SustainRoundingPolicy::RoundToNearest;
+    }
+    SustainTicksMetric sustain_ticks_metric() const override
+    {
+        return SustainTicksMetric::Beat;
     }
 };
 
