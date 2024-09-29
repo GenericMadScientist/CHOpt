@@ -38,8 +38,8 @@ endfunction()
 find_package(PNG REQUIRED)
 find_package(
   Qt6 REQUIRED
-  COMPONENTS Core Gui
-  OPTIONAL_COMPONENTS Widgets)
+  COMPONENTS Core
+  OPTIONAL_COMPONENTS Gui Widgets)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -148,7 +148,7 @@ if(PACKAGE_TESTS)
 
   target_include_directories(chopt_tests
     PRIVATE "${PROJECT_SOURCE_DIR}/include")
-  target_link_libraries(chopt_tests PRIVATE Boost::unit_test_framework Qt6::Core Qt6::Gui sightread)
+  target_link_libraries(chopt_tests PRIVATE Boost::unit_test_framework Qt6::Core sightread)
   add_test(NAME chopt_tests COMMAND chopt_tests)
   set_cpp_standard(chopt_tests)
   set_warnings(chopt_tests)
