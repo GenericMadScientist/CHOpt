@@ -686,6 +686,9 @@ ImageBuilder make_builder(SightRead::Song& song,
         if (!settings.drum_settings.enable_dynamics) {
             new_track.disable_dynamics();
         }
+        if (!settings.drum_settings.pro_drums) {
+            new_track.disable_cymbals();
+        }
     }
     song.speedup(settings.speed);
     const auto& tempo_map = song.global_data().tempo_map();
