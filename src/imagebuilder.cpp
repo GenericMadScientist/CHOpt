@@ -267,6 +267,20 @@ SightRead::Beat subtract_video_lag(SightRead::Beat beat,
     }
     return tempo_map.to_beats(seconds);
 }
+
+void apply_drum_settings(SightRead::NoteTrack& track,
+                         const SightRead::Song& song, const Settings& settings)
+{
+    if (!settings.engine->is_rock_band() && track.drum_fills().empty()) {
+        track.generate_drum_fills(song.global_data().tempo_map());
+    }
+    if (!settings.drum_settings.enable_dynamics) {
+        track.disable_dynamics();
+    }
+    if (!settings.drum_settings.pro_drums) {
+        track.disable_cymbals();
+    }
+}
 }
 
 void ImageBuilder::form_beat_lines(const SightRead::TempoMap& tempo_map)
@@ -679,16 +693,7 @@ ImageBuilder make_builder(SightRead::Song& song,
     }
     new_track = new_track.snap_chords(settings.engine->snap_gap());
     if (track.track_type() == SightRead::TrackType::Drums) {
-        if (!settings.engine->is_rock_band()
-            && new_track.drum_fills().empty()) {
-            new_track.generate_drum_fills(song.global_data().tempo_map());
-        }
-        if (!settings.drum_settings.enable_dynamics) {
-            new_track.disable_dynamics();
-        }
-        if (!settings.drum_settings.pro_drums) {
-            new_track.disable_cymbals();
-        }
+        apply_drum_settings(new_track, song, settings);
     }
     song.speedup(settings.speed);
     const auto& tempo_map = song.global_data().tempo_map();
