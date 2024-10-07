@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include <cstdlib>
+#include <iostream>
 
 #include <boost/test/unit_test.hpp>
 
@@ -1270,6 +1271,39 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {50, 150};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        builder.base_values().cbegin(), builder.base_values().cend(),
+        expected_base_values.cbegin(), expected_base_values.cend());
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        builder.score_values().cbegin(), builder.score_values().cend(),
+        expected_score_values.cbegin(), expected_score_values.cend());
+}
+
+BOOST_AUTO_TEST_CASE(ticks_close_to_the_end_of_a_measure_are_handled_correctly)
+{
+    constexpr auto RESOLUTION = 1 << 28;
+
+    auto global_data = std::make_shared<SightRead::SongGlobalData>();
+    global_data->resolution(RESOLUTION);
+    global_data->tempo_map({{}, {}, {}, RESOLUTION});
+    SightRead::NoteTrack track {{make_note(4 * RESOLUTION - 1)},
+                                {},
+                                SightRead::TrackType::FiveFret,
+                                global_data};
+    PointSet points {track,
+                     {global_data->tempo_map(), SpMode::Measure},
+                     {},
+                     SqueezeSettings::default_settings(),
+                     SightRead::DrumSettings::default_settings(),
+                     ChGuitarEngine()};
+    Path path;
+    ImageBuilder builder {track, SightRead::Difficulty::Expert,
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
+    builder.add_measure_values(points, global_data->tempo_map(), path);
+    std::vector<int> expected_base_values {50};
+    std::vector<int> expected_score_values {50};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.base_values().cbegin(), builder.base_values().cend(),

@@ -429,6 +429,7 @@ void ImageBuilder::add_measure_values(const PointSet& points,
                                  tempo_map)
                   .value();
         while (meas_iter != m_measure_lines.cend()
+               && (std::next(meas_iter) != m_measure_lines.cend())
                && (*meas_iter - MEAS_EPSILON) <= adjusted_p_pos) {
             ++meas_iter;
             ++base_value_iter;
