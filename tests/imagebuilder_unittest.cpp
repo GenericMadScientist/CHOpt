@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1331,6 +1331,28 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
                           true};
     builder.add_sp_values(sp_data, ChGuitarEngine());
     std::vector<double> expected_sp_values {3.14, 1.0};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        builder.sp_values().cbegin(), builder.sp_values().cend(),
+        expected_sp_values.cbegin(), expected_sp_values.cend());
+}
+
+BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values_for_fortnite)
+{
+    SightRead::NoteTrack track {{make_note(0), make_note(192, 768)},
+                                {{SightRead::Tick {192}, SightRead::Tick {50}}},
+                                SightRead::TrackType::FortniteFestival,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    SpData sp_data {track,
+                    {{}, SpMode::OdBeat},
+                    {},
+                    SqueezeSettings::default_settings(),
+                    FortniteGuitarEngine()};
+    ImageBuilder builder {track, SightRead::Difficulty::Expert,
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
+    builder.add_sp_values(sp_data, FortniteGuitarEngine());
+    std::vector<double> expected_sp_values {0.0, 0.0};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.sp_values().cbegin(), builder.sp_values().cend(),
