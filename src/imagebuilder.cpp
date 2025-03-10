@@ -647,7 +647,7 @@ void ImageBuilder::add_sp_values(const SpData& sp_data, const Engine& engine)
     m_sp_values.resize(m_measure_lines.size() - 1);
 
     if (engine.sp_gain_rate() == 0.0) {
-        std::fill(m_measure_lines.begin(), m_measure_lines.end(), 0);
+        std::fill(m_sp_values.begin(), m_sp_values.end(), 0);
         return;
     }
 
