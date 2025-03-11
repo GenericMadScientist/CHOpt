@@ -56,7 +56,7 @@ for song, output in zip(songs, outputs):
             "--engine",
             engine,
             "--speed",
-            speed,
+            str(speed),
         ],
         capture_output=True,
     )
