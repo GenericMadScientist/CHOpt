@@ -41,8 +41,7 @@ double sp_deduction(SpPosition start, SpPosition end)
 }
 
 std::vector<std::tuple<SightRead::Tick, SightRead::Tick, SightRead::Second>>
-note_spans(const SightRead::NoteTrack& track, double early_whammy,
-           const Engine& engine)
+note_spans(const SightRead::NoteTrack& track, const Configuration& config)
 {
     const auto& tempo_map = track.global_data().tempo_map();
     std::vector<std::tuple<SightRead::Tick, SightRead::Tick, SightRead::Second>>
@@ -66,8 +65,8 @@ note_spans(const SightRead::NoteTrack& track, double early_whammy,
                 spans.emplace_back(
                     note->position, length,
                     SightRead::Second {
-                        engine.early_timing_window(early_gap, late_gap)}
-                        * early_whammy);
+                        config.engine->early_timing_window(early_gap, late_gap)}
+                        * config.squeeze_settings.early_whammy);
             }
         }
     }
@@ -125,8 +124,8 @@ SpData::SpData(const SightRead::NoteTrack& track, SpTimeMap time_map,
     // Elements are (whammy start, whammy end, note).
     std::vector<std::tuple<SightRead::Beat, SightRead::Beat, SightRead::Beat>>
         ranges;
-    for (const auto& [position, length, early_timing_window] : note_spans(
-             track, config.squeeze_settings.early_whammy, *config.engine)) {
+    for (const auto& [position, length, early_timing_window] :
+         note_spans(track, config)) {
         if (length == SightRead::Tick {0}) {
             continue;
         }
