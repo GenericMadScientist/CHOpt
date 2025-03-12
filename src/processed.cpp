@@ -63,12 +63,7 @@ ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
                              const std::vector<SightRead::Tick>& od_beats,
                              const std::vector<SightRead::Tick>& unison_phrases)
     : m_time_map {std::move(time_map)}
-    , m_points {track,
-                m_time_map,
-                unison_phrases,
-                config.squeeze_settings,
-                config.drum_settings,
-                *config.engine}
+    , m_points {track, m_time_map, unison_phrases, config}
     , m_sp_data {track, m_time_map, od_beats, config.squeeze_settings,
                  *config.engine}
     , m_minimum_sp_to_activate {config.engine->minimum_sp_to_activate()}

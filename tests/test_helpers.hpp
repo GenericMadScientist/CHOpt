@@ -202,6 +202,13 @@ inline Configuration default_drums_configuration()
             std::make_unique<ChDrumEngine>()};
 }
 
+inline Configuration default_fortnite_guitar_configuration()
+{
+    return {SqueezeSettings::default_settings(),
+            SightRead::DrumSettings::default_settings(),
+            std::make_unique<FortniteGuitarEngine>()};
+}
+
 inline Configuration default_gh1_configuration()
 {
     return {SqueezeSettings::default_settings(),
@@ -214,6 +221,27 @@ inline Configuration default_guitar_configuration()
     return {SqueezeSettings::default_settings(),
             SightRead::DrumSettings::default_settings(),
             std::make_unique<ChGuitarEngine>()};
+}
+
+inline Configuration default_pro_drums_configuration()
+{
+    return {SqueezeSettings::default_settings(),
+            {false, false, true, false},
+            std::make_unique<ChDrumEngine>()};
+}
+
+inline Configuration default_rb_configuration()
+{
+    return {SqueezeSettings::default_settings(),
+            SightRead::DrumSettings::default_settings(),
+            std::make_unique<RbEngine>()};
+}
+
+inline Configuration default_rb3_configuration()
+{
+    return {SqueezeSettings::default_settings(),
+            SightRead::DrumSettings::default_settings(),
+            std::make_unique<Rb3Engine>()};
 }
 
 #endif

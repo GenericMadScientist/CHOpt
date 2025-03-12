@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,9 +63,7 @@ private:
 public:
     PointSet(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
              const std::vector<SightRead::Tick>& unison_phrases,
-             const SqueezeSettings& squeeze_settings,
-             const SightRead::DrumSettings& drum_settings,
-             const Engine& engine);
+             const Configuration& config);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
     // Designed for engines without SP overlap, so the next activation is not

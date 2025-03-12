@@ -22,29 +22,6 @@
 
 #include "test_helpers.hpp"
 
-namespace {
-Configuration default_pro_drums_configuration()
-{
-    return {SqueezeSettings::default_settings(),
-            {false, false, true, false},
-            std::make_unique<ChDrumEngine>()};
-}
-
-Configuration default_rb_configuration()
-{
-    return {SqueezeSettings::default_settings(),
-            SightRead::DrumSettings::default_settings(),
-            std::make_unique<RbEngine>()};
-}
-
-Configuration default_rb3_configuration()
-{
-    return {SqueezeSettings::default_settings(),
-            SightRead::DrumSettings::default_settings(),
-            std::make_unique<Rb3Engine>()};
-}
-}
-
 BOOST_AUTO_TEST_SUITE(three_arg_total_available_sp_counts_sp_correctly)
 
 BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)

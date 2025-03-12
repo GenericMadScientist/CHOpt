@@ -27,13 +27,6 @@
 
 namespace {
 const std::atomic<bool> term_bool {false};
-
-Configuration default_fortnite_guitar_configuration()
-{
-    return {SqueezeSettings::default_settings(),
-            SightRead::DrumSettings::default_settings(),
-            std::make_unique<FortniteGuitarEngine>()};
-}
 }
 
 BOOST_AUTO_TEST_SUITE(overlap_guitar_paths)
