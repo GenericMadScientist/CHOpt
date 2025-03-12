@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -107,9 +107,7 @@ private:
 
 public:
     ProcessedSong(const SightRead::NoteTrack& track, SpTimeMap time_map,
-                  const SqueezeSettings& squeeze_settings,
-                  const SightRead::DrumSettings& drum_settings,
-                  const Engine& engine,
+                  const Configuration& config,
                   const std::vector<SightRead::Tick>& od_beats,
                   const std::vector<SightRead::Tick>& unison_phrases);
 

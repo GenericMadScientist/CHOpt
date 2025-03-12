@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -255,25 +255,27 @@ Settings MainWindow::get_settings() const
     settings.draw_bpms = m_ui->drawBpmsCheckBox->isChecked();
     settings.draw_solos = m_ui->drawSolosCheckBox->isChecked();
     settings.draw_time_sigs = m_ui->drawTsesCheckBox->isChecked();
-    settings.drum_settings.enable_double_kick
+    settings.configuration.drum_settings.enable_double_kick
         = m_ui->doubleKickCheckBox->isChecked();
-    settings.drum_settings.disable_kick = m_ui->noKickCheckBox->isChecked();
-    settings.drum_settings.pro_drums = m_ui->proDrumsCheckBox->isChecked();
-    settings.drum_settings.enable_dynamics
+    settings.configuration.drum_settings.disable_kick
+        = m_ui->noKickCheckBox->isChecked();
+    settings.configuration.drum_settings.pro_drums
+        = m_ui->proDrumsCheckBox->isChecked();
+    settings.configuration.drum_settings.enable_dynamics
         = m_ui->dynamicsCheckBox->isChecked();
     settings.difficulty = m_ui->difficultyComboBox->currentData()
                               .value<SightRead::Difficulty>();
     settings.instrument = m_ui->instrumentComboBox->currentData()
                               .value<SightRead::Instrument>();
-    settings.squeeze_settings.squeeze
+    settings.configuration.squeeze_settings.squeeze
         = m_ui->squeezeSlider->value() / PERCENTAGE_IN_UNIT;
-    settings.squeeze_settings.early_whammy
+    settings.configuration.squeeze_settings.early_whammy
         = m_ui->earlyWhammySlider->value() / PERCENTAGE_IN_UNIT;
-    settings.squeeze_settings.video_lag
+    settings.configuration.squeeze_settings.video_lag
         = SightRead::Second {m_ui->videoLagSlider->value() / MS_IN_SECOND};
     settings.game = m_ui->engineComboBox->currentData().value<Game>();
     const auto precision_mode = m_ui->precisionModeCheckBox->isChecked();
-    settings.engine
+    settings.configuration.engine
         = game_to_engine(settings.game, settings.instrument, precision_mode);
     settings.is_lefty_flip = m_ui->leftyCheckBox->isChecked();
     settings.opacity
@@ -283,19 +285,21 @@ Settings MainWindow::get_settings() const
     auto ok = false;
     auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok);
     if (ok) {
-        settings.squeeze_settings.lazy_whammy
+        settings.configuration.squeeze_settings.lazy_whammy
             = SightRead::Second {lazy_whammy_ms / MS_IN_SECOND};
     } else {
-        settings.squeeze_settings.lazy_whammy = SightRead::Second {0.0};
+        settings.configuration.squeeze_settings.lazy_whammy
+            = SightRead::Second {0.0};
     }
 
     const auto whammy_delay_text = m_ui->whammyDelayLineEdit->text();
     auto whammy_delay_ms = whammy_delay_text.toInt(&ok);
     if (ok) {
-        settings.squeeze_settings.whammy_delay
+        settings.configuration.squeeze_settings.whammy_delay
             = SightRead::Second {whammy_delay_ms / MS_IN_SECOND};
     } else {
-        settings.squeeze_settings.whammy_delay = SightRead::Second {0.0};
+        settings.configuration.squeeze_settings.whammy_delay
+            = SightRead::Second {0.0};
     }
 
     const auto speed_text = m_ui->speedLineEdit->text();

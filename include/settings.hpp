@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,6 +57,12 @@ struct SqueezeSettings {
     }
 };
 
+struct Configuration {
+    SqueezeSettings squeeze_settings;
+    SightRead::DrumSettings drum_settings;
+    std::unique_ptr<Engine> engine;
+};
+
 // This struct represents the options chosen on the command line by the user.
 struct Settings {
     bool blank;
@@ -68,12 +74,10 @@ struct Settings {
     bool draw_time_sigs;
     SightRead::Difficulty difficulty;
     SightRead::Instrument instrument;
-    SqueezeSettings squeeze_settings;
     int speed;
     bool is_lefty_flip;
     Game game;
-    std::unique_ptr<Engine> engine;
-    SightRead::DrumSettings drum_settings;
+    Configuration configuration;
     float opacity;
 };
 

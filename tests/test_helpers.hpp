@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023 Raymond Wright
+ * Copyright (C) 2023, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -193,6 +193,27 @@ make_drum_note(int position, SightRead::DrumNotes colour = SightRead::DRUM_RED,
     note.lengths[colour] = SightRead::Tick {0};
 
     return note;
+}
+
+inline Configuration default_drums_configuration()
+{
+    return {SqueezeSettings::default_settings(),
+            SightRead::DrumSettings::default_settings(),
+            std::make_unique<ChDrumEngine>()};
+}
+
+inline Configuration default_gh1_configuration()
+{
+    return {SqueezeSettings::default_settings(),
+            SightRead::DrumSettings::default_settings(),
+            std::make_unique<Gh1Engine>()};
+}
+
+inline Configuration default_guitar_configuration()
+{
+    return {SqueezeSettings::default_settings(),
+            SightRead::DrumSettings::default_settings(),
+            std::make_unique<ChGuitarEngine>()};
 }
 
 #endif

@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,24 +59,26 @@ SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
 }
 
 ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
-                             SpTimeMap time_map,
-                             const SqueezeSettings& squeeze_settings,
-                             const SightRead::DrumSettings& drum_settings,
-                             const Engine& engine,
+                             SpTimeMap time_map, const Configuration& config,
                              const std::vector<SightRead::Tick>& od_beats,
                              const std::vector<SightRead::Tick>& unison_phrases)
     : m_time_map {std::move(time_map)}
-    , m_points {track,         m_time_map, unison_phrases, squeeze_settings,
-                drum_settings, engine}
-    , m_sp_data {track, m_time_map, od_beats, squeeze_settings, engine}
-    , m_minimum_sp_to_activate {engine.minimum_sp_to_activate()}
-    , m_total_bre_boost {bre_boost(track, engine)}
-    , m_base_score {track.base_score(drum_settings)}
-    , m_ignore_average_multiplier {engine.ignore_average_multiplier()}
+    , m_points {track,
+                m_time_map,
+                unison_phrases,
+                config.squeeze_settings,
+                config.drum_settings,
+                *config.engine}
+    , m_sp_data {track, m_time_map, od_beats, config.squeeze_settings,
+                 *config.engine}
+    , m_minimum_sp_to_activate {config.engine->minimum_sp_to_activate()}
+    , m_total_bre_boost {bre_boost(track, *config.engine)}
+    , m_base_score {track.base_score(config.drum_settings)}
+    , m_ignore_average_multiplier {config.engine->ignore_average_multiplier()}
     , m_is_drums {track.track_type() == SightRead::TrackType::Drums}
-    , m_overlaps {engine.overlaps()}
+    , m_overlaps {config.engine->overlaps()}
 {
-    const auto solos = track.solos(drum_settings);
+    const auto solos = track.solos(config.drum_settings);
     m_total_solo_boost = std::accumulate(
         solos.cbegin(), solos.cend(), 0,
         [](const auto x, const auto& y) { return x + y.value; });
