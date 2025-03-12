@@ -149,20 +149,18 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
                         const std::vector<SightRead::Note>& notes,
                         OutputIt points, const SpTimeMap& time_map,
                         int resolution, bool is_note_sp_ender,
-                        bool is_unison_sp_ender, double squeeze,
-                        const Engine& engine,
-                        const SightRead::DrumSettings& drum_settings)
+                        bool is_unison_sp_ender, const Configuration& config)
 {
-    auto note_value = engine.base_note_value();
+    auto note_value = config.engine->base_note_value();
     if (note->flags & SightRead::FLAGS_DRUMS) {
         if (note->flags & SightRead::FLAGS_CYMBAL) {
-            note_value = engine.base_cymbal_value();
+            note_value = config.engine->base_cymbal_value();
         }
         if (note->flags & (SightRead::FLAGS_GHOST | SightRead::FLAGS_ACCENT)) {
             note_value *= 2;
         }
     }
-    const auto chord_size = get_chord_size(*note, drum_settings);
+    const auto chord_size = get_chord_size(*note, config.drum_settings);
     const auto pos = note->position;
     const auto beat = time_map.to_beats(pos);
     const auto meas = time_map.to_sp_measures(beat);
@@ -184,9 +182,11 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
     }
 
     const SightRead::Second early_window {
-        engine.early_timing_window(early_gap, late_gap) * squeeze};
+        config.engine->early_timing_window(early_gap, late_gap)
+        * config.squeeze_settings.squeeze};
     const SightRead::Second late_window {
-        engine.late_timing_window(early_gap, late_gap) * squeeze};
+        config.engine->late_timing_window(early_gap, late_gap)
+        * config.squeeze_settings.squeeze};
 
     const auto early_beat = time_map.to_beats(note_seconds - early_window);
     const auto early_meas = time_map.to_sp_measures(early_beat);
@@ -207,14 +207,14 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
         max_length = std::max(length, max_length);
     }
 
-    if (min_length == max_length || engine.merge_uneven_sustains()) {
+    if (min_length == max_length || config.engine->merge_uneven_sustains()) {
         append_sustain_points(points, pos, min_length, resolution, chord_size,
-                              time_map, engine);
+                              time_map, *config.engine);
     } else {
         for (auto length : note->lengths) {
             if (length != SightRead::Tick {-1}) {
                 append_sustain_points(points, pos, length, resolution,
-                                      chord_size, time_map, engine);
+                                      chord_size, time_map, *config.engine);
             }
         }
     }
@@ -356,11 +356,11 @@ bool is_note_skippable(const SightRead::Note& starting_note,
     return starting_note.position == note_to_test.position;
 }
 
-std::vector<Point> unmultiplied_points(
-    const SightRead::NoteTrack& track, const SpTimeMap& time_map,
-    const std::vector<SightRead::Tick>& unison_phrases,
-    const SqueezeSettings& squeeze_settings,
-    const SightRead::DrumSettings& drum_settings, const Engine& engine)
+std::vector<Point>
+unmultiplied_points(const SightRead::NoteTrack& track,
+                    const SpTimeMap& time_map,
+                    const std::vector<SightRead::Tick>& unison_phrases,
+                    const Configuration& config)
 {
     const auto& notes = track.notes();
     const auto bre = track.bre();
@@ -370,20 +370,21 @@ std::vector<Point> unmultiplied_points(
 
     for (auto p = notes.cbegin(); p != notes.cend();) {
         if (track.track_type() == SightRead::TrackType::Drums) {
-            if (p->is_skipped_kick(drum_settings)) {
+            if (p->is_skipped_kick(config.drum_settings)) {
                 ++p;
                 continue;
             }
         }
-        if (engine.has_bres() && bre.has_value() && p->position >= bre->start) {
+        if (config.engine->has_bres() && bre.has_value()
+            && p->position >= bre->start) {
             break;
         }
         const auto search_start
             = has_split_notes(track.track_type()) ? std::next(p) : p;
         const auto q = std::find_if_not(
-            search_start, notes.cend(), [=](const auto& note) {
+            search_start, notes.cend(), [&](const auto& note) {
                 return is_note_skippable(*p, note, track.track_type(),
-                                         drum_settings);
+                                         config.drum_settings);
             });
         auto is_note_sp_ender = false;
         auto is_unison_sp_ender = false;
@@ -392,7 +393,7 @@ std::vector<Point> unmultiplied_points(
             && ((q == notes.cend())
                 || !phrase_contains_pos(*current_phrase, q->position))) {
             is_note_sp_ender = true;
-            if (engine.has_unison_bonuses()
+            if (config.engine->has_unison_bonuses()
                 && std::find(unison_phrases.cbegin(), unison_phrases.cend(),
                              current_phrase->position)
                     != unison_phrases.cend()) {
@@ -402,8 +403,7 @@ std::vector<Point> unmultiplied_points(
         }
         append_note_points(p, notes, std::back_inserter(points), time_map,
                            track.global_data().resolution(), is_note_sp_ender,
-                           is_unison_sp_ender, squeeze_settings.squeeze, engine,
-                           drum_settings);
+                           is_unison_sp_ender, config);
         p = q;
     }
 
@@ -418,13 +418,12 @@ std::vector<Point> unmultiplied_points(
 std::vector<Point>
 non_drum_points(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
                 const std::vector<SightRead::Tick>& unison_phrases,
-                const SqueezeSettings& squeeze_settings, const Engine& engine)
+                const Configuration& config)
 {
-    auto points = unmultiplied_points(
-        track, time_map, unison_phrases, squeeze_settings,
-        SightRead::DrumSettings::default_settings(), engine);
-    apply_multiplier(points, engine);
-    shift_points_by_video_lag(points, time_map, squeeze_settings.video_lag);
+    auto points = unmultiplied_points(track, time_map, unison_phrases, config);
+    apply_multiplier(points, *config.engine);
+    shift_points_by_video_lag(points, time_map,
+                              config.squeeze_settings.video_lag);
     return points;
 }
 
@@ -529,19 +528,16 @@ std::vector<std::string> note_colours(const std::vector<SightRead::Note>& notes,
 std::vector<Point>
 points_from_track(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
                   const std::vector<SightRead::Tick>& unison_phrases,
-                  const SqueezeSettings& squeeze_settings,
-                  const SightRead::DrumSettings& drum_settings,
-                  const Engine& engine)
+                  const Configuration& config)
 {
     if (track.track_type() != SightRead::TrackType::Drums) {
-        return non_drum_points(track, time_map, unison_phrases,
-                               squeeze_settings, engine);
+        return non_drum_points(track, time_map, unison_phrases, config);
     }
-    auto points = unmultiplied_points(track, time_map, unison_phrases,
-                                      squeeze_settings, drum_settings, engine);
+    auto points = unmultiplied_points(track, time_map, unison_phrases, config);
     add_drum_activation_points(track, points);
-    apply_multiplier(points, engine);
-    shift_points_by_video_lag(points, time_map, squeeze_settings.video_lag);
+    apply_multiplier(points, *config.engine);
+    shift_points_by_video_lag(points, time_map,
+                              config.squeeze_settings.video_lag);
     return points;
 }
 
@@ -589,9 +585,7 @@ solo_boosts_from_solos(const std::vector<SightRead::Solo>& solos,
 PointSet::PointSet(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
                    const std::vector<SightRead::Tick>& unison_phrases,
                    const Configuration& config)
-    : m_points {points_from_track(track, time_map, unison_phrases,
-                                  config.squeeze_settings, config.drum_settings,
-                                  *config.engine)}
+    : m_points {points_from_track(track, time_map, unison_phrases, config)}
     , m_first_after_current_sp {first_after_current_sp_vector(m_points, track,
                                                               *config.engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
