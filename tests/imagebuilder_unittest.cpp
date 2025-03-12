@@ -1267,11 +1267,8 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
                                 {{SightRead::Tick {192}, SightRead::Tick {50}}},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    SpData sp_data {track,
-                    {{}, SpMode::Measure},
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    SpData sp_data {
+        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -1292,8 +1289,7 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values_for_fortnite)
     SpData sp_data {track,
                     {{}, SpMode::OdBeat},
                     {},
-                    SqueezeSettings::default_settings(),
-                    FortniteGuitarEngine()};
+                    default_fortnite_guitar_configuration()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -1376,11 +1372,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
         track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
-    SpData sp_data {track,
-                    {{}, SpMode::Measure},
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    SpData sp_data {
+        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
     Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
                  SightRead::Beat {70.0}, SightRead::Beat {102.0}}},
                0};
@@ -1415,11 +1408,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
         track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
-    SpData sp_data {track,
-                    {{}, SpMode::Measure},
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    SpData sp_data {
+        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
     Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
                  SightRead::Beat {98.0}, SightRead::Beat {132.0}}},
                0};
@@ -1449,11 +1439,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
         track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
-    SpData sp_data {track,
-                    {{}, SpMode::Measure},
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    SpData sp_data {
+        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
     Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
                  SightRead::Beat {9.0}, SightRead::Beat {22.0}}},
                0};
@@ -1483,11 +1470,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
         track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
-    SpData sp_data {track,
-                    {{}, SpMode::Measure},
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    SpData sp_data {
+        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
     Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {12.0},
                  SightRead::Beat {9.0}, SightRead::Beat {22.0}}},
                0};
@@ -1520,11 +1504,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
         track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
-    SpData sp_data {track,
-                    {{}, SpMode::Measure},
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    SpData sp_data {
+        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
     Path path {{{points.cbegin() + 5, points.cend() - 3, SightRead::Beat {12.0},
                  SightRead::Beat {9.0}, SightRead::Beat {28.8827}},
                 {points.cend() - 1, points.cend(), SightRead::Beat {1000.0},
@@ -1560,11 +1541,8 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
         track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
-    SpData sp_data {track,
-                    {{}, SpMode::Measure},
-                    {},
-                    SqueezeSettings::default_settings(),
-                    ChGuitarEngine()};
+    SpData sp_data {
+        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
     Path path {
         {{points.cbegin() + 2, points.cbegin() + 2, SightRead::Beat {17.0},
           SightRead::Beat {0.8958}, SightRead::Beat {16.8958}}},

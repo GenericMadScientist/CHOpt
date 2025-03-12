@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2023 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -120,7 +120,7 @@ private:
 public:
     SpData(const SightRead::NoteTrack& track, SpTimeMap time_map,
            const std::vector<SightRead::Tick>& od_beats,
-           const SqueezeSettings& squeeze_settings, const Engine& engine);
+           const Configuration& config);
     // Return the maximum amount of SP available at the end after propagating
     // over a range, or -1 if SP runs out at any point. Only includes SP gain
     // from whammy.

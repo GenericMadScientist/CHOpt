@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2023 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,18 +115,18 @@ SpData::form_beat_rates(const SightRead::TempoMap& tempo_map,
 
 SpData::SpData(const SightRead::NoteTrack& track, SpTimeMap time_map,
                const std::vector<SightRead::Tick>& od_beats,
-               const SqueezeSettings& squeeze_settings, const Engine& engine)
+               const Configuration& config)
     : m_time_map {std::move(time_map)}
     , m_beat_rates {form_beat_rates(track.global_data().tempo_map(), od_beats,
-                                    engine)}
-    , m_sp_gain_rate {engine.sp_gain_rate()}
+                                    *config.engine)}
+    , m_sp_gain_rate {config.engine->sp_gain_rate()}
     , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
 {
     // Elements are (whammy start, whammy end, note).
     std::vector<std::tuple<SightRead::Beat, SightRead::Beat, SightRead::Beat>>
         ranges;
-    for (const auto& [position, length, early_timing_window] :
-         note_spans(track, squeeze_settings.early_whammy, engine)) {
+    for (const auto& [position, length, early_timing_window] : note_spans(
+             track, config.squeeze_settings.early_whammy, *config.engine)) {
         if (length == SightRead::Tick {0}) {
             continue;
         }
@@ -141,8 +141,8 @@ SpData::SpData(const SightRead::NoteTrack& track, SpTimeMap time_map,
         const auto note = m_time_map.to_beats(position);
         auto second_start = m_time_map.to_seconds(note);
         second_start -= early_timing_window;
-        second_start += squeeze_settings.lazy_whammy;
-        second_start += squeeze_settings.video_lag;
+        second_start += config.squeeze_settings.lazy_whammy;
+        second_start += config.squeeze_settings.video_lag;
         const auto beat_start = m_time_map.to_beats(second_start);
         auto beat_end = m_time_map.to_beats(position + length);
         if (beat_start < beat_end) {
