@@ -1179,10 +1179,14 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
                      SightRead::DrumSettings::default_settings(),
                      ChDrumEngine()};
     const auto begin = points.cbegin();
+    const auto fill_start = (begin + 2)->fill_start;
 
     BOOST_TEST(!begin->fill_start.has_value());
     BOOST_TEST(!(begin + 1)->fill_start.has_value());
-    BOOST_CHECK_CLOSE((begin + 2)->fill_start->value(), 1.0, 0.0001);
+    BOOST_TEST(fill_start.has_value());
+    if (fill_start.has_value()) {
+        BOOST_CHECK_CLOSE(*fill_start, 1.0, 0.0001);
+    }
     BOOST_TEST(!(begin + 3)->fill_start.has_value());
 }
 
@@ -1254,7 +1258,9 @@ BOOST_AUTO_TEST_CASE(
 
     const auto fill_start = begin->fill_start;
     BOOST_CHECK(fill_start.has_value());
-    BOOST_CHECK_CLOSE(fill_start->value(), 0.0, 0.0001);
+    if (fill_start.has_value()) {
+        BOOST_CHECK_CLOSE(*fill_start, 0.0, 0.0001);
+    }
     BOOST_TEST(!(begin + 1)->fill_start.has_value());
 }
 
