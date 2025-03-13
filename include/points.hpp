@@ -63,7 +63,7 @@ private:
 public:
     PointSet(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
              const std::vector<SightRead::Tick>& unison_phrases,
-             const Configuration& config);
+             const PathingSettings& pathing_settings);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
     // Designed for engines without SP overlap, so the next activation is not

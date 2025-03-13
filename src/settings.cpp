@@ -250,7 +250,7 @@ Settings from_args(const QStringList& args)
         parser->value("instrument").toStdString(), settings.game);
 
     const auto precision_mode = parser->isSet("precision-mode");
-    settings.configuration.engine
+    settings.pathing_settings.engine
         = game_to_engine(settings.game, settings.instrument, precision_mode);
 
     settings.image_path = parser->value("output").toStdString();
@@ -264,13 +264,13 @@ Settings from_args(const QStringList& args)
     settings.draw_bpms = !parser->isSet("no-bpms");
     settings.draw_solos = !parser->isSet("no-solos");
     settings.draw_time_sigs = !parser->isSet("no-time-sigs");
-    settings.configuration.drum_settings.enable_double_kick
+    settings.pathing_settings.drum_settings.enable_double_kick
         = !parser->isSet("no-double-kick");
-    settings.configuration.drum_settings.disable_kick
+    settings.pathing_settings.drum_settings.disable_kick
         = parser->isSet("no-kick");
-    settings.configuration.drum_settings.pro_drums
+    settings.pathing_settings.drum_settings.pro_drums
         = !parser->isSet("no-pro-drums");
-    settings.configuration.drum_settings.enable_dynamics
+    settings.pathing_settings.drum_settings.enable_dynamics
         = parser->isSet("enable-dynamics");
 
     const auto squeeze = parser->value("squeeze").toInt();
@@ -296,11 +296,12 @@ Settings from_args(const QStringList& args)
             "Whammy delay must be greater than or equal to 0");
     }
 
-    settings.configuration.squeeze_settings.squeeze = squeeze / 100.0;
-    settings.configuration.squeeze_settings.early_whammy = early_whammy / 100.0;
-    settings.configuration.squeeze_settings.lazy_whammy
+    settings.pathing_settings.squeeze_settings.squeeze = squeeze / 100.0;
+    settings.pathing_settings.squeeze_settings.early_whammy
+        = early_whammy / 100.0;
+    settings.pathing_settings.squeeze_settings.lazy_whammy
         = SightRead::Second {lazy_whammy / MS_PER_SECOND};
-    settings.configuration.squeeze_settings.whammy_delay
+    settings.pathing_settings.squeeze_settings.whammy_delay
         = SightRead::Second {whammy_delay / MS_PER_SECOND};
 
     const auto video_lag = parser->value("video-lag").toInt();
@@ -309,7 +310,7 @@ Settings from_args(const QStringList& args)
             "Video lag setting unsupported by Clone Hero");
     }
 
-    settings.configuration.squeeze_settings.video_lag
+    settings.pathing_settings.squeeze_settings.video_lag
         = SightRead::Second {video_lag / MS_PER_SECOND};
 
     const auto speed = parser->value("speed").toInt();

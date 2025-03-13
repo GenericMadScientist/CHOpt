@@ -107,7 +107,7 @@ private:
 
 public:
     ProcessedSong(const SightRead::NoteTrack& track, SpTimeMap time_map,
-                  const Configuration& config,
+                  const PathingSettings& pathing_settings,
                   const std::vector<SightRead::Tick>& od_beats,
                   const std::vector<SightRead::Tick>& unison_phrases);
 

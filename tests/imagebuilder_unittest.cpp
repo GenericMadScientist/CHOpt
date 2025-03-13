@@ -657,7 +657,7 @@ BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_gh1_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_gh1_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           false};
@@ -822,7 +822,7 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -856,7 +856,7 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -883,7 +883,7 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -906,7 +906,7 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -968,7 +968,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_gh1_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_gh1_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           false};
@@ -992,7 +992,7 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_gh1_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_gh1_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           false};
@@ -1020,7 +1020,7 @@ BOOST_AUTO_TEST_CASE(
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_gh1_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_gh1_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           false};
@@ -1044,7 +1044,7 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_gh1_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_gh1_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           false};
@@ -1112,7 +1112,7 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     Path path;
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
@@ -1138,7 +1138,7 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
     track.solos({{SightRead::Tick {0}, SightRead::Tick {100}, 100},
                  {SightRead::Tick {200}, SightRead::Tick {800}, 100}});
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     Path path;
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
@@ -1161,7 +1161,7 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
                                 std::make_shared<SightRead::SongGlobalData>()};
     track.solos({{SightRead::Tick {0}, SightRead::Tick {1600}, 50}});
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     Path path;
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
@@ -1182,7 +1182,7 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     Path path {{{points.cbegin() + 2, points.cbegin() + 3,
                  SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
                100};
@@ -1242,7 +1242,7 @@ BOOST_AUTO_TEST_CASE(ticks_close_to_the_end_of_a_measure_are_handled_correctly)
     PointSet points {track,
                      {global_data->tempo_map(), SpMode::Measure},
                      {},
-                     default_guitar_configuration()};
+                     default_guitar_pathing_settings()};
     Path path;
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
@@ -1268,7 +1268,7 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -1289,7 +1289,7 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values_for_fortnite)
     SpData sp_data {track,
                     {{}, SpMode::OdBeat},
                     {},
-                    default_fortnite_guitar_configuration()};
+                    default_fortnite_guitar_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -1308,7 +1308,7 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -1371,9 +1371,9 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     SpData sp_data {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
                  SightRead::Beat {70.0}, SightRead::Beat {102.0}}},
                0};
@@ -1407,9 +1407,9 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     SpData sp_data {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
                  SightRead::Beat {98.0}, SightRead::Beat {132.0}}},
                0};
@@ -1438,9 +1438,9 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     SpData sp_data {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
                  SightRead::Beat {9.0}, SightRead::Beat {22.0}}},
                0};
@@ -1469,9 +1469,9 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     SpData sp_data {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {12.0},
                  SightRead::Beat {9.0}, SightRead::Beat {22.0}}},
                0};
@@ -1503,9 +1503,9 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     SpData sp_data {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     Path path {{{points.cbegin() + 5, points.cend() - 3, SightRead::Beat {12.0},
                  SightRead::Beat {9.0}, SightRead::Beat {28.8827}},
                 {points.cend() - 1, points.cend(), SightRead::Beat {1000.0},
@@ -1540,9 +1540,9 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     SpData sp_data {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     Path path {
         {{points.cbegin() + 2, points.cbegin() + 2, SightRead::Beat {17.0},
           SightRead::Beat {0.8958}, SightRead::Beat {16.8958}}},

@@ -230,8 +230,9 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
 ImageBuilder build_with_engine_params(const SightRead::NoteTrack& track,
                                       const Settings& settings)
 {
-    return {track, settings.difficulty, settings.configuration.drum_settings,
-            settings.is_lefty_flip, settings.configuration.engine->overlaps()};
+    return {track, settings.difficulty, settings.pathing_settings.drum_settings,
+            settings.is_lefty_flip,
+            settings.pathing_settings.engine->overlaps()};
 }
 
 std::vector<std::tuple<double, double>>
@@ -270,15 +271,16 @@ SightRead::Beat subtract_video_lag(SightRead::Beat beat,
 
 void apply_drum_settings(SightRead::NoteTrack& track,
                          const SightRead::Song& song,
-                         const Configuration& configuration)
+                         const PathingSettings& pathing_settings)
 {
-    if (!configuration.engine->is_rock_band() && track.drum_fills().empty()) {
+    if (!pathing_settings.engine->is_rock_band()
+        && track.drum_fills().empty()) {
         track.generate_drum_fills(song.global_data().tempo_map());
     }
-    if (!configuration.drum_settings.enable_dynamics) {
+    if (!pathing_settings.drum_settings.enable_dynamics) {
         track.disable_dynamics();
     }
-    if (!configuration.drum_settings.pro_drums) {
+    if (!pathing_settings.drum_settings.pro_drums) {
         track.disable_cymbals();
     }
 }
@@ -699,14 +701,14 @@ ImageBuilder make_builder(SightRead::Song& song,
         new_track = track.trim_sustains();
     }
     new_track
-        = new_track.snap_chords(settings.configuration.engine->snap_gap());
+        = new_track.snap_chords(settings.pathing_settings.engine->snap_gap());
     if (track.track_type() == SightRead::TrackType::Drums) {
-        apply_drum_settings(new_track, song, settings.configuration);
+        apply_drum_settings(new_track, song, settings.pathing_settings);
     }
     song.speedup(settings.speed);
     const auto& tempo_map = song.global_data().tempo_map();
     const SpTimeMap time_map {tempo_map,
-                              settings.configuration.engine->sp_mode()};
+                              settings.pathing_settings.engine->sp_mode()};
 
     auto builder = build_with_engine_params(new_track, settings);
     builder.add_song_header(song.global_data());
@@ -721,7 +723,7 @@ ImageBuilder make_builder(SightRead::Song& song,
         builder.add_bpms(tempo_map);
     }
 
-    const auto solos = new_track.solos(settings.configuration.drum_settings);
+    const auto solos = new_track.solos(settings.pathing_settings.drum_settings);
     if (settings.draw_solos) {
         builder.add_solo_sections(solos, tempo_map);
     }
@@ -731,25 +733,25 @@ ImageBuilder make_builder(SightRead::Song& song,
     }
 
     const auto unison_positions
-        = (settings.configuration.engine->has_unison_bonuses())
+        = (settings.pathing_settings.engine->has_unison_bonuses())
         ? song.unison_phrase_positions()
         : std::vector<SightRead::Tick> {};
 
     // The 0.1% squeeze minimum is to get around dumb floating point rounding
     // issues that visibly affect the path at 0% squeeze.
-    auto squeeze_settings = settings.configuration.squeeze_settings;
+    auto squeeze_settings = settings.pathing_settings.squeeze_settings;
     constexpr double SQUEEZE_EPSILON = 0.001;
     squeeze_settings.squeeze
         = std::max(squeeze_settings.squeeze, SQUEEZE_EPSILON);
     const ProcessedSong processed_track {
-        new_track, time_map, settings.configuration,
+        new_track, time_map, settings.pathing_settings,
         song.global_data().od_beats(), unison_positions};
     Path path;
 
     if (!settings.blank) {
         const auto is_rb_drums
             = track.track_type() == SightRead::TrackType::Drums
-            && settings.configuration.engine->is_rock_band();
+            && settings.pathing_settings.engine->is_rock_band();
         if (is_rb_drums) {
             write("Optimisation disabled for Rock Band drums, planned for a "
                   "future release");
@@ -770,15 +772,15 @@ ImageBuilder make_builder(SightRead::Song& song,
     }
 
     builder.add_measure_values(processed_track.points(), tempo_map, path);
-    if (settings.blank || !settings.configuration.engine->overlaps()) {
+    if (settings.blank || !settings.pathing_settings.engine->overlaps()) {
         builder.add_sp_values(processed_track.sp_data(),
-                              *settings.configuration.engine);
+                              *settings.pathing_settings.engine);
     } else {
         builder.add_sp_percent_values(processed_track.sp_data(), time_map,
                                       processed_track.points(), path);
     }
     builder.set_total_score(processed_track.points(), solos, path);
-    if (settings.configuration.engine->has_bres()
+    if (settings.pathing_settings.engine->has_bres()
         && new_track.bre().has_value()) {
         const auto bre = new_track.bre();
         if (bre.has_value()) {

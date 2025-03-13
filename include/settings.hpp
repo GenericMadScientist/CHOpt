@@ -57,7 +57,7 @@ struct SqueezeSettings {
     }
 };
 
-struct Configuration {
+struct PathingSettings {
     SqueezeSettings squeeze_settings;
     SightRead::DrumSettings drum_settings;
     std::unique_ptr<Engine> engine;
@@ -77,7 +77,7 @@ struct Settings {
     int speed;
     bool is_lefty_flip;
     Game game;
-    Configuration configuration;
+    PathingSettings pathing_settings;
     float opacity;
 };
 

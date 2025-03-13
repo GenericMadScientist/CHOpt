@@ -80,35 +80,35 @@ std::shared_ptr<SightRead::SongGlobalData> make_resolution(int resolution)
     return data;
 }
 
-Configuration non_pro_drums_configuration()
+PathingSettings non_pro_drums_pathing_settings()
 {
     return {SqueezeSettings::default_settings(),
             {false, false, false, false},
             std::make_unique<ChDrumEngine>()};
 }
 
-Configuration min_kicks_drums_configuration()
+PathingSettings min_kicks_drums_pathing_settings()
 {
     return {SqueezeSettings::default_settings(),
             {false, true, false, false},
             std::make_unique<ChDrumEngine>()};
 }
 
-Configuration extra_kicks_only_drums_configuration()
+PathingSettings extra_kicks_only_drums_pathing_settings()
 {
     return {SqueezeSettings::default_settings(),
             {true, true, false, false},
             std::make_unique<ChDrumEngine>()};
 }
 
-Configuration default_rb_bass_configuration()
+PathingSettings default_rb_bass_pathing_settings()
 {
     return {SqueezeSettings::default_settings(),
             SightRead::DrumSettings::default_settings(),
             std::make_unique<RbBassEngine>()};
 }
 
-Configuration default_fortnite_vocals_configuration()
+PathingSettings default_fortnite_vocals_pathing_settings()
 {
     return {SqueezeSettings::default_settings(),
             SightRead::DrumSettings::default_settings(),
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(single_notes_give_fifty_points)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     std::vector<int> expected_values {50, 50};
     std::vector<int> values = set_values(points);
 
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(chords_give_multiples_of_fifty_points)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     std::vector<int> expected_values {100};
     std::vector<int> values = set_values(points);
 
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE(ghl_notes_behave_the_same_as_five_fret_notes)
                                 SightRead::TrackType::SixFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     std::vector<int> expected_values {50, 50};
     std::vector<int> values = set_values(points);
 
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet first_points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     std::vector<int> first_expected_values {50, 3};
     std::vector<SightRead::Beat> first_expected_beats {SightRead::Beat(4.0),
                                                        SightRead::Beat(4.0026)};
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
         second_track,
         {make_resolution(200)->tempo_map(), SpMode::Measure},
         {},
-        default_guitar_configuration()};
+        default_guitar_pathing_settings()};
     std::vector<int> second_expected_values {50, 2};
     std::vector<SightRead::Beat> second_expected_beats {
         SightRead::Beat(3.84), SightRead::Beat(3.8425)};
@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     std::vector<int> expected_values {100, 2};
     std::vector<SightRead::Beat> expected_beats {SightRead::Beat(4.0),
                                                  SightRead::Beat(4.0026)};
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE(resolutions_below_25_do_not_enter_an_infinite_loop)
                                 SightRead::TrackType::FiveFret,
                                 make_resolution(1)};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
 
     BOOST_CHECK_EQUAL(std::distance(points.cbegin(), points.cend()), 3);
 }
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(sustains_of_uneven_length_are_handled_correctly)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     auto total_score = std::accumulate(
         points.cbegin(), points.cend(), 0,
         [](const auto& a, const auto& b) { return a + b.value; });
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE(chord_sustains_in_rb_are_handled_correctly)
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_rb_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_rb_pathing_settings()};
     const auto total_score = std::accumulate(
         points.cbegin(), points.cend(), 0,
         [](const auto& a, const auto& b) { return a + b.value; });
@@ -305,7 +305,7 @@ BOOST_AUTO_TEST_CASE(
                                 SightRead::TrackType::FiveFret,
                                 make_resolution(480)};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_rb_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_rb_pathing_settings()};
     const auto total_score = std::accumulate(
         points.cbegin(), points.cend(), 0,
         [](const auto& a, const auto& b) { return a + b.value; });
@@ -324,7 +324,7 @@ BOOST_AUTO_TEST_CASE(rounding_from_length_in_rb_for_chords_is_handled_correctly)
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {
-        track, {{}, SpMode::OdBeat}, {}, default_rb_configuration()};
+        track, {{}, SpMode::OdBeat}, {}, default_rb_pathing_settings()};
     const auto total_score = std::accumulate(
         points.cbegin(), points.cend(), 0,
         [](const auto& a, const auto& b) { return a + b.value; });
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE(gh1_one_beat_sustain_is_handled_correctly)
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_gh1_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_gh1_pathing_settings()};
     const auto total_score = std::accumulate(
         points.cbegin(), points.cend(), 0,
         [](const auto& a, const auto& b) { return a + b.value; });
@@ -359,7 +359,7 @@ BOOST_AUTO_TEST_CASE(
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_gh1_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_gh1_pathing_settings()};
     const auto total_score = std::accumulate(
         points.cbegin(), points.cend(), 0,
         [](const auto& a, const auto& b) { return a + b.value; });
@@ -379,7 +379,7 @@ BOOST_AUTO_TEST_CASE(
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_gh1_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_gh1_pathing_settings()};
     const auto total_score = std::accumulate(
         points.cbegin(), points.cend(), 0,
         [](const auto& a, const auto& b) { return a + b.value; });
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE(fortnite_festival_half_od_time_is_handled_correctly)
           480},
          SpMode::OdBeat},
         {},
-        default_fortnite_guitar_configuration()};
+        default_fortnite_guitar_pathing_settings()};
     const auto total_score = std::accumulate(
         points.cbegin(), points.cend(), 0,
         [](const auto& a, const auto& b) { return a + b.value; });
@@ -420,7 +420,7 @@ BOOST_AUTO_TEST_CASE(long_fortnite_sustains_are_handled_correctly)
     PointSet points {track,
                      {{{}, {}, {}, 480}, SpMode::OdBeat},
                      {},
-                     default_fortnite_vocals_configuration()};
+                     default_fortnite_vocals_pathing_settings()};
     const auto total_score = std::accumulate(
         points.cbegin(), points.cend(), 0,
         [](const auto& a, const auto& b) { return a + b.value; });
@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_CASE(points_are_sorted)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     const auto beats = set_position_beats(points);
 
     BOOST_TEST(std::is_sorted(beats.cbegin(), beats.cend()));
@@ -453,11 +453,11 @@ BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     PointSet unison_points {track,
                             {{}, SpMode::Measure},
                             {{SightRead::Tick {1100}, SightRead::Tick {53}}},
-                            default_rb3_configuration()};
+                            default_rb3_pathing_settings()};
 
     BOOST_TEST(points.cbegin()->is_sp_granting_note);
     BOOST_TEST(!std::next(points.cbegin())->is_sp_granting_note);
@@ -483,7 +483,7 @@ BOOST_AUTO_TEST_CASE(multiplier_applies_to_non_sustains)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     std::vector<int> expected_values;
     std::vector<int> expected_base_values;
     expected_values.reserve(50);
@@ -518,7 +518,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_are_multiplied)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
 
     BOOST_CHECK_EQUAL(std::prev(points.cend(), 2)->value, 4);
     BOOST_CHECK_EQUAL(std::prev(points.cend(), 2)->base_value, 1);
@@ -538,7 +538,7 @@ BOOST_AUTO_TEST_CASE(later_sustain_points_in_extended_sustains_are_multiplied)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
 
     BOOST_CHECK_EQUAL(std::prev(points.cend(), 2)->value, 2);
     BOOST_CHECK_EQUAL(std::prev(points.cend(), 2)->base_value, 1);
@@ -558,7 +558,7 @@ BOOST_AUTO_TEST_CASE(drum_notes_have_the_multiplier_handled_correctly)
                                 SightRead::TrackType::Drums,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_drums_pathing_settings()};
 
     BOOST_CHECK_EQUAL(std::prev(points.cend(), 1)->value, 100);
 }
@@ -579,7 +579,7 @@ BOOST_AUTO_TEST_CASE(fortnite_notes_have_the_multiplier_handled_correctly)
     PointSet points {track,
                      {{}, SpMode::OdBeat},
                      {},
-                     default_fortnite_guitar_configuration()};
+                     default_fortnite_guitar_pathing_settings()};
 
     BOOST_CHECK_EQUAL(std::prev(points.cend(), 1)->value, 72);
 }
@@ -595,7 +595,7 @@ BOOST_AUTO_TEST_CASE(gh1_multiplier_delay_accounted_for)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_gh1_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_gh1_pathing_settings()};
 
     BOOST_CHECK_EQUAL((points.cbegin() + 9)->value, 50);
     BOOST_CHECK_EQUAL((points.cbegin() + 10)->value, 2);
@@ -621,7 +621,7 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
     PointSet points {track,
                      {tempo_map, SpMode::Measure},
                      {},
-                     default_guitar_configuration()};
+                     default_guitar_pathing_settings()};
 
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_start.beat.value(), 0.825,
                       0.0001);
@@ -645,7 +645,7 @@ BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
     PointSet points {track,
                      {tempo_map, SpMode::Measure},
                      {},
-                     default_guitar_configuration()};
+                     default_guitar_pathing_settings()};
 
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_end.beat.value(), 1.175,
                       0.0001);
@@ -669,7 +669,7 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
     PointSet points {track,
                      {tempo_map, SpMode::Measure},
                      {},
-                     default_guitar_configuration()};
+                     default_guitar_pathing_settings()};
 
     for (auto p = std::next(points.cbegin()); p < points.cend(); ++p) {
         BOOST_CHECK_CLOSE(p->position.beat.value(),
@@ -720,7 +720,7 @@ BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
     SightRead::NoteTrack track {
         notes, {}, SightRead::TrackType::FiveFret, global_data};
     PointSet points {
-        track, {tempo_map, SpMode::Measure}, {}, default_rb_configuration()};
+        track, {tempo_map, SpMode::Measure}, {}, default_rb_pathing_settings()};
     PointSet fifty_sqz_points {
         track,
         {{}, SpMode::Measure},
@@ -751,7 +751,7 @@ BOOST_AUTO_TEST_CASE(rb_bass_multiplier_is_taken_into_account)
         SightRead::TrackType::FiveFret,
         std::make_unique<SightRead::SongGlobalData>()};
     const PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_rb_bass_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_rb_bass_pathing_settings()};
 
     const auto total_points
         = std::accumulate(points.cbegin(), points.cend(), 0,
@@ -847,7 +847,7 @@ BOOST_AUTO_TEST_CASE(next_non_hold_point_is_correct)
                                 std::make_unique<SightRead::SongGlobalData>()};
 
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
 
     BOOST_CHECK_EQUAL(points.next_non_hold_point(points.cbegin()),
                       points.cbegin());
@@ -866,7 +866,7 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
                                 std::make_unique<SightRead::SongGlobalData>()};
 
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
 
     BOOST_CHECK_EQUAL(points.next_sp_granting_note(points.cbegin()),
                       std::next(points.cbegin()));
@@ -888,7 +888,7 @@ BOOST_AUTO_TEST_CASE(solo_sections_are_added)
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.solos(solos);
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     std::vector<std::tuple<SpPosition, int>> expected_solo_boosts {
         {{SightRead::Beat(3.0), SpMeasure(0.75)}, 100},
         {{SightRead::Beat(6.0), SpMeasure(1.5)}, 200}};
@@ -905,7 +905,7 @@ BOOST_AUTO_TEST_CASE(range_score_is_correct)
                                 SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     const auto begin = points.cbegin();
     const auto end = points.cend();
 
@@ -927,7 +927,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_five_fret)
                                 SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     const auto begin = points.cbegin();
     const auto end = points.cend();
 
@@ -949,7 +949,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_six_fret)
                                 SightRead::TrackType::SixFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     const auto begin = points.cbegin();
     const auto end = points.cend();
 
@@ -970,7 +970,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_drums)
                                 SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_drums_pathing_settings()};
     const auto begin = points.cbegin();
     const auto end = points.cend();
 
@@ -989,9 +989,9 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_appear_with_enable_double_kick)
                                 SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet single_points {
-        track, {{}, SpMode::Measure}, {}, default_pro_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_pro_drums_pathing_settings()};
     PointSet double_points {
-        track, {{}, SpMode::Measure}, {}, default_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_drums_pathing_settings()};
 
     BOOST_CHECK_EQUAL(single_points.cend() - single_points.cbegin(), 1);
     BOOST_CHECK_EQUAL(double_points.cend() - double_points.cbegin(), 2);
@@ -1009,7 +1009,7 @@ BOOST_AUTO_TEST_CASE(single_kicks_are_removed_with_disable_kick)
     PointSet points {track,
                      {{}, SpMode::Measure},
                      {},
-                     extra_kicks_only_drums_configuration()};
+                     extra_kicks_only_drums_pathing_settings()};
 
     BOOST_CHECK_EQUAL(points.cend() - points.cbegin(), 1);
     BOOST_CHECK_EQUAL(points.cbegin()->value, 50);
@@ -1025,7 +1025,7 @@ BOOST_AUTO_TEST_CASE(disable_kick_doesnt_kill_sp_phrases)
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, min_kicks_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, min_kicks_drums_pathing_settings()};
 
     BOOST_TEST(points.cbegin()->is_sp_granting_note);
 }
@@ -1040,7 +1040,7 @@ BOOST_AUTO_TEST_CASE(double_kicks_dont_kill_phrases)
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, non_pro_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, non_pro_drums_pathing_settings()};
 
     BOOST_TEST(points.cbegin()->is_sp_granting_note);
 }
@@ -1058,7 +1058,7 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_drums_pathing_settings()};
     const auto begin = points.cbegin();
     const auto fill_start = (begin + 2)->fill_start;
 
@@ -1083,7 +1083,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_not_killed)
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, non_pro_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, non_pro_drums_pathing_settings()};
     const auto begin = points.cbegin();
 
     BOOST_TEST(!begin->fill_start.has_value());
@@ -1102,7 +1102,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_not_killed)
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_drums_pathing_settings()};
     const auto begin = points.cbegin();
 
     BOOST_TEST(!begin->fill_start.has_value());
@@ -1122,7 +1122,7 @@ BOOST_AUTO_TEST_CASE(
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_drums_pathing_settings()};
     const auto begin = points.cbegin();
 
     const auto fill_start = begin->fill_start;
@@ -1148,7 +1148,7 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_drums_pathing_settings()};
     const auto begin = points.cbegin();
 
     BOOST_TEST(begin->fill_start.has_value());
@@ -1168,7 +1168,7 @@ BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_drums_pathing_settings()};
     const auto begin = points.cbegin();
 
     BOOST_TEST(!begin->fill_start.has_value());
@@ -1184,7 +1184,7 @@ BOOST_AUTO_TEST_CASE(cymbals_get_extra_points)
                                 SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_drums_pathing_settings()};
     const auto begin = points.cbegin();
 
     BOOST_CHECK_EQUAL(begin->value, 65);
@@ -1208,7 +1208,7 @@ BOOST_AUTO_TEST_CASE(dynamics_get_double_points)
                                 SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_drums_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_drums_pathing_settings()};
     const auto begin = points.cbegin();
 
     BOOST_CHECK_EQUAL(begin->value, 100);
@@ -1230,7 +1230,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
                                 SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_gh1_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_gh1_pathing_settings()};
     const auto begin = points.cbegin();
 
     BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin),
@@ -1246,7 +1246,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_gh1_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_gh1_pathing_settings()};
     const auto begin = points.cbegin();
 
     BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin), begin + 2);
@@ -1261,7 +1261,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {
-        track, {{}, SpMode::Measure}, {}, default_guitar_configuration()};
+        track, {{}, SpMode::Measure}, {}, default_guitar_pathing_settings()};
     const auto begin = points.cbegin();
 
     BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin), begin + 1);
@@ -1282,7 +1282,7 @@ BOOST_AUTO_TEST_CASE(fortnite_notes_have_individual_split_points)
     PointSet points {track,
                      {{}, SpMode::OdBeat},
                      {},
-                     default_fortnite_guitar_configuration()};
+                     default_fortnite_guitar_pathing_settings()};
 
     BOOST_CHECK_EQUAL(std::distance(points.cbegin(), points.cend()), 2);
 }
