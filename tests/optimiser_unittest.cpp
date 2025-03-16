@@ -27,6 +27,24 @@
 
 namespace {
 const std::atomic<bool> term_bool {false};
+
+PathingSettings positive_video_lag_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            1.0,
+            SightRead::DrumSettings::default_settings(),
+            {1.0, SightRead::Second {0.0}, SightRead::Second {0.1},
+             SightRead::Second {0.0}}};
+}
+
+PathingSettings whammy_delay_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            1.0,
+            SightRead::DrumSettings::default_settings(),
+            {1.0, SightRead::Second {0.0}, SightRead::Second {0.0},
+             SightRead::Second {0.1}}};
+}
 }
 
 BOOST_AUTO_TEST_SUITE(overlap_guitar_paths)
@@ -545,10 +563,7 @@ BOOST_AUTO_TEST_CASE(does_not_crash_with_positive_video_lag)
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track,
                          {{}, SpMode::Measure},
-                         {{1.0, 1.0, SightRead::Second {0.0},
-                           SightRead::Second {0.1}, SightRead::Second {0.0}},
-                          SightRead::DrumSettings::default_settings(),
-                          std::make_unique<ChGuitarEngine>()},
+                         positive_video_lag_settings(),
                          {},
                          {}};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -572,14 +587,8 @@ BOOST_AUTO_TEST_CASE(whammy_delay_is_handled_correctly)
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
-    ProcessedSong track {note_track,
-                         {{}, SpMode::Measure},
-                         {{1.0, 1.0, SightRead::Second {0.0},
-                           SightRead::Second {0.0}, SightRead::Second {0.1}},
-                          SightRead::DrumSettings::default_settings(),
-                          std::make_unique<ChGuitarEngine>()},
-                         {},
-                         {}};
+    ProcessedSong track {
+        note_track, {{}, SpMode::Measure}, whammy_delay_settings(), {}, {}};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.1)};
 
     const auto opt_path = optimiser.optimal_path();

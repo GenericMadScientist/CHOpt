@@ -185,10 +185,10 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
 
     const SightRead::Second early_window {
         pathing_settings.engine->early_timing_window(early_gap, late_gap)
-        * pathing_settings.squeeze_settings.squeeze};
+        * pathing_settings.squeeze};
     const SightRead::Second late_window {
         pathing_settings.engine->late_timing_window(early_gap, late_gap)
-        * pathing_settings.squeeze_settings.squeeze};
+        * pathing_settings.squeeze};
 
     const auto early_beat = time_map.to_beats(note_seconds - early_window);
     const auto early_meas = time_map.to_sp_measures(early_beat);

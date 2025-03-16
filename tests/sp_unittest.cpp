@@ -21,6 +21,35 @@
 #include "sp.hpp"
 #include "test_helpers.hpp"
 
+namespace {
+PathingSettings mid_early_whammy_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            1.0,
+            SightRead::DrumSettings::default_settings(),
+            {0.5, SightRead::Second {0.0}, SightRead::Second {0.0},
+             SightRead::Second {0.0}}};
+}
+
+PathingSettings negative_early_whammy_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            1.0,
+            SightRead::DrumSettings::default_settings(),
+            {0.0, SightRead::Second {2.5}, SightRead::Second {0.0},
+             SightRead::Second {0.0}}};
+}
+
+PathingSettings positive_video_lag_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            1.0,
+            SightRead::DrumSettings::default_settings(),
+            {1.0, SightRead::Second {0.0}, SightRead::Second {0.1},
+             SightRead::Second {0.0}}};
+}
+}
+
 BOOST_AUTO_TEST_SUITE(spbar_methods)
 
 BOOST_AUTO_TEST_CASE(add_phrase_works_correctly)
@@ -314,13 +343,8 @@ BOOST_AUTO_TEST_CASE(mid_early_whammy)
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    SpData sp_data {track,
-                    {{}, SpMode::Measure},
-                    {},
-                    {{1.0, 0.5, SightRead::Second {0.0},
-                      SightRead::Second {0.0}, SightRead::Second {0.0}},
-                     SightRead::DrumSettings::default_settings(),
-                     std::make_unique<ChGuitarEngine>()}};
+    SpData sp_data {
+        track, {{}, SpMode::Measure}, {}, mid_early_whammy_settings()};
 
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(16.0)),
@@ -341,13 +365,8 @@ BOOST_AUTO_TEST_CASE(negative_early_whammy)
         {SightRead::Tick {0}, SightRead::Tick {3000}}};
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    SpData sp_data {track,
-                    {{}, SpMode::Measure},
-                    {},
-                    {{1.0, 0.0, SightRead::Second {2.5},
-                      SightRead::Second {0.0}, SightRead::Second {0.0}},
-                     SightRead::DrumSettings::default_settings(),
-                     std::make_unique<ChGuitarEngine>()}};
+    SpData sp_data {
+        track, {{}, SpMode::Measure}, {}, negative_early_whammy_settings()};
 
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(10.0)),
@@ -496,13 +515,8 @@ BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
 
-    SpData sp_data {track,
-                    {{}, SpMode::Measure},
-                    {},
-                    {{1.0, 1.0, SightRead::Second {0.0},
-                      SightRead::Second {0.1}, SightRead::Second {0.0}},
-                     SightRead::DrumSettings::default_settings(),
-                     std::make_unique<ChGuitarEngine>()}};
+    SpData sp_data {
+        track, {{}, SpMode::Measure}, {}, positive_video_lag_settings()};
 
     BOOST_TEST(!sp_data.is_in_whammy_ranges(SightRead::Beat(1.0)));
     BOOST_TEST(sp_data.is_in_whammy_ranges(SightRead::Beat(1.9)));

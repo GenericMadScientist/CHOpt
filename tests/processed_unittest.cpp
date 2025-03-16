@@ -22,6 +22,26 @@
 
 #include "test_helpers.hpp"
 
+namespace {
+PathingSettings no_squeeze_negative_video_lag_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            0.0,
+            SightRead::DrumSettings::default_settings(),
+            {0.0, SightRead::Second {0.0}, SightRead::Second {-0.1},
+             SightRead::Second {0.0}}};
+}
+
+PathingSettings no_squeeze_positive_video_lag_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            0.0,
+            SightRead::DrumSettings::default_settings(),
+            {0.0, SightRead::Second {0.0}, SightRead::Second {0.1},
+             SightRead::Second {0.0}}};
+}
+}
+
 BOOST_AUTO_TEST_SUITE(three_arg_total_available_sp_counts_sp_correctly)
 
 BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)
@@ -1335,10 +1355,7 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
                                 std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong song {track,
                         {{}, SpMode::Measure},
-                        {{0.0, 0.0, SightRead::Second {0.0},
-                          SightRead::Second {-0.1}, SightRead::Second {0.0}},
-                         SightRead::DrumSettings::default_settings(),
-                         std::make_unique<ChGuitarEngine>()},
+                        no_squeeze_negative_video_lag_settings(),
                         {},
                         {}};
     const auto& points = song.points();
@@ -1364,10 +1381,7 @@ BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
         notes, {}, SightRead::TrackType::FiveFret, global_data};
     ProcessedSong song {track,
                         {tempo_map, SpMode::Measure},
-                        {{0.0, 0.0, SightRead::Second {0.0},
-                          SightRead::Second {0.1}, SightRead::Second {0.0}},
-                         SightRead::DrumSettings::default_settings(),
-                         std::make_unique<ChGuitarEngine>()},
+                        no_squeeze_positive_video_lag_settings(),
                         {},
                         {}};
     const auto& points = song.points();

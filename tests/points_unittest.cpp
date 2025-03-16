@@ -82,37 +82,85 @@ std::shared_ptr<SightRead::SongGlobalData> make_resolution(int resolution)
 
 PathingSettings non_pro_drums_pathing_settings()
 {
-    return {SqueezeSettings::default_settings(),
+    return {std::make_unique<ChDrumEngine>(),
+            1.0,
             {false, false, false, false},
-            std::make_unique<ChDrumEngine>()};
+            SqueezeSettings::default_settings()};
 }
 
 PathingSettings min_kicks_drums_pathing_settings()
 {
-    return {SqueezeSettings::default_settings(),
+    return {std::make_unique<ChDrumEngine>(),
+            1.0,
             {false, true, false, false},
-            std::make_unique<ChDrumEngine>()};
+            SqueezeSettings::default_settings()};
 }
 
 PathingSettings extra_kicks_only_drums_pathing_settings()
 {
-    return {SqueezeSettings::default_settings(),
+    return {std::make_unique<ChDrumEngine>(),
+            1.0,
             {true, true, false, false},
-            std::make_unique<ChDrumEngine>()};
+            SqueezeSettings::default_settings()};
 }
 
 PathingSettings default_rb_bass_pathing_settings()
 {
-    return {SqueezeSettings::default_settings(),
+    return {std::make_unique<RbBassEngine>(), 1.0,
             SightRead::DrumSettings::default_settings(),
-            std::make_unique<RbBassEngine>()};
+            SqueezeSettings::default_settings()};
 }
 
 PathingSettings default_fortnite_vocals_pathing_settings()
 {
-    return {SqueezeSettings::default_settings(),
+    return {std::make_unique<FortniteVocalsEngine>(), 1.0,
             SightRead::DrumSettings::default_settings(),
-            std::make_unique<FortniteVocalsEngine>()};
+            SqueezeSettings::default_settings()};
+}
+
+PathingSettings mid_squeeze_ch_guitar_pathing_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            0.5,
+            SightRead::DrumSettings::default_settings(),
+            {1.0, SightRead::Second {0.0}, SightRead::Second {0.0},
+             SightRead::Second {0.0}}};
+}
+
+PathingSettings mid_squeeze_rb_pathing_settings()
+{
+    return {std::make_unique<RbEngine>(),
+            0.5,
+            SightRead::DrumSettings::default_settings(),
+            {1.0, SightRead::Second {0.0}, SightRead::Second {0.0},
+             SightRead::Second {0.0}}};
+}
+
+PathingSettings positive_video_lag_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            1.0,
+            SightRead::DrumSettings::default_settings(),
+            {1.0, SightRead::Second {0.0}, SightRead::Second {0.20},
+             SightRead::Second {0.0}}};
+}
+
+PathingSettings slight_negative_video_lag_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            1.0,
+            SightRead::DrumSettings::default_settings(),
+            {1.0, SightRead::Second {0.0}, SightRead::Second {-0.20},
+             SightRead::Second {0.0}}};
+}
+
+PathingSettings negative_video_lag_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            1.0,
+            SightRead::DrumSettings::default_settings(),
+            {1.0, SightRead::Second {0.0}, SightRead::Second {-0.40},
+             SightRead::Second {0.0}}};
 }
 }
 
@@ -695,10 +743,7 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
     PointSet points {track,
                      {tempo_map, SpMode::Measure},
                      {},
-                     {{0.5, 1.0, SightRead::Second {0.0},
-                       SightRead::Second {0.0}, SightRead::Second {0.0}},
-                      SightRead::DrumSettings::default_settings(),
-                      std::make_unique<ChGuitarEngine>()}};
+                     mid_squeeze_ch_guitar_pathing_settings()};
 
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_start.beat.value(), 0.9125,
                       0.0001);
@@ -722,13 +767,7 @@ BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
     PointSet points {
         track, {tempo_map, SpMode::Measure}, {}, default_rb_pathing_settings()};
     PointSet fifty_sqz_points {
-        track,
-        {{}, SpMode::Measure},
-        {},
-        {{0.5, 1.0, SightRead::Second {0.0}, SightRead::Second {0.0},
-          SightRead::Second {0.0}},
-         SightRead::DrumSettings::default_settings(),
-         std::make_unique<RbEngine>()}};
+        track, {{}, SpMode::Measure}, {}, mid_squeeze_rb_pathing_settings()};
 
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_end.beat.value(), 1.125,
                       0.0001);
@@ -771,13 +810,8 @@ BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
         {},
         SightRead::TrackType::FiveFret,
         std::make_unique<SightRead::SongGlobalData>()};
-    PointSet points {track,
-                     {{}, SpMode::Measure},
-                     {},
-                     {{1.0, 1.0, SightRead::Second {0.0},
-                       SightRead::Second {-0.20}, SightRead::Second {0.0}},
-                      SightRead::DrumSettings::default_settings(),
-                      std::make_unique<ChGuitarEngine>()}};
+    PointSet points {
+        track, {{}, SpMode::Measure}, {}, slight_negative_video_lag_settings()};
 
     BOOST_CHECK_CLOSE(points.cbegin()->position.beat.value(), 0.6, 0.0001);
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_start.beat.value(), 0.46,
@@ -797,13 +831,8 @@ BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
         {},
         SightRead::TrackType::FiveFret,
         std::make_unique<SightRead::SongGlobalData>()};
-    PointSet points {track,
-                     {{}, SpMode::Measure},
-                     {},
-                     {{1.0, 1.0, SightRead::Second {0.0},
-                       SightRead::Second {0.20}, SightRead::Second {0.0}},
-                      SightRead::DrumSettings::default_settings(),
-                      std::make_unique<ChGuitarEngine>()}};
+    PointSet points {
+        track, {{}, SpMode::Measure}, {}, positive_video_lag_settings()};
 
     BOOST_CHECK_CLOSE(points.cbegin()->position.beat.value(), 1.4, 0.0001);
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_start.beat.value(), 1.26,
@@ -824,13 +853,8 @@ BOOST_AUTO_TEST_CASE(tick_points_are_not_multiplied_prematurely)
                                 {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
-    PointSet points {track,
-                     {{}, SpMode::Measure},
-                     {},
-                     {{1.0, 1.0, SightRead::Second {0.0},
-                       SightRead::Second {-0.40}, SightRead::Second {0.0}},
-                      SightRead::DrumSettings::default_settings(),
-                      std::make_unique<ChGuitarEngine>()}};
+    PointSet points {
+        track, {{}, SpMode::Measure}, {}, negative_video_lag_settings()};
 
     BOOST_CHECK_EQUAL(std::prev(points.cend())->value, 100);
     BOOST_CHECK_EQUAL(std::prev(points.cend(), 2)->value, 7);

@@ -44,7 +44,6 @@ std::unique_ptr<Engine> game_to_engine(Game game,
                                        bool precision_mode);
 
 struct SqueezeSettings {
-    double squeeze;
     double early_whammy;
     SightRead::Second lazy_whammy {0.0};
     SightRead::Second video_lag {0.0};
@@ -52,15 +51,16 @@ struct SqueezeSettings {
 
     static SqueezeSettings default_settings()
     {
-        return {1.0, 1.0, SightRead::Second(0.0), SightRead::Second(0.0),
+        return {1.0, SightRead::Second(0.0), SightRead::Second(0.0),
                 SightRead::Second(0.0)};
     }
 };
 
 struct PathingSettings {
-    SqueezeSettings squeeze_settings;
-    SightRead::DrumSettings drum_settings;
     std::unique_ptr<Engine> engine;
+    double squeeze;
+    SightRead::DrumSettings drum_settings;
+    SqueezeSettings squeeze_settings;
 };
 
 // This struct represents the options chosen on the command line by the user.

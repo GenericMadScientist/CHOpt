@@ -110,6 +110,24 @@ make_drawn_drum_note(double position,
 
     return note;
 }
+
+PathingSettings negative_video_lag_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            1.0,
+            SightRead::DrumSettings::default_settings(),
+            {1.0, SightRead::Second {0.0}, SightRead::Second {-0.1},
+             SightRead::Second {0.0}}};
+}
+
+PathingSettings positive_video_lag_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            1.0,
+            SightRead::DrumSettings::default_settings(),
+            {1.0, SightRead::Second(0.0), SightRead::Second(0.05),
+             SightRead::Second(0.0)}};
+}
 }
 
 namespace SightRead {
@@ -929,13 +947,8 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                                 {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    PointSet points {track,
-                     {{}, SpMode::Measure},
-                     {},
-                     {{1.0, 1.0, SightRead::Second(0.0),
-                       SightRead::Second(0.05), SightRead::Second(0.0)},
-                      SightRead::DrumSettings::default_settings(),
-                      std::make_unique<ChGuitarEngine>()}};
+    PointSet points {
+        track, {{}, SpMode::Measure}, {}, positive_video_lag_settings()};
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
@@ -1203,13 +1216,8 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
                                 {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    PointSet points {track,
-                     {{}, SpMode::Measure},
-                     {},
-                     {{1.0, 1.0, SightRead::Second {0.0},
-                       SightRead::Second {-0.1}, SightRead::Second {0.0}},
-                      SightRead::DrumSettings::default_settings(),
-                      std::make_unique<ChGuitarEngine>()}};
+    PointSet points {
+        track, {{}, SpMode::Measure}, {}, negative_video_lag_settings()};
     Path path {{{points.cbegin() + 1, points.cbegin() + 1,
                  SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
                50};

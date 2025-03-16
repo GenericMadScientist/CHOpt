@@ -737,12 +737,6 @@ ImageBuilder make_builder(SightRead::Song& song,
         ? song.unison_phrase_positions()
         : std::vector<SightRead::Tick> {};
 
-    // The 0.1% squeeze minimum is to get around dumb floating point rounding
-    // issues that visibly affect the path at 0% squeeze.
-    auto squeeze_settings = settings.pathing_settings.squeeze_settings;
-    constexpr double SQUEEZE_EPSILON = 0.001;
-    squeeze_settings.squeeze
-        = std::max(squeeze_settings.squeeze, SQUEEZE_EPSILON);
     const ProcessedSong processed_track {
         new_track, time_map, settings.pathing_settings,
         song.global_data().od_beats(), unison_positions};
@@ -758,9 +752,9 @@ ImageBuilder make_builder(SightRead::Song& song,
             builder.add_sp_phrases(new_track, unison_positions, path);
         } else {
             write("Optimising, please wait...");
-            const Optimiser optimiser {&processed_track, terminate,
-                                       settings.speed,
-                                       squeeze_settings.whammy_delay};
+            const Optimiser optimiser {
+                &processed_track, terminate, settings.speed,
+                settings.pathing_settings.squeeze_settings.whammy_delay};
             path = optimiser.optimal_path();
             write(processed_track.path_summary(path).c_str());
             builder.add_sp_phrases(new_track, unison_positions, path);

@@ -226,6 +226,7 @@ Settings from_args(const QStringList& args)
     constexpr int MAX_VIDEO_LAG = 200;
     constexpr int MIN_SPEED = 5;
     constexpr double MS_PER_SECOND = 1000.0;
+    constexpr double SQUEEZE_EPSILON = 0.001;
 
     auto parser = arg_parser();
     parser->process(args);
@@ -296,7 +297,10 @@ Settings from_args(const QStringList& args)
             "Whammy delay must be greater than or equal to 0");
     }
 
-    settings.pathing_settings.squeeze_settings.squeeze = squeeze / 100.0;
+    // The 0.1% squeeze minimum is to get around dumb floating point rounding
+    // issues that visibly affect the path at 0% squeeze.
+    settings.pathing_settings.squeeze
+        = std::max(squeeze / 100.0, SQUEEZE_EPSILON);
     settings.pathing_settings.squeeze_settings.early_whammy
         = early_whammy / 100.0;
     settings.pathing_settings.squeeze_settings.lazy_whammy

@@ -248,6 +248,7 @@ Settings MainWindow::get_settings() const
     constexpr auto DEFAULT_SPEED = 100;
     constexpr auto MS_IN_SECOND = 1000.0;
     constexpr auto PERCENTAGE_IN_UNIT = 100.0;
+    constexpr auto SQUEEZE_EPSILON = 0.001;
 
     Settings settings;
 
@@ -267,8 +268,8 @@ Settings MainWindow::get_settings() const
                               .value<SightRead::Difficulty>();
     settings.instrument = m_ui->instrumentComboBox->currentData()
                               .value<SightRead::Instrument>();
-    settings.pathing_settings.squeeze_settings.squeeze
-        = m_ui->squeezeSlider->value() / PERCENTAGE_IN_UNIT;
+    settings.pathing_settings.squeeze = std::max(
+        m_ui->squeezeSlider->value() / PERCENTAGE_IN_UNIT, SQUEEZE_EPSILON);
     settings.pathing_settings.squeeze_settings.early_whammy
         = m_ui->earlyWhammySlider->value() / PERCENTAGE_IN_UNIT;
     settings.pathing_settings.squeeze_settings.video_lag
