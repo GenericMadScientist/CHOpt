@@ -286,11 +286,10 @@ Settings MainWindow::get_settings() const
     auto ok = false;
     auto lazy_whammy_ms = lazy_whammy_text.toInt(&ok);
     if (ok) {
-        settings.pathing_settings.squeeze_settings.lazy_whammy
+        settings.pathing_settings.lazy_whammy
             = SightRead::Second {lazy_whammy_ms / MS_IN_SECOND};
     } else {
-        settings.pathing_settings.squeeze_settings.lazy_whammy
-            = SightRead::Second {0.0};
+        settings.pathing_settings.lazy_whammy = SightRead::Second {0.0};
     }
 
     const auto whammy_delay_text = m_ui->whammyDelayLineEdit->text();

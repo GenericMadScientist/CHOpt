@@ -142,7 +142,7 @@ SpData::SpData(const SightRead::NoteTrack& track, SpTimeMap time_map,
         const auto note = m_time_map.to_beats(position);
         auto second_start = m_time_map.to_seconds(note);
         second_start -= early_timing_window;
-        second_start += pathing_settings.squeeze_settings.lazy_whammy;
+        second_start += pathing_settings.lazy_whammy;
         second_start += pathing_settings.squeeze_settings.video_lag;
         const auto beat_start = m_time_map.to_beats(second_start);
         auto beat_end = m_time_map.to_beats(position + length);

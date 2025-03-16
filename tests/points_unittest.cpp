@@ -85,6 +85,7 @@ PathingSettings non_pro_drums_pathing_settings()
     return {std::make_unique<ChDrumEngine>(),
             1.0,
             1.0,
+            SightRead::Second {0.0},
             {false, false, false, false},
             SqueezeSettings::default_settings()};
 }
@@ -94,6 +95,7 @@ PathingSettings min_kicks_drums_pathing_settings()
     return {std::make_unique<ChDrumEngine>(),
             1.0,
             1.0,
+            SightRead::Second {0.0},
             {false, true, false, false},
             SqueezeSettings::default_settings()};
 }
@@ -103,20 +105,27 @@ PathingSettings extra_kicks_only_drums_pathing_settings()
     return {std::make_unique<ChDrumEngine>(),
             1.0,
             1.0,
+            SightRead::Second {0.0},
             {true, true, false, false},
             SqueezeSettings::default_settings()};
 }
 
 PathingSettings default_rb_bass_pathing_settings()
 {
-    return {std::make_unique<RbBassEngine>(), 1.0, 1.0,
+    return {std::make_unique<RbBassEngine>(),
+            1.0,
+            1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
             SqueezeSettings::default_settings()};
 }
 
 PathingSettings default_fortnite_vocals_pathing_settings()
 {
-    return {std::make_unique<FortniteVocalsEngine>(), 1.0, 1.0,
+    return {std::make_unique<FortniteVocalsEngine>(),
+            1.0,
+            1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
             SqueezeSettings::default_settings()};
 }
@@ -126,9 +135,9 @@ PathingSettings mid_squeeze_ch_guitar_pathing_settings()
     return {std::make_unique<ChGuitarEngine>(),
             0.5,
             1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
-            {SightRead::Second {0.0}, SightRead::Second {0.0},
-             SightRead::Second {0.0}}};
+            {SightRead::Second {0.0}, SightRead::Second {0.0}}};
 }
 
 PathingSettings mid_squeeze_rb_pathing_settings()
@@ -136,9 +145,9 @@ PathingSettings mid_squeeze_rb_pathing_settings()
     return {std::make_unique<RbEngine>(),
             0.5,
             1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
-            {SightRead::Second {0.0}, SightRead::Second {0.0},
-             SightRead::Second {0.0}}};
+            {SightRead::Second {0.0}, SightRead::Second {0.0}}};
 }
 
 PathingSettings slight_negative_video_lag_settings()
@@ -146,9 +155,9 @@ PathingSettings slight_negative_video_lag_settings()
     return {std::make_unique<ChGuitarEngine>(),
             1.0,
             1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
-            {SightRead::Second {0.0}, SightRead::Second {-0.20},
-             SightRead::Second {0.0}}};
+            {SightRead::Second {-0.20}, SightRead::Second {0.0}}};
 }
 
 PathingSettings negative_video_lag_settings()
@@ -156,9 +165,9 @@ PathingSettings negative_video_lag_settings()
     return {std::make_unique<ChGuitarEngine>(),
             1.0,
             1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
-            {SightRead::Second {0.0}, SightRead::Second {-0.40},
-             SightRead::Second {0.0}}};
+            {SightRead::Second {-0.40}, SightRead::Second {0.0}}};
 }
 }
 

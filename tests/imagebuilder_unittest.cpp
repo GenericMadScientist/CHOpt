@@ -116,9 +116,9 @@ PathingSettings negative_video_lag_settings()
     return {std::make_unique<ChGuitarEngine>(),
             1.0,
             1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
-            {SightRead::Second {0.0}, SightRead::Second {-0.1},
-             SightRead::Second {0.0}}};
+            {SightRead::Second {-0.1}, SightRead::Second {0.0}}};
 }
 }
 

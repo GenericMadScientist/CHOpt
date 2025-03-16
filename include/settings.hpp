@@ -44,14 +44,12 @@ std::unique_ptr<Engine> game_to_engine(Game game,
                                        bool precision_mode);
 
 struct SqueezeSettings {
-    SightRead::Second lazy_whammy {0.0};
     SightRead::Second video_lag {0.0};
     SightRead::Second whammy_delay {0.0};
 
     static SqueezeSettings default_settings()
     {
-        return {SightRead::Second(0.0), SightRead::Second(0.0),
-                SightRead::Second(0.0)};
+        return {SightRead::Second(0.0), SightRead::Second(0.0)};
     }
 };
 
@@ -59,6 +57,7 @@ struct PathingSettings {
     std::unique_ptr<Engine> engine;
     double squeeze;
     double early_whammy;
+    SightRead::Second lazy_whammy {0.0};
     SightRead::DrumSettings drum_settings;
     SqueezeSettings squeeze_settings;
 };

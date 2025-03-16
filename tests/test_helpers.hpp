@@ -197,28 +197,40 @@ make_drum_note(int position, SightRead::DrumNotes colour = SightRead::DRUM_RED,
 
 inline PathingSettings default_drums_pathing_settings()
 {
-    return {std::make_unique<ChDrumEngine>(), 1.0, 1.0,
+    return {std::make_unique<ChDrumEngine>(),
+            1.0,
+            1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
             SqueezeSettings::default_settings()};
 }
 
 inline PathingSettings default_fortnite_guitar_pathing_settings()
 {
-    return {std::make_unique<FortniteGuitarEngine>(), 1.0, 1.0,
+    return {std::make_unique<FortniteGuitarEngine>(),
+            1.0,
+            1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
             SqueezeSettings::default_settings()};
 }
 
 inline PathingSettings default_gh1_pathing_settings()
 {
-    return {std::make_unique<Gh1Engine>(), 1.0, 1.0,
+    return {std::make_unique<Gh1Engine>(),
+            1.0,
+            1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
             SqueezeSettings::default_settings()};
 }
 
 inline PathingSettings default_guitar_pathing_settings()
 {
-    return {std::make_unique<ChGuitarEngine>(), 1.0, 1.0,
+    return {std::make_unique<ChGuitarEngine>(),
+            1.0,
+            1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
             SqueezeSettings::default_settings()};
 }
@@ -228,20 +240,27 @@ inline PathingSettings default_pro_drums_pathing_settings()
     return {std::make_unique<ChDrumEngine>(),
             1.0,
             1.0,
+            SightRead::Second {0.0},
             {false, false, true, false},
             SqueezeSettings::default_settings()};
 }
 
 inline PathingSettings default_rb_pathing_settings()
 {
-    return {std::make_unique<RbEngine>(), 1.0, 1.0,
+    return {std::make_unique<RbEngine>(),
+            1.0,
+            1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
             SqueezeSettings::default_settings()};
 }
 
 inline PathingSettings default_rb3_pathing_settings()
 {
-    return {std::make_unique<Rb3Engine>(), 1.0, 1.0,
+    return {std::make_unique<Rb3Engine>(),
+            1.0,
+            1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
             SqueezeSettings::default_settings()};
 }
@@ -251,9 +270,9 @@ inline PathingSettings positive_video_lag_settings()
     return {std::make_unique<ChGuitarEngine>(),
             1.0,
             1.0,
+            SightRead::Second {0.0},
             SightRead::DrumSettings::default_settings(),
-            {SightRead::Second(0.0), SightRead::Second(0.1),
-             SightRead::Second(0.0)}};
+            {SightRead::Second(0.1), SightRead::Second(0.0)}};
 }
 
 #endif
