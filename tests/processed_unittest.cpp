@@ -27,8 +27,9 @@ PathingSettings no_squeeze_negative_video_lag_settings()
 {
     return {std::make_unique<ChGuitarEngine>(),
             0.0,
+            0.0,
             SightRead::DrumSettings::default_settings(),
-            {0.0, SightRead::Second {0.0}, SightRead::Second {-0.1},
+            {SightRead::Second {0.0}, SightRead::Second {-0.1},
              SightRead::Second {0.0}}};
 }
 
@@ -36,8 +37,9 @@ PathingSettings no_squeeze_positive_video_lag_settings()
 {
     return {std::make_unique<ChGuitarEngine>(),
             0.0,
+            0.0,
             SightRead::DrumSettings::default_settings(),
-            {0.0, SightRead::Second {0.0}, SightRead::Second {0.1},
+            {SightRead::Second {0.0}, SightRead::Second {0.1},
              SightRead::Second {0.0}}};
 }
 }

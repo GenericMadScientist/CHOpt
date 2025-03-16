@@ -301,8 +301,7 @@ Settings from_args(const QStringList& args)
     // issues that visibly affect the path at 0% squeeze.
     settings.pathing_settings.squeeze
         = std::max(squeeze / 100.0, SQUEEZE_EPSILON);
-    settings.pathing_settings.squeeze_settings.early_whammy
-        = early_whammy / 100.0;
+    settings.pathing_settings.early_whammy = early_whammy / 100.0;
     settings.pathing_settings.squeeze_settings.lazy_whammy
         = SightRead::Second {lazy_whammy / MS_PER_SECOND};
     settings.pathing_settings.squeeze_settings.whammy_delay

@@ -68,7 +68,7 @@ note_spans(const SightRead::NoteTrack& track,
                     SightRead::Second {
                         pathing_settings.engine->early_timing_window(early_gap,
                                                                      late_gap)}
-                        * pathing_settings.squeeze_settings.early_whammy);
+                        * pathing_settings.early_whammy);
             }
         }
     }

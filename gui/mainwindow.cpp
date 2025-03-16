@@ -270,7 +270,7 @@ Settings MainWindow::get_settings() const
                               .value<SightRead::Instrument>();
     settings.pathing_settings.squeeze = std::max(
         m_ui->squeezeSlider->value() / PERCENTAGE_IN_UNIT, SQUEEZE_EPSILON);
-    settings.pathing_settings.squeeze_settings.early_whammy
+    settings.pathing_settings.early_whammy
         = m_ui->earlyWhammySlider->value() / PERCENTAGE_IN_UNIT;
     settings.pathing_settings.squeeze_settings.video_lag
         = SightRead::Second {m_ui->videoLagSlider->value() / MS_IN_SECOND};

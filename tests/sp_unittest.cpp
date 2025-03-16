@@ -26,8 +26,9 @@ PathingSettings mid_early_whammy_settings()
 {
     return {std::make_unique<ChGuitarEngine>(),
             1.0,
+            0.5,
             SightRead::DrumSettings::default_settings(),
-            {0.5, SightRead::Second {0.0}, SightRead::Second {0.0},
+            {SightRead::Second {0.0}, SightRead::Second {0.0},
              SightRead::Second {0.0}}};
 }
 
@@ -35,8 +36,9 @@ PathingSettings negative_early_whammy_settings()
 {
     return {std::make_unique<ChGuitarEngine>(),
             1.0,
+            0.0,
             SightRead::DrumSettings::default_settings(),
-            {0.0, SightRead::Second {2.5}, SightRead::Second {0.0},
+            {SightRead::Second {2.5}, SightRead::Second {0.0},
              SightRead::Second {0.0}}};
 }
 }
