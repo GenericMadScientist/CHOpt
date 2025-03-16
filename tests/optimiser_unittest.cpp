@@ -28,15 +28,6 @@
 namespace {
 const std::atomic<bool> term_bool {false};
 
-PathingSettings positive_video_lag_settings()
-{
-    return {std::make_unique<ChGuitarEngine>(),
-            1.0,
-            SightRead::DrumSettings::default_settings(),
-            {1.0, SightRead::Second {0.0}, SightRead::Second {0.1},
-             SightRead::Second {0.0}}};
-}
-
 PathingSettings whammy_delay_settings()
 {
     return {std::make_unique<ChGuitarEngine>(),

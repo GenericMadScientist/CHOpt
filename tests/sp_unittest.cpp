@@ -39,15 +39,6 @@ PathingSettings negative_early_whammy_settings()
             {0.0, SightRead::Second {2.5}, SightRead::Second {0.0},
              SightRead::Second {0.0}}};
 }
-
-PathingSettings positive_video_lag_settings()
-{
-    return {std::make_unique<ChGuitarEngine>(),
-            1.0,
-            SightRead::DrumSettings::default_settings(),
-            {1.0, SightRead::Second {0.0}, SightRead::Second {0.1},
-             SightRead::Second {0.0}}};
-}
 }
 
 BOOST_AUTO_TEST_SUITE(spbar_methods)

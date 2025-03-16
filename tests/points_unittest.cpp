@@ -136,15 +136,6 @@ PathingSettings mid_squeeze_rb_pathing_settings()
              SightRead::Second {0.0}}};
 }
 
-PathingSettings positive_video_lag_settings()
-{
-    return {std::make_unique<ChGuitarEngine>(),
-            1.0,
-            SightRead::DrumSettings::default_settings(),
-            {1.0, SightRead::Second {0.0}, SightRead::Second {0.20},
-             SightRead::Second {0.0}}};
-}
-
 PathingSettings slight_negative_video_lag_settings()
 {
     return {std::make_unique<ChGuitarEngine>(),
@@ -834,10 +825,10 @@ BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
     PointSet points {
         track, {{}, SpMode::Measure}, {}, positive_video_lag_settings()};
 
-    BOOST_CHECK_CLOSE(points.cbegin()->position.beat.value(), 1.4, 0.0001);
-    BOOST_CHECK_CLOSE(points.cbegin()->hit_window_start.beat.value(), 1.26,
+    BOOST_CHECK_CLOSE(points.cbegin()->position.beat.value(), 1.2, 0.0001);
+    BOOST_CHECK_CLOSE(points.cbegin()->hit_window_start.beat.value(), 1.06,
                       0.0001);
-    BOOST_CHECK_CLOSE(points.cbegin()->hit_window_end.beat.value(), 1.54,
+    BOOST_CHECK_CLOSE(points.cbegin()->hit_window_end.beat.value(), 1.34,
                       0.0001);
     BOOST_CHECK_CLOSE(std::next(points.cbegin(), 2)->position.beat.value(),
                       2.033854, 0.0001);

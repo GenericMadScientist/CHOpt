@@ -119,15 +119,6 @@ PathingSettings negative_video_lag_settings()
             {1.0, SightRead::Second {0.0}, SightRead::Second {-0.1},
              SightRead::Second {0.0}}};
 }
-
-PathingSettings positive_video_lag_settings()
-{
-    return {std::make_unique<ChGuitarEngine>(),
-            1.0,
-            SightRead::DrumSettings::default_settings(),
-            {1.0, SightRead::Second(0.0), SightRead::Second(0.05),
-             SightRead::Second(0.0)}};
-}
 }
 
 namespace SightRead {
@@ -954,14 +945,14 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                           true};
     Path path {
         {{points.cbegin(), points.cbegin() + 1, SightRead::Beat {0.25},
-          SightRead::Beat {0.1}, SightRead::Beat {1.1}},
+          SightRead::Beat {0.1}, SightRead::Beat {1.2}},
          {points.cbegin() + 2, points.cbegin() + 3, SightRead::Beat {0.25},
-          SightRead::Beat {2.0}, SightRead::Beat {2.9}},
+          SightRead::Beat {2.2}, SightRead::Beat {3.0}},
          {points.cbegin() + 5, points.cbegin() + 5, SightRead::Beat {0.25},
           SightRead::Beat {7.0}, SightRead::Beat {23.0}}},
         0};
     std::vector<std::tuple<double, double>> expected_blue_ranges {
-        {0.0, 1.0}, {1.9, 2.8}, {6.9, 8.0}};
+        {0.0, 1.0}, {2.0, 2.8}, {6.8, 8.0}};
     std::vector<std::tuple<double, double>> expected_red_ranges {{2.8, 3.0}};
 
     builder.add_sp_acts(points, {}, path);
