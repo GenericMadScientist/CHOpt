@@ -752,9 +752,9 @@ ImageBuilder make_builder(SightRead::Song& song,
             builder.add_sp_phrases(new_track, unison_positions, path);
         } else {
             write("Optimising, please wait...");
-            const Optimiser optimiser {
-                &processed_track, terminate, settings.speed,
-                settings.pathing_settings.squeeze_settings.whammy_delay};
+            const Optimiser optimiser {&processed_track, terminate,
+                                       settings.speed,
+                                       settings.pathing_settings.whammy_delay};
             path = optimiser.optimal_path();
             write(processed_track.path_summary(path).c_str());
             builder.add_sp_phrases(new_track, unison_positions, path);

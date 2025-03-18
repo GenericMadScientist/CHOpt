@@ -295,11 +295,10 @@ Settings MainWindow::get_settings() const
     const auto whammy_delay_text = m_ui->whammyDelayLineEdit->text();
     auto whammy_delay_ms = whammy_delay_text.toInt(&ok);
     if (ok) {
-        settings.pathing_settings.squeeze_settings.whammy_delay
+        settings.pathing_settings.whammy_delay
             = SightRead::Second {whammy_delay_ms / MS_IN_SECOND};
     } else {
-        settings.pathing_settings.squeeze_settings.whammy_delay
-            = SightRead::Second {0.0};
+        settings.pathing_settings.whammy_delay = SightRead::Second {0.0};
     }
 
     const auto speed_text = m_ui->speedLineEdit->text();

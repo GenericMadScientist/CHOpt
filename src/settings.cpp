@@ -304,7 +304,7 @@ Settings from_args(const QStringList& args)
     settings.pathing_settings.early_whammy = early_whammy / 100.0;
     settings.pathing_settings.lazy_whammy
         = SightRead::Second {lazy_whammy / MS_PER_SECOND};
-    settings.pathing_settings.squeeze_settings.whammy_delay
+    settings.pathing_settings.whammy_delay
         = SightRead::Second {whammy_delay / MS_PER_SECOND};
 
     const auto video_lag = parser->value("video-lag").toInt();

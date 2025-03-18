@@ -118,8 +118,8 @@ PathingSettings negative_video_lag_settings()
             1.0,
             SightRead::Second {0.0},
             SightRead::Second {-0.1},
-            SightRead::DrumSettings::default_settings(),
-            {SightRead::Second {0.0}}};
+            SightRead::Second {0.0},
+            SightRead::DrumSettings::default_settings()};
 }
 }
 

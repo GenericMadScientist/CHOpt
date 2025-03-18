@@ -29,8 +29,8 @@ PathingSettings mid_early_whammy_settings()
             0.5,
             SightRead::Second {0.0},
             SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings(),
-            {SightRead::Second {0.0}}};
+            SightRead::Second {0.0},
+            SightRead::DrumSettings::default_settings()};
 }
 
 PathingSettings negative_early_whammy_settings()
@@ -40,8 +40,8 @@ PathingSettings negative_early_whammy_settings()
             0.0,
             SightRead::Second {2.5},
             SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings(),
-            {SightRead::Second {0.0}}};
+            SightRead::Second {0.0},
+            SightRead::DrumSettings::default_settings()};
 }
 }
 
