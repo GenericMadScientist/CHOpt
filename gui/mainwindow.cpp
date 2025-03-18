@@ -272,7 +272,7 @@ Settings MainWindow::get_settings() const
         m_ui->squeezeSlider->value() / PERCENTAGE_IN_UNIT, SQUEEZE_EPSILON);
     settings.pathing_settings.early_whammy
         = m_ui->earlyWhammySlider->value() / PERCENTAGE_IN_UNIT;
-    settings.pathing_settings.squeeze_settings.video_lag
+    settings.pathing_settings.video_lag
         = SightRead::Second {m_ui->videoLagSlider->value() / MS_IN_SECOND};
     settings.game = m_ui->engineComboBox->currentData().value<Game>();
     const auto precision_mode = m_ui->precisionModeCheckBox->isChecked();

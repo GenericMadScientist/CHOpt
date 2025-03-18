@@ -313,7 +313,7 @@ Settings from_args(const QStringList& args)
             "Video lag setting unsupported by Clone Hero");
     }
 
-    settings.pathing_settings.squeeze_settings.video_lag
+    settings.pathing_settings.video_lag
         = SightRead::Second {video_lag / MS_PER_SECOND};
 
     const auto speed = parser->value("speed").toInt();

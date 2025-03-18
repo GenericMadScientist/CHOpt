@@ -29,8 +29,9 @@ PathingSettings no_squeeze_negative_video_lag_settings()
             0.0,
             0.0,
             SightRead::Second {0.0},
+            SightRead::Second {-0.1},
             SightRead::DrumSettings::default_settings(),
-            {SightRead::Second {-0.1}, SightRead::Second {0.0}}};
+            {SightRead::Second {0.0}}};
 }
 
 PathingSettings no_squeeze_positive_video_lag_settings()
@@ -39,8 +40,9 @@ PathingSettings no_squeeze_positive_video_lag_settings()
             0.0,
             0.0,
             SightRead::Second {0.0},
+            SightRead::Second {0.1},
             SightRead::DrumSettings::default_settings(),
-            {SightRead::Second {0.1}, SightRead::Second {0.0}}};
+            {SightRead::Second {0.0}}};
 }
 }
 

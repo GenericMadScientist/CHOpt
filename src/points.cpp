@@ -427,8 +427,7 @@ non_drum_points(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
     auto points = unmultiplied_points(track, time_map, unison_phrases,
                                       pathing_settings);
     apply_multiplier(points, *pathing_settings.engine);
-    shift_points_by_video_lag(points, time_map,
-                              pathing_settings.squeeze_settings.video_lag);
+    shift_points_by_video_lag(points, time_map, pathing_settings.video_lag);
     return points;
 }
 
@@ -543,8 +542,7 @@ points_from_track(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
                                       pathing_settings);
     add_drum_activation_points(track, points);
     apply_multiplier(points, *pathing_settings.engine);
-    shift_points_by_video_lag(points, time_map,
-                              pathing_settings.squeeze_settings.video_lag);
+    shift_points_by_video_lag(points, time_map, pathing_settings.video_lag);
     return points;
 }
 
@@ -601,7 +599,7 @@ PointSet::PointSet(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
     , m_solo_boosts {solo_boosts_from_solos(
           track.solos(pathing_settings.drum_settings), time_map)}
     , m_cumulative_score_totals {score_totals(m_points)}
-    , m_video_lag {pathing_settings.squeeze_settings.video_lag}
+    , m_video_lag {pathing_settings.video_lag}
     , m_colours {note_colours(track.notes(), m_points)}
 {
 }
