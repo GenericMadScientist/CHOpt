@@ -738,8 +738,9 @@ ImageBuilder make_builder(SightRead::Song& song,
         : std::vector<SightRead::Tick> {};
 
     const ProcessedSong processed_track {
-        new_track, time_map, settings.pathing_settings,
-        song.global_data().od_beats(), unison_positions};
+        new_track,
+        {time_map, song.global_data().od_beats(), unison_positions},
+        settings.pathing_settings};
     Path path;
 
     if (!settings.blank) {

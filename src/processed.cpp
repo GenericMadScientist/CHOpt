@@ -59,13 +59,13 @@ SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
 }
 
 ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
-                             SpTimeMap time_map,
-                             const PathingSettings& pathing_settings,
-                             const std::vector<SightRead::Tick>& od_beats,
-                             const std::vector<SightRead::Tick>& unison_phrases)
-    : m_time_map {std::move(time_map)}
-    , m_points {track, m_time_map, unison_phrases, pathing_settings}
-    , m_sp_data {track, m_time_map, od_beats, pathing_settings}
+                             const SpTimeStruct& sp_struct,
+                             const PathingSettings& pathing_settings)
+    : m_time_map {sp_struct.time_map}
+    , m_points {track, sp_struct.time_map, sp_struct.unison_phrases,
+                pathing_settings}
+    , m_sp_data {track, sp_struct.time_map, sp_struct.od_beats,
+                 pathing_settings}
     , m_minimum_sp_to_activate {pathing_settings.engine
                                     ->minimum_sp_to_activate()}
     , m_total_bre_boost {bre_boost(track, *pathing_settings.engine)}
