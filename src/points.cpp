@@ -587,17 +587,17 @@ solo_boosts_from_solos(const std::vector<SightRead::Solo>& solos,
 }
 }
 
-PointSet::PointSet(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
-                   const std::vector<SightRead::Tick>& unison_phrases,
+PointSet::PointSet(const SightRead::NoteTrack& track,
+                   const SpTimeStruct& sp_struct,
                    const PathingSettings& pathing_settings)
-    : m_points {points_from_track(track, time_map, unison_phrases,
-                                  pathing_settings)}
+    : m_points {points_from_track(track, sp_struct.time_map,
+                                  sp_struct.unison_phrases, pathing_settings)}
     , m_first_after_current_sp {first_after_current_sp_vector(
           m_points, track, *pathing_settings.engine)}
     , m_next_non_hold_point {next_non_hold_vector(m_points)}
     , m_next_sp_granting_note {next_sp_note_vector(m_points)}
     , m_solo_boosts {solo_boosts_from_solos(
-          track.solos(pathing_settings.drum_settings), time_map)}
+          track.solos(pathing_settings.drum_settings), sp_struct.time_map)}
     , m_cumulative_score_totals {score_totals(m_points)}
     , m_video_lag {pathing_settings.video_lag}
     , m_colours {note_colours(track.notes(), m_points)}

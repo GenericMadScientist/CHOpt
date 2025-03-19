@@ -61,8 +61,7 @@ private:
     std::vector<std::string> m_colours;
 
 public:
-    PointSet(const SightRead::NoteTrack& track, const SpTimeMap& time_map,
-             const std::vector<SightRead::Tick>& unison_phrases,
+    PointSet(const SightRead::NoteTrack& track, const SpTimeStruct& sp_struct,
              const PathingSettings& pathing_settings);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
