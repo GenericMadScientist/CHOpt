@@ -283,4 +283,14 @@ inline PathingSettings positive_video_lag_settings()
             SightRead::DrumSettings::default_settings()};
 }
 
+inline SpDurationData default_measure_mode_data()
+{
+    return {{{}, SpMode::Measure}, {}, {}};
+}
+
+inline SpDurationData default_od_beat_mode_data()
+{
+    return {{{}, SpMode::OdBeat}, {}, {}};
+}
+
 #endif
