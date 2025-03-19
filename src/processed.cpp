@@ -63,8 +63,7 @@ ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
                              const PathingSettings& pathing_settings)
     : m_time_map {sp_struct.time_map}
     , m_points {track, sp_struct, pathing_settings}
-    , m_sp_data {track, sp_struct.time_map, sp_struct.od_beats,
-                 pathing_settings}
+    , m_sp_data {track, sp_struct, pathing_settings}
     , m_minimum_sp_to_activate {pathing_settings.engine
                                     ->minimum_sp_to_activate()}
     , m_total_bre_boost {bre_boost(track, *pathing_settings.engine)}
