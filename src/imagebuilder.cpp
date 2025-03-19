@@ -736,10 +736,10 @@ ImageBuilder make_builder(SightRead::Song& song,
         = (settings.pathing_settings.engine->has_unison_bonuses())
         ? song.unison_phrase_positions()
         : std::vector<SightRead::Tick> {};
-    const SpTimeStruct sp_struct {time_map, song.global_data().od_beats(),
-                                  unison_positions};
+    const SpDurationData duration_data {time_map, song.global_data().od_beats(),
+                                        unison_positions};
 
-    const ProcessedSong processed_track {new_track, sp_struct,
+    const ProcessedSong processed_track {new_track, duration_data,
                                          settings.pathing_settings};
     Path path;
 

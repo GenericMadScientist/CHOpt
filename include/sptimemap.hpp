@@ -115,7 +115,7 @@ public:
     [[nodiscard]] SpMeasure to_sp_measures(SightRead::Second seconds) const;
 };
 
-struct SpTimeStruct {
+struct SpDurationData {
     SpTimeMap time_map;
     std::vector<SightRead::Tick> od_beats;
     std::vector<SightRead::Tick> unison_phrases;

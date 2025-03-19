@@ -118,7 +118,8 @@ private:
     SpPosition sp_drain_end_point(SpPosition start, double sp_bar_amount) const;
 
 public:
-    SpData(const SightRead::NoteTrack& track, const SpTimeStruct& sp_struct,
+    SpData(const SightRead::NoteTrack& track,
+           const SpDurationData& duration_data,
            const PathingSettings& pathing_settings);
     // Return the maximum amount of SP available at the end after propagating
     // over a range, or -1 if SP runs out at any point. Only includes SP gain

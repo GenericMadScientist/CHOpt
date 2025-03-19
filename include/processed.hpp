@@ -107,7 +107,7 @@ private:
 
 public:
     ProcessedSong(const SightRead::NoteTrack& track,
-                  const SpTimeStruct& sp_struct,
+                  const SpDurationData& duration_data,
                   const PathingSettings& pathing_settings);
 
     // Return the minimum and maximum amount of SP can be acquired between two

@@ -114,11 +114,12 @@ SpData::form_beat_rates(const SightRead::TempoMap& tempo_map,
     return beat_rates;
 }
 
-SpData::SpData(const SightRead::NoteTrack& track, const SpTimeStruct& sp_struct,
+SpData::SpData(const SightRead::NoteTrack& track,
+               const SpDurationData& duration_data,
                const PathingSettings& pathing_settings)
-    : m_time_map {sp_struct.time_map}
+    : m_time_map {duration_data.time_map}
     , m_beat_rates {form_beat_rates(track.global_data().tempo_map(),
-                                    sp_struct.od_beats,
+                                    duration_data.od_beats,
                                     *pathing_settings.engine)}
     , m_sp_gain_rate {pathing_settings.engine->sp_gain_rate()}
     , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}

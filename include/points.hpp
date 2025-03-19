@@ -61,7 +61,8 @@ private:
     std::vector<std::string> m_colours;
 
 public:
-    PointSet(const SightRead::NoteTrack& track, const SpTimeStruct& sp_struct,
+    PointSet(const SightRead::NoteTrack& track,
+             const SpDurationData& duration_data,
              const PathingSettings& pathing_settings);
     [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
     [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
