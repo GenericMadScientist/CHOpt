@@ -707,8 +707,6 @@ ImageBuilder make_builder(SightRead::Song& song,
     }
     song.speedup(settings.speed);
     const auto& tempo_map = song.global_data().tempo_map();
-    const SpTimeMap time_map {tempo_map,
-                              settings.pathing_settings.engine->sp_mode()};
 
     auto builder = build_with_engine_params(new_track, settings);
     builder.add_song_header(song.global_data());
@@ -732,15 +730,17 @@ ImageBuilder make_builder(SightRead::Song& song,
         builder.add_time_sigs(tempo_map);
     }
 
+    const SpTimeMap time_map {tempo_map,
+                              settings.pathing_settings.engine->sp_mode()};
     const auto unison_positions
         = (settings.pathing_settings.engine->has_unison_bonuses())
         ? song.unison_phrase_positions()
         : std::vector<SightRead::Tick> {};
+    const SpTimeStruct sp_struct {time_map, song.global_data().od_beats(),
+                                  unison_positions};
 
-    const ProcessedSong processed_track {
-        new_track,
-        {time_map, song.global_data().od_beats(), unison_positions},
-        settings.pathing_settings};
+    const ProcessedSong processed_track {new_track, sp_struct,
+                                         settings.pathing_settings};
     Path path;
 
     if (!settings.blank) {
