@@ -99,4 +99,4 @@ RileyTheFox, Taka, Tposejank, Venxm, and Zantor.
 ## Contact
 
 If you have any bug reports I would prefer they be reported on the GitHub page,
-but feel free to send them to me on Discord at GMS#5303.
+but feel free to send them to me on Discord at genericmadscientist.
