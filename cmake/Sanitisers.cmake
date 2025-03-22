@@ -14,9 +14,9 @@ function(enable_sanitisers target)
       list(APPEND sanitisers "leak")
     endif()
 
-    option(ENABLE_SANITISER_UNDEFINED_BEHAVIOR
-           "Enable undefined behavior sanitiser" OFF)
-    if(ENABLE_SANITISER_UNDEFINED_BEHAVIOR)
+    option(ENABLE_SANITISER_UNDEFINED_BEHAVIOUR
+           "Enable undefined behaviour sanitiser" OFF)
+    if(ENABLE_SANITISER_UNDEFINED_BEHAVIOUR)
       list(APPEND sanitisers "undefined")
     endif()
 
