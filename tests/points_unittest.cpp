@@ -135,17 +135,6 @@ PathingSettings default_fortnite_vocals_pathing_settings()
             SightRead::DrumSettings::default_settings()};
 }
 
-PathingSettings mid_squeeze_ch_guitar_pathing_settings()
-{
-    return {std::make_unique<ChGuitarEngine>(),
-            0.5,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
-}
-
 PathingSettings mid_squeeze_rb_pathing_settings()
 {
     return {std::make_unique<RbEngine>(),
@@ -665,7 +654,7 @@ BOOST_AUTO_TEST_CASE(gh1_multiplier_delay_accounted_for)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(hit_window_start_and_hit_window_end_are_set_correctly)
+BOOST_AUTO_TEST_SUITE(hit_windows_are_set_correctly)
 
 BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
 {
@@ -759,6 +748,8 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
                       0.0001);
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_end.beat.value(), 1.0875,
                       0.0001);
+    BOOST_CHECK_CLOSE(points.cbegin()->max_sqz_hit_window_start.beat.value(),
+                      0.825, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)

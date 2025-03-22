@@ -53,6 +53,7 @@ void append_sustain_point(OutputIt points, SightRead::Beat beat,
     *points++ = {{beat, measure},
                  {beat, measure},
                  {beat, measure},
+                 {beat, measure},
                  {},
                  value,
                  value,
@@ -186,18 +187,29 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
     const SightRead::Second early_window {
         pathing_settings.engine->early_timing_window(early_gap, late_gap)
         * pathing_settings.squeeze};
+    const SightRead::Second max_sqz_early_window {
+        pathing_settings.engine->early_timing_window(early_gap, late_gap)};
     const SightRead::Second late_window {
         pathing_settings.engine->late_timing_window(early_gap, late_gap)
         * pathing_settings.squeeze};
 
     const auto early_beat = time_map.to_beats(note_seconds - early_window);
     const auto early_meas = time_map.to_sp_measures(early_beat);
+    const auto early_max_sqz_beat
+        = time_map.to_beats(note_seconds - max_sqz_early_window);
+    const auto early_max_sqz_meas = time_map.to_sp_measures(early_max_sqz_beat);
     const auto late_beat = time_map.to_beats(note_seconds + late_window);
     const auto late_meas = time_map.to_sp_measures(late_beat);
-    *points++
-        = {{beat, meas}, {early_beat, early_meas}, {late_beat, late_meas},
-           {},           note_value * chord_size,  note_value * chord_size,
-           false,        is_note_sp_ender,         is_unison_sp_ender};
+    *points++ = {{beat, meas},
+                 {early_beat, early_meas},
+                 {late_beat, late_meas},
+                 {early_max_sqz_beat, early_max_sqz_meas},
+                 {},
+                 note_value * chord_size,
+                 note_value * chord_size,
+                 false,
+                 is_note_sp_ender,
+                 is_unison_sp_ender};
 
     SightRead::Tick min_length {std::numeric_limits<int>::max()};
     SightRead::Tick max_length {0};

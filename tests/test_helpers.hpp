@@ -283,6 +283,17 @@ inline PathingSettings positive_video_lag_settings()
             SightRead::DrumSettings::default_settings()};
 }
 
+inline PathingSettings mid_squeeze_ch_guitar_pathing_settings()
+{
+    return {std::make_unique<ChGuitarEngine>(),
+            0.5,
+            1.0,
+            SightRead::Second {0.0},
+            SightRead::Second {0.0},
+            SightRead::Second {0.0},
+            SightRead::DrumSettings::default_settings()};
+}
+
 inline SpDurationData default_measure_mode_data()
 {
     return {{{}, SpMode::Measure}, {}, {}};

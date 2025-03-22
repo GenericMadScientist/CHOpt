@@ -39,6 +39,7 @@ struct Point {
     SpPosition position;
     SpPosition hit_window_start;
     SpPosition hit_window_end;
+    SpPosition max_sqz_hit_window_start;
     std::optional<SightRead::Second> fill_start;
     int value;
     int base_value;

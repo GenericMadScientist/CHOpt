@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,10 +71,13 @@ Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
         return key;
     }
     key = add_whammy_delay(key);
-    auto pos = key.point->hit_window_start;
-    if (key.point != m_song->points().cbegin()) {
-        pos = std::prev(key.point)->hit_window_start;
+
+    auto point = key.point;
+    if (point != m_song->points().cbegin()) {
+        point = std::prev(point);
     }
+    const auto pos = point->max_sqz_hit_window_start;
+
     if (pos.beat >= key.position.beat) {
         key.position = pos;
     }

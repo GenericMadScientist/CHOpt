@@ -820,3 +820,20 @@ BOOST_AUTO_TEST_CASE(quarter_bar_activations_are_possible_on_fortnite_engine)
                                   opt_path.activations.cend(),
                                   optimal_acts.cbegin(), optimal_acts.cend());
 }
+
+BOOST_AUTO_TEST_CASE(one_phrase_acts_use_ew_when_bigger_than_squeeze)
+{
+    std::vector<SightRead::Note> notes {make_note(192, 1420), make_note(24576)};
+    std::vector<SightRead::StarPower> phrases {
+        {SightRead::Tick {191}, SightRead::Tick {50}}};
+    SightRead::NoteTrack note_track {
+        notes, phrases, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    ProcessedSong track {note_track, default_measure_mode_data(),
+                         mid_squeeze_ch_guitar_pathing_settings()};
+    Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
+
+    const auto opt_path = optimiser.optimal_path();
+
+    BOOST_CHECK_EQUAL(opt_path.score_boost, 50);
+}
