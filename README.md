@@ -92,9 +92,9 @@ getting an initial idea of Clone Hero's parsing behaviour.
 * Dinoguy1000 and shadoweh helped me make sure CHOpt runs on other peoples'
 machines.
 * Various users for feedback and testing, including 3-UP, ArchWK, Bromik,
-CyclopsDragon, DNelson, GHNerd, Haggis, Jdsmitty1, Joel, Jpetersen5, Jrh,
-JUANPGP, Kyleruth, LightlessWalk, Littlejth, Lucretio, NicoBrenChan, RandomDays,
-RileyTheFox, Taka, Tposejank, Venxm, and Zantor.
+CyclopsDragon, DNelson, GHNerd, GiometriQ, Haggis, Jdsmitty1, Joel, Jpetersen5,
+Jrh, JUANPGP, Kyleruth, LightlessWalk, Littlejth, Lucretio, NicoBrenChan,
+RandomDays, RileyTheFox, Taka, Tposejank, Venxm, and Zantor.
 
 ## Contact
 
