@@ -1069,11 +1069,13 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(add_practice_sections)
+
 BOOST_AUTO_TEST_CASE(add_practice_sections_adds_correct_ranges)
 {
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->practice_sections({{"Intro", SightRead::Tick {192}}});
-    SightRead::NoteTrack track {{make_note(0)},
+    SightRead::NoteTrack track {{make_note(384)},
                                 {},
                                 SightRead::TrackType::FiveFret,
                                 std::move(global_data)};
@@ -1089,6 +1091,24 @@ BOOST_AUTO_TEST_CASE(add_practice_sections_adds_correct_ranges)
                                   expected_practice_sections.cbegin(),
                                   expected_practice_sections.cend());
 }
+
+BOOST_AUTO_TEST_CASE(add_practice_sections_ignores_trailing_sections)
+{
+    auto global_data = std::make_shared<SightRead::SongGlobalData>();
+    global_data->practice_sections({{"Intro", SightRead::Tick {192}}});
+    SightRead::NoteTrack track {{make_note(0)},
+                                {},
+                                SightRead::TrackType::FiveFret,
+                                std::move(global_data)};
+    ImageBuilder builder {track, SightRead::Difficulty::Expert,
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
+    builder.add_practice_sections(track.global_data().practice_sections(), {});
+
+    BOOST_TEST(builder.practice_sections().empty());
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(add_solo_sections_adds_correct_ranges)
 {

@@ -486,9 +486,20 @@ void ImageBuilder::add_practice_sections(
     const std::vector<SightRead::PracticeSection>& practice_sections,
     const SightRead::TempoMap& tempo_map)
 {
+    if (m_notes.empty()) {
+        return;
+    }
+
+    const auto last_note
+        = std::max_element(m_notes.cbegin(), m_notes.cend(),
+                           [](auto a, auto b) { return a.beat < b.beat; });
+    const auto last_note_position = last_note->beat;
+
     for (const auto& section : practice_sections) {
         const auto pos = tempo_map.to_beats(section.start).value();
-        m_practice_sections.emplace_back(pos, section.name);
+        if (pos <= last_note_position) {
+            m_practice_sections.emplace_back(pos, section.name);
+        }
     }
 }
 
