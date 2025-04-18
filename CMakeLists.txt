@@ -1,6 +1,4 @@
-cmake_minimum_required(VERSION 3.15.0)
-
-cmake_policy(SET CMP0091 NEW)
+cmake_minimum_required(VERSION 3.30.0)
 
 project(
   chopt
@@ -47,7 +45,6 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_subdirectory("extern/sightread")
 
-cmake_policy(SET CMP0083 NEW)
 include(CheckPIESupported)
 check_pie_supported(OUTPUT_VARIABLE output LANGUAGES CXX)
 
@@ -164,8 +161,6 @@ endif()
 option(ENABLE_LTO "Enable Link Time Optimisation" OFF)
 
 if(ENABLE_LTO)
-  cmake_policy(SET CMP0069 NEW)
-
   include(CheckIPOSupported)
   check_ipo_supported(
     RESULT supported

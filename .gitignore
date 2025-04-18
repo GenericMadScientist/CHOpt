@@ -8,4 +8,6 @@ chopt-env/
 vcpkg_installed/
 CMakePresets.json
 CMakeSettings.json
+CMakeUserPresets.json
 vcpkg.json
+vcpkg-configuration.json
