@@ -313,7 +313,7 @@ public:
 
 class Rb3Engine final : public BaseRbEngine {
 protected:
-    double base_timing_window() const override { return 0.105; }
+    double base_timing_window() const override { return 0.1; }
 
 public:
     bool has_unison_bonuses() const override { return true; }
@@ -322,7 +322,7 @@ public:
 
 class Rb3BassEngine final : public BaseRbEngine {
 protected:
-    double base_timing_window() const override { return 0.105; }
+    double base_timing_window() const override { return 0.1; }
 
 public:
     bool has_unison_bonuses() const override { return true; }
