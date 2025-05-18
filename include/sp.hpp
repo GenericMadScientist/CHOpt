@@ -37,11 +37,13 @@ class SpBar {
 private:
     double m_min;
     double m_max;
+    double m_sp_phrase_amount;
 
 public:
-    SpBar(double min, double max)
+    SpBar(double min, double max, double sp_phrase_amount)
         : m_min {min}
         , m_max {max}
+        , m_sp_phrase_amount {sp_phrase_amount}
     {
     }
 
@@ -52,10 +54,8 @@ public:
 
     void add_phrase()
     {
-        constexpr double SP_PHRASE_AMOUNT = 0.25;
-
-        m_min += SP_PHRASE_AMOUNT;
-        m_max += SP_PHRASE_AMOUNT;
+        m_min += m_sp_phrase_amount;
+        m_max += m_sp_phrase_amount;
         m_min = std::min(m_min, 1.0);
         m_max = std::min(m_max, 1.0);
     }

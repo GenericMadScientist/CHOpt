@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2021, 2022, 2023, 2024 Raymond Wright
+ * Copyright (C) 2021, 2022, 2023, 2024, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,8 +50,9 @@ public:
     virtual bool overlaps() const = 0;
     virtual bool round_tick_gap() const = 0;
     virtual SightRead::Tick snap_gap() const = 0;
-    virtual SpMode sp_mode() const = 0;
     virtual double sp_gain_rate() const = 0;
+    virtual SpMode sp_mode() const = 0;
+    virtual double sp_phrase_amount() const = 0;
     virtual int sust_points_per_beat() const = 0;
     virtual SustainRoundingPolicy sustain_rounding() const = 0;
     virtual SustainTicksMetric sustain_ticks_metric() const = 0;
@@ -87,6 +88,7 @@ public:
     bool round_tick_gap() const override { return true; }
     SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; }
     double sp_gain_rate() const override { return 1 / 30.0; }
+    double sp_phrase_amount() const override { return 0.25; }
     SpMode sp_mode() const override { return SpMode::Measure; }
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
@@ -173,6 +175,7 @@ public:
     SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; };
     SpMode sp_mode() const override { return SpMode::OdBeat; };
     double sp_gain_rate() const override { return 0.0; };
+    double sp_phrase_amount() const override { return 0.25; }
     SustainRoundingPolicy sustain_rounding() const override
     {
         return SustainRoundingPolicy::RoundToNearest;
@@ -231,6 +234,7 @@ public:
     SightRead::Tick snap_gap() const override { return SightRead::Tick {2}; }
     double sp_gain_rate() const override { return 0.034; }
     SpMode sp_mode() const override { return SpMode::Measure; }
+    double sp_phrase_amount() const override { return 0.25; }
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
     {
@@ -272,6 +276,7 @@ public:
     SightRead::Tick snap_gap() const override { return SightRead::Tick {2}; }
     double sp_gain_rate() const override { return 0.034; }
     SpMode sp_mode() const override { return SpMode::OdBeat; }
+    double sp_phrase_amount() const override { return 0.251; }
     int sust_points_per_beat() const override { return 12; }
     SustainRoundingPolicy sustain_rounding() const override
     {

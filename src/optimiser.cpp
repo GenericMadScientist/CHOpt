@@ -270,7 +270,7 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                 || p->fill_start < early_act_bound)) {
             continue;
         }
-        SpBar sp_bar {1.0, 1.0};
+        SpBar sp_bar {1.0, 1.0, m_song->sp_phrase_amount()};
         SpPosition starting_pos {SightRead::Beat {NEG_INF},
                                  SpMeasure {NEG_INF}};
         if (p != m_song->points().cbegin()) {

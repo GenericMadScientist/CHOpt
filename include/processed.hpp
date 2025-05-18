@@ -30,6 +30,7 @@
 #include <sightread/tempomap.hpp>
 #include <sightread/time.hpp>
 
+#include "engine.hpp"
 #include "points.hpp"
 #include "settings.hpp"
 #include "sp.hpp"
@@ -39,7 +40,21 @@ struct ActivationCandidate {
     PointPtr act_start;
     PointPtr act_end;
     SpPosition earliest_activation_point {SightRead::Beat(0.0), SpMeasure(0.0)};
-    SpBar sp_bar {0.0, 0.0};
+    SpBar sp_bar;
+
+    ActivationCandidate(double sp_phrase_amount)
+        : sp_bar {0.0, 0.0, sp_phrase_amount}
+    {
+    }
+
+    ActivationCandidate(PointPtr act_start, PointPtr act_end,
+                        SpPosition earliest_activation_point, SpBar sp_bar)
+        : act_start {act_start}
+        , act_end {act_end}
+        , earliest_activation_point {earliest_activation_point}
+        , sp_bar {sp_bar}
+    {
+    }
 };
 
 struct ProtoActivation {
@@ -83,6 +98,7 @@ private:
     PointSet m_points;
     SpData m_sp_data;
     double m_minimum_sp_to_activate;
+    double m_sp_phrase_amount;
     int m_total_bre_boost;
     int m_total_solo_boost;
     int m_base_score;
@@ -154,6 +170,7 @@ public:
     {
         return m_minimum_sp_to_activate;
     }
+    [[nodiscard]] double sp_phrase_amount() const { return m_sp_phrase_amount; }
 };
 
 #endif

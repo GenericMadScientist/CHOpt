@@ -68,15 +68,15 @@ BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)
     BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
                                               points.cbegin(),
                                               points.cbegin() + 1),
-                      SpBar(0.25, 0.25));
+                      SpBar(0.25, 0.25, 0.25));
     BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
                                               points.cbegin(),
                                               points.cbegin() + 2),
-                      SpBar(0.25, 0.25));
+                      SpBar(0.25, 0.25, 0.25));
     BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.5),
                                               points.cbegin() + 2,
                                               points.cbegin() + 3),
-                      SpBar(0.25, 0.25));
+                      SpBar(0.25, 0.25, 0.25));
 }
 
 BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly)
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(sp_does_not_exceed_full_bar)
     BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
                                               points.cbegin(),
                                               points.cend() - 1),
-                      SpBar(1.0, 1.0));
+                      SpBar(1.0, 1.0, 0.25));
 }
 
 BOOST_AUTO_TEST_CASE(
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE(
     BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.05),
                                               points.cbegin(),
                                               points.cbegin() + 1),
-                      SpBar(0.25, 0.25));
+                      SpBar(0.25, 0.25, 0.25));
 }
 
 BOOST_AUTO_TEST_CASE(unison_bonuses_are_taken_account_of)
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE(unison_bonuses_are_taken_account_of)
     BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
                                               points.cbegin(),
                                               points.cbegin() + 1),
-                      SpBar(0.5, 0.5));
+                      SpBar(0.502, 0.502, 0.251));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
         SightRead::Beat(0.0), points.cbegin(), std::next(points.cbegin()),
         {SightRead::Beat(0.0), SpMeasure(0.0)});
 
-    BOOST_CHECK_CLOSE(sp_bar.max(), 0.5, 0.0001);
+    BOOST_CHECK_CLOSE(sp_bar.max(), 0.502, 0.0001);
 }
 
 BOOST_AUTO_TEST_SUITE(is_candidate_valid_works_with_no_whammy)
@@ -289,7 +289,7 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0}};
+                                   {1.0, 1.0, 0.25}};
 
     SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 3, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
@@ -304,7 +304,7 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
         second_points.cbegin(),
         second_points.cbegin() + 3,
         {SightRead::Beat(0.0), SpMeasure(0.0)},
-        {1.0, 1.0}};
+        {1.0, 1.0, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 3, 4}}, {}, {}, 192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
@@ -343,7 +343,7 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
         second_points.cbegin(),
         second_points.cbegin() + 2,
         {SightRead::Beat(0.0), SpMeasure(0.0)},
-        {0.5, 0.5}};
+        {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_CASE(below_half_bar_never_works)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.25, 0.25}};
+                                   {0.25, 0.25, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::insufficient_sp);
@@ -388,7 +388,7 @@ BOOST_AUTO_TEST_CASE(check_next_point_needs_to_not_lie_in_activation)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.6, 0.6}};
+                                   {0.6, 0.6, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::surplus_sp);
@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_CASE(check_intermediate_sp_is_accounted_for)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.8, 0.8}};
+                                   {0.8, 0.8, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE(check_only_reached_intermediate_sp_is_accounted_for)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.8, 0.8}};
+                                   {0.8, 0.8, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::insufficient_sp);
@@ -451,7 +451,7 @@ BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::surplus_sp);
@@ -473,7 +473,7 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0}};
+                                   {1.0, 1.0, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::insufficient_sp);
@@ -494,7 +494,7 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(-2.0), SpMeasure(-0.5)},
-                                   {0.53125, 0.53125}};
+                                   {0.53125, 0.53125, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -530,7 +530,7 @@ BOOST_AUTO_TEST_CASE(
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(2.24), SpMeasure(0.56)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     const auto result = track.is_candidate_valid(
         candidate, 1.0, {SightRead::Beat {27}, SpMeasure {6.75}});
@@ -558,7 +558,7 @@ BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     const auto result = track.is_candidate_valid(candidate);
 
@@ -580,7 +580,7 @@ BOOST_AUTO_TEST_CASE(last_note_unison_bonus_accounted_for_excess_sp)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin(),
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     const auto result = track.is_candidate_valid(candidate);
 
@@ -606,7 +606,7 @@ BOOST_AUTO_TEST_CASE(check_whammy_is_counted)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
 }
@@ -628,7 +628,7 @@ BOOST_AUTO_TEST_CASE(check_whammy_from_end_of_sp_sustain_before_note_is_counted)
     ActivationCandidate candidate {points.cend() - 2,
                                    points.cend() - 1,
                                    {SightRead::Beat(1.0), SpMeasure(0.25)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -653,7 +653,7 @@ BOOST_AUTO_TEST_CASE(
     ActivationCandidate candidate {points.cbegin() + 2,
                                    points.cend() - 1,
                                    {SightRead::Beat(1.0), SpMeasure(0.25)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::insufficient_sp);
@@ -674,7 +674,7 @@ BOOST_AUTO_TEST_CASE(check_compressed_activations_are_counted)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.9}};
+                                   {0.5, 0.9, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -700,7 +700,7 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_considered)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 3,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 1.0}};
+                                   {0.5, 1.0, 0.25}};
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
 }
@@ -721,7 +721,7 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_only_considered_down_to_a_half_bar)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.25, 1.0}};
+                                   {0.25, 1.0, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::surplus_sp);
@@ -746,7 +746,7 @@ BOOST_AUTO_TEST_CASE(
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -767,7 +767,7 @@ BOOST_AUTO_TEST_CASE(next_note_can_be_squeezed_late_to_avoid_going_too_far)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -788,7 +788,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -809,7 +809,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_late)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0}};
+                                   {1.0, 1.0, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -839,7 +839,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
     ActivationCandidate candidate {points.cbegin() + 2,
                                    points.cbegin() + 4,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -861,7 +861,7 @@ BOOST_AUTO_TEST_CASE(front_end_and_back_end_are_restricted)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
                       ActValidity::insufficient_sp);
@@ -884,7 +884,7 @@ BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
                       ActValidity::insufficient_sp);
@@ -907,7 +907,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0}};
+                                   {1.0, 1.0, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
                       ActValidity::insufficient_sp);
@@ -930,7 +930,7 @@ BOOST_AUTO_TEST_CASE(next_note_back_end_is_restricted)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
                       ActValidity::surplus_sp);
@@ -952,7 +952,7 @@ BOOST_AUTO_TEST_CASE(end_position_is_finite_if_activation_goes_past_last_note)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin(),
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0}};
+                                   {1.0, 1.0, 0.25}};
     auto result = track.is_candidate_valid(candidate, 1.0);
 
     BOOST_CHECK_EQUAL(result.validity, ActValidity::success);
@@ -978,7 +978,7 @@ BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 2,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
                       ActValidity::success);
@@ -999,7 +999,7 @@ BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
                       ActValidity::success);
@@ -1019,7 +1019,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
                       ActValidity::insufficient_sp);
@@ -1039,7 +1039,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_CLOSE(
         track
@@ -1066,7 +1066,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_around_sp_granting_note_doesnt_get_added)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
                       ActValidity::insufficient_sp);
@@ -1089,7 +1089,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cend() - 2,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(
         track
@@ -1121,7 +1121,7 @@ BOOST_AUTO_TEST_CASE(
     ActivationCandidate candidate {points.cend() - 2,
                                    points.cend() - 1,
                                    {SightRead::Beat(1.0), SpMeasure(0.25)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.0).validity,
                       ActValidity::success);
@@ -1148,7 +1148,7 @@ BOOST_AUTO_TEST_CASE(
     ActivationCandidate candidate {points.cbegin() + 2,
                                    points.cend() - 1,
                                    {SightRead::Beat(1.0), SpMeasure(0.25)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     auto result = track.is_candidate_valid(candidate, 0.0);
 
@@ -1178,7 +1178,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
     ActivationCandidate candidate {points.cbegin() + 500,
                                    points.cbegin() + 750,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0}};
+                                   {1.0, 1.0, 0.25}};
 
     auto result = track.is_candidate_valid(candidate, 0.0);
 
@@ -1251,7 +1251,7 @@ BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
                                    {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5}};
+                                   {0.5, 0.5, 0.25}};
 
     auto result = song.is_candidate_valid(candidate);
 

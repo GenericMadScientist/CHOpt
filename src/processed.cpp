@@ -46,7 +46,7 @@ int bre_boost(const SightRead::NoteTrack& track, const Engine& engine)
 
 SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
 {
-    SpBar sp_bar {0.0, 0.0};
+    SpBar sp_bar {0.0, 0.0, m_sp_phrase_amount};
     for (auto p = m_points.next_sp_granting_note(begin); p < end;
          p = m_points.next_sp_granting_note(std::next(p))) {
         sp_bar.add_phrase();
@@ -66,6 +66,7 @@ ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
     , m_sp_data {track, duration_data, pathing_settings}
     , m_minimum_sp_to_activate {pathing_settings.engine
                                     ->minimum_sp_to_activate()}
+    , m_sp_phrase_amount {pathing_settings.engine->sp_phrase_amount()}
     , m_total_bre_boost {bre_boost(track, *pathing_settings.engine)}
     , m_base_score {track.base_score(pathing_settings.drum_settings)}
     , m_ignore_average_multiplier {pathing_settings.engine
