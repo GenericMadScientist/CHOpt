@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_SUITE(spbar_methods)
 
 BOOST_AUTO_TEST_CASE(add_phrase_works_correctly)
 {
-    SpBar sp_bar {0.0, 0.25, 0.25};
+    SpBar sp_bar {0.0, 0.25, 0.25, 0.5};
     sp_bar.add_phrase();
 
     BOOST_CHECK_CLOSE(sp_bar.min(), 0.25, 0.0001);
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(add_phrase_works_correctly)
 
 BOOST_AUTO_TEST_CASE(add_phrase_works_correctly_with_nearly_full_bar)
 {
-    SpBar sp_bar {0.8, 1.0, 0.25};
+    SpBar sp_bar {0.8, 1.0, 0.25, 0.5};
     sp_bar.add_phrase();
 
     BOOST_CHECK_CLOSE(sp_bar.min(), 1.0, 0.0001);
@@ -67,23 +67,32 @@ BOOST_AUTO_TEST_CASE(add_phrase_works_correctly_with_nearly_full_bar)
 
 BOOST_AUTO_TEST_CASE(add_phrase_works_correctly_with_rb_phrases)
 {
-    SpBar sp_bar {0.0, 0.25, 0.251};
+    SpBar sp_bar {0.0, 0.25, 0.251, 0.501};
     sp_bar.add_phrase();
 
     BOOST_CHECK_CLOSE(sp_bar.min(), 0.251, 0.0001);
     BOOST_CHECK_CLOSE(sp_bar.max(), 0.501, 0.0001);
 }
 
+BOOST_AUTO_TEST_CASE(add_unison_phrase_works_correctly_with_rb_phrases)
+{
+    SpBar sp_bar {0.0, 0.25, 0.251, 0.501};
+    sp_bar.add_unison_phrase();
+
+    BOOST_CHECK_CLOSE(sp_bar.min(), 0.501, 0.0001);
+    BOOST_CHECK_CLOSE(sp_bar.max(), 0.751, 0.0001);
+}
+
 BOOST_AUTO_TEST_CASE(full_enough_to_activate_denies_with_half_bar_act_engines)
 {
-    SpBar sp_bar {0.49, 0.49, 0.25};
+    SpBar sp_bar {0.49, 0.49, 0.25, 0.5};
 
     BOOST_TEST(!sp_bar.full_enough_to_activate(0.5));
 }
 
 BOOST_AUTO_TEST_CASE(full_enough_to_activate_accepts_with_half_bar_act_engines)
 {
-    SpBar sp_bar {0.0, 0.5, 0.25};
+    SpBar sp_bar {0.0, 0.5, 0.25, 0.5};
 
     BOOST_TEST(sp_bar.full_enough_to_activate(0.5));
 }
@@ -91,7 +100,7 @@ BOOST_AUTO_TEST_CASE(full_enough_to_activate_accepts_with_half_bar_act_engines)
 BOOST_AUTO_TEST_CASE(
     full_enough_to_activate_denies_with_quarter_bar_act_engines)
 {
-    SpBar sp_bar {0.24, 0.24, 0.25};
+    SpBar sp_bar {0.24, 0.24, 0.25, 0.5};
 
     BOOST_TEST(!sp_bar.full_enough_to_activate(0.25));
 }
@@ -99,7 +108,7 @@ BOOST_AUTO_TEST_CASE(
 BOOST_AUTO_TEST_CASE(
     full_enough_to_activate_accepts_with_quarter_bar_act_engines)
 {
-    SpBar sp_bar {0.0, 0.25, 0.25};
+    SpBar sp_bar {0.0, 0.25, 0.25, 0.5};
 
     BOOST_TEST(sp_bar.full_enough_to_activate(0.25));
 }

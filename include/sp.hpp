@@ -38,12 +38,15 @@ private:
     double m_min;
     double m_max;
     double m_sp_phrase_amount;
+    double m_unison_sp_phrase_amount;
 
 public:
-    SpBar(double min, double max, double sp_phrase_amount)
+    SpBar(double min, double max, double sp_phrase_amount,
+          double unison_sp_phrase_amount)
         : m_min {min}
         , m_max {max}
         , m_sp_phrase_amount {sp_phrase_amount}
+        , m_unison_sp_phrase_amount {unison_sp_phrase_amount}
     {
     }
 
@@ -54,10 +57,14 @@ public:
 
     void add_phrase()
     {
-        m_min += m_sp_phrase_amount;
-        m_max += m_sp_phrase_amount;
-        m_min = std::min(m_min, 1.0);
-        m_max = std::min(m_max, 1.0);
+        m_min = std::min(m_min + m_sp_phrase_amount, 1.0);
+        m_max = std::min(m_max + m_sp_phrase_amount, 1.0);
+    }
+
+    void add_unison_phrase()
+    {
+        m_min = std::min(m_min + m_unison_sp_phrase_amount, 1.0);
+        m_max = std::min(m_max + m_unison_sp_phrase_amount, 1.0);
     }
 
     [[nodiscard]] bool

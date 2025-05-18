@@ -56,6 +56,7 @@ public:
     virtual int sust_points_per_beat() const = 0;
     virtual SustainRoundingPolicy sustain_rounding() const = 0;
     virtual SustainTicksMetric sustain_ticks_metric() const = 0;
+    virtual double unison_sp_phrase_amount() const = 0;
     virtual ~Engine() = default;
 };
 
@@ -99,6 +100,7 @@ public:
     {
         return SustainTicksMetric::Beat;
     }
+    double unison_sp_phrase_amount() const override { return 0.5; }
 };
 
 class ChGuitarEngine final : public BaseChEngine {
@@ -184,6 +186,7 @@ public:
     {
         return SustainTicksMetric::OdBeat;
     }
+    double unison_sp_phrase_amount() const override { return 0.5; }
 };
 
 class FortniteGuitarEngine final : public BaseFortniteEngine {
@@ -244,6 +247,7 @@ public:
     {
         return SustainTicksMetric::Beat;
     }
+    double unison_sp_phrase_amount() const override { return 0.5; }
 };
 
 class BaseRbEngine : public Engine {
@@ -286,6 +290,7 @@ public:
     {
         return SustainTicksMetric::Beat;
     }
+    double unison_sp_phrase_amount() const override { return 0.501; }
 };
 
 class RbEngine final : public BaseRbEngine {

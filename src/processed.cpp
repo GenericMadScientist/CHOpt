@@ -46,11 +46,12 @@ int bre_boost(const SightRead::NoteTrack& track, const Engine& engine)
 
 SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
 {
-    SpBar sp_bar {0.0, 0.0, m_sp_phrase_amount};
+    SpBar sp_bar {0.0, 0.0, m_sp_phrase_amount, m_unison_sp_phrase_amount};
     for (auto p = m_points.next_sp_granting_note(begin); p < end;
          p = m_points.next_sp_granting_note(std::next(p))) {
-        sp_bar.add_phrase();
         if (p->is_unison_sp_granting_note) {
+            sp_bar.add_unison_phrase();
+        } else {
             sp_bar.add_phrase();
         }
     }
@@ -67,6 +68,8 @@ ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
     , m_minimum_sp_to_activate {pathing_settings.engine
                                     ->minimum_sp_to_activate()}
     , m_sp_phrase_amount {pathing_settings.engine->sp_phrase_amount()}
+    , m_unison_sp_phrase_amount {pathing_settings.engine
+                                     ->unison_sp_phrase_amount()}
     , m_total_bre_boost {bre_boost(track, *pathing_settings.engine)}
     , m_base_score {track.base_score(pathing_settings.drum_settings)}
     , m_ignore_average_multiplier {pathing_settings.engine
@@ -194,16 +197,18 @@ private:
     double m_sp;
     bool m_overlap_engine;
     double m_sp_phrase_amount;
+    double m_unison_sp_phrase_amount;
 
     static constexpr double MEASURES_PER_BAR = 8.0;
 
 public:
     SpStatus(SpPosition position, double sp, bool overlap_engine,
-             double sp_phrase_amount)
+             double sp_phrase_amount, double unison_sp_phrase_amount)
         : m_position {position}
         , m_sp {sp}
         , m_overlap_engine {overlap_engine}
         , m_sp_phrase_amount {sp_phrase_amount}
+        , m_unison_sp_phrase_amount {unison_sp_phrase_amount}
     {
     }
 
@@ -211,6 +216,10 @@ public:
     [[nodiscard]] double sp() const { return m_sp; }
 
     void add_phrase() { m_sp = std::min(m_sp + m_sp_phrase_amount, 1.0); }
+    void add_unison_phrase()
+    {
+        m_sp = std::min(m_sp + m_unison_sp_phrase_amount, 1.0);
+    }
 
     void advance_whammy_max(SpPosition end_position, const SpData& sp_data,
                             bool does_overlap)
@@ -295,9 +304,10 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
     SpStatus status_for_early_end {
         activation.earliest_activation_point,
         std::max(activation.sp_bar.min(), m_minimum_sp_to_activate), m_overlaps,
-        m_sp_phrase_amount};
+        m_sp_phrase_amount, m_unison_sp_phrase_amount};
     SpStatus status_for_late_end {late_end_position, late_end_sp, m_overlaps,
-                                  m_sp_phrase_amount};
+                                  m_sp_phrase_amount,
+                                  m_unison_sp_phrase_amount};
 
     for (auto p = m_points.next_sp_granting_note(activation.act_start);
          p < activation.act_end;
@@ -318,9 +328,10 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
         status_for_early_end.update_early_end(p_start, m_sp_data,
                                               required_whammy_end);
         if (m_overlaps) {
-            status_for_early_end.add_phrase();
-            status_for_late_end.add_phrase();
             if (p->is_unison_sp_granting_note) {
+                status_for_early_end.add_unison_phrase();
+                status_for_late_end.add_unison_phrase();
+            } else {
                 status_for_early_end.add_phrase();
                 status_for_late_end.add_phrase();
             }
@@ -335,8 +346,9 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
     status_for_early_end.update_early_end(ending_pos, m_sp_data,
                                           required_whammy_end);
     if (m_overlaps && activation.act_end->is_sp_granting_note) {
-        status_for_early_end.add_phrase();
         if (activation.act_end->is_unison_sp_granting_note) {
+            status_for_early_end.add_unison_phrase();
+        } else {
             status_for_early_end.add_phrase();
         }
     }
