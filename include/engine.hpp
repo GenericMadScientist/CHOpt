@@ -29,6 +29,12 @@ enum class SustainRoundingPolicy { RoundUp, RoundToNearest };
 
 enum class SustainTicksMetric { Beat, OdBeat };
 
+struct SpEngineValues {
+    double phrase_amount;
+    double unison_phrase_amount;
+    double minimum_to_activate;
+};
+
 class Engine {
 public:
     virtual int base_note_value() const = 0;
@@ -46,17 +52,15 @@ public:
         = 0;
     virtual int max_multiplier() const = 0;
     virtual bool merge_uneven_sustains() const = 0;
-    virtual double minimum_sp_to_activate() const = 0;
     virtual bool overlaps() const = 0;
     virtual bool round_tick_gap() const = 0;
     virtual SightRead::Tick snap_gap() const = 0;
+    virtual SpEngineValues sp_engine_values() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual SpMode sp_mode() const = 0;
-    virtual double sp_phrase_amount() const = 0;
     virtual int sust_points_per_beat() const = 0;
     virtual SustainRoundingPolicy sustain_rounding() const = 0;
     virtual SustainTicksMetric sustain_ticks_metric() const = 0;
-    virtual double unison_sp_phrase_amount() const = 0;
     virtual ~Engine() = default;
 };
 
@@ -84,12 +88,14 @@ public:
     }
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return false; }
-    double minimum_sp_to_activate() const override { return 0.5; }
     bool overlaps() const override { return true; }
     bool round_tick_gap() const override { return true; }
     SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; }
+    SpEngineValues sp_engine_values() const override
+    {
+        return {0.25, 0.5, 0.5};
+    }
     double sp_gain_rate() const override { return 1 / 30.0; }
-    double sp_phrase_amount() const override { return 0.25; }
     SpMode sp_mode() const override { return SpMode::Measure; }
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
@@ -100,7 +106,6 @@ public:
     {
         return SustainTicksMetric::Beat;
     }
-    double unison_sp_phrase_amount() const override { return 0.5; }
 };
 
 class ChGuitarEngine final : public BaseChEngine {
@@ -171,13 +176,15 @@ public:
         return 0.1;
     }
     bool merge_uneven_sustains() const override { return true; };
-    double minimum_sp_to_activate() const override { return 0.25; }
     bool overlaps() const override { return true; };
     bool round_tick_gap() const override { return false; };
     SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; };
+    SpEngineValues sp_engine_values() const override
+    {
+        return {0.25, 0.5, 0.25};
+    }
     SpMode sp_mode() const override { return SpMode::OdBeat; };
     double sp_gain_rate() const override { return 0.0; };
-    double sp_phrase_amount() const override { return 0.25; }
     SustainRoundingPolicy sustain_rounding() const override
     {
         return SustainRoundingPolicy::RoundToNearest;
@@ -186,7 +193,6 @@ public:
     {
         return SustainTicksMetric::OdBeat;
     }
-    double unison_sp_phrase_amount() const override { return 0.5; }
 };
 
 class FortniteGuitarEngine final : public BaseFortniteEngine {
@@ -231,13 +237,15 @@ public:
     }
     int max_multiplier() const override { return 4; }
     bool merge_uneven_sustains() const override { return true; }
-    double minimum_sp_to_activate() const override { return 0.5; }
     bool overlaps() const override { return false; }
     bool round_tick_gap() const override { return false; }
     SightRead::Tick snap_gap() const override { return SightRead::Tick {2}; }
+    SpEngineValues sp_engine_values() const override
+    {
+        return {0.25, 0.5, 0.5};
+    }
     double sp_gain_rate() const override { return 0.034; }
     SpMode sp_mode() const override { return SpMode::Measure; }
-    double sp_phrase_amount() const override { return 0.25; }
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
     {
@@ -247,7 +255,6 @@ public:
     {
         return SustainTicksMetric::Beat;
     }
-    double unison_sp_phrase_amount() const override { return 0.5; }
 };
 
 class BaseRbEngine : public Engine {
@@ -274,13 +281,15 @@ public:
         return std::min(base_timing_window(), late_gap / 2);
     }
     bool merge_uneven_sustains() const override { return true; }
-    double minimum_sp_to_activate() const override { return 0.5; }
     bool overlaps() const override { return true; }
     bool round_tick_gap() const override { return false; }
     SightRead::Tick snap_gap() const override { return SightRead::Tick {2}; }
+    SpEngineValues sp_engine_values() const override
+    {
+        return {0.251, 0.501, 0.5};
+    }
     double sp_gain_rate() const override { return 0.034; }
     SpMode sp_mode() const override { return SpMode::OdBeat; }
-    double sp_phrase_amount() const override { return 0.251; }
     int sust_points_per_beat() const override { return 12; }
     SustainRoundingPolicy sustain_rounding() const override
     {
@@ -290,7 +299,6 @@ public:
     {
         return SustainTicksMetric::Beat;
     }
-    double unison_sp_phrase_amount() const override { return 0.501; }
 };
 
 class RbEngine final : public BaseRbEngine {

@@ -1400,7 +1400,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                           SightRead::DrumSettings::default_settings(), false,
                           true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  0.25);
+                                  {0.25, 0.5, 0.5});
     std::vector<double> expected_percents {
         0.0,    0.5,    0.75,   0.75,   0.75,   1.0,    1.0,    1.0, 1.0,
         1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0, 0.9375,
@@ -1428,7 +1428,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_rb_phrase_amounts)
                           SightRead::DrumSettings::default_settings(), false,
                           true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  0.251);
+                                  {0.251, 0.501, 0.5});
     std::vector<double> expected_percents {0.0, 0.251};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.sp_percent_values().cbegin(),
@@ -1462,7 +1462,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                           SightRead::DrumSettings::default_settings(), false,
                           true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  0.25);
+                                  {0.25, 0.5, 0.5});
     std::vector<double> expected_percents {
         0.0, 0.5, 0.75, 0.75, 0.75, 1.0, 1.0,    1.0,  1.0,
         1.0, 1.0, 1.0,  1.0,  1.0,  1.0, 1.0,    1.0,  1.0,
@@ -1494,7 +1494,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                           SightRead::DrumSettings::default_settings(), false,
                           true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  0.25);
+                                  {0.25, 0.5, 0.5});
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.5359166667, 0.49425};
 
@@ -1526,7 +1526,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                           SightRead::DrumSettings::default_settings(), false,
                           true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  0.25);
+                                  {0.25, 0.5, 0.5});
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.4025833333, 0.2775833333};
 
@@ -1563,7 +1563,7 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                           SightRead::DrumSettings::default_settings(), false,
                           true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  0.25);
+                                  {0.25, 0.5, 0.5});
     std::vector<double> expected_percents {
         0.0,          0.25,         0.5275833333, 0.4025833333, 0.2775833333,
         0.1525833333, 0.0275833333, 0.0,          0.5,          0.40625};
@@ -1600,7 +1600,7 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                           SightRead::DrumSettings::default_settings(), false,
                           true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  0.25);
+                                  {0.25, 0.5, 0.5});
     std::vector<double> expected_percents {0.40299375, 0.27799375, 0.15299375,
                                            0.02799375, 0.25};
 

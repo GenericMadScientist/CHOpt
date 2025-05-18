@@ -46,7 +46,7 @@ int bre_boost(const SightRead::NoteTrack& track, const Engine& engine)
 
 SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
 {
-    SpBar sp_bar {0.0, 0.0, m_sp_phrase_amount, m_unison_sp_phrase_amount};
+    SpBar sp_bar {0.0, 0.0, m_sp_engine_values};
     for (auto p = m_points.next_sp_granting_note(begin); p < end;
          p = m_points.next_sp_granting_note(std::next(p))) {
         if (p->is_unison_sp_granting_note) {
@@ -65,11 +65,7 @@ ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
     : m_time_map {duration_data.time_map}
     , m_points {track, duration_data, pathing_settings}
     , m_sp_data {track, duration_data, pathing_settings}
-    , m_minimum_sp_to_activate {pathing_settings.engine
-                                    ->minimum_sp_to_activate()}
-    , m_sp_phrase_amount {pathing_settings.engine->sp_phrase_amount()}
-    , m_unison_sp_phrase_amount {pathing_settings.engine
-                                     ->unison_sp_phrase_amount()}
+    , m_sp_engine_values {pathing_settings.engine->sp_engine_values()}
     , m_total_bre_boost {bre_boost(track, *pathing_settings.engine)}
     , m_base_score {track.base_score(pathing_settings.drum_settings)}
     , m_ignore_average_multiplier {pathing_settings.engine
@@ -123,11 +119,12 @@ ProcessedSong::total_available_sp_with_earliest_pos(
         start, earliest_potential_pos.beat, act_start->position.beat);
     sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
-    if (sp_bar.full_enough_to_activate(m_minimum_sp_to_activate)) {
+    if (sp_bar.full_enough_to_activate()) {
         return {sp_bar, earliest_potential_pos};
     }
 
-    const auto extra_sp_required = m_minimum_sp_to_activate - sp_bar.max();
+    const auto extra_sp_required
+        = m_sp_engine_values.minimum_to_activate - sp_bar.max();
     auto first_beat = earliest_potential_pos.beat;
     auto last_beat = act_start->position.beat;
     if (m_sp_data.available_whammy(first_beat, last_beat,
@@ -196,29 +193,30 @@ private:
     SpPosition m_position;
     double m_sp;
     bool m_overlap_engine;
-    double m_sp_phrase_amount;
-    double m_unison_sp_phrase_amount;
+    SpEngineValues m_sp_engine_values;
 
     static constexpr double MEASURES_PER_BAR = 8.0;
 
 public:
     SpStatus(SpPosition position, double sp, bool overlap_engine,
-             double sp_phrase_amount, double unison_sp_phrase_amount)
+             const SpEngineValues& sp_engine_values)
         : m_position {position}
         , m_sp {sp}
         , m_overlap_engine {overlap_engine}
-        , m_sp_phrase_amount {sp_phrase_amount}
-        , m_unison_sp_phrase_amount {unison_sp_phrase_amount}
+        , m_sp_engine_values {sp_engine_values}
     {
     }
 
     [[nodiscard]] SpPosition position() const { return m_position; }
     [[nodiscard]] double sp() const { return m_sp; }
 
-    void add_phrase() { m_sp = std::min(m_sp + m_sp_phrase_amount, 1.0); }
+    void add_phrase()
+    {
+        m_sp = std::min(m_sp + m_sp_engine_values.phrase_amount, 1.0);
+    }
     void add_unison_phrase()
     {
-        m_sp = std::min(m_sp + m_unison_sp_phrase_amount, 1.0);
+        m_sp = std::min(m_sp + m_sp_engine_values.unison_phrase_amount, 1.0);
     }
 
     void advance_whammy_max(SpPosition end_position, const SpData& sp_data,
@@ -279,7 +277,7 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
     static constexpr double MEASURES_PER_BAR = 8.0;
     const SpPosition null_position {SightRead::Beat(0.0), SpMeasure(0.0)};
 
-    if (!activation.sp_bar.full_enough_to_activate(m_minimum_sp_to_activate)) {
+    if (!activation.sp_bar.full_enough_to_activate()) {
         return {null_position, ActValidity::insufficient_sp};
     }
 
@@ -303,11 +301,11 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
 
     SpStatus status_for_early_end {
         activation.earliest_activation_point,
-        std::max(activation.sp_bar.min(), m_minimum_sp_to_activate), m_overlaps,
-        m_sp_phrase_amount, m_unison_sp_phrase_amount};
+        std::max(activation.sp_bar.min(),
+                 m_sp_engine_values.minimum_to_activate),
+        m_overlaps, m_sp_engine_values};
     SpStatus status_for_late_end {late_end_position, late_end_sp, m_overlaps,
-                                  m_sp_phrase_amount,
-                                  m_unison_sp_phrase_amount};
+                                  m_sp_engine_values};
 
     for (auto p = m_points.next_sp_granting_note(activation.act_start);
          p < activation.act_end;

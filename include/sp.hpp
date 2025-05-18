@@ -37,16 +37,13 @@ class SpBar {
 private:
     double m_min;
     double m_max;
-    double m_sp_phrase_amount;
-    double m_unison_sp_phrase_amount;
+    SpEngineValues m_sp_engine_values;
 
 public:
-    SpBar(double min, double max, double sp_phrase_amount,
-          double unison_sp_phrase_amount)
+    SpBar(double min, double max, const SpEngineValues& sp_engine_values)
         : m_min {min}
         , m_max {max}
-        , m_sp_phrase_amount {sp_phrase_amount}
-        , m_unison_sp_phrase_amount {unison_sp_phrase_amount}
+        , m_sp_engine_values {sp_engine_values}
     {
     }
 
@@ -57,20 +54,19 @@ public:
 
     void add_phrase()
     {
-        m_min = std::min(m_min + m_sp_phrase_amount, 1.0);
-        m_max = std::min(m_max + m_sp_phrase_amount, 1.0);
+        m_min = std::min(m_min + m_sp_engine_values.phrase_amount, 1.0);
+        m_max = std::min(m_max + m_sp_engine_values.phrase_amount, 1.0);
     }
 
     void add_unison_phrase()
     {
-        m_min = std::min(m_min + m_unison_sp_phrase_amount, 1.0);
-        m_max = std::min(m_max + m_unison_sp_phrase_amount, 1.0);
+        m_min = std::min(m_min + m_sp_engine_values.unison_phrase_amount, 1.0);
+        m_max = std::min(m_max + m_sp_engine_values.unison_phrase_amount, 1.0);
     }
 
-    [[nodiscard]] bool
-    full_enough_to_activate(double minimum_sp_to_activate) const
+    [[nodiscard]] bool full_enough_to_activate() const
     {
-        return m_max >= minimum_sp_to_activate;
+        return m_max >= m_sp_engine_values.minimum_to_activate;
     }
 };
 

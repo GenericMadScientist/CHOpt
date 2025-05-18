@@ -584,7 +584,7 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
                                          const SpTimeMap& time_map,
                                          const PointSet& points,
                                          const Path& path,
-                                         double sp_phrase_amount)
+                                         const SpEngineValues& sp_engine_values)
 {
     m_sp_percent_values.clear();
     m_sp_percent_values.reserve(m_measure_lines.size() - 1);
@@ -620,7 +620,7 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
             total_sp = 0.0;
             break;
         case SpDrainEventType::SpPhrase:
-            total_sp += sp_phrase_amount;
+            total_sp += sp_engine_values.phrase_amount;
             break;
         case SpDrainEventType::Measure:
             m_sp_percent_values.push_back(std::clamp(total_sp, 0.0, 1.0));
@@ -783,7 +783,7 @@ ImageBuilder make_builder(SightRead::Song& song,
     } else {
         builder.add_sp_percent_values(
             processed_track.sp_data(), time_map, processed_track.points(), path,
-            settings.pathing_settings.engine->sp_phrase_amount());
+            settings.pathing_settings.engine->sp_engine_values());
     }
     builder.set_total_score(processed_track.points(), solos, path);
     if (settings.pathing_settings.engine->has_bres()

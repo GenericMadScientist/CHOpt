@@ -109,7 +109,7 @@ public:
                      const SightRead::TempoMap& tempo_map, const Path& path);
     void add_sp_percent_values(const SpData& sp_data, const SpTimeMap& time_map,
                                const PointSet& points, const Path& path,
-                               double sp_phrase_amount);
+                               const SpEngineValues& sp_engine_values);
     void add_sp_phrases(const SightRead::NoteTrack& track,
                         const std::vector<SightRead::Tick>& unison_phrases,
                         const Path& path);

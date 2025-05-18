@@ -42,8 +42,8 @@ struct ActivationCandidate {
     SpPosition earliest_activation_point {SightRead::Beat(0.0), SpMeasure(0.0)};
     SpBar sp_bar;
 
-    ActivationCandidate(double sp_phrase_amount, double unison_sp_phrase_amount)
-        : sp_bar {0.0, 0.0, sp_phrase_amount, unison_sp_phrase_amount}
+    ActivationCandidate(const SpEngineValues& sp_engine_values)
+        : sp_bar {0.0, 0.0, sp_engine_values}
     {
     }
 
@@ -97,9 +97,7 @@ private:
     SpTimeMap m_time_map;
     PointSet m_points;
     SpData m_sp_data;
-    double m_minimum_sp_to_activate;
-    double m_sp_phrase_amount;
-    double m_unison_sp_phrase_amount;
+    SpEngineValues m_sp_engine_values;
     int m_total_bre_boost;
     int m_total_solo_boost;
     int m_base_score;
@@ -167,14 +165,9 @@ public:
     [[nodiscard]] const SpData& sp_data() const { return m_sp_data; }
     [[nodiscard]] const SpTimeMap& sp_time_map() const { return m_time_map; }
     [[nodiscard]] bool is_drums() const { return m_is_drums; }
-    [[nodiscard]] double minimum_sp_to_activate() const
+    [[nodiscard]] const SpEngineValues& sp_engine_values() const
     {
-        return m_minimum_sp_to_activate;
-    }
-    [[nodiscard]] double sp_phrase_amount() const { return m_sp_phrase_amount; }
-    [[nodiscard]] double unison_sp_phrase_amount() const
-    {
-        return m_unison_sp_phrase_amount;
+        return m_sp_engine_values;
     }
 };
 
