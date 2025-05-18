@@ -39,22 +39,8 @@
 struct ActivationCandidate {
     PointPtr act_start;
     PointPtr act_end;
-    SpPosition earliest_activation_point {SightRead::Beat(0.0), SpMeasure(0.0)};
+    SpPosition earliest_activation_point;
     SpBar sp_bar;
-
-    ActivationCandidate(const SpEngineValues& sp_engine_values)
-        : sp_bar {0.0, 0.0, sp_engine_values}
-    {
-    }
-
-    ActivationCandidate(PointPtr act_start, PointPtr act_end,
-                        SpPosition earliest_activation_point, SpBar sp_bar)
-        : act_start {act_start}
-        , act_end {act_end}
-        , earliest_activation_point {earliest_activation_point}
-        , sp_bar {sp_bar}
-    {
-    }
 };
 
 struct ProtoActivation {
