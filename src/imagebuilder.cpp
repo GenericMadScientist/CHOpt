@@ -192,7 +192,8 @@ enum class SpDrainEventType : std::uint8_t {
     ActStart,
     ActEnd,
     WhammyEnd,
-    SpPhrase
+    SpPhrase,
+    UnisonPhrase
 };
 
 std::vector<std::tuple<SightRead::Beat, SpDrainEventType>>
@@ -214,7 +215,11 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
                 position = std::max(position, act.sp_end);
             }
         }
-        events.emplace_back(position, SpDrainEventType::SpPhrase);
+        if (p->is_unison_sp_granting_note) {
+            events.emplace_back(position, SpDrainEventType::UnisonPhrase);
+        } else {
+            events.emplace_back(position, SpDrainEventType::SpPhrase);
+        }
     }
     for (auto act : path.activations) {
         if (act.whammy_end < act.sp_end) {
@@ -621,6 +626,9 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
             break;
         case SpDrainEventType::SpPhrase:
             total_sp += sp_engine_values.phrase_amount;
+            break;
+        case SpDrainEventType::UnisonPhrase:
+            total_sp += sp_engine_values.unison_phrase_amount;
             break;
         case SpDrainEventType::Measure:
             m_sp_percent_values.push_back(std::clamp(total_sp, 0.0, 1.0));

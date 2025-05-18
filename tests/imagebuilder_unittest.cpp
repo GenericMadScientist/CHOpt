@@ -1437,6 +1437,31 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_rb_phrase_amounts)
                                   expected_percents.cend());
 }
 
+BOOST_AUTO_TEST_CASE(sp_percents_added_with_unison_phrases)
+{
+    SightRead::NoteTrack track {{make_note(960)},
+                                {{SightRead::Tick {960}, SightRead::Tick {10}}},
+                                SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    SpDurationData unison_phrase {
+        {{}, SpMode::OdBeat}, {}, {SightRead::Tick {960}}};
+    PointSet points {track, unison_phrase, default_rb3_pathing_settings()};
+    SpData sp_data {track, unison_phrase, default_rb3_pathing_settings()};
+    Path path {{}, 0};
+
+    ImageBuilder builder {track, SightRead::Difficulty::Expert,
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
+    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
+                                  {0.251, 0.501, 0.5});
+    std::vector<double> expected_percents {0.0, 0.501};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(builder.sp_percent_values().cbegin(),
+                                  builder.sp_percent_values().cend(),
+                                  expected_percents.cbegin(),
+                                  expected_percents.cend());
+}
+
 BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
 {
     SightRead::NoteTrack track {
