@@ -1399,11 +1399,37 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
+    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
+                                  0.25);
     std::vector<double> expected_percents {
         0.0,    0.5,    0.75,   0.75,   0.75,   1.0,    1.0,    1.0, 1.0,
         1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0, 0.9375,
         0.8125, 0.6875, 0.5625, 0.4375, 0.3125, 0.1875, 0.0625, 0.0};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(builder.sp_percent_values().cbegin(),
+                                  builder.sp_percent_values().cend(),
+                                  expected_percents.cbegin(),
+                                  expected_percents.cend());
+}
+
+BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_rb_phrase_amounts)
+{
+    SightRead::NoteTrack track {{make_note(960)},
+                                {{SightRead::Tick {960}, SightRead::Tick {10}}},
+                                SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    PointSet points {track, default_measure_mode_data(),
+                     default_guitar_pathing_settings()};
+    SpData sp_data {track, default_measure_mode_data(),
+                    default_guitar_pathing_settings()};
+    Path path {{}, 0};
+
+    ImageBuilder builder {track, SightRead::Difficulty::Expert,
+                          SightRead::DrumSettings::default_settings(), false,
+                          true};
+    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
+                                  0.251);
+    std::vector<double> expected_percents {0.0, 0.251};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.sp_percent_values().cbegin(),
                                   builder.sp_percent_values().cend(),
@@ -1435,7 +1461,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
+    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
+                                  0.25);
     std::vector<double> expected_percents {
         0.0, 0.5, 0.75, 0.75, 0.75, 1.0, 1.0,    1.0,  1.0,
         1.0, 1.0, 1.0,  1.0,  1.0,  1.0, 1.0,    1.0,  1.0,
@@ -1466,7 +1493,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
+    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
+                                  0.25);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.5359166667, 0.49425};
 
@@ -1497,7 +1525,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
+    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
+                                  0.25);
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.4025833333, 0.2775833333};
 
@@ -1533,7 +1562,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
+    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
+                                  0.25);
     std::vector<double> expected_percents {
         0.0,          0.25,         0.5275833333, 0.4025833333, 0.2775833333,
         0.1525833333, 0.0275833333, 0.0,          0.5,          0.40625};
@@ -1569,7 +1599,8 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
     ImageBuilder builder {track, SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(), false,
                           true};
-    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path);
+    builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
+                                  0.25);
     std::vector<double> expected_percents {0.40299375, 0.27799375, 0.15299375,
                                            0.02799375, 0.25};
 

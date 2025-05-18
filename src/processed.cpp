@@ -193,26 +193,24 @@ private:
     SpPosition m_position;
     double m_sp;
     bool m_overlap_engine;
+    double m_sp_phrase_amount;
+
     static constexpr double MEASURES_PER_BAR = 8.0;
 
 public:
-    SpStatus(SpPosition position, double sp, bool overlap_engine)
+    SpStatus(SpPosition position, double sp, bool overlap_engine,
+             double sp_phrase_amount)
         : m_position {position}
         , m_sp {sp}
         , m_overlap_engine {overlap_engine}
+        , m_sp_phrase_amount {sp_phrase_amount}
     {
     }
 
     [[nodiscard]] SpPosition position() const { return m_position; }
     [[nodiscard]] double sp() const { return m_sp; }
 
-    void add_phrase()
-    {
-        constexpr double SP_PHRASE_AMOUNT = 0.25;
-
-        m_sp += SP_PHRASE_AMOUNT;
-        m_sp = std::min(m_sp, 1.0);
-    }
+    void add_phrase() { m_sp = std::min(m_sp + m_sp_phrase_amount, 1.0); }
 
     void advance_whammy_max(SpPosition end_position, const SpData& sp_data,
                             bool does_overlap)
@@ -296,9 +294,10 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
 
     SpStatus status_for_early_end {
         activation.earliest_activation_point,
-        std::max(activation.sp_bar.min(), m_minimum_sp_to_activate),
-        m_overlaps};
-    SpStatus status_for_late_end {late_end_position, late_end_sp, m_overlaps};
+        std::max(activation.sp_bar.min(), m_minimum_sp_to_activate), m_overlaps,
+        m_sp_phrase_amount};
+    SpStatus status_for_late_end {late_end_position, late_end_sp, m_overlaps,
+                                  m_sp_phrase_amount};
 
     for (auto p = m_points.next_sp_granting_note(activation.act_start);
          p < activation.act_end;
