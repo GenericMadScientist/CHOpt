@@ -86,6 +86,12 @@ SongFile::SongFile(const std::string& filename)
         m_file_type = FileType::Chart;
     } else if (filename.ends_with(".mid")) {
         m_file_type = FileType::Midi;
+    } else if (filename.ends_with(".mid.qb.xen")) {
+        m_file_type = FileType::QbMidi;
+        m_console = SightRead::Console::PC;
+    } else if (filename.ends_with(".mid.qb.ps2")) {
+        m_file_type = FileType::QbMidi;
+        m_console = SightRead::Console::PS2;
     } else {
         throw std::invalid_argument("file should be .chart or .mid");
     }
@@ -97,6 +103,10 @@ SongFile::SongFile(const std::string& filename)
     const auto chart_buffer = chart.readAll();
     m_loaded_file = std::vector<std::uint8_t> {chart_buffer.cbegin(),
                                                chart_buffer.cend()};
+
+    const auto filename_with_ext = song_path.filename().string();
+    const auto first_period_pos = filename_with_ext.find_first_of('.');
+    m_file_song_name = filename_with_ext.substr(0, first_period_pos);
 }
 
 SightRead::Song SongFile::load_song(Game game) const
@@ -118,13 +128,20 @@ SightRead::Song SongFile::load_song(Game game) const
         parser.parse_solos(parse_solos(game));
         return parser.parse(u8_string);
     }
-    case FileType::Midi:
+    case FileType::Midi: {
         std::span<const std::uint8_t> midi_buffer {m_loaded_file.data(),
                                                    m_loaded_file.size()};
         SightRead::MidiParser parser {m_metadata};
         parser.permit_instruments(permitted_instruments(game));
         parser.parse_solos(parse_solos(game));
         return parser.parse(midi_buffer);
+    }
+    case FileType::QbMidi: {
+        std::span<const std::uint8_t> qb_midi_buffer {m_loaded_file.data(),
+                                                      m_loaded_file.size()};
+        SightRead::QbMidiParser parser {m_file_song_name, *m_console};
+        return parser.parse(qb_midi_buffer);
+    }
     }
     throw std::runtime_error("Invalid file type");
 }

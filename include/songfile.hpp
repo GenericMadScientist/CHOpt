@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023 Raymond Wright
+ * Copyright (C) 2023, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,21 +20,25 @@
 #define CHOPT_SONGFILE_HPP
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include <sightread/metadata.hpp>
+#include <sightread/qbmidiparser.hpp>
 #include <sightread/song.hpp>
 
 #include "settings.hpp"
 
 class SongFile {
 private:
-    enum class FileType { Chart, Midi };
+    enum class FileType { Chart, Midi, QbMidi };
 
     std::vector<std::uint8_t> m_loaded_file;
     SightRead::Metadata m_metadata;
     FileType m_file_type;
+    std::optional<SightRead::Console> m_console;
+    std::string m_file_song_name;
 
 public:
     explicit SongFile(const std::string& filename);

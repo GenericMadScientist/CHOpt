@@ -327,7 +327,9 @@ void MainWindow::clear_worker_thread() { m_thread.reset(); }
 
 void MainWindow::load_file(const QString& file_name)
 {
-    if (!file_name.endsWith(".chart") && !file_name.endsWith(".mid")) {
+    if (!file_name.endsWith(".chart") && !file_name.endsWith(".mid")
+        && !file_name.endsWith(".mid.qb.xen")
+        && !file_name.endsWith("mid.qb.ps2")) {
         write_message("File must be .chart or .mid");
         return;
     }
