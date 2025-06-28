@@ -53,7 +53,6 @@ std::set<SightRead::Instrument> permitted_instruments(Game game)
                 SightRead::Instrument::FortniteProGuitar,
                 SightRead::Instrument::FortniteProBass};
     case Game::GuitarHeroOne:
-        return {SightRead::Instrument::Guitar};
     case Game::GuitarHeroThree:
         return {SightRead::Instrument::Guitar};
     case Game::RockBand:
@@ -142,7 +141,7 @@ SightRead::Song SongFile::load_song(Game game) const
     case FileType::QbMidi: {
         std::span<const std::uint8_t> qb_midi_buffer {m_loaded_file.data(),
                                                       m_loaded_file.size()};
-        SightRead::QbMidiParser parser {m_file_song_name, *m_console};
+        SightRead::QbMidiParser parser {m_file_song_name, m_console.value()};
         return parser.parse(qb_midi_buffer);
     }
     }
