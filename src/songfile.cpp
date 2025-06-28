@@ -54,6 +54,8 @@ std::set<SightRead::Instrument> permitted_instruments(Game game)
                 SightRead::Instrument::FortniteProBass};
     case Game::GuitarHeroOne:
         return {SightRead::Instrument::Guitar};
+    case Game::GuitarHeroThree:
+        return {SightRead::Instrument::Guitar};
     case Game::RockBand:
         return {SightRead::Instrument::Guitar, SightRead::Instrument::Bass};
     case Game::RockBandThree:
@@ -66,7 +68,8 @@ std::set<SightRead::Instrument> permitted_instruments(Game game)
 
 bool parse_solos(Game game)
 {
-    return game != Game::GuitarHeroOne && game != Game::FortniteFestival;
+    return game != Game::GuitarHeroOne && game != Game::GuitarHeroThree
+        && game != Game::FortniteFestival;
 }
 }
 

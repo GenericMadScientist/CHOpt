@@ -257,6 +257,52 @@ public:
     }
 };
 
+class Gh3Engine final : public Engine {
+private:
+    static constexpr double FUDGE_EPSILON = 0.0001;
+
+public:
+    int base_note_value() const override { return 50; }
+    double burst_size() const override { return 0.0; }
+    bool chords_multiply_sustains() const override { return false; }
+    bool delayed_multiplier() const override { return false; }
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.116;
+    }
+    bool has_bres() const override { return false; }
+    bool has_unison_bonuses() const override { return false; }
+    bool ignore_average_multiplier() const override { return true; }
+    bool is_rock_band() const override { return false; }
+    double late_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        return std::min(0.1, late_gap / (2.0 + FUDGE_EPSILON));
+    }
+    int max_multiplier() const override { return 4; }
+    bool merge_uneven_sustains() const override { return false; }
+    bool overlaps() const override { return false; }
+    bool round_tick_gap() const override { return false; }
+    SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; }
+    SpEngineValues sp_engine_values() const override
+    {
+        return {0.25, 0.5, 0.5};
+    }
+    double sp_gain_rate() const override { return 0.031875; }
+    SpMode sp_mode() const override { return SpMode::Measure; }
+    int sust_points_per_beat() const override { return 25; }
+    SustainRoundingPolicy sustain_rounding() const override
+    {
+        return SustainRoundingPolicy::RoundToNearest;
+    }
+    SustainTicksMetric sustain_ticks_metric() const override
+    {
+        return SustainTicksMetric::Beat;
+    }
+};
+
 class BaseRbEngine : public Engine {
 protected:
     virtual double base_timing_window() const = 0;

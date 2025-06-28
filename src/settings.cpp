@@ -102,11 +102,9 @@ SightRead::Instrument string_to_inst(std::string_view text, Game game)
 Game game_from_string(std::string_view game)
 {
     const std::map<std::string_view, Game> game_map {
-        {"ch", Game::CloneHero},
-        {"fnf", Game::FortniteFestival},
-        {"gh1", Game::GuitarHeroOne},
-        {"rb", Game::RockBand},
-        {"rb3", Game::RockBandThree}};
+        {"ch", Game::CloneHero},      {"fnf", Game::FortniteFestival},
+        {"gh1", Game::GuitarHeroOne}, {"gh3", Game::GuitarHeroThree},
+        {"rb", Game::RockBand},       {"rb3", Game::RockBandThree}};
     return game_map.at(game);
 }
 
@@ -163,7 +161,8 @@ std::unique_ptr<QCommandLineParser> arg_parser()
          {"no-pro-drums", "Disable pro drums."},
          {"enable-dynamics",
           "Enable double points for ghost and accent notes."},
-         {"engine", "Engine, options are ch, fnf, gh1, rb, rb3. Default ch.",
+         {"engine",
+          "Engine, options are ch, fnf, gh1, gh3, rb, rb3. Default ch.",
           "engine", "ch"},
          {{"p", "precision-mode"}, "Turn on precision mode for CH."},
          {{"b", "blank"}, "Give a blank chart image."},
@@ -204,6 +203,8 @@ game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
         return std::make_unique<FortniteGuitarEngine>();
     case Game::GuitarHeroOne:
         return std::make_unique<Gh1Engine>();
+    case Game::GuitarHeroThree:
+        return std::make_unique<Gh3Engine>();
     case Game::RockBand:
         if (instrument == SightRead::Instrument::Bass) {
             return std::make_unique<RbBassEngine>();
