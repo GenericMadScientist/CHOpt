@@ -290,7 +290,7 @@ public:
     {
         return {0.25, 0.5, 0.5};
     }
-    double sp_gain_rate() const override { return 1 / 30.0; }
+    double sp_gain_rate() const override { return 0.033332999; }
     SpMode sp_mode() const override { return SpMode::Measure; }
     int sust_points_per_beat() const override { return 25; }
     SustainRoundingPolicy sustain_rounding() const override
