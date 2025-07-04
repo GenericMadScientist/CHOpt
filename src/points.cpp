@@ -109,6 +109,34 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
         }
         break;
     }
+    case SustainTicksMetric::Fretbar: {
+        const auto sust_start = time_map.to_fretbars(position);
+        const auto sust_end = time_map.to_fretbars(position + sust_length);
+        auto float_sust_ticks
+            = (sust_end - sust_start).value() * engine.sust_points_per_beat();
+        switch (engine.sustain_rounding()) {
+        case SustainRoundingPolicy::RoundUp:
+            float_sust_ticks = std::ceil(float_sust_ticks);
+            break;
+        case SustainRoundingPolicy::RoundToNearest:
+            float_sust_ticks = std::round(float_sust_ticks);
+            break;
+        }
+        auto sust_ticks = static_cast<int>(float_sust_ticks);
+        // TODO: Fix this.
+        const auto burst_position = sust_end - SightRead::Fretbar {0.25};
+
+        auto tick_position = sust_start;
+        for (auto i = 0; i < sust_ticks; ++i) {
+            tick_position
+                += SightRead::Fretbar {1.0 / engine.sust_points_per_beat()};
+            tick_position = std::min(tick_position, burst_position);
+            const auto beat = time_map.to_beats(tick_position);
+            const auto meas = time_map.to_sp_measures(beat);
+            append_sustain_point(points, beat, meas, 1);
+        }
+        break;
+    }
     case SustainTicksMetric::OdBeat:
         constexpr double SP_BEATS_PER_MEASURE = 4.0;
         const double sustain_end = (position + sust_length).value();

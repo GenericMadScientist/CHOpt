@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023, 2024 Raymond Wright
+ * Copyright (C) 2023, 2024, 2025 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

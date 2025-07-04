@@ -104,9 +104,12 @@ public:
     {
     }
 
+    [[nodiscard]] SightRead::Beat to_beats(SightRead::Fretbar fretbars) const;
     [[nodiscard]] SightRead::Beat to_beats(SightRead::Second seconds) const;
     [[nodiscard]] SightRead::Beat to_beats(SpMeasure sp_measures) const;
     [[nodiscard]] SightRead::Beat to_beats(SightRead::Tick ticks) const;
+
+    [[nodiscard]] SightRead::Fretbar to_fretbars(SightRead::Tick ticks) const;
 
     [[nodiscard]] SightRead::Second to_seconds(SightRead::Beat beats) const;
     [[nodiscard]] SightRead::Second to_seconds(SpMeasure sp_measures) const;

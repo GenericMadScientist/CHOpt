@@ -27,7 +27,7 @@
 
 enum class SustainRoundingPolicy { RoundUp, RoundToNearest };
 
-enum class SustainTicksMetric { Beat, OdBeat };
+enum class SustainTicksMetric { Beat, Fretbar, OdBeat };
 
 struct SpEngineValues {
     double phrase_amount;
@@ -155,36 +155,36 @@ protected:
 
 class BaseFortniteEngine : public Engine {
 public:
-    int base_note_value() const override { return 36; };
-    double burst_size() const override { return 0.0; };
-    bool chords_multiply_sustains() const override { return true; };
-    bool delayed_multiplier() const override { return true; };
+    int base_note_value() const override { return 36; }
+    double burst_size() const override { return 0.0; }
+    bool chords_multiply_sustains() const override { return true; }
+    bool delayed_multiplier() const override { return true; }
     double early_timing_window(double early_gap, double late_gap) const override
     {
         (void)early_gap;
         (void)late_gap;
         return 0.1;
     }
-    bool has_bres() const override { return false; };
+    bool has_bres() const override { return false; }
     bool has_unison_bonuses() const override { return false; }
-    bool is_rock_band() const override { return false; };
-    bool ignore_average_multiplier() const override { return true; };
+    bool is_rock_band() const override { return false; }
+    bool ignore_average_multiplier() const override { return true; }
     double late_timing_window(double early_gap, double late_gap) const override
     {
         (void)early_gap;
         (void)late_gap;
         return 0.1;
     }
-    bool merge_uneven_sustains() const override { return true; };
-    bool overlaps() const override { return true; };
-    bool round_tick_gap() const override { return false; };
-    SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; };
+    bool merge_uneven_sustains() const override { return true; }
+    bool overlaps() const override { return true; }
+    bool round_tick_gap() const override { return false; }
+    SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; }
     SpEngineValues sp_engine_values() const override
     {
         return {0.25, 0.5, 0.25};
     }
-    SpMode sp_mode() const override { return SpMode::OdBeat; };
-    double sp_gain_rate() const override { return 0.0; };
+    SpMode sp_mode() const override { return SpMode::OdBeat; }
+    double sp_gain_rate() const override { return 0.0; }
     SustainRoundingPolicy sustain_rounding() const override
     {
         return SustainRoundingPolicy::RoundToNearest;
@@ -196,18 +196,18 @@ public:
 };
 
 class FortniteGuitarEngine final : public BaseFortniteEngine {
-    int max_multiplier() const override { return 4; };
-    int sust_points_per_beat() const override { return 12; };
+    int max_multiplier() const override { return 4; }
+    int sust_points_per_beat() const override { return 12; }
 };
 
 class FortniteBassEngine final : public BaseFortniteEngine {
-    int max_multiplier() const override { return 6; };
-    int sust_points_per_beat() const override { return 12; };
+    int max_multiplier() const override { return 6; }
+    int sust_points_per_beat() const override { return 12; }
 };
 
 class FortniteVocalsEngine final : public BaseFortniteEngine {
-    int max_multiplier() const override { return 6; };
-    int sust_points_per_beat() const override { return 25; };
+    int max_multiplier() const override { return 6; }
+    int sust_points_per_beat() const override { return 25; }
 };
 
 class Gh1Engine final : public Engine {
@@ -299,7 +299,7 @@ public:
     }
     SustainTicksMetric sustain_ticks_metric() const override
     {
-        return SustainTicksMetric::Beat;
+        return SustainTicksMetric::Fretbar;
     }
 };
 
