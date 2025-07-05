@@ -45,6 +45,7 @@ public:
     virtual double early_timing_window(double early_gap, double late_gap) const
         = 0;
     virtual bool has_bres() const = 0;
+    virtual bool has_early_whammy() const = 0;
     virtual bool has_unison_bonuses() const = 0;
     virtual bool is_rock_band() const = 0;
     virtual bool ignore_average_multiplier() const = 0;
@@ -79,6 +80,7 @@ public:
         return timing_window(early_gap, late_gap);
     }
     bool has_bres() const override { return false; }
+    bool has_early_whammy() const override { return true; }
     bool has_unison_bonuses() const override { return false; }
     bool ignore_average_multiplier() const override { return false; }
     bool is_rock_band() const override { return false; }
@@ -166,6 +168,7 @@ public:
         return 0.1;
     }
     bool has_bres() const override { return false; }
+    bool has_early_whammy() const override { return false; }
     bool has_unison_bonuses() const override { return false; }
     bool is_rock_band() const override { return false; }
     bool ignore_average_multiplier() const override { return true; }
@@ -227,6 +230,7 @@ public:
         return std::min(0.1, early_gap / (2.0 + FUDGE_EPSILON));
     }
     bool has_bres() const override { return false; }
+    bool has_early_whammy() const override { return true; }
     bool has_unison_bonuses() const override { return false; }
     bool ignore_average_multiplier() const override { return true; }
     bool is_rock_band() const override { return false; }
@@ -273,6 +277,7 @@ public:
         return 0.116;
     }
     bool has_bres() const override { return false; }
+    bool has_early_whammy() const override { return false; }
     bool has_unison_bonuses() const override { return false; }
     bool ignore_average_multiplier() const override { return true; }
     bool is_rock_band() const override { return false; }
@@ -319,6 +324,7 @@ public:
         return base_timing_window();
     }
     bool has_bres() const override { return true; }
+    bool has_early_whammy() const override { return true; }
     bool ignore_average_multiplier() const override { return true; }
     bool is_rock_band() const override { return true; }
     double late_timing_window(double early_gap, double late_gap) const override

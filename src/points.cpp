@@ -122,8 +122,7 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
             float_sust_ticks = std::round(float_sust_ticks);
             break;
         }
-        auto sust_ticks = static_cast<int>(float_sust_ticks);
-        // TODO: Fix this.
+        const auto sust_ticks = static_cast<int>(float_sust_ticks);
         const auto burst_size = time_map.to_seconds(SightRead::Fretbar {0.25});
         const auto burst_position
             = time_map.to_fretbars(time_map.to_seconds(sust_end) - burst_size);

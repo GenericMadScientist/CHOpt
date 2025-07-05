@@ -63,12 +63,15 @@ note_spans(const SightRead::NoteTrack& track,
         }
         for (auto length : note->lengths) {
             if (length != SightRead::Tick {-1}) {
-                spans.emplace_back(
-                    note->position, length,
-                    SightRead::Second {
-                        pathing_settings.engine->early_timing_window(early_gap,
-                                                                     late_gap)}
-                        * pathing_settings.early_whammy);
+                SightRead::Second early_timing_window {0};
+                if (pathing_settings.engine->has_early_whammy()) {
+                    early_timing_window
+                        = SightRead::Second {pathing_settings.engine
+                                                 ->early_timing_window(
+                                                     early_gap, late_gap)}
+                        * pathing_settings.early_whammy;
+                }
+                spans.emplace_back(note->position, length, early_timing_window);
             }
         }
     }
