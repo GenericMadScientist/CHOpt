@@ -124,12 +124,15 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
         }
         auto sust_ticks = static_cast<int>(float_sust_ticks);
         // TODO: Fix this.
-        const auto burst_position = sust_end - SightRead::Fretbar {0.25};
+        const auto burst_size = time_map.to_seconds(SightRead::Fretbar {0.25});
+        const auto burst_position
+            = time_map.to_fretbars(time_map.to_seconds(sust_end) - burst_size);
+        const SightRead::Fretbar fretbar_tick_gap {
+            1.0 / engine.sust_points_per_beat()};
 
         auto tick_position = sust_start;
         for (auto i = 0; i < sust_ticks; ++i) {
-            tick_position
-                += SightRead::Fretbar {1.0 / engine.sust_points_per_beat()};
+            tick_position += fretbar_tick_gap;
             tick_position = std::min(tick_position, burst_position);
             const auto beat = time_map.to_beats(tick_position);
             const auto meas = time_map.to_sp_measures(beat);
