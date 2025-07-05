@@ -150,6 +150,13 @@ SpData::SpData(const SightRead::NoteTrack& track,
         second_start += pathing_settings.video_lag;
         const auto beat_start = m_time_map.to_beats(second_start);
         auto beat_end = m_time_map.to_beats(position + length);
+        if (pathing_settings.engine->sustain_ticks_metric()
+            == SustainTicksMetric::Fretbar) {
+            const auto burst_size
+                = m_time_map.to_seconds(SightRead::Fretbar {0.25});
+            beat_end = m_time_map.to_beats(m_time_map.to_seconds(beat_end)
+                                           - burst_size);
+        }
         if (beat_start < beat_end) {
             ranges.emplace_back(beat_start, beat_end, note);
         }
