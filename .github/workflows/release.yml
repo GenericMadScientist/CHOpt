@@ -168,7 +168,7 @@ jobs:
           version: 6.6.*
 
       - name: Install Boost Locale
-        run: vcpkg install --triplet x64-linux-static boost-locale
+        run: vcpkg install --triplet x64-linux boost-locale
 
       - name: Make build directory
         run: mkdir build
