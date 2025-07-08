@@ -168,7 +168,7 @@ jobs:
           version: 6.6.*
 
       - name: Install Boost Locale
-        run: vcpkg install boost-locale
+        run: vcpkg install --triplet x64-linux-static boost-locale
 
       - name: Make build directory
         run: mkdir build
@@ -177,6 +177,7 @@ jobs:
         working-directory: build
         env:
           CMAKE_BUILD_TYPE: Release
+          CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
           CXX: g++-14
         run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF ..
 
