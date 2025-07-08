@@ -72,6 +72,7 @@ jobs:
       - name: Generate build files
         working-directory: build
         env:
+          CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
           CXX: g++-14
         run: >
           cmake -DBUILD_GUI=OFF -DPACKAGE_TESTS=OFF
