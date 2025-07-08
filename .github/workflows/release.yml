@@ -35,7 +35,7 @@ jobs:
           version: 6.7.2
 
       - name: Install other dependencies
-        run: vcpkg --triplet x64-windows-static-md install libpng
+        run: vcpkg --triplet x64-windows-static-md install boost-locale libpng
 
       - name: Make build directory
         run: mkdir build
@@ -96,6 +96,9 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: 6.7.2
+
+      - name: Install Boost
+        run: brew install boost
 
       - name: Make build directory
         run: mkdir build
@@ -163,6 +166,9 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: 6.6.*
+
+      - name: Install Boost Locale
+        run: vcpkg install boost-locale
 
       - name: Make build directory
         run: mkdir build

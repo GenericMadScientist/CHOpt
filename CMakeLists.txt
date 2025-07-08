@@ -38,6 +38,10 @@ find_package(
   Qt6 REQUIRED
   COMPONENTS Core
   OPTIONAL_COMPONENTS Gui Widgets)
+find_package(
+  Boost 1.77 REQUIRED
+  COMPONENTS locale
+  OPTIONAL_COMPONENTS unit_test_framework)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -72,7 +76,7 @@ add_executable(
   resources/resources.rc)
 target_include_directories(
   chopt PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
-target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES} Qt6::Core Qt6::Gui sightread)
+target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES} Boost::locale Qt6::Core Qt6::Gui sightread)
 
 set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 set_cpp_standard(chopt)
@@ -104,7 +108,7 @@ if(BUILD_GUI)
     resources/resources.rc)
   target_include_directories(
     choptgui PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/libs" ${PNG_INCLUDE_DIRS})
-  target_link_libraries(choptgui PRIVATE ${PNG_LIBRARIES} Qt6::Widgets sightread)
+  target_link_libraries(choptgui PRIVATE ${PNG_LIBRARIES} Boost::locale Qt6::Widgets sightread)
 
   set_property(TARGET choptgui PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 
@@ -120,8 +124,6 @@ include(CTest)
 option(PACKAGE_TESTS "Build the tests" ON)
 
 if(PACKAGE_TESTS)
-  find_package(Boost 1.77 REQUIRED unit_test_framework)
-
   enable_testing()
   add_executable(
     chopt_tests
@@ -145,7 +147,7 @@ if(PACKAGE_TESTS)
 
   target_include_directories(chopt_tests
     PRIVATE "${PROJECT_SOURCE_DIR}/include")
-  target_link_libraries(chopt_tests PRIVATE Boost::unit_test_framework Qt6::Core sightread)
+  target_link_libraries(chopt_tests PRIVATE Boost::locale Boost::unit_test_framework Qt6::Core sightread)
   add_test(NAME chopt_tests COMMAND chopt_tests)
   set_cpp_standard(chopt_tests)
   set_warnings(chopt_tests)
