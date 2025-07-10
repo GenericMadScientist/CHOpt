@@ -94,8 +94,11 @@ SongFile::SongFile(const std::string& filename)
     } else if (filename.ends_with(".mid.qb.ps2")) {
         m_file_type = FileType::QbMidi;
         m_console = SightRead::Console::PS2;
+    } else if (filename.ends_with(".mid.qb.ngc")) {
+        m_file_type = FileType::QbMidi;
+        m_console = SightRead::Console::Wii;
     } else {
-        throw std::invalid_argument("file should be .chart or .mid");
+        throw std::invalid_argument("file should be .chart, .mid or .mid.qb.*");
     }
 
     QFile chart {QString::fromStdString(filename)};
