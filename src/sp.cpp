@@ -121,6 +121,7 @@ SpData::SpData(const SightRead::NoteTrack& track,
                const SpDurationData& duration_data,
                const PathingSettings& pathing_settings)
     : m_time_map {duration_data.time_map}
+    , m_gain_mode {pathing_settings.engine->sp_gain_mode()}
     , m_beat_rates {form_beat_rates(track.global_data().tempo_map(),
                                     duration_data.od_beats,
                                     *pathing_settings.engine)}
@@ -319,6 +320,19 @@ bool SpData::is_in_whammy_ranges(SightRead::Beat beat) const
     return p->start.beat <= beat;
 }
 
+double SpData::sp_from_whammying_range(SightRead::Beat start,
+                                       SightRead::Beat end) const
+{
+    auto gain_interval = (end - start).value();
+    if (m_gain_mode == SpGainMode::Fretbar) {
+        gain_interval
+            = (m_time_map.to_fretbars(end) - m_time_map.to_fretbars(start))
+                  .value();
+    }
+
+    return gain_interval * m_sp_gain_rate;
+}
+
 double SpData::available_whammy(SightRead::Beat start,
                                 SightRead::Beat end) const
 {
@@ -331,7 +345,7 @@ double SpData::available_whammy(SightRead::Beat start,
         }
         const auto whammy_start = std::max(p->start.beat, start);
         const auto whammy_end = std::min(p->end.beat, end);
-        total_whammy += (whammy_end - whammy_start).value() * m_sp_gain_rate;
+        total_whammy += sp_from_whammying_range(whammy_start, whammy_end);
     }
 
     return total_whammy;
@@ -349,7 +363,7 @@ double SpData::available_whammy(SightRead::Beat start, SightRead::Beat end,
         }
         auto whammy_start = std::max(p->start.beat, start);
         auto whammy_end = std::min(p->end.beat, end);
-        total_whammy += (whammy_end - whammy_start).value() * m_sp_gain_rate;
+        total_whammy += sp_from_whammying_range(whammy_start, whammy_end);
     }
 
     return total_whammy;

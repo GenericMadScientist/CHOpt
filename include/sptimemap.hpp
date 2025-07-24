@@ -90,6 +90,8 @@ struct SpPosition {
     SpMeasure sp_measure;
 };
 
+enum class SpGainMode { Beat, Fretbar };
+
 enum class SpMode { Measure, OdBeat };
 
 class SpTimeMap {
@@ -109,6 +111,7 @@ public:
     [[nodiscard]] SightRead::Beat to_beats(SpMeasure sp_measures) const;
     [[nodiscard]] SightRead::Beat to_beats(SightRead::Tick ticks) const;
 
+    [[nodiscard]] SightRead::Fretbar to_fretbars(SightRead::Beat beats) const;
     [[nodiscard]] SightRead::Fretbar
     to_fretbars(SightRead::Second seconds) const;
     [[nodiscard]] SightRead::Fretbar to_fretbars(SightRead::Tick ticks) const;

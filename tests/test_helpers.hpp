@@ -228,6 +228,17 @@ inline PathingSettings default_gh1_pathing_settings()
             SightRead::DrumSettings::default_settings()};
 }
 
+inline PathingSettings default_gh3_pathing_settings()
+{
+    return {std::make_unique<Gh3Engine>(),
+            1.0,
+            1.0,
+            SightRead::Second {0.0},
+            SightRead::Second {0.0},
+            SightRead::Second {0.0},
+            SightRead::DrumSettings::default_settings()};
+}
+
 inline PathingSettings default_guitar_pathing_settings()
 {
     return {std::make_unique<ChGuitarEngine>(),

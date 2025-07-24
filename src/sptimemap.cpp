@@ -47,6 +47,11 @@ SightRead::Beat SpTimeMap::to_beats(SightRead::Tick ticks) const
     return m_tempo_map.to_beats(ticks);
 }
 
+SightRead::Fretbar SpTimeMap::to_fretbars(SightRead::Beat beats) const
+{
+    return m_tempo_map.to_fretbars(beats);
+}
+
 SightRead::Fretbar SpTimeMap::to_fretbars(SightRead::Second seconds) const
 {
     return m_tempo_map.to_fretbars(m_tempo_map.to_beats(seconds));

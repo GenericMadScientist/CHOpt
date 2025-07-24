@@ -417,6 +417,25 @@ BOOST_AUTO_TEST_CASE(three_argument_version_works_correctly)
                       0.3333333, 0.0001);
 }
 
+BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_on_x_8_time_sigs_in_gh3)
+{
+    std::vector<SightRead::Note> notes {make_note(192, 192), make_note(768)};
+    std::vector<SightRead::StarPower> phrases {
+        {SightRead::Tick {192}, SightRead::Tick {50}}};
+    auto global = std::make_shared<SightRead::SongGlobalData>();
+    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 6, 8}}, {}, {}, 192};
+    global->tempo_map(tempo_map);
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::move(global)};
+    SpDurationData duration_data {{tempo_map, SpMode::Measure}, {}, {}};
+    SpData sp_data {track, duration_data, default_gh3_pathing_settings()};
+
+    BOOST_CHECK_CLOSE(sp_data.available_whammy(SightRead::Beat(0.0),
+                                               SightRead::Beat(2.0),
+                                               SightRead::Beat(2.0)),
+                      0.05833274825, 0.0001);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(activation_end_point_works_correctly)

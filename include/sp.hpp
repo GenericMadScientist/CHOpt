@@ -94,6 +94,7 @@ private:
     static constexpr double MEASURES_PER_BAR = 8.0;
 
     SpTimeMap m_time_map;
+    SpGainMode m_gain_mode;
     std::vector<BeatRate> m_beat_rates;
     std::vector<WhammyRange> m_whammy_ranges;
     SightRead::Beat m_last_whammy_point {
@@ -119,6 +120,8 @@ private:
     initial_whammy_prop_state(SightRead::Beat start, SightRead::Beat end,
                               double sp_bar_amount) const;
     SpPosition sp_drain_end_point(SpPosition start, double sp_bar_amount) const;
+    double sp_from_whammying_range(SightRead::Beat start,
+                                   SightRead::Beat end) const;
 
 public:
     SpData(const SightRead::NoteTrack& track,

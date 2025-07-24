@@ -57,6 +57,7 @@ public:
     virtual bool round_tick_gap() const = 0;
     virtual SightRead::Tick snap_gap() const = 0;
     virtual SpEngineValues sp_engine_values() const = 0;
+    virtual SpGainMode sp_gain_mode() const = 0;
     virtual double sp_gain_rate() const = 0;
     virtual SpMode sp_mode() const = 0;
     virtual int sust_points_per_beat() const = 0;
@@ -97,6 +98,7 @@ public:
     {
         return {0.25, 0.5, 0.5};
     }
+    SpGainMode sp_gain_mode() const override { return SpGainMode::Beat; }
     double sp_gain_rate() const override { return 1 / 30.0; }
     SpMode sp_mode() const override { return SpMode::Measure; }
     int sust_points_per_beat() const override { return 25; }
@@ -186,6 +188,7 @@ public:
     {
         return {0.25, 0.5, 0.25};
     }
+    SpGainMode sp_gain_mode() const override { return SpGainMode::Beat; }
     SpMode sp_mode() const override { return SpMode::OdBeat; }
     double sp_gain_rate() const override { return 0.0; }
     SustainRoundingPolicy sustain_rounding() const override
@@ -248,6 +251,7 @@ public:
     {
         return {0.25, 0.5, 0.5};
     }
+    SpGainMode sp_gain_mode() const override { return SpGainMode::Beat; }
     double sp_gain_rate() const override { return 0.034; }
     SpMode sp_mode() const override { return SpMode::Measure; }
     int sust_points_per_beat() const override { return 25; }
@@ -295,6 +299,7 @@ public:
     {
         return {0.25, 0.5, 0.5};
     }
+    SpGainMode sp_gain_mode() const override { return SpGainMode::Fretbar; }
     double sp_gain_rate() const override { return 0.033332999; }
     SpMode sp_mode() const override { return SpMode::Measure; }
     int sust_points_per_beat() const override { return 25; }
@@ -340,6 +345,7 @@ public:
     {
         return {0.251, 0.501, 0.5};
     }
+    SpGainMode sp_gain_mode() const override { return SpGainMode::Beat; }
     double sp_gain_rate() const override { return 0.034; }
     SpMode sp_mode() const override { return SpMode::OdBeat; }
     int sust_points_per_beat() const override { return 12; }
