@@ -67,7 +67,7 @@ in cmd then enter to open a command prompt in that folder, then run the command
 
 ## Dependencies
 
-* [Boost](https://www.boost.org) for Boost.Test
+* [Boost](https://www.boost.org) for Boost.Locale and Boost.Test
 * [CImg](https://cimg.eu) to produce images
 * [libpng](http://libpng.org/pub/png/libpng.html) to save pngs
 * [Qt 6](https://www.qt.io) for the GUI and various utility code for both
