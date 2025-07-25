@@ -73,7 +73,6 @@ DrawnNote note_to_drawn_note(const SightRead::Note& note,
                              bool trim_sustains)
 {
     constexpr auto COLOURS_SIZE = 7;
-    constexpr auto SUSTAIN_TRIM_SIZE = 0.25; // TODO: Pass this from engine
     const auto& tempo_map = track.global_data().tempo_map();
     const auto beat = tempo_map.to_beats(note.position);
 
@@ -83,7 +82,7 @@ DrawnNote note_to_drawn_note(const SightRead::Note& note,
             lengths.at(i) = -1;
         } else if (trim_sustains) {
             const auto sustain_gap = tempo_map.to_seconds(
-                tempo_map.to_beats(SightRead::Fretbar {SUSTAIN_TRIM_SIZE}));
+                tempo_map.to_beats(SightRead::Fretbar {0.25}));
             auto sust_end_pos
                 = tempo_map.to_seconds(note.position + note.lengths.at(i));
             sust_end_pos -= sustain_gap;
