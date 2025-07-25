@@ -91,7 +91,8 @@ public:
     ImageBuilder(const SightRead::NoteTrack& track,
                  SightRead::Difficulty difficulty,
                  const SightRead::DrumSettings& drum_settings,
-                 bool is_lefty_flip, bool is_overlap_engine);
+                 bool is_lefty_flip, bool is_overlap_engine,
+                 bool trim_sustains);
     void add_bpms(const SightRead::TempoMap& tempo_map);
     void add_bre(const SightRead::BigRockEnding& bre,
                  const SightRead::TempoMap& tempo_map);

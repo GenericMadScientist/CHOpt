@@ -69,9 +69,11 @@ double get_denom(const SightRead::TempoMap& tempo_map, SightRead::Beat beat)
 }
 
 DrawnNote note_to_drawn_note(const SightRead::Note& note,
-                             const SightRead::NoteTrack& track)
+                             const SightRead::NoteTrack& track,
+                             bool trim_sustains)
 {
     constexpr auto COLOURS_SIZE = 7;
+    constexpr auto SUSTAIN_TRIM_SIZE = 0.25; // TODO: Pass this from engine
     const auto& tempo_map = track.global_data().tempo_map();
     const auto beat = tempo_map.to_beats(note.position);
 
@@ -79,6 +81,15 @@ DrawnNote note_to_drawn_note(const SightRead::Note& note,
     for (auto i = 0; i < COLOURS_SIZE; ++i) {
         if (note.lengths.at(i) == SightRead::Tick {-1}) {
             lengths.at(i) = -1;
+        } else if (trim_sustains) {
+            const auto sustain_gap = tempo_map.to_seconds(
+                tempo_map.to_beats(SightRead::Fretbar {SUSTAIN_TRIM_SIZE}));
+            auto sust_end_pos
+                = tempo_map.to_seconds(note.position + note.lengths.at(i));
+            sust_end_pos -= sustain_gap;
+            const auto beat_length = tempo_map.to_beats(sust_end_pos)
+                - tempo_map.to_beats(note.position);
+            lengths.at(i) = std::max(beat_length.value(), 0.0);
         } else {
             lengths.at(i) = tempo_map.to_beats(note.lengths.at(i)).value();
         }
@@ -107,7 +118,8 @@ bool is_in_disco_flips(const std::vector<SightRead::DiscoFlip>& disco_flips,
 }
 
 std::vector<DrawnNote> drawn_notes(const SightRead::NoteTrack& track,
-                                   const SightRead::DrumSettings& drum_settings)
+                                   const SightRead::DrumSettings& drum_settings,
+                                   bool trim_sustains)
 {
     std::vector<DrawnNote> notes;
 
@@ -115,7 +127,7 @@ std::vector<DrawnNote> drawn_notes(const SightRead::NoteTrack& track,
         if (note.is_skipped_kick(drum_settings)) {
             continue;
         }
-        auto drawn_note = note_to_drawn_note(note, track);
+        auto drawn_note = note_to_drawn_note(note, track, trim_sustains);
         if (!drum_settings.pro_drums) {
             drawn_note.note_flags = static_cast<SightRead::NoteFlags>(
                 drawn_note.note_flags & ~SightRead::FLAGS_CYMBAL);
@@ -235,9 +247,13 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
 ImageBuilder build_with_engine_params(const SightRead::NoteTrack& track,
                                       const Settings& settings)
 {
-    return {track, settings.difficulty, settings.pathing_settings.drum_settings,
+    return {track,
+            settings.difficulty,
+            settings.pathing_settings.drum_settings,
             settings.is_lefty_flip,
-            settings.pathing_settings.engine->overlaps()};
+            settings.pathing_settings.engine->overlaps(),
+            settings.pathing_settings.engine->sustain_ticks_metric()
+                == SustainTicksMetric::Fretbar};
 }
 
 std::vector<std::tuple<double, double>>
@@ -363,12 +379,13 @@ ImageBuilder::sp_phrase_bounds(const SightRead::StarPower& phrase,
 ImageBuilder::ImageBuilder(const SightRead::NoteTrack& track,
                            SightRead::Difficulty difficulty,
                            const SightRead::DrumSettings& drum_settings,
-                           bool is_lefty_flip, bool is_overlap_engine)
+                           bool is_lefty_flip, bool is_overlap_engine,
+                           bool trim_sustains)
     : m_track_type {track.track_type()}
     , m_difficulty {difficulty}
     , m_is_lefty_flip {is_lefty_flip}
     , m_rows {drawn_rows(track)}
-    , m_notes {drawn_notes(track, drum_settings)}
+    , m_notes {drawn_notes(track, drum_settings, trim_sustains)}
     , m_overlap_engine {is_overlap_engine}
 {
     form_beat_lines(track.global_data().tempo_map());
