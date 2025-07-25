@@ -47,26 +47,29 @@ double song_tick_gap(int resolution, const Engine& engine)
 }
 
 template <typename OutputIt>
-void append_sustain_point(OutputIt points, SightRead::Beat beat,
-                          SpMeasure measure, int value)
+void append_sustain_point(OutputIt points, SpPosition position, int value,
+                          std::optional<SpPosition> start = std::nullopt,
+                          std::optional<SpPosition> end = std::nullopt,
+                          std::optional<SpPosition> max_start = std::nullopt)
 {
-    *points++ = {{beat, measure},
-                 {beat, measure},
-                 {beat, measure},
-                 {beat, measure},
-                 {},
-                 value,
-                 value,
-                 true,
-                 false,
-                 false};
+    if (!start.has_value()) {
+        start = position;
+    }
+    if (!end.has_value()) {
+        end = position;
+    }
+    if (!max_start.has_value()) {
+        max_start = position;
+    }
+    *points++ = {position, *start, *end, *max_start, {},
+                 value,    value,  true, false,      false};
 }
 
 template <typename OutputIt>
 void append_sustain_points(OutputIt points, SightRead::Tick position,
                            SightRead::Tick sust_length, int resolution,
                            int chord_size, const SpTimeMap& time_map,
-                           const Engine& engine)
+                           const Engine& engine, Point note_point)
 {
     constexpr double HALF_RES_OFFSET = 0.5;
     const double float_res = resolution;
@@ -99,18 +102,24 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
                                         / float_res};
             const auto meas = time_map.to_sp_measures(beat);
             --sust_ticks;
-            append_sustain_point(points, beat, meas, 1);
+            append_sustain_point(points, {beat, meas}, 1);
         }
         if (sust_ticks > 0) {
             const SightRead::Beat beat {(float_pos + HALF_RES_OFFSET)
                                         / float_res};
             const auto meas = time_map.to_sp_measures(beat);
-            append_sustain_point(points, beat, meas, sust_ticks);
+            append_sustain_point(points, {beat, meas}, sust_ticks);
         }
         break;
     }
     case SustainTicksMetric::Fretbar: {
         const auto sust_start = time_map.to_fretbars(position);
+        const auto sust_early_start
+            = time_map.to_fretbars(note_point.hit_window_start.beat);
+        const auto sust_late_start
+            = time_map.to_fretbars(note_point.hit_window_end.beat);
+        const auto sust_max_early_start
+            = time_map.to_fretbars(note_point.max_sqz_hit_window_start.beat);
         const auto sust_end = time_map.to_fretbars(position + sust_length);
         auto float_sust_ticks
             = (sust_end - sust_start).value() * engine.sust_points_per_beat();
@@ -129,13 +138,32 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
         const SightRead::Fretbar fretbar_tick_gap {
             1.0 / engine.sust_points_per_beat()};
 
-        auto tick_position = sust_start;
         for (auto i = 0; i < sust_ticks; ++i) {
-            tick_position += fretbar_tick_gap;
-            tick_position = std::min(tick_position, burst_position);
+            const auto tick_position
+                = std::min(sust_start + fretbar_tick_gap * i, burst_position);
+            const auto tick_hit_window_start
+                = std::clamp(sust_early_start + fretbar_tick_gap * i,
+                             sust_start, burst_position);
+            const auto tick_hit_window_end
+                = std::min(sust_late_start + fretbar_tick_gap * i,
+                           burst_position + sust_late_start - sust_start);
+            const auto tick_max_sqz_hit_window_start
+                = std::clamp(sust_max_early_start + fretbar_tick_gap * i,
+                             sust_start, burst_position);
             const auto beat = time_map.to_beats(tick_position);
             const auto meas = time_map.to_sp_measures(beat);
-            append_sustain_point(points, beat, meas, 1);
+            const auto start_beat = time_map.to_beats(tick_hit_window_start);
+            const auto start_meas = time_map.to_sp_measures(start_beat);
+            const auto end_beat = time_map.to_beats(tick_hit_window_end);
+            const auto end_meas = time_map.to_sp_measures(end_beat);
+            const auto full_early_beat
+                = time_map.to_beats(tick_max_sqz_hit_window_start);
+            const auto full_early_meas
+                = time_map.to_sp_measures(full_early_beat);
+            append_sustain_point(points, {beat, meas}, 1,
+                                 SpPosition {start_beat, start_meas},
+                                 SpPosition {end_beat, end_meas},
+                                 SpPosition {full_early_beat, full_early_meas});
         }
         break;
     }
@@ -153,7 +181,7 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
             meas += SpMeasure {tick_gap};
             const auto beat = time_map.to_beats(meas);
             float_pos = beat.value() * float_res;
-            append_sustain_point(points, beat, meas, 1);
+            append_sustain_point(points, {beat, meas}, 1);
         }
 
         break;
@@ -230,16 +258,17 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
     const auto early_max_sqz_meas = time_map.to_sp_measures(early_max_sqz_beat);
     const auto late_beat = time_map.to_beats(note_seconds + late_window);
     const auto late_meas = time_map.to_sp_measures(late_beat);
-    *points++ = {{beat, meas},
-                 {early_beat, early_meas},
-                 {late_beat, late_meas},
-                 {early_max_sqz_beat, early_max_sqz_meas},
-                 {},
-                 note_value * chord_size,
-                 note_value * chord_size,
-                 false,
-                 is_note_sp_ender,
-                 is_unison_sp_ender};
+    const Point note_point {{beat, meas},
+                            {early_beat, early_meas},
+                            {late_beat, late_meas},
+                            {early_max_sqz_beat, early_max_sqz_meas},
+                            {},
+                            note_value * chord_size,
+                            note_value * chord_size,
+                            false,
+                            is_note_sp_ender,
+                            is_unison_sp_ender};
+    *points++ = note_point;
 
     SightRead::Tick min_length {std::numeric_limits<int>::max()};
     SightRead::Tick max_length {0};
@@ -254,13 +283,13 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
     if (min_length == max_length
         || pathing_settings.engine->merge_uneven_sustains()) {
         append_sustain_points(points, pos, min_length, resolution, chord_size,
-                              time_map, *pathing_settings.engine);
+                              time_map, *pathing_settings.engine, note_point);
     } else {
         for (auto length : note->lengths) {
             if (length != SightRead::Tick {-1}) {
                 append_sustain_points(points, pos, length, resolution,
                                       chord_size, time_map,
-                                      *pathing_settings.engine);
+                                      *pathing_settings.engine, note_point);
             }
         }
     }
