@@ -1291,6 +1291,34 @@ BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
     BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin), begin + 1);
 }
 
+// This is a regression test for a specific failure on GH3 Rock and Roll All
+// Nite.
+//
+// The problem is that first_after_current_phrase would not register the first
+// note of the third SP phrase as being part of the SP phrase, causing CHOpt
+// to suggest ending the first activation on that note.
+//
+// This bug was caused by a rounding error putting the beat value for the note
+// a very tiny amount before the true position. The rounding error is caused by
+// the conversion from beat to second to beat needed for video lag calculations.
+// This test case is a simplified chart that triggers the bug before the fix.
+BOOST_AUTO_TEST_CASE(is_not_broken_by_floating_point_imprecision)
+{
+    std::vector<SightRead::Note> notes {make_note(192), make_note(384),
+                                        make_note(576)};
+    std::vector<SightRead::StarPower> phrases {
+        {SightRead::Tick {192}, SightRead::Tick {200}}};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_unique<SightRead::SongGlobalData>()};
+    SightRead::TempoMap tempo_map {
+        {}, {{SightRead::Tick {0}, 119999}}, {}, 192};
+    SpDurationData duration_data {{tempo_map, SpMode::Measure}, {}, {}};
+    PointSet points {track, duration_data, default_gh1_pathing_settings()};
+    const auto begin = points.cbegin();
+
+    BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin), begin + 2);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(fortnite_notes_have_individual_split_points)

@@ -551,6 +551,11 @@ first_after_current_sp_vector(const std::vector<Point>& points,
                               const SightRead::NoteTrack& track,
                               const Engine& engine)
 {
+    // Needed because point positions can be very slightly off due to the
+    // beats -> seconds -> beats conversions for applying video lag, causing
+    // false negatives when checking if a note is part of an SP phrase.
+    const SightRead::Beat SP_PHRASE_EPSILON {1e-9};
+
     std::vector<PointPtr> results;
     const auto& tempo_map = track.global_data().tempo_map();
     auto current_sp = track.sp_phrases().cbegin();
@@ -563,7 +568,8 @@ first_after_current_sp_vector(const std::vector<Point>& points,
         SightRead::Beat sp_start {std::numeric_limits<double>::infinity()};
         SightRead::Beat sp_end {std::numeric_limits<double>::infinity()};
         if (current_sp != track.sp_phrases().cend()) {
-            sp_start = tempo_map.to_beats(current_sp->position);
+            sp_start
+                = tempo_map.to_beats(current_sp->position) - SP_PHRASE_EPSILON;
             sp_end
                 = tempo_map.to_beats(current_sp->position + current_sp->length);
         }
