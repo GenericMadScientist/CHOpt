@@ -511,7 +511,7 @@ std::string ProcessedSong::path_summary(const Path& path) const
 {
     constexpr double AVG_MULT_PRECISION = 1000.0;
 
-    // We use std::stringstream instead of std::string for better formating of
+    // We use std::stringstream instead of std::string for better formatting of
     // floats (average multiplier and mid-sustain activation positions).
     std::stringstream stream;
     stream << "Path: ";
