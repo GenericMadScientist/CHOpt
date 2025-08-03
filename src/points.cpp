@@ -65,6 +65,18 @@ void append_sustain_point(OutputIt points, SpPosition position, int value,
                  value,    value,  true, false,      false};
 }
 
+SightRead::Fretbar snap_to_ms(SightRead::Fretbar position,
+                              const SpTimeMap& time_map)
+{
+    constexpr auto MS_PER_SECOND = 1000.0;
+
+    auto time_seconds = time_map.to_seconds(position);
+    auto ms_count = time_seconds.value() * MS_PER_SECOND;
+    ms_count = std::round(ms_count);
+    time_seconds = SightRead::Second {ms_count / MS_PER_SECOND};
+    return time_map.to_fretbars(time_seconds);
+}
+
 template <typename OutputIt>
 void append_sustain_points(OutputIt points, SightRead::Tick position,
                            SightRead::Tick sust_length, int resolution,
@@ -113,14 +125,16 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
         break;
     }
     case SustainTicksMetric::Fretbar: {
-        const auto sust_start = time_map.to_fretbars(position);
+        const auto sust_start
+            = snap_to_ms(time_map.to_fretbars(position), time_map);
         const auto sust_early_start
             = time_map.to_fretbars(note_point.hit_window_start.beat);
         const auto sust_late_start
             = time_map.to_fretbars(note_point.hit_window_end.beat);
         const auto sust_max_early_start
             = time_map.to_fretbars(note_point.max_sqz_hit_window_start.beat);
-        const auto sust_end = time_map.to_fretbars(position + sust_length);
+        const auto sust_end = snap_to_ms(
+            time_map.to_fretbars(position + sust_length), time_map);
         auto float_sust_ticks
             = (sust_end - sust_start).value() * engine.sust_points_per_beat();
         switch (engine.sustain_rounding()) {
