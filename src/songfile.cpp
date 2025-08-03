@@ -147,7 +147,8 @@ SightRead::Song SongFile::load_song(Game game) const
         if (!m_console.has_value()) {
             throw std::runtime_error("No console with .mid.qb");
         }
-        SightRead::QbMidiParser parser {m_file_song_name, *m_console};
+        SightRead::QbMidiParser parser {m_metadata, m_file_song_name,
+                                        *m_console};
         return parser.parse(qb_midi_buffer);
     }
     }
