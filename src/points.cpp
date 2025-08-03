@@ -490,17 +490,6 @@ std::vector<Point> unmultiplied_points(const SightRead::NoteTrack& track,
     return points;
 }
 
-std::vector<Point> non_drum_points(const SightRead::NoteTrack& track,
-                                   const SpDurationData& duration_data,
-                                   const PathingSettings& pathing_settings)
-{
-    auto points = unmultiplied_points(track, duration_data, pathing_settings);
-    apply_multiplier(points, *pathing_settings.engine);
-    shift_points_by_video_lag(points, duration_data.time_map,
-                              pathing_settings.video_lag);
-    return points;
-}
-
 std::string colours_string(const SightRead::Note& note)
 {
     std::string colours;
@@ -609,11 +598,10 @@ std::vector<Point> points_from_track(const SightRead::NoteTrack& track,
                                      const SpDurationData& duration_data,
                                      const PathingSettings& pathing_settings)
 {
-    if (track.track_type() != SightRead::TrackType::Drums) {
-        return non_drum_points(track, duration_data, pathing_settings);
-    }
     auto points = unmultiplied_points(track, duration_data, pathing_settings);
-    add_drum_activation_points(track, points);
+    if (track.track_type() == SightRead::TrackType::Drums) {
+        add_drum_activation_points(track, points);
+    }
     apply_multiplier(points, *pathing_settings.engine);
     shift_points_by_video_lag(points, duration_data.time_map,
                               pathing_settings.video_lag);
