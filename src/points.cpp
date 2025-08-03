@@ -65,16 +65,51 @@ void append_sustain_point(OutputIt points, SpPosition position, int value,
                  value,    value,  true, false,      false};
 }
 
-SightRead::Fretbar snap_to_ms(SightRead::Fretbar position,
-                              const SpTimeMap& time_map)
+int ms_at_fretbar(SightRead::Fretbar position, const SpTimeMap& time_map)
 {
     constexpr auto MS_PER_SECOND = 1000.0;
 
     auto time_seconds = time_map.to_seconds(position);
     auto ms_count = time_seconds.value() * MS_PER_SECOND;
-    ms_count = std::round(ms_count);
-    time_seconds = SightRead::Second {ms_count / MS_PER_SECOND};
-    return time_map.to_fretbars(time_seconds);
+    return static_cast<int>(std::round(ms_count));
+}
+
+int ms_at_fretbar(int fretbar, const SpTimeMap& time_map)
+{
+    return ms_at_fretbar(SightRead::Fretbar {static_cast<double>(fretbar)},
+                         time_map);
+}
+
+int gh3_sust_ticks(SightRead::Fretbar sust_start, SightRead::Fretbar sust_end,
+                   const SpTimeMap& time_map, const Engine& engine)
+{
+    const auto sust_start_ms = ms_at_fretbar(sust_start, time_map);
+    const auto sust_end_ms = ms_at_fretbar(sust_end, time_map);
+
+    auto fretbar = static_cast<int>(std::floor(sust_start.value()));
+    while (ms_at_fretbar(fretbar, time_map) > sust_start_ms) {
+        --fretbar;
+    }
+    while (ms_at_fretbar(fretbar + 1, time_map) < sust_start_ms) {
+        ++fretbar;
+    }
+
+    double ticks = 0.0;
+    auto fretbar_ms = ms_at_fretbar(fretbar, time_map);
+    while (fretbar_ms < sust_end_ms) {
+        const auto beat_start = fretbar_ms;
+        const auto beat_end = ms_at_fretbar(fretbar + 1, time_map);
+        const auto range_start = std::max(beat_start, sust_start_ms);
+        const auto range_end = std::min(beat_end, sust_end_ms);
+        const auto range_size = range_end - range_start;
+        const auto beat_size = beat_end - beat_start;
+        ticks += (range_size * engine.sust_points_per_beat())
+            / static_cast<double>(beat_size);
+        ++fretbar;
+        fretbar_ms = beat_end;
+    }
+
+    return static_cast<int>(std::round(ticks));
 }
 
 template <typename OutputIt>
@@ -125,27 +160,16 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
         break;
     }
     case SustainTicksMetric::Fretbar: {
-        const auto sust_start
-            = snap_to_ms(time_map.to_fretbars(position), time_map);
+        const auto sust_start = time_map.to_fretbars(position);
         const auto sust_early_start
             = time_map.to_fretbars(note_point.hit_window_start.beat);
         const auto sust_late_start
             = time_map.to_fretbars(note_point.hit_window_end.beat);
         const auto sust_max_early_start
             = time_map.to_fretbars(note_point.max_sqz_hit_window_start.beat);
-        const auto sust_end = snap_to_ms(
-            time_map.to_fretbars(position + sust_length), time_map);
-        auto float_sust_ticks
-            = (sust_end - sust_start).value() * engine.sust_points_per_beat();
-        switch (engine.sustain_rounding()) {
-        case SustainRoundingPolicy::RoundUp:
-            float_sust_ticks = std::ceil(float_sust_ticks);
-            break;
-        case SustainRoundingPolicy::RoundToNearest:
-            float_sust_ticks = std::round(float_sust_ticks);
-            break;
-        }
-        const auto sust_ticks = static_cast<int>(float_sust_ticks);
+        const auto sust_end = time_map.to_fretbars(position + sust_length);
+        const auto sust_ticks
+            = gh3_sust_ticks(sust_start, sust_end, time_map, engine);
         const auto burst_size = time_map.to_seconds(SightRead::Fretbar {0.25});
         const auto burst_position
             = time_map.to_fretbars(time_map.to_seconds(sust_end) - burst_size);
