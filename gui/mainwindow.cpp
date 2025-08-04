@@ -329,6 +329,7 @@ void MainWindow::load_file(const QString& file_name)
 {
     if (!file_name.endsWith(".chart") && !file_name.endsWith(".mid")
         && !file_name.endsWith(".mid.qb.xen")
+        && !file_name.endsWith(".mid.qb.PS3")
         && !file_name.endsWith("mid.qb.ps2")
         && !file_name.endsWith(".mid.qb.ngc")) {
         write_message("File must be .chart, .mid or .mid.qb.*");

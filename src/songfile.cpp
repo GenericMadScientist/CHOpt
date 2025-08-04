@@ -91,6 +91,9 @@ SongFile::SongFile(const std::string& filename)
     } else if (filename.ends_with(".mid.qb.xen")) {
         m_file_type = FileType::QbMidi;
         m_console = SightRead::Console::PC;
+    } else if (filename.ends_with(".mid.qb.PS3")) {
+        m_file_type = FileType::QbMidi;
+        m_console = SightRead::Console::PS3;
     } else if (filename.ends_with(".mid.qb.ps2")) {
         m_file_type = FileType::QbMidi;
         m_console = SightRead::Console::PS2;
