@@ -188,11 +188,16 @@ jobs:
       - name: Prepare CLI release
         working-directory: build
         run: |
-          mkdir cli-artifacts
+          mkdir -p cli-artifacts/libs
           strip -s chopt
           mv chopt cli-artifacts/CHOpt
-          cp ${QT_ROOT_DIR}/lib/libQt6Core.so.6 cli-artifacts/libQt6Core.so.6
-          cp ${QT_ROOT_DIR}/lib/libQt6Gui.so.6 cli-artifacts/libQt6Gui.so.6
+          cp ../resources/CHOpt.sh cli-artifacts/CHOpt.sh
+          cp ${QT_ROOT_DIR}/lib/libicudata.so.56 cli-artifacts/libs/libicudata.so.56
+          cp ${QT_ROOT_DIR}/lib/libicui18n.so.56 cli-artifacts/libs/libicui18n.so.56
+          cp ${QT_ROOT_DIR}/lib/libicuuc.so.56 cli-artifacts/libs/libicuuc.so.56
+          cp ${QT_ROOT_DIR}/lib/libQt6Core.so.6 cli-artifacts/libs/libQt6Core.so.6
+          cp ${QT_ROOT_DIR}/lib/libQt6DBus.so.6 cli-artifacts/libs/libQt6DBus.so.6
+          cp ${QT_ROOT_DIR}/lib/libQt6Gui.so.6 cli-artifacts/libs/libQt6Gui.so.6
 
       - name: Prepare GUI release
         working-directory: build
