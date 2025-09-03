@@ -79,6 +79,9 @@ target_include_directories(
 target_link_libraries(chopt PRIVATE ${PNG_LIBRARIES} Boost::locale Qt6::Core Qt6::Gui sightread)
 
 set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
+if(APPLE)
+  set_property(TARGET chopt PROPERTY MACOSX_BUNDLE TRUE)
+endif()
 set_cpp_standard(chopt)
 set_warnings(chopt)
 enable_sanitisers(chopt)

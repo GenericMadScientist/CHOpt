@@ -94,7 +94,8 @@ machines.
 * Various users for feedback and testing, including 3-UP, AddyMills, ArchWK,
 Bromik, CyclopsDragon, DNelson, GHNerd, GiometriQ, Haggis, Jdsmitty1, Joel,
 Jpetersen5, Jrh, JUANPGP, Kyleruth, LightlessWalk, Littlejth, Lucretio,
-NicoBrenChan, RandomDays, RileyTheFox, Taka, Tposejank, Venxm and Zantor.
+NicoBrenChan, RandomDays, RileyTheFox, SanicStudios, Taka, Tposejank, Venxm and
+Zantor.
 
 ## Contact
 

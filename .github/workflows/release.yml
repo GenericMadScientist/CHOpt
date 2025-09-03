@@ -84,7 +84,7 @@ jobs:
           path: build/gui-artifacts/**/*
 
   macos:
-    runs-on: macos-14
+    runs-on: macos-13
     needs: determine-version
     steps:
       - name: Checkout
@@ -117,14 +117,11 @@ jobs:
         working-directory: build
         run: |
           mkdir cli-artifacts
-          strip -x chopt
-          install_name_tool -change /opt/homebrew/opt/libpng/lib/libpng16.16.dylib @executable_path/libpng.dylib chopt
-          install_name_tool -change @rpath/QtCore.framework/Versions/A/QtCore @executable_path/QtCore chopt
-          install_name_tool -change @rpath/QtGui.framework/Versions/A/QtGui @executable_path/QtGui chopt
-          mv chopt cli-artifacts/CHOpt
-          cp /opt/homebrew/lib/libpng.dylib cli-artifacts/libpng.dylib
-          cp ${QT_ROOT_DIR}/lib/QtCore.framework/Versions/A/QtCore cli-artifacts/QtCore
-          cp ${QT_ROOT_DIR}/lib/QtGui.framework/Versions/A/QtGui cli-artifacts/QtGui
+          mv chopt.app CHOpt.app
+          mv CHOpt.app/Contents/MacOS/chopt CHOpt.app/Contents/MacOS/CHOpt
+          sed -i "" "s/chopt/CHOpt/g" CHOpt.app/Contents/Info.plist
+          macdeployqt CHOpt.app
+          mv CHOpt.app cli-artifacts/CHOpt.app
 
       - name: Prepare GUI release
         working-directory: build

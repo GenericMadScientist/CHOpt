@@ -24,12 +24,24 @@
 #include <QFileDialog>
 #include <QMimeData>
 #include <QUrl>
+#include <QtSystemDetection>
 
 #include "image.hpp"
 #include "json_settings.hpp"
 #include "mainwindow.hpp"
 #include "optimiser.hpp"
 #include "ui_mainwindow.h"
+
+namespace {
+QFileDialog::Option file_dialog_options()
+{
+#ifdef Q_OS_MACOS
+    return QFileDialog::Option::DontUseNativeDialog;
+#else
+    return QFileDialog::Option {};
+#endif
+}
+}
 
 class ParserThread : public QThread {
     Q_OBJECT
@@ -315,7 +327,8 @@ Settings MainWindow::get_settings() const
 void MainWindow::on_selectFileButton_clicked()
 {
     const auto file_name = QFileDialog::getOpenFileName(
-        this, "Open song", "../", "Song charts (*.chart *.mid *.mid.qb.*)");
+        this, "Open song", "../", "Song charts (*.chart *.mid *.mid.qb.*)",
+        nullptr, file_dialog_options());
     if (file_name.isEmpty()) {
         return;
     }
@@ -382,8 +395,9 @@ void MainWindow::on_findPathButton_clicked()
         return;
     }
 
-    const auto file_name = QFileDialog::getSaveFileName(this, "Save image", ".",
-                                                        "Images (*.png *.bmp)");
+    const auto file_name = QFileDialog::getSaveFileName(
+        this, "Save image", ".", "Images (*.png *.bmp)", nullptr,
+        file_dialog_options());
     if (file_name.isEmpty()) {
         return;
     }
