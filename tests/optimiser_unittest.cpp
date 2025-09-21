@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_activations_ending_late_matter)
     const auto opt_path = optimiser.optimal_path();
 
     BOOST_CHECK_EQUAL(opt_path.score_boost, 750);
-    BOOST_CHECK_EQUAL(opt_path.activations.size(), 1);
+    BOOST_CHECK_EQUAL(opt_path.activations.size(), 1U);
 }
 
 // There was a bug where sustains at the start of an SP phrase right after an
@@ -261,7 +261,7 @@ BOOST_AUTO_TEST_CASE(early_whammy_at_start_of_an_sp_phrase_is_always_counted)
     const auto opt_path = optimiser.optimal_path();
 
     BOOST_CHECK_EQUAL(opt_path.score_boost, 50);
-    BOOST_CHECK_EQUAL(opt_path.activations.size(), 1);
+    BOOST_CHECK_EQUAL(opt_path.activations.size(), 1U);
 }
 
 // There was a bug where an activation on a note right after an SP sustain could
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(songs_ending_in_es1_are_pathed_correctly)
     const auto opt_path = optimiser.optimal_path();
 
     BOOST_CHECK_EQUAL(opt_path.score_boost, 150);
-    BOOST_CHECK_EQUAL(opt_path.activations.size(), 1);
+    BOOST_CHECK_EQUAL(opt_path.activations.size(), 1U);
 }
 
 BOOST_AUTO_TEST_CASE(compressed_whammy_is_specified_correctly)
@@ -360,7 +360,7 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_is_specified_correctly)
     const auto& act = opt_path.activations[0];
 
     BOOST_CHECK_EQUAL(opt_path.score_boost, 300);
-    BOOST_CHECK_EQUAL(opt_path.activations.size(), 2);
+    BOOST_CHECK_EQUAL(opt_path.activations.size(), 2U);
     BOOST_CHECK_GT(act.whammy_end.value(), 1.06);
     BOOST_CHECK_LT(act.whammy_end.value(), 1.74);
     BOOST_CHECK_LT(act.sp_start.value(), 3.6);
@@ -532,7 +532,7 @@ BOOST_AUTO_TEST_CASE(whammy_delay_is_handled_correctly)
 
     const auto opt_path = optimiser.optimal_path();
 
-    BOOST_CHECK_EQUAL(opt_path.activations.size(), 2);
+    BOOST_CHECK_EQUAL(opt_path.activations.size(), 2U);
     BOOST_CHECK_EQUAL(opt_path.score_boost, 550);
 }
 
@@ -560,7 +560,7 @@ BOOST_AUTO_TEST_CASE(drum_paths_can_only_activate_on_activation_notes)
 
     const auto opt_path = optimiser.optimal_path();
 
-    BOOST_CHECK_EQUAL(opt_path.activations.size(), 1);
+    BOOST_CHECK_EQUAL(opt_path.activations.size(), 1U);
     BOOST_CHECK_EQUAL(opt_path.score_boost, 50);
 }
 
@@ -590,7 +590,7 @@ BOOST_AUTO_TEST_CASE(
 
     const auto opt_path = optimiser.optimal_path();
 
-    BOOST_CHECK_EQUAL(opt_path.activations.size(), 1);
+    BOOST_CHECK_EQUAL(opt_path.activations.size(), 1U);
     BOOST_CHECK_EQUAL(opt_path.score_boost, 150);
 }
 
@@ -618,7 +618,7 @@ BOOST_AUTO_TEST_CASE(drum_reverse_squeezes_are_drawn_properly)
 
     const auto opt_path = optimiser.optimal_path();
 
-    BOOST_CHECK_EQUAL(opt_path.activations.size(), 2);
+    BOOST_CHECK_EQUAL(opt_path.activations.size(), 2U);
     BOOST_CHECK_GT(opt_path.activations[0].sp_start.value(), 99.8);
 }
 
