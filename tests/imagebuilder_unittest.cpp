@@ -577,7 +577,7 @@ BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
                           false};
     builder.add_time_sigs(tempo_map);
 
-    BOOST_CHECK_EQUAL(builder.time_sigs().size(), 1);
+    BOOST_CHECK_EQUAL(builder.time_sigs().size(), 1U);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -632,7 +632,7 @@ BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
                           false};
     builder.add_bpms(tempo_map);
 
-    BOOST_CHECK_EQUAL(builder.bpms().size(), 1);
+    BOOST_CHECK_EQUAL(builder.bpms().size(), 1U);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -817,7 +817,7 @@ BOOST_AUTO_TEST_CASE(drum_fills_cannot_be_cancelled_by_a_kick)
                           false};
     builder.add_drum_fills(track);
 
-    BOOST_CHECK_EQUAL(builder.fill_ranges().size(), 1);
+    BOOST_CHECK_EQUAL(builder.fill_ranges().size(), 1U);
 }
 
 BOOST_AUTO_TEST_CASE(double_kicks_only_drawn_with_enable_double_kick)
@@ -841,8 +841,8 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_drawn_with_enable_double_kick)
                                  true,
                                  false};
 
-    BOOST_CHECK_EQUAL(no_double_builder.notes().size(), 1);
-    BOOST_CHECK_EQUAL(double_builder.notes().size(), 2);
+    BOOST_CHECK_EQUAL(no_double_builder.notes().size(), 1U);
+    BOOST_CHECK_EQUAL(double_builder.notes().size(), 2U);
 }
 
 BOOST_AUTO_TEST_CASE(single_kicks_disappear_with_disable_kick)
@@ -860,7 +860,7 @@ BOOST_AUTO_TEST_CASE(single_kicks_disappear_with_disable_kick)
                           true,
                           false};
 
-    BOOST_CHECK_EQUAL(builder.notes().size(), 1);
+    BOOST_CHECK_EQUAL(builder.notes().size(), 1U);
 }
 
 BOOST_AUTO_TEST_CASE(cymbals_become_toms_with_pro_drums_off)
@@ -877,7 +877,7 @@ BOOST_AUTO_TEST_CASE(cymbals_become_toms_with_pro_drums_off)
                           true,
                           false};
 
-    BOOST_CHECK_EQUAL(builder.notes().size(), 1);
+    BOOST_CHECK_EQUAL(builder.notes().size(), 1U);
     BOOST_CHECK_EQUAL(builder.notes().front().note_flags,
                       SightRead::FLAGS_DRUMS);
 }
@@ -904,10 +904,10 @@ BOOST_AUTO_TEST_CASE(disco_flip_matters_only_with_pro_drums_on)
                               true,
                               false};
 
-    BOOST_CHECK_EQUAL(normal_builder.notes().size(), 2);
+    BOOST_CHECK_EQUAL(normal_builder.notes().size(), 2U);
     BOOST_CHECK_EQUAL(normal_builder.notes().front().note_flags,
                       SightRead::FLAGS_DRUMS);
-    BOOST_CHECK_EQUAL(pro_builder.notes().size(), 2);
+    BOOST_CHECK_EQUAL(pro_builder.notes().size(), 2U);
     BOOST_CHECK_EQUAL(pro_builder.notes()[0].lengths[SightRead::DRUM_RED], 0);
     BOOST_CHECK_EQUAL(pro_builder.notes()[1].lengths[SightRead::DRUM_YELLOW],
                       0);
