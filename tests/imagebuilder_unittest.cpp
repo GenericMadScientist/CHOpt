@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE(enough_rows_are_drawn_for_end_of_song_sustains)
                           true,
                           false};
 
-    BOOST_CHECK_EQUAL(builder.rows().size(), 2);
+    BOOST_CHECK_EQUAL(builder.rows().size(), 2U);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
