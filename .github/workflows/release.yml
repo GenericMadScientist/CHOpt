@@ -72,13 +72,13 @@ jobs:
           Copy-Item -Path * -Destination ..\gui-artifacts -Recurse
 
       - name: Upload CLI release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: "CHOpt CLI ${{ needs.determine-version.outputs.version }} (x64 Windows)"
           path: build/cli-artifacts/**/*
 
       - name: Upload GUI release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: "CHOpt ${{ needs.determine-version.outputs.version }} (x64 Windows)"
           path: build/gui-artifacts/**/*
@@ -134,13 +134,13 @@ jobs:
           mv CHOpt.app gui-artifacts/CHOpt.app
 
       - name: Upload CLI release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: "CHOpt CLI ${{ needs.determine-version.outputs.version }} (x64 Mac)"
           path: build/cli-artifacts/**/*
 
       - name: Upload GUI release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: "CHOpt ${{ needs.determine-version.outputs.version }} (x64 Mac)"
           path: build/gui-artifacts/**/*
@@ -216,13 +216,13 @@ jobs:
           cp ${QT_PLUGIN_PATH}/platforms/libqxcb.so gui-artifacts/platforms/libqxcb.so
 
       - name: Upload CLI release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: "CHOpt CLI ${{ needs.determine-version.outputs.version }} (x64 Linux)"
           path: build/cli-artifacts/**/*
   
       - name: Upload GUI release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: "CHOpt ${{ needs.determine-version.outputs.version }} (x64 Linux)"
           path: build/gui-artifacts/**/*
