@@ -167,7 +167,7 @@ public:
     {
         (void)early_gap;
         (void)late_gap;
-        return 0.1;
+        return 0.125;
     }
     bool has_bres() const override { return false; }
     bool has_early_whammy() const override { return false; }
@@ -178,7 +178,7 @@ public:
     {
         (void)early_gap;
         (void)late_gap;
-        return 0.1;
+        return 0.125;
     }
     bool merge_uneven_sustains() const override { return true; }
     bool overlaps() const override { return true; }
