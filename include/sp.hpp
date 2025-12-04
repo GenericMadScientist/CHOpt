@@ -154,6 +154,8 @@ public:
     [[nodiscard]] SpPosition activation_end_point(SpPosition start,
                                                   SpPosition end,
                                                   double sp_bar_amount) const;
+    // Return the first time after a certain point with whammy.
+    [[nodiscard]] SightRead::Beat next_whammy_point(SightRead::Beat pos) const;
 };
 
 #endif
