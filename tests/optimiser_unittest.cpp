@@ -536,6 +536,35 @@ BOOST_AUTO_TEST_CASE(whammy_delay_is_handled_correctly)
     BOOST_CHECK_EQUAL(opt_path.score_boost, 550);
 }
 
+// This can come into play when you end an act on a note that is the start of an
+// SP sustain, and then want to immediately run out of SP. There was a bug where
+// the act end would be just before the first tick. This is a problem because
+// then the SP calculation would be a bit short, meaning sometimes CHOpt looks
+// like it's claiming you should activate with under a half bar. For example,
+// That's The Spirit (Full Album Chart) on 50% squeeze/70% early whammy/20ms
+// whammy delay had this for the m1510 act.
+BOOST_AUTO_TEST_CASE(act_end_is_constrained_by_next_act_start)
+{
+    std::vector<SightRead::Note> notes {
+        make_note(0, 1440), make_note(1536),  make_note(4608, 1420),
+        make_note(6144),    make_note(19200), make_note(19201),
+        make_note(19202),   make_note(19203), make_note(19204),
+        make_note(19205),   make_note(19206)};
+    std::vector<SightRead::StarPower> phrases {
+        {SightRead::Tick {0}, SightRead::Tick {1}},
+        {SightRead::Tick {4608}, SightRead::Tick {1537}}};
+    SightRead::NoteTrack note_track {
+        notes, phrases, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    ProcessedSong track {note_track, default_measure_mode_data(),
+                         default_guitar_pathing_settings()};
+    Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
+
+    const auto opt_path = optimiser.optimal_path();
+
+    BOOST_CHECK_LT(opt_path.activations[0].sp_end.value(), 23.9);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(drum_paths)

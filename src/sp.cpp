@@ -443,3 +443,12 @@ SightRead::Beat SpData::whammy_propagation_endpoint(SightRead::Beat start,
 
     return end;
 }
+
+SightRead::Beat SpData::next_whammy_point(SightRead::Beat pos) const
+{
+    const auto p = first_whammy_range_after(pos);
+    if (p == m_whammy_ranges.cend()) {
+        return SightRead::Beat {std::numeric_limits<double>::infinity()};
+    }
+    return std::max(p->start.beat, pos);
+}

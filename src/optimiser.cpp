@@ -363,6 +363,12 @@ Path Optimiser::optimal_path() const
             best_proto_act, start_key, best_sqz_level, min_whammy_force);
         Activation act {best_proto_act.act_start, best_proto_act.act_end,
                         min_whammy_force.beat, start_pos, end_pos};
+        if (best_next_key.point != m_song->points().cend()) {
+            const auto post_act_first_whammy
+                = m_song->sp_data().next_whammy_point(
+                    best_next_key.position.beat);
+            act.sp_end = std::min(act.sp_end, post_act_first_whammy);
+        }
         path.activations.push_back(act);
         start_key = best_next_key;
     }
