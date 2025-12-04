@@ -79,7 +79,7 @@ SongFile::SongFile(const std::string& filename)
     const auto song_directory = song_path.parent_path();
     const auto ini_path = song_directory / "song.ini";
     QFile ini {QString::fromStdString(ini_path.string())};
-    if (ini.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if (ini.open(QIODevice::ReadOnly)) {
         ini_file = ini.readAll().toStdString();
     }
     m_metadata = parse_ini(ini_file);
