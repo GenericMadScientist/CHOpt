@@ -39,7 +39,7 @@ find_package(
   COMPONENTS Core
   OPTIONAL_COMPONENTS Gui Widgets)
 find_package(
-  Boost 1.77 REQUIRED
+  Boost 1.82 REQUIRED
   COMPONENTS locale
   OPTIONAL_COMPONENTS unit_test_framework)
 
