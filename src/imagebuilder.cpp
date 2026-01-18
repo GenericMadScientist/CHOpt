@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -392,15 +392,12 @@ ImageBuilder::ImageBuilder(const SightRead::NoteTrack& track,
 
 void ImageBuilder::add_bpms(const SightRead::TempoMap& tempo_map)
 {
-    constexpr double MS_PER_SECOND = 1000.0;
-
     m_bpms.clear();
 
     for (const auto& bpm : tempo_map.bpms()) {
         const auto pos = tempo_map.to_beats(bpm.position).value();
-        const auto tempo = static_cast<double>(bpm.bpm) / MS_PER_SECOND;
         if (pos < m_rows.back().end) {
-            m_bpms.emplace_back(pos, tempo);
+            m_bpms.emplace_back(pos, bpm.bpm());
         }
     }
 }
