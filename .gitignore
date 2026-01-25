@@ -1,3 +1,4 @@
+.cache/
 .vs/
 .vscode/
 build/
@@ -9,5 +10,6 @@ vcpkg_installed/
 CMakePresets.json
 CMakeSettings.json
 CMakeUserPresets.json
+compile_commands.json
 vcpkg.json
 vcpkg-configuration.json
