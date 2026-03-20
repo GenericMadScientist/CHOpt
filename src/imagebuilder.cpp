@@ -659,7 +659,7 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
 
 void ImageBuilder::add_sp_phrases(
     const SightRead::NoteTrack& track,
-    const std::vector<SightRead::Tick>& unison_phrases, const Path& path)
+    const std::vector<SightRead::StarPower>& unison_phrases, const Path& path)
 {
     for (const auto& phrase : track.sp_phrases()) {
         const auto range = sp_phrase_bounds(phrase, track, path);
@@ -667,8 +667,12 @@ void ImageBuilder::add_sp_phrases(
             continue;
         }
         m_green_ranges.push_back(range);
-        if (std::find(unison_phrases.cbegin(), unison_phrases.cend(),
-                      phrase.position)
+        if (std::find_if(unison_phrases.cbegin(), unison_phrases.cend(),
+                         [&](const auto& unison_phrase) {
+                             return std::tie(unison_phrase.position,
+                                             unison_phrase.length)
+                                 == std::tie(phrase.position, phrase.length);
+                         })
             != unison_phrases.cend()) {
             m_unison_ranges.push_back(range);
         }
@@ -763,12 +767,12 @@ ImageBuilder make_builder(SightRead::Song& song,
 
     const SpTimeMap time_map {tempo_map,
                               settings.pathing_settings.engine->sp_mode()};
-    const auto unison_positions
+    const auto unison_phrases
         = (settings.pathing_settings.engine->has_unison_bonuses())
-        ? song.unison_phrase_positions()
-        : std::vector<SightRead::Tick> {};
+        ? song.unison_phrases()
+        : std::vector<SightRead::StarPower> {};
     const SpDurationData duration_data {time_map, song.global_data().od_beats(),
-                                        unison_positions};
+                                        unison_phrases};
 
     const ProcessedSong processed_track {new_track, duration_data,
                                          settings.pathing_settings};
@@ -781,7 +785,7 @@ ImageBuilder make_builder(SightRead::Song& song,
         if (is_rb_drums) {
             write("Optimisation disabled for Rock Band drums, planned for a "
                   "future release");
-            builder.add_sp_phrases(new_track, unison_positions, path);
+            builder.add_sp_phrases(new_track, unison_phrases, path);
         } else {
             write("Optimising, please wait...");
             const Optimiser optimiser {&processed_track, terminate,
@@ -789,12 +793,12 @@ ImageBuilder make_builder(SightRead::Song& song,
                                        settings.pathing_settings.whammy_delay};
             path = optimiser.optimal_path();
             write(processed_track.path_summary(path).c_str());
-            builder.add_sp_phrases(new_track, unison_positions, path);
+            builder.add_sp_phrases(new_track, unison_phrases, path);
             builder.add_sp_acts(processed_track.points(), tempo_map, path);
             builder.activation_opacity() = settings.opacity;
         }
     } else {
-        builder.add_sp_phrases(new_track, unison_positions, path);
+        builder.add_sp_phrases(new_track, unison_phrases, path);
     }
 
     builder.add_measure_values(processed_track.points(), tempo_map, path);
@@ -807,11 +811,10 @@ ImageBuilder make_builder(SightRead::Song& song,
             settings.pathing_settings.engine->sp_engine_values());
     }
     builder.set_total_score(processed_track.points(), solos, path);
-    if (settings.pathing_settings.engine->has_bres()
-        && new_track.bre().has_value()) {
-        const auto bre = new_track.bre();
-        if (bre.has_value()) {
-            builder.add_bre(*bre, tempo_map);
+    if (settings.pathing_settings.engine->has_bres()) {
+        const auto& bres = new_track.bres();
+        if (!bres.empty()) {
+            builder.add_bre(bres.back(), tempo_map);
         }
     }
 

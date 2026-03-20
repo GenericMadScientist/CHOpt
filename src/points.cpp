@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -474,7 +474,7 @@ std::vector<Point> unmultiplied_points(const SightRead::NoteTrack& track,
                                        const PathingSettings& pathing_settings)
 {
     const auto& notes = track.notes();
-    const auto bre = track.bre();
+    const auto& bres = track.bres();
 
     std::vector<Point> points;
     auto current_phrase = track.sp_phrases().cbegin();
@@ -486,8 +486,8 @@ std::vector<Point> unmultiplied_points(const SightRead::NoteTrack& track,
                 continue;
             }
         }
-        if (pathing_settings.engine->has_bres() && bre.has_value()
-            && p->position >= bre->start) {
+        if (pathing_settings.engine->has_bres() && !bres.empty()
+            && p->position >= bres.back().start) {
             break;
         }
         const auto search_start
@@ -505,9 +505,14 @@ std::vector<Point> unmultiplied_points(const SightRead::NoteTrack& track,
                 || !phrase_contains_pos(*current_phrase, q->position))) {
             is_note_sp_ender = true;
             if (pathing_settings.engine->has_unison_bonuses()
-                && std::find(duration_data.unison_phrases.cbegin(),
-                             duration_data.unison_phrases.cend(),
-                             current_phrase->position)
+                && std::find_if(duration_data.unison_phrases.cbegin(),
+                                duration_data.unison_phrases.cend(),
+                                [&](const auto& phrase) {
+                                    return std::tie(phrase.position,
+                                                    phrase.length)
+                                        == std::tie(current_phrase->position,
+                                                    current_phrase->length);
+                                })
                     != duration_data.unison_phrases.cend()) {
                 is_unison_sp_ender = true;
             }

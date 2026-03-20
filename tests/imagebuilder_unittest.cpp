@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1639,7 +1639,9 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_unison_phrases)
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     SpDurationData unison_phrase {
-        {{}, SpMode::OdBeat}, {}, {SightRead::Tick {960}}};
+        {{}, SpMode::OdBeat},
+        {},
+        {SightRead::StarPower {SightRead::Tick {960}, SightRead::Tick {10}}}};
     PointSet points {track, unison_phrase, default_rb3_pathing_settings()};
     SpData sp_data {track, unison_phrase, default_rb3_pathing_settings()};
     Path path {{}, 0};

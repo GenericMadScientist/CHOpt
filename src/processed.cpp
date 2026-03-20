@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,13 +31,14 @@ int bre_boost(const SightRead::NoteTrack& track, const Engine& engine)
     constexpr int INITIAL_BRE_VALUE = 750;
     constexpr int BRE_VALUE_PER_SECOND = 500;
 
-    const auto bre = track.bre();
-    if (!engine.has_bres() || !bre.has_value()) {
+    const auto& bres = track.bres();
+    if (!engine.has_bres() || bres.empty()) {
         return 0;
     }
+    const auto& bre = bres.back();
     const auto& tempo_map = track.global_data().tempo_map();
-    const auto seconds_start = tempo_map.to_seconds(bre->start);
-    const auto seconds_end = tempo_map.to_seconds(bre->end);
+    const auto seconds_start = tempo_map.to_seconds(bre.start);
+    const auto seconds_end = tempo_map.to_seconds(bre.end);
     const auto seconds_gap = seconds_end - seconds_start;
     return static_cast<int>(INITIAL_BRE_VALUE
                             + BRE_VALUE_PER_SECOND * seconds_gap.value());

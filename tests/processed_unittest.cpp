@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -260,9 +260,12 @@ BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
-    ProcessedSong song {note_track,
-                        {{{}, SpMode::OdBeat}, {}, {SightRead::Tick {0}}},
-                        default_rb3_pathing_settings()};
+    ProcessedSong song {
+        note_track,
+        {{{}, SpMode::OdBeat},
+         {},
+         {SightRead::StarPower {SightRead::Tick {0}, SightRead::Tick {100}}}},
+        default_rb3_pathing_settings()};
     const auto& points = song.points();
 
     const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
@@ -551,9 +554,12 @@ BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
-    ProcessedSong track {note_track,
-                         {{{}, SpMode::OdBeat}, {}, {SightRead::Tick {192}}},
-                         default_rb3_pathing_settings()};
+    ProcessedSong track {
+        note_track,
+        {{{}, SpMode::OdBeat},
+         {},
+         {SightRead::StarPower {SightRead::Tick {192}, SightRead::Tick {1}}}},
+        default_rb3_pathing_settings()};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin() + 1,
@@ -573,9 +579,12 @@ BOOST_AUTO_TEST_CASE(last_note_unison_bonus_accounted_for_excess_sp)
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
-    ProcessedSong track {note_track,
-                         {{{}, SpMode::OdBeat}, {}, {SightRead::Tick {192}}},
-                         default_rb3_pathing_settings()};
+    ProcessedSong track {
+        note_track,
+        {{{}, SpMode::OdBeat},
+         {},
+         {SightRead::StarPower {SightRead::Tick {192}, SightRead::Tick {1}}}},
+        default_rb3_pathing_settings()};
     const auto& points = track.points();
     ActivationCandidate candidate {points.cbegin(),
                                    points.cbegin(),
