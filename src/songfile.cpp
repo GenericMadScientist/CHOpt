@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023, 2024, 2025 Raymond Wright
+ * Copyright (C) 2023, 2024, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@
 #include <QString>
 
 #include <sightread/chartparser.hpp>
+#include <sightread/metadata.hpp>
 #include <sightread/midiparser.hpp>
 
-#include "ini.hpp"
 #include "songfile.hpp"
 #include "stringutil.hpp"
 
@@ -82,7 +82,7 @@ SongFile::SongFile(const std::string& filename)
     if (ini.open(QIODevice::ReadOnly)) {
         ini_file = ini.readAll().toStdString();
     }
-    m_metadata = parse_ini(ini_file);
+    m_metadata = SightRead::parse_ini(ini_file);
 
     if (filename.ends_with(".chart")) {
         m_file_type = FileType::Chart;

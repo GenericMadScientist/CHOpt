@@ -62,7 +62,6 @@ add_executable(
   src/main.cpp
   src/image.cpp
   src/imagebuilder.cpp
-  src/ini.cpp
   src/optimiser.cpp
   src/points.cpp
   src/processed.cpp
@@ -97,7 +96,6 @@ if(BUILD_GUI)
     gui/mainwindow.ui
     src/image.cpp
     src/imagebuilder.cpp
-    src/ini.cpp
     src/optimiser.cpp
     src/points.cpp
     src/processed.cpp
@@ -132,14 +130,12 @@ if(PACKAGE_TESTS)
     chopt_tests
     tests/test_main.cpp
     tests/imagebuilder_unittest.cpp
-    tests/ini_unittest.cpp
     tests/optimiser_unittest.cpp
     tests/points_unittest.cpp
     tests/processed_unittest.cpp
     tests/sp_unittest.cpp
     tests/stringutil_unittest.cpp
     src/imagebuilder.cpp
-    src/ini.cpp
     src/optimiser.cpp
     src/points.cpp
     src/processed.cpp
