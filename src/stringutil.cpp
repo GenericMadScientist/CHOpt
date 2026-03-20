@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,42 +20,7 @@
 #include <array>
 #include <stdexcept>
 
-#include <QByteArrayView>
-#include <QChar>
-#include <QString>
-#include <QStringConverter>
-#include <QStringDecoder>
-
-#include <sightread/songparts.hpp>
-
 #include "stringutil.hpp"
-
-std::string_view break_off_newline(std::string_view& input)
-{
-    if (input.empty()) {
-        throw SightRead::ParseError("No lines left");
-    }
-
-    const auto newline_location
-        = std::min(input.find('\n'), input.find("\r\n"));
-    if (newline_location == std::string_view::npos) {
-        const auto line = input;
-        input.remove_prefix(input.size());
-        return line;
-    }
-
-    const auto line = input.substr(0, newline_location);
-    input.remove_prefix(newline_location);
-    input = skip_whitespace(input);
-    return line;
-}
-
-std::string_view skip_whitespace(std::string_view input)
-{
-    const auto first_non_ws_location = input.find_first_not_of(" \f\n\r\t\v");
-    input.remove_prefix(std::min(first_non_ws_location, input.size()));
-    return input;
-}
 
 std::string to_ordinal(int ordinal)
 {
@@ -81,30 +46,4 @@ std::string to_ordinal(int ordinal)
         return std::to_string(ordinal) + "rd";
     }
     return std::to_string(ordinal) + "th";
-}
-
-std::string to_utf8_string(std::string_view input)
-{
-    const QByteArrayView byte_view {input.data(),
-                                    static_cast<qsizetype>(input.size())};
-
-    QStringDecoder to_utf8 {QStringDecoder::Utf8};
-    QString str = to_utf8(byte_view);
-    if (!to_utf8.hasError()) {
-        return str.toStdString();
-    }
-
-    QStringDecoder to_latin_1 {QStringDecoder::Latin1};
-    str = to_latin_1(byte_view);
-    if (!to_latin_1.hasError() && !str.contains(QChar {0})) {
-        return str.toStdString();
-    }
-
-    QStringDecoder to_utf16_le {QStringDecoder::Utf16LE};
-    str = to_utf16_le(byte_view);
-    if (!to_utf16_le.hasError()) {
-        return str.toStdString();
-    }
-
-    throw std::runtime_error("Unable to determine string encoding");
 }

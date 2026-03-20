@@ -121,20 +121,13 @@ SightRead::Song SongFile::load_song(Game game) const
 {
     switch (m_file_type) {
     case FileType::Chart: {
-        std::string_view chart_buffer {
+        std::string_view chart {
             reinterpret_cast<const char*>(m_loaded_file.data()), // NOLINT
             m_loaded_file.size()};
-        std::string u8_string;
-
-        try {
-            u8_string = to_utf8_string(chart_buffer);
-        } catch (const std::invalid_argument& e) {
-            throw SightRead::ParseError(e.what());
-        }
         SightRead::ChartParser parser {m_metadata};
         parser.permit_instruments(permitted_instruments(game));
         parser.parse_solos(parse_solos(game));
-        return parser.parse(u8_string);
+        return parser.parse(chart);
     }
     case FileType::Midi: {
         std::span<const std::uint8_t> midi_buffer {m_loaded_file.data(),
