@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     try {
         QCoreApplication app {argc, argv};
         QCoreApplication::setApplicationName("CHOpt");
-        QCoreApplication::setApplicationVersion("1.10.3");
+        QCoreApplication::setApplicationVersion("1.10.4");
 
         const auto settings = from_args(QCoreApplication::arguments());
         const SongFile song_file {settings.filename};
