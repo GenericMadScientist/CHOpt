@@ -137,8 +137,7 @@ std::vector<DrawnNote> drawn_notes(const SightRead::NoteTrack& track,
                 drawn_note.note_flags = static_cast<SightRead::NoteFlags>(
                     drawn_note.note_flags | SightRead::FLAGS_CYMBAL);
             } else if (note.lengths[SightRead::DRUM_YELLOW]
-                           != SightRead::Tick {-1}
-                       && (note.flags & SightRead::FLAGS_CYMBAL) != 0U) {
+                       != SightRead::Tick {-1}) {
                 std::swap(drawn_note.lengths[SightRead::DRUM_RED],
                           drawn_note.lengths[SightRead::DRUM_YELLOW]);
                 drawn_note.note_flags = static_cast<SightRead::NoteFlags>(

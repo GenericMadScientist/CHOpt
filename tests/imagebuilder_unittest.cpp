@@ -882,38 +882,84 @@ BOOST_AUTO_TEST_CASE(cymbals_become_toms_with_pro_drums_off)
                       SightRead::FLAGS_DRUMS);
 }
 
-BOOST_AUTO_TEST_CASE(disco_flip_matters_only_with_pro_drums_on)
+BOOST_AUTO_TEST_SUITE(disco_flip)
+
+BOOST_AUTO_TEST_CASE(turns_red_toms_into_yellow_cymbals)
+{
+    SightRead::NoteTrack track {{make_drum_note(192, SightRead::DRUM_RED)},
+                                {},
+                                SightRead::TrackType::Drums,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.disco_flips({{SightRead::Tick {192}, SightRead::Tick {192}}});
+    ImageBuilder builder {track,
+                          SightRead::Difficulty::Expert,
+                          SightRead::DrumSettings::default_settings(),
+                          false,
+                          true,
+                          false};
+
+    BOOST_CHECK_EQUAL(builder.notes()[0].lengths[SightRead::DRUM_YELLOW], 0);
+    BOOST_CHECK_EQUAL(builder.notes()[0].note_flags,
+                      SightRead::FLAGS_DRUMS | SightRead::FLAGS_CYMBAL);
+}
+
+// Comes up in m140 of RB3 Crazy Train drums.
+BOOST_AUTO_TEST_CASE(turns_yellow_toms_into_red_toms)
+{
+    SightRead::NoteTrack track {{make_drum_note(192, SightRead::DRUM_YELLOW)},
+                                {},
+                                SightRead::TrackType::Drums,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.disco_flips({{SightRead::Tick {192}, SightRead::Tick {192}}});
+    ImageBuilder builder {track,
+                          SightRead::Difficulty::Expert,
+                          SightRead::DrumSettings::default_settings(),
+                          false,
+                          true,
+                          false};
+
+    BOOST_CHECK_EQUAL(builder.notes()[0].lengths[SightRead::DRUM_RED], 0);
+    BOOST_CHECK_EQUAL(builder.notes()[0].note_flags, SightRead::FLAGS_DRUMS);
+}
+
+BOOST_AUTO_TEST_CASE(turns_yellow_cymbals_into_red_toms)
 {
     SightRead::NoteTrack track {
-        {make_drum_note(192, SightRead::DRUM_YELLOW, SightRead::FLAGS_CYMBAL),
-         make_drum_note(288, SightRead::DRUM_YELLOW)},
+        {make_drum_note(192, SightRead::DRUM_YELLOW, SightRead::FLAGS_CYMBAL)},
         {},
         SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
     track.disco_flips({{SightRead::Tick {192}, SightRead::Tick {192}}});
-    ImageBuilder normal_builder {track,
-                                 SightRead::Difficulty::Expert,
-                                 {true, false, false, false},
-                                 false,
-                                 true,
-                                 false};
-    ImageBuilder pro_builder {track,
-                              SightRead::Difficulty::Expert,
-                              SightRead::DrumSettings::default_settings(),
-                              false,
-                              true,
-                              false};
+    ImageBuilder builder {track,
+                          SightRead::Difficulty::Expert,
+                          SightRead::DrumSettings::default_settings(),
+                          false,
+                          true,
+                          false};
 
-    BOOST_CHECK_EQUAL(normal_builder.notes().size(), 2U);
-    BOOST_CHECK_EQUAL(normal_builder.notes().front().note_flags,
-                      SightRead::FLAGS_DRUMS);
-    BOOST_CHECK_EQUAL(pro_builder.notes().size(), 2U);
-    BOOST_CHECK_EQUAL(pro_builder.notes()[0].lengths[SightRead::DRUM_RED], 0);
-    BOOST_CHECK_EQUAL(pro_builder.notes()[1].lengths[SightRead::DRUM_YELLOW],
-                      0);
-    BOOST_CHECK_EQUAL(pro_builder.notes()[1].note_flags,
-                      SightRead::FLAGS_DRUMS);
+    BOOST_CHECK_EQUAL(builder.notes()[0].lengths[SightRead::DRUM_RED], 0);
+    BOOST_CHECK_EQUAL(builder.notes()[0].note_flags, SightRead::FLAGS_DRUMS);
 }
+
+BOOST_AUTO_TEST_CASE(does_not_affect_non_pro_drums)
+{
+    SightRead::NoteTrack track {{make_drum_note(192, SightRead::DRUM_RED)},
+                                {},
+                                SightRead::TrackType::Drums,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.disco_flips({{SightRead::Tick {192}, SightRead::Tick {192}}});
+    ImageBuilder builder {track,
+                          SightRead::Difficulty::Expert,
+                          {true, false, false, false},
+                          false,
+                          true,
+                          false};
+
+    BOOST_CHECK_EQUAL(builder.notes()[0].lengths[SightRead::DRUM_RED], 0);
+    BOOST_CHECK_EQUAL(builder.notes()[0].note_flags, SightRead::FLAGS_DRUMS);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
 {
