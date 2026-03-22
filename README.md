@@ -45,7 +45,6 @@ by passing -h or --help to CHOpt, or by consulting the table below.
 | --no-double-kick        | Disable 2x kick (drums only)                                                  |
 | --no-kick               | Disable non-2x kicks (drums only)                                             |
 | --no-pro-drums          | Disable pro drums (drums only)                                                |
-| --enable-dynamics       | Enables double points from ghost and accent notes (drums only)                |
 | --engine                | Choose the engine (ch/fnf/gh1/rb/rb3)                                         |
 | -p, --precision-mode    | Enable precision mode (CH only)                                               |
 | -b, --blank             | Output a blank image without pathing                                          |
