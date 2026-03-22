@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,10 @@
 #define CHOPT_SETTINGS_HPP
 
 #include <memory>
-#include <set>
 #include <string>
 
 #include <QStringList>
+#include <QTextStream>
 
 #include <sightread/drumsettings.hpp>
 #include <sightread/songparts.hpp>
@@ -73,6 +73,6 @@ struct Settings {
 };
 
 // Parses the command line options.
-Settings from_args(const QStringList& args);
+Settings from_args(const QStringList& args, QTextStream& std_err);
 
 #endif

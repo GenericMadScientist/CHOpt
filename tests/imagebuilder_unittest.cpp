@@ -830,16 +830,13 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_drawn_with_enable_double_kick)
         std::make_shared<SightRead::SongGlobalData>()};
     ImageBuilder no_double_builder {track,
                                     SightRead::Difficulty::Expert,
-                                    {false, false, false, false},
+                                    {false, false, false},
                                     false,
                                     true,
                                     false};
-    ImageBuilder double_builder {track,
-                                 SightRead::Difficulty::Expert,
-                                 {true, false, false, false},
-                                 false,
-                                 true,
-                                 false};
+    ImageBuilder double_builder {
+        track, SightRead::Difficulty::Expert, {true, false, false}, false, true,
+        false};
 
     BOOST_CHECK_EQUAL(no_double_builder.notes().size(), 1U);
     BOOST_CHECK_EQUAL(double_builder.notes().size(), 2U);
@@ -853,12 +850,9 @@ BOOST_AUTO_TEST_CASE(single_kicks_disappear_with_disable_kick)
         {},
         SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
-    ImageBuilder builder {track,
-                          SightRead::Difficulty::Expert,
-                          {true, true, false, false},
-                          false,
-                          true,
-                          false};
+    ImageBuilder builder {
+        track, SightRead::Difficulty::Expert, {true, true, false}, false, true,
+        false};
 
     BOOST_CHECK_EQUAL(builder.notes().size(), 1U);
 }
@@ -870,12 +864,9 @@ BOOST_AUTO_TEST_CASE(cymbals_become_toms_with_pro_drums_off)
         {},
         SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
-    ImageBuilder builder {track,
-                          SightRead::Difficulty::Expert,
-                          {true, false, false, false},
-                          false,
-                          true,
-                          false};
+    ImageBuilder builder {
+        track, SightRead::Difficulty::Expert, {true, false, false}, false, true,
+        false};
 
     BOOST_CHECK_EQUAL(builder.notes().size(), 1U);
     BOOST_CHECK_EQUAL(builder.notes().front().note_flags,
@@ -948,12 +939,9 @@ BOOST_AUTO_TEST_CASE(does_not_affect_non_pro_drums)
                                 SightRead::TrackType::Drums,
                                 std::make_shared<SightRead::SongGlobalData>()};
     track.disco_flips({{SightRead::Tick {192}, SightRead::Tick {192}}});
-    ImageBuilder builder {track,
-                          SightRead::Difficulty::Expert,
-                          {true, false, false, false},
-                          false,
-                          true,
-                          false};
+    ImageBuilder builder {
+        track, SightRead::Difficulty::Expert, {true, false, false}, false, true,
+        false};
 
     BOOST_CHECK_EQUAL(builder.notes()[0].lengths[SightRead::DRUM_RED], 0);
     BOOST_CHECK_EQUAL(builder.notes()[0].note_flags, SightRead::FLAGS_DRUMS);

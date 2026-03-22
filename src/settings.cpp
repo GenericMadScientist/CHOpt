@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -220,7 +220,7 @@ game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
     }
 }
 
-Settings from_args(const QStringList& args)
+Settings from_args(const QStringList& args, QTextStream& std_err)
 {
     constexpr int MAX_PERCENT = 100;
     constexpr int MAX_SPEED = 5000;
@@ -272,8 +272,11 @@ Settings from_args(const QStringList& args)
         = parser->isSet("no-kick");
     settings.pathing_settings.drum_settings.pro_drums
         = !parser->isSet("no-pro-drums");
-    settings.pathing_settings.drum_settings.enable_dynamics
-        = parser->isSet("enable-dynamics");
+
+    if (parser->isSet("enable-dynamics")) {
+        std_err << "enable-dynamics is deprecated and does nothing, "
+                   "will be removed in a future version.\n";
+    }
 
     const auto squeeze = parser->value("squeeze").toInt();
     auto early_whammy = squeeze;

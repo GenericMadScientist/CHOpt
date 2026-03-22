@@ -296,11 +296,9 @@ void apply_drum_settings(SightRead::NoteTrack& track,
         && track.drum_fills().empty()) {
         track.generate_drum_fills(song.global_data().tempo_map());
     }
-    if (!pathing_settings.drum_settings.enable_dynamics) {
-        track.disable_dynamics();
-    }
     if (!pathing_settings.drum_settings.pro_drums) {
         track.disable_cymbals();
+        track.disable_dynamics();
     }
 }
 }

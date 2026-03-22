@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023, 2025 Raymond Wright
+ * Copyright (C) 2023, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -258,7 +258,7 @@ inline PathingSettings default_pro_drums_pathing_settings()
             SightRead::Second {0.0},
             SightRead::Second {0.0},
             SightRead::Second {0.0},
-            {false, false, true, false}};
+            {false, false, true}};
 }
 
 inline PathingSettings default_rb_pathing_settings()

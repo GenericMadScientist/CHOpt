@@ -367,27 +367,13 @@
           </widget>
         </item>
         <item row="4" column="0">
-          <widget class="QLabel" name="label_dynamics">
-            <property name="text">
-              <string>Enable dynamics</string>
-            </property>
-          </widget>
-        </item>
-        <item row="4" column="1">
-          <widget class="QCheckBox" name="dynamicsCheckBox">
-            <property name="checked">
-              <bool>false</bool>
-            </property>
-          </widget>
-        </item>
-        <item row="4" column="2">
           <widget class="QLabel" name="label_lefty">
             <property name="text">
               <string>Lefty flip</string>
             </property>
           </widget>
         </item>
-        <item row="4" column="3">
+        <item row="4" column="1">
           <widget class="QCheckBox" name="leftyCheckBox">
             <property name="checked">
               <bool>false</bool>

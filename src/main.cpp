@@ -40,7 +40,8 @@ int main(int argc, char** argv)
         QCoreApplication::setApplicationName("CHOpt");
         QCoreApplication::setApplicationVersion("1.10.4");
 
-        const auto settings = from_args(QCoreApplication::arguments());
+        const auto settings
+            = from_args(QCoreApplication::arguments(), q_stderr);
         const SongFile song_file {settings.filename};
         auto song = song_file.load_song(settings.game);
         const auto& track

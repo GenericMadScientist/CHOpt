@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ PathingSettings non_pro_drums_pathing_settings()
             SightRead::Second {0.0},
             SightRead::Second {0.0},
             SightRead::Second {0.0},
-            {false, false, false, false}};
+            {false, false, false}};
 }
 
 PathingSettings min_kicks_drums_pathing_settings()
@@ -99,7 +99,7 @@ PathingSettings min_kicks_drums_pathing_settings()
             SightRead::Second {0.0},
             SightRead::Second {0.0},
             SightRead::Second {0.0},
-            {false, true, false, false}};
+            {false, true, false}};
 }
 
 PathingSettings extra_kicks_only_drums_pathing_settings()
@@ -110,7 +110,7 @@ PathingSettings extra_kicks_only_drums_pathing_settings()
             SightRead::Second {0.0},
             SightRead::Second {0.0},
             SightRead::Second {0.0},
-            {true, true, false, false}};
+            {true, true, false}};
 }
 
 PathingSettings default_rb_bass_pathing_settings()

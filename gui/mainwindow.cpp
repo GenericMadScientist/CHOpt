@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -274,8 +274,6 @@ Settings MainWindow::get_settings() const
         = m_ui->noKickCheckBox->isChecked();
     settings.pathing_settings.drum_settings.pro_drums
         = m_ui->proDrumsCheckBox->isChecked();
-    settings.pathing_settings.drum_settings.enable_dynamics
-        = m_ui->dynamicsCheckBox->isChecked();
     settings.difficulty = m_ui->difficultyComboBox->currentData()
                               .value<SightRead::Difficulty>();
     settings.instrument = m_ui->instrumentComboBox->currentData()
