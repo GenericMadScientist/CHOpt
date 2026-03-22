@@ -28,7 +28,6 @@
 #include <sightread/midiparser.hpp>
 
 #include "songfile.hpp"
-#include "stringutil.hpp"
 
 namespace {
 std::set<SightRead::Instrument> permitted_instruments(Game game)
@@ -59,7 +58,7 @@ std::set<SightRead::Instrument> permitted_instruments(Game game)
         return {SightRead::Instrument::Guitar, SightRead::Instrument::Bass};
     case Game::RockBandThree:
         return {SightRead::Instrument::Guitar, SightRead::Instrument::Bass,
-                SightRead::Instrument::Keys};
+                SightRead::Instrument::Keys, SightRead::Instrument::Drums};
     default:
         throw std::invalid_argument("Invalid Game");
     }
