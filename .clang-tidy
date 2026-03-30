@@ -1,5 +1,6 @@
 Checks: >
   boost-*,
+  -boost-use-ranges,
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   cert-*,
@@ -16,7 +17,8 @@ Checks: >
   performance-*,
   portability-*,
   readability-*,
-  -readability-identifier-length
+  -readability-identifier-length,
+  -readability-math-missing-parentheses
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle: none

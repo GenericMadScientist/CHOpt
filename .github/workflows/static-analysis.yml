@@ -24,6 +24,13 @@ jobs:
       - name: Install Boost dependencies
         run: vcpkg install boost-locale boost-test
 
+      - name: Install clang-tidy 22
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main"
+          sudo apt-get update
+          sudo apt-get install clang-tidy-22
+
       - name: Make build directory
         run: mkdir build
 
@@ -40,7 +47,7 @@ jobs:
 
       - name: Run clang tidy
         run: >
-          clang-tidy-18 src/*.cpp gui/*.cpp tests/*_unittest.cpp -- -std=c++20
+          clang-tidy-22 src/*.cpp gui/*.cpp tests/*_unittest.cpp -- -std=c++20
           -Iinclude -Ilibs -Iextern/sightread/include
           -I${QT_ROOT_DIR}/include -I${QT_ROOT_DIR}/include/QtCore -I${QT_ROOT_DIR}/include/QtGui -I${QT_ROOT_DIR}/include/QtWidgets
           -Ibuild/choptgui_autogen/include -I ${VCPKG_INSTALLATION_ROOT}/installed/x64-linux/include
