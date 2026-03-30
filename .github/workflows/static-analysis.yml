@@ -38,19 +38,12 @@ jobs:
         working-directory: build
         run: cmake --build . --verbose
 
-      - name: Main application files
+      - name: Run clang tidy
         run: >
-          clang-tidy-18 src/*.cpp gui/*.cpp -- -std=c++20
+          clang-tidy-18 src/*.cpp gui/*.cpp tests/*_unittest.cpp -- -std=c++20
           -Iinclude -Ilibs -Iextern/sightread/include
           -I${QT_ROOT_DIR}/include -I${QT_ROOT_DIR}/include/QtCore -I${QT_ROOT_DIR}/include/QtGui -I${QT_ROOT_DIR}/include/QtWidgets
-          -Ibuild/choptgui_autogen/include
-
-      - name: Test files
-        run: >
-          clang-tidy-18 tests/*_unittest.cpp
-          -checks=-cppcoreguidelines-avoid-do-while,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-clang-analyzer-*,-readability-function-cognitive-complexity,-readability-magic-numbers
-          -- -Iinclude -Iextern/sightread/include -I${QT_ROOT_DIR}/include -I${QT_ROOT_DIR}/include/QtCore
-          -I ${VCPKG_INSTALLATION_ROOT}/installed/x64-linux/include -std=c++20
+          -Ibuild/choptgui_autogen/include -I ${VCPKG_INSTALLATION_ROOT}/installed/x64-linux/include
 
   clang-format:
     runs-on: ubuntu-24.04
