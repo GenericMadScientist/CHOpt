@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,21 +99,25 @@ int Optimiser::get_partial_path(CacheKey key, Cache& cache) const
     if (key.point == m_song->points().cend()) {
         return 0;
     }
-    if (cache.paths.find(key) == cache.paths.end()) {
-        if (m_terminate->load()) {
-            throw std::runtime_error("Thread halted");
-        }
-        auto best_path = find_best_subpaths(key, cache, false);
-        cache.paths.emplace(key, best_path);
-        return best_path.score_boost;
+
+    const auto it = cache.paths.find(key);
+    if (it != cache.paths.end()) {
+        return it->second.score_boost;
     }
-    return cache.paths.at(key).score_boost;
+
+    if (m_terminate->load()) {
+        throw std::runtime_error("Thread halted");
+    }
+    auto best_path = find_best_subpaths(key, cache, false);
+    cache.paths.emplace(key, best_path);
+    return best_path.score_boost;
 }
 
 int Optimiser::get_partial_full_sp_path(PointPtr point, Cache& cache) const
 {
-    if (cache.full_sp_paths.find(point) != cache.full_sp_paths.end()) {
-        return cache.full_sp_paths.at(point).score_boost;
+    const auto it = cache.full_sp_paths.find(point);
+    if (it != cache.full_sp_paths.end()) {
+        return it->second.score_boost;
     }
 
     // We only call this from find_best_subpath in a situaiton where we know
