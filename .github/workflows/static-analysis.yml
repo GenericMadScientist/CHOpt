@@ -51,7 +51,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Install clang-format 22
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main"
+          sudo apt-get update
+          sudo apt-get install clang-format-22
+
       - name: Format
         run: |
-          clang-format-18 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp tests/*.hpp
+          clang-format-22 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp tests/*.hpp
           git diff --color --exit-code
