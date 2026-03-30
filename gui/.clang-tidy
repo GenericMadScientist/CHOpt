@@ -1,0 +1,27 @@
+Checks: >
+  boost-*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  cert-*,
+  -clang-analyzer-optin.cplusplus.VirtualCall,
+  concurrency-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-type-vararg,
+  misc-*,
+  -misc-const-correctness,
+  -misc-include-cleaner,
+  -misc-no-recursion,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-identifier-length,
+  -readability-inconsistent-declaration-parameter-name
+WarningsAsErrors: '*'
+HeaderFilterRegex: ''
+FormatStyle: none
+CheckOptions:
+  - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: true
