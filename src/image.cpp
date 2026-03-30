@@ -153,6 +153,12 @@ const char* shape_directory(const ImageBuilder& builder, const DrawnNote& note)
 
     throw std::invalid_argument("Invalid track type");
 }
+
+struct SustainColour {
+    std::array<unsigned char, 3> rgb;
+    float opacity;
+    std::tuple<int, int> y_range;
+};
 }
 
 class ImageImpl {
@@ -445,12 +451,6 @@ void ImageImpl::draw_note(const ImageBuilder& builder, const DrawnNote& note)
     draw_sprite(sprite, x - sprite.width() / 2,
                 y - (sprite.height() - MEASURE_HEIGHT) / 2);
 }
-
-struct SustainColour {
-    std::array<unsigned char, 3> rgb;
-    float opacity;
-    std::tuple<int, int> y_range;
-};
 
 void ImageImpl::draw_sustain(const ImageBuilder& builder, const DrawnNote& note)
 {

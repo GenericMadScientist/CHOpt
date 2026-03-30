@@ -41,7 +41,6 @@ QFileDialog::Option file_dialog_options()
     return QFileDialog::Option {};
 #endif
 }
-}
 
 class ParserThread : public QThread {
     Q_OBJECT
@@ -146,6 +145,7 @@ public:
 signals:
     void write_text(const QString& text);
 };
+}
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)

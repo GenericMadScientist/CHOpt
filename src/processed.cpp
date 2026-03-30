@@ -43,6 +43,87 @@ int bre_boost(const SightRead::NoteTrack& track, const Engine& engine)
     return static_cast<int>(INITIAL_BRE_VALUE
                             + BRE_VALUE_PER_SECOND * seconds_gap.value());
 }
+
+class SpStatus {
+private:
+    SpPosition m_position;
+    double m_sp;
+    bool m_overlap_engine;
+    SpEngineValues m_sp_engine_values;
+
+    static constexpr double MEASURES_PER_BAR = 8.0;
+
+public:
+    SpStatus(SpPosition position, double sp, bool overlap_engine,
+             const SpEngineValues& sp_engine_values)
+        : m_position {position}
+        , m_sp {sp}
+        , m_overlap_engine {overlap_engine}
+        , m_sp_engine_values {sp_engine_values}
+    {
+    }
+
+    [[nodiscard]] SpPosition position() const { return m_position; }
+    [[nodiscard]] double sp() const { return m_sp; }
+
+    void add_phrase()
+    {
+        m_sp = std::min(m_sp + m_sp_engine_values.phrase_amount, 1.0);
+    }
+    void add_unison_phrase()
+    {
+        m_sp = std::min(m_sp + m_sp_engine_values.unison_phrase_amount, 1.0);
+    }
+
+    void advance_whammy_max(SpPosition end_position, const SpData& sp_data,
+                            bool does_overlap)
+    {
+        if (does_overlap) {
+            m_sp = sp_data.propagate_sp_over_whammy_max(m_position,
+                                                        end_position, m_sp);
+        } else {
+            m_sp -= (end_position.sp_measure - m_position.sp_measure).value()
+                / MEASURES_PER_BAR;
+        }
+        m_position = end_position;
+    }
+
+    void update_early_end(SpPosition sp_note_start, const SpData& sp_data,
+                          SpPosition required_whammy_end)
+    {
+        if (!m_overlap_engine) {
+            required_whammy_end = {SightRead::Beat {0.0}, SpMeasure {0.0}};
+        }
+        m_sp = sp_data.propagate_sp_over_whammy_min(m_position, sp_note_start,
+                                                    m_sp, required_whammy_end);
+        if (sp_note_start.beat > m_position.beat) {
+            m_position = sp_note_start;
+        }
+    }
+
+    void update_late_end(SpPosition sp_note_start, SpPosition sp_note_end,
+                         const SpData& sp_data, bool does_overlap)
+    {
+        if (sp_note_start.beat < m_position.beat) {
+            sp_note_start = m_position;
+        }
+
+        advance_whammy_max(sp_note_start, sp_data, does_overlap);
+        if (m_sp < 0.0) {
+            return;
+        }
+        // We might run out of SP between sp_note_start and sp_note_end. In this
+        // case we just hit the note as early as possible.
+        if (does_overlap) {
+            const auto new_sp = sp_data.propagate_sp_over_whammy_max(
+                sp_note_start, sp_note_end, m_sp);
+            if (new_sp >= 0.0) {
+                m_sp = new_sp;
+                m_position = sp_note_end;
+            }
+        }
+    }
+};
 }
 
 SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
@@ -188,87 +269,6 @@ SpPosition ProcessedSong::adjusted_hit_window_end(PointPtr point,
 
     return {adj_end_b, adj_end_m};
 }
-
-class SpStatus {
-private:
-    SpPosition m_position;
-    double m_sp;
-    bool m_overlap_engine;
-    SpEngineValues m_sp_engine_values;
-
-    static constexpr double MEASURES_PER_BAR = 8.0;
-
-public:
-    SpStatus(SpPosition position, double sp, bool overlap_engine,
-             const SpEngineValues& sp_engine_values)
-        : m_position {position}
-        , m_sp {sp}
-        , m_overlap_engine {overlap_engine}
-        , m_sp_engine_values {sp_engine_values}
-    {
-    }
-
-    [[nodiscard]] SpPosition position() const { return m_position; }
-    [[nodiscard]] double sp() const { return m_sp; }
-
-    void add_phrase()
-    {
-        m_sp = std::min(m_sp + m_sp_engine_values.phrase_amount, 1.0);
-    }
-    void add_unison_phrase()
-    {
-        m_sp = std::min(m_sp + m_sp_engine_values.unison_phrase_amount, 1.0);
-    }
-
-    void advance_whammy_max(SpPosition end_position, const SpData& sp_data,
-                            bool does_overlap)
-    {
-        if (does_overlap) {
-            m_sp = sp_data.propagate_sp_over_whammy_max(m_position,
-                                                        end_position, m_sp);
-        } else {
-            m_sp -= (end_position.sp_measure - m_position.sp_measure).value()
-                / MEASURES_PER_BAR;
-        }
-        m_position = end_position;
-    }
-
-    void update_early_end(SpPosition sp_note_start, const SpData& sp_data,
-                          SpPosition required_whammy_end)
-    {
-        if (!m_overlap_engine) {
-            required_whammy_end = {SightRead::Beat {0.0}, SpMeasure {0.0}};
-        }
-        m_sp = sp_data.propagate_sp_over_whammy_min(m_position, sp_note_start,
-                                                    m_sp, required_whammy_end);
-        if (sp_note_start.beat > m_position.beat) {
-            m_position = sp_note_start;
-        }
-    }
-
-    void update_late_end(SpPosition sp_note_start, SpPosition sp_note_end,
-                         const SpData& sp_data, bool does_overlap)
-    {
-        if (sp_note_start.beat < m_position.beat) {
-            sp_note_start = m_position;
-        }
-
-        advance_whammy_max(sp_note_start, sp_data, does_overlap);
-        if (m_sp < 0.0) {
-            return;
-        }
-        // We might run out of SP between sp_note_start and sp_note_end. In this
-        // case we just hit the note as early as possible.
-        if (does_overlap) {
-            const auto new_sp = sp_data.propagate_sp_over_whammy_max(
-                sp_note_start, sp_note_end, m_sp);
-            if (new_sp >= 0.0) {
-                m_sp = new_sp;
-                m_position = sp_note_end;
-            }
-        }
-    }
-};
 
 ActResult
 ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
