@@ -39,18 +39,14 @@ jobs:
         env:
           CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
           CXX: g++-14
-        run: cmake -DPACKAGE_TESTS=OFF ..
+        run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DPACKAGE_TESTS=ON ..
 
-      - name: Build
+      - name: Build moc files
         working-directory: build
-        run: cmake --build . --verbose
+        run: cmake --build . --target choptgui --verbose
 
       - name: Run clang tidy
-        run: >
-          clang-tidy-22 src/*.cpp gui/*.cpp tests/*_unittest.cpp -- -std=c++20
-          -Iinclude -Ilibs -Iextern/sightread/include
-          -I${QT_ROOT_DIR}/include -I${QT_ROOT_DIR}/include/QtCore -I${QT_ROOT_DIR}/include/QtGui -I${QT_ROOT_DIR}/include/QtWidgets
-          -Ibuild/choptgui_autogen/include -I ${VCPKG_INSTALLATION_ROOT}/installed/x64-linux/include
+        run: run-clang-tidy-22 -p=build/ -source-filter='^(?!.*(_autogen|extern)).*$' -hide-progress -quiet
 
   clang-format:
     runs-on: ubuntu-24.04
