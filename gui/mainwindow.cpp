@@ -65,12 +65,7 @@ private:
         return supported_games;
     }
 
-public:
-    explicit ParserThread(QObject* parent = nullptr)
-        : QThread(parent)
-    {
-    }
-
+protected:
     void run() override
     {
         try {
@@ -84,6 +79,12 @@ public:
         } catch (const std::exception&) {
             emit parsing_failed(m_file_name);
         }
+    }
+
+public:
+    explicit ParserThread(QObject* parent = nullptr)
+        : QThread(parent)
+    {
     }
 
     void set_file_name(const QString& file_name) { m_file_name = file_name; }
@@ -103,12 +104,7 @@ private:
     std::optional<SightRead::Song> m_song;
     QString m_file_name;
 
-public:
-    explicit OptimiserThread(QObject* parent = nullptr)
-        : QThread(parent)
-    {
-    }
-
+protected:
     void run() override
     {
         if (!m_song.has_value()) {
@@ -130,6 +126,12 @@ public:
         } catch (const std::runtime_error&) {
             qDebug() << "Breaking out of computation";
         }
+    }
+
+public:
+    explicit OptimiserThread(QObject* parent = nullptr)
+        : QThread(parent)
+    {
     }
 
     void set_data(Settings settings, SightRead::Song song,
