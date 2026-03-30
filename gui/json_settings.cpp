@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2022, 2024 Raymond Wright
+ * Copyright (C) 2022, 2024, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,16 +81,16 @@ JsonSettings load_saved_settings(std::string_view application_dir)
     }
 
     const auto obj = jv.object();
-    settings.squeeze
-        = read_value(obj, "squeeze", {0, MAX_PERCENT}, MAX_PERCENT);
-    settings.early_whammy
-        = read_value(obj, "early_whammy", {0, MAX_PERCENT}, MAX_PERCENT);
-    settings.lazy_whammy
-        = read_value(obj, "lazy_whammy", {0, MAX_LINE_EDIT_INT}, 0);
-    settings.whammy_delay
-        = read_value(obj, "whammy_delay", {0, MAX_LINE_EDIT_INT}, 0);
-    settings.video_lag
-        = read_value(obj, "video_lag", {MIN_VIDEO_LAG, MAX_VIDEO_LAG}, 0);
+    settings.squeeze = read_value(obj, "squeeze",
+                                  {.min = 0, .max = MAX_PERCENT}, MAX_PERCENT);
+    settings.early_whammy = read_value(
+        obj, "early_whammy", {.min = 0, .max = MAX_PERCENT}, MAX_PERCENT);
+    settings.lazy_whammy = read_value(obj, "lazy_whammy",
+                                      {.min = 0, .max = MAX_LINE_EDIT_INT}, 0);
+    settings.whammy_delay = read_value(obj, "whammy_delay",
+                                       {.min = 0, .max = MAX_LINE_EDIT_INT}, 0);
+    settings.video_lag = read_value(
+        obj, "video_lag", {.min = MIN_VIDEO_LAG, .max = MAX_VIDEO_LAG}, 0);
     settings.is_lefty_flip = read_json_bool(obj, "lefty_flip", false);
 
     return settings;

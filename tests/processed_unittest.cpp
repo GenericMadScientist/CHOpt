@@ -25,24 +25,24 @@
 namespace {
 PathingSettings no_squeeze_negative_video_lag_settings()
 {
-    return {std::make_unique<ChGuitarEngine>(),
-            0.0,
-            0.0,
-            SightRead::Second {0.0},
-            SightRead::Second {-0.1},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<ChGuitarEngine>(),
+            .squeeze = 0.0,
+            .early_whammy = 0.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {-0.1},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 PathingSettings no_squeeze_positive_video_lag_settings()
 {
-    return {std::make_unique<ChGuitarEngine>(),
-            0.0,
-            0.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.1},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<ChGuitarEngine>(),
+            .squeeze = 0.0,
+            .early_whammy = 0.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.1},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 }
 
@@ -54,10 +54,10 @@ BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {768}, SightRead::Tick {400}},
-        {SightRead::Tick {1344}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {768}, .length = SightRead::Tick {400}},
+        {.position = SightRead::Tick {1344}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
@@ -85,10 +85,10 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {768}, SightRead::Tick {400}},
-        {SightRead::Tick {1344}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {768}, .length = SightRead::Tick {400}},
+        {.position = SightRead::Tick {1344}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
@@ -108,10 +108,10 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_even_started_mid_hold)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {768}, SightRead::Tick {400}},
-        {SightRead::Tick {1344}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {768}, .length = SightRead::Tick {400}},
+        {.position = SightRead::Tick {1344}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
@@ -131,10 +131,10 @@ BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {768}, SightRead::Tick {400}},
-        {SightRead::Tick {1344}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {768}, .length = SightRead::Tick {400}},
+        {.position = SightRead::Tick {1344}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
@@ -162,10 +162,10 @@ BOOST_AUTO_TEST_CASE(sp_does_not_exceed_full_bar)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {768}, SightRead::Tick {400}},
-        {SightRead::Tick {1344}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {768}, .length = SightRead::Tick {400}},
+        {.position = SightRead::Tick {1344}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
@@ -186,10 +186,10 @@ BOOST_AUTO_TEST_CASE(
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {768}, SightRead::Tick {400}},
-        {SightRead::Tick {1344}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {768}, .length = SightRead::Tick {400}},
+        {.position = SightRead::Tick {1344}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
@@ -209,17 +209,18 @@ BOOST_AUTO_TEST_CASE(unison_bonuses_are_taken_account_of)
         make_note(0),        make_note(192),  make_note(384),  make_note(576),
         make_note(768, 192), make_note(1152), make_note(1344), make_note(1536)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {768}, SightRead::Tick {400}},
-        {SightRead::Tick {1344}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {768}, .length = SightRead::Tick {400}},
+        {.position = SightRead::Tick {1344}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong song {note_track,
-                        {{{}, SpMode::OdBeat},
-                         {},
-                         {{SightRead::Tick {0}, SightRead::Tick {50}}}},
+                        {.time_map = {{}, SpMode::OdBeat},
+                         .od_beats = {},
+                         .unison_phrases = {{.position = SightRead::Tick {0},
+                                             .length = SightRead::Tick {50}}}},
                         default_rb3_pathing_settings()};
     const auto& points = song.points();
 
@@ -236,7 +237,7 @@ BOOST_AUTO_TEST_CASE(
 {
     std::vector<SightRead::Note> notes {make_note(0, 1459), make_note(1459)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {100}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {100}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
@@ -256,21 +257,22 @@ BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
 {
     std::vector<SightRead::Note> notes {make_note(0), make_note(192)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {100}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {100}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
-    ProcessedSong song {
-        note_track,
-        {{{}, SpMode::OdBeat},
-         {},
-         {SightRead::StarPower {SightRead::Tick {0}, SightRead::Tick {100}}}},
-        default_rb3_pathing_settings()};
+    ProcessedSong song {note_track,
+                        {.time_map = {{}, SpMode::OdBeat},
+                         .od_beats = {},
+                         .unison_phrases = {SightRead::StarPower {
+                             .position = SightRead::Tick {0},
+                             .length = SightRead::Tick {100}}}},
+                        default_rb3_pathing_settings()};
     const auto& points = song.points();
 
     const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
         SightRead::Beat(0.0), points.cbegin(), std::next(points.cbegin()),
-        {SightRead::Beat(0.0), SpMeasure(0.0)});
+        {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)});
 
     BOOST_CHECK_CLOSE(sp_bar.max(), 0.501, 0.0001);
 }
@@ -289,25 +291,42 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 3,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 3,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {1.0,
+                   1.0,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
-    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 3, 4}}, {}, {}, 192};
+    SightRead::TempoMap tempo_map {
+        {{.position = SightRead::Tick {0}, .numerator = 3, .denominator = 4}},
+        {},
+        {},
+        192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
     SightRead::NoteTrack second_note_track {
         notes, {}, SightRead::TrackType::FiveFret, global_data};
     ProcessedSong second_track {second_note_track,
-                                {{tempo_map, SpMode::Measure}, {}, {}},
+                                {.time_map = {tempo_map, SpMode::Measure},
+                                 .od_beats = {},
+                                 .unison_phrases = {}},
                                 default_guitar_pathing_settings()};
     const auto& second_points = second_track.points();
     ActivationCandidate second_candidate {
-        second_points.cbegin(),
-        second_points.cbegin() + 3,
-        {SightRead::Beat(0.0), SpMeasure(0.0)},
-        {1.0, 1.0, {0.25, 0.5, 0.5}}};
+        .act_start = second_points.cbegin(),
+        .act_end = second_points.cbegin() + 3,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {1.0,
+                   1.0,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -328,25 +347,42 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 2,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
-    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 3, 4}}, {}, {}, 192};
+    SightRead::TempoMap tempo_map {
+        {{.position = SightRead::Tick {0}, .numerator = 3, .denominator = 4}},
+        {},
+        {},
+        192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
     SightRead::NoteTrack second_note_track {
         notes, {}, SightRead::TrackType::FiveFret, global_data};
     ProcessedSong second_track {second_note_track,
-                                {{tempo_map, SpMode::Measure}, {}, {}},
+                                {.time_map = {tempo_map, SpMode::Measure},
+                                 .od_beats = {},
+                                 .unison_phrases = {}},
                                 default_guitar_pathing_settings()};
     const auto& second_points = second_track.points();
     ActivationCandidate second_candidate {
-        second_points.cbegin(),
-        second_points.cbegin() + 2,
-        {SightRead::Beat(0.0), SpMeasure(0.0)},
-        {0.5, 0.5, {0.25, 0.5, 0.5}}};
+        .act_start = second_points.cbegin(),
+        .act_end = second_points.cbegin() + 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -367,10 +403,16 @@ BOOST_AUTO_TEST_CASE(below_half_bar_never_works)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.25, 0.25, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.25,
+                   0.25,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::insufficient_sp);
@@ -388,10 +430,16 @@ BOOST_AUTO_TEST_CASE(check_next_point_needs_to_not_lie_in_activation)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.6, 0.6, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.6,
+                   0.6,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::surplus_sp);
@@ -402,17 +450,23 @@ BOOST_AUTO_TEST_CASE(check_intermediate_sp_is_accounted_for)
     std::vector<SightRead::Note> notes {make_note(0), make_note(1536),
                                         make_note(3072), make_note(6144)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {3000}, SightRead::Tick {100}}};
+        {.position = SightRead::Tick {3000}, .length = SightRead::Tick {100}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 3,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.8, 0.8, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 3,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.8,
+                   0.8,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -423,17 +477,23 @@ BOOST_AUTO_TEST_CASE(check_only_reached_intermediate_sp_is_accounted_for)
     std::vector<SightRead::Note> notes {make_note(0), make_note(1536),
                                         make_note(6000), make_note(6144)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {6000}, SightRead::Tick {100}}};
+        {.position = SightRead::Tick {6000}, .length = SightRead::Tick {100}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 3,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.8, 0.8, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 3,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.8,
+                   0.8,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::insufficient_sp);
@@ -444,17 +504,23 @@ BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
     std::vector<SightRead::Note> notes {make_note(0), make_note(1536),
                                         make_note(3072), make_note(4000)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {3072}, SightRead::Tick {100}}};
+        {.position = SightRead::Tick {3072}, .length = SightRead::Tick {100}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 2,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::surplus_sp);
@@ -465,18 +531,24 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
     std::vector<SightRead::Note> notes {make_note(0), make_note(2),
                                         make_note(7000)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {1}},
-        {SightRead::Tick {2}, SightRead::Tick {1}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {2}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 2,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {1.0,
+                   1.0,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::insufficient_sp);
@@ -494,10 +566,16 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(-2.0), SpMeasure(-0.5)},
-                                   {0.53125, 0.53125, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(-2.0), .sp_measure = SpMeasure(-0.5)},
+        .sp_bar = {0.53125,
+                   0.53125,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -510,10 +588,11 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
 BOOST_AUTO_TEST_CASE(
     activations_starting_on_an_sp_granting_note_have_the_correct_end)
 {
-    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4}},
-                                   {{SightRead::Tick {0}, 300000}},
-                                   {},
-                                   192};
+    SightRead::TempoMap tempo_map {
+        {{.position = SightRead::Tick {0}, .numerator = 4, .denominator = 4}},
+        {{.position = SightRead::Tick {0}, .millibeats_per_minute = 300000}},
+        {},
+        192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -523,20 +602,29 @@ BOOST_AUTO_TEST_CASE(
             {{SightRead::FIVE_FRET_GREEN, 0}, {SightRead::FIVE_FRET_RED, 0}}),
         make_note(5088), make_note(5136)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {384}, SightRead::Tick {1}}};
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret, global_data};
     ProcessedSong track {note_track,
-                         {{tempo_map, SpMode::Measure}, {}, {}},
+                         {.time_map = {tempo_map, SpMode::Measure},
+                          .od_beats = {},
+                          .unison_phrases = {}},
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(2.24), SpMeasure(0.56)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(2.24), .sp_measure = SpMeasure(0.56)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     const auto result = track.is_candidate_valid(
-        candidate, 1.0, {SightRead::Beat {27}, SpMeasure {6.75}});
+        candidate, 1.0,
+        {.beat = SightRead::Beat {27}, .sp_measure = SpMeasure {6.75}});
 
     BOOST_CHECK_EQUAL(result.validity, ActValidity::success);
     BOOST_CHECK_LT(result.ending_position.beat.value(), 26.5);
@@ -550,21 +638,28 @@ BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
 {
     std::vector<SightRead::Note> notes {make_note(192), make_note(5376)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {192}, SightRead::Tick {1}}};
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
-    ProcessedSong track {
-        note_track,
-        {{{}, SpMode::OdBeat},
-         {},
-         {SightRead::StarPower {SightRead::Tick {192}, SightRead::Tick {1}}}},
-        default_rb3_pathing_settings()};
+    ProcessedSong track {note_track,
+                         {.time_map = {{}, SpMode::OdBeat},
+                          .od_beats = {},
+                          .unison_phrases = {SightRead::StarPower {
+                              .position = SightRead::Tick {192},
+                              .length = SightRead::Tick {1}}}},
+                         default_rb3_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     const auto result = track.is_candidate_valid(candidate);
 
@@ -575,21 +670,28 @@ BOOST_AUTO_TEST_CASE(last_note_unison_bonus_accounted_for_excess_sp)
 {
     std::vector<SightRead::Note> notes {make_note(192), make_note(5376)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {192}, SightRead::Tick {1}}};
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
-    ProcessedSong track {
-        note_track,
-        {{{}, SpMode::OdBeat},
-         {},
-         {SightRead::StarPower {SightRead::Tick {192}, SightRead::Tick {1}}}},
-        default_rb3_pathing_settings()};
+    ProcessedSong track {note_track,
+                         {.time_map = {{}, SpMode::OdBeat},
+                          .od_beats = {},
+                          .unison_phrases = {SightRead::StarPower {
+                              .position = SightRead::Tick {192},
+                              .length = SightRead::Tick {1}}}},
+                         default_rb3_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin(),
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin(),
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     const auto result = track.is_candidate_valid(candidate);
 
@@ -605,17 +707,23 @@ BOOST_AUTO_TEST_CASE(check_whammy_is_counted)
     std::vector<SightRead::Note> notes {make_note(0, 960), make_note(3840),
                                         make_note(6144)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {7000}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {7000}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cend() - 2,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cend() - 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
 }
@@ -627,17 +735,23 @@ BOOST_AUTO_TEST_CASE(check_whammy_from_end_of_sp_sustain_before_note_is_counted)
     std::vector<SightRead::Note> notes {make_note(0, 960), make_note(2880),
                                         make_note(6144)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {7000}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {7000}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cend() - 2,
-                                   points.cend() - 1,
-                                   {SightRead::Beat(1.0), SpMeasure(0.25)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cend() - 2,
+        .act_end = points.cend() - 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(1.0), .sp_measure = SpMeasure(0.25)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -652,17 +766,23 @@ BOOST_AUTO_TEST_CASE(
     std::vector<SightRead::Note> notes {make_note(0), make_note(192),
                                         make_note(384, 192), make_note(5260)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {384}, SightRead::Tick {1}}};
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin() + 2,
-                                   points.cend() - 1,
-                                   {SightRead::Beat(1.0), SpMeasure(0.25)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin() + 2,
+        .act_end = points.cend() - 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(1.0), .sp_measure = SpMeasure(0.25)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::insufficient_sp);
@@ -673,17 +793,23 @@ BOOST_AUTO_TEST_CASE(check_compressed_activations_are_counted)
     std::vector<SightRead::Note> notes {make_note(0, 960), make_note(3840),
                                         make_note(6144)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {7000}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {7000}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cend() - 2,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.9, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cend() - 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.9,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -706,10 +832,16 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_considered)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 3,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 1.0, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 3,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   1.0,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
 }
@@ -727,10 +859,16 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_only_considered_down_to_a_half_bar)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.25, 1.0, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.25,
+                   1.0,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::surplus_sp);
@@ -752,10 +890,16 @@ BOOST_AUTO_TEST_CASE(
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -773,10 +917,16 @@ BOOST_AUTO_TEST_CASE(next_note_can_be_squeezed_late_to_avoid_going_too_far)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -787,17 +937,23 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
     std::vector<SightRead::Note> notes {make_note(0), make_note(3102),
                                         make_note(4608)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {3100}, SightRead::Tick {100}}};
+        {.position = SightRead::Tick {3100}, .length = SightRead::Tick {100}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 2,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -808,17 +964,23 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_late)
     std::vector<SightRead::Note> notes {make_note(0), make_note(768),
                                         make_note(6942)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {768}, SightRead::Tick {100}}};
+        {.position = SightRead::Tick {768}, .length = SightRead::Tick {100}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 2,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {1.0,
+                   1.0,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -832,9 +994,12 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
                                         make_note(768), make_note(4608),
                                         make_note(5376)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {4608}, SightRead::Tick {50}}};
-    SightRead::TempoMap tempo_map {
-        {}, {{SightRead::Tick {3840}, 4000000}}, {}, 192};
+        {.position = SightRead::Tick {4608}, .length = SightRead::Tick {50}}};
+    SightRead::TempoMap tempo_map {{},
+                                   {{.position = SightRead::Tick {3840},
+                                     .millibeats_per_minute = 4000000}},
+                                   {},
+                                   192};
 
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
@@ -842,13 +1007,21 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret, global_data};
     ProcessedSong track {note_track,
-                         {{tempo_map, SpMode::Measure}, {}, {}},
+                         {.time_map = {tempo_map, SpMode::Measure},
+                          .od_beats = {},
+                          .unison_phrases = {}},
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin() + 2,
-                                   points.cbegin() + 4,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin() + 2,
+        .act_end = points.cbegin() + 4,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate).validity,
                       ActValidity::success);
@@ -867,10 +1040,16 @@ BOOST_AUTO_TEST_CASE(front_end_and_back_end_are_restricted)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
                       ActValidity::insufficient_sp);
@@ -883,17 +1062,23 @@ BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
     std::vector<SightRead::Note> notes {make_note(0), make_note(3102),
                                         make_note(4608)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {3100}, SightRead::Tick {100}}};
+        {.position = SightRead::Tick {3100}, .length = SightRead::Tick {100}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 2,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
                       ActValidity::insufficient_sp);
@@ -906,17 +1091,23 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
     std::vector<SightRead::Note> notes {make_note(0), make_note(768),
                                         make_note(6942)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {768}, SightRead::Tick {100}}};
+        {.position = SightRead::Tick {768}, .length = SightRead::Tick {100}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 2,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {1.0,
+                   1.0,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
                       ActValidity::insufficient_sp);
@@ -936,10 +1127,16 @@ BOOST_AUTO_TEST_CASE(next_note_back_end_is_restricted)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.5).validity,
                       ActValidity::surplus_sp);
@@ -958,10 +1155,16 @@ BOOST_AUTO_TEST_CASE(end_position_is_finite_if_activation_goes_past_last_note)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin(),
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin(),
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {1.0,
+                   1.0,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
     auto result = track.is_candidate_valid(candidate, 1.0);
 
     BOOST_CHECK_EQUAL(result.validity, ActValidity::success);
@@ -977,17 +1180,23 @@ BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
     std::vector<SightRead::Note> notes {make_note(0), make_note(2688),
                                         make_note(3072), make_note(3840)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {2688}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {2688}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_gh1_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 2,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
                       ActValidity::success);
@@ -998,17 +1207,23 @@ BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
     std::vector<SightRead::Note> notes {make_note(0), make_note(3072),
                                         make_note(3840)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {3072}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {3072}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_gh1_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
                       ActValidity::success);
@@ -1018,17 +1233,23 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
 {
     std::vector<SightRead::Note> notes {make_note(0, 1920), make_note(3456)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_gh1_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cend() - 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cend() - 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
                       ActValidity::insufficient_sp);
@@ -1038,17 +1259,23 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
 {
     std::vector<SightRead::Note> notes {make_note(0, 2304)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_gh1_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cend() - 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cend() - 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_CLOSE(
         track
@@ -1065,17 +1292,23 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_around_sp_granting_note_doesnt_get_added)
     std::vector<SightRead::Note> notes {make_note(0), make_note(768, 192),
                                         make_note(3168)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {768}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {768}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_gh1_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cend() - 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cend() - 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
                       ActValidity::insufficient_sp);
@@ -1088,17 +1321,23 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)
     std::vector<SightRead::Note> notes {make_note(0, 768), make_note(3072),
                                         make_note(3264)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {3300}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {3300}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cend() - 2,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cend() - 2,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(
         track
@@ -1120,17 +1359,23 @@ BOOST_AUTO_TEST_CASE(
     std::vector<SightRead::Note> notes {make_note(0, 960), make_note(2880),
                                         make_note(6144)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {7000}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {7000}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cend() - 2,
-                                   points.cend() - 1,
-                                   {SightRead::Beat(1.0), SpMeasure(0.25)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cend() - 2,
+        .act_end = points.cend() - 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(1.0), .sp_measure = SpMeasure(0.25)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 0.0).validity,
                       ActValidity::success);
@@ -1145,19 +1390,25 @@ BOOST_AUTO_TEST_CASE(
     std::vector<SightRead::Note> notes {make_note(0), make_note(192),
                                         make_note(384), make_note(3456, 192)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {1}},
-        {SightRead::Tick {192}, SightRead::Tick {1}},
-        {SightRead::Tick {3456}, SightRead::Tick {1}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {3456}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin() + 2,
-                                   points.cend() - 1,
-                                   {SightRead::Beat(1.0), SpMeasure(0.25)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin() + 2,
+        .act_end = points.cend() - 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(1.0), .sp_measure = SpMeasure(0.25)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     auto result = track.is_candidate_valid(candidate, 0.0);
 
@@ -1171,23 +1422,35 @@ BOOST_AUTO_TEST_CASE(
 // caused the endpoint to be too early.
 BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
 {
-    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 1, 4}}, {}, {}, 192};
+    SightRead::TempoMap tempo_map {
+        {{.position = SightRead::Tick {0}, .numerator = 1, .denominator = 4}},
+        {},
+        {},
+        192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
     std::vector<SightRead::Note> notes {make_note(0, 6720)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {1}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret, global_data};
     ProcessedSong track {note_track,
-                         {{tempo_map, SpMode::Measure}, {}, {}},
+                         {.time_map = {tempo_map, SpMode::Measure},
+                          .od_beats = {},
+                          .unison_phrases = {}},
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    ActivationCandidate candidate {points.cbegin() + 500,
-                                   points.cbegin() + 750,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {1.0, 1.0, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin() + 500,
+        .act_end = points.cbegin() + 750,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {1.0,
+                   1.0,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     auto result = track.is_candidate_valid(candidate, 0.0);
 
@@ -1227,7 +1490,7 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
     std::vector<SightRead::Note> notes {make_note(192), make_note(384, 192),
                                         make_note(768)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {384}, SightRead::Tick {1}}};
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong song {track, default_measure_mode_data(),
@@ -1243,7 +1506,10 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
 BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
 {
     SightRead::TempoMap tempo_map {
-        {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {3840}, 2, 4}},
+        {{.position = SightRead::Tick {0}, .numerator = 4, .denominator = 4},
+         {.position = SightRead::Tick {3840},
+          .numerator = 2,
+          .denominator = 4}},
         {},
         {},
         192};
@@ -1254,13 +1520,21 @@ BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
     SightRead::NoteTrack track {
         notes, {}, SightRead::TrackType::FiveFret, global_data};
     ProcessedSong song {track,
-                        {{tempo_map, SpMode::Measure}, {}, {}},
+                        {.time_map = {tempo_map, SpMode::Measure},
+                         .od_beats = {},
+                         .unison_phrases = {}},
                         no_squeeze_positive_video_lag_settings()};
     const auto& points = song.points();
-    ActivationCandidate candidate {points.cbegin(),
-                                   points.cbegin() + 1,
-                                   {SightRead::Beat(0.0), SpMeasure(0.0)},
-                                   {0.5, 0.5, {0.25, 0.5, 0.5}}};
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cbegin() + 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
 
     auto result = song.is_candidate_valid(candidate);
 
@@ -1307,12 +1581,13 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
                                         make_note(384), make_note(576),
                                         make_note(6144)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {192}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {6144}, SightRead::Tick {50}}};
-    std::vector<SightRead::Solo> solos {
-        {SightRead::Tick {0}, SightRead::Tick {50}, 50}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {6144}, .length = SightRead::Tick {50}}};
+    std::vector<SightRead::Solo> solos {{.start = SightRead::Tick {0},
+                                         .end = SightRead::Tick {50},
+                                         .value = 50}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
@@ -1320,9 +1595,11 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cbegin() + 2, points.cbegin() + 3,
-                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
-               100};
+    Path path {.activations = {{.act_start = points.cbegin() + 2,
+                                .act_end = points.cbegin() + 3,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 100};
 
     const char* desired_path_output = "Path: 2(+1)-ES1\n"
                                       "No SP score: 300\n"
@@ -1339,12 +1616,13 @@ BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
                                         make_note(384), make_note(576),
                                         make_note(6144)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {192}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {6144}, SightRead::Tick {50}}};
-    std::vector<SightRead::Solo> solos {
-        {SightRead::Tick {0}, SightRead::Tick {50}, 50}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {6144}, .length = SightRead::Tick {50}}};
+    std::vector<SightRead::Solo> solos {{.start = SightRead::Tick {0},
+                                         .end = SightRead::Tick {50},
+                                         .value = 50}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
@@ -1352,9 +1630,11 @@ BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_gh1_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cbegin() + 2, points.cbegin() + 3,
-                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
-               100};
+    Path path {.activations = {{.act_start = points.cbegin() + 2,
+                                .act_end = points.cbegin() + 3,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 100};
 
     const char* desired_path_output = "Path: 2-S1-ES1\n"
                                       "No SP score: 300\n"
@@ -1370,19 +1650,21 @@ BOOST_AUTO_TEST_CASE(no_overlap_is_denoted_correctly)
                                         make_note(384), make_note(576),
                                         make_note(6144)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {192}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {6144}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {6144}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cbegin() + 3, points.cbegin() + 3,
-                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
-               50};
+    Path path {.activations = {{.act_start = points.cbegin() + 3,
+                                .act_end = points.cbegin() + 3,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 50};
 
     const char* desired_path_output = "Path: 3-ES1\n"
                                       "No SP score: 250\n"
@@ -1399,19 +1681,21 @@ BOOST_AUTO_TEST_CASE(no_es_is_denoted_correctly)
                                         make_note(384), make_note(576),
                                         make_note(6144)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {192}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {6144}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {6144}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cbegin() + 4, points.cbegin() + 4,
-                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
-               50};
+    Path path {.activations = {{.act_start = points.cbegin() + 4,
+                                .act_end = points.cbegin() + 4,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 50};
 
     const char* desired_path_output = "Path: 3(+1)\n"
                                       "No SP score: 250\n"
@@ -1428,10 +1712,10 @@ BOOST_AUTO_TEST_CASE(no_sp_is_denoted_correctly)
                                         make_note(384), make_note(576),
                                         make_note(6144)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {192}, SightRead::Tick {50}},
-        {SightRead::Tick {384}, SightRead::Tick {50}},
-        {SightRead::Tick {6144}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {6144}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes,
         {},
@@ -1439,7 +1723,7 @@ BOOST_AUTO_TEST_CASE(no_sp_is_denoted_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
-    Path path {{}, 0};
+    Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
                                       "No SP score: 250\n"
@@ -1454,17 +1738,19 @@ BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
     std::vector<SightRead::Note> notes {make_note(0), make_note(192, 192),
                                         make_note(768)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {192}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cend() - 1, points.cend() - 1, SightRead::Beat {0.0},
-                 SightRead::Beat {0.0}}},
-               50};
+    Path path {.activations = {{.act_start = points.cend() - 1,
+                                .act_end = points.cend() - 1,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 50};
 
     const char* desired_path_output = "Path: 2\n"
                                       "No SP score: 178\n"
@@ -1480,17 +1766,19 @@ BOOST_AUTO_TEST_CASE(mid_sustain_activations_noted_correctly)
     std::vector<SightRead::Note> notes {make_note(0), make_note(192),
                                         make_note(768, 192)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {192}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cbegin() + 3, points.cend() - 1, SightRead::Beat {0.0},
-                 SightRead::Beat {0.0}}},
-               28};
+    Path path {.activations = {{.act_start = points.cbegin() + 3,
+                                .act_end = points.cend() - 1,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 28};
 
     const char* desired_path_output = "Path: 2\n"
                                       "No SP score: 178\n"
@@ -1507,17 +1795,19 @@ BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_counted_correctly)
         make_note(0), make_note(192), make_note(768),
         make_note(960, 0, SightRead::FIVE_FRET_RED)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {192}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cend() - 1, points.cend() - 1, SightRead::Beat {0.0},
-                 SightRead::Beat {0.0}}},
-               50};
+    Path path {.activations = {{.act_start = points.cend() - 1,
+                                .act_end = points.cend() - 1,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 50};
 
     const char* desired_path_output = "Path: 2\n"
                                       "No SP score: 200\n"
@@ -1535,17 +1825,19 @@ BOOST_AUTO_TEST_CASE(
         make_note(0), make_note(192), make_note(768, 96),
         make_note(960, 0, SightRead::FIVE_FRET_RED)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {192}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cend() - 1, points.cend() - 1, SightRead::Beat {0.0},
-                 SightRead::Beat {0.0}}},
-               50};
+    Path path {.activations = {{.act_start = points.cend() - 1,
+                                .act_end = points.cend() - 1,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 50};
 
     const char* desired_path_output = "Path: 2\n"
                                       "No SP score: 214\n"
@@ -1560,17 +1852,19 @@ BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
 {
     std::vector<SightRead::Note> notes {make_note(0), make_note(192, 192)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {50}},
-        {SightRead::Tick {192}, SightRead::Tick {50}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cbegin() + 2, points.cend() - 1, SightRead::Beat {0.0},
-                 SightRead::Beat {0.0}}},
-               28};
+    Path path {.activations = {{.act_start = points.cbegin() + 2,
+                                .act_end = points.cend() - 1,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 28};
 
     const char* desired_path_output = "Path: 2\n"
                                       "No SP score: 128\n"
@@ -1585,16 +1879,18 @@ BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
 {
     std::vector<SightRead::Note> notes {make_note(0, 3072), make_note(3264)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {3300}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {3300}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cend() - 3, points.cend() - 3, SightRead::Beat {0.0},
-                 SightRead::Beat {0.0}}},
-               1};
+    Path path {.activations = {{.act_start = points.cend() - 3,
+                                .act_end = points.cend() - 3,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 1};
 
     const char* desired_path_output = "Path: 0-ES1\n"
                                       "No SP score: 539\n"
@@ -1619,7 +1915,7 @@ BOOST_AUTO_TEST_CASE(average_multiplier_rounds_down)
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
-    Path path {{}, 0};
+    Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
                                       "No SP score: 650\n"
@@ -1641,7 +1937,7 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_drums)
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_pro_drums_pathing_settings()};
-    Path path {{}, 0};
+    Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
                                       "No SP score: 50\n"
@@ -1662,7 +1958,7 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_zero_notes)
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_pro_drums_pathing_settings()};
-    Path path {{}, 0};
+    Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
                                       "No SP score: 0\n"
@@ -1679,10 +1975,10 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_is_used_for_drums)
         make_drum_note(6336), make_drum_note(6528), make_drum_note(6912),
         make_drum_note(9984), make_drum_note(13056)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {1}},
-        {SightRead::Tick {192}, SightRead::Tick {1}},
-        {SightRead::Tick {6336}, SightRead::Tick {1}},
-        {SightRead::Tick {6528}, SightRead::Tick {1}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {6336}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {6528}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
@@ -1690,11 +1986,15 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_is_used_for_drums)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_pro_drums_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cbegin() + 2, points.cbegin() + 2,
-                 SightRead::Beat {8.0}, SightRead::Beat {24.0}},
-                {points.cend() - 1, points.cend() - 1, SightRead::Beat {68.0},
-                 SightRead::Beat {84.0}}},
-               100};
+    Path path {.activations = {{.act_start = points.cbegin() + 2,
+                                .act_end = points.cbegin() + 2,
+                                .whammy_end = SightRead::Beat {8.0},
+                                .sp_start = SightRead::Beat {24.0}},
+                               {.act_start = points.cend() - 1,
+                                .act_end = points.cend() - 1,
+                                .whammy_end = SightRead::Beat {68.0},
+                                .sp_start = SightRead::Beat {84.0}}},
+               .score_boost = 100};
 
     const char* desired_path_output = "Path: 0-1\n"
                                       "No SP score: 400\n"
@@ -1711,10 +2011,10 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_l_and_e_are_used_for_drums)
         make_drum_note(5568), make_drum_note(5755), make_drum_note(6912),
         make_drum_note(9984), make_drum_note(13056)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {1}},
-        {SightRead::Tick {390}, SightRead::Tick {1}},
-        {SightRead::Tick {5568}, SightRead::Tick {1}},
-        {SightRead::Tick {5755}, SightRead::Tick {1}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {390}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {5568}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {5755}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
         notes, phrases, SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
@@ -1722,11 +2022,15 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_l_and_e_are_used_for_drums)
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_pro_drums_pathing_settings()};
     const auto& points = track.points();
-    Path path {{{points.cbegin() + 2, points.cbegin() + 2,
-                 SightRead::Beat {8.0}, SightRead::Beat {24.0}},
-                {points.cend() - 1, points.cend() - 1, SightRead::Beat {68.0},
-                 SightRead::Beat {84.0}}},
-               100};
+    Path path {.activations = {{.act_start = points.cbegin() + 2,
+                                .act_end = points.cbegin() + 2,
+                                .whammy_end = SightRead::Beat {8.0},
+                                .sp_start = SightRead::Beat {24.0}},
+                               {.act_start = points.cend() - 1,
+                                .act_end = points.cend() - 1,
+                                .whammy_end = SightRead::Beat {68.0},
+                                .sp_start = SightRead::Beat {84.0}}},
+               .score_boost = 100};
 
     const char* desired_path_output = "Path: 0(E)-1(L)\n"
                                       "No SP score: 400\n"
@@ -1741,8 +2045,9 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_ignored_with_rb)
     std::vector<SightRead::Note> notes {make_note(0), make_note(192),
                                         make_note(384), make_note(576),
                                         make_note(6144)};
-    std::vector<SightRead::Solo> solos {
-        {SightRead::Tick {0}, SightRead::Tick {50}, 100}};
+    std::vector<SightRead::Solo> solos {{.start = SightRead::Tick {0},
+                                         .end = SightRead::Tick {50},
+                                         .value = 100}};
     SightRead::NoteTrack note_track {
         notes,
         {},
@@ -1751,7 +2056,7 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_ignored_with_rb)
     note_track.solos(solos);
     ProcessedSong track {note_track, default_od_beat_mode_data(),
                          default_rb_pathing_settings()};
-    Path path {{}, 0};
+    Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
                                       "No SP score: 225\n"

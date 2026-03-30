@@ -455,29 +455,30 @@ void ImageImpl::draw_note(const ImageBuilder& builder, const DrawnNote& note)
 void ImageImpl::draw_sustain(const ImageBuilder& builder, const DrawnNote& note)
 {
     const std::map<SightRead::TrackType, std::vector<SustainColour>>
-        colour_map {{SightRead::TrackType::FiveFret,
-                     {{{0, 255, 0}, 1.0F, {-3, 3}},
-                      {{255, 0, 0}, 1.0F, {12, 18}},
-                      {{255, 255, 0}, 1.0F, {27, 33}},
-                      {{0, 0, 255}, 1.0F, {42, 48}},
-                      {{255, 165, 0}, 1.0F, {57, 63}},
-                      {{128, 0, 128}, 0.5F, {7, 53}}}},
-                    {SightRead::TrackType::FortniteFestival,
-                     {{{0, 255, 0}, 1.0F, {-3, 3}},
-                      {{255, 0, 0}, 1.0F, {12, 18}},
-                      {{255, 255, 0}, 1.0F, {27, 33}},
-                      {{0, 0, 255}, 1.0F, {42, 48}},
-                      {{255, 165, 0}, 1.0F, {57, 63}},
-                      {{128, 0, 128}, 0.5F, {7, 53}}}},
-                    {SightRead::TrackType::SixFret,
-                     {{{150, 150, 150}, 1.0F, {-3, 3}},
-                      {{150, 150, 150}, 1.0F, {27, 33}},
-                      {{150, 150, 150}, 1.0F, {57, 63}},
-                      {{150, 150, 150}, 1.0F, {-3, 3}},
-                      {{150, 150, 150}, 1.0F, {27, 33}},
-                      {{150, 150, 150}, 1.0F, {57, 63}},
-                      {{150, 150, 150}, 0.5F, {7, 53}}}},
-                    {SightRead::TrackType::Drums, {}}};
+        colour_map {
+            {SightRead::TrackType::FiveFret,
+             {{.rgb = {0, 255, 0}, .opacity = 1.0F, .y_range = {-3, 3}},
+              {.rgb = {255, 0, 0}, .opacity = 1.0F, .y_range = {12, 18}},
+              {.rgb = {255, 255, 0}, .opacity = 1.0F, .y_range = {27, 33}},
+              {.rgb = {0, 0, 255}, .opacity = 1.0F, .y_range = {42, 48}},
+              {.rgb = {255, 165, 0}, .opacity = 1.0F, .y_range = {57, 63}},
+              {.rgb = {128, 0, 128}, .opacity = 0.5F, .y_range = {7, 53}}}},
+            {SightRead::TrackType::FortniteFestival,
+             {{.rgb = {0, 255, 0}, .opacity = 1.0F, .y_range = {-3, 3}},
+              {.rgb = {255, 0, 0}, .opacity = 1.0F, .y_range = {12, 18}},
+              {.rgb = {255, 255, 0}, .opacity = 1.0F, .y_range = {27, 33}},
+              {.rgb = {0, 0, 255}, .opacity = 1.0F, .y_range = {42, 48}},
+              {.rgb = {255, 165, 0}, .opacity = 1.0F, .y_range = {57, 63}},
+              {.rgb = {128, 0, 128}, .opacity = 0.5F, .y_range = {7, 53}}}},
+            {SightRead::TrackType::SixFret,
+             {{.rgb = {150, 150, 150}, .opacity = 1.0F, .y_range = {-3, 3}},
+              {.rgb = {150, 150, 150}, .opacity = 1.0F, .y_range = {27, 33}},
+              {.rgb = {150, 150, 150}, .opacity = 1.0F, .y_range = {57, 63}},
+              {.rgb = {150, 150, 150}, .opacity = 1.0F, .y_range = {-3, 3}},
+              {.rgb = {150, 150, 150}, .opacity = 1.0F, .y_range = {27, 33}},
+              {.rgb = {150, 150, 150}, .opacity = 1.0F, .y_range = {57, 63}},
+              {.rgb = {150, 150, 150}, .opacity = 0.5F, .y_range = {7, 53}}}},
+            {SightRead::TrackType::Drums, {}}};
     const auto& colours = colour_map.at(builder.track_type());
 
     for (auto i = 0U; i < colours.size(); ++i) {

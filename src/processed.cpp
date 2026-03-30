@@ -92,7 +92,8 @@ public:
                           SpPosition required_whammy_end)
     {
         if (!m_overlap_engine) {
-            required_whammy_end = {SightRead::Beat {0.0}, SpMeasure {0.0}};
+            required_whammy_end = {.beat = SightRead::Beat {0.0},
+                                   .sp_measure = SpMeasure {0.0}};
         }
         m_sp = sp_data.propagate_sp_over_whammy_min(m_position, sp_note_start,
                                                     m_sp, required_whammy_end);
@@ -231,7 +232,8 @@ ProcessedSong::total_available_sp_with_earliest_pos(
     sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
     return {sp_bar,
-            SpPosition {last_beat, m_time_map.to_sp_measures(last_beat)}};
+            SpPosition {.beat = last_beat,
+                        .sp_measure = m_time_map.to_sp_measures(last_beat)}};
 }
 
 SpPosition ProcessedSong::adjusted_hit_window_start(PointPtr point,
@@ -249,7 +251,7 @@ SpPosition ProcessedSong::adjusted_hit_window_start(PointPtr point,
     auto adj_start_b = m_time_map.to_beats(adj_start_s);
     auto adj_start_m = m_time_map.to_sp_measures(adj_start_b);
 
-    return {adj_start_b, adj_start_m};
+    return {.beat = adj_start_b, .sp_measure = adj_start_m};
 }
 
 SpPosition ProcessedSong::adjusted_hit_window_end(PointPtr point,
@@ -267,7 +269,7 @@ SpPosition ProcessedSong::adjusted_hit_window_end(PointPtr point,
     auto adj_end_b = m_time_map.to_beats(adj_end_s);
     auto adj_end_m = m_time_map.to_sp_measures(adj_end_b);
 
-    return {adj_end_b, adj_end_m};
+    return {.beat = adj_end_b, .sp_measure = adj_end_m};
 }
 
 ActResult
@@ -276,10 +278,12 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
                                   SpPosition required_whammy_end) const
 {
     static constexpr double MEASURES_PER_BAR = 8.0;
-    const SpPosition null_position {SightRead::Beat(0.0), SpMeasure(0.0)};
+    const SpPosition null_position {.beat = SightRead::Beat(0.0),
+                                    .sp_measure = SpMeasure(0.0)};
 
     if (!activation.sp_bar.full_enough_to_activate()) {
-        return {null_position, ActValidity::insufficient_sp};
+        return {.ending_position = null_position,
+                .validity = ActValidity::insufficient_sp};
     }
 
     auto ending_pos = adjusted_hit_window_start(activation.act_end, squeeze);
@@ -322,7 +326,8 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
         status_for_late_end.update_late_end(p_start, p_end, m_sp_data,
                                             m_overlaps);
         if (status_for_late_end.sp() < 0.0) {
-            return {null_position, ActValidity::insufficient_sp};
+            return {.ending_position = null_position,
+                    .validity = ActValidity::insufficient_sp};
         }
         status_for_early_end.update_early_end(p_start, m_sp_data,
                                               required_whammy_end);
@@ -339,7 +344,8 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
 
     status_for_late_end.advance_whammy_max(ending_pos, m_sp_data, m_overlaps);
     if (status_for_late_end.sp() < 0.0) {
-        return {null_position, ActValidity::insufficient_sp};
+        return {.ending_position = null_position,
+                .validity = ActValidity::insufficient_sp};
     }
 
     status_for_early_end.update_early_end(ending_pos, m_sp_data,
@@ -358,11 +364,13 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
     if (next_point != m_points.cend()
         && end_meas
             >= adjusted_hit_window_end(next_point, squeeze).sp_measure) {
-        return {null_position, ActValidity::surplus_sp};
+        return {.ending_position = null_position,
+                .validity = ActValidity::surplus_sp};
     }
 
     const auto end_beat = m_time_map.to_beats(end_meas);
-    return {{end_beat, end_meas}, ActValidity::success};
+    return {.ending_position = {.beat = end_beat, .sp_measure = end_meas},
+            .validity = ActValidity::success};
 }
 
 void ProcessedSong::append_activation(std::stringstream& stream,

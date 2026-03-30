@@ -82,90 +82,96 @@ std::shared_ptr<SightRead::SongGlobalData> make_resolution(int resolution)
 
 PathingSettings non_pro_drums_pathing_settings()
 {
-    return {std::make_unique<ChDrumEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            {false, false, false}};
+    return {.engine = std::make_unique<ChDrumEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = {.enable_double_kick = false,
+                              .disable_kick = false,
+                              .pro_drums = false}};
 }
 
 PathingSettings min_kicks_drums_pathing_settings()
 {
-    return {std::make_unique<ChDrumEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            {false, true, false}};
+    return {.engine = std::make_unique<ChDrumEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = {.enable_double_kick = false,
+                              .disable_kick = true,
+                              .pro_drums = false}};
 }
 
 PathingSettings extra_kicks_only_drums_pathing_settings()
 {
-    return {std::make_unique<ChDrumEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            {true, true, false}};
+    return {.engine = std::make_unique<ChDrumEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = {.enable_double_kick = true,
+                              .disable_kick = true,
+                              .pro_drums = false}};
 }
 
 PathingSettings default_rb_bass_pathing_settings()
 {
-    return {std::make_unique<RbBassEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<RbBassEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 PathingSettings default_fortnite_vocals_pathing_settings()
 {
-    return {std::make_unique<FortniteVocalsEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<FortniteVocalsEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 PathingSettings mid_squeeze_rb_pathing_settings()
 {
-    return {std::make_unique<RbEngine>(),
-            0.5,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<RbEngine>(),
+            .squeeze = 0.5,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 PathingSettings slight_negative_video_lag_settings()
 {
-    return {std::make_unique<ChGuitarEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {-0.20},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<ChGuitarEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {-0.20},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 PathingSettings negative_video_lag_settings()
 {
-    return {std::make_unique<ChGuitarEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {-0.40},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<ChGuitarEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {-0.40},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 }
 
@@ -242,7 +248,9 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
                                        make_resolution(200)};
     PointSet second_points {
         second_track,
-        {{make_resolution(200)->tempo_map(), SpMode::Measure}, {}, {}},
+        {.time_map = {make_resolution(200)->tempo_map(), SpMode::Measure},
+         .od_beats = {},
+         .unison_phrases = {}},
         default_guitar_pathing_settings()};
     std::vector<int> second_expected_values {50, 2};
     std::vector<SightRead::Beat> second_expected_beats {
@@ -446,16 +454,16 @@ BOOST_AUTO_TEST_CASE(fortnite_festival_half_od_time_is_handled_correctly)
         {},
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
-    PointSet points {
-        track,
-        {{{{},
-           {},
-           {SightRead::Tick {0}, SightRead::Tick {960}, SightRead::Tick {1920}},
-           480},
-          SpMode::OdBeat},
-         {},
-         {}},
-        default_fortnite_guitar_pathing_settings()};
+    PointSet points {track,
+                     {.time_map = {{{},
+                                    {},
+                                    {SightRead::Tick {0}, SightRead::Tick {960},
+                                     SightRead::Tick {1920}},
+                                    480},
+                                   SpMode::OdBeat},
+                      .od_beats = {},
+                      .unison_phrases = {}},
+                     default_fortnite_guitar_pathing_settings()};
     const auto total_score = std::accumulate(
         points.cbegin(), points.cend(), 0,
         [](const auto& a, const auto& b) { return a + b.value; });
@@ -471,7 +479,9 @@ BOOST_AUTO_TEST_CASE(long_fortnite_sustains_are_handled_correctly)
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track,
-                     {{{{}, {}, {}, 480}, SpMode::OdBeat}, {}, {}},
+                     {.time_map = {{{}, {}, {}, 480}, SpMode::OdBeat},
+                      .od_beats = {},
+                      .unison_phrases = {}},
                      default_fortnite_vocals_pathing_settings()};
     const auto total_score = std::accumulate(
         points.cbegin(), points.cend(), 0,
@@ -499,18 +509,20 @@ BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)
 {
     SightRead::NoteTrack track {
         {make_note(768), make_note(960), make_note(1152)},
-        {{SightRead::Tick {768}, SightRead::Tick {1}},
-         {SightRead::Tick {900}, SightRead::Tick {50}},
-         {SightRead::Tick {1100}, SightRead::Tick {53}}},
+        {{.position = SightRead::Tick {768}, .length = SightRead::Tick {1}},
+         {.position = SightRead::Tick {900}, .length = SightRead::Tick {50}},
+         {.position = SightRead::Tick {1100}, .length = SightRead::Tick {53}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
-    PointSet unison_points {track,
-                            {{{}, SpMode::Measure},
-                             {},
-                             {{SightRead::Tick {1100}, SightRead::Tick {53}}}},
-                            default_rb3_pathing_settings()};
+    PointSet unison_points {
+        track,
+        {.time_map = {{}, SpMode::Measure},
+         .od_beats = {},
+         .unison_phrases = {{.position = SightRead::Tick {1100},
+                             .length = SightRead::Tick {53}}}},
+        default_rb3_pathing_settings()};
 
     BOOST_TEST(points.cbegin()->is_sp_granting_note);
     BOOST_TEST(!std::next(points.cbegin())->is_sp_granting_note);
@@ -660,7 +672,8 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
 {
     SightRead::TempoMap tempo_map {
         {},
-        {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
+        {{.position = SightRead::Tick {0}, .millibeats_per_minute = 150000},
+         {.position = SightRead::Tick {768}, .millibeats_per_minute = 200000}},
         {},
         192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
@@ -670,7 +683,9 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
     SightRead::NoteTrack track {
         notes, {}, SightRead::TrackType::FiveFret, global_data};
     PointSet points {track,
-                     {{tempo_map, SpMode::Measure}, {}, {}},
+                     {.time_map = {tempo_map, SpMode::Measure},
+                      .od_beats = {},
+                      .unison_phrases = {}},
                      default_guitar_pathing_settings()};
 
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_start.beat.value(), 0.825,
@@ -683,7 +698,8 @@ BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
 {
     SightRead::TempoMap tempo_map {
         {},
-        {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
+        {{.position = SightRead::Tick {0}, .millibeats_per_minute = 150000},
+         {.position = SightRead::Tick {768}, .millibeats_per_minute = 200000}},
         {},
         192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
@@ -693,7 +709,9 @@ BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
     SightRead::NoteTrack track {
         notes, {}, SightRead::TrackType::FiveFret, global_data};
     PointSet points {track,
-                     {{tempo_map, SpMode::Measure}, {}, {}},
+                     {.time_map = {tempo_map, SpMode::Measure},
+                      .od_beats = {},
+                      .unison_phrases = {}},
                      default_guitar_pathing_settings()};
 
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_end.beat.value(), 1.175,
@@ -706,7 +724,8 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
 {
     SightRead::TempoMap tempo_map {
         {},
-        {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
+        {{.position = SightRead::Tick {0}, .millibeats_per_minute = 150000},
+         {.position = SightRead::Tick {768}, .millibeats_per_minute = 200000}},
         {},
         192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
@@ -716,7 +735,9 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
     SightRead::NoteTrack track {
         notes, {}, SightRead::TrackType::FiveFret, global_data};
     PointSet points {track,
-                     {{tempo_map, SpMode::Measure}, {}, {}},
+                     {.time_map = {tempo_map, SpMode::Measure},
+                      .od_beats = {},
+                      .unison_phrases = {}},
                      default_guitar_pathing_settings()};
 
     for (auto p = std::next(points.cbegin()); p < points.cend(); ++p) {
@@ -731,7 +752,8 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
 {
     SightRead::TempoMap tempo_map {
         {},
-        {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
+        {{.position = SightRead::Tick {0}, .millibeats_per_minute = 150000},
+         {.position = SightRead::Tick {768}, .millibeats_per_minute = 200000}},
         {},
         192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
@@ -741,7 +763,9 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
     SightRead::NoteTrack track {
         notes, {}, SightRead::TrackType::FiveFret, global_data};
     PointSet points {track,
-                     {{tempo_map, SpMode::Measure}, {}, {}},
+                     {.time_map = {tempo_map, SpMode::Measure},
+                      .od_beats = {},
+                      .unison_phrases = {}},
                      mid_squeeze_ch_guitar_pathing_settings()};
 
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_start.beat.value(), 0.9125,
@@ -756,7 +780,8 @@ BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
 {
     SightRead::TempoMap tempo_map {
         {},
-        {{SightRead::Tick {0}, 150000}, {SightRead::Tick {768}, 200000}},
+        {{.position = SightRead::Tick {0}, .millibeats_per_minute = 150000},
+         {.position = SightRead::Tick {768}, .millibeats_per_minute = 200000}},
         {},
         192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
@@ -766,7 +791,9 @@ BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
     SightRead::NoteTrack track {
         notes, {}, SightRead::TrackType::FiveFret, global_data};
     PointSet points {track,
-                     {{tempo_map, SpMode::Measure}, {}, {}},
+                     {.time_map = {tempo_map, SpMode::Measure},
+                      .od_beats = {},
+                      .unison_phrases = {}},
                      default_rb_pathing_settings()};
     PointSet fifty_sqz_points {track, default_measure_mode_data(),
                                mid_squeeze_rb_pathing_settings()};
@@ -886,8 +913,8 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
     std::vector<SightRead::Note> notes {make_note(100, 0), make_note(200, 100),
                                         make_note(400, 0)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {200}, SightRead::Tick {1}},
-        {SightRead::Tick {400}, SightRead::Tick {1}}};
+        {.position = SightRead::Tick {200}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {400}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
 
@@ -905,9 +932,12 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
 
 BOOST_AUTO_TEST_CASE(solo_sections_are_added)
 {
-    std::vector<SightRead::Solo> solos {
-        {SightRead::Tick {0}, SightRead::Tick {576}, 100},
-        {SightRead::Tick {768}, SightRead::Tick {1152}, 200}};
+    std::vector<SightRead::Solo> solos {{.start = SightRead::Tick {0},
+                                         .end = SightRead::Tick {576},
+                                         .value = 100},
+                                        {.start = SightRead::Tick {768},
+                                         .end = SightRead::Tick {1152},
+                                         .value = 200}};
     SightRead::NoteTrack track {{},
                                 {},
                                 SightRead::TrackType::FiveFret,
@@ -916,8 +946,8 @@ BOOST_AUTO_TEST_CASE(solo_sections_are_added)
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     std::vector<std::tuple<SpPosition, int>> expected_solo_boosts {
-        {{SightRead::Beat(3.0), SpMeasure(0.75)}, 100},
-        {{SightRead::Beat(6.0), SpMeasure(1.5)}, 200}};
+        {{.beat = SightRead::Beat(3.0), .sp_measure = SpMeasure(0.75)}, 100},
+        {{.beat = SightRead::Beat(6.0), .sp_measure = SpMeasure(1.5)}, 200}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         points.solo_boosts().cbegin(), points.solo_boosts().cend(),
@@ -1045,7 +1075,7 @@ BOOST_AUTO_TEST_CASE(disable_kick_doesnt_kill_sp_phrases)
         make_drum_note(0, SightRead::DRUM_RED),
         make_drum_note(192, SightRead::DRUM_KICK)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {200}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {200}}};
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -1060,7 +1090,7 @@ BOOST_AUTO_TEST_CASE(double_kicks_dont_kill_phrases)
         make_drum_note(0, SightRead::DRUM_RED),
         make_drum_note(192, SightRead::DRUM_DOUBLE_KICK)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {200}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {200}}};
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -1075,7 +1105,7 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
                                         make_drum_note(385),
                                         make_drum_note(576)};
     std::vector<SightRead::DrumFill> fills {
-        {SightRead::Tick {384}, SightRead::Tick {5}}};
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {5}}};
     SightRead::NoteTrack track {notes,
                                 {},
                                 SightRead::TrackType::Drums,
@@ -1100,7 +1130,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_not_killed)
     std::vector<SightRead::Note> notes {
         make_drum_note(0), make_drum_note(1, SightRead::DRUM_KICK)};
     std::vector<SightRead::DrumFill> fills {
-        {SightRead::Tick {0}, SightRead::Tick {2}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {2}}};
     SightRead::NoteTrack track {notes,
                                 {},
                                 SightRead::TrackType::Drums,
@@ -1119,7 +1149,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_not_killed)
     std::vector<SightRead::Note> notes {
         make_drum_note(0), make_drum_note(1, SightRead::DRUM_DOUBLE_KICK)};
     std::vector<SightRead::DrumFill> fills {
-        {SightRead::Tick {0}, SightRead::Tick {2}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {2}}};
     SightRead::NoteTrack track {notes,
                                 {},
                                 SightRead::TrackType::Drums,
@@ -1139,7 +1169,7 @@ BOOST_AUTO_TEST_CASE(
     std::vector<SightRead::Note> notes {
         make_drum_note(0), make_drum_note(0, SightRead::DRUM_KICK)};
     std::vector<SightRead::DrumFill> fills {
-        {SightRead::Tick {0}, SightRead::Tick {2}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {2}}};
     SightRead::NoteTrack track {notes,
                                 {},
                                 SightRead::TrackType::Drums,
@@ -1163,9 +1193,9 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
                                         make_drum_note(370),
                                         make_drum_note(384)};
     std::vector<SightRead::DrumFill> fills {
-        {SightRead::Tick {0}, SightRead::Tick {2}},
-        {SightRead::Tick {193}, SightRead::Tick {5}},
-        {SightRead::Tick {377}, SightRead::Tick {4}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {2}},
+        {.position = SightRead::Tick {193}, .length = SightRead::Tick {5}},
+        {.position = SightRead::Tick {377}, .length = SightRead::Tick {4}}};
     SightRead::NoteTrack track {notes,
                                 {},
                                 SightRead::TrackType::Drums,
@@ -1185,7 +1215,7 @@ BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
 {
     std::vector<SightRead::Note> notes {make_drum_note(0), make_drum_note(192)};
     std::vector<SightRead::DrumFill> fills {
-        {SightRead::Tick {0}, SightRead::Tick {96}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {96}}};
     SightRead::NoteTrack track {notes,
                                 {},
                                 SightRead::TrackType::Drums,
@@ -1266,7 +1296,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
     std::vector<SightRead::Note> notes {make_note(0), make_note(192),
                                         make_note(384)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {200}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {200}}};
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -1281,7 +1311,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
     std::vector<SightRead::Note> notes {make_note(0), make_note(192),
                                         make_note(384)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {0}, SightRead::Tick {200}}};
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {200}}};
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -1307,12 +1337,17 @@ BOOST_AUTO_TEST_CASE(is_not_broken_by_floating_point_imprecision)
     std::vector<SightRead::Note> notes {make_note(192), make_note(384),
                                         make_note(576)};
     std::vector<SightRead::StarPower> phrases {
-        {SightRead::Tick {192}, SightRead::Tick {200}}};
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {200}}};
     SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     SightRead::TempoMap tempo_map {
-        {}, {{SightRead::Tick {0}, 119999}}, {}, 192};
-    SpDurationData duration_data {{tempo_map, SpMode::Measure}, {}, {}};
+        {},
+        {{.position = SightRead::Tick {0}, .millibeats_per_minute = 119999}},
+        {},
+        192};
+    SpDurationData duration_data {.time_map = {tempo_map, SpMode::Measure},
+                                  .od_beats = {},
+                                  .unison_phrases = {}};
     PointSet points {track, duration_data, default_gh1_pathing_settings()};
     const auto begin = points.cbegin();
 

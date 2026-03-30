@@ -122,7 +122,8 @@ int Optimiser::get_partial_full_sp_path(PointPtr point, Cache& cache) const
 
     // We only call this from find_best_subpath in a situaiton where we know
     // point is not m_points.cend(), so we may assume point is a real Point.
-    CacheKey key {point, std::prev(point)->hit_window_start};
+    CacheKey key {.point = point,
+                  .position = std::prev(point)->hit_window_start};
     auto best_path = find_best_subpaths(key, cache, true);
     cache.full_sp_paths.emplace(point, best_path);
     return best_path.score_boost;
@@ -163,7 +164,11 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
             = m_song->total_available_sp_with_earliest_pos(
                 key.position.beat, key.point, p,
                 std::prev(p)->hit_window_start);
-        ActivationCandidate candidate {p, q, starting_pos, sp_bar};
+        ActivationCandidate candidate {.act_start = p,
+                                       .act_end = q,
+                                       .earliest_activation_point
+                                       = starting_pos,
+                                       .sp_bar = sp_bar};
         auto candidate_result = m_song->is_candidate_valid(candidate);
         if (candidate_result.validity == ActValidity::success
             && candidate_result.ending_position.beat
@@ -176,7 +181,7 @@ Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
     }
 
     const auto score_boost = prev_key_iter->second.score_boost;
-    return {{next_acts, score_boost}};
+    return {{.possible_next_acts = next_acts, .score_boost = score_boost}};
 }
 
 // This function takes some information and completes the optimal subpaths from
@@ -193,7 +198,11 @@ void Optimiser::complete_subpath(
             continue;
         }
 
-        ActivationCandidate candidate {p, q, starting_pos, sp_bar};
+        ActivationCandidate candidate {.act_start = p,
+                                       .act_end = q,
+                                       .earliest_activation_point
+                                       = starting_pos,
+                                       .sp_bar = sp_bar};
         const auto candidate_result = m_song->is_candidate_valid(candidate);
         if (candidate_result.validity != ActValidity::insufficient_sp) {
             attained_act_ends.add(q);
@@ -215,17 +224,18 @@ void Optimiser::complete_subpath(
         }
 
         const auto act_score = m_song->points().range_score(p, std::next(q));
-        CacheKey next_key {m_song->points().first_after_current_phrase(q),
-                           candidate_result.ending_position};
+        CacheKey next_key {.point
+                           = m_song->points().first_after_current_phrase(q),
+                           .position = candidate_result.ending_position};
         next_key = advance_cache_key(next_key);
         const auto rest_of_path_score_boost = get_partial_path(next_key, cache);
         const auto score = act_score + rest_of_path_score_boost;
         if (score > best_score_boost) {
             best_score_boost = score;
             acts.clear();
-            acts.push_back({{p, q}, next_key});
+            acts.push_back({{.act_start = p, .act_end = q}, next_key});
         } else if (score == best_score_boost) {
-            acts.push_back({{p, q}, next_key});
+            acts.push_back({{.act_start = p, .act_end = q}, next_key});
         }
         ++q;
     }
@@ -275,8 +285,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
             continue;
         }
         SpBar sp_bar {1.0, 1.0, m_song->sp_engine_values()};
-        SpPosition starting_pos {SightRead::Beat {NEG_INF},
-                                 SpMeasure {NEG_INF}};
+        SpPosition starting_pos {.beat = SightRead::Beat {NEG_INF},
+                                 .sp_measure = SpMeasure {NEG_INF}};
         if (p != m_song->points().cbegin()) {
             starting_pos = std::prev(p)->hit_window_start;
         }
@@ -330,18 +340,19 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                          best_score_boost, acts);
     }
 
-    return {acts, best_score_boost};
+    return {.possible_next_acts = acts, .score_boost = best_score_boost};
 }
 
 Path Optimiser::optimal_path() const
 {
     Cache cache;
-    CacheKey start_key {m_song->points().cbegin(),
-                        {SightRead::Beat(NEG_INF), SpMeasure(NEG_INF)}};
+    CacheKey start_key {.point = m_song->points().cbegin(),
+                        .position = {.beat = SightRead::Beat(NEG_INF),
+                                     .sp_measure = SpMeasure(NEG_INF)}};
     start_key = advance_cache_key(start_key);
 
     const auto best_score_boost = get_partial_path(start_key, cache);
-    Path path {{}, best_score_boost};
+    Path path {.activations = {}, .score_boost = best_score_boost};
 
     while (start_key.point != m_song->points().cend()) {
         const auto& acts = cache.paths.at(start_key).possible_next_acts;
@@ -365,8 +376,11 @@ Path Optimiser::optimal_path() const
             = forced_whammy_end(best_proto_act, start_key, best_sqz_level);
         const auto [start_pos, end_pos] = act_duration(
             best_proto_act, start_key, best_sqz_level, min_whammy_force);
-        Activation act {best_proto_act.act_start, best_proto_act.act_end,
-                        min_whammy_force.beat, start_pos, end_pos};
+        Activation act {.act_start = best_proto_act.act_start,
+                        .act_end = best_proto_act.act_end,
+                        .whammy_end = min_whammy_force.beat,
+                        .sp_start = start_pos,
+                        .sp_end = end_pos};
         if (best_next_key.point != m_song->points().cend()) {
             const auto post_act_first_whammy
                 = m_song->sp_data().next_whammy_point(
@@ -403,8 +417,10 @@ double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
                 key.position.beat, key.point, act.act_start, start_pos);
         start_pos = new_pos;
 
-        ActivationCandidate candidate {act.act_start, act.act_end, start_pos,
-                                       sp_bar};
+        ActivationCandidate candidate {.act_start = act.act_start,
+                                       .act_end = act.act_end,
+                                       .earliest_activation_point = start_pos,
+                                       .sp_bar = sp_bar};
         if (m_song->is_candidate_valid(candidate, trial_sqz).validity
             == ActValidity::success) {
             max_sqz = trial_sqz;
@@ -424,7 +440,8 @@ SpPosition Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
     auto next_point = std::next(act.act_end);
 
     if (next_point == m_song->points().cend()) {
-        return {SightRead::Beat {POS_INF}, SpMeasure {POS_INF}};
+        return {.beat = SightRead::Beat {POS_INF},
+                .sp_measure = SpMeasure {POS_INF}};
     }
 
     auto prev_point = std::prev(act.act_start);
@@ -436,11 +453,13 @@ SpPosition Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
         auto mid_beat
             = (min_whammy_force.beat + max_whammy_force.beat) * (1.0 / 2);
         auto mid_meas = m_song->sp_time_map().to_sp_measures(mid_beat);
-        SpPosition mid_pos {mid_beat, mid_meas};
+        SpPosition mid_pos {.beat = mid_beat, .sp_measure = mid_meas};
         auto sp_bar = m_song->total_available_sp(key.position.beat, key.point,
                                                  act.act_start, mid_beat);
-        ActivationCandidate candidate {act.act_start, act.act_end, start_pos,
-                                       sp_bar};
+        ActivationCandidate candidate {.act_start = act.act_start,
+                                       .act_end = act.act_end,
+                                       .earliest_activation_point = start_pos,
+                                       .sp_bar = sp_bar};
         auto result = m_song->is_candidate_valid(candidate, sqz_level, mid_pos);
         if (result.validity == ActValidity::success) {
             min_whammy_force = mid_pos;
@@ -470,9 +489,11 @@ Optimiser::act_duration(ProtoActivation act, CacheKey key, double sqz_level,
     while ((max_pos.beat - min_pos.beat).value() > THRESHOLD) {
         auto trial_beat = (min_pos.beat + max_pos.beat) * (1.0 / 2);
         auto trial_meas = m_song->sp_time_map().to_sp_measures(trial_beat);
-        SpPosition trial_pos {trial_beat, trial_meas};
-        ActivationCandidate candidate {act.act_start, act.act_end, trial_pos,
-                                       sp_bar};
+        SpPosition trial_pos {.beat = trial_beat, .sp_measure = trial_meas};
+        ActivationCandidate candidate {.act_start = act.act_start,
+                                       .act_end = act.act_end,
+                                       .earliest_activation_point = trial_pos,
+                                       .sp_bar = sp_bar};
         if (m_song->is_candidate_valid(candidate, sqz_level, min_whammy_force)
                 .validity
             == ActValidity::success) {
@@ -482,7 +503,10 @@ Optimiser::act_duration(ProtoActivation act, CacheKey key, double sqz_level,
         }
     }
 
-    ActivationCandidate candidate {act.act_start, act.act_end, min_pos, sp_bar};
+    ActivationCandidate candidate {.act_start = act.act_start,
+                                   .act_end = act.act_end,
+                                   .earliest_activation_point = min_pos,
+                                   .sp_bar = sp_bar};
     auto result
         = m_song->is_candidate_valid(candidate, sqz_level, min_whammy_force);
     assert(result.validity == ActValidity::success); // NOLINT

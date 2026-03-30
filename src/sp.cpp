@@ -96,7 +96,8 @@ SpData::form_beat_rates(const SightRead::TempoMap& tempo_map,
                 = ts.numerator * DEFAULT_BEAT_RATE / ts.denominator;
             const auto drain_rate
                 = engine.sp_gain_rate() - 1 / (MEASURES_PER_BAR * measure_rate);
-            beat_rates.push_back({pos, drain_rate});
+            beat_rates.push_back(
+                {.position = pos, .net_sp_gain_rate = drain_rate});
         }
     } else if (!od_beats.empty()) {
         beat_rates.reserve(od_beats.size() - 1);
@@ -106,12 +107,13 @@ SpData::form_beat_rates(const SightRead::TempoMap& tempo_map,
             const auto next_marker = tempo_map.to_beats(od_beats[i + 1]);
             const auto drain_rate = engine.sp_gain_rate()
                 - 1 / (DEFAULT_BEATS_PER_BAR * (next_marker - pos).value());
-            beat_rates.push_back({pos, drain_rate});
+            beat_rates.push_back(
+                {.position = pos, .net_sp_gain_rate = drain_rate});
         }
     } else {
-        beat_rates.push_back(
-            {SightRead::Beat(0.0),
-             engine.sp_gain_rate() - 1 / DEFAULT_BEATS_PER_BAR});
+        beat_rates.push_back({.position = SightRead::Beat(0.0),
+                              .net_sp_gain_rate = engine.sp_gain_rate()
+                                  - 1 / DEFAULT_BEATS_PER_BAR});
     }
 
     return beat_rates;
@@ -185,7 +187,10 @@ SpData::SpData(const SightRead::NoteTrack& track,
     for (auto [start, end, note] : merged_ranges) {
         const auto start_meas = m_time_map.to_sp_measures(start);
         const auto end_meas = m_time_map.to_sp_measures(end);
-        m_whammy_ranges.push_back({{start, start_meas}, {end, end_meas}, note});
+        m_whammy_ranges.push_back(
+            {.start = {.beat = start, .sp_measure = start_meas},
+             .end = {.beat = end, .sp_measure = end_meas},
+             .note = note});
     }
 
     if (m_whammy_ranges.empty()) {
@@ -233,7 +238,9 @@ SpData::initial_whammy_prop_state(SightRead::Beat start, SightRead::Beat end,
         sp_bar_amount = std::min(sp_bar_amount, 1.0);
         start = subrange_end;
     }
-    return {p, start, sp_bar_amount};
+    return {.current_beat_rate = p,
+            .current_position = start,
+            .current_sp = sp_bar_amount};
 }
 
 double SpData::propagate_sp_over_whammy_max(SpPosition start, SpPosition end,
@@ -375,7 +382,7 @@ SpPosition SpData::sp_drain_end_point(SpPosition start,
     const auto end_meas
         = start.sp_measure + SpMeasure(sp_bar_amount * MEASURES_PER_BAR);
     const auto end_beat = m_time_map.to_beats(end_meas);
-    return {end_beat, end_meas};
+    return {.beat = end_beat, .sp_measure = end_meas};
 }
 
 SpPosition SpData::activation_end_point(SpPosition start, SpPosition end,
@@ -398,7 +405,7 @@ SpPosition SpData::activation_end_point(SpPosition start, SpPosition end,
             const auto end_beat = whammy_propagation_endpoint(
                 start.beat, end.beat, sp_bar_amount);
             const auto end_meas = m_time_map.to_sp_measures(end_beat);
-            return {end_beat, end_meas};
+            return {.beat = end_beat, .sp_measure = end_meas};
         }
         sp_bar_amount = new_sp_bar_amount;
         if (p->end.beat >= end.beat) {

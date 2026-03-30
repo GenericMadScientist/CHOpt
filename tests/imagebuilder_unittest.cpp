@@ -113,13 +113,13 @@ make_drawn_drum_note(double position,
 
 PathingSettings negative_video_lag_settings()
 {
-    return {std::make_unique<ChGuitarEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {-0.1},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<ChGuitarEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {-0.1},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 }
 
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(sp_notes_are_recorded)
 {
     SightRead::NoteTrack track {
         {make_note(0), make_note(768)},
-        {{SightRead::Tick {768}, SightRead::Tick {100}}},
+        {{.position = SightRead::Tick {768}, .length = SightRead::Tick {100}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ImageBuilder builder {track,
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE(simple_four_four_is_handled_correctly)
                           false,
                           true,
                           false};
-    std::vector<DrawnRow> expected_rows {{0.0, 16.0}};
+    std::vector<DrawnRow> expected_rows {{.start = 0.0, .end = 16.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
                                   builder.rows().cend(), expected_rows.cbegin(),
@@ -343,13 +343,16 @@ BOOST_AUTO_TEST_CASE(simple_four_four_is_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
 {
-    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4},
-                                    {SightRead::Tick {768}, 3, 4},
-                                    {SightRead::Tick {1344}, 3, 8},
-                                    {SightRead::Tick {1632}, 4, 4}},
-                                   {},
-                                   {},
-                                   192};
+    SightRead::TempoMap tempo_map {
+        {{.position = SightRead::Tick {0}, .numerator = 4, .denominator = 4},
+         {.position = SightRead::Tick {768}, .numerator = 3, .denominator = 4},
+         {.position = SightRead::Tick {1344}, .numerator = 3, .denominator = 8},
+         {.position = SightRead::Tick {1632},
+          .numerator = 4,
+          .denominator = 4}},
+        {},
+        {},
+        192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -361,7 +364,8 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
                           false,
                           true,
                           false};
-    std::vector<DrawnRow> expected_rows {{0.0, 12.5}, {12.5, 16.5}};
+    std::vector<DrawnRow> expected_rows {{.start = 0.0, .end = 12.5},
+                                         {.start = 12.5, .end = 16.5}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
                                   builder.rows().cend(), expected_rows.cbegin(),
@@ -370,12 +374,15 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
 
 BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
 {
-    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 4, 4},
-                                    {SightRead::Tick {767}, 3, 4},
-                                    {SightRead::Tick {1344}, 3, 8}},
-                                   {},
-                                   {},
-                                   192};
+    SightRead::TempoMap tempo_map {
+        {{.position = SightRead::Tick {0}, .numerator = 4, .denominator = 4},
+         {.position = SightRead::Tick {767}, .numerator = 3, .denominator = 4},
+         {.position = SightRead::Tick {1344},
+          .numerator = 3,
+          .denominator = 8}},
+        {},
+        {},
+        192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -387,7 +394,7 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
                           false,
                           true,
                           false};
-    std::vector<DrawnRow> expected_rows {{0.0, 7.0}};
+    std::vector<DrawnRow> expected_rows {{.start = 0.0, .end = 7.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
                                   builder.rows().cend(), expected_rows.cbegin(),
@@ -396,7 +403,11 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
 
 BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
 {
-    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 17, 4}}, {}, {}, 192};
+    SightRead::TempoMap tempo_map {
+        {{.position = SightRead::Tick {0}, .numerator = 17, .denominator = 4}},
+        {},
+        {},
+        192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -408,7 +419,8 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
                           false,
                           true,
                           false};
-    std::vector<DrawnRow> expected_rows {{0.0, 16.0}, {16.0, 17.0}};
+    std::vector<DrawnRow> expected_rows {{.start = 0.0, .end = 16.0},
+                                         {.start = 16.0, .end = 17.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
                                   builder.rows().cend(), expected_rows.cbegin(),
@@ -464,7 +476,11 @@ BOOST_AUTO_TEST_CASE(four_four_works_fine)
 
 BOOST_AUTO_TEST_CASE(four_eight_works_fine)
 {
-    SightRead::TempoMap tempo_map {{{SightRead::Tick {0}, 4, 8}}, {}, {}, 192};
+    SightRead::TempoMap tempo_map {
+        {{.position = SightRead::Tick {0}, .numerator = 4, .denominator = 8}},
+        {},
+        {},
+        192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -495,7 +511,8 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
 BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
 {
     SightRead::TempoMap tempo_map {
-        {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {768}, 4, 8}},
+        {{.position = SightRead::Tick {0}, .numerator = 4, .denominator = 4},
+         {.position = SightRead::Tick {768}, .numerator = 4, .denominator = 8}},
         {},
         {},
         192};
@@ -533,7 +550,8 @@ BOOST_AUTO_TEST_SUITE(time_signatures_are_handled_correctly)
 BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
 {
     SightRead::TempoMap tempo_map {
-        {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {768}, 4, 8}},
+        {{.position = SightRead::Tick {0}, .numerator = 4, .denominator = 4},
+         {.position = SightRead::Tick {768}, .numerator = 4, .denominator = 8}},
         {},
         {},
         192};
@@ -560,7 +578,10 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
 BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
 {
     SightRead::TempoMap tempo_map {
-        {{SightRead::Tick {0}, 4, 4}, {SightRead::Tick {1920}, 3, 4}},
+        {{.position = SightRead::Tick {0}, .numerator = 4, .denominator = 4},
+         {.position = SightRead::Tick {1920},
+          .numerator = 3,
+          .denominator = 4}},
         {},
         {},
         192};
@@ -586,12 +607,13 @@ BOOST_AUTO_TEST_SUITE(tempos_are_handled_correctly)
 
 BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
 {
-    SightRead::TempoMap tempo_map {{},
-                                   {{SightRead::Tick {0}, 150000},
-                                    {SightRead::Tick {384}, 120000},
-                                    {SightRead::Tick {768}, 200000}},
-                                   {},
-                                   192};
+    SightRead::TempoMap tempo_map {
+        {},
+        {{.position = SightRead::Tick {0}, .millibeats_per_minute = 150000},
+         {.position = SightRead::Tick {384}, .millibeats_per_minute = 120000},
+         {.position = SightRead::Tick {768}, .millibeats_per_minute = 200000}},
+        {},
+        192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
@@ -616,7 +638,8 @@ BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
 {
     SightRead::TempoMap tempo_map {
         {},
-        {{SightRead::Tick {0}, 120000}, {SightRead::Tick {1920}, 200000}},
+        {{.position = SightRead::Tick {0}, .millibeats_per_minute = 120000},
+         {.position = SightRead::Tick {1920}, .millibeats_per_minute = 200000}},
         {},
         192};
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
@@ -667,8 +690,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
 {
     SightRead::NoteTrack track {
         {make_note(960), make_note(1344, 96)},
-        {{SightRead::Tick {768}, SightRead::Tick {384}},
-         {SightRead::Tick {1200}, SightRead::Tick {150}}},
+        {{.position = SightRead::Tick {768}, .length = SightRead::Tick {384}},
+         {.position = SightRead::Tick {1200}, .length = SightRead::Tick {150}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ImageBuilder builder {track,
@@ -690,7 +713,7 @@ BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
 {
     SightRead::NoteTrack track {
         {make_note(768)},
-        {{SightRead::Tick {768}, SightRead::Tick {384}}},
+        {{.position = SightRead::Tick {768}, .length = SightRead::Tick {384}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ImageBuilder builder {track,
@@ -712,8 +735,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
 {
     SightRead::NoteTrack track {
         {make_ghl_note(960), make_ghl_note(1344, 96)},
-        {{SightRead::Tick {768}, SightRead::Tick {384}},
-         {SightRead::Tick {1200}, SightRead::Tick {150}}},
+        {{.position = SightRead::Tick {768}, .length = SightRead::Tick {384}},
+         {.position = SightRead::Tick {1200}, .length = SightRead::Tick {150}}},
         SightRead::TrackType::SixFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ImageBuilder builder {track,
@@ -735,8 +758,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
 {
     SightRead::NoteTrack track {
         {make_drum_note(960), make_drum_note(1344)},
-        {{SightRead::Tick {768}, SightRead::Tick {384}},
-         {SightRead::Tick {1200}, SightRead::Tick {150}}},
+        {{.position = SightRead::Tick {768}, .length = SightRead::Tick {384}},
+         {.position = SightRead::Tick {1200}, .length = SightRead::Tick {150}}},
         SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
     ImageBuilder builder {track,
@@ -758,7 +781,7 @@ BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
 {
     SightRead::NoteTrack track {
         {make_note(0), make_note(768), make_note(3840)},
-        {{SightRead::Tick {3840}, SightRead::Tick {192}}},
+        {{.position = SightRead::Tick {3840}, .length = SightRead::Tick {192}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -769,10 +792,12 @@ BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
                           false,
                           false,
                           false};
-    Path path {
-        {{points.cbegin() + 1, points.cbegin() + 2, SightRead::Beat {0.05},
-          SightRead::Beat {4.01}, SightRead::Beat {20.01}}},
-        100};
+    Path path {.activations = {{.act_start = points.cbegin() + 1,
+                                .act_end = points.cbegin() + 2,
+                                .whammy_end = SightRead::Beat {0.05},
+                                .sp_start = SightRead::Beat {4.01},
+                                .sp_end = SightRead::Beat {20.01}}},
+               .score_boost = 100};
     builder.add_sp_phrases(track, {}, path);
 
     BOOST_TEST(builder.green_ranges().empty());
@@ -786,7 +811,8 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)
                                 {},
                                 SightRead::TrackType::Drums,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    track.drum_fills({{SightRead::Tick {192}, SightRead::Tick {96}}});
+    track.drum_fills(
+        {{.position = SightRead::Tick {192}, .length = SightRead::Tick {96}}});
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(),
@@ -808,7 +834,8 @@ BOOST_AUTO_TEST_CASE(drum_fills_cannot_be_cancelled_by_a_kick)
                                 {},
                                 SightRead::TrackType::Drums,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    track.drum_fills({{SightRead::Tick {192}, SightRead::Tick {96}}});
+    track.drum_fills(
+        {{.position = SightRead::Tick {192}, .length = SightRead::Tick {96}}});
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(),
@@ -830,12 +857,18 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_drawn_with_enable_double_kick)
         std::make_shared<SightRead::SongGlobalData>()};
     ImageBuilder no_double_builder {track,
                                     SightRead::Difficulty::Expert,
-                                    {false, false, false},
+                                    {.enable_double_kick = false,
+                                     .disable_kick = false,
+                                     .pro_drums = false},
                                     false,
                                     true,
                                     false};
     ImageBuilder double_builder {
-        track, SightRead::Difficulty::Expert, {true, false, false}, false, true,
+        track,
+        SightRead::Difficulty::Expert,
+        {.enable_double_kick = true, .disable_kick = false, .pro_drums = false},
+        false,
+        true,
         false};
 
     BOOST_CHECK_EQUAL(no_double_builder.notes().size(), 1U);
@@ -851,7 +884,11 @@ BOOST_AUTO_TEST_CASE(single_kicks_disappear_with_disable_kick)
         SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
     ImageBuilder builder {
-        track, SightRead::Difficulty::Expert, {true, true, false}, false, true,
+        track,
+        SightRead::Difficulty::Expert,
+        {.enable_double_kick = true, .disable_kick = true, .pro_drums = false},
+        false,
+        true,
         false};
 
     BOOST_CHECK_EQUAL(builder.notes().size(), 1U);
@@ -865,7 +902,11 @@ BOOST_AUTO_TEST_CASE(cymbals_become_toms_with_pro_drums_off)
         SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
     ImageBuilder builder {
-        track, SightRead::Difficulty::Expert, {true, false, false}, false, true,
+        track,
+        SightRead::Difficulty::Expert,
+        {.enable_double_kick = true, .disable_kick = false, .pro_drums = false},
+        false,
+        true,
         false};
 
     BOOST_CHECK_EQUAL(builder.notes().size(), 1U);
@@ -881,7 +922,8 @@ BOOST_AUTO_TEST_CASE(turns_red_toms_into_yellow_cymbals)
                                 {},
                                 SightRead::TrackType::Drums,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    track.disco_flips({{SightRead::Tick {192}, SightRead::Tick {192}}});
+    track.disco_flips(
+        {{.position = SightRead::Tick {192}, .length = SightRead::Tick {192}}});
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(),
@@ -901,7 +943,8 @@ BOOST_AUTO_TEST_CASE(turns_yellow_toms_into_red_toms)
                                 {},
                                 SightRead::TrackType::Drums,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    track.disco_flips({{SightRead::Tick {192}, SightRead::Tick {192}}});
+    track.disco_flips(
+        {{.position = SightRead::Tick {192}, .length = SightRead::Tick {192}}});
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(),
@@ -920,7 +963,8 @@ BOOST_AUTO_TEST_CASE(turns_yellow_cymbals_into_red_toms)
         {},
         SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
-    track.disco_flips({{SightRead::Tick {192}, SightRead::Tick {192}}});
+    track.disco_flips(
+        {{.position = SightRead::Tick {192}, .length = SightRead::Tick {192}}});
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(),
@@ -938,9 +982,14 @@ BOOST_AUTO_TEST_CASE(does_not_affect_non_pro_drums)
                                 {},
                                 SightRead::TrackType::Drums,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    track.disco_flips({{SightRead::Tick {192}, SightRead::Tick {192}}});
+    track.disco_flips(
+        {{.position = SightRead::Tick {192}, .length = SightRead::Tick {192}}});
     ImageBuilder builder {
-        track, SightRead::Difficulty::Expert, {true, false, false}, false, true,
+        track,
+        SightRead::Difficulty::Expert,
+        {.enable_double_kick = true, .disable_kick = false, .pro_drums = false},
+        false,
+        true,
         false};
 
     BOOST_CHECK_EQUAL(builder.notes()[0].lengths[SightRead::DRUM_RED], 0);
@@ -953,8 +1002,8 @@ BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
 {
     SightRead::NoteTrack track {
         {make_note(960), make_note(1344, 96)},
-        {{SightRead::Tick {768}, SightRead::Tick {384}},
-         {SightRead::Tick {1200}, SightRead::Tick {150}}},
+        {{.position = SightRead::Tick {768}, .length = SightRead::Tick {384}},
+         {.position = SightRead::Tick {1200}, .length = SightRead::Tick {150}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ImageBuilder builder {track,
@@ -964,7 +1013,9 @@ BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
                           true,
                           false};
     builder.add_sp_phrases(
-        track, {{SightRead::Tick {768}, SightRead::Tick {384}}}, Path {});
+        track,
+        {{.position = SightRead::Tick {768}, .length = SightRead::Tick {384}}},
+        Path {});
     std::vector<std::tuple<double, double>> expected_unison_ranges {{5.0, 5.1}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -976,10 +1027,11 @@ BOOST_AUTO_TEST_SUITE(add_sp_acts_adds_correct_ranges)
 
 BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
 {
-    SightRead::NoteTrack track {{make_note(0, 96), make_note(192)},
-                                {{SightRead::Tick {0}, SightRead::Tick {50}}},
-                                SightRead::TrackType::FiveFret,
-                                std::make_shared<SightRead::SongGlobalData>()};
+    SightRead::NoteTrack track {
+        {make_note(0, 96), make_note(192)},
+        {{.position = SightRead::Tick {0}, .length = SightRead::Tick {50}}},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     ImageBuilder builder {track,
@@ -988,9 +1040,12 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                           false,
                           true,
                           false};
-    Path path {{{points.cbegin(), points.cend() - 1, SightRead::Beat {0.25},
-                 SightRead::Beat {0.1}, SightRead::Beat {0.9}}},
-               0};
+    Path path {.activations = {{.act_start = points.cbegin(),
+                                .act_end = points.cend() - 1,
+                                .whammy_end = SightRead::Beat {0.25},
+                                .sp_start = SightRead::Beat {0.1},
+                                .sp_end = SightRead::Beat {0.9}}},
+               .score_boost = 0};
     builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_blue_ranges {{0.1, 0.9}};
@@ -1025,12 +1080,17 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
                           false,
                           true,
                           false};
-    Path path {
-        {{points.cbegin(), points.cbegin() + 1, SightRead::Beat {0.25},
-          SightRead::Beat {0.1}, SightRead::Beat {1.1}},
-         {points.cbegin() + 2, points.cbegin() + 3, SightRead::Beat {0.25},
-          SightRead::Beat {2.0}, SightRead::Beat {2.9}}},
-        0};
+    Path path {.activations = {{.act_start = points.cbegin(),
+                                .act_end = points.cbegin() + 1,
+                                .whammy_end = SightRead::Beat {0.25},
+                                .sp_start = SightRead::Beat {0.1},
+                                .sp_end = SightRead::Beat {1.1}},
+                               {.act_start = points.cbegin() + 2,
+                                .act_end = points.cbegin() + 3,
+                                .whammy_end = SightRead::Beat {0.25},
+                                .sp_start = SightRead::Beat {2.0},
+                                .sp_end = SightRead::Beat {2.9}}},
+               .score_boost = 0};
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_red_ranges {{0.0, 0.1},
                                                                  {2.9, 3.0}};
@@ -1055,10 +1115,12 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
                           false,
                           true,
                           false};
-    Path path {
-        {{points.cbegin() + 1, points.cbegin() + 2, SightRead::Beat {5.0},
-          SightRead::Beat {0.0}, SightRead::Beat {5.0}}},
-        0};
+    Path path {.activations = {{.act_start = points.cbegin() + 1,
+                                .act_end = points.cbegin() + 2,
+                                .whammy_end = SightRead::Beat {5.0},
+                                .sp_start = SightRead::Beat {0.0},
+                                .sp_end = SightRead::Beat {5.0}}},
+               .score_boost = 0};
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_blue_ranges {{1.0, 4.0}};
 
@@ -1081,9 +1143,12 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
                           false,
                           true,
                           false};
-    Path path {{{points.cbegin(), points.cbegin(), SightRead::Beat {0.0},
-                 SightRead::Beat {0.0}, SightRead::Beat {16.0}}},
-               0};
+    Path path {.activations = {{.act_start = points.cbegin(),
+                                .act_end = points.cbegin(),
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0},
+                                .sp_end = SightRead::Beat {16.0}}},
+               .score_boost = 0};
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_blue_ranges {{0.0, 4.0}};
 
@@ -1108,14 +1173,22 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                           false,
                           true,
                           false};
-    Path path {
-        {{points.cbegin(), points.cbegin() + 1, SightRead::Beat {0.25},
-          SightRead::Beat {0.1}, SightRead::Beat {1.2}},
-         {points.cbegin() + 2, points.cbegin() + 3, SightRead::Beat {0.25},
-          SightRead::Beat {2.2}, SightRead::Beat {3.0}},
-         {points.cbegin() + 5, points.cbegin() + 5, SightRead::Beat {0.25},
-          SightRead::Beat {7.0}, SightRead::Beat {23.0}}},
-        0};
+    Path path {.activations = {{.act_start = points.cbegin(),
+                                .act_end = points.cbegin() + 1,
+                                .whammy_end = SightRead::Beat {0.25},
+                                .sp_start = SightRead::Beat {0.1},
+                                .sp_end = SightRead::Beat {1.2}},
+                               {.act_start = points.cbegin() + 2,
+                                .act_end = points.cbegin() + 3,
+                                .whammy_end = SightRead::Beat {0.25},
+                                .sp_start = SightRead::Beat {2.2},
+                                .sp_end = SightRead::Beat {3.0}},
+                               {.act_start = points.cbegin() + 5,
+                                .act_end = points.cbegin() + 5,
+                                .whammy_end = SightRead::Beat {0.25},
+                                .sp_start = SightRead::Beat {7.0},
+                                .sp_end = SightRead::Beat {23.0}}},
+               .score_boost = 0};
     std::vector<std::tuple<double, double>> expected_blue_ranges {
         {0.0, 1.0}, {2.0, 2.8}, {6.8, 8.0}};
     std::vector<std::tuple<double, double>> expected_red_ranges {{2.8, 3.0}};
@@ -1132,10 +1205,11 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
 
 BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
 {
-    SightRead::NoteTrack track {{make_note(0, 96), make_note(192)},
-                                {{SightRead::Tick {0}, SightRead::Tick {50}}},
-                                SightRead::TrackType::FiveFret,
-                                std::make_shared<SightRead::SongGlobalData>()};
+    SightRead::NoteTrack track {
+        {make_note(0, 96), make_note(192)},
+        {{.position = SightRead::Tick {0}, .length = SightRead::Tick {50}}},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_gh1_pathing_settings()};
     ImageBuilder builder {track,
@@ -1144,9 +1218,12 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
                           false,
                           false,
                           false};
-    Path path {{{points.cbegin() + 1, points.cend() - 1, SightRead::Beat {0.05},
-                 SightRead::Beat {0.1}, SightRead::Beat {0.9}}},
-               0};
+    Path path {.activations = {{.act_start = points.cbegin() + 1,
+                                .act_end = points.cend() - 1,
+                                .whammy_end = SightRead::Beat {0.05},
+                                .sp_start = SightRead::Beat {0.1},
+                                .sp_end = SightRead::Beat {0.9}}},
+               .score_boost = 0};
     builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_green_ranges {{0.0, 0.1}};
@@ -1160,7 +1237,7 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
 {
     SightRead::NoteTrack track {
         {make_note(0), make_note(768), make_note(3840)},
-        {{SightRead::Tick {3840}, SightRead::Tick {192}}},
+        {{.position = SightRead::Tick {3840}, .length = SightRead::Tick {192}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -1171,10 +1248,12 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
                           false,
                           false,
                           false};
-    Path path {
-        {{points.cbegin() + 1, points.cbegin() + 1, SightRead::Beat {0.05},
-          SightRead::Beat {4.01}, SightRead::Beat {20.01}}},
-        50};
+    Path path {.activations = {{.act_start = points.cbegin() + 1,
+                                .act_end = points.cbegin() + 1,
+                                .whammy_end = SightRead::Beat {0.05},
+                                .sp_start = SightRead::Beat {4.01},
+                                .sp_end = SightRead::Beat {20.01}}},
+               .score_boost = 50};
     builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_green_ranges {
@@ -1190,8 +1269,8 @@ BOOST_AUTO_TEST_CASE(
 {
     SightRead::NoteTrack track {
         {make_note(0, 96), make_note(192), make_note(3840)},
-        {{SightRead::Tick {0}, SightRead::Tick {50}},
-         {SightRead::Tick {3840}, SightRead::Tick {192}}},
+        {{.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+         {.position = SightRead::Tick {3840}, .length = SightRead::Tick {192}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -1202,9 +1281,12 @@ BOOST_AUTO_TEST_CASE(
                           false,
                           false,
                           false};
-    Path path {{{points.cbegin() + 1, points.cend() - 2, SightRead::Beat {0.05},
-                 SightRead::Beat {0.1}, SightRead::Beat {0.9}}},
-               0};
+    Path path {.activations = {{.act_start = points.cbegin() + 1,
+                                .act_end = points.cend() - 2,
+                                .whammy_end = SightRead::Beat {0.05},
+                                .sp_start = SightRead::Beat {0.1},
+                                .sp_end = SightRead::Beat {0.9}}},
+               .score_boost = 0};
     builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_green_ranges {
@@ -1217,10 +1299,11 @@ BOOST_AUTO_TEST_CASE(
 
 BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
 {
-    SightRead::NoteTrack track {{make_note(0, 96), make_note(192)},
-                                {{SightRead::Tick {0}, SightRead::Tick {50}}},
-                                SightRead::TrackType::FiveFret,
-                                std::make_shared<SightRead::SongGlobalData>()};
+    SightRead::NoteTrack track {
+        {make_note(0, 96), make_note(192)},
+        {{.position = SightRead::Tick {0}, .length = SightRead::Tick {50}}},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_gh1_pathing_settings()};
     ImageBuilder builder {track,
@@ -1229,9 +1312,12 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
                           false,
                           false,
                           false};
-    Path path {{{points.cbegin() + 1, points.cend() - 1, SightRead::Beat {0.05},
-                 SightRead::Beat {0.1}, SightRead::Beat {0.9}}},
-               0};
+    Path path {.activations = {{.act_start = points.cbegin() + 1,
+                                .act_end = points.cend() - 1,
+                                .whammy_end = SightRead::Beat {0.05},
+                                .sp_start = SightRead::Beat {0.1},
+                                .sp_end = SightRead::Beat {0.9}}},
+               .score_boost = 0};
     builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_yellow_ranges {
@@ -1249,7 +1335,8 @@ BOOST_AUTO_TEST_SUITE(add_practice_sections)
 BOOST_AUTO_TEST_CASE(add_practice_sections_adds_correct_ranges)
 {
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
-    global_data->practice_sections({{"Intro", SightRead::Tick {192}}});
+    global_data->practice_sections(
+        {{.name = "Intro", .start = SightRead::Tick {192}}});
     SightRead::NoteTrack track {{make_note(384)},
                                 {},
                                 SightRead::TrackType::FiveFret,
@@ -1273,7 +1360,8 @@ BOOST_AUTO_TEST_CASE(add_practice_sections_adds_correct_ranges)
 BOOST_AUTO_TEST_CASE(add_practice_sections_ignores_trailing_sections)
 {
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
-    global_data->practice_sections({{"Intro", SightRead::Tick {192}}});
+    global_data->practice_sections(
+        {{.name = "Intro", .start = SightRead::Tick {192}}});
     SightRead::NoteTrack track {{make_note(0)},
                                 {},
                                 SightRead::TrackType::FiveFret,
@@ -1297,7 +1385,9 @@ BOOST_AUTO_TEST_CASE(add_solo_sections_adds_correct_ranges)
                                 {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    track.solos({{SightRead::Tick {192}, SightRead::Tick {384}, 0}});
+    track.solos({{.start = SightRead::Tick {192},
+                  .end = SightRead::Tick {384},
+                  .value = 0}});
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(),
@@ -1348,8 +1438,12 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
                                 {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    track.solos({{SightRead::Tick {0}, SightRead::Tick {100}, 100},
-                 {SightRead::Tick {200}, SightRead::Tick {800}, 100}});
+    track.solos({{.start = SightRead::Tick {0},
+                  .end = SightRead::Tick {100},
+                  .value = 100},
+                 {.start = SightRead::Tick {200},
+                  .end = SightRead::Tick {800},
+                  .value = 100}});
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     Path path;
@@ -1375,7 +1469,9 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
                                 {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
-    track.solos({{SightRead::Tick {0}, SightRead::Tick {1600}, 50}});
+    track.solos({{.start = SightRead::Tick {0},
+                  .end = SightRead::Tick {1600},
+                  .value = 50}});
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     Path path;
@@ -1402,9 +1498,11 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
-    Path path {{{points.cbegin() + 2, points.cbegin() + 3,
-                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
-               100};
+    Path path {.activations = {{.act_start = points.cbegin() + 2,
+                                .act_end = points.cbegin() + 3,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 100};
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(),
@@ -1427,9 +1525,11 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      negative_video_lag_settings()};
-    Path path {{{points.cbegin() + 1, points.cbegin() + 1,
-                 SightRead::Beat {0.0}, SightRead::Beat {0.0}}},
-               50};
+    Path path {.activations = {{.act_start = points.cbegin() + 1,
+                                .act_end = points.cbegin() + 1,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 50};
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(),
@@ -1460,7 +1560,9 @@ BOOST_AUTO_TEST_CASE(ticks_close_to_the_end_of_a_measure_are_handled_correctly)
                                 SightRead::TrackType::FiveFret,
                                 global_data};
     PointSet points {track,
-                     {{global_data->tempo_map(), SpMode::Measure}, {}, {}},
+                     {.time_map = {global_data->tempo_map(), SpMode::Measure},
+                      .od_beats = {},
+                      .unison_phrases = {}},
                      default_guitar_pathing_settings()};
     Path path;
     ImageBuilder builder {track,
@@ -1485,10 +1587,11 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
 {
-    SightRead::NoteTrack track {{make_note(0), make_note(192, 768)},
-                                {{SightRead::Tick {192}, SightRead::Tick {50}}},
-                                SightRead::TrackType::FiveFret,
-                                std::make_shared<SightRead::SongGlobalData>()};
+    SightRead::NoteTrack track {
+        {make_note(0), make_note(192, 768)},
+        {{.position = SightRead::Tick {192}, .length = SightRead::Tick {50}}},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track, default_measure_mode_data(),
                     default_guitar_pathing_settings()};
     ImageBuilder builder {track,
@@ -1507,10 +1610,11 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
 
 BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values_for_fortnite)
 {
-    SightRead::NoteTrack track {{make_note(0), make_note(192, 768)},
-                                {{SightRead::Tick {192}, SightRead::Tick {50}}},
-                                SightRead::TrackType::FortniteFestival,
-                                std::make_shared<SightRead::SongGlobalData>()};
+    SightRead::NoteTrack track {
+        {make_note(0), make_note(192, 768)},
+        {{.position = SightRead::Tick {192}, .length = SightRead::Tick {50}}},
+        SightRead::TrackType::FortniteFestival,
+        std::make_shared<SightRead::SongGlobalData>()};
     SpData sp_data {track, default_od_beat_mode_data(),
                     default_fortnite_guitar_pathing_settings()};
     ImageBuilder builder {track,
@@ -1529,10 +1633,11 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values_for_fortnite)
 
 BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
 {
-    SightRead::NoteTrack track {{make_note(0), make_note(192)},
-                                {{SightRead::Tick {0}, SightRead::Tick {50}}},
-                                SightRead::TrackType::FiveFret,
-                                std::make_shared<SightRead::SongGlobalData>()};
+    SightRead::NoteTrack track {
+        {make_note(0), make_note(192)},
+        {{.position = SightRead::Tick {0}, .length = SightRead::Tick {50}}},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     ImageBuilder builder {track,
@@ -1541,11 +1646,17 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
                           false,
                           true,
                           false};
-    Path path {{{points.cbegin(), points.cend() - 1, SightRead::Beat {0.25},
-                 SightRead::Beat {0.1}, SightRead::Beat {0.9}}},
-               50};
-    builder.set_total_score(
-        points, {{SightRead::Tick {0}, SightRead::Tick {1}, 100}}, path);
+    Path path {.activations = {{.act_start = points.cbegin(),
+                                .act_end = points.cend() - 1,
+                                .whammy_end = SightRead::Beat {0.25},
+                                .sp_start = SightRead::Beat {0.1},
+                                .sp_end = SightRead::Beat {0.9}}},
+               .score_boost = 50};
+    builder.set_total_score(points,
+                            {{.start = SightRead::Tick {0},
+                              .end = SightRead::Tick {1},
+                              .value = 100}},
+                            path);
 
     BOOST_CHECK_EQUAL(builder.total_score(), 250);
 }
@@ -1604,20 +1715,23 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
     SightRead::NoteTrack track {
         {make_note(960), make_note(1080), make_note(1920), make_note(3840),
          make_note(4050), make_note(19200)},
-        {{SightRead::Tick {960}, SightRead::Tick {10}},
-         {SightRead::Tick {1080}, SightRead::Tick {10}},
-         {SightRead::Tick {1920}, SightRead::Tick {10}},
-         {SightRead::Tick {3840}, SightRead::Tick {10}},
-         {SightRead::Tick {4050}, SightRead::Tick {10}}},
+        {{.position = SightRead::Tick {960}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {1080}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {1920}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {3840}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {4050}, .length = SightRead::Tick {10}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     SpData sp_data {track, default_measure_mode_data(),
                     default_guitar_pathing_settings()};
-    Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
-                 SightRead::Beat {70.0}, SightRead::Beat {102.0}}},
-               0};
+    Path path {.activations = {{.act_start = points.cbegin() + 5,
+                                .act_end = points.cend(),
+                                .whammy_end = SightRead::Beat {1000.0},
+                                .sp_start = SightRead::Beat {70.0},
+                                .sp_end = SightRead::Beat {102.0}}},
+               .score_boost = 0};
 
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
@@ -1626,7 +1740,9 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                           true,
                           false};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  {0.25, 0.5, 0.5});
+                                  {.phrase_amount = 0.25,
+                                   .unison_phrase_amount = 0.5,
+                                   .minimum_to_activate = 0.5});
     std::vector<double> expected_percents {
         0.0,    0.5,    0.75,   0.75,   0.75,   1.0,    1.0,    1.0, 1.0,
         1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0,    1.0, 0.9375,
@@ -1640,15 +1756,16 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
 
 BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_rb_phrase_amounts)
 {
-    SightRead::NoteTrack track {{make_note(960)},
-                                {{SightRead::Tick {960}, SightRead::Tick {10}}},
-                                SightRead::TrackType::FiveFret,
-                                std::make_shared<SightRead::SongGlobalData>()};
+    SightRead::NoteTrack track {
+        {make_note(960)},
+        {{.position = SightRead::Tick {960}, .length = SightRead::Tick {10}}},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     SpData sp_data {track, default_measure_mode_data(),
                     default_guitar_pathing_settings()};
-    Path path {{}, 0};
+    Path path {.activations = {}, .score_boost = 0};
 
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
@@ -1657,7 +1774,9 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_rb_phrase_amounts)
                           true,
                           false};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  {0.251, 0.501, 0.5});
+                                  {.phrase_amount = 0.251,
+                                   .unison_phrase_amount = 0.501,
+                                   .minimum_to_activate = 0.5});
     std::vector<double> expected_percents {0.0, 0.251};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.sp_percent_values().cbegin(),
@@ -1668,17 +1787,19 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_rb_phrase_amounts)
 
 BOOST_AUTO_TEST_CASE(sp_percents_added_with_unison_phrases)
 {
-    SightRead::NoteTrack track {{make_note(960)},
-                                {{SightRead::Tick {960}, SightRead::Tick {10}}},
-                                SightRead::TrackType::FiveFret,
-                                std::make_shared<SightRead::SongGlobalData>()};
-    SpDurationData unison_phrase {
-        {{}, SpMode::OdBeat},
-        {},
-        {SightRead::StarPower {SightRead::Tick {960}, SightRead::Tick {10}}}};
+    SightRead::NoteTrack track {
+        {make_note(960)},
+        {{.position = SightRead::Tick {960}, .length = SightRead::Tick {10}}},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    SpDurationData unison_phrase {.time_map = {{}, SpMode::OdBeat},
+                                  .od_beats = {},
+                                  .unison_phrases = {SightRead::StarPower {
+                                      .position = SightRead::Tick {960},
+                                      .length = SightRead::Tick {10}}}};
     PointSet points {track, unison_phrase, default_rb3_pathing_settings()};
     SpData sp_data {track, unison_phrase, default_rb3_pathing_settings()};
-    Path path {{}, 0};
+    Path path {.activations = {}, .score_boost = 0};
 
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
@@ -1687,7 +1808,9 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_unison_phrases)
                           true,
                           false};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  {0.251, 0.501, 0.5});
+                                  {.phrase_amount = 0.251,
+                                   .unison_phrase_amount = 0.501,
+                                   .minimum_to_activate = 0.5});
     std::vector<double> expected_percents {0.0, 0.501};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.sp_percent_values().cbegin(),
@@ -1701,21 +1824,24 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
     SightRead::NoteTrack track {
         {make_note(960), make_note(1080), make_note(1920), make_note(3840),
          make_note(4050), make_note(19200)},
-        {{SightRead::Tick {960}, SightRead::Tick {10}},
-         {SightRead::Tick {1080}, SightRead::Tick {10}},
-         {SightRead::Tick {1920}, SightRead::Tick {10}},
-         {SightRead::Tick {3840}, SightRead::Tick {10}},
-         {SightRead::Tick {4050}, SightRead::Tick {10}},
-         {SightRead::Tick {19200}, SightRead::Tick {10}}},
+        {{.position = SightRead::Tick {960}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {1080}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {1920}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {3840}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {4050}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {19200}, .length = SightRead::Tick {10}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     SpData sp_data {track, default_measure_mode_data(),
                     default_guitar_pathing_settings()};
-    Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
-                 SightRead::Beat {98.0}, SightRead::Beat {132.0}}},
-               0};
+    Path path {.activations = {{.act_start = points.cbegin() + 5,
+                                .act_end = points.cend(),
+                                .whammy_end = SightRead::Beat {1000.0},
+                                .sp_start = SightRead::Beat {98.0},
+                                .sp_end = SightRead::Beat {132.0}}},
+               .score_boost = 0};
 
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
@@ -1724,7 +1850,9 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                           true,
                           false};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  {0.25, 0.5, 0.5});
+                                  {.phrase_amount = 0.25,
+                                   .unison_phrase_amount = 0.5,
+                                   .minimum_to_activate = 0.5});
     std::vector<double> expected_percents {
         0.0, 0.5, 0.75, 0.75, 0.75, 1.0, 1.0,    1.0,  1.0,
         1.0, 1.0, 1.0,  1.0,  1.0,  1.0, 1.0,    1.0,  1.0,
@@ -1740,17 +1868,20 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
 {
     SightRead::NoteTrack track {
         {make_note(960), make_note(1632, 1920)},
-        {{SightRead::Tick {960}, SightRead::Tick {10}},
-         {SightRead::Tick {1632}, SightRead::Tick {10}}},
+        {{.position = SightRead::Tick {960}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {1632}, .length = SightRead::Tick {10}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     SpData sp_data {track, default_measure_mode_data(),
                     default_guitar_pathing_settings()};
-    Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {1000.0},
-                 SightRead::Beat {9.0}, SightRead::Beat {22.0}}},
-               0};
+    Path path {.activations = {{.act_start = points.cbegin() + 5,
+                                .act_end = points.cend(),
+                                .whammy_end = SightRead::Beat {1000.0},
+                                .sp_start = SightRead::Beat {9.0},
+                                .sp_end = SightRead::Beat {22.0}}},
+               .score_boost = 0};
 
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
@@ -1759,7 +1890,9 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                           true,
                           false};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  {0.25, 0.5, 0.5});
+                                  {.phrase_amount = 0.25,
+                                   .unison_phrase_amount = 0.5,
+                                   .minimum_to_activate = 0.5});
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.5359166667, 0.49425};
 
@@ -1775,17 +1908,20 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
 {
     SightRead::NoteTrack track {
         {make_note(960), make_note(1632, 1920)},
-        {{SightRead::Tick {960}, SightRead::Tick {10}},
-         {SightRead::Tick {1632}, SightRead::Tick {10}}},
+        {{.position = SightRead::Tick {960}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {1632}, .length = SightRead::Tick {10}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     SpData sp_data {track, default_measure_mode_data(),
                     default_guitar_pathing_settings()};
-    Path path {{{points.cbegin() + 5, points.cend(), SightRead::Beat {12.0},
-                 SightRead::Beat {9.0}, SightRead::Beat {22.0}}},
-               0};
+    Path path {.activations = {{.act_start = points.cbegin() + 5,
+                                .act_end = points.cend(),
+                                .whammy_end = SightRead::Beat {12.0},
+                                .sp_start = SightRead::Beat {9.0},
+                                .sp_end = SightRead::Beat {22.0}}},
+               .score_boost = 0};
 
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
@@ -1794,7 +1930,9 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                           true,
                           false};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  {0.25, 0.5, 0.5});
+                                  {.phrase_amount = 0.25,
+                                   .unison_phrase_amount = 0.5,
+                                   .minimum_to_activate = 0.5});
     std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
                                            0.4025833333, 0.2775833333};
 
@@ -1811,21 +1949,27 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
     SightRead::NoteTrack track {
         {make_note(960), make_note(1632, 1920), make_note(6336),
          make_note(6528), make_note(7104)},
-        {{SightRead::Tick {960}, SightRead::Tick {10}},
-         {SightRead::Tick {1632}, SightRead::Tick {10}},
-         {SightRead::Tick {6336}, SightRead::Tick {10}},
-         {SightRead::Tick {6528}, SightRead::Tick {10}}},
+        {{.position = SightRead::Tick {960}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {1632}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {6336}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {6528}, .length = SightRead::Tick {10}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     SpData sp_data {track, default_measure_mode_data(),
                     default_guitar_pathing_settings()};
-    Path path {{{points.cbegin() + 5, points.cend() - 3, SightRead::Beat {12.0},
-                 SightRead::Beat {9.0}, SightRead::Beat {28.8827}},
-                {points.cend() - 1, points.cend(), SightRead::Beat {1000.0},
-                 SightRead::Beat {37.0}, SightRead::Beat {53.0}}},
-               0};
+    Path path {.activations = {{.act_start = points.cbegin() + 5,
+                                .act_end = points.cend() - 3,
+                                .whammy_end = SightRead::Beat {12.0},
+                                .sp_start = SightRead::Beat {9.0},
+                                .sp_end = SightRead::Beat {28.8827}},
+                               {.act_start = points.cend() - 1,
+                                .act_end = points.cend(),
+                                .whammy_end = SightRead::Beat {1000.0},
+                                .sp_start = SightRead::Beat {37.0},
+                                .sp_end = SightRead::Beat {53.0}}},
+               .score_boost = 0};
 
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
@@ -1834,7 +1978,9 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                           true,
                           false};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  {0.25, 0.5, 0.5});
+                                  {.phrase_amount = 0.25,
+                                   .unison_phrase_amount = 0.5,
+                                   .minimum_to_activate = 0.5});
     std::vector<double> expected_percents {
         0.0,          0.25,         0.5275833333, 0.4025833333, 0.2775833333,
         0.1525833333, 0.0275833333, 0.0,          0.5,          0.40625};
@@ -1853,19 +1999,21 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
     SightRead::NoteTrack track {
         {make_note(0), make_note(192), make_note(384), make_note(3224),
          make_note(3456)},
-        {{SightRead::Tick {0}, SightRead::Tick {10}},
-         {SightRead::Tick {192}, SightRead::Tick {10}},
-         {SightRead::Tick {3224}, SightRead::Tick {10}}},
+        {{.position = SightRead::Tick {0}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {192}, .length = SightRead::Tick {10}},
+         {.position = SightRead::Tick {3224}, .length = SightRead::Tick {10}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     SpData sp_data {track, default_measure_mode_data(),
                     default_guitar_pathing_settings()};
-    Path path {
-        {{points.cbegin() + 2, points.cbegin() + 2, SightRead::Beat {17.0},
-          SightRead::Beat {0.8958}, SightRead::Beat {16.8958}}},
-        50};
+    Path path {.activations = {{.act_start = points.cbegin() + 2,
+                                .act_end = points.cbegin() + 2,
+                                .whammy_end = SightRead::Beat {17.0},
+                                .sp_start = SightRead::Beat {0.8958},
+                                .sp_end = SightRead::Beat {16.8958}}},
+               .score_boost = 50};
 
     ImageBuilder builder {track,
                           SightRead::Difficulty::Expert,
@@ -1874,7 +2022,9 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                           true,
                           false};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
-                                  {0.25, 0.5, 0.5});
+                                  {.phrase_amount = 0.25,
+                                   .unison_phrase_amount = 0.5,
+                                   .minimum_to_activate = 0.5});
     std::vector<double> expected_percents {0.40299375, 0.27799375, 0.15299375,
                                            0.02799375, 0.25};
 

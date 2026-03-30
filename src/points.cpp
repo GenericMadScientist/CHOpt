@@ -198,10 +198,12 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
                 = time_map.to_beats(tick_max_sqz_hit_window_start);
             const auto full_early_meas
                 = time_map.to_sp_measures(full_early_beat);
-            append_sustain_point(points, {beat, meas}, 1,
-                                 SpPosition {start_beat, start_meas},
-                                 SpPosition {end_beat, end_meas},
-                                 SpPosition {full_early_beat, full_early_meas});
+            append_sustain_point(
+                points, {beat, meas}, 1,
+                SpPosition {.beat = start_beat, .sp_measure = start_meas},
+                SpPosition {.beat = end_beat, .sp_measure = end_meas},
+                SpPosition {.beat = full_early_beat,
+                            .sp_measure = full_early_meas});
         }
         break;
     }
@@ -296,16 +298,18 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
     const auto early_max_sqz_meas = time_map.to_sp_measures(early_max_sqz_beat);
     const auto late_beat = time_map.to_beats(note_seconds + late_window);
     const auto late_meas = time_map.to_sp_measures(late_beat);
-    const Point note_point {{beat, meas},
-                            {early_beat, early_meas},
-                            {late_beat, late_meas},
-                            {early_max_sqz_beat, early_max_sqz_meas},
-                            {},
-                            note_value * chord_size,
-                            note_value * chord_size,
-                            false,
-                            is_note_sp_ender,
-                            is_unison_sp_ender};
+    const Point note_point {
+        .position = {.beat = beat, .sp_measure = meas},
+        .hit_window_start = {.beat = early_beat, .sp_measure = early_meas},
+        .hit_window_end = {.beat = late_beat, .sp_measure = late_meas},
+        .max_sqz_hit_window_start
+        = {.beat = early_max_sqz_beat, .sp_measure = early_max_sqz_meas},
+        .fill_start = {},
+        .value = note_value * chord_size,
+        .base_value = note_value * chord_size,
+        .is_hold_point = false,
+        .is_sp_granting_note = is_note_sp_ender,
+        .is_unison_sp_granting_note = is_unison_sp_ender};
     *points++ = note_point;
 
     SightRead::Tick min_length {std::numeric_limits<int>::max()};
@@ -683,7 +687,7 @@ solo_boosts_from_solos(const std::vector<SightRead::Solo>& solos,
     for (const auto& solo : solos) {
         const auto end_beat = time_map.to_beats(solo.end);
         const SpMeasure end_meas = time_map.to_sp_measures(end_beat);
-        const SpPosition end_pos {end_beat, end_meas};
+        const SpPosition end_pos {.beat = end_beat, .sp_measure = end_meas};
         solo_boosts.emplace_back(end_pos, solo.value);
     }
     return solo_boosts;

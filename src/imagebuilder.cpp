@@ -103,7 +103,10 @@ DrawnNote note_to_drawn_note(const SightRead::Note& note,
         }
     }
 
-    return {beat.value(), lengths, note.flags, is_sp_note};
+    return {.beat = beat.value(),
+            .lengths = lengths,
+            .note_flags = note.flags,
+            .is_sp_note = is_sp_note};
 }
 
 bool is_in_disco_flips(const std::vector<SightRead::DiscoFlip>& disco_flips,
@@ -171,8 +174,8 @@ std::vector<DrawnRow> drawn_rows(const SightRead::NoteTrack& track)
             if (contribution > MAX_BEATS_PER_LINE && row_length == 0.0) {
                 // Break up a measure that spans more than a full row.
                 while (contribution > MAX_BEATS_PER_LINE) {
-                    rows.push_back(
-                        {current_beat, current_beat + MAX_BEATS_PER_LINE});
+                    rows.push_back({.start = current_beat,
+                                    .end = current_beat + MAX_BEATS_PER_LINE});
                     current_beat += MAX_BEATS_PER_LINE;
                     contribution -= MAX_BEATS_PER_LINE;
                 }
@@ -185,7 +188,8 @@ std::vector<DrawnRow> drawn_rows(const SightRead::NoteTrack& track)
                 break;
             }
         }
-        rows.push_back({current_beat, current_beat + row_length});
+        rows.push_back(
+            {.start = current_beat, .end = current_beat + row_length});
         current_beat += row_length;
     }
 
@@ -609,11 +613,18 @@ void ImageBuilder::add_sp_percent_values(const SpData& sp_data,
     double total_sp = 0.0;
     for (auto [event_pos, event_type] : events) {
         if (is_sp_active) {
-            SpPosition start_pos {position, time_map.to_sp_measures(position)};
-            SpPosition end_pos {event_pos, time_map.to_sp_measures(event_pos)};
-            SpPosition whammy_pos {SightRead::Beat {0.0}, SpMeasure {0.0}};
+            SpPosition start_pos {.beat = position,
+                                  .sp_measure
+                                  = time_map.to_sp_measures(position)};
+            SpPosition end_pos {.beat = event_pos,
+                                .sp_measure
+                                = time_map.to_sp_measures(event_pos)};
+            SpPosition whammy_pos {.beat = SightRead::Beat {0.0},
+                                   .sp_measure = SpMeasure {0.0}};
             if (m_overlap_engine) {
-                whammy_pos = {whammy_end, time_map.to_sp_measures(whammy_end)};
+                whammy_pos
+                    = {.beat = whammy_end,
+                       .sp_measure = time_map.to_sp_measures(whammy_end)};
             }
             total_sp = sp_data.propagate_sp_over_whammy_min(
                 start_pos, end_pos, total_sp, whammy_pos);
@@ -766,8 +777,10 @@ ImageBuilder make_builder(SightRead::Song& song,
         = (settings.pathing_settings.engine->has_unison_bonuses())
         ? song.unison_phrases()
         : std::vector<SightRead::StarPower> {};
-    const SpDurationData duration_data {time_map, song.global_data().od_beats(),
-                                        unison_phrases};
+    const SpDurationData duration_data {.time_map = time_map,
+                                        .od_beats
+                                        = song.global_data().od_beats(),
+                                        .unison_phrases = unison_phrases};
 
     const ProcessedSong processed_track {new_track, duration_data,
                                          settings.pathing_settings};
