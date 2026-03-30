@@ -33,12 +33,12 @@
 #include "ui_mainwindow.h"
 
 namespace {
-QFileDialog::Option file_dialog_options()
+QFileDialog::Options file_dialog_options()
 {
 #ifdef Q_OS_MACOS
     return QFileDialog::Option::DontUseNativeDialog;
 #else
-    return QFileDialog::Option {};
+    return QFileDialog::Options {};
 #endif
 }
 
