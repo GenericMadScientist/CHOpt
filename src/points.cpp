@@ -409,7 +409,7 @@ std::vector<PointPtr> next_matching_vector(const std::vector<Point>& points,
             break;
         }
     }
-    std::reverse(next_matching_points.begin(), next_matching_points.end());
+    std::ranges::reverse(next_matching_points);
     return next_matching_points;
 }
 
@@ -505,14 +505,13 @@ std::vector<Point> unmultiplied_points(const SightRead::NoteTrack& track,
                 || !phrase_contains_pos(*current_phrase, q->position))) {
             is_note_sp_ender = true;
             if (pathing_settings.engine->has_unison_bonuses()
-                && std::find_if(duration_data.unison_phrases.cbegin(),
-                                duration_data.unison_phrases.cend(),
-                                [&](const auto& phrase) {
-                                    return std::tie(phrase.position,
-                                                    phrase.length)
-                                        == std::tie(current_phrase->position,
-                                                    current_phrase->length);
-                                })
+                && std::ranges::find_if(
+                       duration_data.unison_phrases,
+                       [&](const auto& phrase) {
+                           return std::tie(phrase.position, phrase.length)
+                               == std::tie(current_phrase->position,
+                                           current_phrase->length);
+                       })
                     != duration_data.unison_phrases.cend()) {
                 is_unison_sp_ender = true;
             }
@@ -525,10 +524,9 @@ std::vector<Point> unmultiplied_points(const SightRead::NoteTrack& track,
         p = q;
     }
 
-    std::stable_sort(points.begin(), points.end(),
-                     [](const auto& x, const auto& y) {
-                         return x.position.beat < y.position.beat;
-                     });
+    std::ranges::stable_sort(points, [](const auto& x, const auto& y) {
+        return x.position.beat < y.position.beat;
+    });
 
     return points;
 }

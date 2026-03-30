@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE(points_are_sorted)
                      default_guitar_pathing_settings()};
     const auto beats = set_position_beats(points);
 
-    BOOST_TEST(std::is_sorted(beats.cbegin(), beats.cend()));
+    BOOST_TEST(std::ranges::is_sorted(beats, std::less {}));
 }
 
 BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)

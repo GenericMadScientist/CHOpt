@@ -109,11 +109,10 @@ DrawnNote note_to_drawn_note(const SightRead::Note& note,
 bool is_in_disco_flips(const std::vector<SightRead::DiscoFlip>& disco_flips,
                        SightRead::Tick position)
 {
-    return std::any_of(disco_flips.cbegin(), disco_flips.cend(),
-                       [&](const auto& flip) {
-                           return (flip.position <= position)
-                               && (flip.position + flip.length >= position);
-                       });
+    return std::ranges::any_of(disco_flips, [&](const auto& flip) {
+        return (flip.position <= position)
+            && (flip.position + flip.length >= position);
+    });
 }
 
 std::vector<DrawnNote> drawn_notes(const SightRead::NoteTrack& track,
@@ -154,8 +153,7 @@ std::vector<DrawnRow> drawn_rows(const SightRead::NoteTrack& track)
 {
     SightRead::Tick max_pos {0};
     for (const auto& note : track.notes()) {
-        const auto length
-            = *std::max_element(note.lengths.cbegin(), note.lengths.cend());
+        const auto length = *std::ranges::max_element(note.lengths);
         const auto note_end = note.position + length;
         max_pos = std::max(max_pos, note_end);
     }
@@ -238,7 +236,7 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
         events.emplace_back(act.sp_start, SpDrainEventType::ActStart);
         events.emplace_back(act.sp_end, SpDrainEventType::ActEnd);
     }
-    std::sort(events.begin(), events.end());
+    std::ranges::sort(events, std::less {});
     return events;
 }
 
@@ -505,9 +503,8 @@ void ImageBuilder::add_practice_sections(
         return;
     }
 
-    const auto last_note
-        = std::max_element(m_notes.cbegin(), m_notes.cend(),
-                           [](auto a, auto b) { return a.beat < b.beat; });
+    const auto last_note = std::ranges::max_element(
+        m_notes, [](auto a, auto b) { return a.beat < b.beat; });
     const auto last_note_position = last_note->beat;
 
     for (const auto& section : practice_sections) {
@@ -664,12 +661,13 @@ void ImageBuilder::add_sp_phrases(
             continue;
         }
         m_green_ranges.push_back(range);
-        if (std::find_if(unison_phrases.cbegin(), unison_phrases.cend(),
-                         [&](const auto& unison_phrase) {
-                             return std::tie(unison_phrase.position,
-                                             unison_phrase.length)
-                                 == std::tie(phrase.position, phrase.length);
-                         })
+        if (std::ranges::find_if(unison_phrases,
+                                 [&](const auto& unison_phrase) {
+                                     return std::tie(unison_phrase.position,
+                                                     unison_phrase.length)
+                                         == std::tie(phrase.position,
+                                                     phrase.length);
+                                 })
             != unison_phrases.cend()) {
             m_unison_ranges.push_back(range);
         }
@@ -682,7 +680,7 @@ void ImageBuilder::add_sp_values(const SpData& sp_data, const Engine& engine)
     m_sp_values.resize(m_measure_lines.size() - 1);
 
     if (engine.sp_gain_rate() == 0.0) {
-        std::fill(m_sp_values.begin(), m_sp_values.end(), 0);
+        std::ranges::fill(m_sp_values, 0);
         return;
     }
 

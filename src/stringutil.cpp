@@ -31,8 +31,7 @@ std::string to_ordinal(int ordinal)
     if (ordinal < 0) {
         throw std::runtime_error("ordinal was negative");
     }
-    if (std::find(EXCEPTIONAL_TEENS.cbegin(), EXCEPTIONAL_TEENS.cend(),
-                  ordinal % HUNDREDS_MODULUS)
+    if (std::ranges::find(EXCEPTIONAL_TEENS, ordinal % HUNDREDS_MODULUS)
         != EXCEPTIONAL_TEENS.cend()) {
         return std::to_string(ordinal) + "th";
     }

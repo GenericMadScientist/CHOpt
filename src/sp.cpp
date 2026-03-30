@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2023, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -167,7 +167,7 @@ SpData::SpData(const SightRead::NoteTrack& track,
         return;
     }
 
-    std::sort(ranges.begin(), ranges.end());
+    std::ranges::sort(ranges, std::less {});
 
     std::vector<std::tuple<SightRead::Beat, SightRead::Beat, SightRead::Beat>>
         merged_ranges;
@@ -220,9 +220,9 @@ SpData::WhammyPropagationState
 SpData::initial_whammy_prop_state(SightRead::Beat start, SightRead::Beat end,
                                   double sp_bar_amount) const
 {
-    auto p = std::lower_bound(
-        m_beat_rates.cbegin(), m_beat_rates.cend(), start,
-        [](const auto& ts, const auto& y) { return ts.position < y; });
+    auto p
+        = std::ranges::lower_bound(m_beat_rates, start, std::less {},
+                                   [](const auto& ts) { return ts.position; });
     if (p != m_beat_rates.cbegin()) {
         --p;
     } else {
