@@ -267,16 +267,16 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
                                   first_expected_values.cend());
     BOOST_CHECK_EQUAL(first_beats.size(), first_expected_beats.size());
     for (auto i = 0U; i < first_beats.size(); ++i) {
-        BOOST_CHECK_CLOSE(first_beats[i].value(),
-                          first_expected_beats[i].value(), 0.01);
+        BOOST_CHECK_CLOSE(first_beats.at(i).value(),
+                          first_expected_beats.at(i).value(), 0.01);
     }
     BOOST_CHECK_EQUAL_COLLECTIONS(second_values.cbegin(), second_values.cend(),
                                   second_expected_values.cbegin(),
                                   second_expected_values.cend());
     BOOST_CHECK_EQUAL(second_beats.size(), second_expected_beats.size());
     for (auto i = 0U; i < second_beats.size(); ++i) {
-        BOOST_CHECK_CLOSE(second_beats[i].value(),
-                          second_expected_beats[i].value(), 0.01);
+        BOOST_CHECK_CLOSE(second_beats.at(i).value(),
+                          second_expected_beats.at(i).value(), 0.01);
     }
 }
 
@@ -301,7 +301,8 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
                                   expected_values.cend());
     BOOST_CHECK_EQUAL(beats.size(), expected_beats.size());
     for (auto i = 0U; i < beats.size(); ++i) {
-        BOOST_CHECK_CLOSE(beats[i].value(), expected_beats[i].value(), 0.01);
+        BOOST_CHECK_CLOSE(beats.at(i).value(), expected_beats.at(i).value(),
+                          0.01);
     }
 }
 
@@ -596,7 +597,7 @@ BOOST_AUTO_TEST_CASE(later_sustain_points_in_extended_sustains_are_multiplied)
     for (int i = 0; i < 10; ++i) {
         notes.push_back(make_note(192 * i));
     }
-    notes[0].lengths[0] = SightRead::Tick {2000};
+    notes.at(0).lengths.at(0) = SightRead::Tick {2000};
 
     SightRead::NoteTrack track {notes,
                                 {},

@@ -714,21 +714,21 @@ PointPtr PointSet::first_after_current_phrase(PointPtr point) const
 {
     const auto index
         = static_cast<std::size_t>(std::distance(m_points.cbegin(), point));
-    return m_first_after_current_sp[index];
+    return m_first_after_current_sp.at(index);
 }
 
 PointPtr PointSet::next_non_hold_point(PointPtr point) const
 {
     const auto index
         = static_cast<std::size_t>(std::distance(m_points.cbegin(), point));
-    return m_next_non_hold_point[index];
+    return m_next_non_hold_point.at(index);
 }
 
 PointPtr PointSet::next_sp_granting_note(PointPtr point) const
 {
     const auto index
         = static_cast<std::size_t>(std::distance(m_points.cbegin(), point));
-    return m_next_sp_granting_note[index];
+    return m_next_sp_granting_note.at(index);
 }
 
 int PointSet::range_score(PointPtr start, PointPtr end) const
@@ -737,6 +737,6 @@ int PointSet::range_score(PointPtr start, PointPtr end) const
         = static_cast<std::size_t>(std::distance(m_points.cbegin(), start));
     const auto end_index
         = static_cast<std::size_t>(std::distance(m_points.cbegin(), end));
-    return m_cumulative_score_totals[end_index]
-        - m_cumulative_score_totals[start_index];
+    return m_cumulative_score_totals.at(end_index)
+        - m_cumulative_score_totals.at(start_index);
 }

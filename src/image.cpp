@@ -100,8 +100,8 @@ void validate_snprintf_rc(int snprintf_rc)
 bool is_kick_note(const ImageBuilder& builder, const DrawnNote& note)
 {
     return (builder.track_type() == SightRead::TrackType::Drums)
-        && (note.lengths[SightRead::DRUM_KICK] != -1
-            || note.lengths[SightRead::DRUM_DOUBLE_KICK] != -1);
+        && (note.lengths.at(SightRead::DRUM_KICK) != -1
+            || note.lengths.at(SightRead::DRUM_DOUBLE_KICK) != -1);
 }
 
 void blend_colour(unsigned char& canvas_value, int sprite_value,
@@ -258,7 +258,7 @@ void ImageImpl::draw_measures(const ImageBuilder& builder)
     draw_vertical_lines(builder, measure_copy, BLACK);
 
     for (std::size_t i = 0; i < builder.measure_lines().size() - 1; ++i) {
-        auto pos = builder.measure_lines()[i];
+        auto pos = builder.measure_lines().at(i);
         auto [x, y] = get_xy(builder, pos);
         y -= MEASURE_NUMB_GAP;
         m_image.draw_text(x, y, "%u", RED.data(), 0, 1.0, FONT_HEIGHT, i + 1);
@@ -347,27 +347,27 @@ void ImageImpl::draw_score_totals(const ImageBuilder& builder)
     for (std::size_t i = 0; i < base_values.size(); ++i) {
         // We need to go to the previous double because otherwise we have an OOB
         // when drawing the scores for the last measure.
-        auto pos = std::nextafter(measures[i + 1], -1.0);
+        auto pos = std::nextafter(measures.at(i + 1), -1.0);
         auto [x, y] = get_xy(builder, pos);
         y += BASE_VALUE_MARGIN + MEASURE_HEIGHT;
-        auto text = std::to_string(base_values[i]);
+        auto text = std::to_string(base_values.at(i));
         draw_text_backwards(x, y, text.c_str(), GREY.data(), 1.0F, FONT_HEIGHT);
-        text = std::to_string(score_values[i]);
+        text = std::to_string(score_values.at(i));
         y += VALUE_GAP;
         draw_text_backwards(x, y, text.c_str(), GREEN.data(), 1.0F,
                             FONT_HEIGHT);
-        if (sp_percent_values.empty() && sp_values[i] == 0) {
+        if (sp_percent_values.empty() && sp_values.at(i) == 0) {
             continue;
         }
         y += VALUE_GAP;
         if (sp_percent_values.empty()) {
             const auto print_rc = std::snprintf(buffer.data(), BUFFER_SIZE,
-                                                "%.2fSP", sp_values[i]);
+                                                "%.2fSP", sp_values.at(i));
             validate_snprintf_rc(print_rc);
         } else {
             const auto print_rc
                 = std::snprintf(buffer.data(), BUFFER_SIZE, "%.2f%%%%",
-                                PERCENT_MULT * sp_percent_values[i]);
+                                PERCENT_MULT * sp_percent_values.at(i));
             validate_snprintf_rc(print_rc);
         }
         draw_text_backwards(x, y, buffer.data(), CYAN.data(), 1.0F,
@@ -486,7 +486,7 @@ void ImageImpl::draw_sustain(const ImageBuilder& builder, const DrawnNote& note)
         if (length <= 0.0) {
             continue;
         }
-        const auto& colour = colours[i];
+        const auto& colour = colours.at(i);
         auto range = colour.y_range;
         if (builder.is_lefty_flip()) {
             range = {MEASURE_HEIGHT - 1 - std::get<1>(range),

@@ -61,7 +61,7 @@ Optimiser::Optimiser(const ProcessedSong* song,
 PointPtr Optimiser::next_candidate_point(PointPtr point) const
 {
     const auto index = std::distance(m_song->points().cbegin(), point);
-    return m_next_candidate_points[static_cast<std::size_t>(index)];
+    return m_next_candidate_points.at(static_cast<std::size_t>(index));
 }
 
 Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
@@ -360,15 +360,15 @@ Path Optimiser::optimal_path() const
         if (acts.empty()) {
             break;
         }
-        auto best_proto_act = std::get<0>(acts[0]);
-        auto best_next_key = std::get<1>(acts[0]);
+        auto best_proto_act = std::get<0>(acts.at(0));
+        auto best_next_key = std::get<1>(acts.at(0));
         auto best_sqz_level = act_squeeze_level(best_proto_act, start_key);
         for (auto i = 1U; i < acts.size(); ++i) {
-            const auto [proto_act, next_key] = acts[i];
+            const auto [proto_act, next_key] = acts.at(i);
             const auto sqz_level = act_squeeze_level(proto_act, start_key);
             if (sqz_level < best_sqz_level) {
-                best_proto_act = std::get<0>(acts[i]);
-                best_next_key = std::get<1>(acts[i]);
+                best_proto_act = std::get<0>(acts.at(i));
+                best_next_key = std::get<1>(acts.at(i));
                 best_sqz_level = sqz_level;
             }
         }

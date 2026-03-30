@@ -324,7 +324,7 @@ BOOST_AUTO_TEST_CASE(activation_right_after_a_sp_sustain_is_drawn_correctly)
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto opt_path = optimiser.optimal_path();
 
-    BOOST_CHECK_GE(opt_path.activations[0].sp_start.value(), 15.0);
+    BOOST_CHECK_GE(opt_path.activations.at(0).sp_start.value(), 15.0);
 }
 
 BOOST_AUTO_TEST_CASE(songs_ending_in_es1_are_pathed_correctly)
@@ -376,7 +376,7 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_is_specified_correctly)
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
-    const auto& act = opt_path.activations[0];
+    const auto& act = opt_path.activations.at(0);
 
     BOOST_CHECK_EQUAL(opt_path.score_boost, 300);
     BOOST_CHECK_EQUAL(opt_path.activations.size(), 2U);
@@ -398,7 +398,7 @@ BOOST_AUTO_TEST_CASE(acts_covering_the_last_note_do_not_compress_whammy)
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
-    const auto& act = opt_path.activations[0];
+    const auto& act = opt_path.activations.at(0);
 
     BOOST_CHECK_GT(act.whammy_end.value(), 16.0);
 }
@@ -432,7 +432,7 @@ BOOST_AUTO_TEST_CASE(use_next_point_to_work_out_compressed_whammy)
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
-    const auto& act = opt_path.activations[0];
+    const auto& act = opt_path.activations.at(0);
 
     BOOST_CHECK_GT(act.whammy_end.value(), 17.45);
 }
@@ -484,7 +484,7 @@ BOOST_AUTO_TEST_CASE(easier_activations_are_chosen_where_possible)
 
     const auto opt_path = optimiser.optimal_path();
 
-    BOOST_CHECK_GT(opt_path.activations[0].sp_start.value(), 20.0);
+    BOOST_CHECK_GT(opt_path.activations.at(0).sp_start.value(), 20.0);
 }
 
 // There was a bug where EW could be obtained from a note before the note was
@@ -581,7 +581,7 @@ BOOST_AUTO_TEST_CASE(act_end_is_constrained_by_next_act_start)
 
     const auto opt_path = optimiser.optimal_path();
 
-    BOOST_CHECK_LT(opt_path.activations[0].sp_end.value(), 23.9);
+    BOOST_CHECK_LT(opt_path.activations.at(0).sp_end.value(), 23.9);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -667,7 +667,7 @@ BOOST_AUTO_TEST_CASE(drum_reverse_squeezes_are_drawn_properly)
     const auto opt_path = optimiser.optimal_path();
 
     BOOST_CHECK_EQUAL(opt_path.activations.size(), 2U);
-    BOOST_CHECK_GT(opt_path.activations[0].sp_start.value(), 99.8);
+    BOOST_CHECK_GT(opt_path.activations.at(0).sp_start.value(), 99.8);
 }
 
 BOOST_AUTO_TEST_CASE(

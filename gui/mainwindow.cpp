@@ -249,7 +249,7 @@ void MainWindow::dropEvent(QDropEvent* event)
         return;
     }
 
-    load_file(urls[0].toLocalFile());
+    load_file(urls.at(0).toLocalFile());
 }
 
 void MainWindow::write_message(const QString& message)

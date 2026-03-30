@@ -103,8 +103,8 @@ SpData::form_beat_rates(const SightRead::TempoMap& tempo_map,
         beat_rates.reserve(od_beats.size() - 1);
 
         for (auto i = 0U; i < od_beats.size() - 1; ++i) {
-            const auto pos = tempo_map.to_beats(od_beats[i]);
-            const auto next_marker = tempo_map.to_beats(od_beats[i + 1]);
+            const auto pos = tempo_map.to_beats(od_beats.at(i));
+            const auto next_marker = tempo_map.to_beats(od_beats.at(i + 1));
             const auto drain_rate = engine.sp_gain_rate()
                 - 1 / (DEFAULT_BEATS_PER_BAR * (next_marker - pos).value());
             beat_rates.push_back(
@@ -173,7 +173,7 @@ SpData::SpData(const SightRead::NoteTrack& track,
 
     std::vector<std::tuple<SightRead::Beat, SightRead::Beat, SightRead::Beat>>
         merged_ranges;
-    auto pair = ranges[0];
+    auto pair = ranges.at(0);
     for (auto p = std::next(ranges.cbegin()); p < ranges.cend(); ++p) {
         if (std::get<0>(*p) <= std::get<1>(pair)) {
             std::get<1>(pair) = std::max(std::get<1>(pair), std::get<1>(*p));
@@ -214,8 +214,9 @@ SpData::first_whammy_range_after(SightRead::Beat pos) const
         return m_whammy_ranges.cend();
     }
     const auto index = static_cast<std::size_t>(pos.value());
-    const auto begin = (pos < SightRead::Beat(0.0)) ? m_whammy_ranges.cbegin()
-                                                    : m_initial_guesses[index];
+    const auto begin = (pos < SightRead::Beat(0.0))
+        ? m_whammy_ranges.cbegin()
+        : m_initial_guesses.at(index);
 
     return std::find_if_not(begin, m_whammy_ranges.cend(),
                             [=](const auto& x) { return x.end.beat <= pos; });

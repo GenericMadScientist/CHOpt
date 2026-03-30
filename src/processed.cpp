@@ -378,7 +378,7 @@ void ProcessedSong::append_activation(std::stringstream& stream,
                                       const std::string& act_summary) const
 {
     stream << '\n' << act_summary.substr(0, act_summary.find('-')) << ": ";
-    if (act_summary[0] == '0') {
+    if (act_summary.at(0) == '0') {
         stream << "See image";
         return;
     }
@@ -530,9 +530,12 @@ std::string ProcessedSong::path_summary(const Path& path) const
     if (activation_summaries.empty()) {
         stream << "None";
     } else {
-        stream << activation_summaries[0];
-        for (std::size_t i = 1; i < activation_summaries.size(); ++i) {
-            stream << '-' << activation_summaries[i];
+        for (auto it = activation_summaries.cbegin();
+             it < activation_summaries.cend(); ++it) {
+            stream << *it;
+            if (std::next(it) != activation_summaries.cend()) {
+                stream << '-';
+            }
         }
     }
 
@@ -567,8 +570,8 @@ std::string ProcessedSong::path_summary(const Path& path) const
     if (!m_is_drums) {
         stream << std::setprecision(2);
         for (std::size_t i = 0; i < path.activations.size(); ++i) {
-            append_activation(stream, path.activations[i],
-                              activation_summaries[i]);
+            append_activation(stream, path.activations.at(i),
+                              activation_summaries.at(i));
         }
     }
 

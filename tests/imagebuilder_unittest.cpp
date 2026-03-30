@@ -931,8 +931,9 @@ BOOST_AUTO_TEST_CASE(turns_red_toms_into_yellow_cymbals)
                           true,
                           false};
 
-    BOOST_CHECK_EQUAL(builder.notes()[0].lengths[SightRead::DRUM_YELLOW], 0);
-    BOOST_CHECK_EQUAL(builder.notes()[0].note_flags,
+    BOOST_CHECK_EQUAL(builder.notes().at(0).lengths.at(SightRead::DRUM_YELLOW),
+                      0);
+    BOOST_CHECK_EQUAL(builder.notes().at(0).note_flags,
                       SightRead::FLAGS_DRUMS | SightRead::FLAGS_CYMBAL);
 }
 
@@ -952,8 +953,8 @@ BOOST_AUTO_TEST_CASE(turns_yellow_toms_into_red_toms)
                           true,
                           false};
 
-    BOOST_CHECK_EQUAL(builder.notes()[0].lengths[SightRead::DRUM_RED], 0);
-    BOOST_CHECK_EQUAL(builder.notes()[0].note_flags, SightRead::FLAGS_DRUMS);
+    BOOST_CHECK_EQUAL(builder.notes().at(0).lengths.at(SightRead::DRUM_RED), 0);
+    BOOST_CHECK_EQUAL(builder.notes().at(0).note_flags, SightRead::FLAGS_DRUMS);
 }
 
 BOOST_AUTO_TEST_CASE(turns_yellow_cymbals_into_red_toms)
@@ -972,8 +973,8 @@ BOOST_AUTO_TEST_CASE(turns_yellow_cymbals_into_red_toms)
                           true,
                           false};
 
-    BOOST_CHECK_EQUAL(builder.notes()[0].lengths[SightRead::DRUM_RED], 0);
-    BOOST_CHECK_EQUAL(builder.notes()[0].note_flags, SightRead::FLAGS_DRUMS);
+    BOOST_CHECK_EQUAL(builder.notes().at(0).lengths.at(SightRead::DRUM_RED), 0);
+    BOOST_CHECK_EQUAL(builder.notes().at(0).note_flags, SightRead::FLAGS_DRUMS);
 }
 
 BOOST_AUTO_TEST_CASE(does_not_affect_non_pro_drums)
@@ -992,8 +993,8 @@ BOOST_AUTO_TEST_CASE(does_not_affect_non_pro_drums)
         true,
         false};
 
-    BOOST_CHECK_EQUAL(builder.notes()[0].lengths[SightRead::DRUM_RED], 0);
-    BOOST_CHECK_EQUAL(builder.notes()[0].note_flags, SightRead::FLAGS_DRUMS);
+    BOOST_CHECK_EQUAL(builder.notes().at(0).lengths.at(SightRead::DRUM_RED), 0);
+    BOOST_CHECK_EQUAL(builder.notes().at(0).note_flags, SightRead::FLAGS_DRUMS);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1899,8 +1900,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
     BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
                         expected_percents.size());
     for (std::size_t i = 0; i < expected_percents.size(); ++i) {
-        BOOST_CHECK_CLOSE(builder.sp_percent_values()[i], expected_percents[i],
-                          0.0001);
+        BOOST_CHECK_CLOSE(builder.sp_percent_values().at(i),
+                          expected_percents.at(i), 0.0001);
     }
 }
 
@@ -1939,8 +1940,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
     BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
                         expected_percents.size());
     for (std::size_t i = 0; i < expected_percents.size(); ++i) {
-        BOOST_CHECK_CLOSE(builder.sp_percent_values()[i], expected_percents[i],
-                          0.0001);
+        BOOST_CHECK_CLOSE(builder.sp_percent_values().at(i),
+                          expected_percents.at(i), 0.0001);
     }
 }
 
@@ -1988,8 +1989,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
     BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
                         expected_percents.size());
     for (std::size_t i = 0; i < expected_percents.size(); ++i) {
-        BOOST_CHECK_CLOSE(builder.sp_percent_values()[i], expected_percents[i],
-                          0.0001);
+        BOOST_CHECK_CLOSE(builder.sp_percent_values().at(i),
+                          expected_percents.at(i), 0.0001);
     }
 }
 
@@ -2031,8 +2032,8 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
     BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
                         expected_percents.size());
     for (std::size_t i = 0; i < expected_percents.size(); ++i) {
-        BOOST_CHECK_CLOSE(builder.sp_percent_values()[i], expected_percents[i],
-                          0.0001);
+        BOOST_CHECK_CLOSE(builder.sp_percent_values().at(i),
+                          expected_percents.at(i), 0.0001);
     }
 }
 

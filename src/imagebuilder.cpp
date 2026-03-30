@@ -133,15 +133,15 @@ std::vector<DrawnNote> drawn_notes(const SightRead::NoteTrack& track,
             drawn_note.note_flags = static_cast<SightRead::NoteFlags>(
                 drawn_note.note_flags & ~SightRead::FLAGS_CYMBAL);
         } else if (is_in_disco_flips(track.disco_flips(), note.position)) {
-            if (note.lengths[SightRead::DRUM_RED] != SightRead::Tick {-1}) {
-                std::swap(drawn_note.lengths[SightRead::DRUM_RED],
-                          drawn_note.lengths[SightRead::DRUM_YELLOW]);
+            if (note.lengths.at(SightRead::DRUM_RED) != SightRead::Tick {-1}) {
+                std::swap(drawn_note.lengths.at(SightRead::DRUM_RED),
+                          drawn_note.lengths.at(SightRead::DRUM_YELLOW));
                 drawn_note.note_flags = static_cast<SightRead::NoteFlags>(
                     drawn_note.note_flags | SightRead::FLAGS_CYMBAL);
-            } else if (note.lengths[SightRead::DRUM_YELLOW]
+            } else if (note.lengths.at(SightRead::DRUM_YELLOW)
                        != SightRead::Tick {-1}) {
-                std::swap(drawn_note.lengths[SightRead::DRUM_RED],
-                          drawn_note.lengths[SightRead::DRUM_YELLOW]);
+                std::swap(drawn_note.lengths.at(SightRead::DRUM_RED),
+                          drawn_note.lengths.at(SightRead::DRUM_YELLOW));
                 drawn_note.note_flags = static_cast<SightRead::NoteFlags>(
                     drawn_note.note_flags & ~SightRead::FLAGS_CYMBAL);
             }
@@ -213,9 +213,9 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
             const Path& path)
 {
     std::vector<std::tuple<SightRead::Beat, SpDrainEventType>> events;
-    for (std::size_t i = 1; i < measure_lines.size(); ++i) {
-        events.emplace_back(SightRead::Beat {measure_lines[i]},
-                            SpDrainEventType::Measure);
+    for (auto it = std::next(measure_lines.cbegin()); it < measure_lines.cend();
+         ++it) {
+        events.emplace_back(SightRead::Beat {*it}, SpDrainEventType::Measure);
     }
     for (auto p = points.cbegin(); p < points.cend(); ++p) {
         if (!p->is_sp_granting_note) {
@@ -696,12 +696,12 @@ void ImageBuilder::add_sp_values(const SpData& sp_data, const Engine& engine)
     }
 
     for (std::size_t i = 0; i < m_measure_lines.size() - 1; ++i) {
-        SightRead::Beat start {m_measure_lines[i]};
+        SightRead::Beat start {m_measure_lines.at(i)};
         SightRead::Beat end {std::numeric_limits<double>::infinity()};
         if (i < m_measure_lines.size() - 1) {
-            end = SightRead::Beat {m_measure_lines[i + 1]};
+            end = SightRead::Beat {m_measure_lines.at(i + 1)};
         }
-        m_sp_values[i]
+        m_sp_values.at(i)
             = sp_data.available_whammy(start, end) / engine.sp_gain_rate();
     }
 }
