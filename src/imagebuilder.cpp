@@ -109,15 +109,6 @@ DrawnNote note_to_drawn_note(const SightRead::Note& note,
             .is_sp_note = is_sp_note};
 }
 
-bool is_in_disco_flips(const std::vector<SightRead::DiscoFlip>& disco_flips,
-                       SightRead::Tick position)
-{
-    return std::ranges::any_of(disco_flips, [&](const auto& flip) {
-        return (flip.position <= position)
-            && (flip.position + flip.length >= position);
-    });
-}
-
 std::vector<DrawnNote> drawn_notes(const SightRead::NoteTrack& track,
                                    const SightRead::DrumSettings& drum_settings,
                                    bool trim_sustains)
@@ -129,23 +120,6 @@ std::vector<DrawnNote> drawn_notes(const SightRead::NoteTrack& track,
             continue;
         }
         auto drawn_note = note_to_drawn_note(note, track, trim_sustains);
-        if (!drum_settings.pro_drums) {
-            drawn_note.note_flags = static_cast<SightRead::NoteFlags>(
-                drawn_note.note_flags & ~SightRead::FLAGS_CYMBAL);
-        } else if (is_in_disco_flips(track.disco_flips(), note.position)) {
-            if (note.lengths.at(SightRead::DRUM_RED) != SightRead::Tick {-1}) {
-                std::swap(drawn_note.lengths.at(SightRead::DRUM_RED),
-                          drawn_note.lengths.at(SightRead::DRUM_YELLOW));
-                drawn_note.note_flags = static_cast<SightRead::NoteFlags>(
-                    drawn_note.note_flags | SightRead::FLAGS_CYMBAL);
-            } else if (note.lengths.at(SightRead::DRUM_YELLOW)
-                       != SightRead::Tick {-1}) {
-                std::swap(drawn_note.lengths.at(SightRead::DRUM_RED),
-                          drawn_note.lengths.at(SightRead::DRUM_YELLOW));
-                drawn_note.note_flags = static_cast<SightRead::NoteFlags>(
-                    drawn_note.note_flags & ~SightRead::FLAGS_CYMBAL);
-            }
-        }
         notes.push_back(drawn_note);
     }
 
@@ -298,7 +272,9 @@ void apply_drum_settings(SightRead::NoteTrack& track,
         && track.drum_fills().empty()) {
         track.generate_drum_fills(song.global_data().tempo_map());
     }
-    if (!pathing_settings.drum_settings.pro_drums) {
+    if (pathing_settings.drum_settings.pro_drums) {
+        track.apply_disco_flips();
+    } else {
         track.disable_cymbals();
         track.disable_dynamics();
     }
