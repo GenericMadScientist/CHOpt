@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2023 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,8 @@ private:
     // already full SP there.
     struct CacheKey {
         PointPtr point;
-        SpPosition position {SightRead::Beat(0.0), SpMeasure(0.0)};
+        SpPosition position {.beat = SightRead::Beat(0.0),
+                             .sp_measure = SpMeasure(0.0)};
 
         friend bool operator<(const CacheKey& lhs, const CacheKey& rhs)
         {
@@ -92,9 +93,8 @@ private:
             if (element < m_min_absent_ptr) {
                 return true;
             }
-            return std::find(m_abnormal_elements.cbegin(),
-                             m_abnormal_elements.cend(), element)
-                != m_abnormal_elements.cend();
+            return std::ranges::find(m_abnormal_elements, element)
+                != std::ranges::end(m_abnormal_elements);
         }
 
         [[nodiscard]] PointPtr lowest_absent_element() const
@@ -109,10 +109,10 @@ private:
             if (m_min_absent_ptr == element) {
                 ++m_min_absent_ptr;
                 while (true) {
-                    auto next_elem_iter = std::find(m_abnormal_elements.begin(),
-                                                    m_abnormal_elements.end(),
-                                                    m_min_absent_ptr);
-                    if (next_elem_iter == m_abnormal_elements.end()) {
+                    auto next_elem_iter = std::ranges::find(m_abnormal_elements,
+                                                            m_min_absent_ptr);
+                    if (next_elem_iter
+                        == std::ranges::end(m_abnormal_elements)) {
                         return;
                     }
                     std::swap(*next_elem_iter, m_abnormal_elements.back());
@@ -129,7 +129,7 @@ private:
     static constexpr double BASE_DRUM_FILL_DELAY = 2.0 * 100;
     const ProcessedSong* m_song;
     const std::atomic<bool>* m_terminate;
-    const SightRead::Second m_drum_fill_delay;
+    SightRead::Second m_drum_fill_delay;
     SightRead::Second m_whammy_delay;
     std::vector<PointPtr> m_next_candidate_points;
 
