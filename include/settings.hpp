@@ -35,6 +35,7 @@ enum class Game {
     CloneHero,
     FortniteFestival,
     GuitarHeroOne,
+    GuitarHeroTwo,
     GuitarHeroThree,
     RockBand,
     RockBandThree

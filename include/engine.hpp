@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2021, 2022, 2023, 2024, 2025 Raymond Wright
+ * Copyright (C) 2021, 2022, 2023, 2024, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -216,7 +216,7 @@ class FortniteVocalsEngine final : public BaseFortniteEngine {
     int sust_points_per_beat() const override { return 25; }
 };
 
-class Gh1Engine final : public Engine {
+class BaseHarmonixGhEngine : public Engine {
 private:
     static constexpr double FUDGE_EPSILON = 0.0001;
 
@@ -224,14 +224,6 @@ public:
     int base_note_value() const override { return 50; }
     double burst_size() const override { return 0.0; }
     bool chords_multiply_sustains() const override { return true; }
-    bool delayed_multiplier() const override { return true; }
-    double early_timing_window(double early_gap, double late_gap) const override
-    {
-        (void)late_gap;
-        // The division by a number greater than 2 is a fudge so standard
-        // doubles are not shown as possible without EHW.
-        return std::min(0.1, early_gap / (2.0 + FUDGE_EPSILON));
-    }
     bool has_bres() const override { return false; }
     bool has_early_whammy() const override { return true; }
     bool has_unison_bonuses() const override { return false; }
@@ -262,6 +254,32 @@ public:
     SustainTicksMetric sustain_ticks_metric() const override
     {
         return SustainTicksMetric::Beat;
+    }
+};
+
+class Gh1Engine final : public BaseHarmonixGhEngine {
+private:
+    static constexpr double FUDGE_EPSILON = 0.0001;
+
+public:
+    bool delayed_multiplier() const override { return true; }
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)late_gap;
+        // The division by a number greater than 2 is a fudge so standard
+        // doubles are not shown as possible without EHW.
+        return std::min(0.1, early_gap / (2.0 + FUDGE_EPSILON));
+    }
+};
+
+class Gh2Engine final : public BaseHarmonixGhEngine {
+public:
+    bool delayed_multiplier() const override { return false; }
+    double early_timing_window(double early_gap, double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.1;
     }
 };
 

@@ -102,9 +102,10 @@ SightRead::Instrument string_to_inst(std::string_view text, Game game)
 Game game_from_string(std::string_view game)
 {
     const std::map<std::string_view, Game> game_map {
-        {"ch", Game::CloneHero},      {"fnf", Game::FortniteFestival},
-        {"gh1", Game::GuitarHeroOne}, {"gh3", Game::GuitarHeroThree},
-        {"rb", Game::RockBand},       {"rb3", Game::RockBandThree}};
+        {"ch", Game::CloneHero},        {"fnf", Game::FortniteFestival},
+        {"gh1", Game::GuitarHeroOne},   {"gh2", Game::GuitarHeroTwo},
+        {"gh3", Game::GuitarHeroThree}, {"rb", Game::RockBand},
+        {"rb3", Game::RockBandThree}};
     return game_map.at(game);
 }
 
@@ -202,6 +203,8 @@ game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
         return std::make_unique<FortniteGuitarEngine>();
     case Game::GuitarHeroOne:
         return std::make_unique<Gh1Engine>();
+    case Game::GuitarHeroTwo:
+        return std::make_unique<Gh2Engine>();
     case Game::GuitarHeroThree:
         return std::make_unique<Gh3Engine>();
     case Game::RockBand:
