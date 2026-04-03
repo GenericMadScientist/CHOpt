@@ -20,14 +20,15 @@
 #define CHOPT_ENGINE_HPP
 
 #include <algorithm>
+#include <cstdint>
 
 #include <sightread/time.hpp>
 
 #include "sptimemap.hpp"
 
-enum class SustainRoundingPolicy { RoundUp, RoundToNearest };
+enum class SustainRoundingPolicy : std::uint8_t { RoundUp, RoundToNearest };
 
-enum class SustainTicksMetric { Beat, Fretbar, OdBeat };
+enum class SustainTicksMetric : std::uint8_t { Beat, Fretbar, OdBeat };
 
 struct SpEngineValues {
     double phrase_amount;
@@ -37,76 +38,103 @@ struct SpEngineValues {
 
 class Engine {
 public:
-    virtual int base_note_value() const = 0;
-    virtual int base_cymbal_value() const { return base_note_value(); }
-    virtual double burst_size() const = 0;
-    virtual bool chords_multiply_sustains() const = 0;
-    virtual bool delayed_multiplier() const = 0;
-    virtual double early_timing_window(double early_gap, double late_gap) const
-        = 0;
-    virtual bool has_bres() const = 0;
-    virtual bool has_early_whammy() const = 0;
-    virtual bool has_unison_bonuses() const = 0;
-    virtual bool is_rock_band() const = 0;
-    virtual bool ignore_average_multiplier() const = 0;
-    virtual double late_timing_window(double early_gap, double late_gap) const
-        = 0;
-    virtual int max_multiplier() const = 0;
-    virtual bool merge_uneven_sustains() const = 0;
-    virtual bool overlaps() const = 0;
-    virtual bool round_tick_gap() const = 0;
-    virtual SightRead::Tick snap_gap() const = 0;
-    virtual SpEngineValues sp_engine_values() const = 0;
-    virtual SpGainMode sp_gain_mode() const = 0;
-    virtual double sp_gain_rate() const = 0;
-    virtual SpMode sp_mode() const = 0;
-    virtual int sust_points_per_beat() const = 0;
-    virtual SustainRoundingPolicy sustain_rounding() const = 0;
-    virtual SustainTicksMetric sustain_ticks_metric() const = 0;
+    [[nodiscard]] virtual int base_note_value() const = 0;
+    [[nodiscard]] virtual int base_cymbal_value() const
+    {
+        return base_note_value();
+    }
+    [[nodiscard]] virtual double burst_size() const = 0;
+    [[nodiscard]] virtual bool chords_multiply_sustains() const = 0;
+    [[nodiscard]] virtual bool delayed_multiplier() const = 0;
+    [[nodiscard]] virtual double early_timing_window(double early_gap,
+                                                     double late_gap) const = 0;
+    [[nodiscard]] virtual bool has_bres() const = 0;
+    [[nodiscard]] virtual bool has_early_whammy() const = 0;
+    [[nodiscard]] virtual bool has_unison_bonuses() const = 0;
+    [[nodiscard]] virtual bool is_rock_band() const = 0;
+    [[nodiscard]] virtual bool ignore_average_multiplier() const = 0;
+    [[nodiscard]] virtual double late_timing_window(double early_gap,
+                                                    double late_gap) const = 0;
+    [[nodiscard]] virtual int max_multiplier() const = 0;
+    [[nodiscard]] virtual bool merge_uneven_sustains() const = 0;
+    [[nodiscard]] virtual bool overlaps() const = 0;
+    [[nodiscard]] virtual bool round_tick_gap() const = 0;
+    [[nodiscard]] virtual SightRead::Tick snap_gap() const = 0;
+    [[nodiscard]] virtual SpEngineValues sp_engine_values() const = 0;
+    [[nodiscard]] virtual SpGainMode sp_gain_mode() const = 0;
+    [[nodiscard]] virtual double sp_gain_rate() const = 0;
+    [[nodiscard]] virtual SpMode sp_mode() const = 0;
+    [[nodiscard]] virtual int sust_points_per_beat() const = 0;
+    [[nodiscard]] virtual SustainRoundingPolicy sustain_rounding() const = 0;
+    [[nodiscard]] virtual SustainTicksMetric sustain_ticks_metric() const = 0;
+
+    Engine() = default;
+    Engine(const Engine&) = delete;
+    Engine(Engine&&) = delete;
+    Engine& operator=(const Engine&) = delete;
+    Engine& operator=(Engine&&) = delete;
     virtual ~Engine() = default;
 };
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 class BaseChEngine : public Engine {
 protected:
-    virtual double timing_window(double early_gap, double late_gap) const = 0;
+    [[nodiscard]] virtual double timing_window(double early_gap,
+                                               double late_gap) const = 0;
 
 public:
-    int base_cymbal_value() const override { return 65; }
-    int base_note_value() const override { return 50; }
-    double burst_size() const override { return 0.25; }
-    bool chords_multiply_sustains() const override { return false; }
-    bool delayed_multiplier() const override { return false; }
-    double early_timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] int base_cymbal_value() const override { return 65; }
+    [[nodiscard]] int base_note_value() const override { return 50; }
+    [[nodiscard]] double burst_size() const override { return 0.25; }
+    [[nodiscard]] bool chords_multiply_sustains() const override
+    {
+        return false;
+    }
+    [[nodiscard]] bool delayed_multiplier() const override { return false; }
+    [[nodiscard]] double early_timing_window(double early_gap,
+                                             double late_gap) const override
     {
         return timing_window(early_gap, late_gap);
     }
-    bool has_bres() const override { return false; }
-    bool has_early_whammy() const override { return true; }
-    bool has_unison_bonuses() const override { return false; }
-    bool ignore_average_multiplier() const override { return false; }
-    bool is_rock_band() const override { return false; }
-    double late_timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] bool has_bres() const override { return false; }
+    [[nodiscard]] bool has_early_whammy() const override { return true; }
+    [[nodiscard]] bool has_unison_bonuses() const override { return false; }
+    [[nodiscard]] bool ignore_average_multiplier() const override
+    {
+        return false;
+    }
+    [[nodiscard]] bool is_rock_band() const override { return false; }
+    [[nodiscard]] double late_timing_window(double early_gap,
+                                            double late_gap) const override
     {
         return timing_window(early_gap, late_gap);
     }
-    int max_multiplier() const override { return 4; }
-    bool merge_uneven_sustains() const override { return false; }
-    bool overlaps() const override { return true; }
-    bool round_tick_gap() const override { return true; }
-    SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; }
-    SpEngineValues sp_engine_values() const override
+    [[nodiscard]] int max_multiplier() const override { return 4; }
+    [[nodiscard]] bool merge_uneven_sustains() const override { return false; }
+    [[nodiscard]] bool overlaps() const override { return true; }
+    [[nodiscard]] bool round_tick_gap() const override { return true; }
+    [[nodiscard]] SightRead::Tick snap_gap() const override
     {
-        return {0.25, 0.5, 0.5};
+        return SightRead::Tick {0};
     }
-    SpGainMode sp_gain_mode() const override { return SpGainMode::Beat; }
-    double sp_gain_rate() const override { return 1 / 30.0; }
-    SpMode sp_mode() const override { return SpMode::Measure; }
-    int sust_points_per_beat() const override { return 25; }
-    SustainRoundingPolicy sustain_rounding() const override
+    [[nodiscard]] SpEngineValues sp_engine_values() const override
+    {
+        return {.phrase_amount = 0.25,
+                .unison_phrase_amount = 0.5,
+                .minimum_to_activate = 0.5};
+    }
+    [[nodiscard]] SpGainMode sp_gain_mode() const override
+    {
+        return SpGainMode::Beat;
+    }
+    [[nodiscard]] double sp_gain_rate() const override { return 1 / 30.0; }
+    [[nodiscard]] SpMode sp_mode() const override { return SpMode::Measure; }
+    [[nodiscard]] int sust_points_per_beat() const override { return 25; }
+    [[nodiscard]] SustainRoundingPolicy sustain_rounding() const override
     {
         return SustainRoundingPolicy::RoundUp;
     }
-    SustainTicksMetric sustain_ticks_metric() const override
+    [[nodiscard]] SustainTicksMetric sustain_ticks_metric() const override
     {
         return SustainTicksMetric::Beat;
     }
@@ -114,7 +142,8 @@ public:
 
 class ChGuitarEngine final : public BaseChEngine {
 protected:
-    double timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] double timing_window(double early_gap,
+                                       double late_gap) const override
     {
         (void)early_gap;
         (void)late_gap;
@@ -124,7 +153,8 @@ protected:
 
 class ChPrecisionGuitarEngine final : public BaseChEngine {
 protected:
-    double timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] double timing_window(double early_gap,
+                                       double late_gap) const override
     {
         early_gap = std::clamp(early_gap, 0.0, 0.0525);
         late_gap = std::clamp(late_gap, 0.0, 0.0525);
@@ -135,7 +165,8 @@ protected:
 
 class ChDrumEngine final : public BaseChEngine {
 protected:
-    double timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] double timing_window(double early_gap,
+                                       double late_gap) const override
     {
         early_gap = std::clamp(early_gap, 0.0375, 0.085);
         late_gap = std::clamp(late_gap, 0.0375, 0.085);
@@ -147,7 +178,8 @@ protected:
 
 class ChPrecisionDrumEngine final : public BaseChEngine {
 protected:
-    double timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] double timing_window(double early_gap,
+                                       double late_gap) const override
     {
         early_gap = std::clamp(early_gap, 0.025, 0.04);
         late_gap = std::clamp(late_gap, 0.025, 0.04);
@@ -159,61 +191,77 @@ protected:
 
 class BaseFortniteEngine : public Engine {
 public:
-    int base_note_value() const override { return 36; }
-    double burst_size() const override { return 0.0; }
-    bool chords_multiply_sustains() const override { return true; }
-    bool delayed_multiplier() const override { return true; }
-    double early_timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] int base_note_value() const override { return 36; }
+    [[nodiscard]] double burst_size() const override { return 0.0; }
+    [[nodiscard]] bool chords_multiply_sustains() const override
+    {
+        return true;
+    }
+    [[nodiscard]] bool delayed_multiplier() const override { return true; }
+    [[nodiscard]] double early_timing_window(double early_gap,
+                                             double late_gap) const override
     {
         (void)early_gap;
         (void)late_gap;
         return 0.125;
     }
-    bool has_bres() const override { return false; }
-    bool has_early_whammy() const override { return false; }
-    bool has_unison_bonuses() const override { return false; }
-    bool is_rock_band() const override { return false; }
-    bool ignore_average_multiplier() const override { return true; }
-    double late_timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] bool has_bres() const override { return false; }
+    [[nodiscard]] bool has_early_whammy() const override { return false; }
+    [[nodiscard]] bool has_unison_bonuses() const override { return false; }
+    [[nodiscard]] bool is_rock_band() const override { return false; }
+    [[nodiscard]] bool ignore_average_multiplier() const override
+    {
+        return true;
+    }
+    [[nodiscard]] double late_timing_window(double early_gap,
+                                            double late_gap) const override
     {
         (void)early_gap;
         (void)late_gap;
         return 0.125;
     }
-    bool merge_uneven_sustains() const override { return true; }
-    bool overlaps() const override { return true; }
-    bool round_tick_gap() const override { return false; }
-    SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; }
-    SpEngineValues sp_engine_values() const override
+    [[nodiscard]] bool merge_uneven_sustains() const override { return true; }
+    [[nodiscard]] bool overlaps() const override { return true; }
+    [[nodiscard]] bool round_tick_gap() const override { return false; }
+    [[nodiscard]] SightRead::Tick snap_gap() const override
     {
-        return {0.25, 0.5, 0.25};
+        return SightRead::Tick {0};
     }
-    SpGainMode sp_gain_mode() const override { return SpGainMode::Beat; }
-    SpMode sp_mode() const override { return SpMode::OdBeat; }
-    double sp_gain_rate() const override { return 0.0; }
-    SustainRoundingPolicy sustain_rounding() const override
+    [[nodiscard]] SpEngineValues sp_engine_values() const override
+    {
+        return {.phrase_amount = 0.25,
+                .unison_phrase_amount = 0.5,
+                .minimum_to_activate = 0.25};
+    }
+    [[nodiscard]] SpGainMode sp_gain_mode() const override
+    {
+        return SpGainMode::Beat;
+    }
+    [[nodiscard]] SpMode sp_mode() const override { return SpMode::OdBeat; }
+    [[nodiscard]] double sp_gain_rate() const override { return 0.0; }
+    [[nodiscard]] SustainRoundingPolicy sustain_rounding() const override
     {
         return SustainRoundingPolicy::RoundToNearest;
     }
-    SustainTicksMetric sustain_ticks_metric() const override
+    [[nodiscard]] SustainTicksMetric sustain_ticks_metric() const override
     {
         return SustainTicksMetric::OdBeat;
     }
 };
 
 class FortniteGuitarEngine final : public BaseFortniteEngine {
-    int max_multiplier() const override { return 4; }
-    int sust_points_per_beat() const override { return 12; }
+    [[nodiscard]] int max_multiplier() const override { return 4; }
+    [[nodiscard]] int sust_points_per_beat() const override { return 12; }
 };
 
 class FortniteBassEngine final : public BaseFortniteEngine {
-    int max_multiplier() const override { return 6; }
-    int sust_points_per_beat() const override { return 12; }
+    [[nodiscard]] int max_multiplier() const override { return 6; }
+    [[nodiscard]] int sust_points_per_beat() const override { return 12; }
 };
 
 class FortniteVocalsEngine final : public BaseFortniteEngine {
-    int max_multiplier() const override { return 6; }
-    int sust_points_per_beat() const override { return 25; }
+    [[nodiscard]] int max_multiplier() const override { return 6; }
+    [[nodiscard]] int sust_points_per_beat() const override { return 25; }
 };
 
 class BaseHarmonixGhEngine : public Engine {
@@ -221,37 +269,52 @@ private:
     static constexpr double FUDGE_EPSILON = 0.0001;
 
 public:
-    int base_note_value() const override { return 50; }
-    double burst_size() const override { return 0.0; }
-    bool chords_multiply_sustains() const override { return true; }
-    bool has_bres() const override { return false; }
-    bool has_early_whammy() const override { return true; }
-    bool has_unison_bonuses() const override { return false; }
-    bool ignore_average_multiplier() const override { return true; }
-    bool is_rock_band() const override { return false; }
-    double late_timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] int base_note_value() const override { return 50; }
+    [[nodiscard]] double burst_size() const override { return 0.0; }
+    [[nodiscard]] bool chords_multiply_sustains() const override
+    {
+        return true;
+    }
+    [[nodiscard]] bool has_bres() const override { return false; }
+    [[nodiscard]] bool has_early_whammy() const override { return true; }
+    [[nodiscard]] bool has_unison_bonuses() const override { return false; }
+    [[nodiscard]] bool ignore_average_multiplier() const override
+    {
+        return true;
+    }
+    [[nodiscard]] bool is_rock_band() const override { return false; }
+    [[nodiscard]] double late_timing_window(double early_gap,
+                                            double late_gap) const override
     {
         (void)early_gap;
         return std::min(0.1, late_gap / (2.0 + FUDGE_EPSILON));
     }
-    int max_multiplier() const override { return 4; }
-    bool merge_uneven_sustains() const override { return true; }
-    bool overlaps() const override { return false; }
-    bool round_tick_gap() const override { return false; }
-    SightRead::Tick snap_gap() const override { return SightRead::Tick {2}; }
-    SpEngineValues sp_engine_values() const override
+    [[nodiscard]] int max_multiplier() const override { return 4; }
+    [[nodiscard]] bool merge_uneven_sustains() const override { return true; }
+    [[nodiscard]] bool overlaps() const override { return false; }
+    [[nodiscard]] bool round_tick_gap() const override { return false; }
+    [[nodiscard]] SightRead::Tick snap_gap() const override
     {
-        return {0.25, 0.5, 0.5};
+        return SightRead::Tick {2};
     }
-    SpGainMode sp_gain_mode() const override { return SpGainMode::Beat; }
-    double sp_gain_rate() const override { return 0.034; }
-    SpMode sp_mode() const override { return SpMode::Measure; }
-    int sust_points_per_beat() const override { return 25; }
-    SustainRoundingPolicy sustain_rounding() const override
+    [[nodiscard]] SpEngineValues sp_engine_values() const override
+    {
+        return {.phrase_amount = 0.25,
+                .unison_phrase_amount = 0.5,
+                .minimum_to_activate = 0.5};
+    }
+    [[nodiscard]] SpGainMode sp_gain_mode() const override
+    {
+        return SpGainMode::Beat;
+    }
+    [[nodiscard]] double sp_gain_rate() const override { return 0.034; }
+    [[nodiscard]] SpMode sp_mode() const override { return SpMode::Measure; }
+    [[nodiscard]] int sust_points_per_beat() const override { return 25; }
+    [[nodiscard]] SustainRoundingPolicy sustain_rounding() const override
     {
         return SustainRoundingPolicy::RoundToNearest;
     }
-    SustainTicksMetric sustain_ticks_metric() const override
+    [[nodiscard]] SustainTicksMetric sustain_ticks_metric() const override
     {
         return SustainTicksMetric::Beat;
     }
@@ -262,8 +325,9 @@ private:
     static constexpr double FUDGE_EPSILON = 0.0001;
 
 public:
-    bool delayed_multiplier() const override { return true; }
-    double early_timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] bool delayed_multiplier() const override { return true; }
+    [[nodiscard]] double early_timing_window(double early_gap,
+                                             double late_gap) const override
     {
         (void)late_gap;
         // The division by a number greater than 2 is a fudge so standard
@@ -274,8 +338,9 @@ public:
 
 class Gh2Engine final : public BaseHarmonixGhEngine {
 public:
-    bool delayed_multiplier() const override { return false; }
-    double early_timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] bool delayed_multiplier() const override { return false; }
+    [[nodiscard]] double early_timing_window(double early_gap,
+                                             double late_gap) const override
     {
         (void)early_gap;
         (void)late_gap;
@@ -288,44 +353,60 @@ private:
     static constexpr double FUDGE_EPSILON = 0.0001;
 
 public:
-    int base_note_value() const override { return 50; }
-    double burst_size() const override { return 0.0; }
-    bool chords_multiply_sustains() const override { return false; }
-    bool delayed_multiplier() const override { return false; }
-    double early_timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] int base_note_value() const override { return 50; }
+    [[nodiscard]] double burst_size() const override { return 0.0; }
+    [[nodiscard]] bool chords_multiply_sustains() const override
+    {
+        return false;
+    }
+    [[nodiscard]] bool delayed_multiplier() const override { return false; }
+    [[nodiscard]] double early_timing_window(double early_gap,
+                                             double late_gap) const override
     {
         (void)early_gap;
         (void)late_gap;
         return 0.116;
     }
-    bool has_bres() const override { return false; }
-    bool has_early_whammy() const override { return false; }
-    bool has_unison_bonuses() const override { return false; }
-    bool ignore_average_multiplier() const override { return true; }
-    bool is_rock_band() const override { return false; }
-    double late_timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] bool has_bres() const override { return false; }
+    [[nodiscard]] bool has_early_whammy() const override { return false; }
+    [[nodiscard]] bool has_unison_bonuses() const override { return false; }
+    [[nodiscard]] bool ignore_average_multiplier() const override
+    {
+        return true;
+    }
+    [[nodiscard]] bool is_rock_band() const override { return false; }
+    [[nodiscard]] double late_timing_window(double early_gap,
+                                            double late_gap) const override
     {
         (void)early_gap;
         return std::min(0.1, late_gap / (2.0 + FUDGE_EPSILON));
     }
-    int max_multiplier() const override { return 4; }
-    bool merge_uneven_sustains() const override { return false; }
-    bool overlaps() const override { return false; }
-    bool round_tick_gap() const override { return false; }
-    SightRead::Tick snap_gap() const override { return SightRead::Tick {0}; }
-    SpEngineValues sp_engine_values() const override
+    [[nodiscard]] int max_multiplier() const override { return 4; }
+    [[nodiscard]] bool merge_uneven_sustains() const override { return false; }
+    [[nodiscard]] bool overlaps() const override { return false; }
+    [[nodiscard]] bool round_tick_gap() const override { return false; }
+    [[nodiscard]] SightRead::Tick snap_gap() const override
     {
-        return {0.25, 0.5, 0.5};
+        return SightRead::Tick {0};
     }
-    SpGainMode sp_gain_mode() const override { return SpGainMode::Fretbar; }
-    double sp_gain_rate() const override { return 0.033332999; }
-    SpMode sp_mode() const override { return SpMode::Measure; }
-    int sust_points_per_beat() const override { return 25; }
-    SustainRoundingPolicy sustain_rounding() const override
+    [[nodiscard]] SpEngineValues sp_engine_values() const override
+    {
+        return {.phrase_amount = 0.25,
+                .unison_phrase_amount = 0.5,
+                .minimum_to_activate = 0.5};
+    }
+    [[nodiscard]] SpGainMode sp_gain_mode() const override
+    {
+        return SpGainMode::Fretbar;
+    }
+    [[nodiscard]] double sp_gain_rate() const override { return 0.033332999; }
+    [[nodiscard]] SpMode sp_mode() const override { return SpMode::Measure; }
+    [[nodiscard]] int sust_points_per_beat() const override { return 25; }
+    [[nodiscard]] SustainRoundingPolicy sustain_rounding() const override
     {
         return SustainRoundingPolicy::RoundToNearest;
     }
-    SustainTicksMetric sustain_ticks_metric() const override
+    [[nodiscard]] SustainTicksMetric sustain_ticks_metric() const override
     {
         return SustainTicksMetric::Fretbar;
     }
@@ -333,45 +414,61 @@ public:
 
 class BaseRbEngine : public Engine {
 protected:
-    virtual double base_timing_window() const = 0;
+    [[nodiscard]] virtual double base_timing_window() const = 0;
 
 public:
-    int base_note_value() const override { return 25; }
-    double burst_size() const override { return 0.0; }
-    bool chords_multiply_sustains() const override { return true; }
-    bool delayed_multiplier() const override { return false; }
-    double early_timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] int base_note_value() const override { return 25; }
+    [[nodiscard]] double burst_size() const override { return 0.0; }
+    [[nodiscard]] bool chords_multiply_sustains() const override
+    {
+        return true;
+    }
+    [[nodiscard]] bool delayed_multiplier() const override { return false; }
+    [[nodiscard]] double early_timing_window(double early_gap,
+                                             double late_gap) const override
     {
         (void)early_gap;
         (void)late_gap;
         return base_timing_window();
     }
-    bool has_bres() const override { return true; }
-    bool has_early_whammy() const override { return true; }
-    bool ignore_average_multiplier() const override { return true; }
-    bool is_rock_band() const override { return true; }
-    double late_timing_window(double early_gap, double late_gap) const override
+    [[nodiscard]] bool has_bres() const override { return true; }
+    [[nodiscard]] bool has_early_whammy() const override { return true; }
+    [[nodiscard]] bool ignore_average_multiplier() const override
+    {
+        return true;
+    }
+    [[nodiscard]] bool is_rock_band() const override { return true; }
+    [[nodiscard]] double late_timing_window(double early_gap,
+                                            double late_gap) const override
     {
         (void)early_gap;
         return std::min(base_timing_window(), late_gap / 2);
     }
-    bool merge_uneven_sustains() const override { return true; }
-    bool overlaps() const override { return true; }
-    bool round_tick_gap() const override { return false; }
-    SightRead::Tick snap_gap() const override { return SightRead::Tick {2}; }
-    SpEngineValues sp_engine_values() const override
+    [[nodiscard]] bool merge_uneven_sustains() const override { return true; }
+    [[nodiscard]] bool overlaps() const override { return true; }
+    [[nodiscard]] bool round_tick_gap() const override { return false; }
+    [[nodiscard]] SightRead::Tick snap_gap() const override
     {
-        return {0.251, 0.501, 0.5};
+        return SightRead::Tick {2};
     }
-    SpGainMode sp_gain_mode() const override { return SpGainMode::Beat; }
-    double sp_gain_rate() const override { return 0.034; }
-    SpMode sp_mode() const override { return SpMode::OdBeat; }
-    int sust_points_per_beat() const override { return 12; }
-    SustainRoundingPolicy sustain_rounding() const override
+    [[nodiscard]] SpEngineValues sp_engine_values() const override
+    {
+        return {.phrase_amount = 0.251,
+                .unison_phrase_amount = 0.501,
+                .minimum_to_activate = 0.5};
+    }
+    [[nodiscard]] SpGainMode sp_gain_mode() const override
+    {
+        return SpGainMode::Beat;
+    }
+    [[nodiscard]] double sp_gain_rate() const override { return 0.034; }
+    [[nodiscard]] SpMode sp_mode() const override { return SpMode::OdBeat; }
+    [[nodiscard]] int sust_points_per_beat() const override { return 12; }
+    [[nodiscard]] SustainRoundingPolicy sustain_rounding() const override
     {
         return SustainRoundingPolicy::RoundToNearest;
     }
-    SustainTicksMetric sustain_ticks_metric() const override
+    [[nodiscard]] SustainTicksMetric sustain_ticks_metric() const override
     {
         return SustainTicksMetric::Beat;
     }
@@ -379,38 +476,39 @@ public:
 
 class RbEngine final : public BaseRbEngine {
 protected:
-    double base_timing_window() const override { return 0.1; }
+    [[nodiscard]] double base_timing_window() const override { return 0.1; }
 
 public:
-    bool has_unison_bonuses() const override { return false; }
-    int max_multiplier() const override { return 4; }
+    [[nodiscard]] bool has_unison_bonuses() const override { return false; }
+    [[nodiscard]] int max_multiplier() const override { return 4; }
 };
 
 class RbBassEngine final : public BaseRbEngine {
 protected:
-    double base_timing_window() const override { return 0.1; }
+    [[nodiscard]] double base_timing_window() const override { return 0.1; }
 
 public:
-    bool has_unison_bonuses() const override { return false; }
-    int max_multiplier() const override { return 6; }
+    [[nodiscard]] bool has_unison_bonuses() const override { return false; }
+    [[nodiscard]] int max_multiplier() const override { return 6; }
 };
 
 class Rb3Engine final : public BaseRbEngine {
 protected:
-    double base_timing_window() const override { return 0.1; }
+    [[nodiscard]] double base_timing_window() const override { return 0.1; }
 
 public:
-    bool has_unison_bonuses() const override { return true; }
-    int max_multiplier() const override { return 4; }
+    [[nodiscard]] bool has_unison_bonuses() const override { return true; }
+    [[nodiscard]] int max_multiplier() const override { return 4; }
 };
 
 class Rb3BassEngine final : public BaseRbEngine {
 protected:
-    double base_timing_window() const override { return 0.1; }
+    [[nodiscard]] double base_timing_window() const override { return 0.1; }
 
 public:
-    bool has_unison_bonuses() const override { return true; }
-    int max_multiplier() const override { return 6; }
+    [[nodiscard]] bool has_unison_bonuses() const override { return true; }
+    [[nodiscard]] int max_multiplier() const override { return 6; }
 };
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 
 #endif
