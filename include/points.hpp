@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #ifndef CHOPT_POINTS_HPP
 #define CHOPT_POINTS_HPP
 
-#include <limits>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -29,7 +28,6 @@
 #include <sightread/songparts.hpp>
 #include <sightread/time.hpp>
 
-#include "engine.hpp"
 #include "settings.hpp"
 #include "sptimemap.hpp"
 

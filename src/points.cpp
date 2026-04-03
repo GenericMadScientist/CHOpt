@@ -20,9 +20,7 @@
 #include <array>
 #include <cassert>
 #include <cmath>
-#include <cstdint>
 #include <iterator>
-#include <type_traits>
 
 #include "points.hpp"
 
