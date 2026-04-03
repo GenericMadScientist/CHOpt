@@ -19,6 +19,7 @@
 #ifndef CHOPT_SETTINGS_HPP
 #define CHOPT_SETTINGS_HPP
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -31,7 +32,7 @@
 
 #include "engine.hpp"
 
-enum class Game {
+enum class Game : std::uint8_t {
     CloneHero,
     FortniteFestival,
     GuitarHeroOne,
