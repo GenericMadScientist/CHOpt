@@ -1292,7 +1292,30 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
                       std::next(begin));
 }
 
-BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
+// This comes up for Psychobilly Freakout (GH2 chart). The SP phrase struct is
+// marked as ending in the middle of the sustain ending an SP phrase, and past
+// that point first_after_current_phrase was returning the next tick rather than
+// the next note.
+BOOST_AUTO_TEST_CASE(
+    returns_next_note_for_sustain_point_in_phrase_ending_sustain)
+{
+    std::vector<SightRead::Note> notes {make_note(0, 192), make_note(384)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {96}}};
+    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+                                std::make_unique<SightRead::SongGlobalData>()};
+    PointSet points {track, default_measure_mode_data(),
+                     default_gh1_pathing_settings()};
+
+    const auto last_note = std::prev(points.cend());
+    const auto second_last_tick = std::prev(last_note, 2);
+
+    BOOST_CHECK_EQUAL(points.first_after_current_phrase(second_last_tick),
+                      last_note);
+}
+
+BOOST_AUTO_TEST_CASE(
+    returns_next_point_outside_current_sp_for_non_overlap_engine)
 {
     std::vector<SightRead::Note> notes {make_note(0), make_note(192),
                                         make_note(384)};
@@ -1307,7 +1330,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_current_sp_for_overlap_engine)
     BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin), begin + 2);
 }
 
-BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_non_overlap_engine)
+BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_overlap_engine)
 {
     std::vector<SightRead::Note> notes {make_note(0), make_note(192),
                                         make_note(384)};

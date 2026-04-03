@@ -589,6 +589,15 @@ first_after_current_sp_vector(const std::vector<Point>& points,
     const SightRead::Beat SP_PHRASE_EPSILON {1e-9};
 
     std::vector<PointPtr> results;
+
+    if (engine.overlaps()) {
+        for (auto p = points.cbegin(); p < points.cend(); ++p) {
+            results.push_back(std::next(p));
+        }
+
+        return results;
+    }
+
     const auto& tempo_map = track.global_data().tempo_map();
     auto current_sp = track.sp_phrases().cbegin();
     for (auto p = points.cbegin(); p < points.cend();) {
@@ -605,18 +614,19 @@ first_after_current_sp_vector(const std::vector<Point>& points,
             sp_end
                 = tempo_map.to_beats(current_sp->position + current_sp->length);
         }
-        if (p->position.beat < sp_start || engine.overlaps()) {
+        if (p->position.beat < sp_start) {
             results.push_back(++p);
             continue;
         }
         const auto q = std::find_if(std::next(p), points.cend(), [&](auto pt) {
-            return pt.position.beat >= sp_end;
+            return pt.position.beat >= sp_end && !pt.is_hold_point;
         });
         while (p < q) {
             results.push_back(q);
             ++p;
         }
     }
+
     return results;
 }
 
