@@ -32,7 +32,8 @@ for song in songs:
         ),
         (song_id,),
     )
-    for (description, act_end), activation in zip(c.fetchall(), path.split("-")):
+    activation_prefixes = [act for act in path.split("-") if not act.startswith("S")]
+    for (description, act_end), activation in zip(c.fetchall(), activation_prefixes):
         if act_end is None:
             output_lines.append(f"{activation}: {description}")
         else:
