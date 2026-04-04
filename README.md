@@ -64,6 +64,13 @@ in cmd then enter to open a command prompt in that folder, then run the command
 > powershell -ExecutionPolicy Bypass -File setlist.ps1
 ```
 
+As of 1.5.1, path images have a small bit of steganography to tell what version
+of CHOpt they were generated with. Their bitwise complements are stored in the
+first eight pixels of the first row. The bottom bits of the R, G and B values
+store the bitwise complements of the major, minor and patch numbers
+respectively. The first pixel stores the most significant bit of these values,
+and the eighth pixel stores the least significant bit.
+
 ## Dependencies
 
 * [Boost](https://www.boost.org) for Boost.Locale and Boost.Test
