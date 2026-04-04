@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cstdint>
 #include <stdexcept>
 
 #include <QCommandLineParser>
@@ -162,7 +161,7 @@ std::unique_ptr<QCommandLineParser> arg_parser()
          {"no-pro-drums", "Disable pro drums."},
          {"enable-dynamics", "Deprecated, does nothing."},
          {"engine",
-          "Engine, options are ch, fnf, gh1, gh3, rb, rb3. Default ch.",
+          "Engine, options are ch, fnf, gh1, gh2, gh3, rb, rb3. Default ch.",
           "engine", "ch"},
          {{"p", "precision-mode"}, "Turn on precision mode for CH."},
          {{"b", "blank"}, "Give a blank chart image."},
