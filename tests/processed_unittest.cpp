@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <cstdlib>
-
 #include <boost/test/unit_test.hpp>
 
 #include "test_helpers.hpp"
@@ -1610,7 +1608,8 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
     BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
 }
 
-BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
+BOOST_AUTO_TEST_CASE(
+    fully_overlapped_sp_is_handled_correctly_for_non_overlap_games)
 {
     std::vector<SightRead::Note> notes {make_note(0), make_note(192),
                                         make_note(384), make_note(576),
@@ -1637,6 +1636,43 @@ BOOST_AUTO_TEST_CASE(overlapped_sp_is_handled_correctly_for_non_overlap_games)
                .score_boost = 100};
 
     const char* desired_path_output = "Path: 2-S1-ES1\n"
+                                      "No SP score: 300\n"
+                                      "Total score: 400\n"
+                                      "2: NN (G)";
+
+    BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
+}
+
+// Comes up in Even Rats GH1. The Expert path ends -S1 by overlapping the start
+// of the last phrase, but there was a bug where this would be summarised as
+// -ES1.
+BOOST_AUTO_TEST_CASE(
+    phrases_overlapped_at_start_are_handled_correctly_for_non_overlap_games)
+{
+    std::vector<SightRead::Note> notes {make_note(0), make_note(192),
+                                        make_note(384), make_note(576),
+                                        make_note(6144)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}},
+        {.position = SightRead::Tick {384}, .length = SightRead::Tick {6000}}};
+    std::vector<SightRead::Solo> solos {{.start = SightRead::Tick {0},
+                                         .end = SightRead::Tick {50},
+                                         .value = 50}};
+    SightRead::NoteTrack note_track {
+        notes, phrases, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    note_track.solos(solos);
+    ProcessedSong track {note_track, default_measure_mode_data(),
+                         default_gh1_pathing_settings()};
+    const auto& points = track.points();
+    Path path {.activations = {{.act_start = points.cbegin() + 2,
+                                .act_end = points.cbegin() + 3,
+                                .whammy_end = SightRead::Beat {0.0},
+                                .sp_start = SightRead::Beat {0.0}}},
+               .score_boost = 100};
+
+    const char* desired_path_output = "Path: 2-S1\n"
                                       "No SP score: 300\n"
                                       "Total score: 400\n"
                                       "2: NN (G)";

@@ -17,7 +17,6 @@
  */
 
 #include <cassert>
-#include <cmath>
 #include <iomanip>
 #include <iterator>
 #include <sstream>
@@ -160,6 +159,23 @@ ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
     m_total_solo_boost = std::accumulate(
         solos.cbegin(), solos.cend(), 0,
         [](const auto x, const auto& y) { return x + y.value; });
+
+    m_phrase_note_spans.reserve(track.sp_phrases().size());
+    for (const auto& phrase : track.sp_phrases()) {
+        const auto phrase_start
+            = duration_data.time_map.to_beats(phrase.position);
+        const auto phrase_end
+            = duration_data.time_map.to_beats(phrase.position + phrase.length);
+        const auto start = std::ranges::find_if(
+            m_points.cbegin(), m_points.cend(), [&](const auto& pt) {
+                return !pt.is_hold_point && pt.position.beat >= phrase_start;
+            });
+        const auto end
+            = std::find_if(start, m_points.cend(), [&](const auto& pt) {
+                  return !pt.is_hold_point && pt.position.beat >= phrase_end;
+              });
+        m_phrase_note_spans.push_back({.begin = start, .end = end});
+    }
 }
 
 SpBar ProcessedSong::total_available_sp(
@@ -428,6 +444,47 @@ void ProcessedSong::append_activation(std::stringstream& stream,
     }
 }
 
+bool ProcessedSong::nullifies_phrase(const Activation& activation,
+                                     const PhrasePointSpan& phrase)
+{
+    const auto start = std::max(phrase.begin, activation.act_start);
+    const auto end = std::min(phrase.end, std::next(activation.act_end));
+    if (start >= end) {
+        return false;
+    }
+    return std::find_if_not(start, end,
+                            [](const auto& p) { return p.is_hold_point; })
+        != end;
+}
+
+std::size_t
+ProcessedSong::overlapped_phrases(const Activation& activation) const
+{
+    if (m_overlaps) {
+        return std::count_if(
+            activation.act_start, std::next(activation.act_end),
+            [](const auto& p) { return p.is_sp_granting_note; });
+    }
+
+    return std::count_if(
+        m_phrase_note_spans.cbegin(), m_phrase_note_spans.cend(),
+        [&](const auto& sp) { return nullifies_phrase(activation, sp); });
+}
+
+std::size_t
+ProcessedSong::leftover_phrases(PointPtr first_post_acts_point) const
+{
+    if (m_overlaps) {
+        return std::count_if(
+            first_post_acts_point, m_points.cend(),
+            [](const auto& p) { return p.is_sp_granting_note; });
+    }
+
+    return std::count_if(
+        m_phrase_note_spans.cbegin(), m_phrase_note_spans.cend(),
+        [=](const auto& sp) { return sp.begin >= first_post_acts_point; });
+}
+
 std::vector<std::string> ProcessedSong::act_summaries(const Path& path) const
 {
     using namespace std::literals::string_literals;
@@ -439,24 +496,21 @@ std::vector<std::string> ProcessedSong::act_summaries(const Path& path) const
             = std::count_if(start_point, act.act_start, [](const auto& p) {
                   return p.is_sp_granting_note;
               });
-        const auto sp_during = std::count_if(
-            act.act_start, std::next(act.act_end),
-            [](const auto& p) { return p.is_sp_granting_note; });
         auto summary = std::to_string(sp_before);
-        if (sp_during != 0) {
+        const auto overlapped_phrase_count = overlapped_phrases(act);
+        if (overlapped_phrase_count > 0) {
             if (m_overlaps) {
-                summary += "(+"s + std::to_string(sp_during) + ')';
+                summary
+                    += "(+"s + std::to_string(overlapped_phrase_count) + ')';
             } else {
-                summary += "-S"s + std::to_string(sp_during);
+                summary += "-S"s + std::to_string(overlapped_phrase_count);
             }
         }
         activation_summaries.push_back(summary);
         start_point = std::next(act.act_end);
     }
 
-    const auto spare_sp
-        = std::count_if(start_point, m_points.cend(),
-                        [](const auto& p) { return p.is_sp_granting_note; });
+    std::size_t spare_sp = leftover_phrases(start_point);
     if (spare_sp != 0) {
         activation_summaries.push_back(std::string("ES")
                                        + std::to_string(spare_sp));
@@ -520,8 +574,8 @@ std::string ProcessedSong::path_summary(const Path& path) const
 {
     constexpr double AVG_MULT_PRECISION = 1000.0;
 
-    // We use std::stringstream instead of std::string for better formatting of
-    // floats (average multiplier and mid-sustain activation positions).
+    // We use std::stringstream instead of std::string for better formatting
+    // of floats (average multiplier and mid-sustain activation positions).
     std::stringstream stream;
     stream << "Path: ";
 

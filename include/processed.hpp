@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2022, 2023, 2024, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 #define CHOPT_PROCESSED_HPP
 
 #include <limits>
-#include <numeric>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -59,7 +58,7 @@ struct Activation {
 // Part of the return value of ProcessedSong::is_candidate_valid. Says if an
 // activation is valid, and if not whether the problem is too little or too much
 // Star Power.
-enum class ActValidity { success, insufficient_sp, surplus_sp };
+enum class ActValidity : std::uint8_t { success, insufficient_sp, surplus_sp };
 
 // Return value of ProcessedSong::is_candidate_valid, providing information on
 // whether an activation is valid, and if so the earliest position it can end.
@@ -80,10 +79,16 @@ class ProcessedSong {
 private:
     static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
 
+    struct PhrasePointSpan {
+        PointPtr begin;
+        PointPtr end;
+    };
+
     SpTimeMap m_time_map;
     PointSet m_points;
     SpData m_sp_data;
     SpEngineValues m_sp_engine_values;
+    std::vector<PhrasePointSpan> m_phrase_note_spans;
     int m_total_bre_boost;
     int m_total_solo_boost;
     int m_base_score;
@@ -91,19 +96,29 @@ private:
     bool m_is_drums;
     bool m_overlaps;
 
-    SpBar sp_from_phrases(PointPtr begin, PointPtr end) const;
-    std::vector<std::string> act_summaries(const Path& path) const;
-    std::vector<std::string> drum_act_summaries(const Path& path) const;
+    [[nodiscard]] SpBar sp_from_phrases(PointPtr begin, PointPtr end) const;
+    [[nodiscard]] std::vector<std::string>
+    act_summaries(const Path& path) const;
+    [[nodiscard]] std::vector<std::string>
+    drum_act_summaries(const Path& path) const;
     void append_activation(std::stringstream& stream,
                            const Activation& activation,
                            const std::string& act_summary) const;
+    [[nodiscard]] std::size_t
+    overlapped_phrases(const Activation& activation) const;
+    [[nodiscard]] std::size_t
+    leftover_phrases(PointPtr first_post_acts_point) const;
+
+    static bool nullifies_phrase(const Activation& activation,
+                                 const PhrasePointSpan& phrase);
 
     // This static function is necessary to deal with a bug in MSVC. See
     // https://developercommunity.visualstudio.com/t/ICE-with-MSVC-1940-with-default-functio/10750601
     // for details.
     static SpPosition default_position()
     {
-        return {SightRead::Beat {NEG_INF}, SpMeasure {NEG_INF}};
+        return {.beat = SightRead::Beat {NEG_INF},
+                .sp_measure = SpMeasure {NEG_INF}};
     }
 
 public:
