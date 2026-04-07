@@ -34,6 +34,12 @@ bool phrase_contains_pos(const SightRead::StarPower& phrase,
     return position < (phrase.position + phrase.length);
 }
 
+bool pos_after_phrase(const SightRead::StarPower& phrase,
+                      SightRead::Tick position)
+{
+    return position >= (phrase.position + phrase.length);
+}
+
 double song_tick_gap(int resolution, const Engine& engine)
 {
     double quotient
@@ -501,6 +507,9 @@ std::vector<Point> unmultiplied_points(const SightRead::NoteTrack& track,
             });
         auto is_note_sp_ender = false;
         auto is_unison_sp_ender = false;
+        current_phrase = std::find_if_not(
+            current_phrase, track.sp_phrases().cend(),
+            [&](const auto& sp) { return pos_after_phrase(sp, p->position); });
         if (current_phrase != track.sp_phrases().cend()
             && phrase_contains_pos(*current_phrase, p->position)
             && ((q == notes.cend())
@@ -517,7 +526,6 @@ std::vector<Point> unmultiplied_points(const SightRead::NoteTrack& track,
                     != duration_data.unison_phrases.cend()) {
                 is_unison_sp_ender = true;
             }
-            ++current_phrase;
         }
         append_note_points(p, notes, std::back_inserter(points),
                            duration_data.time_map,
