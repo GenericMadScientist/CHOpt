@@ -2,6 +2,8 @@ name: Compiler Warnings
 
 on: push
 
+permissions: {}
+
 jobs:
   msvc:
     runs-on: windows-2025

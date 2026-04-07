@@ -2,6 +2,8 @@ name: Static Analysis
 
 on: push
 
+permissions: {}
+
 jobs:
   clang-tidy:
     runs-on: ubuntu-24.04

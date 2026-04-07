@@ -6,6 +6,8 @@ on:
       - 'v**'
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   determine-version:
     runs-on: ubuntu-24.04
