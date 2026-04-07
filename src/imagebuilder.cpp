@@ -18,7 +18,6 @@
 
 #include <cstdint>
 #include <iterator>
-#include <stdexcept>
 
 #include "imagebuilder.hpp"
 #include "optimiser.hpp"
@@ -325,17 +324,20 @@ ImageBuilder::sp_phrase_bounds(const SightRead::StarPower& phrase,
 {
     constexpr double MINIMUM_GREEN_RANGE_SIZE = 0.1;
 
-    auto p = track.notes().cbegin();
-    while (p->position < phrase.position) {
-        ++p;
+    auto p = std::find_if_not(
+        track.notes().cbegin(), track.notes().cend(),
+        [&](const auto& pt) { return pt.position < phrase.position; });
+    const auto phrase_end = phrase.position + phrase.length;
+    if (p == track.notes().cend() || p->position >= phrase_end) {
+        return {-1, -1};
     }
+
     const auto& tempo_map = track.global_data().tempo_map();
     const auto start = tempo_map.to_beats(p->position).value();
     if (!m_overlap_engine
         && is_neutralised_phrase(SightRead::Beat {start}, path)) {
         return {-1, -1};
     }
-    const auto phrase_end = phrase.position + phrase.length;
     auto end = start;
     while (p < track.notes().cend() && p->position < phrase_end) {
         SightRead::Tick max_length {0};

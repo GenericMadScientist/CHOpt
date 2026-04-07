@@ -731,6 +731,25 @@ BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
         expected_green_ranges.cbegin(), expected_green_ranges.cend());
 }
 
+BOOST_AUTO_TEST_CASE(empty_phrases_are_ignored)
+{
+    SightRead::NoteTrack track {
+        {make_note(768)},
+        {{.position = SightRead::Tick {0}, .length = SightRead::Tick {384}},
+         {.position = SightRead::Tick {7680}, .length = SightRead::Tick {384}}},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    ImageBuilder builder {track,
+                          SightRead::Difficulty::Expert,
+                          SightRead::DrumSettings::default_settings(),
+                          false,
+                          true,
+                          false};
+    builder.add_sp_phrases(track, {}, Path {});
+
+    BOOST_CHECK(builder.green_ranges().empty());
+}
+
 BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
 {
     SightRead::NoteTrack track {
