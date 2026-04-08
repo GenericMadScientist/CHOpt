@@ -20,6 +20,7 @@
 #define CHOPT_ENGINE_HPP
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 
 #include <sightread/time.hpp>
@@ -512,12 +513,8 @@ public:
 
 class BaseYargEngine : public Engine {
 protected:
-    [[nodiscard]] static double timing_window(double early_gap, double late_gap)
-    {
-        (void)early_gap;
-        (void)late_gap;
-        return 0.07;
-    }
+    [[nodiscard]] virtual double timing_window(double early_gap,
+                                               double late_gap) const = 0;
 
 public:
     [[nodiscard]] int base_cymbal_value() const override { return 50; }
@@ -576,12 +573,44 @@ public:
     }
 };
 
-class YargEngine final : public BaseYargEngine {
+class BaseYargDefaultEngine : public BaseYargEngine {
+protected:
+    [[nodiscard]] double timing_window(double early_gap,
+                                       double late_gap) const override
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.07;
+    }
+};
+
+class BaseYargPrecisionEngine : public BaseYargEngine {
+protected:
+    [[nodiscard]] double timing_window(double early_gap,
+                                       double late_gap) const override
+    {
+        const auto window
+            = 0.02 + 0.0414 * std::pow((early_gap + late_gap) / 0.24, 1.5);
+        return std::min(window, 0.06);
+    }
+};
+
+class YargEngine final : public BaseYargDefaultEngine {
 public:
     [[nodiscard]] int max_multiplier() const override { return 4; }
 };
 
-class YargBassEngine final : public BaseYargEngine {
+class YargBassEngine final : public BaseYargDefaultEngine {
+public:
+    [[nodiscard]] int max_multiplier() const override { return 6; }
+};
+
+class YargPrecisionEngine final : public BaseYargPrecisionEngine {
+public:
+    [[nodiscard]] int max_multiplier() const override { return 4; }
+};
+
+class YargBassPrecisionEngine final : public BaseYargPrecisionEngine {
 public:
     [[nodiscard]] int max_multiplier() const override { return 6; }
 };

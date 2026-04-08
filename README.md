@@ -46,7 +46,7 @@ by passing -h or --help to CHOpt, or by consulting the table below.
 | --no-kick               | Disable non-2x kicks (drums only)                                             |
 | --no-pro-drums          | Disable pro drums (drums only)                                                |
 | --engine                | Choose the engine (ch/fnf/gh1/gh2/gh3/rb/rb3/yarg)                            |
-| -p, --precision-mode    | Enable precision mode (CH only)                                               |
+| -p, --precision-mode    | Enable precision mode (CH and YARG only)                                      |
 | -b, --blank             | Output a blank image without pathing                                          |
 | --no-image              | Do not create an image                                                        |
 | --no-bpms               | Do not draw BPMs                                                              |

@@ -164,7 +164,7 @@ std::unique_ptr<QCommandLineParser> arg_parser()
           "Engine, options are ch, fnf, gh1, gh2, gh3, rb, rb3, yarg. Default "
           "ch.",
           "engine", "ch"},
-         {{"p", "precision-mode"}, "Turn on precision mode for CH."},
+         {{"p", "precision-mode"}, "Turn on precision mode for CH or YARG."},
          {{"b", "blank"}, "Give a blank chart image."},
          {"no-image", "Do not create an image."},
          {"no-bpms", "Do not draw BPMs."},
@@ -219,7 +219,13 @@ game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
         return std::make_unique<Rb3Engine>();
     case Game::Yarg:
         if (instrument == SightRead::Instrument::Bass) {
+            if (precision_mode) {
+                return std::make_unique<YargBassPrecisionEngine>();
+            }
             return std::make_unique<YargBassEngine>();
+        }
+        if (precision_mode) {
+            return std::make_unique<YargPrecisionEngine>();
         }
         return std::make_unique<YargEngine>();
     default:
