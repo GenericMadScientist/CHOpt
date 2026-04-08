@@ -510,7 +510,7 @@ public:
     [[nodiscard]] int max_multiplier() const override { return 6; }
 };
 
-class YargEngine : public Engine {
+class BaseYargEngine : public Engine {
 protected:
     [[nodiscard]] static double timing_window(double early_gap, double late_gap)
     {
@@ -546,7 +546,6 @@ public:
     {
         return timing_window(early_gap, late_gap);
     }
-    [[nodiscard]] int max_multiplier() const override { return 4; }
     [[nodiscard]] bool merge_uneven_sustains() const override { return false; }
     [[nodiscard]] bool overlaps() const override { return true; }
     [[nodiscard]] bool round_tick_gap() const override { return false; }
@@ -575,6 +574,16 @@ public:
     {
         return SustainTicksMetric::Beat;
     }
+};
+
+class YargEngine final : public BaseYargEngine {
+public:
+    [[nodiscard]] int max_multiplier() const override { return 4; }
+};
+
+class YargBassEngine final : public BaseYargEngine {
+public:
+    [[nodiscard]] int max_multiplier() const override { return 6; }
 };
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 

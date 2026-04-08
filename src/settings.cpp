@@ -218,6 +218,9 @@ game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
         }
         return std::make_unique<Rb3Engine>();
     case Game::Yarg:
+        if (instrument == SightRead::Instrument::Bass) {
+            return std::make_unique<YargBassEngine>();
+        }
         return std::make_unique<YargEngine>();
     default:
         throw std::invalid_argument("Invalid Game");
