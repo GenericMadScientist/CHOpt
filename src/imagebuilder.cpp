@@ -765,9 +765,16 @@ ImageBuilder make_builder(SightRead::Song& song,
         const auto is_rb_drums
             = track.track_type() == SightRead::TrackType::Drums
             && settings.pathing_settings.engine->is_rock_band();
+        const auto is_yarg_drums
+            = track.track_type() == SightRead::TrackType::Drums
+            && settings.game == Game::Yarg;
         if (is_rb_drums) {
             write("Optimisation disabled for Rock Band drums, planned for a "
                   "future release");
+            builder.add_sp_phrases(new_track, unison_phrases, path);
+        } else if (is_yarg_drums) {
+            write("Optimisation disabled for YARG drums, planned for a future "
+                  "release");
             builder.add_sp_phrases(new_track, unison_phrases, path);
         } else {
             write("Optimising, please wait...");

@@ -39,7 +39,8 @@ enum class Game : std::uint8_t {
     GuitarHeroTwo,
     GuitarHeroThree,
     RockBand,
-    RockBandThree
+    RockBandThree,
+    Yarg
 };
 
 std::unique_ptr<Engine> game_to_engine(Game game,

@@ -104,7 +104,7 @@ Game game_from_string(std::string_view game)
         {"ch", Game::CloneHero},        {"fnf", Game::FortniteFestival},
         {"gh1", Game::GuitarHeroOne},   {"gh2", Game::GuitarHeroTwo},
         {"gh3", Game::GuitarHeroThree}, {"rb", Game::RockBand},
-        {"rb3", Game::RockBandThree}};
+        {"rb3", Game::RockBandThree},   {"yarg", Game::Yarg}};
     return game_map.at(game);
 }
 
@@ -161,7 +161,8 @@ std::unique_ptr<QCommandLineParser> arg_parser()
          {"no-pro-drums", "Disable pro drums."},
          {"enable-dynamics", "Deprecated, does nothing."},
          {"engine",
-          "Engine, options are ch, fnf, gh1, gh2, gh3, rb, rb3. Default ch.",
+          "Engine, options are ch, fnf, gh1, gh2, gh3, rb, rb3, yarg. Default "
+          "ch.",
           "engine", "ch"},
          {{"p", "precision-mode"}, "Turn on precision mode for CH."},
          {{"b", "blank"}, "Give a blank chart image."},
@@ -216,6 +217,8 @@ game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
             return std::make_unique<Rb3BassEngine>();
         }
         return std::make_unique<Rb3Engine>();
+    case Game::Yarg:
+        return std::make_unique<YargEngine>();
     default:
         throw std::invalid_argument("Invalid Game");
     }

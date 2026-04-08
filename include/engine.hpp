@@ -509,6 +509,73 @@ public:
     [[nodiscard]] bool has_unison_bonuses() const override { return true; }
     [[nodiscard]] int max_multiplier() const override { return 6; }
 };
+
+class YargEngine : public Engine {
+protected:
+    [[nodiscard]] static double timing_window(double early_gap, double late_gap)
+    {
+        (void)early_gap;
+        (void)late_gap;
+        return 0.07;
+    }
+
+public:
+    [[nodiscard]] int base_cymbal_value() const override { return 50; }
+    [[nodiscard]] int base_note_value() const override { return 50; }
+    [[nodiscard]] double burst_size() const override { return 0.25; }
+    [[nodiscard]] bool chords_multiply_sustains() const override
+    {
+        return false;
+    }
+    [[nodiscard]] bool delayed_multiplier() const override { return false; }
+    [[nodiscard]] double early_timing_window(double early_gap,
+                                             double late_gap) const override
+    {
+        return timing_window(early_gap, late_gap);
+    }
+    [[nodiscard]] bool has_bres() const override { return false; }
+    [[nodiscard]] bool has_early_whammy() const override { return true; }
+    [[nodiscard]] bool has_unison_bonuses() const override { return true; }
+    [[nodiscard]] bool ignore_average_multiplier() const override
+    {
+        return true;
+    }
+    [[nodiscard]] bool is_rock_band() const override { return false; }
+    [[nodiscard]] double late_timing_window(double early_gap,
+                                            double late_gap) const override
+    {
+        return timing_window(early_gap, late_gap);
+    }
+    [[nodiscard]] int max_multiplier() const override { return 4; }
+    [[nodiscard]] bool merge_uneven_sustains() const override { return false; }
+    [[nodiscard]] bool overlaps() const override { return true; }
+    [[nodiscard]] bool round_tick_gap() const override { return false; }
+    [[nodiscard]] SightRead::Tick snap_gap() const override
+    {
+        return SightRead::Tick {0};
+    }
+    [[nodiscard]] SpEngineValues sp_engine_values() const override
+    {
+        return {.phrase_amount = 0.25,
+                .unison_phrase_amount = 0.5,
+                .minimum_to_activate = 0.5};
+    }
+    [[nodiscard]] SpGainMode sp_gain_mode() const override
+    {
+        return SpGainMode::Beat;
+    }
+    [[nodiscard]] double sp_gain_rate() const override { return 1 / 30.0; }
+    [[nodiscard]] SpMode sp_mode() const override { return SpMode::Measure; }
+    [[nodiscard]] int sust_points_per_beat() const override { return 25; }
+    [[nodiscard]] SustainRoundingPolicy sustain_rounding() const override
+    {
+        return SustainRoundingPolicy::RoundUp;
+    }
+    [[nodiscard]] SustainTicksMetric sustain_ticks_metric() const override
+    {
+        return SustainTicksMetric::Beat;
+    }
+};
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 
 #endif

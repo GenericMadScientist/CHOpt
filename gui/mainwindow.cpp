@@ -29,7 +29,6 @@
 #include "image.hpp"
 #include "json_settings.hpp"
 #include "mainwindow.hpp"
-#include "optimiser.hpp"
 #include "ui_mainwindow.h"
 
 namespace {
@@ -51,9 +50,10 @@ private:
     static std::set<Game> song_file_games(const SongFile& song_file)
     {
         const std::set<Game> all_games {
-            Game::CloneHero,     Game::FortniteFestival, Game::GuitarHeroOne,
-            Game::GuitarHeroTwo, Game::GuitarHeroThree,  Game::RockBand,
-            Game::RockBandThree};
+            Game::CloneHero,       Game::FortniteFestival,
+            Game::GuitarHeroOne,   Game::GuitarHeroTwo,
+            Game::GuitarHeroThree, Game::RockBand,
+            Game::RockBandThree,   Game::Yarg};
         std::set<Game> supported_games;
         for (const auto game : all_games) {
             try {
@@ -368,14 +368,15 @@ void MainWindow::load_file(const QString& file_name)
 void MainWindow::populate_games(const std::set<Game>& games)
 {
     m_ui->engineComboBox->clear();
-    const std::array<std::pair<Game, QString>, 7> full_game_set {
+    const std::array<std::pair<Game, QString>, 8> full_game_set {
         {{Game::CloneHero, "Clone Hero"},
          {Game::FortniteFestival, "Fortnite Festival"},
          {Game::GuitarHeroOne, "Guitar Hero 1"},
          {Game::GuitarHeroTwo, "Guitar Hero 2"},
          {Game::GuitarHeroThree, "Guitar Hero 3"},
          {Game::RockBand, "Rock Band"},
-         {Game::RockBandThree, "Rock Band 3"}}};
+         {Game::RockBandThree, "Rock Band 3"},
+         {Game::Yarg, "YARG"}}};
     for (const auto& [game, name] : full_game_set) {
         if (games.contains(game)) {
             m_ui->engineComboBox->addItem(name, QVariant::fromValue(game));
