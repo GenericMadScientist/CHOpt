@@ -715,12 +715,8 @@ ImageBuilder make_builder(SightRead::Song& song,
                           const std::function<void(const char*)>& write,
                           const std::atomic<bool>* terminate)
 {
-    auto new_track = track;
-    if (song.global_data().is_from_midi()) {
-        new_track = track.trim_sustains();
-    }
-    new_track
-        = new_track.snap_chords(settings.pathing_settings.engine->snap_gap());
+    auto new_track
+        = track.snap_chords(settings.pathing_settings.engine->snap_gap());
     if (track.track_type() == SightRead::TrackType::Drums) {
         apply_drum_settings(new_track, song, settings.pathing_settings);
     }
