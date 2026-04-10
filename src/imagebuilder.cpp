@@ -271,6 +271,7 @@ void apply_drum_settings(SightRead::NoteTrack& track,
         && track.drum_fills().empty()) {
         track.generate_drum_fills(song.global_data().tempo_map());
     }
+    track.apply_flam_markers();
     if (pathing_settings.drum_settings.pro_drums) {
         track.apply_disco_flips();
     } else {
