@@ -75,6 +75,8 @@ bool parse_solos(Game game)
     return std::ranges::find(NO_SOLO_GAMES, game)
         == std::ranges::end(NO_SOLO_GAMES);
 }
+
+bool use_sustain_cutoff_threshold(Game game) { return game == Game::Yarg; }
 }
 
 SongFile::SongFile(const std::string& filename)
@@ -140,6 +142,7 @@ SightRead::Song SongFile::load_song(Game game) const
         SightRead::MidiParser parser {m_metadata};
         parser.permit_instruments(permitted_instruments(game));
         parser.parse_solos(parse_solos(game));
+        parser.use_sustain_cutoff_threshold(use_sustain_cutoff_threshold(game));
         return parser.parse(midi_buffer);
     }
     case FileType::QbMidi: {
