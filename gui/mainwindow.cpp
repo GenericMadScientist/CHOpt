@@ -148,6 +148,23 @@ public:
 signals:
     void write_text(const QString& text);
 };
+
+void restore_combo_box_value(QComboBox& combo_box, const QVariant& value,
+                             bool default_to_last_value = false)
+{
+    for (auto i = 0; i < combo_box.count(); ++i) {
+        if (combo_box.itemData(i) == value) {
+            combo_box.setCurrentIndex(i);
+            return;
+        }
+    }
+
+    if (default_to_last_value) {
+        combo_box.setCurrentIndex(combo_box.count() - 1);
+    } else {
+        combo_box.setCurrentIndex(0);
+    }
+}
 }
 
 MainWindow::MainWindow(QWidget* parent)
@@ -367,6 +384,7 @@ void MainWindow::load_file(const QString& file_name)
 
 void MainWindow::populate_games(const std::set<Game>& games)
 {
+    const auto previous_game = m_ui->engineComboBox->currentData();
     m_ui->engineComboBox->clear();
     const std::array<std::pair<Game, QString>, 8> full_game_set {
         {{Game::CloneHero, "Clone Hero"},
@@ -382,7 +400,8 @@ void MainWindow::populate_games(const std::set<Game>& games)
             m_ui->engineComboBox->addItem(name, QVariant::fromValue(game));
         }
     }
-    m_ui->engineComboBox->setCurrentIndex(0);
+
+    restore_combo_box_value(*m_ui->engineComboBox, previous_game);
 }
 
 void MainWindow::on_findPathButton_clicked()
@@ -464,11 +483,12 @@ void MainWindow::on_engineComboBox_currentIndexChanged(int index)
         throw std::runtime_error("No loaded file");
     }
 
-    m_ui->instrumentComboBox->clear();
-
     if (index == -1) {
         return;
     }
+
+    const auto previous_instrument = m_ui->instrumentComboBox->currentData();
+    m_ui->instrumentComboBox->clear();
     const std::map<SightRead::Instrument, QString> INST_NAMES {
         {SightRead::Instrument::Guitar, "Guitar"},
         {SightRead::Instrument::GuitarCoop, "Guitar Co-op"},
@@ -491,7 +511,8 @@ void MainWindow::on_engineComboBox_currentIndexChanged(int index)
         m_ui->instrumentComboBox->addItem(INST_NAMES.at(inst),
                                           QVariant::fromValue(inst));
     }
-    m_ui->instrumentComboBox->setCurrentIndex(0);
+
+    restore_combo_box_value(*m_ui->instrumentComboBox, previous_instrument);
 }
 
 void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
@@ -500,11 +521,12 @@ void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
         throw std::runtime_error("No loaded file");
     }
 
-    m_ui->difficultyComboBox->clear();
-
     if (index == -1) {
         return;
     }
+
+    const auto previous_difficulty = m_ui->difficultyComboBox->currentData();
+    m_ui->difficultyComboBox->clear();
     const std::map<SightRead::Difficulty, QString> DIFF_NAMES {
         {SightRead::Difficulty::Easy, "Easy"},
         {SightRead::Difficulty::Medium, "Medium"},
@@ -517,8 +539,9 @@ void MainWindow::on_instrumentComboBox_currentIndexChanged(int index)
         m_ui->difficultyComboBox->addItem(DIFF_NAMES.at(diff),
                                           QVariant::fromValue(diff));
     }
-    const auto count = m_ui->difficultyComboBox->count();
-    m_ui->difficultyComboBox->setCurrentIndex(count - 1);
+
+    restore_combo_box_value(*m_ui->difficultyComboBox, previous_difficulty,
+                            true);
 }
 
 void MainWindow::on_squeezeSlider_valueChanged(int value)
