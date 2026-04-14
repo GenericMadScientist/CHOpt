@@ -479,7 +479,7 @@ void ImageImpl::draw_sustain(const ImageBuilder& builder, const DrawnNote& note)
             {SightRead::TrackType::Drums, {}}};
     const auto& colours = colour_map.at(builder.track_type());
 
-    for (auto i = 0U; i < colours.size(); ++i) {
+    for (auto i = static_cast<int>(colours.size()) - 1; i >= 0; --i) {
         const auto length = note.lengths.at(i);
         if (length <= 0.0) {
             continue;
