@@ -207,7 +207,7 @@ for orientation in ["lefty", "righty"]:
     circle_dir.mkdir(parents=True, exist_ok=True)
     star_dir = sprites_dir.joinpath(orientation, "stars")
     star_dir.mkdir(parents=True, exist_ok=True)
-    for i in range(1, 33):
+    for i in range(1, 64):
         img = circle_image(i, orientation)
         img.save(circle_dir.joinpath(f"{i}.png"), optimize=True)
         img = star_image(i, orientation)
@@ -225,7 +225,7 @@ for orientation in ["lefty", "righty"]:
 
     ghl_dir = sprites_dir.joinpath(orientation, "ghl")
     ghl_dir.mkdir(parents=True, exist_ok=True)
-    for i in range(1, 65):
+    for i in range(1, 128):
         img = ghl_image(i, orientation)
         img.save(ghl_dir.joinpath(f"{i}.png"), optimize=True)
 
