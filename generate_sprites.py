@@ -228,3 +228,19 @@ for orientation in ["lefty", "righty"]:
     for i in range(1, 65):
         img = ghl_image(i, orientation)
         img.save(ghl_dir.joinpath(f"{i}.png"))
+
+
+resources = [
+    str(path).removeprefix("resources/") for path in sprites_dir.rglob("*.png")
+]
+resources.sort()
+resources.insert(0, "icon.png")
+
+with open("resources/resources.qrc", "w", encoding="utf-8", newline="\n") as f:
+    f.write("<!DOCTYPE RCC>\n")
+    f.write('<RCC version="1.0">\n')
+    f.write("  <qresource>\n")
+    for r in resources:
+        f.write(f"    <file>{r}</file>\n")
+    f.write("  </qresource>\n")
+    f.write("</RCC>\n")
