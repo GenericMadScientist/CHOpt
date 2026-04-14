@@ -209,9 +209,9 @@ for orientation in ["lefty", "righty"]:
     star_dir.mkdir(parents=True, exist_ok=True)
     for i in range(1, 33):
         img = circle_image(i, orientation)
-        img.save(circle_dir.joinpath(f"{i}.png"))
+        img.save(circle_dir.joinpath(f"{i}.png"), optimize=True)
         img = star_image(i, orientation)
-        img.save(star_dir.joinpath(f"{i}.png"))
+        img.save(star_dir.joinpath(f"{i}.png"), optimize=True)
 
     tom_dir = sprites_dir.joinpath(orientation, "drums")
     tom_dir.mkdir(parents=True, exist_ok=True)
@@ -219,15 +219,15 @@ for orientation in ["lefty", "righty"]:
     cymbal_dir.mkdir(parents=True, exist_ok=True)
     for i in range(6):
         img = tom_image(i, orientation)
-        img.save(tom_dir.joinpath(f"{1 << i}.png"))
+        img.save(tom_dir.joinpath(f"{1 << i}.png"), optimize=True)
         img = cymbal_image(i, orientation)
-        img.save(cymbal_dir.joinpath(f"{1 << i}.png"))
+        img.save(cymbal_dir.joinpath(f"{1 << i}.png"), optimize=True)
 
     ghl_dir = sprites_dir.joinpath(orientation, "ghl")
     ghl_dir.mkdir(parents=True, exist_ok=True)
     for i in range(1, 65):
         img = ghl_image(i, orientation)
-        img.save(ghl_dir.joinpath(f"{i}.png"))
+        img.save(ghl_dir.joinpath(f"{i}.png"), optimize=True)
 
 
 resources = [
