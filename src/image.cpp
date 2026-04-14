@@ -22,7 +22,6 @@
 #include <cstdio>
 #include <iterator>
 #include <map>
-#include <set>
 #include <stdexcept>
 
 #include <QImage>
@@ -31,7 +30,6 @@
 #include "cimg_wrapper.hpp"
 
 #include "image.hpp"
-#include "optimiser.hpp"
 
 using namespace cimg_library;
 

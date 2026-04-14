@@ -76,6 +76,8 @@ bool parse_solos(Game game)
         == std::ranges::end(NO_SOLO_GAMES);
 }
 
+bool allow_open_chords(Game game) { return game == Game::Yarg; }
+
 bool use_sustain_cutoff_threshold(Game game) { return game == Game::Yarg; }
 }
 
@@ -134,6 +136,7 @@ SightRead::Song SongFile::load_song(Game game) const
         SightRead::ChartParser parser {m_metadata};
         parser.permit_instruments(permitted_instruments(game));
         parser.parse_solos(parse_solos(game));
+        parser.allow_open_chords(allow_open_chords(game));
         return parser.parse(chart);
     }
     case FileType::Midi: {
@@ -142,6 +145,7 @@ SightRead::Song SongFile::load_song(Game game) const
         SightRead::MidiParser parser {m_metadata};
         parser.permit_instruments(permitted_instruments(game));
         parser.parse_solos(parse_solos(game));
+        parser.allow_open_chords(allow_open_chords(game));
         parser.use_sustain_cutoff_threshold(use_sustain_cutoff_threshold(game));
         return parser.parse(midi_buffer);
     }
