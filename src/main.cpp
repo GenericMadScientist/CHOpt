@@ -17,7 +17,6 @@
  */
 
 #include <atomic>
-#include <cstdio>
 #include <exception>
 
 #include <QCoreApplication>
@@ -26,7 +25,6 @@
 #include <sightread/time.hpp>
 
 #include "image.hpp"
-#include "optimiser.hpp"
 #include "settings.hpp"
 #include "songfile.hpp"
 
