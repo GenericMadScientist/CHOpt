@@ -279,6 +279,23 @@ void apply_drum_settings(SightRead::NoteTrack& track,
         track.disable_dynamics();
     }
 }
+
+std::vector<SightRead::StarPower>
+song_unison_phrases(const SightRead::Song& song,
+                    UnisonBonusType unison_bonus_type)
+{
+
+    switch (unison_bonus_type) {
+    case UnisonBonusType::RockBand3:
+        return song.rb3_unison_phrases();
+    case UnisonBonusType::Yarg:
+        return song.yarg_unison_phrases();
+    case UnisonBonusType::None:
+        return {};
+    default:
+        throw std::runtime_error("Invalid UnisonBonusType");
+    }
+}
 }
 
 void ImageBuilder::form_beat_lines(const SightRead::TempoMap& tempo_map)
@@ -748,10 +765,8 @@ ImageBuilder make_builder(SightRead::Song& song,
 
     const SpTimeMap time_map {tempo_map,
                               settings.pathing_settings.engine->sp_mode()};
-    const auto unison_phrases
-        = (settings.pathing_settings.engine->has_unison_bonuses())
-        ? song.unison_phrases()
-        : std::vector<SightRead::StarPower> {};
+    const auto unison_phrases = song_unison_phrases(
+        song, settings.pathing_settings.engine->unison_bonus_type());
     const SpDurationData duration_data {.time_map = time_map,
                                         .od_beats
                                         = song.global_data().od_beats(),

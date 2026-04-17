@@ -50,8 +50,9 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_a_non_empty_path)
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -90,8 +91,9 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_multiple_acts)
         {.position = SightRead::Tick {3840}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {4032}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -122,8 +124,9 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_an_act_containing_more_than_one_note)
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -149,8 +152,9 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_an_act_that_must_go_as_long_as_possible)
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -179,8 +183,9 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_greedy_algorithm_fails)
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -209,8 +214,9 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_a_phrase_must_be_hit_early)
         {.position = SightRead::Tick {3224}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {9378}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -250,8 +256,9 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_activations_ending_late_matter)
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {3234}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -272,8 +279,9 @@ BOOST_AUTO_TEST_CASE(early_whammy_at_start_of_an_sp_phrase_is_always_counted)
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {1550}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -296,8 +304,9 @@ BOOST_AUTO_TEST_CASE(
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {1}},
         {.position = SightRead::Tick {1632}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -317,8 +326,9 @@ BOOST_AUTO_TEST_CASE(activation_right_after_a_sp_sustain_is_drawn_correctly)
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -337,8 +347,9 @@ BOOST_AUTO_TEST_CASE(songs_ending_in_es1_are_pathed_correctly)
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {4032}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -369,8 +380,9 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_is_specified_correctly)
         {.position = SightRead::Tick {3840}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {9984}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -391,8 +403,9 @@ BOOST_AUTO_TEST_CASE(acts_covering_the_last_note_do_not_compress_whammy)
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -425,8 +438,9 @@ BOOST_AUTO_TEST_CASE(use_next_point_to_work_out_compressed_whammy)
         {.position = SightRead::Tick {3350}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {9504}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -453,8 +467,9 @@ BOOST_AUTO_TEST_CASE(forbidden_squeeze_does_not_grant_extra_whammy_next_act)
         {.position = SightRead::Tick {3840}, .length = SightRead::Tick {576}},
         {.position = SightRead::Tick {19200}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -476,8 +491,9 @@ BOOST_AUTO_TEST_CASE(easier_activations_are_chosen_where_possible)
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {1}},
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -500,8 +516,9 @@ BOOST_AUTO_TEST_CASE(
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {1}},
         {.position = SightRead::Tick {1536}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -520,8 +537,9 @@ BOOST_AUTO_TEST_CASE(does_not_crash_with_positive_video_lag)
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          positive_video_lag_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -543,8 +561,9 @@ BOOST_AUTO_TEST_CASE(whammy_delay_is_handled_correctly)
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {1}},
         {.position = SightRead::Tick {3840}, .length = SightRead::Tick {1728}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          whammy_delay_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.1)};
@@ -573,8 +592,9 @@ BOOST_AUTO_TEST_CASE(act_end_is_constrained_by_next_act_start)
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {1}},
         {.position = SightRead::Tick {4608}, .length = SightRead::Tick {1537}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -599,8 +619,9 @@ BOOST_AUTO_TEST_CASE(drum_paths_can_only_activate_on_activation_notes)
     std::vector<SightRead::DrumFill> fills {
         {.position = SightRead::Tick {3900}, .length = SightRead::Tick {101}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::Drums,
+        notes, SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     note_track.drum_fills(fills);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_drums_pathing_settings()};
@@ -628,8 +649,9 @@ BOOST_AUTO_TEST_CASE(
         {.position = SightRead::Tick {3830}, .length = SightRead::Tick {20}},
         {.position = SightRead::Tick {19990}, .length = SightRead::Tick {20}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::Drums,
+        notes, SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     note_track.drum_fills(fills);
 
     ProcessedSong track {note_track, default_measure_mode_data(),
@@ -657,8 +679,9 @@ BOOST_AUTO_TEST_CASE(drum_reverse_squeezes_are_drawn_properly)
         {.position = SightRead::Tick {19190}, .length = SightRead::Tick {20}},
         {.position = SightRead::Tick {89990}, .length = SightRead::Tick {20}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::Drums,
+        notes, SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     note_track.drum_fills(fills);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_drums_pathing_settings()};
@@ -683,8 +706,9 @@ BOOST_AUTO_TEST_CASE(
         {.position = SightRead::Tick {800}, .length = SightRead::Tick {1}},
         {.position = SightRead::Tick {1000}, .length = SightRead::Tick {1}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::Drums,
+        notes, SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     note_track.drum_fills(fills);
 
     ProcessedSong track {note_track, default_measure_mode_data(),
@@ -711,8 +735,9 @@ BOOST_AUTO_TEST_CASE(drum_activation_delay_is_affected_by_speed)
     auto global_data = std::make_shared<SightRead::SongGlobalData>();
     global_data->tempo_map(tempo_map);
 
-    SightRead::NoteTrack note_track {notes, phrases,
-                                     SightRead::TrackType::Drums, global_data};
+    SightRead::NoteTrack note_track {notes, SightRead::TrackType::Drums,
+                                     global_data};
+    note_track.sp_phrases(phrases);
     note_track.drum_fills(fills);
 
     ProcessedSong track {note_track,
@@ -743,8 +768,9 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_overlap_matters)
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {3456}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_gh1_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -784,8 +810,9 @@ BOOST_AUTO_TEST_CASE(partial_overlap_doesnt_work)
         {.position = SightRead::Tick {3456}, .length = SightRead::Tick {200}},
         {.position = SightRead::Tick {4224}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_gh1_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -834,8 +861,9 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_considered_even_with_maxable_sp)
         {.position = SightRead::Tick {15936}, .length = SightRead::Tick {50}},
         {.position = SightRead::Tick {23616}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          default_gh1_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -866,8 +894,9 @@ BOOST_AUTO_TEST_CASE(quarter_bar_activations_are_possible_on_fortnite_engine)
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FortniteFestival,
+        notes, SightRead::TrackType::FortniteFestival,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_od_beat_mode_data(),
                          default_fortnite_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
@@ -891,8 +920,9 @@ BOOST_AUTO_TEST_CASE(one_phrase_acts_use_ew_when_bigger_than_squeeze)
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {191}, .length = SightRead::Tick {50}}};
     SightRead::NoteTrack note_track {
-        notes, phrases, SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
                          mid_squeeze_ch_guitar_pathing_settings()};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};

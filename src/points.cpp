@@ -515,17 +515,12 @@ std::vector<Point> unmultiplied_points(const SightRead::NoteTrack& track,
             && ((q == notes.cend())
                 || !phrase_contains_pos(*current_phrase, q->position))) {
             is_note_sp_ender = true;
-            if (pathing_settings.engine->has_unison_bonuses()
-                && std::ranges::find_if(
-                       duration_data.unison_phrases,
-                       [&](const auto& phrase) {
-                           return std::tie(phrase.position, phrase.length)
-                               == std::tie(current_phrase->position,
-                                           current_phrase->length);
-                       })
-                    != duration_data.unison_phrases.cend()) {
-                is_unison_sp_ender = true;
-            }
+            is_unison_sp_ender = std::ranges::any_of(
+                duration_data.unison_phrases, [&](const auto& phrase) {
+                    return std::tie(phrase.position, phrase.length)
+                        == std::tie(current_phrase->position,
+                                    current_phrase->length);
+                });
         }
         append_note_points(p, notes, std::back_inserter(points),
                            duration_data.time_map,

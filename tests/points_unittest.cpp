@@ -180,7 +180,6 @@ BOOST_AUTO_TEST_SUITE(non_sustain_notes)
 BOOST_AUTO_TEST_CASE(single_notes_give_fifty_points)
 {
     SightRead::NoteTrack track {{make_note(768), make_note(960)},
-                                {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -198,7 +197,6 @@ BOOST_AUTO_TEST_CASE(chords_give_multiples_of_fifty_points)
     SightRead::NoteTrack track {{make_chord(768,
                                             {{SightRead::FIVE_FRET_GREEN, 0},
                                              {SightRead::FIVE_FRET_RED, 0}})},
-                                {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -214,7 +212,6 @@ BOOST_AUTO_TEST_CASE(chords_give_multiples_of_fifty_points)
 BOOST_AUTO_TEST_CASE(ghl_notes_behave_the_same_as_five_fret_notes)
 {
     SightRead::NoteTrack track {{make_ghl_note(768), make_ghl_note(960)},
-                                {},
                                 SightRead::TrackType::SixFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -234,7 +231,6 @@ BOOST_AUTO_TEST_SUITE(sustain_notes)
 BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
 {
     SightRead::NoteTrack track {{make_note(768, 15)},
-                                {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet first_points {track, default_measure_mode_data(),
@@ -243,7 +239,6 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
     std::vector<SightRead::Beat> first_expected_beats {SightRead::Beat(4.0),
                                                        SightRead::Beat(4.0026)};
     SightRead::NoteTrack second_track {{make_note(768, 15)},
-                                       {},
                                        SightRead::TrackType::FiveFret,
                                        make_resolution(200)};
     PointSet second_points {
@@ -285,7 +280,6 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
     SightRead::NoteTrack track {{make_chord(768,
                                             {{SightRead::FIVE_FRET_GREEN, 8},
                                              {SightRead::FIVE_FRET_RED, 8}})},
-                                {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -309,7 +303,6 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
 BOOST_AUTO_TEST_CASE(resolutions_below_25_do_not_enter_an_infinite_loop)
 {
     SightRead::NoteTrack track {{make_note(768, 2)},
-                                {},
                                 SightRead::TrackType::FiveFret,
                                 make_resolution(1)};
     PointSet points {track, default_measure_mode_data(),
@@ -325,7 +318,6 @@ BOOST_AUTO_TEST_CASE(sustains_of_uneven_length_are_handled_correctly)
                     {{SightRead::FIVE_FRET_GREEN, 1504},
                      {SightRead::FIVE_FRET_RED, 1504},
                      {SightRead::FIVE_FRET_YELLOW, 736}})},
-        {},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -345,7 +337,6 @@ BOOST_AUTO_TEST_CASE(chord_sustains_in_rb_are_handled_correctly)
                     {{SightRead::FIVE_FRET_GREEN, 1800},
                      {SightRead::FIVE_FRET_RED, 1800},
                      {SightRead::FIVE_FRET_BLUE, 1800}})},
-        {},
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track, default_measure_mode_data(),
@@ -362,7 +353,6 @@ BOOST_AUTO_TEST_CASE(
     rounding_from_length_in_rb_for_single_notes_is_handled_correctly)
 {
     SightRead::NoteTrack track {{make_note(0, 419)},
-                                {},
                                 SightRead::TrackType::FiveFret,
                                 make_resolution(480)};
     PointSet points {track, default_measure_mode_data(),
@@ -381,7 +371,6 @@ BOOST_AUTO_TEST_CASE(rounding_from_length_in_rb_for_chords_is_handled_correctly)
         {make_chord(0,
                     {{SightRead::FIVE_FRET_RED, 419},
                      {SightRead::FIVE_FRET_ORANGE, 419}})},
-        {},
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track, default_od_beat_mode_data(),
@@ -398,7 +387,6 @@ BOOST_AUTO_TEST_CASE(gh1_one_beat_sustain_is_handled_correctly)
 {
     SightRead::NoteTrack track {
         {make_note(0, 1917, SightRead::FIVE_FRET_YELLOW)},
-        {},
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track, default_measure_mode_data(),
@@ -416,7 +404,6 @@ BOOST_AUTO_TEST_CASE(
 {
     SightRead::NoteTrack track {
         {make_note(0, 1560, SightRead::FIVE_FRET_ORANGE)},
-        {},
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track, default_measure_mode_data(),
@@ -436,7 +423,6 @@ BOOST_AUTO_TEST_CASE(
         {make_chord(0,
                     {{SightRead::FIVE_FRET_BLUE, 360},
                      {SightRead::FIVE_FRET_ORANGE, 360}})},
-        {},
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track, default_measure_mode_data(),
@@ -452,7 +438,6 @@ BOOST_AUTO_TEST_CASE(fortnite_festival_half_od_time_is_handled_correctly)
 {
     SightRead::NoteTrack track {
         {make_chord(0, {{SightRead::FIVE_FRET_GREEN, 1920}})},
-        {},
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track,
@@ -476,7 +461,6 @@ BOOST_AUTO_TEST_CASE(long_fortnite_sustains_are_handled_correctly)
 {
     SightRead::NoteTrack track {
         {make_chord(0, {{SightRead::FIVE_FRET_GREEN, 1920}})},
-        {},
         SightRead::TrackType::FiveFret,
         make_resolution(480)};
     PointSet points {track,
@@ -496,7 +480,6 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_CASE(points_are_sorted)
 {
     SightRead::NoteTrack track {{make_note(768, 15), make_note(770, 0)},
-                                {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -510,11 +493,12 @@ BOOST_AUTO_TEST_CASE(end_of_sp_phrase_points)
 {
     SightRead::NoteTrack track {
         {make_note(768), make_note(960), make_note(1152)},
-        {{.position = SightRead::Tick {768}, .length = SightRead::Tick {1}},
-         {.position = SightRead::Tick {900}, .length = SightRead::Tick {50}},
-         {.position = SightRead::Tick {1100}, .length = SightRead::Tick {53}}},
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
+    track.sp_phrases(
+        {{.position = SightRead::Tick {768}, .length = SightRead::Tick {1}},
+         {.position = SightRead::Tick {900}, .length = SightRead::Tick {50}},
+         {.position = SightRead::Tick {1100}, .length = SightRead::Tick {53}}});
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     PointSet unison_points {
@@ -544,9 +528,7 @@ BOOST_AUTO_TEST_CASE(multiplier_applies_to_non_sustains)
     for (int i = 0; i < 50; ++i) {
         notes.push_back(make_note(192 * i));
     }
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
@@ -579,9 +561,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_are_multiplied)
     }
     notes.push_back(make_note(9600, 192));
 
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
@@ -599,9 +579,7 @@ BOOST_AUTO_TEST_CASE(later_sustain_points_in_extended_sustains_are_multiplied)
     }
     notes.at(0).lengths.at(0) = SightRead::Tick {2000};
 
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
@@ -619,9 +597,7 @@ BOOST_AUTO_TEST_CASE(drum_notes_have_the_multiplier_handled_correctly)
     }
     notes.push_back(make_drum_note(192 * 7, SightRead::DRUM_YELLOW));
 
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
@@ -638,9 +614,7 @@ BOOST_AUTO_TEST_CASE(fortnite_notes_have_the_multiplier_handled_correctly)
     }
     notes.push_back(make_note(192 * 7, 0, SightRead::FIVE_FRET_RED));
 
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::FortniteFestival,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FortniteFestival,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_od_beat_mode_data(),
                      default_fortnite_guitar_pathing_settings()};
@@ -654,9 +628,7 @@ BOOST_AUTO_TEST_CASE(gh1_multiplier_delay_accounted_for)
         make_note(0),   make_note(100),     make_note(200), make_note(300),
         make_note(400), make_note(500),     make_note(600), make_note(700),
         make_note(800), make_note(900, 100)};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_gh1_pathing_settings()};
@@ -681,8 +653,8 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_for_notes_are_correct)
     global_data->tempo_map(tempo_map);
 
     std::vector<SightRead::Note> notes {make_note(192), make_note(787)};
-    SightRead::NoteTrack track {
-        notes, {}, SightRead::TrackType::FiveFret, global_data};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                global_data};
     PointSet points {track,
                      {.time_map = {tempo_map, SpMode::Measure},
                       .od_beats = {},
@@ -707,8 +679,8 @@ BOOST_AUTO_TEST_CASE(hit_window_ends_for_notes_are_correct)
     global_data->tempo_map(tempo_map);
 
     std::vector<SightRead::Note> notes {make_note(192), make_note(749)};
-    SightRead::NoteTrack track {
-        notes, {}, SightRead::TrackType::FiveFret, global_data};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                global_data};
     PointSet points {track,
                      {.time_map = {tempo_map, SpMode::Measure},
                       .od_beats = {},
@@ -733,8 +705,8 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
     global_data->tempo_map(tempo_map);
 
     std::vector<SightRead::Note> notes {make_note(672, 192)};
-    SightRead::NoteTrack track {
-        notes, {}, SightRead::TrackType::FiveFret, global_data};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                global_data};
     PointSet points {track,
                      {.time_map = {tempo_map, SpMode::Measure},
                       .od_beats = {},
@@ -761,8 +733,8 @@ BOOST_AUTO_TEST_CASE(squeeze_setting_is_accounted_for)
     global_data->tempo_map(tempo_map);
 
     std::vector<SightRead::Note> notes {make_note(192)};
-    SightRead::NoteTrack track {
-        notes, {}, SightRead::TrackType::FiveFret, global_data};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                global_data};
     PointSet points {track,
                      {.time_map = {tempo_map, SpMode::Measure},
                       .od_beats = {},
@@ -789,8 +761,8 @@ BOOST_AUTO_TEST_CASE(restricted_back_end_is_taken_account_of)
     global_data->tempo_map(tempo_map);
 
     std::vector<SightRead::Note> notes {make_note(192), make_note(240)};
-    SightRead::NoteTrack track {
-        notes, {}, SightRead::TrackType::FiveFret, global_data};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                global_data};
     PointSet points {track,
                      {.time_map = {tempo_map, SpMode::Measure},
                       .od_beats = {},
@@ -815,9 +787,7 @@ BOOST_AUTO_TEST_CASE(rb_bass_multiplier_is_taken_into_account)
         notes.push_back(make_note(192 * i));
     }
     const SightRead::NoteTrack track {
-        notes,
-        {},
-        SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_unique<SightRead::SongGlobalData>()};
     const PointSet points {track, default_measure_mode_data(),
                            default_rb_bass_pathing_settings()};
@@ -836,9 +806,7 @@ BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
     const std::vector<SightRead::Note> notes {make_note(192, 0),
                                               make_note(384, 192)};
     const SightRead::NoteTrack track {
-        notes,
-        {},
-        SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      slight_negative_video_lag_settings()};
@@ -857,9 +825,7 @@ BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
     const std::vector<SightRead::Note> notes {make_note(192, 0),
                                               make_note(384, 192)};
     const SightRead::NoteTrack track {
-        notes,
-        {},
-        SightRead::TrackType::FiveFret,
+        notes, SightRead::TrackType::FiveFret,
         std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      positive_video_lag_settings()};
@@ -879,9 +845,7 @@ BOOST_AUTO_TEST_CASE(tick_points_are_not_multiplied_prematurely)
         make_note(192),      make_note(193), make_note(194), make_note(195),
         make_note(196),      make_note(197), make_note(198), make_note(199),
         make_note(200, 200), make_note(400)};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      negative_video_lag_settings()};
@@ -895,9 +859,7 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_CASE(next_non_hold_point_is_correct)
 {
     std::vector<SightRead::Note> notes {make_note(0), make_note(192, 192)};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
 
     PointSet points {track, default_measure_mode_data(),
@@ -916,8 +878,9 @@ BOOST_AUTO_TEST_CASE(next_sp_granting_note_is_correct)
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {200}, .length = SightRead::Tick {1}},
         {.position = SightRead::Tick {400}, .length = SightRead::Tick {1}}};
-    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
 
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
@@ -940,7 +903,6 @@ BOOST_AUTO_TEST_CASE(solo_sections_are_added)
                                          .end = SightRead::Tick {1152},
                                          .value = 200}};
     SightRead::NoteTrack track {{},
-                                {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.solos(solos);
@@ -958,7 +920,6 @@ BOOST_AUTO_TEST_CASE(solo_sections_are_added)
 BOOST_AUTO_TEST_CASE(range_score_is_correct)
 {
     SightRead::NoteTrack track {{make_note(0, 192), make_note(386)},
-                                {},
                                 SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
@@ -979,9 +940,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_five_fret)
             {{SightRead::FIVE_FRET_GREEN, 0}, {SightRead::FIVE_FRET_RED, 0}}),
         make_note(176, 100, SightRead::FIVE_FRET_YELLOW),
         make_note(500, 0, SightRead::FIVE_FRET_BLUE)};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
@@ -1001,9 +960,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_six_fret)
                         {SightRead::SIX_FRET_WHITE_MID, 0}}),
         make_ghl_note(176, 100, SightRead::SIX_FRET_BLACK_HIGH),
         make_ghl_note(500, 0, SightRead::SIX_FRET_OPEN)};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::SixFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::SixFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
@@ -1022,9 +979,7 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_drums)
         make_drum_note(0, SightRead::DRUM_YELLOW, SightRead::FLAGS_CYMBAL),
         make_drum_note(176, SightRead::DRUM_BLUE, SightRead::FLAGS_CYMBAL),
         make_drum_note(500, SightRead::DRUM_KICK)};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
@@ -1041,9 +996,7 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_appear_with_enable_double_kick)
     std::vector<SightRead::Note> notes {
         make_drum_note(0, SightRead::DRUM_KICK),
         make_drum_note(192, SightRead::DRUM_DOUBLE_KICK)};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet single_points {track, default_measure_mode_data(),
                             default_pro_drums_pathing_settings()};
@@ -1059,9 +1012,7 @@ BOOST_AUTO_TEST_CASE(single_kicks_are_removed_with_disable_kick)
     std::vector<SightRead::Note> notes {
         make_drum_note(0, SightRead::DRUM_DOUBLE_KICK),
         make_drum_note(192, SightRead::DRUM_KICK)};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      extra_kicks_only_drums_pathing_settings()};
@@ -1077,8 +1028,9 @@ BOOST_AUTO_TEST_CASE(disable_kick_doesnt_kill_sp_phrases)
         make_drum_note(192, SightRead::DRUM_KICK)};
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {200}}};
-    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
     PointSet points {track, default_measure_mode_data(),
                      min_kicks_drums_pathing_settings()};
 
@@ -1092,8 +1044,9 @@ BOOST_AUTO_TEST_CASE(double_kicks_dont_kill_phrases)
         make_drum_note(192, SightRead::DRUM_DOUBLE_KICK)};
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {200}}};
-    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
     PointSet points {track, default_measure_mode_data(),
                      non_pro_drums_pathing_settings()};
 
@@ -1107,9 +1060,7 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
                                         make_drum_note(576)};
     std::vector<SightRead::DrumFill> fills {
         {.position = SightRead::Tick {384}, .length = SightRead::Tick {5}}};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
@@ -1132,9 +1083,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_not_killed)
         make_drum_note(0), make_drum_note(1, SightRead::DRUM_KICK)};
     std::vector<SightRead::DrumFill> fills {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {2}}};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
@@ -1151,9 +1100,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_not_killed)
         make_drum_note(0), make_drum_note(1, SightRead::DRUM_DOUBLE_KICK)};
     std::vector<SightRead::DrumFill> fills {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {2}}};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
@@ -1171,9 +1118,7 @@ BOOST_AUTO_TEST_CASE(
         make_drum_note(0), make_drum_note(0, SightRead::DRUM_KICK)};
     std::vector<SightRead::DrumFill> fills {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {2}}};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
@@ -1197,9 +1142,7 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {2}},
         {.position = SightRead::Tick {193}, .length = SightRead::Tick {5}},
         {.position = SightRead::Tick {377}, .length = SightRead::Tick {4}}};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
@@ -1217,9 +1160,7 @@ BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
     std::vector<SightRead::Note> notes {make_drum_note(0), make_drum_note(192)};
     std::vector<SightRead::DrumFill> fills {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {96}}};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
@@ -1234,9 +1175,7 @@ BOOST_AUTO_TEST_CASE(cymbals_get_extra_points)
 {
     std::vector<SightRead::Note> notes {
         make_drum_note(0, SightRead::DRUM_YELLOW, SightRead::FLAGS_CYMBAL)};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
@@ -1258,9 +1197,7 @@ BOOST_AUTO_TEST_CASE(dynamics_get_double_points)
                        static_cast<SightRead::NoteFlags>(
                            SightRead::FLAGS_CYMBAL | SightRead::FLAGS_ACCENT)),
         make_drum_note(960, SightRead::DRUM_YELLOW, SightRead::FLAGS_CYMBAL)};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::Drums,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::Drums,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
@@ -1280,9 +1217,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
 {
     std::vector<SightRead::Note> notes {make_note(0), make_note(192),
                                         make_note(384)};
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_gh1_pathing_settings()};
@@ -1302,8 +1237,9 @@ BOOST_AUTO_TEST_CASE(
     std::vector<SightRead::Note> notes {make_note(0, 192), make_note(384)};
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {96}}};
-    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
     PointSet points {track, default_measure_mode_data(),
                      default_gh1_pathing_settings()};
 
@@ -1321,8 +1257,9 @@ BOOST_AUTO_TEST_CASE(
                                         make_note(384)};
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {200}}};
-    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
     PointSet points {track, default_measure_mode_data(),
                      default_gh1_pathing_settings()};
     const auto begin = points.cbegin();
@@ -1336,8 +1273,9 @@ BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_overlap_engine)
                                         make_note(384)};
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {0}, .length = SightRead::Tick {200}}};
-    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
     const auto begin = points.cbegin();
@@ -1362,8 +1300,9 @@ BOOST_AUTO_TEST_CASE(is_not_broken_by_floating_point_imprecision)
                                         make_note(576)};
     std::vector<SightRead::StarPower> phrases {
         {.position = SightRead::Tick {192}, .length = SightRead::Tick {200}}};
-    SightRead::NoteTrack track {notes, phrases, SightRead::TrackType::FiveFret,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
                                 std::make_unique<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
     SightRead::TempoMap tempo_map {
         {},
         {{.position = SightRead::Tick {0}, .millibeats_per_minute = 119999}},
@@ -1386,9 +1325,7 @@ BOOST_AUTO_TEST_CASE(fortnite_notes_have_individual_split_points)
         make_note(0, 0, SightRead::FIVE_FRET_GREEN),
         make_note(0, 0, SightRead::FIVE_FRET_RED)};
 
-    SightRead::NoteTrack track {notes,
-                                {},
-                                SightRead::TrackType::FortniteFestival,
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FortniteFestival,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet points {track, default_od_beat_mode_data(),
                      default_fortnite_guitar_pathing_settings()};
