@@ -9,14 +9,9 @@ project(
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 include(cmake/Sanitisers.cmake)
 
-# Require standard C++20
-function(set_cpp_standard target)
-  set_target_properties(
-    ${target}
-    PROPERTIES CXX_STANDARD 20
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF)
-endfunction()
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Set warning flags
 function(set_warnings target)
@@ -81,7 +76,6 @@ set_property(TARGET chopt PROPERTY POSITION_INDEPENDENT_CODE FALSE)
 if(APPLE)
   set_property(TARGET chopt PROPERTY MACOSX_BUNDLE TRUE)
 endif()
-set_cpp_standard(chopt)
 set_warnings(chopt)
 enable_sanitisers(chopt)
 
@@ -116,8 +110,6 @@ if(BUILD_GUI)
   if(APPLE)
     set_property(TARGET choptgui PROPERTY MACOSX_BUNDLE TRUE)
   endif()
-
-  set_cpp_standard(choptgui)
 endif()
 
 include(CTest)
@@ -148,7 +140,6 @@ if(PACKAGE_TESTS)
     PRIVATE "${PROJECT_SOURCE_DIR}/include")
   target_link_libraries(chopt_tests PRIVATE Boost::locale Boost::unit_test_framework Qt6::Core sightread)
   add_test(NAME chopt_tests COMMAND chopt_tests)
-  set_cpp_standard(chopt_tests)
   set_warnings(chopt_tests)
   enable_sanitisers(chopt_tests)
 endif()
