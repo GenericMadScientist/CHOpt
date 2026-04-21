@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(unison_bonuses_are_taken_account_of)
     BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
                                               points.cbegin(),
                                               points.cbegin() + 1),
-                      SpBar(0.501, 0.501, {0.251, 0.501, 0.5}));
+                      SpBar(0.502, 0.502, {0.251, 0.502, 0.5}));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
         SightRead::Beat(0.0), points.cbegin(), std::next(points.cbegin()),
         {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)});
 
-    BOOST_CHECK_CLOSE(sp_bar.max(), 0.501, 0.0001);
+    BOOST_CHECK_CLOSE(sp_bar.max(), 0.502, 0.0001);
 }
 
 BOOST_AUTO_TEST_SUITE(is_candidate_valid_works_with_no_whammy)

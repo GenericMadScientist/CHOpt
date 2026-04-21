@@ -1690,7 +1690,7 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_rb_phrase_amounts)
                           false};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
                                   {.phrase_amount = 0.251,
-                                   .unison_phrase_amount = 0.501,
+                                   .unison_phrase_amount = 0.502,
                                    .minimum_to_activate = 0.5});
     std::vector<double> expected_percents {0.0, 0.251};
 
@@ -1724,9 +1724,9 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_unison_phrases)
                           false};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
                                   {.phrase_amount = 0.251,
-                                   .unison_phrase_amount = 0.501,
+                                   .unison_phrase_amount = 0.502,
                                    .minimum_to_activate = 0.5});
-    std::vector<double> expected_percents {0.0, 0.501};
+    std::vector<double> expected_percents {0.0, 0.502};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.sp_percent_values().cbegin(),
                                   builder.sp_percent_values().cend(),

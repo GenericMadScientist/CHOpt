@@ -455,7 +455,7 @@ public:
     [[nodiscard]] SpEngineValues sp_engine_values() const override
     {
         return {.phrase_amount = 0.251,
-                .unison_phrase_amount = 0.501,
+                .unison_phrase_amount = 0.502,
                 .minimum_to_activate = 0.5};
     }
     [[nodiscard]] SpGainMode sp_gain_mode() const override

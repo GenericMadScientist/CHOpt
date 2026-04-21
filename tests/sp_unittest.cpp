@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(add_phrase_works_correctly_with_rb_phrases)
     SpBar sp_bar {0.0,
                   0.25,
                   {.phrase_amount = 0.251,
-                   .unison_phrase_amount = 0.501,
+                   .unison_phrase_amount = 0.502,
                    .minimum_to_activate = 0.5}};
     sp_bar.add_phrase();
 
@@ -91,12 +91,12 @@ BOOST_AUTO_TEST_CASE(add_unison_phrase_works_correctly_with_rb_phrases)
     SpBar sp_bar {0.0,
                   0.25,
                   {.phrase_amount = 0.251,
-                   .unison_phrase_amount = 0.501,
+                   .unison_phrase_amount = 0.502,
                    .minimum_to_activate = 0.5}};
     sp_bar.add_unison_phrase();
 
-    BOOST_CHECK_CLOSE(sp_bar.min(), 0.501, 0.0001);
-    BOOST_CHECK_CLOSE(sp_bar.max(), 0.751, 0.0001);
+    BOOST_CHECK_CLOSE(sp_bar.min(), 0.502, 0.0001);
+    BOOST_CHECK_CLOSE(sp_bar.max(), 0.752, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(full_enough_to_activate_denies_with_half_bar_act_engines)
