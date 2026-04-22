@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     try {
         QCoreApplication app {argc, argv};
         QCoreApplication::setApplicationName("CHOpt");
-        QCoreApplication::setApplicationVersion("1.13.0");
+        QCoreApplication::setApplicationVersion("1.13.1");
 
         const auto settings
             = from_args(QCoreApplication::arguments(), q_stderr);
