@@ -144,12 +144,6 @@ if(PACKAGE_TESTS)
   enable_sanitisers(chopt_tests)
 endif()
 
-option(BUILD_FUZZ_TARGETS "Build the fuzzing targets" OFF)
-
-if(BUILD_FUZZ_TARGETS)
-  add_subdirectory(fuzzing_targets)
-endif()
-
 option(ENABLE_LTO "Enable Link Time Optimisation" OFF)
 
 if(ENABLE_LTO)
