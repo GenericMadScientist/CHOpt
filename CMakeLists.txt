@@ -35,7 +35,7 @@ find_package(
   OPTIONAL_COMPONENTS Gui Widgets)
 find_package(
   Boost 1.82 REQUIRED
-  COMPONENTS locale
+  COMPONENTS graph locale
   OPTIONAL_COMPONENTS unit_test_framework)
 
 set(CMAKE_AUTOMOC ON)

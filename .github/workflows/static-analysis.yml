@@ -24,7 +24,7 @@ jobs:
           version: 6.6.*
 
       - name: Install Boost dependencies
-        run: vcpkg install boost-locale boost-test
+        run: vcpkg install boost-graph boost-locale boost-test
 
       - name: Install clang-tidy 22
         run: |

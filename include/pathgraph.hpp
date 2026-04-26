@@ -22,15 +22,25 @@
 #include <algorithm>
 #include <limits>
 #include <optional>
-#include <set>
 #include <stack>
+#include <unordered_map>
 #include <vector>
+
+#include <boost/graph/adjacency_list.hpp>
+
+template <typename Activation> struct ActivationOptions {
+    std::vector<Activation> activations;
+    int weight;
+};
 
 template <typename Vertex, typename Activation> struct Edge {
     Vertex source;
     Vertex destination;
-    int weight;
-    std::vector<Activation> activations;
+    ActivationOptions<Activation> options;
+};
+
+template <typename T> struct Property {
+    T properties;
 };
 
 // This data structure is for the directed acyclic graph at the core of the
@@ -57,25 +67,35 @@ template <typename Vertex, typename Activation> struct Edge {
 // edges, and loop until the queue is empty.
 template <typename Vertex, typename Activation> class PathGraph {
 private:
-    std::stack<Vertex> m_unprocessed_vertices;
-    std::set<Vertex> m_vertices;
-    std::vector<Edge<Vertex, Activation>> m_edges;
-    Vertex m_root_vertex;
+    using Graph
+        = boost::adjacency_list<boost::hash_setS, boost::vecS, boost::directedS,
+                                Property<Vertex>,
+                                Property<ActivationOptions<Activation>>>;
+    using VertexId = boost::graph_traits<Graph>::vertex_descriptor;
+    using EdgeId = boost::graph_traits<Graph>::edge_descriptor;
+
+    Graph m_graph;
+    std::unordered_map<Vertex, VertexId> m_vertex_lookup;
+    std::stack<VertexId> m_unprocessed_vertices;
+    VertexId m_root_vertex_id;
 
     [[nodiscard]] std::vector<Edge<Vertex, Activation>>
-    optimal_subpath_from_vertex(const Vertex& vertex) const
+    optimal_subpath_from_vertex(VertexId vertex_id) const
     {
         auto best_weight = std::numeric_limits<int>::min();
         std::vector<Edge<Vertex, Activation>> best_path;
 
-        for (const auto& edge : m_edges) {
-            if (edge.source != vertex) {
-                continue;
-            }
-            auto subpath = optimal_subpath_from_vertex(edge.destination);
-            auto subpath_weight = edge.weight;
+        const auto [begin, end] = boost::out_edges(vertex_id, m_graph);
+        for (auto it = begin; it != end; ++it) {
+            const Edge<Vertex, Activation> edge {
+                m_graph[boost::source(*it, m_graph)].properties,
+                m_graph[boost::target(*it, m_graph)].properties,
+                m_graph[*it].properties};
+            auto subpath
+                = optimal_subpath_from_vertex(boost::target(*it, m_graph));
+            auto subpath_weight = edge.options.weight;
             for (const auto& subpath_edge : subpath) {
-                subpath_weight += subpath_edge.weight;
+                subpath_weight += subpath_edge.options.weight;
             }
 
             if (subpath_weight > best_weight) {
@@ -88,50 +108,64 @@ private:
         return best_path;
     }
 
+    VertexId add_or_get_vertex(const Vertex& vertex)
+    {
+        auto [iter, inserted] = m_vertex_lookup.emplace(vertex, VertexId {});
+        if (!inserted) {
+            return iter->second;
+        }
+
+        const auto vertex_id = boost::add_vertex(m_graph);
+        iter->second = vertex_id;
+        m_unprocessed_vertices.push(vertex_id);
+        m_graph[vertex_id].properties = vertex;
+        return vertex_id;
+    }
+
 public:
     PathGraph(Vertex root_vertex)
-        : m_unprocessed_vertices {{root_vertex}}
-        , m_root_vertex {std::move(root_vertex)}
     {
+        const auto root_vertex_id = boost::add_vertex(m_graph);
+        m_graph[root_vertex_id].properties = root_vertex;
+        m_unprocessed_vertices.push(root_vertex_id);
+        m_vertex_lookup.emplace(root_vertex, root_vertex_id);
+        m_root_vertex_id = root_vertex_id;
     }
 
     void add_activation(Vertex source, Vertex destination, int weight,
                         std::optional<Activation> activation)
     {
-        const auto result = m_vertices.insert(destination);
-        if (result.second) {
-            m_unprocessed_vertices.push(destination);
-        }
+        const auto source_id = add_or_get_vertex(source);
+        const auto destination_id = add_or_get_vertex(destination);
 
-        const auto edge_iter = std::ranges::find_if(
-            m_edges, [&](const auto& edge) {
-                return edge.source == source && edge.destination == destination;
-            });
-        if (edge_iter != std::ranges::end(m_edges)) {
-            if (edge_iter->weight > weight) {
-                return;
-            }
-            if (edge_iter->weight < weight) {
-                edge_iter->activations.clear();
-                edge_iter->weight = weight;
-            }
+        const auto [edge_id, inserted]
+            = boost::add_edge(source_id, destination_id, m_graph);
+        auto& properties = m_graph[edge_id].properties;
+        if (inserted) {
+            std::vector<Activation> activations;
             if (activation.has_value()) {
-                edge_iter->activations.push_back(std::move(*activation));
+                activations.push_back(std::move(*activation));
             }
+            properties = ActivationOptions<Activation> {std::move(activations),
+                                                        weight};
             return;
         }
 
-        std::vector<Activation> activations;
-        if (activation.has_value()) {
-            activations.push_back(std::move(*activation));
+        if (properties.weight > weight) {
+            return;
         }
-        m_edges.emplace_back(std::move(source), std::move(destination), weight,
-                             std::move(activations));
+        if (properties.weight < weight) {
+            properties.activations.clear();
+            properties.weight = weight;
+        }
+        if (activation.has_value()) {
+            properties.activations.push_back(std::move(*activation));
+        }
     }
 
     [[nodiscard]] std::vector<Edge<Vertex, Activation>> optimal_path() const
     {
-        return optimal_subpath_from_vertex(m_root_vertex);
+        return optimal_subpath_from_vertex(m_root_vertex_id);
     }
 
     std::optional<Vertex> next_unprocessed_vertex()
@@ -139,9 +173,9 @@ public:
         if (m_unprocessed_vertices.empty()) {
             return std::nullopt;
         }
-        const auto vertex = m_unprocessed_vertices.top();
+        const auto vertex_id = m_unprocessed_vertices.top();
         m_unprocessed_vertices.pop();
-        return vertex;
+        return m_graph[vertex_id].properties;
     }
 };
 

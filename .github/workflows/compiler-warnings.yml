@@ -19,7 +19,7 @@ jobs:
           version: 6.7.2
 
       - name: Install other dependencies
-        run: vcpkg install boost-locale boost-test libpng
+        run: vcpkg install boost-graph boost-locale boost-test libpng
 
       - name: Make build directory
         run: mkdir build
@@ -81,7 +81,7 @@ jobs:
           version: 6.6.*
 
       - name: Install Boost dependencies
-        run: vcpkg install boost-locale boost-test
+        run: vcpkg install boost-graph boost-locale boost-test
 
       - name: Make build directory
         run: mkdir build
