@@ -123,6 +123,7 @@ if(PACKAGE_TESTS)
     tests/test_main.cpp
     tests/imagebuilder_unittest.cpp
     tests/optimiser_unittest.cpp
+    tests/pathgraph_unittest.cpp
     tests/points_unittest.cpp
     tests/processed_unittest.cpp
     tests/sp_unittest.cpp
