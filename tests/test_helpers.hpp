@@ -94,12 +94,6 @@ inline std::ostream& operator<<(std::ostream& stream, const DrawnRow& row)
     return stream;
 }
 
-inline std::ostream& operator<<(std::ostream& stream, PointPtr addr)
-{
-    stream << "Point @ " << &(*addr);
-    return stream;
-}
-
 inline bool operator==(const SpBar& lhs, const SpBar& rhs)
 {
     return std::abs(lhs.min() - rhs.min()) < 0.000001

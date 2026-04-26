@@ -46,7 +46,7 @@ struct Point {
     bool is_unison_sp_granting_note;
 };
 
-using PointPtr = std::vector<Point>::const_iterator;
+using PointPtr = const Point*;
 
 class PointSet {
 private:
@@ -63,8 +63,12 @@ public:
     PointSet(const SightRead::NoteTrack& track,
              const SpDurationData& duration_data,
              const PathingSettings& pathing_settings);
-    [[nodiscard]] PointPtr cbegin() const { return m_points.cbegin(); }
-    [[nodiscard]] PointPtr cend() const { return m_points.cend(); }
+    [[nodiscard]] PointPtr cbegin() const { return m_points.data(); }
+    [[nodiscard]] PointPtr cend() const
+    {
+        return std::next(m_points.data(),
+                         static_cast<std::ptrdiff_t>(m_points.size()));
+    }
     // Designed for engines without SP overlap, so the next activation is not
     // using part of the given phrase. If the point is not part of a phrase, or
     // the engine supports overlap, then this just returns the next point.
@@ -74,7 +78,7 @@ public:
     [[nodiscard]] std::string colour_set(PointPtr point) const
     {
         return m_colours[static_cast<std::size_t>(
-            std::distance(m_points.cbegin(), point))];
+            std::distance(m_points.data(), point))];
     }
     // Get the combined score of all points that are >= start and < end.
     [[nodiscard]] int range_score(PointPtr start, PointPtr end) const;

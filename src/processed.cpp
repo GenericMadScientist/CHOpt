@@ -129,7 +129,7 @@ public:
 SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
 {
     SpBar sp_bar {0.0, 0.0, m_sp_engine_values};
-    for (auto p = m_points.next_sp_granting_note(begin); p < end;
+    for (const auto* p = m_points.next_sp_granting_note(begin); p < end;
          p = m_points.next_sp_granting_note(std::next(p))) {
         if (p->is_unison_sp_granting_note) {
             sp_bar.add_unison_phrase();
@@ -166,11 +166,11 @@ ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
             = duration_data.time_map.to_beats(phrase.position);
         const auto phrase_end
             = duration_data.time_map.to_beats(phrase.position + phrase.length);
-        const auto start = std::ranges::find_if(
+        const auto* start = std::ranges::find_if(
             m_points.cbegin(), m_points.cend(), [&](const auto& pt) {
                 return !pt.is_hold_point && pt.position.beat >= phrase_start;
             });
-        const auto end
+        const auto* end
             = std::find_if(start, m_points.cend(), [&](const auto& pt) {
                   return !pt.is_hold_point && pt.position.beat >= phrase_end;
               });
@@ -328,7 +328,7 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
     SpStatus status_for_late_end {late_end_position, late_end_sp, m_overlaps,
                                   m_sp_engine_values};
 
-    for (auto p = m_points.next_sp_granting_note(activation.act_start);
+    for (const auto* p = m_points.next_sp_granting_note(activation.act_start);
          p < activation.act_end;
          p = m_points.next_sp_granting_note(std::next(p))) {
         auto p_start = adjusted_hit_window_start(p, squeeze);
@@ -376,7 +376,7 @@ ProcessedSong::is_candidate_valid(const ActivationCandidate& activation,
     const auto end_meas = status_for_early_end.position().sp_measure
         + SpMeasure(status_for_early_end.sp() * MEASURES_PER_BAR);
 
-    const auto next_point = std::next(activation.act_end);
+    const auto* next_point = std::next(activation.act_end);
     if (next_point != m_points.cend()
         && end_meas
             >= adjusted_hit_window_end(next_point, squeeze).sp_measure) {
@@ -398,18 +398,18 @@ void ProcessedSong::append_activation(std::stringstream& stream,
         stream << "See image";
         return;
     }
-    const auto act_start = activation.act_start;
-    auto previous_sp_note = std::prev(act_start);
+    const auto* act_start = activation.act_start;
+    const auto* previous_sp_note = std::prev(act_start);
     while (!previous_sp_note->is_sp_granting_note) {
-        --previous_sp_note;
+        --previous_sp_note; // NOLINT
     }
     const auto count
         = std::count_if(std::next(previous_sp_note), std::next(act_start),
                         [](const auto& p) { return !p.is_hold_point; });
     if (act_start->is_hold_point) {
-        auto starting_note = act_start;
+        const auto* starting_note = act_start;
         while (starting_note->is_hold_point) {
-            --starting_note;
+            --starting_note; // NOLINT
         }
         const auto beat_gap
             = act_start->position.beat - starting_note->position.beat;
@@ -420,13 +420,14 @@ void ProcessedSong::append_activation(std::stringstream& stream,
         }
     }
     if (count > 1) {
-        auto previous_note = act_start;
+        const auto* previous_note = act_start;
         while (previous_note->is_hold_point) {
-            --previous_note;
+            --previous_note; // NOLINT
         }
         const auto colour = m_points.colour_set(previous_note);
         auto same_colour_count = 1;
-        for (auto p = std::next(previous_sp_note); p < previous_note; ++p) {
+        for (const auto* p = std::next(previous_sp_note); p < previous_note;
+             ++p) { // NOLINT
             if (p->is_hold_point) {
                 continue;
             }
@@ -438,7 +439,7 @@ void ProcessedSong::append_activation(std::stringstream& stream,
     } else if (count == 1) {
         stream << "NN";
     }
-    const auto act_end = activation.act_end;
+    const auto* act_end = activation.act_end;
     if (!act_end->is_hold_point) {
         stream << " (" << m_points.colour_set(act_end) << ")";
     }
@@ -447,8 +448,8 @@ void ProcessedSong::append_activation(std::stringstream& stream,
 bool ProcessedSong::nullifies_phrase(const Activation& activation,
                                      const PhrasePointSpan& phrase)
 {
-    const auto start = std::max(phrase.begin, activation.act_start);
-    const auto end = std::min(phrase.end, std::next(activation.act_end));
+    const auto* start = std::max(phrase.begin, activation.act_start);
+    const auto* end = std::min(phrase.end, std::next(activation.act_end));
     if (start >= end) {
         return false;
     }
@@ -490,7 +491,7 @@ std::vector<std::string> ProcessedSong::act_summaries(const Path& path) const
     using namespace std::literals::string_literals;
 
     std::vector<std::string> activation_summaries;
-    auto start_point = m_points.cbegin();
+    const auto* start_point = m_points.cbegin();
     for (const auto& act : path.activations) {
         const auto sp_before
             = std::count_if(start_point, act.act_start, [](const auto& p) {
@@ -523,14 +524,14 @@ std::vector<std::string>
 ProcessedSong::drum_act_summaries(const Path& path) const
 {
     std::vector<std::string> activation_summaries;
-    auto start_point = m_points.cbegin();
+    const auto* start_point = m_points.cbegin();
     for (const auto& act : path.activations) {
         int sp_count = 0;
         while (sp_count < 2) {
             if (start_point->is_sp_granting_note) {
                 ++sp_count;
             }
-            ++start_point;
+            ++start_point; // NOLINT
         }
         const auto early_fill_point
             = m_time_map.to_seconds(
@@ -550,7 +551,7 @@ ProcessedSong::drum_act_summaries(const Path& path) const
             activation_summaries.emplace_back("0(E)");
         } else if (skipped_fills > 0) {
             while (!start_point->fill_start.has_value()) {
-                ++start_point;
+                ++start_point; // NOLINT
             }
             const auto fill_start = start_point->fill_start;
             assert(fill_start.has_value()); // NOLINT

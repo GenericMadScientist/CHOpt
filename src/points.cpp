@@ -405,15 +405,16 @@ std::vector<PointPtr> next_matching_vector(const std::vector<Point>& points,
         return {};
     }
     std::vector<PointPtr> next_matching_points;
-    auto next_matching_point = points.cend();
-    for (auto p = std::prev(points.cend());; --p) {
+    const auto* next_matching_point
+        = std::next(points.data(), static_cast<std::ptrdiff_t>(points.size()));
+    for (const auto* p = std::prev(next_matching_point);; --p) { // NOLINT
         if (predicate(*p)) {
             next_matching_point = p;
         }
         next_matching_points.push_back(next_matching_point);
-        // We can't have the loop condition be p >= points.cbegin() because
-        // decrementing past .begin() is undefined behaviour.
-        if (p == points.cbegin()) {
+        // We can't have the loop condition be p >= points.data() because
+        // decrementing past .data() is undefined behaviour.
+        if (p == points.data()) {
             break;
         }
     }
@@ -593,8 +594,11 @@ first_after_current_sp_vector(const std::vector<Point>& points,
 
     std::vector<PointPtr> results;
 
+    const auto* end_pointer
+        = std::next(points.data(), static_cast<std::ptrdiff_t>(points.size()));
+
     if (engine.overlaps()) {
-        for (auto p = points.cbegin(); p < points.cend(); ++p) {
+        for (const auto* p = points.data(); p < end_pointer; ++p) { // NOLINT
             results.push_back(std::next(p));
         }
 
@@ -603,7 +607,7 @@ first_after_current_sp_vector(const std::vector<Point>& points,
 
     const auto& tempo_map = track.global_data().tempo_map();
     auto current_sp = track.sp_phrases().cbegin();
-    for (auto p = points.cbegin(); p < points.cend();) {
+    for (const auto* p = points.data(); p < end_pointer;) {
         current_sp
             = std::find_if(current_sp, track.sp_phrases().cend(), [&](auto sp) {
                   return tempo_map.to_beats(sp.position + sp.length)
@@ -618,15 +622,15 @@ first_after_current_sp_vector(const std::vector<Point>& points,
                 = tempo_map.to_beats(current_sp->position + current_sp->length);
         }
         if (p->position.beat < sp_start) {
-            results.push_back(++p);
+            results.push_back(++p); // NOLINT
             continue;
         }
-        const auto q = std::find_if(std::next(p), points.cend(), [&](auto pt) {
+        const auto* q = std::find_if(std::next(p), end_pointer, [&](auto pt) {
             return pt.position.beat >= sp_end && !pt.is_hold_point;
         });
         while (p < q) {
             results.push_back(q);
-            ++p;
+            ++p; // NOLINT
         }
     }
 
@@ -724,30 +728,30 @@ PointSet::PointSet(const SightRead::NoteTrack& track,
 PointPtr PointSet::first_after_current_phrase(PointPtr point) const
 {
     const auto index
-        = static_cast<std::size_t>(std::distance(m_points.cbegin(), point));
+        = static_cast<std::size_t>(std::distance(m_points.data(), point));
     return m_first_after_current_sp.at(index);
 }
 
 PointPtr PointSet::next_non_hold_point(PointPtr point) const
 {
     const auto index
-        = static_cast<std::size_t>(std::distance(m_points.cbegin(), point));
+        = static_cast<std::size_t>(std::distance(m_points.data(), point));
     return m_next_non_hold_point.at(index);
 }
 
 PointPtr PointSet::next_sp_granting_note(PointPtr point) const
 {
     const auto index
-        = static_cast<std::size_t>(std::distance(m_points.cbegin(), point));
+        = static_cast<std::size_t>(std::distance(m_points.data(), point));
     return m_next_sp_granting_note.at(index);
 }
 
 int PointSet::range_score(PointPtr start, PointPtr end) const
 {
     const auto start_index
-        = static_cast<std::size_t>(std::distance(m_points.cbegin(), start));
+        = static_cast<std::size_t>(std::distance(m_points.data(), start));
     const auto end_index
-        = static_cast<std::size_t>(std::distance(m_points.cbegin(), end));
+        = static_cast<std::size_t>(std::distance(m_points.data(), end));
     return m_cumulative_score_totals.at(end_index)
         - m_cumulative_score_totals.at(start_index);
 }
