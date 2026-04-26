@@ -37,7 +37,7 @@ jobs:
           version: 6.7.2
 
       - name: Install other dependencies
-        run: vcpkg --triplet x64-windows-static-md install boost-locale libpng
+        run: vcpkg --triplet x64-windows-static-md install boost-graph boost-locale libpng
 
       - name: Make build directory
         run: mkdir build
@@ -167,7 +167,7 @@ jobs:
           version: 6.6.*
 
       - name: Install Boost Locale
-        run: vcpkg install --triplet x64-linux boost-locale
+        run: vcpkg install --triplet x64-linux boost-graph boost-locale
 
       - name: Make build directory
         run: mkdir build
