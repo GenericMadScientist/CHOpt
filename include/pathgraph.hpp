@@ -20,13 +20,13 @@
 #define CHOPT_PATH_GRAPH_HPP
 
 #include <algorithm>
-#include <limits>
 #include <optional>
 #include <stack>
 #include <unordered_map>
 #include <vector>
 
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/topological_sort.hpp>
 
 template <typename Activation> struct ActivationOptions {
     std::vector<Activation> activations;
@@ -79,35 +79,6 @@ private:
     std::stack<VertexId> m_unprocessed_vertices;
     VertexId m_root_vertex_id;
 
-    [[nodiscard]] std::vector<Edge<Vertex, Activation>>
-    optimal_subpath_from_vertex(VertexId vertex_id) const
-    {
-        auto best_weight = std::numeric_limits<int>::min();
-        std::vector<Edge<Vertex, Activation>> best_path;
-
-        const auto [begin, end] = boost::out_edges(vertex_id, m_graph);
-        for (auto it = begin; it != end; ++it) {
-            const Edge<Vertex, Activation> edge {
-                m_graph[boost::source(*it, m_graph)].properties,
-                m_graph[boost::target(*it, m_graph)].properties,
-                m_graph[*it].properties};
-            auto subpath
-                = optimal_subpath_from_vertex(boost::target(*it, m_graph));
-            auto subpath_weight = edge.options.weight;
-            for (const auto& subpath_edge : subpath) {
-                subpath_weight += subpath_edge.options.weight;
-            }
-
-            if (subpath_weight > best_weight) {
-                best_weight = subpath_weight;
-                best_path = std::move(subpath);
-                best_path.insert(best_path.begin(), edge);
-            }
-        }
-
-        return best_path;
-    }
-
     VertexId add_or_get_vertex(const Vertex& vertex)
     {
         auto [iter, inserted] = m_vertex_lookup.emplace(vertex, VertexId {});
@@ -120,6 +91,37 @@ private:
         m_unprocessed_vertices.push(vertex_id);
         m_graph[vertex_id].properties = vertex;
         return vertex_id;
+    }
+
+    void add_continuation_from_vertex(
+        std::unordered_map<VertexId, std::tuple<std::optional<EdgeId>, int>>&
+            optimal_continuations,
+        VertexId vertex) const
+    {
+        const auto [begin, end] = boost::out_edges(vertex, m_graph);
+        if (begin == end) {
+            optimal_continuations.emplace(vertex, std::tuple {std::nullopt, 0});
+            return;
+        }
+
+        const auto subpath_weight = [&](const auto& edge) {
+            return m_graph[edge].properties.weight
+                + std::get<1>(
+                       optimal_continuations.at(boost::target(edge, m_graph)));
+        };
+
+        auto best_edge = *begin;
+        auto best_weight = subpath_weight(best_edge);
+        for (auto it = std::next(begin); it != end; ++it) {
+            const auto weight = subpath_weight(*it);
+            if (weight > best_weight) {
+                best_edge = *it;
+                best_weight = weight;
+            }
+        }
+
+        optimal_continuations.emplace(vertex,
+                                      std::tuple {best_edge, best_weight});
     }
 
 public:
@@ -165,7 +167,33 @@ public:
 
     [[nodiscard]] std::vector<Edge<Vertex, Activation>> optimal_path() const
     {
-        return optimal_subpath_from_vertex(m_root_vertex_id);
+        std::vector<VertexId> reverse_topological_sort;
+        boost::topological_sort(m_graph,
+                                std::back_inserter(reverse_topological_sort));
+
+        std::unordered_map<VertexId, std::tuple<std::optional<EdgeId>, int>>
+            optimal_continuations;
+        for (const auto& vertex : reverse_topological_sort) {
+            add_continuation_from_vertex(optimal_continuations, vertex);
+        }
+
+        std::vector<Edge<Vertex, Activation>> path;
+        const auto& [initial_edge, _]
+            = optimal_continuations.at(m_root_vertex_id);
+        const auto next_edge = [&](const auto& edge) {
+            const auto vertex = boost::target(edge, m_graph);
+            return std::get<0>(optimal_continuations.at(vertex));
+        };
+        for (auto edge = initial_edge; edge.has_value();
+             edge = next_edge(*edge)) {
+            const auto src_vertex_id = boost::source(*edge, m_graph);
+            const auto dest_vertex_id = boost::target(*edge, m_graph);
+            path.emplace_back(m_graph[src_vertex_id].properties,
+                              m_graph[dest_vertex_id].properties,
+                              m_graph[*edge].properties);
+        }
+
+        return path;
     }
 
     std::optional<Vertex> next_unprocessed_vertex()
