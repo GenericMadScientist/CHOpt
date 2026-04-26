@@ -30,7 +30,7 @@ std::vector<int> set_values(const PointSet& points)
     std::vector<int> values;
     values.reserve(static_cast<std::size_t>(
         std::distance(points.cbegin(), points.cend())));
-    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+    for (const auto* p = points.cbegin(); p < points.cend(); ++p) {
         values.push_back(p->value);
     }
     return values;
@@ -41,7 +41,7 @@ std::vector<int> set_base_values(const PointSet& points)
     std::vector<int> base_values;
     base_values.reserve(static_cast<std::size_t>(
         std::distance(points.cbegin(), points.cend())));
-    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+    for (const auto* p = points.cbegin(); p < points.cend(); ++p) {
         base_values.push_back(p->base_value);
     }
     return base_values;
@@ -52,7 +52,7 @@ std::vector<SightRead::Beat> set_position_beats(const PointSet& points)
     std::vector<SightRead::Beat> values;
     values.reserve(static_cast<std::size_t>(
         std::distance(points.cbegin(), points.cend())));
-    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+    for (const auto* p = points.cbegin(); p < points.cend(); ++p) {
         values.push_back(p->position.beat);
     }
     return values;
@@ -713,7 +713,7 @@ BOOST_AUTO_TEST_CASE(hit_window_starts_and_ends_for_hold_points_are_correct)
                       .unison_phrases = {}},
                      default_guitar_pathing_settings()};
 
-    for (auto p = std::next(points.cbegin()); p < points.cend(); ++p) {
+    for (const auto* p = std::next(points.cbegin()); p < points.cend(); ++p) {
         BOOST_CHECK_CLOSE(p->position.beat.value(),
                           p->hit_window_start.beat.value(), 0.0001);
         BOOST_CHECK_CLOSE(p->position.beat.value(),
@@ -924,8 +924,8 @@ BOOST_AUTO_TEST_CASE(range_score_is_correct)
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
-    const auto begin = points.cbegin();
-    const auto end = points.cend();
+    const auto* begin = points.cbegin();
+    const auto* end = points.cend();
 
     BOOST_CHECK_EQUAL(points.range_score(begin, begin), 0);
     BOOST_CHECK_EQUAL(points.range_score(begin, end), 128);
@@ -944,8 +944,8 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_five_fret)
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
-    const auto begin = points.cbegin();
-    const auto end = points.cend();
+    const auto* begin = points.cbegin();
+    const auto* end = points.cend();
 
     BOOST_CHECK_EQUAL(points.colour_set(begin), "GR");
     BOOST_CHECK_EQUAL(points.colour_set(begin + 1), "Y");
@@ -964,8 +964,8 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_six_fret)
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
-    const auto begin = points.cbegin();
-    const auto end = points.cend();
+    const auto* begin = points.cbegin();
+    const auto* end = points.cend();
 
     BOOST_CHECK_EQUAL(points.colour_set(begin), "W1W2");
     BOOST_CHECK_EQUAL(points.colour_set(begin + 1), "B3");
@@ -983,8 +983,8 @@ BOOST_AUTO_TEST_CASE(colour_set_is_correct_for_drums)
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
-    const auto begin = points.cbegin();
-    const auto end = points.cend();
+    const auto* begin = points.cbegin();
+    const auto* end = points.cend();
 
     BOOST_CHECK_EQUAL(points.colour_set(begin), "R");
     BOOST_CHECK_EQUAL(points.colour_set(begin + 1), "Y cymbal");
@@ -1065,7 +1065,7 @@ BOOST_AUTO_TEST_CASE(activation_notes_are_marked_with_drum_fills)
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
     const auto fill_start = (begin + 2)->fill_start;
 
     BOOST_TEST(!begin->fill_start.has_value());
@@ -1088,7 +1088,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_kick_are_not_killed)
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
                      non_pro_drums_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
 
     BOOST_TEST(!begin->fill_start.has_value());
     BOOST_TEST((begin + 1)->fill_start.has_value());
@@ -1105,7 +1105,7 @@ BOOST_AUTO_TEST_CASE(fills_ending_only_in_a_double_kick_are_not_killed)
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
 
     BOOST_TEST(!begin->fill_start.has_value());
     BOOST_TEST((begin + 1)->fill_start.has_value());
@@ -1123,7 +1123,7 @@ BOOST_AUTO_TEST_CASE(
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
 
     const auto fill_start = begin->fill_start;
     BOOST_CHECK(fill_start.has_value());
@@ -1147,7 +1147,7 @@ BOOST_AUTO_TEST_CASE(fills_are_attached_to_the_nearest_ending_point)
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
 
     BOOST_TEST(begin->fill_start.has_value());
     BOOST_TEST((begin + 1)->fill_start.has_value());
@@ -1165,7 +1165,7 @@ BOOST_AUTO_TEST_CASE(fills_attach_to_later_point_in_case_of_a_tie)
     track.drum_fills(fills);
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
 
     BOOST_TEST(!begin->fill_start.has_value());
     BOOST_TEST((begin + 1)->fill_start.has_value());
@@ -1179,7 +1179,7 @@ BOOST_AUTO_TEST_CASE(cymbals_get_extra_points)
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
 
     BOOST_CHECK_EQUAL(begin->value, 65);
 }
@@ -1201,7 +1201,7 @@ BOOST_AUTO_TEST_CASE(dynamics_get_double_points)
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_drums_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
 
     BOOST_CHECK_EQUAL(begin->value, 100);
     BOOST_CHECK_EQUAL((begin + 1)->value, 100);
@@ -1221,7 +1221,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_outside_of_sp)
                                 std::make_unique<SightRead::SongGlobalData>()};
     PointSet points {track, default_measure_mode_data(),
                      default_gh1_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
 
     BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin),
                       std::next(begin));
@@ -1243,8 +1243,8 @@ BOOST_AUTO_TEST_CASE(
     PointSet points {track, default_measure_mode_data(),
                      default_gh1_pathing_settings()};
 
-    const auto last_note = std::prev(points.cend());
-    const auto second_last_tick = std::prev(last_note, 2);
+    const auto* last_note = std::prev(points.cend());
+    const auto* second_last_tick = std::prev(last_note, 2);
 
     BOOST_CHECK_EQUAL(points.first_after_current_phrase(second_last_tick),
                       last_note);
@@ -1262,7 +1262,7 @@ BOOST_AUTO_TEST_CASE(
     track.sp_phrases(phrases);
     PointSet points {track, default_measure_mode_data(),
                      default_gh1_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
 
     BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin), begin + 2);
 }
@@ -1278,7 +1278,7 @@ BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_overlap_engine)
     track.sp_phrases(phrases);
     PointSet points {track, default_measure_mode_data(),
                      default_guitar_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
 
     BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin), begin + 1);
 }
@@ -1312,7 +1312,7 @@ BOOST_AUTO_TEST_CASE(is_not_broken_by_floating_point_imprecision)
                                   .od_beats = {},
                                   .unison_phrases = {}};
     PointSet points {track, duration_data, default_gh1_pathing_settings()};
-    const auto begin = points.cbegin();
+    const auto* begin = points.cbegin();
 
     BOOST_CHECK_EQUAL(points.first_after_current_phrase(begin), begin + 2);
 }

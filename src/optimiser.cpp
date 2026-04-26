@@ -39,7 +39,7 @@ Optimiser::Optimiser(const ProcessedSong* song,
     const auto capacity = std::distance(points.cbegin(), points.cend()) + 1;
     m_next_candidate_points.reserve(static_cast<std::size_t>(capacity));
     int count = 0;
-    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+    for (const auto* p = points.cbegin(); p < points.cend(); ++p) { // NOLINT
         ++count;
         if (p->is_sp_granting_note
             || (p->is_hold_point
@@ -71,7 +71,7 @@ Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
     }
     key = add_whammy_delay(key);
 
-    auto point = key.point;
+    const auto* point = key.point;
     if (point != m_song->points().cbegin()) {
         point = std::prev(point);
     }
@@ -190,10 +190,10 @@ void Optimiser::complete_subpath(
     PointPtrRangeSet& attained_act_ends, Cache& cache, int& best_score_boost,
     std::vector<std::tuple<ProtoActivation, CacheKey>>& acts) const
 {
-    for (auto q = attained_act_ends.lowest_absent_element();
+    for (const auto* q = attained_act_ends.lowest_absent_element();
          q < m_song->points().cend();) {
         if (attained_act_ends.contains(q)) {
-            ++q;
+            ++q; // NOLINT
             continue;
         }
 
@@ -218,7 +218,7 @@ void Optimiser::complete_subpath(
         }
 
         if (candidate_result.validity != ActValidity::success) {
-            ++q;
+            ++q; // NOLINT
             continue;
         }
 
@@ -236,7 +236,7 @@ void Optimiser::complete_subpath(
         } else if (score == best_score_boost) {
             acts.push_back({{.act_start = p, .act_end = q}, next_key});
         }
-        ++q;
+        ++q; // NOLINT
     }
 }
 
@@ -248,7 +248,8 @@ SightRead::Second Optimiser::earliest_fill_appearance(CacheKey key,
     }
 
     int sp_count = 0;
-    for (auto p = key.point; p < m_song->points().cend(); ++p) {
+    for (const auto* p = key.point; p < m_song->points().cend();
+         ++p) { // NOLINT
         if (p->is_sp_granting_note) {
             ++sp_count;
             if (sp_count == 2) {
@@ -277,7 +278,8 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
     auto lower_bound_set = false;
     auto best_score_boost = 0;
 
-    for (auto p = key.point; p < m_song->points().cend(); ++p) {
+    for (const auto* p = key.point; p < m_song->points().cend();
+         ++p) { // NOLINT
         if (m_song->is_drums()
             && (!p->fill_start.has_value()
                 || p->fill_start < early_act_bound)) {
@@ -326,11 +328,11 @@ Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
                 * std::max(sp_bar.min(),
                            m_song->sp_engine_values().minimum_to_activate)};
             const auto earliest_act_end = starting_pos.sp_measure + act_length;
-            auto earliest_pt_end = std::find_if_not(
+            const auto* earliest_pt_end = std::find_if_not(
                 std::next(p), m_song->points().cend(), [&](const auto& pt) {
                     return pt.hit_window_end.sp_measure <= earliest_act_end;
                 });
-            --earliest_pt_end;
+            --earliest_pt_end; // NOLINT
             attained_act_ends
                 = PointPtrRangeSet {earliest_pt_end, m_song->points().cend()};
             lower_bound_set = true;
@@ -401,7 +403,7 @@ double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
     auto max_sqz = 1.0;
     // Determines what point controls how early we can go: the previous point on
     // guitar and the current point on drums.
-    const auto start_bound_point
+    const auto* start_bound_point
         = m_song->is_drums() ? act.act_start : std::prev(act.act_start);
     while (max_sqz - min_sqz > THRESHOLD) {
         auto trial_sqz = (min_sqz + max_sqz) / 2;
@@ -436,14 +438,14 @@ SpPosition Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
     constexpr double POS_INF = std::numeric_limits<double>::infinity();
     constexpr double THRESHOLD = 0.01;
 
-    auto next_point = std::next(act.act_end);
+    const auto* next_point = std::next(act.act_end);
 
     if (next_point == m_song->points().cend()) {
         return {.beat = SightRead::Beat {POS_INF},
                 .sp_measure = SpMeasure {POS_INF}};
     }
 
-    auto prev_point = std::prev(act.act_start);
+    const auto* prev_point = std::prev(act.act_start);
     auto min_whammy_force = key.position;
     auto max_whammy_force = next_point->hit_window_end;
     auto start_pos = m_song->adjusted_hit_window_start(prev_point, sqz_level);
@@ -478,7 +480,7 @@ Optimiser::act_duration(ProtoActivation act, CacheKey key, double sqz_level,
 
     // Determines what point controls how early we can go: the previous point on
     // guitar and the current point on drums.
-    const auto start_bound_point
+    const auto* start_bound_point
         = m_song->is_drums() ? act.act_start : std::prev(act.act_start);
     auto min_pos
         = m_song->adjusted_hit_window_start(start_bound_point, sqz_level);

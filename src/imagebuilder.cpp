@@ -190,7 +190,7 @@ form_events(const std::vector<double>& measure_lines, const PointSet& points,
          ++it) {
         events.emplace_back(SightRead::Beat {*it}, SpDrainEventType::Measure);
     }
-    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+    for (const auto* p = points.cbegin(); p < points.cend(); ++p) { // NOLINT
         if (!p->is_sp_granting_note) {
             continue;
         }
@@ -439,7 +439,7 @@ void ImageBuilder::add_measure_values(const PointSet& points,
     auto base_value_iter = m_base_values.begin();
     auto meas_iter = std::next(m_measure_lines.cbegin());
     auto score_value_iter = m_score_values.begin();
-    for (auto p = points.cbegin(); p < points.cend(); ++p) {
+    for (const auto* p = points.cbegin(); p < points.cend(); ++p) { // NOLINT
         const auto adjusted_p_pos
             = subtract_video_lag(p->position.beat, points.video_lag(),
                                  tempo_map)
@@ -475,7 +475,7 @@ void ImageBuilder::add_measure_values(const PointSet& points,
     for (const auto& act : path.activations) {
         meas_iter = std::next(m_measure_lines.cbegin());
         score_value_iter = m_score_values.begin();
-        for (auto p = act.act_start; p <= act.act_end; ++p) {
+        for (const auto* p = act.act_start; p <= act.act_end; ++p) { // NOLINT
             while (meas_iter != m_measure_lines.cend()
                    && *meas_iter <= subtract_video_lag(p->position.beat,
                                                        points.video_lag(),
