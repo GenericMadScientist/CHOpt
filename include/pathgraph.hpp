@@ -22,11 +22,11 @@
 #include <algorithm>
 #include <optional>
 #include <stack>
-#include <unordered_map>
 #include <vector>
 
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
 
 template <typename Activation> struct ActivationOptions {
     std::vector<Activation> activations;
@@ -75,7 +75,7 @@ private:
     using EdgeId = boost::graph_traits<Graph>::edge_descriptor;
 
     Graph m_graph;
-    std::unordered_map<Vertex, VertexId> m_vertex_lookup;
+    boost::unordered_flat_map<Vertex, VertexId> m_vertex_lookup;
     std::stack<VertexId> m_unprocessed_vertices;
     VertexId m_root_vertex_id;
 
@@ -94,7 +94,8 @@ private:
     }
 
     void add_continuation_from_vertex(
-        std::unordered_map<VertexId, std::tuple<std::optional<EdgeId>, int>>&
+        boost::unordered_flat_map<VertexId,
+                                  std::tuple<std::optional<EdgeId>, int>>&
             optimal_continuations,
         VertexId vertex) const
     {
@@ -171,7 +172,8 @@ public:
         boost::topological_sort(m_graph,
                                 std::back_inserter(reverse_topological_sort));
 
-        std::unordered_map<VertexId, std::tuple<std::optional<EdgeId>, int>>
+        boost::unordered_flat_map<VertexId,
+                                  std::tuple<std::optional<EdgeId>, int>>
             optimal_continuations;
         for (const auto& vertex : reverse_topological_sort) {
             add_continuation_from_vertex(optimal_continuations, vertex);
@@ -204,6 +206,11 @@ public:
         const auto vertex_id = m_unprocessed_vertices.top();
         m_unprocessed_vertices.pop();
         return m_graph[vertex_id].properties;
+    }
+
+    [[nodiscard]] Vertex root_vertex() const
+    {
+        return m_graph[m_root_vertex_id].properties;
     }
 };
 

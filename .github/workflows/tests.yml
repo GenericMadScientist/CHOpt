@@ -24,7 +24,7 @@ jobs:
           version: 6.6.*
 
       - name: Install Boost dependencies
-        run: vcpkg install boost-graph boost-locale boost-test
+        run: vcpkg install boost-graph boost-locale boost-test boost-unordered
 
       - name: Make build directory
         run: mkdir build
@@ -66,7 +66,7 @@ jobs:
           version: 6.6.*
 
       - name: Install Boost dependencies
-        run: vcpkg install boost-graph boost-locale
+        run: vcpkg install boost-graph boost-locale boost-unordered
 
       - name: Make build directory
         run: mkdir build
