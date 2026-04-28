@@ -57,138 +57,164 @@ Optimiser::Optimiser(const ProcessedSong* song,
     }
 }
 
+Path Optimiser::optimal_path() const
+{
+    PathGraphVertex vertex {.point = m_song->points().cbegin(),
+                            .position = {.beat = SightRead::Beat(NEG_INF),
+                                         .sp_measure = SpMeasure(NEG_INF)},
+                            .is_max_sp_vertex = false};
+    const auto root_vertex = advance_graph_vertex(vertex);
+
+    const auto graph = path_graph(root_vertex);
+    return optimal_path_from_graph(graph);
+}
+
+OptimiserGraph Optimiser::path_graph(PathGraphVertex root_vertex) const
+{
+    OptimiserGraph graph {root_vertex};
+
+    for (auto vertex = graph.next_unprocessed_vertex(); vertex.has_value();
+         vertex = graph.next_unprocessed_vertex()) {
+        add_out_edges(graph, *vertex);
+    }
+
+    return graph;
+}
+
 PointPtr Optimiser::next_candidate_point(PointPtr point) const
 {
     const auto index = std::distance(m_song->points().cbegin(), point);
     return m_next_candidate_points.at(static_cast<std::size_t>(index));
 }
 
-Optimiser::CacheKey Optimiser::advance_cache_key(CacheKey key) const
+PathGraphVertex Optimiser::advance_graph_vertex(PathGraphVertex vertex) const
 {
-    key.point = next_candidate_point(key.point);
-    if (key.point == m_song->points().cend()) {
-        return key;
-    }
-    key = add_whammy_delay(key);
+    constexpr double POS_INF = std::numeric_limits<double>::infinity();
 
-    const auto* point = key.point;
+    vertex.point = next_candidate_point(vertex.point);
+    if (vertex.point == m_song->points().cend()) {
+        vertex.position = {.beat = SightRead::Beat {POS_INF},
+                           .sp_measure = SpMeasure {POS_INF}};
+        return vertex;
+    }
+    vertex = add_whammy_delay(vertex);
+
+    const auto* point = vertex.point;
     if (point != m_song->points().cbegin()) {
         point = std::prev(point);
     }
     const auto pos = point->max_sqz_hit_window_start;
 
-    if (pos.beat >= key.position.beat) {
-        key.position = pos;
+    if (pos.beat >= vertex.position.beat) {
+        vertex.position = pos;
     }
-    return key;
+    return vertex;
 }
 
-Optimiser::CacheKey Optimiser::add_whammy_delay(CacheKey key) const
+PathGraphVertex Optimiser::add_whammy_delay(PathGraphVertex vertex) const
 {
-    auto seconds = m_song->sp_time_map().to_seconds(key.position.beat);
+    auto seconds = m_song->sp_time_map().to_seconds(vertex.position.beat);
     seconds += m_whammy_delay;
-    key.position.beat = m_song->sp_time_map().to_beats(seconds);
-    key.position.sp_measure
-        = m_song->sp_time_map().to_sp_measures(key.position.beat);
-    return key;
+    vertex.position.beat = m_song->sp_time_map().to_beats(seconds);
+    vertex.position.sp_measure
+        = m_song->sp_time_map().to_sp_measures(vertex.position.beat);
+    return vertex;
 }
 
-int Optimiser::get_partial_path(CacheKey key, Cache& cache) const
+SightRead::Second
+Optimiser::earliest_fill_appearance(PathGraphVertex vertex) const
 {
-    if (key.point == m_song->points().cend()) {
-        return 0;
+    if (!m_song->is_drums() || vertex.is_max_sp_vertex) {
+        return SightRead::Second(0.0);
     }
 
-    const auto it = cache.paths.find(key);
-    if (it != cache.paths.end()) {
-        return it->second.score_boost;
-    }
-
-    if (m_terminate->load()) {
-        throw std::runtime_error("Thread halted");
-    }
-    auto best_path = find_best_subpaths(key, cache, false);
-    cache.paths.emplace(key, best_path);
-    return best_path.score_boost;
-}
-
-int Optimiser::get_partial_full_sp_path(PointPtr point, Cache& cache) const
-{
-    const auto it = cache.full_sp_paths.find(point);
-    if (it != cache.full_sp_paths.end()) {
-        return it->second.score_boost;
-    }
-
-    // We only call this from find_best_subpath in a situaiton where we know
-    // point is not m_points.cend(), so we may assume point is a real Point.
-    CacheKey key {.point = point,
-                  .position = std::prev(point)->hit_window_start};
-    auto best_path = find_best_subpaths(key, cache, true);
-    cache.full_sp_paths.emplace(point, best_path);
-    return best_path.score_boost;
-}
-
-// This function is an optimisation for the case where key.point is a tick in
-// the middle of an SP granting sustain. It is often the case that adjacent
-// ticks have the same optimal subpath, and at any rate the optimal subpath
-// can't be better than the optimal subpath for the previous point, so we try it
-// first. If it works, we return the result, else we return an empty optional.
-std::optional<Optimiser::CacheValue>
-Optimiser::try_previous_best_subpaths(CacheKey key, const Cache& cache,
-                                      bool has_full_sp) const
-{
-    if (has_full_sp || !key.point->is_hold_point) {
-        return std::nullopt;
-    }
-    if (key.point != m_song->points().cbegin()
-        && !std::prev(key.point)->is_hold_point) {
-        return std::nullopt;
-    }
-
-    auto prev_key_iter = cache.paths.lower_bound(key);
-    if (prev_key_iter == cache.paths.begin()) {
-        return std::nullopt;
-    }
-
-    prev_key_iter = std::prev(prev_key_iter);
-    if (std::distance(prev_key_iter->first.point, key.point) > 1) {
-        return std::nullopt;
-    }
-
-    const auto& acts = prev_key_iter->second.possible_next_acts;
-    std::vector<std::tuple<ProtoActivation, CacheKey>> next_acts;
-    for (const auto& act : acts) {
-        auto [p, q] = std::get<0>(act);
-        const auto& [sp_bar, starting_pos]
-            = m_song->total_available_sp_with_earliest_pos(
-                key.position.beat, key.point, p,
-                std::prev(p)->hit_window_start);
-        ActivationCandidate candidate {.act_start = p,
-                                       .act_end = q,
-                                       .earliest_activation_point
-                                       = starting_pos,
-                                       .sp_bar = sp_bar};
-        auto candidate_result = m_song->is_candidate_valid(candidate);
-        if (candidate_result.validity == ActValidity::success
-            && candidate_result.ending_position.beat
-                <= std::get<1>(act).position.beat) {
-            next_acts.push_back(act);
+    int sp_count = 0;
+    for (const auto* p = vertex.point; p < m_song->points().cend();
+         ++p) { // NOLINT
+        if (p->is_sp_granting_note) {
+            ++sp_count;
+            if (sp_count == 2) {
+                return m_song->sp_time_map().to_seconds(
+                           p->hit_window_start.beat)
+                    + m_drum_fill_delay;
+            }
         }
     }
-    if (next_acts.empty()) {
-        return std::nullopt;
-    }
 
-    const auto score_boost = prev_key_iter->second.score_boost;
-    return {{.possible_next_acts = next_acts, .score_boost = score_boost}};
+    return SightRead::Second(0.0);
 }
 
-// This function takes some information and completes the optimal subpaths from
-// it.
-void Optimiser::complete_subpath(
-    PointPtr p, SpPosition starting_pos, SpBar sp_bar,
-    PointPtrRangeSet& attained_act_ends, Cache& cache, int& best_score_boost,
-    std::vector<std::tuple<ProtoActivation, CacheKey>>& acts) const
+void Optimiser::add_out_edges(OptimiserGraph& graph,
+                              PathGraphVertex vertex) const
+{
+    const auto early_act_bound = earliest_fill_appearance(vertex);
+    PointPtrRangeSet attained_act_ends {vertex.point, m_song->points().cend()};
+    auto lower_bound_set = false;
+
+    for (const auto* p = vertex.point; p < m_song->points().cend();
+         ++p) { // NOLINT
+        if (m_song->is_drums()
+            && (!p->fill_start.has_value()
+                || p->fill_start < early_act_bound)) {
+            continue;
+        }
+        SpBar sp_bar {1.0, 1.0, m_song->sp_engine_values()};
+        SpPosition starting_pos {.beat = SightRead::Beat {NEG_INF},
+                                 .sp_measure = SpMeasure {NEG_INF}};
+        if (p != m_song->points().cbegin()) {
+            starting_pos = std::prev(p)->hit_window_start;
+        }
+        if (!vertex.is_max_sp_vertex) {
+            const auto& [new_sp, new_pos]
+                = m_song->total_available_sp_with_earliest_pos(
+                    vertex.position.beat, vertex.point, p, starting_pos);
+            sp_bar = new_sp;
+            starting_pos = new_pos;
+        }
+        if (m_song->is_drums()) {
+            starting_pos.beat
+                = std::max(starting_pos.beat, p->hit_window_start.beat);
+            starting_pos.sp_measure = std::max(starting_pos.sp_measure,
+                                               p->hit_window_start.sp_measure);
+        }
+        if (!sp_bar.full_enough_to_activate()) {
+            continue;
+        }
+        if (p != vertex.point && sp_bar.min() == 1.0
+            && std::prev(p)->is_sp_granting_note) {
+            PathGraphVertex full_sp_vertex {.point = p,
+                                            .position
+                                            = std::prev(p)->hit_window_start,
+                                            .is_max_sp_vertex = true};
+            graph.add_activation(vertex, full_sp_vertex, 0, {});
+            break;
+        }
+        // This skips some points that are too early to be an act end for the
+        // earliest possible activation.
+        if (!lower_bound_set) {
+            const SpMeasure act_length {
+                8.0
+                * std::max(sp_bar.min(),
+                           m_song->sp_engine_values().minimum_to_activate)};
+            const auto earliest_act_end = starting_pos.sp_measure + act_length;
+            const auto* earliest_pt_end = std::find_if_not(
+                std::next(p), m_song->points().cend(), [&](const auto& pt) {
+                    return pt.hit_window_end.sp_measure <= earliest_act_end;
+                });
+            --earliest_pt_end; // NOLINT
+            attained_act_ends
+                = PointPtrRangeSet {earliest_pt_end, m_song->points().cend()};
+            lower_bound_set = true;
+        }
+        add_acts_from_starting_point(vertex, p, starting_pos, sp_bar,
+                                     attained_act_ends, graph);
+    }
+}
+
+void Optimiser::add_acts_from_starting_point(
+    PathGraphVertex source, PointPtr starting_point, SpPosition starting_pos,
+    SpBar sp_bar, PointPtrRangeSet& attained_act_ends,
+    OptimiserGraph& graph) const
 {
     for (const auto* q = attained_act_ends.lowest_absent_element();
          q < m_song->points().cend();) {
@@ -197,7 +223,7 @@ void Optimiser::complete_subpath(
             continue;
         }
 
-        ActivationCandidate candidate {.act_start = p,
+        ActivationCandidate candidate {.act_start = starting_point,
                                        .act_end = q,
                                        .earliest_activation_point
                                        = starting_pos,
@@ -222,180 +248,70 @@ void Optimiser::complete_subpath(
             continue;
         }
 
-        const auto act_score = m_song->points().range_score(p, std::next(q));
-        CacheKey next_key {.point
-                           = m_song->points().first_after_current_phrase(q),
-                           .position = candidate_result.ending_position};
-        next_key = advance_cache_key(next_key);
-        const auto rest_of_path_score_boost = get_partial_path(next_key, cache);
-        const auto score = act_score + rest_of_path_score_boost;
-        if (score > best_score_boost) {
-            best_score_boost = score;
-            acts.clear();
-            acts.push_back({{.act_start = p, .act_end = q}, next_key});
-        } else if (score == best_score_boost) {
-            acts.push_back({{.act_start = p, .act_end = q}, next_key});
-        }
+        const auto act_score
+            = m_song->points().range_score(starting_point, std::next(q));
+        PathGraphVertex destination {
+            .point = m_song->points().first_after_current_phrase(q),
+            .position = candidate_result.ending_position,
+            .is_max_sp_vertex = false};
+        destination = advance_graph_vertex(destination);
+        graph.add_activation(source, destination, act_score,
+                             {{.act_start = starting_point, .act_end = q}});
+
         ++q; // NOLINT
     }
 }
 
-SightRead::Second Optimiser::earliest_fill_appearance(CacheKey key,
-                                                      bool has_full_sp) const
+Path Optimiser::optimal_path_from_graph(const OptimiserGraph& graph) const
 {
-    if (!m_song->is_drums() || has_full_sp) {
-        return SightRead::Second(0.0);
-    }
+    Path path {.activations = {}, .score_boost = 0};
 
-    int sp_count = 0;
-    for (const auto* p = key.point; p < m_song->points().cend();
-         ++p) { // NOLINT
-        if (p->is_sp_granting_note) {
-            ++sp_count;
-            if (sp_count == 2) {
-                return m_song->sp_time_map().to_seconds(
-                           p->hit_window_start.beat)
-                    + m_drum_fill_delay;
-            }
-        }
-    }
+    PathGraphVertex act_start_vertex = graph.root_vertex();
+    for (const auto& edge : graph.optimal_path()) {
+        path.score_boost += edge.options.weight;
 
-    return SightRead::Second(0.0);
-}
-
-Optimiser::CacheValue Optimiser::find_best_subpaths(CacheKey key, Cache& cache,
-                                                    bool has_full_sp) const
-{
-    const auto subpath_from_prev
-        = try_previous_best_subpaths(key, cache, has_full_sp);
-    if (subpath_from_prev) {
-        return *subpath_from_prev;
-    }
-
-    const auto early_act_bound = earliest_fill_appearance(key, has_full_sp);
-    std::vector<std::tuple<ProtoActivation, CacheKey>> acts;
-    PointPtrRangeSet attained_act_ends {key.point, m_song->points().cend()};
-    auto lower_bound_set = false;
-    auto best_score_boost = 0;
-
-    for (const auto* p = key.point; p < m_song->points().cend();
-         ++p) { // NOLINT
-        if (m_song->is_drums()
-            && (!p->fill_start.has_value()
-                || p->fill_start < early_act_bound)) {
-            continue;
-        }
-        SpBar sp_bar {1.0, 1.0, m_song->sp_engine_values()};
-        SpPosition starting_pos {.beat = SightRead::Beat {NEG_INF},
-                                 .sp_measure = SpMeasure {NEG_INF}};
-        if (p != m_song->points().cbegin()) {
-            starting_pos = std::prev(p)->hit_window_start;
-        }
-        if (!has_full_sp) {
-            const auto& [new_sp, new_pos]
-                = m_song->total_available_sp_with_earliest_pos(
-                    key.position.beat, key.point, p, starting_pos);
-            sp_bar = new_sp;
-            starting_pos = new_pos;
-        }
-        if (m_song->is_drums()) {
-            starting_pos.beat
-                = std::max(starting_pos.beat, p->hit_window_start.beat);
-            starting_pos.sp_measure = std::max(starting_pos.sp_measure,
-                                               p->hit_window_start.sp_measure);
-        }
-        if (!sp_bar.full_enough_to_activate()) {
-            continue;
-        }
-        if (p != key.point && sp_bar.min() == 1.0
-            && std::prev(p)->is_sp_granting_note) {
-            get_partial_full_sp_path(p, cache);
-            auto cache_value = cache.full_sp_paths.at(p);
-            if (cache_value.score_boost > best_score_boost) {
-                return cache_value;
-            }
-            if (cache_value.score_boost == best_score_boost) {
-                const auto& next_acts = cache_value.possible_next_acts;
-                acts.insert(acts.end(), next_acts.cbegin(), next_acts.cend());
-            }
-            break;
-        }
-        // This skips some points that are too early to be an act end for the
-        // earliest possible activation.
-        if (!lower_bound_set) {
-            const SpMeasure act_length {
-                8.0
-                * std::max(sp_bar.min(),
-                           m_song->sp_engine_values().minimum_to_activate)};
-            const auto earliest_act_end = starting_pos.sp_measure + act_length;
-            const auto* earliest_pt_end = std::find_if_not(
-                std::next(p), m_song->points().cend(), [&](const auto& pt) {
-                    return pt.hit_window_end.sp_measure <= earliest_act_end;
-                });
-            --earliest_pt_end; // NOLINT
-            attained_act_ends
-                = PointPtrRangeSet {earliest_pt_end, m_song->points().cend()};
-            lower_bound_set = true;
-        }
-        complete_subpath(p, starting_pos, sp_bar, attained_act_ends, cache,
-                         best_score_boost, acts);
-    }
-
-    return {.possible_next_acts = acts, .score_boost = best_score_boost};
-}
-
-Path Optimiser::optimal_path() const
-{
-    Cache cache;
-    CacheKey start_key {.point = m_song->points().cbegin(),
-                        .position = {.beat = SightRead::Beat(NEG_INF),
-                                     .sp_measure = SpMeasure(NEG_INF)}};
-    start_key = advance_cache_key(start_key);
-
-    const auto best_score_boost = get_partial_path(start_key, cache);
-    Path path {.activations = {}, .score_boost = best_score_boost};
-
-    while (start_key.point != m_song->points().cend()) {
-        const auto& acts = cache.paths.at(start_key).possible_next_acts;
-        // We can get here if the song ends in say ES1.
+        const auto& acts = edge.options.activations;
         if (acts.empty()) {
-            break;
+            continue;
         }
-        auto best_proto_act = std::get<0>(acts.at(0));
-        auto best_next_key = std::get<1>(acts.at(0));
-        auto best_sqz_level = act_squeeze_level(best_proto_act, start_key);
+
+        auto best_proto_act = acts.at(0);
+        auto best_sqz_level
+            = act_squeeze_level(best_proto_act, act_start_vertex);
         for (auto i = 1U; i < acts.size(); ++i) {
-            const auto [proto_act, next_key] = acts.at(i);
-            const auto sqz_level = act_squeeze_level(proto_act, start_key);
+            const auto proto_act = acts.at(i);
+            const auto sqz_level
+                = act_squeeze_level(proto_act, act_start_vertex);
             if (sqz_level < best_sqz_level) {
-                best_proto_act = std::get<0>(acts.at(i));
-                best_next_key = std::get<1>(acts.at(i));
+                best_proto_act = proto_act;
                 best_sqz_level = sqz_level;
             }
         }
-        const auto min_whammy_force
-            = forced_whammy_end(best_proto_act, start_key, best_sqz_level);
+        const auto min_whammy_force = forced_whammy_end(
+            best_proto_act, act_start_vertex, best_sqz_level);
         const auto [start_pos, end_pos] = act_duration(
-            best_proto_act, start_key, best_sqz_level, min_whammy_force);
+            best_proto_act, act_start_vertex, best_sqz_level, min_whammy_force);
         Activation act {.act_start = best_proto_act.act_start,
                         .act_end = best_proto_act.act_end,
                         .whammy_end = min_whammy_force.beat,
                         .sp_start = start_pos,
                         .sp_end = end_pos};
-        if (best_next_key.point != m_song->points().cend()) {
+        if (edge.destination.point != m_song->points().cend()) {
             const auto post_act_first_whammy
                 = m_song->sp_data().next_whammy_point(
-                    best_next_key.position.beat);
+                    edge.destination.position.beat);
             act.sp_end = std::min(act.sp_end, post_act_first_whammy);
         }
         path.activations.push_back(act);
-        start_key = best_next_key;
+
+        act_start_vertex = edge.destination;
     }
 
     return path;
 }
 
-double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
+double Optimiser::act_squeeze_level(ProtoActivation act,
+                                    PathGraphVertex vertex) const
 {
     constexpr double THRESHOLD = 0.01;
 
@@ -409,13 +325,13 @@ double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
         auto trial_sqz = (min_sqz + max_sqz) / 2;
         auto start_pos
             = m_song->adjusted_hit_window_start(start_bound_point, trial_sqz);
-        if (start_pos.beat < key.position.beat) {
-            start_pos = key.position;
+        if (start_pos.beat < vertex.position.beat) {
+            start_pos = vertex.position;
         }
 
         const auto& [sp_bar, new_pos]
             = m_song->total_available_sp_with_earliest_pos(
-                key.position.beat, key.point, act.act_start, start_pos);
+                vertex.position.beat, vertex.point, act.act_start, start_pos);
         start_pos = new_pos;
 
         ActivationCandidate candidate {.act_start = act.act_start,
@@ -432,7 +348,8 @@ double Optimiser::act_squeeze_level(ProtoActivation act, CacheKey key) const
     return max_sqz;
 }
 
-SpPosition Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
+SpPosition Optimiser::forced_whammy_end(ProtoActivation act,
+                                        PathGraphVertex vertex,
                                         double sqz_level) const
 {
     constexpr double POS_INF = std::numeric_limits<double>::infinity();
@@ -446,7 +363,7 @@ SpPosition Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
     }
 
     const auto* prev_point = std::prev(act.act_start);
-    auto min_whammy_force = key.position;
+    auto min_whammy_force = vertex.position;
     auto max_whammy_force = next_point->hit_window_end;
     auto start_pos = m_song->adjusted_hit_window_start(prev_point, sqz_level);
     while ((max_whammy_force.beat - min_whammy_force.beat).value()
@@ -455,8 +372,8 @@ SpPosition Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
             = (min_whammy_force.beat + max_whammy_force.beat) * (1.0 / 2);
         auto mid_meas = m_song->sp_time_map().to_sp_measures(mid_beat);
         SpPosition mid_pos {.beat = mid_beat, .sp_measure = mid_meas};
-        auto sp_bar = m_song->total_available_sp(key.position.beat, key.point,
-                                                 act.act_start, mid_beat);
+        auto sp_bar = m_song->total_available_sp(
+            vertex.position.beat, vertex.point, act.act_start, mid_beat);
         ActivationCandidate candidate {.act_start = act.act_start,
                                        .act_end = act.act_end,
                                        .earliest_activation_point = start_pos,
@@ -473,8 +390,8 @@ SpPosition Optimiser::forced_whammy_end(ProtoActivation act, CacheKey key,
 }
 
 std::tuple<SightRead::Beat, SightRead::Beat>
-Optimiser::act_duration(ProtoActivation act, CacheKey key, double sqz_level,
-                        SpPosition min_whammy_force) const
+Optimiser::act_duration(ProtoActivation act, PathGraphVertex vertex,
+                        double sqz_level, SpPosition min_whammy_force) const
 {
     constexpr double THRESHOLD = 0.01;
 
@@ -485,8 +402,9 @@ Optimiser::act_duration(ProtoActivation act, CacheKey key, double sqz_level,
     auto min_pos
         = m_song->adjusted_hit_window_start(start_bound_point, sqz_level);
     auto max_pos = m_song->adjusted_hit_window_end(act.act_start, sqz_level);
-    auto sp_bar = m_song->total_available_sp(
-        key.position.beat, key.point, act.act_start, min_whammy_force.beat);
+    auto sp_bar
+        = m_song->total_available_sp(vertex.position.beat, vertex.point,
+                                     act.act_start, min_whammy_force.beat);
     while ((max_pos.beat - min_pos.beat).value() > THRESHOLD) {
         auto trial_beat = (min_pos.beat + max_pos.beat) * (1.0 / 2);
         auto trial_meas = m_song->sp_time_map().to_sp_measures(trial_beat);

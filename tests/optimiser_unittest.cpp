@@ -16,10 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
-#include <cstdlib>
-#include <iterator>
-
 #include <boost/test/unit_test.hpp>
 
 #include "optimiser.hpp"
