@@ -24,8 +24,6 @@
 #include <stack>
 #include <vector>
 
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/topological_sort.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 
 template <typename Activation> struct ActivationOptions {
@@ -67,53 +65,47 @@ template <typename T> struct Property {
 // edges, and loop until the queue is empty.
 template <typename Vertex, typename Activation> class PathGraph {
 private:
-    using Graph
-        = boost::adjacency_list<boost::hash_setS, boost::vecS, boost::directedS,
-                                Property<Vertex>,
-                                Property<ActivationOptions<Activation>>>;
-    using VertexId = boost::graph_traits<Graph>::vertex_descriptor;
-    using EdgeId = boost::graph_traits<Graph>::edge_descriptor;
+    using OutEdgeSet
+        = boost::unordered_flat_map<std::size_t, ActivationOptions<Activation>>;
 
-    Graph m_graph;
-    boost::unordered_flat_map<Vertex, VertexId> m_vertex_lookup;
-    std::stack<VertexId> m_unprocessed_vertices;
-    VertexId m_root_vertex_id;
+    std::vector<std::tuple<Vertex, OutEdgeSet>> m_adjacency_list;
+    boost::unordered_flat_map<Vertex, std::size_t> m_vertex_lookup;
+    std::stack<std::size_t> m_unprocessed_vertices;
 
-    VertexId add_or_get_vertex(const Vertex& vertex)
+    std::size_t add_or_get_vertex(const Vertex& vertex)
     {
-        auto [iter, inserted] = m_vertex_lookup.emplace(vertex, VertexId {});
-        if (!inserted) {
-            return iter->second;
+        const auto [iter, inserted]
+            = m_vertex_lookup.emplace(vertex, m_adjacency_list.size());
+        if (inserted) {
+            m_adjacency_list.push_back({vertex, {}});
+            m_unprocessed_vertices.push(iter->second);
         }
 
-        const auto vertex_id = boost::add_vertex(m_graph);
-        iter->second = vertex_id;
-        m_unprocessed_vertices.push(vertex_id);
-        m_graph[vertex_id].properties = vertex;
-        return vertex_id;
+        return iter->second;
     }
 
     void add_continuation_from_vertex(
-        boost::unordered_flat_map<VertexId,
-                                  std::tuple<std::optional<EdgeId>, int>>&
+        boost::unordered_flat_map<std::size_t,
+                                  std::tuple<std::optional<std::size_t>, int>>&
             optimal_continuations,
-        VertexId vertex) const
+        std::size_t vertex) const
     {
-        const auto [begin, end] = boost::out_edges(vertex, m_graph);
-        if (begin == end) {
+        const auto& out_edges = std::get<1>(m_adjacency_list.at(vertex));
+        if (out_edges.empty()) {
             optimal_continuations.emplace(vertex, std::tuple {std::nullopt, 0});
             return;
         }
 
         const auto subpath_weight = [&](const auto& edge) {
-            return m_graph[edge].properties.weight
-                + std::get<1>(
-                       optimal_continuations.at(boost::target(edge, m_graph)));
+            const auto& [dest, edge_properties] = edge;
+            return edge_properties.weight
+                + std::get<1>(optimal_continuations.at(dest));
         };
 
+        const auto begin = out_edges.cbegin();
         auto best_edge = *begin;
         auto best_weight = subpath_weight(best_edge);
-        for (auto it = std::next(begin); it != end; ++it) {
+        for (auto it = std::next(begin); it != out_edges.cend(); ++it) {
             const auto weight = subpath_weight(*it);
             if (weight > best_weight) {
                 best_edge = *it;
@@ -121,18 +113,16 @@ private:
             }
         }
 
-        optimal_continuations.emplace(vertex,
-                                      std::tuple {best_edge, best_weight});
+        optimal_continuations.emplace(
+            vertex, std::tuple {std::get<0>(best_edge), best_weight});
     }
 
 public:
     PathGraph(Vertex root_vertex)
     {
-        const auto root_vertex_id = boost::add_vertex(m_graph);
-        m_graph[root_vertex_id].properties = root_vertex;
-        m_unprocessed_vertices.push(root_vertex_id);
-        m_vertex_lookup.emplace(root_vertex, root_vertex_id);
-        m_root_vertex_id = root_vertex_id;
+        m_adjacency_list.push_back({root_vertex, {}});
+        m_unprocessed_vertices.push(0);
+        m_vertex_lookup.emplace(std::move(root_vertex), 0);
     }
 
     void add_activation(Vertex source, Vertex destination, int weight,
@@ -141,58 +131,86 @@ public:
         const auto source_id = add_or_get_vertex(source);
         const auto destination_id = add_or_get_vertex(destination);
 
-        const auto [edge_id, inserted]
-            = boost::add_edge(source_id, destination_id, m_graph);
-        auto& properties = m_graph[edge_id].properties;
+        auto& out_edge_set = std::get<1>(m_adjacency_list.at(source_id));
+        auto [iter, inserted] = out_edge_set.emplace(
+            destination_id, ActivationOptions<Activation> {{}, 0});
         if (inserted) {
             std::vector<Activation> activations;
             if (activation.has_value()) {
                 activations.push_back(std::move(*activation));
             }
-            properties = ActivationOptions<Activation> {std::move(activations),
-                                                        weight};
+            iter->second = ActivationOptions<Activation> {
+                std::move(activations), weight};
             return;
         }
 
-        if (properties.weight > weight) {
+        if (iter->second.weight > weight) {
             return;
         }
-        if (properties.weight < weight) {
-            properties.activations.clear();
-            properties.weight = weight;
+        if (iter->second.weight < weight) {
+            iter->second.activations.clear();
+            iter->second.weight = weight;
         }
         if (activation.has_value()) {
-            properties.activations.push_back(std::move(*activation));
+            iter->second.activations.push_back(std::move(*activation));
         }
+    }
+
+    void visit_vertex(
+        std::size_t vertex,
+        boost::unordered_flat_map<std::size_t,
+                                  std::tuple<int, std::optional<std::size_t>>>&
+            optimal_continuations) const
+    {
+        if (optimal_continuations.contains(vertex)) {
+            return;
+        }
+
+        const auto& out_edges = std::get<1>(m_adjacency_list.at(vertex));
+        if (out_edges.empty()) {
+            optimal_continuations[vertex] = {0, {}};
+            return;
+        }
+
+        for (const auto& [out_vertex, _] : out_edges) {
+            visit_vertex(out_vertex, optimal_continuations);
+        }
+
+        int best_weight = std::numeric_limits<int>::min();
+        std::size_t best_out_vertex = 0;
+
+        for (const auto& [out_vertex, act_opts] : out_edges) {
+            auto new_weight = act_opts.weight
+                + std::get<0>(optimal_continuations.at(out_vertex));
+            if (new_weight > best_weight) {
+                best_weight = new_weight;
+                best_out_vertex = out_vertex;
+            }
+        }
+
+        optimal_continuations.insert({vertex, {best_weight, best_out_vertex}});
     }
 
     [[nodiscard]] std::vector<Edge<Vertex, Activation>> optimal_path() const
     {
-        std::vector<VertexId> reverse_topological_sort;
-        boost::topological_sort(m_graph,
-                                std::back_inserter(reverse_topological_sort));
-
-        boost::unordered_flat_map<VertexId,
-                                  std::tuple<std::optional<EdgeId>, int>>
+        boost::unordered_flat_map<std::size_t,
+                                  std::tuple<int, std::optional<std::size_t>>>
             optimal_continuations;
-        for (const auto& vertex : reverse_topological_sort) {
-            add_continuation_from_vertex(optimal_continuations, vertex);
-        }
+        visit_vertex(0, optimal_continuations);
 
         std::vector<Edge<Vertex, Activation>> path;
-        const auto& [initial_edge, _]
-            = optimal_continuations.at(m_root_vertex_id);
-        const auto next_edge = [&](const auto& edge) {
-            const auto vertex = boost::target(edge, m_graph);
-            return std::get<0>(optimal_continuations.at(vertex));
-        };
-        for (auto edge = initial_edge; edge.has_value();
-             edge = next_edge(*edge)) {
-            const auto src_vertex_id = boost::source(*edge, m_graph);
-            const auto dest_vertex_id = boost::target(*edge, m_graph);
-            path.emplace_back(m_graph[src_vertex_id].properties,
-                              m_graph[dest_vertex_id].properties,
-                              m_graph[*edge].properties);
+        std::size_t src_vertex = 0;
+        while (true) {
+            const auto dest_vertex
+                = std::get<1>(optimal_continuations[src_vertex]);
+            if (!dest_vertex.has_value()) {
+                break;
+            }
+            path.emplace_back(
+                std::get<0>(m_adjacency_list.at(src_vertex)),
+                std::get<0>(m_adjacency_list.at(*dest_vertex)),
+                std::get<1>(m_adjacency_list.at(src_vertex)).at(*dest_vertex));
+            src_vertex = *dest_vertex;
         }
 
         return path;
@@ -205,12 +223,12 @@ public:
         }
         const auto vertex_id = m_unprocessed_vertices.top();
         m_unprocessed_vertices.pop();
-        return m_graph[vertex_id].properties;
+        return std::get<0>(m_adjacency_list[vertex_id]);
     }
 
     [[nodiscard]] Vertex root_vertex() const
     {
-        return m_graph[m_root_vertex_id].properties;
+        return std::get<0>(m_adjacency_list[0]);
     }
 };
 

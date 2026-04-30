@@ -19,7 +19,7 @@ jobs:
           version: 6.7.2
 
       - name: Install other dependencies
-        run: vcpkg install boost-container-hash boost-graph boost-locale boost-test boost-unordered libpng
+        run: vcpkg install boost-container-hash boost-locale boost-test boost-unordered libpng
 
       - name: Make build directory
         run: mkdir build
@@ -81,7 +81,7 @@ jobs:
           version: 6.6.*
 
       - name: Install Boost dependencies
-        run: vcpkg install boost-container-hash boost-graph boost-locale boost-test boost-unordered
+        run: vcpkg install boost-container-hash boost-locale boost-test boost-unordered
 
       - name: Make build directory
         run: mkdir build

@@ -24,7 +24,7 @@ jobs:
           version: 6.6.*
 
       - name: Install Boost dependencies
-        run: vcpkg install boost-container-hash boost-graph boost-locale boost-test boost-unordered
+        run: vcpkg install boost-container-hash boost-locale boost-test boost-unordered
 
       - name: Install clang-tidy 22
         run: |
