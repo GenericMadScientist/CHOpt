@@ -24,214 +24,164 @@
 #include "pathgraph.hpp"
 
 using TestGraph = PathGraph<int, int>;
-using TestEdge = Edge<int, int>;
+using TestAggregate = OutEdgeAggregate<int, int>;
 
-bool operator==(const TestEdge& lhs, const TestEdge& rhs)
+bool operator==(const TestGraph::Edge& lhs, const TestGraph::Edge& rhs)
 {
-    return std::tie(lhs.source, lhs.destination, lhs.options.weight,
-                    lhs.options.activations)
-        == std::tie(rhs.source, rhs.destination, rhs.options.weight,
-                    rhs.options.activations);
+    return std::tie(lhs.dest_vertex_id, lhs.weight, lhs.property)
+        == std::tie(rhs.dest_vertex_id, rhs.weight, rhs.property);
 }
 
-std::ostream& operator<<(std::ostream& stream, const TestEdge& edge)
+std::ostream& operator<<(std::ostream& stream, const TestGraph::Edge& edge)
 {
-    stream << "{Source " << edge.source << ", Destination " << edge.destination
-           << ", Weight " << edge.options.weight << ", Activations = {";
-    for (auto it = edge.options.activations.cbegin();
-         it < edge.options.activations.cend(); ++it) {
-        if (it != edge.options.activations.cbegin()) {
-            stream << ", ";
-        }
-        stream << *it;
-    }
-    stream << "}}";
+    stream << "{Destination " << edge.dest_vertex_id << ", Weight "
+           << edge.weight << ", Property " << edge.property << '}';
     return stream;
 }
 
-BOOST_AUTO_TEST_SUITE(next_unprocessed_vertex)
+BOOST_AUTO_TEST_SUITE(insert_vertex)
 
-BOOST_AUTO_TEST_CASE(returns_root_vertex_right_after_ctor)
+BOOST_AUTO_TEST_CASE(returns_id_and_true_for_new_vertex)
 {
-    TestGraph graph {1};
+    TestGraph graph {100};
 
-    const auto next_vertex = graph.next_unprocessed_vertex();
+    const auto [id, inserted] = graph.insert_vertex(200);
 
-    BOOST_CHECK(next_vertex.has_value());
-    if (next_vertex.has_value()) {
-        BOOST_CHECK_EQUAL(*next_vertex, 1);
-    }
+    BOOST_CHECK_EQUAL(id, 1U);
+    BOOST_CHECK(inserted);
 }
 
-BOOST_AUTO_TEST_CASE(returns_nullopt_after_root_vertex)
+BOOST_AUTO_TEST_CASE(returns_id_and_false_for_duplicate_vertex)
 {
-    TestGraph graph {1};
+    TestGraph graph {100};
 
-    graph.next_unprocessed_vertex();
-    const auto next_vertex = graph.next_unprocessed_vertex();
-    BOOST_CHECK(!next_vertex.has_value());
-}
+    graph.insert_vertex(200);
+    const auto [id, inserted] = graph.insert_vertex(200);
 
-BOOST_AUTO_TEST_CASE(returns_destination_of_added_edge_once_root_cleared)
-{
-    TestGraph graph {1};
-
-    graph.next_unprocessed_vertex();
-    graph.add_activation(1, 2, 0, {});
-    const auto next_vertex = graph.next_unprocessed_vertex();
-
-    BOOST_CHECK(next_vertex.has_value());
-    if (next_vertex.has_value()) {
-        BOOST_CHECK_EQUAL(*next_vertex, 2);
-    }
-}
-
-BOOST_AUTO_TEST_CASE(does_not_add_same_destination_twice)
-{
-    TestGraph graph {1};
-
-    graph.add_activation(1, 2, 0, {});
-    graph.add_activation(1, 3, 0, {});
-    for (auto i = 0; i < 3; ++i) {
-        graph.next_unprocessed_vertex();
-    }
-    graph.add_activation(1, 3, 0, {});
-
-    const auto next_vertex = graph.next_unprocessed_vertex();
-    BOOST_CHECK(!next_vertex.has_value());
+    BOOST_CHECK_EQUAL(id, 1U);
+    BOOST_CHECK(!inserted);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(optimal_path)
-
-BOOST_AUTO_TEST_CASE(returns_empty_vector_if_no_edges_added)
+BOOST_AUTO_TEST_CASE(adds_edge_to_out_edges)
 {
-    TestGraph graph {1};
+    TestGraph graph {100};
 
-    BOOST_CHECK(graph.optimal_path().empty());
+    graph.insert_vertex(200);
+    graph.add_edge(0, 1, -1, 5);
+    const auto& out_edges = graph.out_edges(0);
+
+    const std::vector<TestGraph::Edge> expected_edges {
+        {.dest_vertex_id = 1, .weight = -1, .property = 5}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(out_edges.cbegin(), out_edges.cend(),
+                                  expected_edges.cbegin(),
+                                  expected_edges.cend());
 }
 
-BOOST_AUTO_TEST_CASE(returns_only_edge_if_one_edge_added)
+BOOST_AUTO_TEST_CASE(root_vertex_id_returns_zero)
 {
-    TestGraph graph {1};
-    graph.add_activation(1, 2, 50, {0});
+    TestGraph graph {100};
 
-    const auto path = graph.optimal_path();
-    const std::vector<TestEdge> expected_path {
-        TestEdge {.source = 1,
-                  .destination = 2,
-                  .options = {.activations = {0}, .weight = 50}}};
-
-    BOOST_CHECK_EQUAL_COLLECTIONS(path.cbegin(), path.cend(),
-                                  expected_path.cbegin(), expected_path.cend());
+    BOOST_CHECK_EQUAL(graph.root_vertex_id(), 0U);
 }
 
-BOOST_AUTO_TEST_CASE(returns_highest_value_edge_if_all_edges_are_from_root)
+BOOST_AUTO_TEST_SUITE(vertex_property)
+
+BOOST_AUTO_TEST_CASE(returns_property_of_root_vertex)
 {
-    TestGraph graph {1};
-    graph.add_activation(1, 2, 50, {0});
-    graph.add_activation(1, 3, 100, {0});
+    TestGraph graph {100};
 
-    const auto path = graph.optimal_path();
-    const std::vector<TestEdge> expected_path {
-        TestEdge {.source = 1,
-                  .destination = 3,
-                  .options = {.activations = {0}, .weight = 100}}};
-
-    BOOST_CHECK_EQUAL_COLLECTIONS(path.cbegin(), path.cend(),
-                                  expected_path.cbegin(), expected_path.cend());
+    BOOST_CHECK_EQUAL(graph.vertex_property(0), 100);
 }
 
-BOOST_AUTO_TEST_CASE(only_returns_paths_from_root_vertex)
+BOOST_AUTO_TEST_CASE(returns_property_of_added_vertex)
 {
-    TestGraph graph {1};
-    graph.add_activation(2, 3, 50, {0});
+    TestGraph graph {100};
 
-    BOOST_CHECK(graph.optimal_path().empty());
-}
+    graph.insert_vertex(200);
 
-BOOST_AUTO_TEST_CASE(returns_full_path_if_only_one_path_from_root)
-{
-    TestGraph graph {1};
-    graph.add_activation(1, 2, 50, {0});
-    graph.add_activation(2, 3, 100, {0});
-
-    const auto path = graph.optimal_path();
-    const std::vector<TestEdge> expected_path {
-        TestEdge {.source = 1,
-                  .destination = 2,
-                  .options = {.activations = {0}, .weight = 50}},
-        TestEdge {.source = 2,
-                  .destination = 3,
-                  .options = {.activations = {0}, .weight = 100}}};
-
-    BOOST_CHECK_EQUAL_COLLECTIONS(path.cbegin(), path.cend(),
-                                  expected_path.cbegin(), expected_path.cend());
+    BOOST_CHECK_EQUAL(graph.vertex_property(1), 200);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(add_activation)
+BOOST_AUTO_TEST_SUITE(prune_suboptimal_out_edges)
 
-BOOST_AUTO_TEST_CASE(merges_activations_if_same_weight)
+BOOST_AUTO_TEST_CASE(fails_if_destinations_havent_been_pruned)
 {
-    TestGraph graph {1};
+    TestGraph graph {100};
 
-    graph.add_activation(1, 2, 50, {0});
-    graph.add_activation(1, 2, 50, {1});
+    graph.insert_vertex(200);
+    graph.add_edge(0, 1, 50, 0);
 
-    const auto path = graph.optimal_path();
-    const auto activations = path.at(0).options.activations;
-    const std::vector<int> expected_activations {{0, 1}};
-
-    BOOST_CHECK_EQUAL_COLLECTIONS(activations.cbegin(), activations.cend(),
-                                  expected_activations.cbegin(),
-                                  expected_activations.cend());
+    BOOST_CHECK_THROW([&] { graph.prune_suboptimal_out_edges(0); }(),
+                      std::out_of_range);
 }
 
-BOOST_AUTO_TEST_CASE(replaces_activations_if_greater_weight)
+BOOST_AUTO_TEST_CASE(prunes_suboptimal_edges_if_destinations_have_been_pruned)
 {
-    TestGraph graph {1};
+    TestGraph graph {100};
 
-    graph.add_activation(1, 2, 50, {0});
-    graph.add_activation(1, 2, 100, {1});
+    graph.insert_vertex(200);
+    graph.insert_vertex(300);
+    graph.add_edge(0, 1, 50, 0);
+    graph.add_edge(0, 2, 100, 0);
 
-    const auto path = graph.optimal_path();
-    const auto activations = path.at(0).options.activations;
-    const std::vector<int> expected_activations {1};
+    for (int i = 2; i >= 0; --i) {
+        graph.prune_suboptimal_out_edges(i);
+    }
 
-    BOOST_CHECK_EQUAL_COLLECTIONS(activations.cbegin(), activations.cend(),
-                                  expected_activations.cbegin(),
-                                  expected_activations.cend());
+    const auto& out_edges = graph.out_edges(0);
+    const std::vector<TestGraph::Edge> expected_out_edges {
+        {.dest_vertex_id = 2, .weight = 100, .property = 0}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(out_edges.cbegin(), out_edges.cend(),
+                                  expected_out_edges.cbegin(),
+                                  expected_out_edges.cend());
 }
 
-BOOST_AUTO_TEST_CASE(replaces_weight_if_greater_weight)
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(out_edge_aggregate)
+
+BOOST_AUTO_TEST_CASE(add_activation_adds_an_edge)
 {
-    TestGraph graph {1};
+    TestAggregate aggregate;
 
-    graph.add_activation(1, 2, 50, {0});
-    graph.add_activation(1, 2, 100, {1});
+    aggregate.add_activation(0, {}, 0);
 
-    const auto path = graph.optimal_path();
-
-    BOOST_CHECK_EQUAL(path.at(0).options.weight, 100);
+    BOOST_CHECK_EQUAL(std::distance(aggregate.begin(), aggregate.end()), 1);
 }
 
-BOOST_AUTO_TEST_CASE(does_not_replace_activations_if_lower_weight)
+BOOST_AUTO_TEST_CASE(add_activation_doesnt_add_multiple_edges_to_same_vertex)
 {
-    TestGraph graph {1};
+    TestAggregate aggregate;
 
-    graph.add_activation(1, 2, 50, {0});
-    graph.add_activation(1, 2, 25, {1});
+    aggregate.add_activation(0, {}, 0);
+    aggregate.add_activation(0, {}, 0);
 
-    const auto path = graph.optimal_path();
-    const auto activations = path.at(0).options.activations;
-    const std::vector<int> expected_activations {0};
+    BOOST_CHECK_EQUAL(std::distance(aggregate.begin(), aggregate.end()), 1);
+}
 
-    BOOST_CHECK_EQUAL_COLLECTIONS(activations.cbegin(), activations.cend(),
-                                  expected_activations.cbegin(),
-                                  expected_activations.cend());
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(generate_optimal_graph_tests)
+
+BOOST_AUTO_TEST_CASE(returns_graph_with_no_edges_if_out_edges_empty)
+{
+    const auto no_edges = [](const auto& graph, const auto& vertex) {
+        (void)graph;
+        (void)vertex;
+        return std::vector<TestAggregate::Edge> {};
+    };
+
+    const auto graph
+        = generate_optimal_graph<int, std::vector<int>, decltype(no_edges)>(
+            100, no_edges);
+
+    BOOST_CHECK(graph.out_edges(0).empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

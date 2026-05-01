@@ -71,14 +71,9 @@ Path Optimiser::optimal_path() const
 
 OptimiserGraph Optimiser::path_graph(PathGraphVertex root_vertex) const
 {
-    OptimiserGraph graph {root_vertex};
-
-    for (auto vertex = graph.next_unprocessed_vertex(); vertex.has_value();
-         vertex = graph.next_unprocessed_vertex()) {
-        add_out_edges(graph, *vertex);
-    }
-
-    return graph;
+    auto F = [&](auto& graph, auto vertex) { return out_edges(graph, vertex); };
+    return generate_optimal_graph<PathGraphVertex, std::vector<ProtoActivation>,
+                                  decltype(F)>(root_vertex, F);
 }
 
 PointPtr Optimiser::next_candidate_point(PointPtr point) const
@@ -144,12 +139,15 @@ Optimiser::earliest_fill_appearance(PathGraphVertex vertex) const
     return SightRead::Second(0.0);
 }
 
-void Optimiser::add_out_edges(OptimiserGraph& graph,
-                              PathGraphVertex vertex) const
+OutEdgeAggregate<PathGraphVertex, ProtoActivation>
+Optimiser::out_edges(OptimiserGraph& graph, std::size_t vertex_id) const
 {
+    const auto vertex = graph.vertex_property(vertex_id);
     const auto early_act_bound = earliest_fill_appearance(vertex);
     PointPtrRangeSet attained_act_ends {vertex.point, m_song->points().cend()};
     auto lower_bound_set = false;
+
+    OutEdgeAggregate<PathGraphVertex, ProtoActivation> optimal_out_edges;
 
     for (const auto* p = vertex.point; p < m_song->points().cend();
          ++p) { // NOLINT
@@ -186,7 +184,7 @@ void Optimiser::add_out_edges(OptimiserGraph& graph,
                                             .position
                                             = std::prev(p)->hit_window_start,
                                             .is_max_sp_vertex = true};
-            graph.add_activation(vertex, full_sp_vertex, 0, {});
+            optimal_out_edges.add_activation(full_sp_vertex, {}, 0);
             break;
         }
         // This skips some points that are too early to be an act end for the
@@ -206,15 +204,17 @@ void Optimiser::add_out_edges(OptimiserGraph& graph,
                 = PointPtrRangeSet {earliest_pt_end, m_song->points().cend()};
             lower_bound_set = true;
         }
-        add_acts_from_starting_point(vertex, p, starting_pos, sp_bar,
-                                     attained_act_ends, graph);
+        add_acts_from_starting_point(p, starting_pos, sp_bar, attained_act_ends,
+                                     optimal_out_edges);
     }
+
+    return optimal_out_edges;
 }
 
 void Optimiser::add_acts_from_starting_point(
-    PathGraphVertex source, PointPtr starting_point, SpPosition starting_pos,
-    SpBar sp_bar, PointPtrRangeSet& attained_act_ends,
-    OptimiserGraph& graph) const
+    PointPtr starting_point, SpPosition starting_pos, SpBar sp_bar,
+    PointPtrRangeSet& attained_act_ends,
+    OutEdgeAggregate<PathGraphVertex, ProtoActivation>& optimal_out_edges) const
 {
     for (const auto* q = attained_act_ends.lowest_absent_element();
          q < m_song->points().cend();) {
@@ -255,8 +255,9 @@ void Optimiser::add_acts_from_starting_point(
             .position = candidate_result.ending_position,
             .is_max_sp_vertex = false};
         destination = advance_graph_vertex(destination);
-        graph.add_activation(source, destination, act_score,
-                             {{.act_start = starting_point, .act_end = q}});
+        optimal_out_edges.add_activation(
+            destination, {{.act_start = starting_point, .act_end = q}},
+            act_score);
 
         ++q; // NOLINT
     }
@@ -266,12 +267,22 @@ Path Optimiser::optimal_path_from_graph(const OptimiserGraph& graph) const
 {
     Path path {.activations = {}, .score_boost = 0};
 
-    PathGraphVertex act_start_vertex = graph.root_vertex();
-    for (const auto& edge : graph.optimal_path()) {
-        path.score_boost += edge.options.weight;
+    std::size_t src_vertex_id = graph.root_vertex_id();
+    PathGraphVertex act_start_vertex = graph.vertex_property(src_vertex_id);
+    while (true) {
+        const auto& out_edges = graph.out_edges(src_vertex_id);
+        if (out_edges.empty()) {
+            break;
+        }
 
-        const auto& acts = edge.options.activations;
+        const auto& edge = out_edges.front();
+        const auto dest_vertex_id = edge.dest_vertex_id;
+
+        path.score_boost += edge.weight;
+
+        const auto& acts = edge.property;
         if (acts.empty()) {
+            src_vertex_id = dest_vertex_id;
             continue;
         }
 
@@ -296,15 +307,18 @@ Path Optimiser::optimal_path_from_graph(const OptimiserGraph& graph) const
                         .whammy_end = min_whammy_force.beat,
                         .sp_start = start_pos,
                         .sp_end = end_pos};
-        if (edge.destination.point != m_song->points().cend()) {
+
+        const auto act_end_vertex = graph.vertex_property(dest_vertex_id);
+        if (act_end_vertex.point != m_song->points().cend()) {
             const auto post_act_first_whammy
                 = m_song->sp_data().next_whammy_point(
-                    edge.destination.position.beat);
+                    act_end_vertex.position.beat);
             act.sp_end = std::min(act.sp_end, post_act_first_whammy);
         }
         path.activations.push_back(act);
 
-        act_start_vertex = edge.destination;
+        src_vertex_id = dest_vertex_id;
+        act_start_vertex = act_end_vertex;
     }
 
     return path;

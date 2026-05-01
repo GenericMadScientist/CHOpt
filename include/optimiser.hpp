@@ -60,7 +60,7 @@ struct PathGraphVertex {
     }
 };
 
-using OptimiserGraph = PathGraph<PathGraphVertex, ProtoActivation>;
+using OptimiserGraph = PathGraph<PathGraphVertex, std::vector<ProtoActivation>>;
 
 // The class that stores extra information needed on top of a ProcessedSong
 // for the purposes of optimisation, and finds the optimal path. The song
@@ -144,12 +144,13 @@ private:
     add_whammy_delay(PathGraphVertex vertex) const;
     [[nodiscard]] SightRead::Second
     earliest_fill_appearance(PathGraphVertex vertex) const;
-    void add_out_edges(OptimiserGraph& graph, PathGraphVertex vertex) const;
-    void add_acts_from_starting_point(PathGraphVertex source,
-                                      PointPtr starting_point,
-                                      SpPosition starting_pos, SpBar sp_bar,
-                                      PointPtrRangeSet& attained_act_ends,
-                                      OptimiserGraph& graph) const;
+    OutEdgeAggregate<PathGraphVertex, ProtoActivation>
+    out_edges(OptimiserGraph& graph, std::size_t vertex) const;
+    void add_acts_from_starting_point(
+        PointPtr starting_point, SpPosition starting_pos, SpBar sp_bar,
+        PointPtrRangeSet& attained_act_ends,
+        OutEdgeAggregate<PathGraphVertex, ProtoActivation>& optimal_out_edges)
+        const;
 
     // These methods are involved in extracting an optimal path from the
     // OptimiserGraph.
