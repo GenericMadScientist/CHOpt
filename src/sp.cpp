@@ -247,7 +247,7 @@ SpData::initial_whammy_prop_state(SightRead::Beat start, SightRead::Beat end,
 double SpData::propagate_sp_over_whammy_max(SpPosition start, SpPosition end,
                                             double sp) const
 {
-    assert(start.beat <= end.beat); // NOLINT
+    assert(start.beat <= end.beat);
     auto p = first_whammy_range_after(start.beat);
     while ((p != m_whammy_ranges.cend()) && (p->start.beat < end.beat)) {
         if (p->start.beat > start.beat) {
@@ -277,7 +277,7 @@ SpData::propagate_sp_over_whammy_min(SpPosition start, SpPosition end,
                                      double sp,
                                      SpPosition required_whammy_end) const
 {
-    assert(start.beat <= end.beat); // NOLINT
+    assert(start.beat <= end.beat);
     if (required_whammy_end.beat > start.beat) {
         auto whammy_end = end;
         if (required_whammy_end.beat < end.beat) {

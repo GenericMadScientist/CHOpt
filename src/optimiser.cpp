@@ -39,7 +39,7 @@ Optimiser::Optimiser(const ProcessedSong* song,
     const auto capacity = std::distance(points.cbegin(), points.cend()) + 1;
     m_next_candidate_points.reserve(static_cast<std::size_t>(capacity));
     int count = 0;
-    for (const auto* p = points.cbegin(); p < points.cend(); ++p) { // NOLINT
+    for (const auto* p = points.cbegin(); p < points.cend(); ++p) {
         ++count;
         if (p->is_sp_granting_note
             || (p->is_hold_point
@@ -124,8 +124,7 @@ Optimiser::earliest_fill_appearance(PathGraphVertex vertex) const
     }
 
     int sp_count = 0;
-    for (const auto* p = vertex.point; p < m_song->points().cend();
-         ++p) { // NOLINT
+    for (const auto* p = vertex.point; p < m_song->points().cend(); ++p) {
         if (p->is_sp_granting_note) {
             ++sp_count;
             if (sp_count == 2) {
@@ -149,8 +148,7 @@ Optimiser::out_edges(OptimiserGraph& graph, std::size_t vertex_id) const
 
     OutEdgeAggregate<PathGraphVertex, ProtoActivation> optimal_out_edges;
 
-    for (const auto* p = vertex.point; p < m_song->points().cend();
-         ++p) { // NOLINT
+    for (const auto* p = vertex.point; p < m_song->points().cend(); ++p) {
         if (m_song->is_drums()
             && (!p->fill_start.has_value()
                 || p->fill_start < early_act_bound)) {
@@ -199,7 +197,7 @@ Optimiser::out_edges(OptimiserGraph& graph, std::size_t vertex_id) const
                 std::next(p), m_song->points().cend(), [&](const auto& pt) {
                     return pt.hit_window_end.sp_measure <= earliest_act_end;
                 });
-            --earliest_pt_end; // NOLINT
+            --earliest_pt_end;
             attained_act_ends
                 = PointPtrRangeSet {earliest_pt_end, m_song->points().cend()};
             lower_bound_set = true;
@@ -219,7 +217,7 @@ void Optimiser::add_acts_from_starting_point(
     for (const auto* q = attained_act_ends.lowest_absent_element();
          q < m_song->points().cend();) {
         if (attained_act_ends.contains(q)) {
-            ++q; // NOLINT
+            ++q;
             continue;
         }
 
@@ -244,7 +242,7 @@ void Optimiser::add_acts_from_starting_point(
         }
 
         if (candidate_result.validity != ActValidity::success) {
-            ++q; // NOLINT
+            ++q;
             continue;
         }
 
@@ -259,7 +257,7 @@ void Optimiser::add_acts_from_starting_point(
             destination, {{.act_start = starting_point, .act_end = q}},
             act_score);
 
-        ++q; // NOLINT
+        ++q;
     }
 }
 
@@ -442,6 +440,6 @@ Optimiser::act_duration(ProtoActivation act, PathGraphVertex vertex,
                                    .sp_bar = sp_bar};
     auto result
         = m_song->is_candidate_valid(candidate, sqz_level, min_whammy_force);
-    assert(result.validity == ActValidity::success); // NOLINT
+    assert(result.validity == ActValidity::success);
     return {min_pos.beat, result.ending_position.beat};
 }

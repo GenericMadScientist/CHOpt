@@ -344,7 +344,7 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
 std::vector<Point>::iterator closest_point(std::vector<Point>& points,
                                            SightRead::Beat fill_end)
 {
-    assert(!points.empty()); // NOLINT
+    assert(!points.empty());
     auto nearest = points.begin();
     auto best_gap = std::abs((nearest->position.beat - fill_end).value());
     for (auto p = std::next(points.begin()); p < points.end(); ++p) {
@@ -407,7 +407,7 @@ std::vector<PointPtr> next_matching_vector(const std::vector<Point>& points,
     std::vector<PointPtr> next_matching_points;
     const auto* next_matching_point
         = std::next(points.data(), static_cast<std::ptrdiff_t>(points.size()));
-    for (const auto* p = std::prev(next_matching_point);; --p) { // NOLINT
+    for (const auto* p = std::prev(next_matching_point);; --p) {
         if (predicate(*p)) {
             next_matching_point = p;
         }
@@ -598,7 +598,7 @@ first_after_current_sp_vector(const std::vector<Point>& points,
         = std::next(points.data(), static_cast<std::ptrdiff_t>(points.size()));
 
     if (engine.overlaps()) {
-        for (const auto* p = points.data(); p < end_pointer; ++p) { // NOLINT
+        for (const auto* p = points.data(); p < end_pointer; ++p) {
             results.push_back(std::next(p));
         }
 
@@ -622,7 +622,7 @@ first_after_current_sp_vector(const std::vector<Point>& points,
                 = tempo_map.to_beats(current_sp->position + current_sp->length);
         }
         if (p->position.beat < sp_start) {
-            results.push_back(++p); // NOLINT
+            results.push_back(++p);
             continue;
         }
         const auto* q = std::find_if(std::next(p), end_pointer, [&](auto pt) {
@@ -630,7 +630,7 @@ first_after_current_sp_vector(const std::vector<Point>& points,
         });
         while (p < q) {
             results.push_back(q);
-            ++p; // NOLINT
+            ++p;
         }
     }
 

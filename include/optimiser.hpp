@@ -85,7 +85,7 @@ private:
             , m_end {end}
             , m_min_absent_ptr {start}
         {
-            assert(start <= end); // NOLINT
+            assert(start <= end);
         }
 
         [[nodiscard]] bool contains(PointPtr element) const
@@ -106,10 +106,10 @@ private:
 
         void add(PointPtr element)
         {
-            assert(m_start <= element); // NOLINT
-            assert(element < m_end); // NOLINT
+            assert(m_start <= element);
+            assert(element < m_end);
             if (m_min_absent_ptr == element) {
-                ++m_min_absent_ptr; // NOLINT
+                ++m_min_absent_ptr;
                 while (true) {
                     auto next_elem_iter = std::ranges::find(m_abnormal_elements,
                                                             m_min_absent_ptr);
@@ -119,7 +119,7 @@ private:
                     }
                     std::swap(*next_elem_iter, m_abnormal_elements.back());
                     m_abnormal_elements.pop_back();
-                    ++m_min_absent_ptr; // NOLINT
+                    ++m_min_absent_ptr;
                 }
             } else {
                 m_abnormal_elements.push_back(element);

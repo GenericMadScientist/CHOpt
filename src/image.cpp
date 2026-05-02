@@ -429,11 +429,11 @@ const QImage& ImageImpl::load_sprite(const QString& path)
 
     const auto [new_it, is_inserted]
         = m_sprite_map.emplace(path, QImage {path});
-    assert(is_inserted); // NOLINT
+    assert(is_inserted);
 
     const auto& image = new_it->second;
-    assert(image.height() > 0); // NOLINT
-    assert(image.width() > 0); // NOLINT
+    assert(image.height() > 0);
+    assert(image.width() > 0);
     return image;
 }
 

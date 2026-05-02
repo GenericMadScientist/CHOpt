@@ -255,7 +255,7 @@ ProcessedSong::total_available_sp_with_earliest_pos(
 SpPosition ProcessedSong::adjusted_hit_window_start(PointPtr point,
                                                     double squeeze) const
 {
-    assert((0.0 <= squeeze) && (squeeze <= 1.0)); // NOLINT
+    assert((0.0 <= squeeze) && (squeeze <= 1.0));
 
     if (squeeze == 1.0) {
         return point->hit_window_start;
@@ -273,7 +273,7 @@ SpPosition ProcessedSong::adjusted_hit_window_start(PointPtr point,
 SpPosition ProcessedSong::adjusted_hit_window_end(PointPtr point,
                                                   double squeeze) const
 {
-    assert((0.0 <= squeeze) && (squeeze <= 1.0)); // NOLINT
+    assert((0.0 <= squeeze) && (squeeze <= 1.0));
 
     if (squeeze == 1.0) {
         return point->hit_window_end;
@@ -401,7 +401,7 @@ void ProcessedSong::append_activation(std::stringstream& stream,
     const auto* act_start = activation.act_start;
     const auto* previous_sp_note = std::prev(act_start);
     while (!previous_sp_note->is_sp_granting_note) {
-        --previous_sp_note; // NOLINT
+        --previous_sp_note;
     }
     const auto count
         = std::count_if(std::next(previous_sp_note), std::next(act_start),
@@ -409,7 +409,7 @@ void ProcessedSong::append_activation(std::stringstream& stream,
     if (act_start->is_hold_point) {
         const auto* starting_note = act_start;
         while (starting_note->is_hold_point) {
-            --starting_note; // NOLINT
+            --starting_note;
         }
         const auto beat_gap
             = act_start->position.beat - starting_note->position.beat;
@@ -422,12 +422,12 @@ void ProcessedSong::append_activation(std::stringstream& stream,
     if (count > 1) {
         const auto* previous_note = act_start;
         while (previous_note->is_hold_point) {
-            --previous_note; // NOLINT
+            --previous_note;
         }
         const auto colour = m_points.colour_set(previous_note);
         auto same_colour_count = 1;
         for (const auto* p = std::next(previous_sp_note); p < previous_note;
-             ++p) { // NOLINT
+             ++p) {
             if (p->is_hold_point) {
                 continue;
             }
@@ -531,7 +531,7 @@ ProcessedSong::drum_act_summaries(const Path& path) const
             if (start_point->is_sp_granting_note) {
                 ++sp_count;
             }
-            ++start_point; // NOLINT
+            ++start_point;
         }
         const auto early_fill_point
             = m_time_map.to_seconds(
@@ -546,15 +546,15 @@ ProcessedSong::drum_act_summaries(const Path& path) const
                       && *p.fill_start >= early_fill_point;
               });
         const auto act_start_fill_start = act.act_start->fill_start;
-        assert(act_start_fill_start.has_value()); // NOLINT
+        assert(act_start_fill_start.has_value());
         if (skipped_fills == 0 && late_fill_point > *act_start_fill_start) {
             activation_summaries.emplace_back("0(E)");
         } else if (skipped_fills > 0) {
             while (!start_point->fill_start.has_value()) {
-                ++start_point; // NOLINT
+                ++start_point;
             }
             const auto fill_start = start_point->fill_start;
-            assert(fill_start.has_value()); // NOLINT
+            assert(fill_start.has_value());
             if (late_fill_point > *fill_start
                 && early_fill_point < *fill_start) {
                 activation_summaries.push_back(std::to_string(skipped_fills - 1)
