@@ -93,14 +93,12 @@ DrawnNote note_to_drawn_note(const SightRead::Note& note,
         }
     }
 
-    auto is_sp_note = false;
-    for (const auto& phrase : track.sp_phrases()) {
-        if (note.position >= phrase.position
-            && note.position < phrase.position + phrase.length) {
-            is_sp_note = true;
-            break;
-        }
-    }
+    const auto& phrases = track.sp_phrases();
+    const auto candidate_phrase = std::ranges::upper_bound(
+        phrases, note.position, {},
+        [](const auto& phrase) { return phrase.position + phrase.length; });
+    const auto is_sp_note = candidate_phrase != std::ranges::end(phrases)
+        && note.position >= candidate_phrase->position;
 
     return {.beat = beat.value(),
             .lengths = lengths,

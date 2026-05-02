@@ -23,13 +23,18 @@
 #include "sp.hpp"
 
 namespace {
-bool phrase_contains_pos(const SightRead::StarPower& phrase,
-                         SightRead::Tick position)
+std::vector<SightRead::StarPower>::const_iterator
+phrase_containing_pos(const std::vector<SightRead::StarPower>& phrases,
+                      SightRead::Tick position)
 {
-    if (position < phrase.position) {
-        return false;
+    const auto candidate_phrase = std::ranges::upper_bound(
+        phrases, position, {},
+        [](const auto& phrase) { return phrase.position + phrase.length; });
+    if (candidate_phrase != std::ranges::end(phrases)
+        && position >= candidate_phrase->position) {
+        return candidate_phrase;
     }
-    return position < (phrase.position + phrase.length);
+    return std::ranges::end(phrases);
 }
 
 double sp_deduction(SpPosition start, SpPosition end)
@@ -138,11 +143,8 @@ SpData::SpData(const SightRead::NoteTrack& track,
         if (length == SightRead::Tick {0}) {
             continue;
         }
-        const auto pos_copy = position;
-        const auto phrase = std::find_if(
-            track.sp_phrases().cbegin(), track.sp_phrases().cend(),
-            [&](const auto& p) { return phrase_contains_pos(p, pos_copy); });
-        if (phrase == track.sp_phrases().cend()) {
+        const auto phrase = phrase_containing_pos(track.sp_phrases(), position);
+        if (phrase == std::ranges::end(track.sp_phrases())) {
             continue;
         }
 

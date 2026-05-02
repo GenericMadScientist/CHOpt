@@ -161,20 +161,23 @@ ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
         [](const auto x, const auto& y) { return x + y.value; });
 
     m_phrase_note_spans.reserve(track.sp_phrases().size());
+
+    const auto* first_phrase_point = m_points.cbegin();
     for (const auto& phrase : track.sp_phrases()) {
         const auto phrase_start
             = duration_data.time_map.to_beats(phrase.position);
         const auto phrase_end
             = duration_data.time_map.to_beats(phrase.position + phrase.length);
-        const auto* start = std::ranges::find_if(
-            m_points.cbegin(), m_points.cend(), [&](const auto& pt) {
+        first_phrase_point = std::ranges::find_if(
+            first_phrase_point, m_points.cend(), [&](const auto& pt) {
                 return !pt.is_hold_point && pt.position.beat >= phrase_start;
             });
-        const auto* end
-            = std::find_if(start, m_points.cend(), [&](const auto& pt) {
-                  return !pt.is_hold_point && pt.position.beat >= phrase_end;
-              });
-        m_phrase_note_spans.push_back({.begin = start, .end = end});
+        const auto* end = std::find_if(
+            first_phrase_point, m_points.cend(), [&](const auto& pt) {
+                return !pt.is_hold_point && pt.position.beat >= phrase_end;
+            });
+        m_phrase_note_spans.push_back(
+            {.begin = first_phrase_point, .end = end});
     }
 }
 
