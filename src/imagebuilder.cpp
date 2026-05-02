@@ -29,10 +29,10 @@ double get_beat_rate(const SightRead::TempoMap& tempo_map, SightRead::Beat beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
-    auto ts = std::find_if(
-        tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
-        [=](const auto& x) { return tempo_map.to_beats(x.position) > beat; });
-    if (ts == tempo_map.time_sigs().cbegin()) {
+    auto ts = std::ranges::upper_bound(
+        tempo_map.time_sigs(), beat, std::less {},
+        [&](const auto& x) { return tempo_map.to_beats(x.position); });
+    if (ts == std::ranges::begin(tempo_map.time_sigs())) {
         return BASE_BEAT_RATE;
     }
     --ts;
@@ -43,10 +43,10 @@ int get_numer(const SightRead::TempoMap& tempo_map, SightRead::Beat beat)
 {
     constexpr int BASE_NUMERATOR = 4;
 
-    auto ts = std::find_if(
-        tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
-        [=](const auto& x) { return tempo_map.to_beats(x.position) > beat; });
-    if (ts == tempo_map.time_sigs().cbegin()) {
+    auto ts = std::ranges::upper_bound(
+        tempo_map.time_sigs(), beat, std::less {},
+        [&](const auto& x) { return tempo_map.to_beats(x.position); });
+    if (ts == std::ranges::begin(tempo_map.time_sigs())) {
         return BASE_NUMERATOR;
     }
     --ts;
@@ -57,10 +57,10 @@ double get_denom(const SightRead::TempoMap& tempo_map, SightRead::Beat beat)
 {
     constexpr double BASE_BEAT_RATE = 4.0;
 
-    auto ts = std::find_if(
-        tempo_map.time_sigs().cbegin(), tempo_map.time_sigs().cend(),
-        [=](const auto& x) { return tempo_map.to_beats(x.position) > beat; });
-    if (ts == tempo_map.time_sigs().cbegin()) {
+    auto ts = std::ranges::upper_bound(
+        tempo_map.time_sigs(), beat, std::less {},
+        [&](const auto& x) { return tempo_map.to_beats(x.position); });
+    if (ts == std::ranges::begin(tempo_map.time_sigs())) {
         return 1.0;
     }
     --ts;
