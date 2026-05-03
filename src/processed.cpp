@@ -43,6 +43,13 @@ int bre_boost(const SightRead::NoteTrack& track, const Engine& engine)
                             + BRE_VALUE_PER_SECOND * seconds_gap.value());
 }
 
+int clean_play_boost(const PointSet& points)
+{
+    return std::accumulate(
+        points.cbegin(), points.cend(), 0,
+        [](const auto x, const auto& y) { return x + y.clean_play_bonus; });
+}
+
 class SpStatus {
 private:
     SpPosition m_position;
@@ -149,6 +156,7 @@ ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
     , m_sp_data {track, duration_data, pathing_settings}
     , m_sp_engine_values {pathing_settings.engine->sp_engine_values()}
     , m_total_bre_boost {bre_boost(track, *pathing_settings.engine)}
+    , m_total_clean_play_boost {clean_play_boost(m_points)}
     , m_base_score {track.base_score(pathing_settings.drum_settings)}
     , m_ignore_average_multiplier {pathing_settings.engine
                                        ->ignore_average_multiplier()}
@@ -600,6 +608,7 @@ std::string ProcessedSong::path_summary(const Path& path) const
     auto no_sp_score = std::accumulate(
         m_points.cbegin(), m_points.cend(), 0,
         [](const auto x, const auto& y) { return x + y.value; });
+    no_sp_score += m_total_clean_play_boost;
     no_sp_score += m_total_solo_boost;
     no_sp_score += m_total_bre_boost;
     stream << "\nNo SP score: " << no_sp_score;
@@ -611,7 +620,8 @@ std::string ProcessedSong::path_summary(const Path& path) const
         double avg_mult = 0;
         if (m_base_score != 0) {
             auto int_avg_mult = 0;
-            auto stars_score = total_score - m_total_solo_boost;
+            auto stars_score
+                = total_score - m_total_solo_boost - m_total_clean_play_boost;
             for (auto i = 0; i < 4; ++i) {
                 int_avg_mult *= 10; // NOLINT
                 int_avg_mult += (stars_score / m_base_score);

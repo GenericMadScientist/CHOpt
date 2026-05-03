@@ -1319,7 +1319,7 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
                           false};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_base_values {50, 50};
-    std::vector<int> expected_score_values {50, 100};
+    std::vector<int> expected_score_values {52, 104};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.base_values().cbegin(), builder.base_values().cend(),
@@ -1350,7 +1350,7 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
                           true,
                           false};
     builder.add_measure_values(points, {}, path);
-    std::vector<int> expected_score_values {100, 250};
+    std::vector<int> expected_score_values {100, 252};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.score_values().cbegin(), builder.score_values().cend(),
@@ -1377,7 +1377,7 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
                           true,
                           false};
     builder.add_measure_values(points, {}, path);
-    std::vector<int> expected_score_values {100};
+    std::vector<int> expected_score_values {102};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.score_values().cbegin(), builder.score_values().cend(),
@@ -1404,7 +1404,7 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
                           true,
                           false};
     builder.add_measure_values(points, {}, path);
-    std::vector<int> expected_score_values {200, 300};
+    std::vector<int> expected_score_values {206, 308};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.score_values().cbegin(), builder.score_values().cend(),
@@ -1431,7 +1431,7 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
                           false};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_base_values {50, 50};
-    std::vector<int> expected_score_values {50, 150};
+    std::vector<int> expected_score_values {52, 154};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.base_values().cbegin(), builder.base_values().cend(),
@@ -1465,7 +1465,7 @@ BOOST_AUTO_TEST_CASE(ticks_close_to_the_end_of_a_measure_are_handled_correctly)
                           false};
     builder.add_measure_values(points, global_data->tempo_map(), path);
     std::vector<int> expected_base_values {50};
-    std::vector<int> expected_score_values {50};
+    std::vector<int> expected_score_values {52};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.base_values().cbegin(), builder.base_values().cend(),
@@ -1550,7 +1550,7 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
                               .value = 100}},
                             path);
 
-    BOOST_CHECK_EQUAL(builder.total_score(), 250);
+    BOOST_CHECK_EQUAL(builder.total_score(), 254);
 }
 
 BOOST_AUTO_TEST_CASE(difficulty_is_handled)

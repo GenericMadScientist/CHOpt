@@ -65,8 +65,17 @@ void append_sustain_point(OutputIt points, SpPosition position, int value,
     if (!max_start.has_value()) {
         max_start = position;
     }
-    *points++ = {position, *start, *end, *max_start, {},
-                 value,    value,  true, false,      false};
+    *points++ = Point {.position = position,
+                       .hit_window_start = *start,
+                       .hit_window_end = *end,
+                       .max_sqz_hit_window_start = *max_start,
+                       .fill_start = {},
+                       .value = value,
+                       .base_value = value,
+                       .clean_play_bonus = 0,
+                       .is_hold_point = true,
+                       .is_sp_granting_note = false,
+                       .is_unison_sp_granting_note = false};
 }
 
 int ms_at_fretbar(SightRead::Fretbar position, const SpTimeMap& time_map)
@@ -311,6 +320,7 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
         .fill_start = {},
         .value = note_value * chord_size,
         .base_value = note_value * chord_size,
+        .clean_play_bonus = pathing_settings.engine->clean_play_bonus(),
         .is_hold_point = false,
         .is_sp_granting_note = is_note_sp_ender,
         .is_unison_sp_granting_note = is_unison_sp_ender};

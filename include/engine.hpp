@@ -48,6 +48,7 @@ public:
     }
     [[nodiscard]] virtual double burst_size() const = 0;
     [[nodiscard]] virtual bool chords_multiply_sustains() const = 0;
+    [[nodiscard]] virtual int clean_play_bonus() const = 0;
     [[nodiscard]] virtual bool delayed_multiplier() const = 0;
     [[nodiscard]] virtual double early_timing_window(double early_gap,
                                                      double late_gap) const = 0;
@@ -155,6 +156,9 @@ protected:
         (void)late_gap;
         return 0.07;
     }
+
+public:
+    [[nodiscard]] int clean_play_bonus() const override { return 2; }
 };
 
 class ChPrecisionGuitarEngine final : public BaseChEngine {
@@ -167,6 +171,9 @@ protected:
         const auto total_gap = early_gap + late_gap;
         return 0.27619 * total_gap + 0.021;
     }
+
+public:
+    [[nodiscard]] int clean_play_bonus() const override { return 2; }
 };
 
 class ChDrumEngine final : public BaseChEngine {
@@ -180,6 +187,9 @@ protected:
         return -2.23425815 * total_gap * total_gap
             + 0.9428571428571415 * total_gap - 0.01;
     }
+
+public:
+    [[nodiscard]] int clean_play_bonus() const override { return 0; }
 };
 
 class ChPrecisionDrumEngine final : public BaseChEngine {
@@ -193,6 +203,9 @@ protected:
         return 2.4961183 * total_gap * total_gap + 0.24961183 * total_gap
             + 0.0065;
     }
+
+public:
+    [[nodiscard]] int clean_play_bonus() const override { return 0; }
 };
 
 class BaseFortniteEngine : public Engine {
@@ -203,6 +216,7 @@ public:
     {
         return true;
     }
+    [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool delayed_multiplier() const override { return true; }
     [[nodiscard]] double early_timing_window(double early_gap,
                                              double late_gap) const override
@@ -284,6 +298,7 @@ public:
     {
         return true;
     }
+    [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool has_bres() const override { return false; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
     [[nodiscard]] bool ignore_average_multiplier() const override
@@ -371,6 +386,7 @@ public:
     {
         return false;
     }
+    [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool delayed_multiplier() const override { return false; }
     [[nodiscard]] double early_timing_window(double early_gap,
                                              double late_gap) const override
@@ -438,6 +454,7 @@ public:
     {
         return true;
     }
+    [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool delayed_multiplier() const override { return false; }
     [[nodiscard]] double early_timing_window(double early_gap,
                                              double late_gap) const override
@@ -550,6 +567,7 @@ public:
     {
         return false;
     }
+    [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool delayed_multiplier() const override { return false; }
     [[nodiscard]] double early_timing_window(double early_gap,
                                              double late_gap) const override

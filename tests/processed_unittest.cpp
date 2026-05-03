@@ -1608,8 +1608,8 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
                .score_boost = 100};
 
     const char* desired_path_output = "Path: 2(+1)-ES1\n"
-                                      "No SP score: 300\n"
-                                      "Total score: 400\n"
+                                      "No SP score: 310\n"
+                                      "Total score: 410\n"
                                       "Average multiplier: 1.400x\n"
                                       "2(+1): NN (G)";
 
@@ -1714,8 +1714,8 @@ BOOST_AUTO_TEST_CASE(no_overlap_is_denoted_correctly)
                .score_boost = 50};
 
     const char* desired_path_output = "Path: 3-ES1\n"
-                                      "No SP score: 250\n"
-                                      "Total score: 300\n"
+                                      "No SP score: 260\n"
+                                      "Total score: 310\n"
                                       "Average multiplier: 1.200x\n"
                                       "3: NN (G)";
 
@@ -1746,8 +1746,8 @@ BOOST_AUTO_TEST_CASE(no_es_is_denoted_correctly)
                .score_boost = 50};
 
     const char* desired_path_output = "Path: 3(+1)\n"
-                                      "No SP score: 250\n"
-                                      "Total score: 300\n"
+                                      "No SP score: 260\n"
+                                      "Total score: 310\n"
                                       "Average multiplier: 1.200x\n"
                                       "3(+1): 2nd G (G)";
 
@@ -1772,8 +1772,8 @@ BOOST_AUTO_TEST_CASE(no_sp_is_denoted_correctly)
     Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
-                                      "No SP score: 250\n"
-                                      "Total score: 250\n"
+                                      "No SP score: 260\n"
+                                      "Total score: 260\n"
                                       "Average multiplier: 1.000x";
 
     BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
@@ -1800,8 +1800,8 @@ BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
                .score_boost = 50};
 
     const char* desired_path_output = "Path: 2\n"
-                                      "No SP score: 178\n"
-                                      "Total score: 228\n"
+                                      "No SP score: 184\n"
+                                      "Total score: 234\n"
                                       "Average multiplier: 1.302x\n"
                                       "2: NN (G)";
 
@@ -1829,8 +1829,8 @@ BOOST_AUTO_TEST_CASE(mid_sustain_activations_noted_correctly)
                .score_boost = 28};
 
     const char* desired_path_output = "Path: 2\n"
-                                      "No SP score: 178\n"
-                                      "Total score: 206\n"
+                                      "No SP score: 184\n"
+                                      "Total score: 212\n"
                                       "Average multiplier: 1.177x\n"
                                       "2: 0.03 beats after NN";
 
@@ -1859,8 +1859,8 @@ BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_counted_correctly)
                .score_boost = 50};
 
     const char* desired_path_output = "Path: 2\n"
-                                      "No SP score: 200\n"
-                                      "Total score: 250\n"
+                                      "No SP score: 208\n"
+                                      "Total score: 258\n"
                                       "Average multiplier: 1.250x\n"
                                       "2: 1st R (R)";
 
@@ -1890,8 +1890,8 @@ BOOST_AUTO_TEST_CASE(
                .score_boost = 50};
 
     const char* desired_path_output = "Path: 2\n"
-                                      "No SP score: 214\n"
-                                      "Total score: 264\n"
+                                      "No SP score: 222\n"
+                                      "Total score: 272\n"
                                       "Average multiplier: 1.239x\n"
                                       "2: 1st R (R)";
 
@@ -1918,8 +1918,8 @@ BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
                .score_boost = 28};
 
     const char* desired_path_output = "Path: 2\n"
-                                      "No SP score: 128\n"
-                                      "Total score: 156\n"
+                                      "No SP score: 132\n"
+                                      "Total score: 160\n"
                                       "Average multiplier: 1.248x\n"
                                       "2: After 0.03 beats";
 
@@ -1945,8 +1945,8 @@ BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
                .score_boost = 1};
 
     const char* desired_path_output = "Path: 0-ES1\n"
-                                      "No SP score: 539\n"
-                                      "Total score: 540\n"
+                                      "No SP score: 543\n"
+                                      "Total score: 544\n"
                                       "Average multiplier: 1.080x\n"
                                       "0: See image";
 
@@ -1968,8 +1968,8 @@ BOOST_AUTO_TEST_CASE(average_multiplier_rounds_down)
     Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
-                                      "No SP score: 650\n"
-                                      "Total score: 650\n"
+                                      "No SP score: 672\n"
+                                      "Total score: 672\n"
                                       "Average multiplier: 1.181x";
 
     BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);

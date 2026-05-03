@@ -450,7 +450,7 @@ void ImageBuilder::add_measure_values(const PointSet& points,
             ++score_value_iter;
         }
         *base_value_iter += p->base_value;
-        *score_value_iter += p->value;
+        *score_value_iter += p->value + p->clean_play_bonus;
     }
 
     meas_iter = std::next(m_measure_lines.cbegin());
@@ -717,8 +717,9 @@ void ImageBuilder::set_total_score(const PointSet& points,
                                    const Path& path)
 {
     auto no_sp_score = std::accumulate(
-        points.cbegin(), points.cend(), 0,
-        [](const auto x, const auto& y) { return x + y.value; });
+        points.cbegin(), points.cend(), 0, [](const auto x, const auto& y) {
+            return x + y.value + y.clean_play_bonus;
+        });
     no_sp_score += std::accumulate(
         solos.cbegin(), solos.cend(), 0,
         [](const auto x, const auto& y) { return x + y.value; });

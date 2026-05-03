@@ -41,6 +41,7 @@ struct Point {
     std::optional<SightRead::Second> fill_start;
     int value;
     int base_value;
+    int clean_play_bonus;
     bool is_hold_point;
     bool is_sp_granting_note;
     bool is_unison_sp_granting_note;

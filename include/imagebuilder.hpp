@@ -83,7 +83,7 @@ private:
     void form_beat_lines(const SightRead::TempoMap& tempo_map);
     static bool is_neutralised_phrase(SightRead::Beat note_pos,
                                       const Path& path);
-    std::tuple<double, double>
+    [[nodiscard]] std::tuple<double, double>
     sp_phrase_bounds(const SightRead::StarPower& phrase,
                      const SightRead::NoteTrack& track, const Path& path) const;
 
