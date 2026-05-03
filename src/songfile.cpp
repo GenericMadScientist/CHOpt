@@ -34,6 +34,17 @@ std::set<SightRead::Instrument> permitted_instruments(Game game)
 {
     switch (game) {
     case Game::CloneHero:
+        return {SightRead::Instrument::Guitar,
+                SightRead::Instrument::GuitarCoop,
+                SightRead::Instrument::Bass,
+                SightRead::Instrument::Rhythm,
+                SightRead::Instrument::Keys,
+                SightRead::Instrument::GHLGuitar,
+                SightRead::Instrument::GHLBass,
+                SightRead::Instrument::GHLRhythm,
+                SightRead::Instrument::GHLGuitarCoop,
+                SightRead::Instrument::GHLKeys,
+                SightRead::Instrument::Drums};
     case Game::Yarg:
         return {SightRead::Instrument::Guitar,
                 SightRead::Instrument::GuitarCoop,

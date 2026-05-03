@@ -499,6 +499,7 @@ void MainWindow::on_engineComboBox_currentIndexChanged(int index)
         {SightRead::Instrument::GHLBass, "GHL Bass"},
         {SightRead::Instrument::GHLRhythm, "GHL Rhythm"},
         {SightRead::Instrument::GHLGuitarCoop, "GHL Guitar Co-op"},
+        {SightRead::Instrument::GHLKeys, "GHL Keys"},
         {SightRead::Instrument::Drums, "Drums"},
         {SightRead::Instrument::FortniteGuitar, "Guitar"},
         {SightRead::Instrument::FortniteBass, "Bass"},

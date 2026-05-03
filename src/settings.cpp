@@ -80,6 +80,9 @@ SightRead::Instrument string_to_inst(std::string_view text, Game game)
     if (text == "ghlcoop") {
         return SightRead::Instrument::GHLGuitarCoop;
     }
+    if (text == "ghlkeys") {
+        return SightRead::Instrument::GHLKeys;
+    }
     if (text == "drums") {
         if (game == Game::FortniteFestival) {
             return SightRead::Instrument::FortniteDrums;
@@ -129,8 +132,8 @@ std::unique_ptr<QCommandLineParser> arg_parser()
           "expert"},
          {{"i", "instrument"},
           "Instrument, options are guitar, coop, bass, rhythm, keys, ghl, "
-          "ghlbass, ghlrhythm, ghlcoop, drums, vocals, proguitar, probass. "
-          "Default guitar.",
+          "ghlbass, ghlrhythm, ghlcoop, ghlkeys, drums, vocals, proguitar, "
+          "probass. Default guitar.",
           "instrument",
           "guitar"},
          {{"sqz", "squeeze"},
