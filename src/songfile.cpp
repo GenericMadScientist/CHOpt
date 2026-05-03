@@ -72,13 +72,18 @@ bool parse_solos(Game game)
         Game::GuitarHeroOne, Game::GuitarHeroTwo, Game::GuitarHeroThree,
         Game::FortniteFestival};
 
-    return std::ranges::find(NO_SOLO_GAMES, game)
-        == std::ranges::end(NO_SOLO_GAMES);
+    return !std::ranges::contains(NO_SOLO_GAMES, game);
 }
 
-bool allow_open_chords(Game game) { return game == Game::Yarg; }
+bool allow_open_chords(Game game)
+{
+    return game == Game::CloneHero || game == Game::Yarg;
+}
 
-bool use_sustain_cutoff_threshold(Game game) { return game == Game::Yarg; }
+bool use_sustain_cutoff_threshold(Game game)
+{
+    return game == Game::CloneHero || game == Game::Yarg;
+}
 }
 
 SongFile::SongFile(const std::string& filename)
