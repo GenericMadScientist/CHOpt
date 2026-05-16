@@ -100,8 +100,8 @@ machines.
 * Various users for feedback and testing, including AddyMills, ArchWK, Bromik,
 CyclopsDragon, Daze, DNelson, GHNerd, GiometriQ, Haggis, JarheadHME, Joel,
 Jpetersen5, Jrh, JUANPGP, Kyleruth, LightlessWalk, Littlejth, Lucretio,
-NicoBrenChan, Raine, RandomDays, RileyTheFox, SanicStudios, Taka, Tposejank,
-Venxm and Zantor.
+Miscellany, NicoBrenChan, Raine, RandomDays, RileyTheFox, SanicStudios, Taka,
+Tposejank, Venxm and Zantor.
 
 ## Contact
 

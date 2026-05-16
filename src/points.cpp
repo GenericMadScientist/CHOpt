@@ -256,6 +256,36 @@ int get_chord_size(const SightRead::Note& note,
     return note_count;
 }
 
+std::tuple<SightRead::Tick, SightRead::Tick>
+minmax_lengths(const SightRead::Note& note)
+{
+    SightRead::Tick min_length {std::numeric_limits<int>::max()};
+    SightRead::Tick max_length {0};
+    for (auto length : note.lengths) {
+        if (length == SightRead::Tick {-1}) {
+            continue;
+        }
+        min_length = std::min(length, min_length);
+        max_length = std::max(length, max_length);
+    }
+
+    return {min_length, max_length};
+}
+
+int clean_bonus_multiplier(const SightRead::Note& note,
+                           const SightRead::DrumSettings& drum_settings)
+{
+    if (note.is_skipped_kick(drum_settings)) {
+        return 0;
+    }
+
+    const auto [min_length, max_length] = minmax_lengths(note);
+    if (min_length == max_length) {
+        return 1;
+    }
+    return get_chord_size(note, drum_settings);
+}
+
 template <typename OutputIt>
 void append_note_points(std::vector<SightRead::Note>::const_iterator note,
                         const std::vector<SightRead::Note>& notes,
@@ -320,21 +350,14 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
         .fill_start = {},
         .value = note_value * chord_size,
         .base_value = note_value * chord_size,
-        .clean_play_bonus = pathing_settings.engine->clean_play_bonus(),
+        .clean_play_bonus = pathing_settings.engine->clean_play_bonus()
+            * clean_bonus_multiplier(*note, pathing_settings.drum_settings),
         .is_hold_point = false,
         .is_sp_granting_note = is_note_sp_ender,
         .is_unison_sp_granting_note = is_unison_sp_ender};
     *points++ = note_point;
 
-    SightRead::Tick min_length {std::numeric_limits<int>::max()};
-    SightRead::Tick max_length {0};
-    for (auto length : note->lengths) {
-        if (length == SightRead::Tick {-1}) {
-            continue;
-        }
-        min_length = std::min(length, min_length);
-        max_length = std::max(length, max_length);
-    }
+    const auto [min_length, max_length] = minmax_lengths(*note);
 
     if (min_length == max_length
         || pathing_settings.engine->merge_uneven_sustains()) {

@@ -224,6 +224,30 @@ BOOST_AUTO_TEST_CASE(ghl_notes_behave_the_same_as_five_fret_notes)
                                   expected_values.cend());
 }
 
+BOOST_AUTO_TEST_CASE(unsplit_chords_give_unmultiplied_clean_play_bonus)
+{
+    SightRead::NoteTrack track {
+        {make_note(0), make_note(0, 0, SightRead::FIVE_FRET_RED)},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    PointSet points {track, default_measure_mode_data(),
+                     default_guitar_pathing_settings()};
+
+    BOOST_CHECK_EQUAL(points.cbegin()->clean_play_bonus, 2);
+}
+
+BOOST_AUTO_TEST_CASE(split_chords_give_multiplied_clean_play_bonus)
+{
+    SightRead::NoteTrack track {
+        {make_note(0, 192), make_note(0, 0, SightRead::FIVE_FRET_RED)},
+        SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    PointSet points {track, default_measure_mode_data(),
+                     default_guitar_pathing_settings()};
+
+    BOOST_CHECK_EQUAL(points.cbegin()->clean_play_bonus, 4);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(sustain_notes)
