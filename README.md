@@ -97,9 +97,9 @@ details). SightRead is included a git submodule.
 getting an initial idea of Clone Hero's parsing behaviour.
 * Dinoguy1000 and shadoweh helped me make sure CHOpt runs on other peoples'
 machines.
-* Various users for feedback and testing, including AddyMills, ArchWK, Bromik,
-CyclopsDragon, Daze, DNelson, GHNerd, GiometriQ, Haggis, JarheadHME, Joel,
-Jpetersen5, Jrh, JUANPGP, Kyleruth, LightlessWalk, Littlejth, Lucretio,
+* Various users for feedback and testing, including AddyMills, ArchWK, Blackett,
+Bromik, CyclopsDragon, Daze, DNelson, GHNerd, GiometriQ, Haggis, JarheadHME,
+Joel, Jpetersen5, Jrh, JUANPGP, Kyleruth, LightlessWalk, Littlejth, Lucretio,
 Miscellany, NicoBrenChan, Raine, RandomDays, RileyTheFox, SanicStudios, Taka,
 Tposejank, Venxm and Zantor.
 
