@@ -77,13 +77,29 @@ std::set<SightRead::Instrument> permitted_instruments(Game game)
     }
 }
 
+SightRead::SoloParsingBehaviour solo_parsing_behaviour(Game game)
+{
+    switch (game) {
+    case Game::CloneHero:
+        return SightRead::SoloParsingBehaviour::PreferLaterStarts;
+    case Game::RockBand:
+    case Game::RockBandThree:
+    case Game::Yarg:
+        return SightRead::SoloParsingBehaviour::PreferEarlierStarts;
+    case Game::FortniteFestival:
+    case Game::GuitarHeroOne:
+    case Game::GuitarHeroTwo:
+    case Game::GuitarHeroThree:
+        return SightRead::SoloParsingBehaviour::NoSolos;
+    default:
+        throw std::invalid_argument("Invalid Game");
+    }
+}
+
 bool parse_solos(Game game)
 {
-    constexpr std::array NO_SOLO_GAMES {
-        Game::GuitarHeroOne, Game::GuitarHeroTwo, Game::GuitarHeroThree,
-        Game::FortniteFestival};
-
-    return !std::ranges::contains(NO_SOLO_GAMES, game);
+    return solo_parsing_behaviour(game)
+        != SightRead::SoloParsingBehaviour::NoSolos;
 }
 
 bool allow_open_chords(Game game)
@@ -150,19 +166,19 @@ SightRead::Song SongFile::load_song(Game game) const
             reinterpret_cast<const char*>(m_loaded_file.data()), // NOLINT
             m_loaded_file.size()};
         SightRead::ChartParser parser {m_metadata};
-        parser.permit_instruments(permitted_instruments(game));
-        parser.parse_solos(parse_solos(game));
-        parser.allow_open_chords(allow_open_chords(game));
+        parser.permit_instruments(permitted_instruments(game))
+            .solo_parsing_behaviour(solo_parsing_behaviour(game))
+            .allow_open_chords(allow_open_chords(game));
         return parser.parse(chart);
     }
     case FileType::Midi: {
         std::span<const std::uint8_t> midi_buffer {m_loaded_file.data(),
                                                    m_loaded_file.size()};
         SightRead::MidiParser parser {m_metadata};
-        parser.permit_instruments(permitted_instruments(game));
-        parser.parse_solos(parse_solos(game));
-        parser.allow_open_chords(allow_open_chords(game));
-        parser.use_sustain_cutoff_threshold(use_sustain_cutoff_threshold(game));
+        parser.permit_instruments(permitted_instruments(game))
+            .parse_solos(parse_solos(game))
+            .allow_open_chords(allow_open_chords(game))
+            .use_sustain_cutoff_threshold(use_sustain_cutoff_threshold(game));
         return parser.parse(midi_buffer);
     }
     case FileType::QbMidi: {
