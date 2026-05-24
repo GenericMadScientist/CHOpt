@@ -124,6 +124,8 @@ public:
 
     [[nodiscard]] SpMeasure to_sp_measures(SightRead::Beat beats) const;
     [[nodiscard]] SpMeasure to_sp_measures(SightRead::Second seconds) const;
+
+    [[nodiscard]] SightRead::Tick to_ticks(SightRead::Beat beats) const;
 };
 
 struct SpDurationData {

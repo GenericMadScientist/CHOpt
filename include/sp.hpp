@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2020, 2021, 2023, 2025 Raymond Wright
+ * Copyright (C) 2020, 2021, 2023, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <tuple>
 #include <vector>
 
 #include <sightread/songparts.hpp>
@@ -70,18 +69,19 @@ public:
     }
 };
 
+struct SpSustain {
+    SightRead::Tick note_position;
+    SightRead::Beat whammy_start;
+    SightRead::Beat whammy_end;
+    SightRead::Beat burst_position;
+};
+
 // This is used by the optimiser to calculate SP drain.
 class SpData {
 private:
     struct BeatRate {
         SightRead::Beat position;
         double net_sp_gain_rate;
-    };
-
-    struct WhammyRange {
-        SpPosition start;
-        SpPosition end;
-        SightRead::Beat note;
     };
 
     struct WhammyPropagationState {
@@ -96,12 +96,12 @@ private:
     SpTimeMap m_time_map;
     SpGainMode m_gain_mode;
     std::vector<BeatRate> m_beat_rates;
-    std::vector<WhammyRange> m_whammy_ranges;
+    std::vector<SpSustain> m_sp_sustains;
     SightRead::Beat m_last_whammy_point {
         -std::numeric_limits<double>::infinity()};
-    std::vector<std::vector<WhammyRange>::const_iterator> m_initial_guesses;
-    const double m_sp_gain_rate;
-    const double m_default_net_sp_gain_rate;
+    std::vector<std::vector<SpSustain>::const_iterator> m_initial_guesses;
+    double m_sp_gain_rate;
+    double m_default_net_sp_gain_rate;
 
     static std::vector<BeatRate>
     form_beat_rates(const SightRead::TempoMap& tempo_map,
@@ -114,14 +114,15 @@ private:
     [[nodiscard]] SightRead::Beat
     whammy_propagation_endpoint(SightRead::Beat start, SightRead::Beat end,
                                 double sp_bar_amount) const;
-    [[nodiscard]] std::vector<WhammyRange>::const_iterator
-    first_whammy_range_after(SightRead::Beat pos) const;
+    [[nodiscard]] std::vector<SpSustain>::const_iterator
+    first_sp_sustain_after(SightRead::Beat pos) const;
     [[nodiscard]] WhammyPropagationState
     initial_whammy_prop_state(SightRead::Beat start, SightRead::Beat end,
                               double sp_bar_amount) const;
-    SpPosition sp_drain_end_point(SpPosition start, double sp_bar_amount) const;
-    double sp_from_whammying_range(SightRead::Beat start,
-                                   SightRead::Beat end) const;
+    [[nodiscard]] SpPosition sp_drain_end_point(SpPosition start,
+                                                double sp_bar_amount) const;
+    [[nodiscard]] double sp_from_whammying_range(SightRead::Beat start,
+                                                 SightRead::Beat end) const;
 
 public:
     SpData(const SightRead::NoteTrack& track,
@@ -141,14 +142,12 @@ public:
                                  SpPosition required_whammy_end) const;
     // Return if a beat is at a place that can be whammied.
     [[nodiscard]] bool is_in_whammy_ranges(SightRead::Beat beat) const;
-    // Return the amount of whammy obtainable across a range.
-    [[nodiscard]] double available_whammy(SightRead::Beat start,
-                                          SightRead::Beat end) const;
     // Return the amount of whammy obtainable across a range, from notes before
     // note_pos.
-    [[nodiscard]] double available_whammy(SightRead::Beat start,
-                                          SightRead::Beat end,
-                                          SightRead::Beat note_pos) const;
+    [[nodiscard]] double
+    available_whammy(SightRead::Beat start, SightRead::Beat end,
+                     SightRead::Tick note_pos
+                     = SightRead::Tick {std::numeric_limits<int>::max()}) const;
     // Return how far an activation can propagate based on whammy, returning the
     // end of the range if it can be reached.
     [[nodiscard]] SpPosition activation_end_point(SpPosition start,

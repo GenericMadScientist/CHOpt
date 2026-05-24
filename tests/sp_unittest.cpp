@@ -358,6 +358,24 @@ BOOST_AUTO_TEST_CASE(
                       0.375, 0.0001);
 }
 
+BOOST_AUTO_TEST_CASE(handles_extended_sustain_with_smaller_sustain_on_top)
+{
+    std::vector<SightRead::Note> notes {
+        make_note(0, 768), make_note(192, 192, SightRead::FIVE_FRET_RED)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {3100}}};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
+    SpData sp_data {track, default_measure_mode_data(),
+                    default_guitar_pathing_settings()};
+
+    BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_max(
+                          {SightRead::Beat(0.0), SpMeasure(0.0)},
+                          {SightRead::Beat(5.0), SpMeasure(1.25)}, 0.5),
+                      0.477083, 0.0001);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(is_in_whammy_ranges_works_correctly)
@@ -458,7 +476,7 @@ BOOST_AUTO_TEST_CASE(three_argument_version_works_correctly)
 
     BOOST_CHECK_CLOSE(sp_data.available_whammy(SightRead::Beat(0.0),
                                                SightRead::Beat(12.0),
-                                               SightRead::Beat(12.0)),
+                                               SightRead::Tick(12 * 192)),
                       0.3333333, 0.0001);
 }
 
@@ -484,8 +502,61 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_on_x_8_time_sigs_in_gh3)
 
     BOOST_CHECK_CLOSE(sp_data.available_whammy(SightRead::Beat(0.0),
                                                SightRead::Beat(2.0),
-                                               SightRead::Beat(2.0)),
+                                               SightRead::Tick(2 * 192)),
                       0.05833274825, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(chords_dont_give_double_whammy)
+{
+    std::vector<SightRead::Note> notes {
+        make_note(192, 768), make_note(192, 768, SightRead::FIVE_FRET_RED)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {3000}}};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
+    SpData sp_data {track, default_measure_mode_data(),
+                    default_guitar_pathing_settings()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(16.0)),
+        0.138, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(
+    small_sustain_mid_extended_sustain_does_not_subtract_whammy)
+{
+    std::vector<SightRead::Note> notes {
+        make_note(192, 768), make_note(384, 192, SightRead::FIVE_FRET_RED)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {3000}}};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
+    SpData sp_data {track, default_measure_mode_data(),
+                    default_guitar_pathing_settings()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(16.0)),
+        0.138, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(
+    small_sustain_mid_extended_sustain_does_not_kill_whammy_for_range_after)
+{
+    std::vector<SightRead::Note> notes {
+        make_note(192, 768), make_note(384, 192, SightRead::FIVE_FRET_RED)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {3000}}};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
+    SpData sp_data {track, default_measure_mode_data(),
+                    default_guitar_pathing_settings()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.available_whammy(SightRead::Beat(4.0), SightRead::Beat(5.0)),
+        0.03333333, 0.0001);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

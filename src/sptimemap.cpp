@@ -1,6 +1,6 @@
 /*
  * CHOpt - Star Power optimiser for Clone Hero
- * Copyright (C) 2023, 2025 Raymond Wright
+ * Copyright (C) 2023, 2025, 2026 Raymond Wright
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,4 +92,9 @@ SpMeasure SpTimeMap::to_sp_measures(SightRead::Beat beats) const
 SpMeasure SpTimeMap::to_sp_measures(SightRead::Second seconds) const
 {
     return to_sp_measures(m_tempo_map.to_beats(seconds));
+}
+
+SightRead::Tick SpTimeMap::to_ticks(SightRead::Beat beats) const
+{
+    return m_tempo_map.to_ticks(beats);
 }

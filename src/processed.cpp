@@ -226,7 +226,8 @@ ProcessedSong::total_available_sp_with_earliest_pos(
     auto sp_bar = sp_from_phrases(first_point, act_start);
 
     sp_bar.max() += m_sp_data.available_whammy(
-        start, earliest_potential_pos.beat, act_start->position.beat);
+        start, earliest_potential_pos.beat,
+        m_time_map.to_ticks(act_start->position.beat));
     sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
     if (sp_bar.full_enough_to_activate()) {
@@ -237,16 +238,18 @@ ProcessedSong::total_available_sp_with_earliest_pos(
         = m_sp_engine_values.minimum_to_activate - sp_bar.max();
     auto first_beat = earliest_potential_pos.beat;
     auto last_beat = act_start->position.beat;
-    if (m_sp_data.available_whammy(first_beat, last_beat,
-                                   act_start->position.beat)
+    if (m_sp_data.available_whammy(
+            first_beat, last_beat,
+            m_time_map.to_ticks(act_start->position.beat))
         < extra_sp_required) {
         return {sp_bar, earliest_potential_pos};
     }
 
     while (last_beat - first_beat > BEAT_EPSILON) {
         const auto mid_beat = (first_beat + last_beat) * 0.5;
-        if (m_sp_data.available_whammy(earliest_potential_pos.beat, mid_beat,
-                                       act_start->position.beat)
+        if (m_sp_data.available_whammy(
+                earliest_potential_pos.beat, mid_beat,
+                m_time_map.to_ticks(act_start->position.beat))
             < extra_sp_required) {
             first_beat = mid_beat;
         } else {
@@ -255,7 +258,8 @@ ProcessedSong::total_available_sp_with_earliest_pos(
     }
 
     sp_bar.max() += m_sp_data.available_whammy(
-        earliest_potential_pos.beat, last_beat, act_start->position.beat);
+        earliest_potential_pos.beat, last_beat,
+        m_time_map.to_ticks(act_start->position.beat));
     sp_bar.max() = std::min(sp_bar.max(), 1.0);
 
     return {sp_bar,
