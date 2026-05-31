@@ -101,7 +101,7 @@ machines.
 Bromik, CyclopsDragon, Daze, DNelson, GHNerd, GiometriQ, Haggis, JarheadHME,
 Joel, Jpetersen5, Jrh, JUANPGP, Kyleruth, LightlessWalk, Littlejth, Lucretio,
 Miscellany, NicoBrenChan, Raine, RandomDays, RileyTheFox, SanicStudios, Taka,
-Tposejank, Venxm and Zantor.
+Tposejank, Venxm, xdhaqwen and Zantor.
 
 ## Contact
 
