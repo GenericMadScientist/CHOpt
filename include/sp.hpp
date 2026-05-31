@@ -74,6 +74,7 @@ struct SpSustain {
     SightRead::Beat whammy_start;
     SightRead::Beat whammy_end;
     SightRead::Beat burst_position;
+    bool releasable_for_burst;
 };
 
 // This is used by the optimiser to calculate SP drain.
@@ -123,6 +124,8 @@ private:
                                                 double sp_bar_amount) const;
     [[nodiscard]] double sp_from_whammying_range(SightRead::Beat start,
                                                  SightRead::Beat end) const;
+    double add_reserved_burst(double sp,
+                              SightRead::Beat& reserved_burst_size) const;
 
 public:
     SpData(const SightRead::NoteTrack& track,

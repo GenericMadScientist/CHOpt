@@ -277,6 +277,17 @@ inline PathingSettings default_rb3_pathing_settings()
             .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
+inline PathingSettings default_yarg_pathing_settings()
+{
+    return {.engine = std::make_unique<YargEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
+}
+
 inline PathingSettings positive_video_lag_settings()
 {
     return {.engine = std::make_unique<ChGuitarEngine>(),

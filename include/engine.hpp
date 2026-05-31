@@ -54,6 +54,7 @@ public:
                                                      double late_gap) const = 0;
     [[nodiscard]] virtual bool has_bres() const = 0;
     [[nodiscard]] virtual bool has_early_whammy() const = 0;
+    [[nodiscard]] virtual bool has_whammy_bursts() const = 0;
     [[nodiscard]] virtual bool is_rock_band() const = 0;
     [[nodiscard]] virtual bool ignore_average_multiplier() const = 0;
     [[nodiscard]] virtual double late_timing_window(double early_gap,
@@ -102,6 +103,7 @@ public:
     }
     [[nodiscard]] bool has_bres() const override { return false; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
+    [[nodiscard]] bool has_whammy_bursts() const override { return true; }
     [[nodiscard]] bool ignore_average_multiplier() const override
     {
         return false;
@@ -227,6 +229,7 @@ public:
     }
     [[nodiscard]] bool has_bres() const override { return false; }
     [[nodiscard]] bool has_early_whammy() const override { return false; }
+    [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool is_rock_band() const override { return false; }
     [[nodiscard]] bool ignore_average_multiplier() const override
     {
@@ -301,6 +304,7 @@ public:
     [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool has_bres() const override { return false; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
+    [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool ignore_average_multiplier() const override
     {
         return true;
@@ -397,6 +401,7 @@ public:
     }
     [[nodiscard]] bool has_bres() const override { return false; }
     [[nodiscard]] bool has_early_whammy() const override { return false; }
+    [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool ignore_average_multiplier() const override
     {
         return true;
@@ -465,6 +470,7 @@ public:
     }
     [[nodiscard]] bool has_bres() const override { return true; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
+    [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool ignore_average_multiplier() const override
     {
         return true;
@@ -576,6 +582,7 @@ public:
     }
     [[nodiscard]] bool has_bres() const override { return false; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
+    [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool ignore_average_multiplier() const override
     {
         return true;
