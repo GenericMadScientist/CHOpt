@@ -20,7 +20,6 @@
 #define CHOPT_TESTHELPERS_HPP
 
 #include <cmath>
-#include <iomanip>
 #include <ostream>
 #include <tuple>
 #include <vector>
@@ -31,7 +30,6 @@
 #include <sightread/time.hpp>
 
 #include "imagebuilder.hpp"
-#include "points.hpp"
 #include "processed.hpp"
 #include "sp.hpp"
 
@@ -60,7 +58,7 @@ inline std::ostream& operator<<(std::ostream& stream, const Activation& act)
 inline bool operator==(const DrawnNote& lhs, const DrawnNote& rhs)
 {
     for (auto i = 0; i < 7; ++i) {
-        if (std::abs(lhs.lengths[i] - rhs.lengths[i]) >= 0.000001) {
+        if (std::abs(lhs.lengths.at(i) - rhs.lengths.at(i)) >= 0.000001) {
             return false;
         }
     }
@@ -73,8 +71,8 @@ inline std::ostream& operator<<(std::ostream& stream, const DrawnNote& note)
 {
     stream << '{' << note.beat << "b, ";
     for (auto i = 0; i < 7; ++i) {
-        if (note.lengths[i] != -1) {
-            stream << "Colour " << i << " with Length " << note.lengths[i]
+        if (note.lengths.at(i) != -1) {
+            stream << "Colour " << i << " with Length " << note.lengths.at(i)
                    << ", ";
         }
     }
@@ -145,7 +143,7 @@ inline SightRead::Note make_note(int position, int length = 0,
     SightRead::Note note;
     note.position = SightRead::Tick {position};
     note.flags = SightRead::FLAGS_FIVE_FRET_GUITAR;
-    note.lengths[colour] = SightRead::Tick {length};
+    note.lengths.at(colour) = SightRead::Tick {length};
 
     return note;
 }
@@ -157,8 +155,8 @@ inline SightRead::Note make_chord(
     SightRead::Note note;
     note.position = SightRead::Tick {position};
     note.flags = SightRead::FLAGS_FIVE_FRET_GUITAR;
-    for (auto& [lane, length] : lengths) {
-        note.lengths[lane] = SightRead::Tick {length};
+    for (const auto& [lane, length] : lengths) {
+        note.lengths.at(lane) = SightRead::Tick {length};
     }
 
     return note;
@@ -171,7 +169,7 @@ inline SightRead::Note make_ghl_note(int position, int length = 0,
     SightRead::Note note;
     note.position = SightRead::Tick {position};
     note.flags = SightRead::FLAGS_SIX_FRET_GUITAR;
-    note.lengths[colour] = SightRead::Tick {length};
+    note.lengths.at(colour) = SightRead::Tick {length};
 
     return note;
 }
@@ -184,129 +182,134 @@ make_drum_note(int position, SightRead::DrumNotes colour = SightRead::DRUM_RED,
     note.position = SightRead::Tick {position};
     note.flags
         = static_cast<SightRead::NoteFlags>(flags | SightRead::FLAGS_DRUMS);
-    note.lengths[colour] = SightRead::Tick {0};
+    note.lengths.at(colour) = SightRead::Tick {0};
 
     return note;
 }
 
 inline PathingSettings default_drums_pathing_settings()
 {
-    return {std::make_unique<ChDrumEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<ChDrumEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 inline PathingSettings default_fortnite_guitar_pathing_settings()
 {
-    return {std::make_unique<FortniteGuitarEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<FortniteGuitarEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 inline PathingSettings default_gh1_pathing_settings()
 {
-    return {std::make_unique<Gh1Engine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<Gh1Engine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 inline PathingSettings default_gh3_pathing_settings()
 {
-    return {std::make_unique<Gh3Engine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<Gh3Engine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 inline PathingSettings default_guitar_pathing_settings()
 {
-    return {std::make_unique<ChGuitarEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<ChGuitarEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 inline PathingSettings default_pro_drums_pathing_settings()
 {
-    return {std::make_unique<ChDrumEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            {false, false, true}};
+    return {.engine = std::make_unique<ChDrumEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = {.enable_double_kick = false,
+                              .disable_kick = false,
+                              .pro_drums = true}};
 }
 
 inline PathingSettings default_rb_pathing_settings()
 {
-    return {std::make_unique<RbEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<RbEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 inline PathingSettings default_rb3_pathing_settings()
 {
-    return {std::make_unique<Rb3Engine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<Rb3Engine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 inline PathingSettings positive_video_lag_settings()
 {
-    return {std::make_unique<ChGuitarEngine>(),
-            1.0,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.1},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<ChGuitarEngine>(),
+            .squeeze = 1.0,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.1},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 inline PathingSettings mid_squeeze_ch_guitar_pathing_settings()
 {
-    return {std::make_unique<ChGuitarEngine>(),
-            0.5,
-            1.0,
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::Second {0.0},
-            SightRead::DrumSettings::default_settings()};
+    return {.engine = std::make_unique<ChGuitarEngine>(),
+            .squeeze = 0.5,
+            .early_whammy = 1.0,
+            .lazy_whammy = SightRead::Second {0.0},
+            .video_lag = SightRead::Second {0.0},
+            .whammy_delay = SightRead::Second {0.0},
+            .drum_settings = SightRead::DrumSettings::default_settings()};
 }
 
 inline SpDurationData default_measure_mode_data()
 {
-    return {{{}, SpMode::Measure}, {}, {}};
+    return {.time_map = {{}, SpMode::Measure},
+            .od_beats = {},
+            .unison_phrases = {}};
 }
 
 inline SpDurationData default_od_beat_mode_data()
 {
-    return {{{}, SpMode::OdBeat}, {}, {}};
+    return {
+        .time_map = {{}, SpMode::OdBeat}, .od_beats = {}, .unison_phrases = {}};
 }
 
 #endif
