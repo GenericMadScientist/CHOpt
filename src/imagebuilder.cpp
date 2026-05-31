@@ -534,6 +534,9 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
                                const SightRead::TempoMap& tempo_map,
                                const Path& path)
 {
+    // This is so we don't have a pixel of overlap between red and blue ranges.
+    const SightRead::Beat RED_EPSILON {1 / 60.0};
+
     std::vector<std::tuple<double, double>> no_whammy_ranges;
 
     const auto shifted_beat = [&](auto beat) {
@@ -555,14 +558,14 @@ void ImageBuilder::add_sp_acts(const PointSet& points,
                             SightRead::Beat {m_rows.back().end});
         m_blue_ranges.emplace_back(shifted_beat(blue_start).value(),
                                    blue_end.value());
-        if (act.sp_start > act.act_start->position.beat) {
+        if (act.sp_start - RED_EPSILON > act.act_start->position.beat) {
             m_red_ranges.emplace_back(
                 shifted_beat(act.act_start->position.beat).value(),
-                shifted_beat(act.sp_start).value());
+                shifted_beat(act.sp_start - RED_EPSILON).value());
         }
-        if (act.sp_end < act.act_end->position.beat) {
+        if (act.sp_end + RED_EPSILON < act.act_end->position.beat) {
             m_red_ranges.emplace_back(
-                shifted_beat(act.sp_end).value(),
+                shifted_beat(act.sp_end + RED_EPSILON).value(),
                 shifted_beat(act.act_end->position.beat).value());
         }
         no_whammy_ranges.emplace_back(act.whammy_end.value(),

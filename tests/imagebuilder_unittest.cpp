@@ -953,8 +953,8 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
     builder.add_sp_phrases(track, {}, path);
     builder.add_sp_acts(points, {}, path);
     std::vector<std::tuple<double, double>> expected_blue_ranges {{0.1, 0.9}};
-    std::vector<std::tuple<double, double>> expected_red_ranges {{0.0, 0.1},
-                                                                 {0.9, 1.0}};
+    std::vector<std::tuple<double, double>> expected_red_ranges {
+        {0.0, 0.1 - 1 / 60.0}, {0.9 + 1 / 60.0, 1.0}};
     std::vector<std::tuple<double, double>> expected_yellow_ranges {
         {0.25, 0.5}};
 
@@ -995,8 +995,8 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
                                 .sp_end = SightRead::Beat {2.9}}},
                .score_boost = 0};
     builder.add_sp_acts(points, {}, path);
-    std::vector<std::tuple<double, double>> expected_red_ranges {{0.0, 0.1},
-                                                                 {2.9, 3.0}};
+    std::vector<std::tuple<double, double>> expected_red_ranges {
+        {0.0, 0.1 - 1 / 60.0}, {2.9 + 1 / 60.0, 3.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.red_ranges().cbegin(), builder.red_ranges().cend(),
@@ -1091,7 +1091,8 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                .score_boost = 0};
     std::vector<std::tuple<double, double>> expected_blue_ranges {
         {0.0, 1.0}, {2.0, 2.8}, {6.8, 8.0}};
-    std::vector<std::tuple<double, double>> expected_red_ranges {{2.8, 3.0}};
+    std::vector<std::tuple<double, double>> expected_red_ranges {
+        {2.8 + 1 / 60.0, 3.0}};
 
     builder.add_sp_acts(points, {}, path);
 

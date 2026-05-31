@@ -157,6 +157,15 @@ struct SustainColour {
     float opacity;
     std::tuple<int, int> y_range;
 };
+
+int x_offset_for_row_gap(double row_gap)
+{
+    const auto EPSILON = 0.01;
+
+    auto double_offset = LEFT_MARGIN + BEAT_WIDTH * row_gap;
+    double_offset += EPSILON;
+    return static_cast<int>(double_offset);
+}
 }
 
 class ImageImpl {
@@ -515,15 +524,13 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
     const auto& [y_min, y_max] = y_range;
 
     while (start < end) {
-        auto block_end = std::min(row_iter->end, end);
-        auto x_min = LEFT_MARGIN
-            + static_cast<int>(BEAT_WIDTH * (start - row_iter->start));
-        // -1 is so regions that cross rows do not go over the ending line of a
-        // row.
-        auto x_max = LEFT_MARGIN
-            + static_cast<int>(BEAT_WIDTH * (block_end - row_iter->start)) - 1;
+        const auto block_end = std::min(row_iter->end, end);
+        const auto maximum_row_x = x_offset_for_row_gap(row_iter->end);
+        const auto x_min = x_offset_for_row_gap(start - row_iter->start);
+        auto x_max = x_offset_for_row_gap(block_end - row_iter->start);
+        x_max = std::min(x_max, maximum_row_x);
         if (x_min <= x_max) {
-            auto y = TOP_MARGIN + MARGIN + DIST_BETWEEN_MEASURES * row;
+            const auto y = TOP_MARGIN + MARGIN + DIST_BETWEEN_MEASURES * row;
             m_image.draw_rectangle(x_min, y + y_min, x_max, y + y_max,
                                    colour.data(), opacity);
         }
