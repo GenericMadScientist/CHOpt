@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.30.0)
 
 project(
   chopt
-  VERSION 1.14.1
+  VERSION 1.15.0
   DESCRIPTION "A program to generate optimal Star Power paths for Clone Hero"
   LANGUAGES CXX)
 
