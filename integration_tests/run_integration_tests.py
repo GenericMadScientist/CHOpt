@@ -1,78 +1,95 @@
-import os
+from contextlib import closing
 import sqlite3
 import subprocess
+import sys
+import tempfile
 
-program = "build/chopt"
-song_dir = "integration_tests/songs"
 
-conn = sqlite3.connect("integration_tests/tests.db")
-c = conn.cursor()
+def expected_path_output(path):
+    lines = ["Optimising, please wait..."]
+    path_summary = "-".join(a["phrase_count"] for a in path["activations"])
+    lines.append(f"Path: {path_summary}")
+    lines.append(f"No SP score: {path['no_sp_score']}")
+    lines.append(f"Total score: {path['total_score']}")
+    if path["average_multiplier"] is not None:
+        lines.append(f"Average multiplier: {path['average_multiplier']:.3f}x")
+    for act in path["activations"]:
+        if act["description"] is None:
+            continue
+        line = f"{act['phrase_count']}: {act['description']}"
+        if act["activation_end"] is not None:
+            line += f" ({act['activation_end']})"
+        lines.append(line)
+    lines.append("")
+    return "\n".join(lines)
 
-c.execute(
-    (
-        "select song_id, file, difficulty, instrument, path, base_score, total_score, "
-        "avg_mult, engine, squeeze, early_whammy, speed from Songs"
-    )
-)
-songs = list(c.fetchall())
 
-outputs = []
-for song in songs:
-    song_id, _, _, _, path, base_score, total_score, avg_mult, _, _, _, _ = song
-    output_lines = ["Optimising, please wait..."]
-    output_lines.append(f"Path: {path}")
-    output_lines.append(f"No SP score: {base_score}")
-    output_lines.append(f"Total score: {total_score}")
-    if avg_mult:
-        output_lines.append(f"Average multiplier: {avg_mult}x")
-    c.execute(
-        (
-            "select description, activation_end from activations "
-            "where song_id = ? order by activation_number"
-        ),
-        (song_id,),
-    )
-    activation_prefixes = [act for act in path.split("-") if not act.startswith("S")]
-    for (description, act_end), activation in zip(c.fetchall(), activation_prefixes):
-        if act_end is None:
-            output_lines.append(f"{activation}: {description}")
+def actual_path_output(path):
+    with tempfile.TemporaryDirectory() as tempdir:
+        with open(f"{tempdir}/song.ini", "w") as f:
+            f.write(path["ini"])
+
+        if path["chart_type"] == "chart":
+            filename = "notes.chart"
+        elif path["chart_type"] == "mid":
+            filename = "notes.mid"
         else:
-            output_lines.append(f"{activation}: {description} ({act_end})")
-    output_lines.append("")
-    outputs.append(os.linesep.join(output_lines).encode("utf-8"))
+            filename = path["chart_type"]
 
-conn.close()
+        with open(f"{tempdir}/{filename}", "wb") as f:
+            f.write(path["chart"])
 
-for song, output in zip(songs, outputs):
-    _, file, difficulty, instrument, _, _, _, _, engine, sqz, ew, speed = song
-    result = subprocess.run(
-        [
-            program,
-            "-f",
-            f"{song_dir}/{file}",
-            "-d",
-            difficulty,
-            "-i",
-            instrument,
-            "--engine",
-            engine,
-            "--speed",
-            str(speed),
-            "--squeeze",
-            str(sqz),
-            "--early-whammy",
-            str(ew),
-        ],
-        capture_output=True,
-    )
-    try:
+        result = subprocess.run(
+            [
+                "build/chopt",
+                "--file",
+                f"{tempdir}/{filename}",
+                "--diff",
+                path["difficulty"],
+                "--instrument",
+                path["instrument"],
+                "--engine",
+                path["engine"],
+                "--speed",
+                str(path["speed"]),
+                "--squeeze",
+                str(path["squeeze"]),
+                "--early-whammy",
+                str(path["early_whammy"]),
+                "--output",
+                f"{tempdir}/path.png",
+            ],
+            capture_output=True,
+        )
         result.check_returncode()
-    except subprocess.CalledProcessError:
-        print(f"stdout: {result.stdout.decode('utf-8')}")
-        print(f"stderr: {result.stderr.decode('utf-8')}")
-        raise
+        return result.stdout.decode("utf-8")
 
-    if result.stdout != output:
-        print(f"Expected output: {output}")
-        print(f"Actual output: {result.stdout}")
-        raise RuntimeError(f"Song {file} has incorrect output")
+
+def paths():
+    with closing(sqlite3.connect("integration_tests/tests.db")) as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("SELECT * FROM paths INNER JOIN songs USING (song_id)")
+        path_map = {r["path_id"]: dict(r) | {"activations": []} for r in c.fetchall()}
+
+        c.execute("SELECT * FROM activations ORDER BY activation_number")
+        for act in c.fetchall():
+            path_map[act["path_id"]]["activations"].append(dict(act))
+
+        return path_map.values()
+
+
+for path in paths():
+    expected = expected_path_output(path)
+    try:
+        actual = actual_path_output(path)
+    except subprocess.CalledProcessError as e:
+        print(e.stderr.decode("utf-8"))
+        raise
+    if expected != actual:
+        print(f"Disagreement on {path['name']}", file=sys.stderr)
+        print("Expected:", file=sys.stderr)
+        print(expected, file=sys.stderr)
+        print("Actual:", file=sys.stderr)
+        print(actual, file=sys.stderr)
+        raise RuntimeError("Test failure")
