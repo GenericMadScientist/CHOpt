@@ -336,7 +336,7 @@ double SpData::propagate_sp_over_whammy_max(SpPosition start, SpPosition end,
         const auto sustain_end
             = p->releasable_for_burst ? p->burst_position : p->whammy_end;
         const auto range_end = std::min(end.beat, sustain_end);
-        if (range_end <= start.beat) {
+        if (range_end < start.beat) {
             continue;
         }
 

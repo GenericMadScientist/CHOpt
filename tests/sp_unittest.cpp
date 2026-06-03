@@ -470,6 +470,23 @@ BOOST_AUTO_TEST_CASE(
                       0.504167, 0.0001);
 }
 
+BOOST_AUTO_TEST_CASE(micro_sustains_give_sp_mid_act)
+{
+    std::vector<SightRead::Note> notes {make_note(192, 1), make_note(2999)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {3000}}};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
+    SpData sp_data {track, default_measure_mode_data(),
+                    default_guitar_pathing_settings()};
+
+    BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_max(
+                          {SightRead::Beat(0.0), SpMeasure(0.0)},
+                          {SightRead::Beat(4.0), SpMeasure(1.0)}, 0.5),
+                      0.37984028, 0.0001);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(is_in_whammy_ranges_works_correctly)
