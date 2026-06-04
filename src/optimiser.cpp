@@ -227,20 +227,25 @@ void Optimiser::add_acts_from_starting_point(
                                        = starting_pos,
                                        .sp_bar = sp_bar};
         const auto candidate_result = m_song->is_candidate_valid(candidate);
-        if (candidate_result.validity != ActValidity::insufficient_sp) {
-            attained_act_ends.add(q);
-        } else if (q->is_hold_point) {
+        switch (candidate_result.validity) {
+        case ActValidity::insufficient_sp:
+            // We cannot hit any later points if q is not a hold point, so we
+            // are done.
+            if (!q->is_hold_point) {
+                return;
+            }
+
             // We cannot hit any subsequent hold point, so go straight to
             // the next non-hold point.
             q = m_song->points().next_non_hold_point(q);
             continue;
-        } else {
-            // We cannot hit any later points if q is not a hold point, so
-            // we are done.
-            return;
-        }
-
-        if (candidate_result.validity != ActValidity::success) {
+        case ActValidity::success:
+            attained_act_ends.add(q);
+            break;
+        case ActValidity::surplus_sp:
+            if (sp_bar.minimum_sufficient_to_activate()) {
+                attained_act_ends.add(q);
+            }
             ++q;
             continue;
         }

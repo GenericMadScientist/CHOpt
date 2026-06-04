@@ -600,6 +600,40 @@ BOOST_AUTO_TEST_CASE(act_end_is_constrained_by_next_act_start)
     BOOST_CHECK_LT(opt_path.activations.at(0).sp_end.value(), 23.9);
 }
 
+// There was a bug where if it is possible to half bar before getting a phrase,
+// CHOpt would ignore the possibility of not whammying up to a halfbar, getting
+// the phrase and then activating. Doing this can avoid an overlap. I Wanna Be
+// Your Man (Guitar Hero On Tour - Modern Hits chart)'s path does this on Expert
+// Guitar.
+BOOST_AUTO_TEST_CASE(whammy_delay_to_stop_early_halfbar_is_considered)
+{
+    std::vector<SightRead::Note> notes {make_note(0), make_note(192, 1536)};
+    for (auto i = 0; i < 10; ++i) {
+        notes.push_back(make_note(1728 + 192 * i));
+    }
+    notes.push_back(make_note(5476));
+    for (auto i = 0; i < 5; ++i) {
+        notes.push_back(make_note(19200 + 192 * i));
+    }
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {1540}},
+        {.position = SightRead::Tick {5476}, .length = SightRead::Tick {1}},
+        {.position = SightRead::Tick {19200}, .length = SightRead::Tick {1}}};
+    SightRead::NoteTrack note_track {
+        notes, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
+    ProcessedSong track {note_track, default_measure_mode_data(),
+                         default_guitar_pathing_settings()};
+    Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
+
+    const auto opt_path = optimiser.optimal_path();
+
+    BOOST_CHECK_EQUAL(opt_path.activations.size(), 2U);
+    BOOST_CHECK_EQUAL(opt_path.score_boost, 1000);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(drum_paths)

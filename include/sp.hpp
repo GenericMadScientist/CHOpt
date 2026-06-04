@@ -67,6 +67,11 @@ public:
     {
         return m_max >= m_sp_engine_values.minimum_to_activate;
     }
+
+    [[nodiscard]] bool minimum_sufficient_to_activate() const
+    {
+        return m_min >= m_sp_engine_values.minimum_to_activate;
+    }
 };
 
 struct SpSustain {
