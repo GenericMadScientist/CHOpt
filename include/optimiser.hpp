@@ -26,6 +26,7 @@
 #include <vector>
 
 #include <boost/container_hash/hash.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
 
 #include <sightread/time.hpp>
 
@@ -77,7 +78,7 @@ private:
         PointPtr m_start;
         PointPtr m_end;
         PointPtr m_min_absent_ptr;
-        std::vector<PointPtr> m_abnormal_elements;
+        boost::unordered_flat_set<PointPtr> m_abnormal_elements;
 
     public:
         PointPtrRangeSet(PointPtr start, PointPtr end)
@@ -96,7 +97,7 @@ private:
             if (element < m_min_absent_ptr) {
                 return true;
             }
-            return std::ranges::contains(m_abnormal_elements, element);
+            return m_abnormal_elements.contains(element);
         }
 
         [[nodiscard]] PointPtr lowest_absent_element() const
@@ -110,19 +111,12 @@ private:
             assert(element < m_end);
             if (m_min_absent_ptr == element) {
                 ++m_min_absent_ptr;
-                while (true) {
-                    auto next_elem_iter = std::ranges::find(m_abnormal_elements,
-                                                            m_min_absent_ptr);
-                    if (next_elem_iter
-                        == std::ranges::end(m_abnormal_elements)) {
-                        return;
-                    }
-                    std::swap(*next_elem_iter, m_abnormal_elements.back());
-                    m_abnormal_elements.pop_back();
+                while (m_abnormal_elements.contains(m_min_absent_ptr)) {
+                    m_abnormal_elements.erase(m_min_absent_ptr);
                     ++m_min_absent_ptr;
                 }
             } else {
-                m_abnormal_elements.push_back(element);
+                m_abnormal_elements.insert(element);
             }
         }
     };
