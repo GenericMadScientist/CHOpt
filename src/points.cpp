@@ -437,9 +437,10 @@ std::vector<PointPtr> next_matching_vector(const std::vector<Point>& points,
     if (points.empty()) {
         return {};
     }
-    std::vector<PointPtr> next_matching_points;
     const auto* next_matching_point
         = std::next(points.data(), static_cast<std::ptrdiff_t>(points.size()));
+    std::vector<PointPtr> next_matching_points;
+    next_matching_points.reserve(points.size());
     for (const auto* p = std::prev(next_matching_point);; --p) {
         if (predicate(*p)) {
             next_matching_point = p;

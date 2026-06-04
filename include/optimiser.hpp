@@ -164,6 +164,8 @@ private:
     [[nodiscard]] std::tuple<SightRead::Beat, SightRead::Beat>
     act_duration(ProtoActivation act, PathGraphVertex vertex, double sqz_level,
                  SpPosition min_whammy_force) const;
+    [[nodiscard]] bool act_contains_sp_phrase(PointPtr start,
+                                              PointPtr end) const;
 
 public:
     Optimiser(const ProcessedSong* song, const std::atomic<bool>* terminate,

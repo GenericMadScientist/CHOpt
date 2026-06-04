@@ -243,7 +243,8 @@ void Optimiser::add_acts_from_starting_point(
             attained_act_ends.add(q);
             break;
         case ActValidity::surplus_sp:
-            if (sp_bar.minimum_sufficient_to_activate()) {
+            if (sp_bar.minimum_sufficient_to_activate()
+                || !act_contains_sp_phrase(starting_point, q)) {
                 attained_act_ends.add(q);
             }
             ++q;
@@ -446,4 +447,9 @@ Optimiser::act_duration(ProtoActivation act, PathGraphVertex vertex,
         = m_song->is_candidate_valid(candidate, sqz_level, min_whammy_force);
     assert(result.validity == ActValidity::success);
     return {min_pos.beat, result.ending_position.beat};
+}
+
+bool Optimiser::act_contains_sp_phrase(PointPtr start, PointPtr end) const
+{
+    return m_song->points().next_sp_granting_note(start) <= end;
 }
