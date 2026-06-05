@@ -76,9 +76,9 @@ public:
 
 struct SpSustain {
     SightRead::Tick note_position;
-    SightRead::Beat whammy_start;
-    SightRead::Beat whammy_end;
-    SightRead::Beat burst_position;
+    SpPosition whammy_start;
+    SpPosition whammy_end;
+    SpPosition burst_position;
     bool releasable_for_burst;
 };
 

@@ -105,7 +105,8 @@ public:
 };
 
 std::vector<SpSustain> sp_whammy_spans(const SightRead::NoteTrack& track,
-                                       const PathingSettings& pathing_settings)
+                                       const PathingSettings& pathing_settings,
+                                       const SpTimeMap& time_map)
 {
     const auto& tempo_map = track.global_data().tempo_map();
     const ExtendedSustainGroups extended_sustains {track.notes()};
@@ -144,14 +145,24 @@ std::vector<SpSustain> sp_whammy_spans(const SightRead::NoteTrack& track,
                     * pathing_settings.early_whammy;
             }
 
-            const auto whammy_start = tempo_map.to_beats(
+            const auto whammy_start_beat = tempo_map.to_beats(
                 tempo_map.to_seconds(note->position) - early_timing_window);
-            const auto whammy_end = tempo_map.to_beats(note->position + length);
+            const SpPosition whammy_start {
+                .beat = whammy_start_beat,
+                .sp_measure = time_map.to_sp_measures(whammy_start_beat)};
+            const auto whammy_end_beat
+                = tempo_map.to_beats(note->position + length);
+            const SpPosition whammy_end {
+                .beat = whammy_end_beat,
+                .sp_measure = time_map.to_sp_measures(whammy_end_beat)};
             auto burst_position = whammy_end;
             if (pathing_settings.engine->has_whammy_bursts()) {
-                burst_position
+                burst_position.beat
                     -= SightRead::Beat {pathing_settings.engine->burst_size()};
-                burst_position = std::max(burst_position, whammy_start);
+                burst_position.beat
+                    = std::max(burst_position.beat, whammy_start.beat);
+                burst_position.sp_measure
+                    = time_map.to_sp_measures(burst_position.beat);
             }
 
             spans.emplace_back(
@@ -216,25 +227,30 @@ SpData::SpData(const SightRead::NoteTrack& track,
     , m_sp_gain_rate {pathing_settings.engine->sp_gain_rate()}
     , m_default_net_sp_gain_rate {m_sp_gain_rate - 1 / DEFAULT_BEATS_PER_BAR}
 {
-    m_sp_sustains = sp_whammy_spans(track, pathing_settings);
+    m_sp_sustains = sp_whammy_spans(track, pathing_settings, m_time_map);
     for (auto& sustain : m_sp_sustains) {
-        auto second_start = m_time_map.to_seconds(sustain.whammy_start);
+        auto second_start = m_time_map.to_seconds(sustain.whammy_start.beat);
         second_start += pathing_settings.lazy_whammy;
         second_start += pathing_settings.video_lag;
-        sustain.whammy_start = m_time_map.to_beats(second_start);
+        sustain.whammy_start
+            = {.beat = m_time_map.to_beats(second_start),
+               .sp_measure = m_time_map.to_sp_measures(second_start)};
         if (pathing_settings.engine->sustain_ticks_metric()
             == SustainTicksMetric::Fretbar) {
             const auto burst_size
                 = m_time_map.to_seconds(SightRead::Fretbar {0.25});
-            sustain.whammy_end = m_time_map.to_beats(
-                m_time_map.to_seconds(sustain.whammy_end) - burst_size);
+            const auto whammy_end_seconds
+                = m_time_map.to_seconds(sustain.whammy_end.beat) - burst_size;
+            sustain.whammy_end.beat = m_time_map.to_beats(whammy_end_seconds);
+            sustain.whammy_end.sp_measure
+                = m_time_map.to_sp_measures(whammy_end_seconds);
             sustain.burst_position = sustain.whammy_end;
         }
     }
 
     const auto [first, last]
         = std::ranges::remove_if(m_sp_sustains, [](const auto& sustain) {
-              return sustain.whammy_start >= sustain.whammy_end;
+              return sustain.whammy_start.beat >= sustain.whammy_end.beat;
           });
     m_sp_sustains.erase(first, last);
 
@@ -244,12 +260,12 @@ SpData::SpData(const SightRead::NoteTrack& track,
 
     const auto latest_ending_sp_sustain = std::ranges::max_element(
         m_sp_sustains, std::less {},
-        [](const auto& sust) { return sust.whammy_end; });
-    m_last_whammy_point = latest_ending_sp_sustain->whammy_end;
+        [](const auto& sust) { return sust.whammy_end.beat; });
+    m_last_whammy_point = latest_ending_sp_sustain->whammy_end.beat;
     auto p = m_sp_sustains.cbegin();
     for (auto pos = 0; pos < m_last_whammy_point.value(); ++pos) {
         p = std::find_if_not(p, m_sp_sustains.cend(), [=](const auto& x) {
-            return x.whammy_end.value() <= pos;
+            return x.whammy_end.beat.value() <= pos;
         });
         m_initial_guesses.push_back(p);
     }
@@ -266,8 +282,9 @@ SpData::first_sp_sustain_after(SightRead::Beat pos) const
         ? m_sp_sustains.cbegin()
         : m_initial_guesses.at(index);
 
-    return std::find_if_not(begin, m_sp_sustains.cend(),
-                            [=](const auto& x) { return x.whammy_end <= pos; });
+    return std::find_if_not(begin, m_sp_sustains.cend(), [=](const auto& x) {
+        return x.whammy_end.beat <= pos;
+    });
 }
 
 SpData::WhammyPropagationState
@@ -310,18 +327,18 @@ double SpData::propagate_sp_over_whammy_max(SpPosition start, SpPosition end,
     assert(start.beat <= end.beat);
 
     SightRead::Beat reserved_burst_size {0.0};
-    SightRead::Beat end_of_reserved_burst {0.0};
+    SpPosition end_of_reserved_burst {.beat = SightRead::Beat {0.0},
+                                      .sp_measure = SpMeasure {0.0}};
     SightRead::Beat last_burst_position {
         -std::numeric_limits<double>::infinity()};
     for (auto p = first_sp_sustain_after(start.beat);
-         (p != m_sp_sustains.cend()) && (p->whammy_start < end.beat); ++p) {
-        if (p->burst_position <= last_burst_position) {
+         (p != m_sp_sustains.cend()) && (p->whammy_start.beat < end.beat);
+         ++p) {
+        if (p->burst_position.beat <= last_burst_position) {
             continue;
         }
-        if (p->whammy_start > start.beat) {
-            SpPosition sustain_start {
-                .beat = p->whammy_start,
-                .sp_measure = m_time_map.to_sp_measures(p->whammy_start)};
+        if (p->whammy_start.beat > start.beat) {
+            SpPosition sustain_start = p->whammy_start;
             const auto meas_diff = sustain_start.sp_measure - start.sp_measure;
             sp -= meas_diff.value() / MEASURES_PER_BAR;
             if (sp < 0.0) {
@@ -335,34 +352,31 @@ double SpData::propagate_sp_over_whammy_max(SpPosition start, SpPosition end,
 
         const auto sustain_end
             = p->releasable_for_burst ? p->burst_position : p->whammy_end;
-        const auto range_end = std::min(end.beat, sustain_end);
+        const auto range_end = std::min(end.beat, sustain_end.beat);
         if (range_end < start.beat) {
             continue;
         }
 
         sp = add_reserved_burst(sp, reserved_burst_size);
         sp = propagate_over_whammy_range(start.beat, range_end, sp);
-        if (sp < 0.0 || sustain_end >= end.beat) {
+        if (sp < 0.0 || sustain_end.beat >= end.beat) {
             return sp;
         }
-        start = {.beat = sustain_end,
-                 .sp_measure = m_time_map.to_sp_measures(sustain_end)};
-        reserved_burst_size = p->whammy_end - sustain_end;
+        start = sustain_end;
+        reserved_burst_size = p->whammy_end.beat - sustain_end.beat;
         end_of_reserved_burst = p->whammy_end;
         if (p->releasable_for_burst) {
-            last_burst_position = p->burst_position;
+            last_burst_position = p->burst_position.beat;
         }
     }
 
     if (reserved_burst_size.value() > 0.0
-        && end_of_reserved_burst > start.beat) {
-        const auto end_of_burst_meas
-            = m_time_map.to_sp_measures(end_of_reserved_burst);
-        const auto meas_diff = end_of_burst_meas - start.sp_measure;
+        && end_of_reserved_burst.sp_measure > start.sp_measure) {
+        const auto meas_diff
+            = end_of_reserved_burst.sp_measure - start.sp_measure;
         sp -= meas_diff.value() / MEASURES_PER_BAR;
         sp = add_reserved_burst(sp, reserved_burst_size);
-        start
-            = {.beat = end_of_reserved_burst, .sp_measure = end_of_burst_meas};
+        start = end_of_reserved_burst;
     }
 
     const auto meas_diff = end.sp_measure - start.sp_measure;
@@ -426,7 +440,7 @@ bool SpData::is_in_whammy_ranges(SightRead::Beat beat) const
     if (p == m_sp_sustains.cend()) {
         return false;
     }
-    return p->whammy_start <= beat;
+    return p->whammy_start.beat <= beat;
 }
 
 double SpData::sp_from_whammying_range(SightRead::Beat start,
@@ -453,21 +467,22 @@ double SpData::available_whammy(SightRead::Beat start, SightRead::Beat end,
     SightRead::Beat last_burst_position {
         -std::numeric_limits<double>::infinity()};
 
-    for (auto p = first_sp_sustain_after(start); p < m_sp_sustains.cend()
-         && p->whammy_start < end && p->note_position < note_pos && start < end;
+    for (auto p = first_sp_sustain_after(start);
+         p < m_sp_sustains.cend() && p->whammy_start.beat < end
+         && p->note_position < note_pos && start < end;
          ++p) {
-        if (p->burst_position <= last_burst_position) {
+        if (p->burst_position.beat <= last_burst_position) {
             continue;
         }
-        const auto whammy_start = std::max(p->whammy_start, start);
-        const auto whammy_end = std::min(p->whammy_end, end);
+        const auto whammy_start = std::max(p->whammy_start.beat, start);
+        const auto whammy_end = std::min(p->whammy_end.beat, end);
         total_whammy += sp_from_whammying_range(whammy_start, whammy_end);
         if (p->releasable_for_burst) {
-            start = std::max(start, p->burst_position);
+            start = std::max(start, p->burst_position.beat);
         } else {
-            start = std::max(start, p->whammy_end);
+            start = std::max(start, p->whammy_end.beat);
         }
-        last_burst_position = p->burst_position;
+        last_burst_position = p->burst_position.beat;
     }
 
     return total_whammy;
@@ -486,11 +501,9 @@ SpPosition SpData::activation_end_point(SpPosition start, SpPosition end,
                                         double sp_bar_amount) const
 {
     auto p = first_sp_sustain_after(start.beat);
-    while ((p != m_sp_sustains.cend()) && (p->whammy_start < end.beat)) {
-        if (p->whammy_start > start.beat) {
-            SpPosition sustain_start {
-                .beat = p->whammy_start,
-                .sp_measure = m_time_map.to_sp_measures(p->whammy_start)};
+    while ((p != m_sp_sustains.cend()) && (p->whammy_start.beat < end.beat)) {
+        if (p->whammy_start.beat > start.beat) {
+            SpPosition sustain_start = p->whammy_start;
             const auto sp_drop = sp_deduction(start, sustain_start);
             if (sp_bar_amount < sp_drop) {
                 return sp_drain_end_point(start, sp_bar_amount);
@@ -498,7 +511,7 @@ SpPosition SpData::activation_end_point(SpPosition start, SpPosition end,
             sp_bar_amount -= sp_drop;
             start = sustain_start;
         }
-        const auto range_end = std::min(end.beat, p->whammy_end);
+        const auto range_end = std::min(end.beat, p->whammy_end.beat);
         const auto new_sp_bar_amount
             = propagate_over_whammy_range(start.beat, range_end, sp_bar_amount);
         if (new_sp_bar_amount < 0.0) {
@@ -508,11 +521,10 @@ SpPosition SpData::activation_end_point(SpPosition start, SpPosition end,
             return {.beat = end_beat, .sp_measure = end_meas};
         }
         sp_bar_amount = new_sp_bar_amount;
-        if (p->whammy_end >= end.beat) {
+        if (p->whammy_end.beat >= end.beat) {
             return end;
         }
-        start = {.beat = p->whammy_end,
-                 .sp_measure = m_time_map.to_sp_measures(p->whammy_end)};
+        start = p->whammy_end;
         ++p;
     }
 
@@ -558,5 +570,5 @@ SightRead::Beat SpData::next_whammy_point(SightRead::Beat pos) const
     if (p == m_sp_sustains.cend()) {
         return SightRead::Beat {std::numeric_limits<double>::infinity()};
     }
-    return std::max(p->whammy_start, pos);
+    return std::max(p->whammy_start.beat, pos);
 }
