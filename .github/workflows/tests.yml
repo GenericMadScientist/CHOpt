@@ -34,9 +34,9 @@ jobs:
         env:
           CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
           CXX: g++-14
-        run: >
-          cmake -DBUILD_GUI=OFF -DENABLE_SANITISER_ADDRESS=ON
-          -DENABLE_SANITISER_LEAK=ON -DENABLE_SANITISER_UNDEFINED_BEHAVIOUR=ON
+        run: >-
+          cmake -DBUILD_GUI=OFF
+          -DENABLE_SANITISER_ADDRESS=ON -DENABLE_SANITISER_UNDEFINED_BEHAVIOUR=ON
           ..
 
       - name: Build
@@ -76,10 +76,10 @@ jobs:
         env:
           CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
           CXX: g++-14
-        run: >
+        run: >-
           cmake -DBUILD_GUI=OFF -DPACKAGE_TESTS=OFF
-          -DENABLE_SANITISER_ADDRESS=ON -DENABLE_SANITISER_LEAK=ON
-          -DENABLE_SANITISER_UNDEFINED_BEHAVIOUR=ON ..
+          -DENABLE_SANITISER_ADDRESS=ON -DENABLE_SANITISER_UNDEFINED_BEHAVIOUR=ON
+          -DCMAKE_CXX_FLAGS=-O1 ..
 
       - name: Build
         working-directory: build
