@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cassert>
 #include <iterator>
 #include <stdexcept>
 
@@ -143,7 +144,8 @@ Optimiser::out_edges(OptimiserGraph& graph, std::size_t vertex_id) const
 {
     const auto vertex = graph.vertex_property(vertex_id);
     const auto early_act_bound = earliest_fill_appearance(vertex);
-    PointPtrRangeSet attained_act_ends {vertex.point, m_song->points().cend()};
+    ActivationEndSet<PointPtr> attained_act_ends {vertex.point,
+                                                  m_song->points().cend()};
     auto lower_bound_set = false;
 
     OutEdgeAggregate<PathGraphVertex, ProtoActivation> optimal_out_edges;
@@ -198,8 +200,8 @@ Optimiser::out_edges(OptimiserGraph& graph, std::size_t vertex_id) const
                     return pt.hit_window_end.sp_measure <= earliest_act_end;
                 });
             --earliest_pt_end;
-            attained_act_ends
-                = PointPtrRangeSet {earliest_pt_end, m_song->points().cend()};
+            attained_act_ends = ActivationEndSet<PointPtr> {
+                earliest_pt_end, m_song->points().cend()};
             lower_bound_set = true;
         }
         add_acts_from_starting_point(p, starting_pos, sp_bar, attained_act_ends,
@@ -211,7 +213,7 @@ Optimiser::out_edges(OptimiserGraph& graph, std::size_t vertex_id) const
 
 void Optimiser::add_acts_from_starting_point(
     PointPtr starting_point, SpPosition starting_pos, SpBar sp_bar,
-    PointPtrRangeSet& attained_act_ends,
+    ActivationEndSet<PointPtr>& attained_act_ends,
     OutEdgeAggregate<PathGraphVertex, ProtoActivation>& optimal_out_edges) const
 {
     for (const auto* q = attained_act_ends.lowest_absent_element();

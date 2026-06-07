@@ -121,6 +121,7 @@ if(PACKAGE_TESTS)
   add_executable(
     chopt_tests
     tests/test_main.cpp
+    tests/activationendset_unittest.cpp
     tests/imagebuilder_unittest.cpp
     tests/optimiser_unittest.cpp
     tests/pathgraph_unittest.cpp

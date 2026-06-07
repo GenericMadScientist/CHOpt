@@ -20,16 +20,15 @@
 #define CHOPT_OPTIMISER_HPP
 
 #include <atomic>
-#include <cassert>
 #include <limits>
 #include <tuple>
 #include <vector>
 
 #include <boost/container_hash/hash.hpp>
-#include <boost/unordered/unordered_flat_set.hpp>
 
 #include <sightread/time.hpp>
 
+#include "activationendset.hpp"
 #include "pathgraph.hpp"
 #include "points.hpp"
 #include "processed.hpp"
@@ -70,57 +69,6 @@ using OptimiserGraph = PathGraph<PathGraphVertex, std::vector<ProtoActivation>>;
 // returned by Optimiser without needing access to Optimiser itself.
 class Optimiser {
 private:
-    // The idea is this is like a std::set<PointPtr>, but is add-only and
-    // takes advantage of the fact that we often tend to add all elements
-    // before a certain point.
-    class PointPtrRangeSet {
-    private:
-        PointPtr m_start;
-        PointPtr m_end;
-        PointPtr m_min_absent_ptr;
-        boost::unordered_flat_set<PointPtr> m_abnormal_elements;
-
-    public:
-        PointPtrRangeSet(PointPtr start, PointPtr end)
-            : m_start {start}
-            , m_end {end}
-            , m_min_absent_ptr {start}
-        {
-            assert(start <= end);
-        }
-
-        [[nodiscard]] bool contains(PointPtr element) const
-        {
-            if (m_start > element || m_end <= element) {
-                return false;
-            }
-            if (element < m_min_absent_ptr) {
-                return true;
-            }
-            return m_abnormal_elements.contains(element);
-        }
-
-        [[nodiscard]] PointPtr lowest_absent_element() const
-        {
-            return m_min_absent_ptr;
-        }
-
-        void add(PointPtr element)
-        {
-            assert(m_start <= element);
-            assert(element < m_end);
-            if (m_min_absent_ptr == element) {
-                ++m_min_absent_ptr;
-                while (m_abnormal_elements.contains(m_min_absent_ptr)) {
-                    m_abnormal_elements.erase(m_min_absent_ptr);
-                    ++m_min_absent_ptr;
-                }
-            } else {
-                m_abnormal_elements.insert(element);
-            }
-        }
-    };
-
     static constexpr double NEG_INF = -std::numeric_limits<double>::infinity();
     static constexpr double BASE_DRUM_FILL_DELAY = 2.0 * 100;
     const ProcessedSong* m_song;
@@ -142,7 +90,7 @@ private:
     out_edges(OptimiserGraph& graph, std::size_t vertex) const;
     void add_acts_from_starting_point(
         PointPtr starting_point, SpPosition starting_pos, SpBar sp_bar,
-        PointPtrRangeSet& attained_act_ends,
+        ActivationEndSet<PointPtr>& attained_act_ends,
         OutEdgeAggregate<PathGraphVertex, ProtoActivation>& optimal_out_edges)
         const;
 
