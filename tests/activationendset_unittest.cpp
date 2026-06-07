@@ -143,3 +143,22 @@ BOOST_AUTO_TEST_CASE(lowest_absent_element_is_first_element_after_start)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(next_absent_element)
+
+BOOST_AUTO_TEST_CASE(returns_first_next_element_out_of_set)
+{
+    IntSet set {0, 3};
+    set.add(1);
+
+    BOOST_CHECK_EQUAL(set.next_absent_element(0), 2);
+}
+
+BOOST_AUTO_TEST_CASE(returns_max_of_range_if_all_subsequent_elements_in_set)
+{
+    const IntSet set {0, 3};
+
+    BOOST_CHECK_EQUAL(set.next_absent_element(2), 3);
+}
+
+BOOST_AUTO_TEST_SUITE_END()

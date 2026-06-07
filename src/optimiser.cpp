@@ -217,12 +217,8 @@ void Optimiser::add_acts_from_starting_point(
     OutEdgeAggregate<PathGraphVertex, ProtoActivation>& optimal_out_edges) const
 {
     for (const auto* q = attained_act_ends.lowest_absent_element();
-         q < m_song->points().cend();) {
-        if (attained_act_ends.contains(q)) {
-            ++q;
-            continue;
-        }
-
+         q < m_song->points().cend();
+         q = attained_act_ends.next_absent_element(q)) {
         ActivationCandidate candidate {.act_start = starting_point,
                                        .act_end = q,
                                        .earliest_activation_point
@@ -239,7 +235,7 @@ void Optimiser::add_acts_from_starting_point(
 
             // We cannot hit any subsequent hold point, so go straight to
             // the next non-hold point.
-            q = m_song->points().next_non_hold_point(q);
+            q = std::prev(m_song->points().next_non_hold_point(q));
             continue;
         case ActValidity::success:
             attained_act_ends.add(q);
@@ -249,7 +245,6 @@ void Optimiser::add_acts_from_starting_point(
                 || !act_contains_sp_phrase(starting_point, q)) {
                 attained_act_ends.add(q);
             }
-            ++q;
             continue;
         }
 
@@ -263,8 +258,6 @@ void Optimiser::add_acts_from_starting_point(
         optimal_out_edges.add_activation(
             destination, {{.act_start = starting_point, .act_end = q}},
             act_score);
-
-        ++q;
     }
 }
 

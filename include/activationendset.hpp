@@ -55,6 +55,17 @@ public:
 
     [[nodiscard]] T lowest_absent_element() const { return m_min_absent_ptr; }
 
+    [[nodiscard]] T next_absent_element(T element) const
+    {
+        while (++element < m_end) {
+            if (!m_abnormal_elements.contains(element)) {
+                return element;
+            }
+        }
+
+        return m_end;
+    }
+
     void add(T element)
     {
         assert(m_start <= element);
