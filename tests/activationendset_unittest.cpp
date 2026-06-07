@@ -162,3 +162,49 @@ BOOST_AUTO_TEST_CASE(returns_max_of_range_if_all_subsequent_elements_in_set)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(temporary_elements)
+
+BOOST_AUTO_TEST_CASE(contains_includes_temporary_elements)
+{
+    IntSet set {0, 3};
+    set.add_temporary_element(1);
+
+    BOOST_CHECK(set.contains(1));
+}
+
+BOOST_AUTO_TEST_CASE(contains_ignores_temporary_elements_after_clear)
+{
+    IntSet set {0, 3};
+    set.add_temporary_element(1);
+    set.clear_temporary_elements();
+
+    BOOST_CHECK(!set.contains(1));
+}
+
+BOOST_AUTO_TEST_CASE(contains_retains_normal_elements_after_clear)
+{
+    IntSet set {0, 3};
+    set.add(1);
+    set.clear_temporary_elements();
+
+    BOOST_CHECK(set.contains(1));
+}
+
+BOOST_AUTO_TEST_CASE(lowest_absent_element_respects_temporary_elements)
+{
+    IntSet set {0, 3};
+    set.add_temporary_element(0);
+
+    BOOST_CHECK_EQUAL(set.lowest_absent_element(), 1);
+}
+
+BOOST_AUTO_TEST_CASE(next_absent_element_respects_temporary_elements)
+{
+    IntSet set {0, 3};
+    set.add_temporary_element(1);
+
+    BOOST_CHECK_EQUAL(set.next_absent_element(0), 2);
+}
+
+BOOST_AUTO_TEST_SUITE_END()

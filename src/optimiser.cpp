@@ -206,6 +206,9 @@ Optimiser::out_edges(OptimiserGraph& graph, std::size_t vertex_id) const
         }
         add_acts_from_starting_point(p, starting_pos, sp_bar, attained_act_ends,
                                      optimal_out_edges);
+        if (p->is_sp_granting_note) {
+            attained_act_ends.clear_temporary_elements();
+        }
     }
 
     return optimal_out_edges;
@@ -244,6 +247,8 @@ void Optimiser::add_acts_from_starting_point(
             if (sp_bar.minimum_sufficient_to_activate()
                 || !act_contains_sp_phrase(starting_point, q)) {
                 attained_act_ends.add(q);
+            } else {
+                attained_act_ends.add_temporary_element(q);
             }
             continue;
         }
