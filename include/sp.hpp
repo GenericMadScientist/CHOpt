@@ -139,9 +139,10 @@ public:
     // Return the maximum amount of SP available at the end after propagating
     // over a range, or -1 if SP runs out at any point. Only includes SP gain
     // from whammy.
-    [[nodiscard]] double propagate_sp_over_whammy_max(SpPosition start,
-                                                      SpPosition end,
-                                                      double sp) const;
+    [[nodiscard]] double propagate_sp_over_whammy_max(
+        SpPosition start, SpPosition end, double sp,
+        SightRead::Beat last_burst_position
+        = SightRead::Beat {-std::numeric_limits<double>::infinity()}) const;
     // Return the minimum amount of SP is available at the end after propagating
     // over a range, returning 0.0 if the minimum would hypothetically be
     // negative.

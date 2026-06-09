@@ -1465,6 +1465,67 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
     BOOST_CHECK_GT(result.ending_position.beat.value(), 27.3);
 }
 
+BOOST_AUTO_TEST_CASE(
+    is_candidate_valid_does_not_double_whammy_right_before_sp_granting_note)
+{
+    std::vector<SightRead::Note> notes {make_note(0), make_note(192, 192),
+                                        make_note(384, 192), make_note(5146)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {200}}};
+    SightRead::NoteTrack note_track {
+        notes, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
+    ProcessedSong track {note_track, default_measure_mode_data(),
+                         default_guitar_pathing_settings()};
+    const auto& points = track.points();
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cend() - 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
+
+    BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
+                      ActValidity::insufficient_sp);
+}
+
+// This bug is from Y'All Want a Single, LMBECIL chart. The interaction happens
+// specifically when taking the burst early would be suboptimal due to maxing
+// out SP.
+BOOST_AUTO_TEST_CASE(
+    is_candidate_valid_does_not_exclude_whammy_if_end_of_sp_granting_note_is_after_whammy_burst)
+{
+    std::vector<SightRead::Note> notes {make_note(0), make_note(192, 64),
+                                        make_note(6420)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {200}}};
+    SightRead::NoteTrack note_track {
+        notes, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
+    ProcessedSong track {note_track, default_measure_mode_data(),
+                         default_guitar_pathing_settings()};
+    const auto& points = track.points();
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cend() - 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {1.0,
+                   1.0,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
+
+    BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
+                      ActValidity::success);
+}
+
 BOOST_AUTO_TEST_CASE(adjusted_hit_window_functions_return_correct_values)
 {
     std::vector<SightRead::Note> notes {make_note(0)};

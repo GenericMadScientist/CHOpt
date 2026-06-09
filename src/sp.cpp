@@ -321,16 +321,16 @@ double SpData::add_reserved_burst(double sp,
     return sp;
 }
 
-double SpData::propagate_sp_over_whammy_max(SpPosition start, SpPosition end,
-                                            double sp) const
+double
+SpData::propagate_sp_over_whammy_max(SpPosition start, SpPosition end,
+                                     double sp,
+                                     SightRead::Beat last_burst_position) const
 {
     assert(start.beat <= end.beat);
 
     SightRead::Beat reserved_burst_size {0.0};
     SpPosition end_of_reserved_burst {.beat = SightRead::Beat {0.0},
                                       .sp_measure = SpMeasure {0.0}};
-    SightRead::Beat last_burst_position {
-        -std::numeric_limits<double>::infinity()};
     for (auto p = first_sp_sustain_after(start.beat);
          (p != m_sp_sustains.cend()) && (p->whammy_start.beat < end.beat);
          ++p) {
@@ -353,12 +353,11 @@ double SpData::propagate_sp_over_whammy_max(SpPosition start, SpPosition end,
         const auto sustain_end
             = p->releasable_for_burst ? p->burst_position : p->whammy_end;
         const auto range_end = std::min(end.beat, sustain_end.beat);
-        if (range_end < start.beat) {
-            continue;
-        }
 
         sp = add_reserved_burst(sp, reserved_burst_size);
-        sp = propagate_over_whammy_range(start.beat, range_end, sp);
+        if (start.beat < range_end) {
+            sp = propagate_over_whammy_range(start.beat, range_end, sp);
+        }
         if (sp < 0.0 || sustain_end.beat >= end.beat) {
             return sp;
         }

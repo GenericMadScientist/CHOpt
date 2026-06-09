@@ -56,6 +56,7 @@ private:
     double m_sp;
     bool m_overlap_engine;
     SpEngineValues m_sp_engine_values;
+    SightRead::Beat m_last_burst_position;
 
     static constexpr double MEASURES_PER_BAR = 8.0;
 
@@ -66,6 +67,7 @@ public:
         , m_sp {sp}
         , m_overlap_engine {overlap_engine}
         , m_sp_engine_values {sp_engine_values}
+        , m_last_burst_position {-std::numeric_limits<double>::infinity()}
     {
     }
 
@@ -85,13 +87,14 @@ public:
                             bool does_overlap)
     {
         if (does_overlap) {
-            m_sp = sp_data.propagate_sp_over_whammy_max(m_position,
-                                                        end_position, m_sp);
+            m_sp = sp_data.propagate_sp_over_whammy_max(
+                m_position, end_position, m_sp, m_last_burst_position);
         } else {
             m_sp -= (end_position.sp_measure - m_position.sp_measure).value()
                 / MEASURES_PER_BAR;
         }
         m_position = end_position;
+        m_last_burst_position = end_position.beat;
     }
 
     void update_early_end(SpPosition sp_note_start, const SpData& sp_data,
@@ -123,7 +126,7 @@ public:
         // case we just hit the note as early as possible.
         if (does_overlap) {
             const auto new_sp = sp_data.propagate_sp_over_whammy_max(
-                sp_note_start, sp_note_end, m_sp);
+                sp_note_start, sp_note_end, m_sp, m_last_burst_position);
             if (new_sp >= 0.0) {
                 m_sp = new_sp;
                 m_position = sp_note_end;
