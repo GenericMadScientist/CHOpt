@@ -364,9 +364,7 @@ SpData::propagate_sp_over_whammy_max(SpPosition start, SpPosition end,
         start = sustain_end;
         reserved_burst_size = p->whammy_end.beat - sustain_end.beat;
         end_of_reserved_burst = p->whammy_end;
-        if (p->releasable_for_burst) {
-            last_burst_position = p->burst_position.beat;
-        }
+        last_burst_position = p->burst_position.beat;
     }
 
     if (reserved_burst_size.value() > 0.0

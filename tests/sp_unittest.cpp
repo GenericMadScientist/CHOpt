@@ -504,6 +504,31 @@ BOOST_AUTO_TEST_CASE(whammy_from_end_of_sustain_counted_when_starting_near_end)
                       0.9375, 0.0001);
 }
 
+// This would happen on The Only Difference expert keys (RBN chart), an extended
+// SP sustain where the notes are of different lengths would do the longer note
+// then the shorter note. Additionally, there is another sustain that extends
+// after the longer note which stops the longer note having a burst. This would
+// cause the shorter note to be processed, after which the start time would be
+// pulled back costing SP at the end.
+BOOST_AUTO_TEST_CASE(extended_sustain_sub_sp_sustain_doesnt_drain_sp)
+{
+    std::vector<SightRead::Note> notes {
+        make_note(192, 384), make_note(192, 192, SightRead::FIVE_FRET_RED),
+        make_note(480, 192, SightRead::FIVE_FRET_RED)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {1}}};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
+    SpData sp_data {track, default_measure_mode_data(),
+                    default_guitar_pathing_settings()};
+
+    BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_max(
+                          {SightRead::Beat(1.0), SpMeasure(0.25)},
+                          {SightRead::Beat(4.0), SpMeasure(1.0)}, 1.0),
+                      0.96875, 0.0001);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(is_in_whammy_ranges_works_correctly)
