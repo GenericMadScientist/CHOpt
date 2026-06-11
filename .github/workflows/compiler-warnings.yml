@@ -6,7 +6,7 @@ permissions: {}
 
 jobs:
   msvc:
-    runs-on: windows-2025
+    runs-on: windows-2025-vs2026
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -27,7 +27,7 @@ jobs:
       - name: Generate build files
         working-directory: build
         env:
-          CMAKE_GENERATOR: "Visual Studio 17 2022"
+          CMAKE_GENERATOR: "Visual Studio 18 2026"
           CMAKE_TOOLCHAIN_FILE: "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
         run: cmake ..
 

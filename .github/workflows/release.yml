@@ -23,7 +23,7 @@ jobs:
           fi
 
   windows:
-    runs-on: windows-2025
+    runs-on: windows-2025-vs2026
     needs: determine-version
     steps:
       - name: Checkout
@@ -45,7 +45,7 @@ jobs:
       - name: Generate build files
         working-directory: build
         env:
-          CMAKE_GENERATOR: "Visual Studio 17 2022"
+          CMAKE_GENERATOR: "Visual Studio 18 2026"
           CMAKE_TOOLCHAIN_FILE: "C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
         run: cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF ..
 
@@ -67,7 +67,7 @@ jobs:
         run: |
           mkdir ..\gui-artifacts
           Rename-Item choptgui.exe CHOpt.exe
-          $env:VCINSTALLDIR = "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise\VC"
+          $env:VCINSTALLDIR = "$env:ProgramFiles\Microsoft Visual Studio\18\Enterprise\VC"
           windeployqt --release --no-network --no-opengl-sw --no-svg --no-system-d3d-compiler --no-translations CHOpt.exe
           rm vc_redist.x64.exe
           rm -r imageformats
