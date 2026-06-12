@@ -1526,6 +1526,38 @@ BOOST_AUTO_TEST_CASE(
                       ActValidity::success);
 }
 
+// This bug is from Electro FAK, Matharu's chart. The 4th SP phrase (which is
+// overlapped) ends on a tiny R sustain. This sustain's whammy was ignored due
+// to the whammy burst being at the very start of the sustain.
+BOOST_AUTO_TEST_CASE(
+    is_candidate_valid_does_not_exclude_whammy_if_burst_is_right_at_start_of_sustain)
+{
+    std::vector<SightRead::Note> notes {make_note(0), make_note(192, 16),
+                                        make_note(4700)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {192}, .length = SightRead::Tick {200}}};
+    SightRead::NoteTrack note_track {
+        notes, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    note_track.sp_phrases(phrases);
+    ProcessedSong track {note_track, default_measure_mode_data(),
+                         default_guitar_pathing_settings()};
+    const auto& points = track.points();
+    ActivationCandidate candidate {
+        .act_start = points.cbegin(),
+        .act_end = points.cend() - 1,
+        .earliest_activation_point
+        = {.beat = SightRead::Beat(0.0), .sp_measure = SpMeasure(0.0)},
+        .sp_bar = {0.5,
+                   0.5,
+                   {.phrase_amount = 0.25,
+                    .unison_phrase_amount = 0.5,
+                    .minimum_to_activate = 0.5}}};
+
+    BOOST_CHECK_EQUAL(track.is_candidate_valid(candidate, 1.0).validity,
+                      ActValidity::success);
+}
+
 BOOST_AUTO_TEST_CASE(adjusted_hit_window_functions_return_correct_values)
 {
     std::vector<SightRead::Note> notes {make_note(0)};

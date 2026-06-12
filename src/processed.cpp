@@ -94,7 +94,11 @@ public:
                 / MEASURES_PER_BAR;
         }
         m_position = end_position;
-        m_last_burst_position = end_position.beat;
+        // The previous double is picked as if a burst happens on exactly
+        // end_position then it isn't added, so we want to retain it.
+        m_last_burst_position = SightRead::Beat {
+            std::nextafter(end_position.beat.value(),
+                           -std::numeric_limits<double>::infinity())};
     }
 
     void update_early_end(SpPosition sp_note_start, const SpData& sp_data,
