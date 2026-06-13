@@ -365,6 +365,37 @@ double Optimiser::act_squeeze_level(ProtoActivation act,
     return max_sqz;
 }
 
+namespace {
+SpPosition refined_start_pos(ProtoActivation act, PathGraphVertex vertex,
+                             double sqz_level, const ProcessedSong& song)
+{
+    const SightRead::Beat tolerance {0.01};
+
+    const auto* prev_point = std::prev(act.act_start);
+    auto range_start
+        = song.adjusted_hit_window_start(prev_point, sqz_level).beat;
+    auto range_end = song.adjusted_hit_window_end(act.act_start, 1.0).beat;
+
+    const auto start_pos_can_halfbar = [&](auto start) {
+        const auto sp_bar = song.total_available_sp(
+            vertex.position.beat, vertex.point, act.act_start, start);
+        return sp_bar.minimum_sufficient_to_activate();
+    };
+
+    assert(range_end >= range_start);
+    while ((range_end - range_start) > tolerance) {
+        const auto mid = (range_start + range_end) * 0.5;
+        if (start_pos_can_halfbar(mid)) {
+            range_end = mid;
+        } else {
+            range_start = mid;
+        }
+    }
+    return {.beat = range_start,
+            .sp_measure = song.sp_time_map().to_sp_measures(range_start)};
+}
+}
+
 SpPosition Optimiser::forced_whammy_end(ProtoActivation act,
                                         PathGraphVertex vertex,
                                         double sqz_level) const
@@ -379,23 +410,25 @@ SpPosition Optimiser::forced_whammy_end(ProtoActivation act,
                 .sp_measure = SpMeasure {POS_INF}};
     }
 
-    const auto* prev_point = std::prev(act.act_start);
     auto min_whammy_force = vertex.position;
     auto max_whammy_force = next_point->hit_window_end;
-    auto start_pos = m_song->adjusted_hit_window_start(prev_point, sqz_level);
+    const auto start_pos = refined_start_pos(act, vertex, sqz_level, *m_song);
+
     while ((max_whammy_force.beat - min_whammy_force.beat).value()
            > THRESHOLD) {
-        auto mid_beat
+        const auto mid_beat
             = (min_whammy_force.beat + max_whammy_force.beat) * (1.0 / 2);
-        auto mid_meas = m_song->sp_time_map().to_sp_measures(mid_beat);
-        SpPosition mid_pos {.beat = mid_beat, .sp_measure = mid_meas};
-        auto sp_bar = m_song->total_available_sp(
+        const auto mid_meas = m_song->sp_time_map().to_sp_measures(mid_beat);
+        const SpPosition mid_pos {.beat = mid_beat, .sp_measure = mid_meas};
+        const auto sp_bar = m_song->total_available_sp(
             vertex.position.beat, vertex.point, act.act_start, mid_beat);
-        ActivationCandidate candidate {.act_start = act.act_start,
-                                       .act_end = act.act_end,
-                                       .earliest_activation_point = start_pos,
-                                       .sp_bar = sp_bar};
-        auto result = m_song->is_candidate_valid(candidate, sqz_level, mid_pos);
+        const ActivationCandidate candidate {.act_start = act.act_start,
+                                             .act_end = act.act_end,
+                                             .earliest_activation_point
+                                             = start_pos,
+                                             .sp_bar = sp_bar};
+        const auto result
+            = m_song->is_candidate_valid(candidate, sqz_level, mid_pos);
         if (result.validity == ActValidity::success) {
             min_whammy_force = mid_pos;
         } else {
