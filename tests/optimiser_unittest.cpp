@@ -447,6 +447,47 @@ BOOST_AUTO_TEST_CASE(use_next_point_to_work_out_compressed_whammy)
     BOOST_CHECK_GT(act.whammy_end.value(), 17.45);
 }
 
+// This is adapted from The Way the News Goes from Anti Hero 2. On 80/100 the
+// final act would show some compressed whammy. This test is a minimised
+// version, stripping down the song while still exhibiting the bug.
+BOOST_AUTO_TEST_CASE(
+    compressed_whammy_is_correct_when_halfbar_hit_at_start_of_sp_sustain)
+{
+    std::vector<SightRead::Note> notes {
+        make_note(816, 201),  make_note(2304, 1152),
+        make_note(6864, 768), make_note(6888, 0, SightRead::FIVE_FRET_RED),
+        make_note(7680, 336), make_note(8064, 144),
+        make_note(8256, 960), make_note(13792, 368)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {768}, .length = SightRead::Tick {1680}},
+        {.position = SightRead::Tick {6864}, .length = SightRead::Tick {1488}}};
+
+    std::vector<SightRead::BPM> bpms {
+        {.position = SightRead::Tick {0}, .millibeats_per_minute = 120000.0},
+        {.position = SightRead::Tick {2112}, .millibeats_per_minute = 106000.0},
+        {.position = SightRead::Tick {5184}, .millibeats_per_minute = 151000.0},
+        {.position = SightRead::Tick {7296}, .millibeats_per_minute = 139000.0},
+        {.position = SightRead::Tick {7680}, .millibeats_per_minute = 137000.0},
+        {.position = SightRead::Tick {8064},
+         .millibeats_per_minute = 115000.0}};
+    SightRead::TempoMap tempo_map {{}, bpms, {}, 192};
+    auto global_data = std::make_shared<SightRead::SongGlobalData>();
+    global_data->tempo_map(tempo_map);
+
+    SightRead::NoteTrack note_track {notes, SightRead::TrackType::FiveFret,
+                                     global_data};
+
+    note_track.sp_phrases(phrases);
+    ProcessedSong track {note_track, default_measure_mode_data(),
+                         default_guitar_pathing_settings()};
+    Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
+
+    const auto opt_path = optimiser.optimal_path();
+    const auto& act = opt_path.activations.at(0);
+
+    BOOST_CHECK_GT(act.whammy_end.value(), 47.95);
+}
+
 // There was a bug where an activation after an SP sustain that comes after an
 // act with a forbidden squeeze would be shown to have ticks possible on the
 // forbidden squeeze even if ticks were not possible. An example is given by the
