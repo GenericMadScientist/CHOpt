@@ -65,7 +65,7 @@ private:
     }
 
 public:
-    ExtendedSustainGroups(const std::vector<SightRead::Note>& notes)
+    explicit ExtendedSustainGroups(const std::vector<SightRead::Note>& notes)
     {
         std::optional<ExtendedSustain> current_sustain;
         for (const auto& note : notes) {

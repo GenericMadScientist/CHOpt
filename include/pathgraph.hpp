@@ -52,7 +52,7 @@ private:
     boost::unordered_flat_map<VertexId, int> m_optimal_subpath_values;
 
 public:
-    PathGraph(VertexProperty root_vertex)
+    explicit PathGraph(VertexProperty root_vertex)
     {
         m_adjacency_list.emplace_back();
         m_vertex_properties.push_back(root_vertex);
