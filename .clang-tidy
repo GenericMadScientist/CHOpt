@@ -9,6 +9,7 @@ Checks: >
   cppcoreguidelines-*,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-type-vararg,
+  google-explicit-constructor,
   misc-*,
   -misc-const-correctness,
   -misc-include-cleaner,
