@@ -1,0 +1,25 @@
+[
+  {
+    "activations": [
+      "2(+1): 13th R (BO)",
+      "2: 2nd RY (BO)",
+      "2: 4th R (B)"
+    ],
+    "average_multiplier": 5.038,
+    "engine": "ch",
+    "no_sp_score": 269374,
+    "summary": "2(+1)-2-2",
+    "total_score": 338310
+  },
+  {
+    "activations": [
+      "2(+1): 13th R (BO)",
+      "2: 2nd RY (BO)",
+      "2: 4th R (B)"
+    ],
+    "engine": "yarg",
+    "no_sp_score": 267906,
+    "summary": "2(+1)-2-2",
+    "total_score": 336810
+  }
+]

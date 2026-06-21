@@ -1,0 +1,18 @@
+[
+  {
+    "activations": [
+      "1: 6th R",
+      "3(+1): 18th R (R)",
+      "2: 6th B (Y)",
+      "3: 3rd R (B)",
+      "2: 31st Y (B)",
+      "3: NN (O)"
+    ],
+    "average_multiplier": 5.141,
+    "early_whammy": 100,
+    "no_sp_score": 541950,
+    "squeeze": 50,
+    "summary": "1-3(+1)-2-3-2-3",
+    "total_score": 653342
+  }
+]

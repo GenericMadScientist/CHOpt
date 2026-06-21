@@ -1,0 +1,18 @@
+[
+  {
+    "activations": [
+      "2: 3rd R (B)",
+      "2: 10th Y (O)",
+      "2: 1st GRY",
+      "2: 1st GY (Y)",
+      "1(+1): 0.87 beats after 7th B (R)",
+      "2: NN (O)",
+      "4: 19th G (G)",
+      "1: 6th R (Y)"
+    ],
+    "average_multiplier": 5.738,
+    "no_sp_score": 680817,
+    "summary": "2-2-2-2-1(+1)-2-4-1",
+    "total_score": 897093
+  }
+]

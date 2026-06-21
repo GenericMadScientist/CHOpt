@@ -1,0 +1,16 @@
+[
+  {
+    "activations": [
+      "2(+1): 27th G (BO)",
+      "1: 3rd Y",
+      "1: 2.7 beats after 3rd R (RB)",
+      "1(+1): 19th B",
+      "2: 16th R (GYO)",
+      "1(+1): 0.8 beats after 5th G (YO)"
+    ],
+    "engine": "yarg",
+    "no_sp_score": 362076,
+    "summary": "2(+1)-1-1-1(+1)-2-1(+1)",
+    "total_score": 462776
+  }
+]

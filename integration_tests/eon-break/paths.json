@@ -1,0 +1,15 @@
+[
+  {
+    "activations": [
+      "2: NN (B)",
+      "2: NN (B)",
+      "2(+1): 33rd R (R)",
+      "2: NN (Y)",
+      "2: 14th B (B)"
+    ],
+    "average_multiplier": 4.671,
+    "no_sp_score": 224612,
+    "summary": "2-2-2(+1)-2-2",
+    "total_score": 268612
+  }
+]

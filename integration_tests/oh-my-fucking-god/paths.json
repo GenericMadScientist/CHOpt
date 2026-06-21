@@ -1,0 +1,13 @@
+[
+  {
+    "activations": [
+      "4: NN (open)",
+      "4(+1): 1st G (R)",
+      "2: 3rd Y (R)"
+    ],
+    "average_multiplier": 4.682,
+    "no_sp_score": 379532,
+    "summary": "4-4(+1)-2",
+    "total_score": 446532
+  }
+]

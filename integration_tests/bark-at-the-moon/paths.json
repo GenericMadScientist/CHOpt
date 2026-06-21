@@ -1,0 +1,19 @@
+[
+  {
+    "activations": [
+      "2: 1st B",
+      "2(+1): 4th R (G)",
+      "1(+1): 2nd GY (Y)",
+      "2(+1): NN",
+      "2: 12th R (B)",
+      "2(+1): 2nd R",
+      "1(+1): 1st GY (R)",
+      "3: 38th Y"
+    ],
+    "average_multiplier": 5.673,
+    "difficulty": "medium",
+    "no_sp_score": 183672,
+    "summary": "2-2(+1)-1(+1)-2(+1)-2-2(+1)-1(+1)-3",
+    "total_score": 263696
+  }
+]

@@ -1,0 +1,15 @@
+[
+  {
+    "activations": [
+      "2: 0.72 beats after 9th Y (YO)",
+      "1: 8th YB (RB)",
+      "1: NN (G)",
+      "3: 18th B (RB)",
+      "1: 3.3 beats after NN (G)"
+    ],
+    "engine": "gh1",
+    "no_sp_score": 234358,
+    "summary": "2-S1-1-S2-1-S1-3-1",
+    "total_score": 341430
+  }
+]

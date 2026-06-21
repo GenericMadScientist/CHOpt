@@ -1,0 +1,23 @@
+[
+  {
+    "activations": [
+      "2: 1st G",
+      "2(+1): 8th open (RBO)",
+      "3(+1): 6th GYO (BO)",
+      "2(+1): 7th RBO (R)",
+      "2: 5th R (BO)",
+      "2: 37th open (open)",
+      "3: 26th open (open)",
+      "3(+1): 8th O (O)",
+      "2: 2nd R (GY)",
+      "2: NN (G)",
+      "3: 3rd B (GY)",
+      "1: After 8.20 beats (RB)",
+      "2: 23rd RB (RB)"
+    ],
+    "average_multiplier": 4.958,
+    "no_sp_score": 1139593,
+    "summary": "2-2(+1)-3(+1)-2(+1)-2-2-3-3(+1)-2-2-3-1-2",
+    "total_score": 1398293
+  }
+]

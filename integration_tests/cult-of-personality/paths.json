@@ -1,0 +1,14 @@
+[
+  {
+    "activations": [
+      "2: NN (R)",
+      "2(+1): 4th Y (RBO)",
+      "3(+2): 2nd B (R)",
+      "3: 19th G (Y)"
+    ],
+    "average_multiplier": 5.549,
+    "no_sp_score": 275950,
+    "summary": "2-2(+1)-3(+2)-3",
+    "total_score": 385586
+  }
+]

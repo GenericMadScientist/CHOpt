@@ -1,0 +1,18 @@
+[
+  {
+    "activations": [
+      "1(+2): 11th O (R)",
+      "1: 1st O (B)",
+      "1(+1): 2nd G",
+      "1(+1): 1st YO",
+      "1: 13th B",
+      "2(+1): 1st G (Y)",
+      "1(+1): 0.40 beats after 9th Y",
+      "2(+1): 9th Y"
+    ],
+    "average_multiplier": 6.154,
+    "no_sp_score": 447955,
+    "summary": "1(+2)-1-1(+1)-1(+1)-1-2(+1)-1(+1)-2(+1)",
+    "total_score": 673451
+  }
+]

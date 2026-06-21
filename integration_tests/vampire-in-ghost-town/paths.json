@@ -1,0 +1,18 @@
+[
+  {
+    "activations": [
+      "2(+1): After 2.65 beats (G)",
+      "2(+1): 71st open (RB)",
+      "1(+1): 9th O",
+      "3(+1): 20th open (GR)",
+      "1: NN",
+      "2(+1): 3rd O (open)",
+      "2: NN",
+      "3(+1): 15th B (R)"
+    ],
+    "average_multiplier": 5.35,
+    "no_sp_score": 429855,
+    "summary": "2(+1)-2(+1)-1(+1)-3(+1)-1-2(+1)-2-3(+1)",
+    "total_score": 577415
+  }
+]

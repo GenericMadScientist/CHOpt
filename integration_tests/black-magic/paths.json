@@ -1,0 +1,18 @@
+[
+  {
+    "activations": [
+      "1(+1): 18th B (G)",
+      "1: 7th B (G)",
+      "1: 4th G (G)",
+      "2(+1): 12th B (O)",
+      "2: NN (Y)",
+      "2(+1): 12th G (G)",
+      "2(+1): 4th G"
+    ],
+    "engine": "rb3",
+    "instrument": "bass",
+    "no_sp_score": 155917,
+    "summary": "1(+1)-1-1-2(+1)-2-2(+1)-2(+1)",
+    "total_score": 220471
+  }
+]

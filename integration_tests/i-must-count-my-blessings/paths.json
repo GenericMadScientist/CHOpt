@@ -1,0 +1,16 @@
+[
+  {
+    "activations": [
+      "1: 5th Y",
+      "2(+1): 1st B (B)",
+      "3: 2nd RO (G)",
+      "1(+1): 19th B (GY)",
+      "1: NN"
+    ],
+    "engine": "rb3",
+    "instrument": "keys",
+    "no_sp_score": 124774,
+    "summary": "1-2(+1)-3-1(+1)-1",
+    "total_score": 203942
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "activations": [
+      "2(+1): 9th Y (O)",
+      "2: 2nd GB (Y)",
+      "2: 2nd open (G)",
+      "4: 14th G (GR)",
+      "2: NN",
+      "3: 10th GRB (RYB)",
+      "1: 18th G",
+      "1: 2nd B (O)",
+      "4: 16th GB (RB)",
+      "2: 3rd R (open)",
+      "4: 11th RBO (RBO)",
+      "2: 25th RB (RB)",
+      "3: 6th open (O)",
+      "4(+2): 10th RYB (YBO)"
+    ],
+    "average_multiplier": 5.045,
+    "no_sp_score": 1493873,
+    "summary": "2(+1)-2-2-4-2-3-1-1-4-2-4-2-3-4(+2)",
+    "total_score": 1883285
+  }
+]

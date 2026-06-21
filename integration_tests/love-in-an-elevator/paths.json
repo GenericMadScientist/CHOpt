@@ -1,0 +1,14 @@
+[
+  {
+    "activations": [
+      "2: NN",
+      "2: 3rd B (BO)",
+      "2: 5th B (B)",
+      "4: 39th BO (BO)"
+    ],
+    "engine": "gh3",
+    "no_sp_score": 359024,
+    "summary": "2-2-2-4",
+    "total_score": 447136
+  }
+]

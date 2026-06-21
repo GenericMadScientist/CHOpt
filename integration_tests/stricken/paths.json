@@ -1,0 +1,15 @@
+[
+  {
+    "activations": [
+      "2: 2nd GRB (RYB)",
+      "2: 1st GRB (RYB)",
+      "3: NN (G)",
+      "2: 2nd GYB (GRY)",
+      "2: NN (GR)"
+    ],
+    "engine": "gh3",
+    "no_sp_score": 418212,
+    "summary": "2-2-3-2-2",
+    "total_score": 541664
+  }
+]
