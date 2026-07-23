@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly)
         SightRead::Beat(4.0), points.cbegin() + 4, points.cbegin() + 5);
 
     BOOST_CHECK_CLOSE(result.min(), 0.0, 0.0001);
-    BOOST_CHECK_CLOSE(result.max(), 0.001128472, 0.0001);
+    BOOST_CHECK_CLOSE(result.max(), 0.001215278, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_even_started_mid_hold)
@@ -148,14 +148,14 @@ BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
                                   points.cbegin() + 5, SightRead::Beat(4.02));
 
     BOOST_CHECK_CLOSE(result.min(), 0.000666667, 0.0001);
-    BOOST_CHECK_CLOSE(result.max(), 0.001128472, 0.0001);
+    BOOST_CHECK_CLOSE(result.max(), 0.001215278, 0.0001);
 
     result
         = song.total_available_sp(SightRead::Beat(4.0), points.cbegin() + 4,
                                   points.cbegin() + 5, SightRead::Beat(4.10));
 
-    BOOST_CHECK_CLOSE(result.min(), 0.001128472, 0.0001);
-    BOOST_CHECK_CLOSE(result.max(), 0.001128472, 0.0001);
+    BOOST_CHECK_CLOSE(result.min(), 0.001215278, 0.0001);
+    BOOST_CHECK_CLOSE(result.max(), 0.001215278, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(sp_does_not_exceed_full_bar)
@@ -1925,7 +1925,7 @@ BOOST_AUTO_TEST_CASE(mid_sustain_activations_noted_correctly)
                                       "No SP score: 184\n"
                                       "Total score: 212\n"
                                       "Average multiplier: 1.177x\n"
-                                      "2: 0.03 beats after NN";
+                                      "2: 0.04 beats after NN";
 
     BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
 }
@@ -2014,7 +2014,7 @@ BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
                                       "No SP score: 132\n"
                                       "Total score: 160\n"
                                       "Average multiplier: 1.248x\n"
-                                      "2: After 0.03 beats";
+                                      "2: After 0.04 beats";
 
     BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
 }

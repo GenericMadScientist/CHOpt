@@ -1,13 +1,13 @@
 [
   {
     "activations": [
-      "2: 2.91 beats after NN (B)",
+      "2: 2.92 beats after NN (B)",
       "1: NN",
       "2: NN (B)"
     ],
     "average_multiplier": 4.975,
     "no_sp_score": 69212,
     "summary": "2-1-2",
-    "total_score": 91768
+    "total_score": 91764
   }
 ]

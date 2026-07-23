@@ -254,15 +254,16 @@ BOOST_AUTO_TEST_SUITE(sustain_notes)
 
 BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
 {
-    SightRead::NoteTrack track {{make_note(768, 15)},
+    SightRead::NoteTrack track {{make_note(768, 64)},
                                 SightRead::TrackType::FiveFret,
                                 std::make_shared<SightRead::SongGlobalData>()};
     PointSet first_points {track, default_measure_mode_data(),
                            default_guitar_pathing_settings()};
-    std::vector<int> first_expected_values {50, 3};
-    std::vector<SightRead::Beat> first_expected_beats {SightRead::Beat(4.0),
-                                                       SightRead::Beat(4.0026)};
-    SightRead::NoteTrack second_track {{make_note(768, 15)},
+    std::vector<int> first_expected_values {50, 1, 1, 1, 7};
+    std::vector<SightRead::Beat> first_expected_beats {
+        SightRead::Beat(4.0), SightRead::Beat(4.0365), SightRead::Beat(4.0729),
+        SightRead::Beat(4.1094), SightRead::Beat(4.1094)};
+    SightRead::NoteTrack second_track {{make_note(768, 64)},
                                        SightRead::TrackType::FiveFret,
                                        make_resolution(200)};
     PointSet second_points {
@@ -271,9 +272,10 @@ BOOST_AUTO_TEST_CASE(sustain_points_depend_on_resolution)
          .od_beats = {},
          .unison_phrases = {}},
         default_guitar_pathing_settings()};
-    std::vector<int> second_expected_values {50, 2};
+    std::vector<int> second_expected_values {50, 1, 1, 6};
     std::vector<SightRead::Beat> second_expected_beats {
-        SightRead::Beat(3.84), SightRead::Beat(3.8425)};
+        SightRead::Beat(3.84), SightRead::Beat(3.88), SightRead::Beat(3.92),
+        SightRead::Beat(3.92)};
 
     std::vector<int> first_values = set_values(first_points);
     std::vector<SightRead::Beat> first_beats = set_position_beats(first_points);
@@ -310,7 +312,7 @@ BOOST_AUTO_TEST_CASE(sustain_points_and_chords)
                      default_guitar_pathing_settings()};
     std::vector<int> expected_values {100, 2};
     std::vector<SightRead::Beat> expected_beats {SightRead::Beat(4.0),
-                                                 SightRead::Beat(4.0026)};
+                                                 SightRead::Beat(4.0)};
     std::vector<int> values = set_values(points);
     std::vector<SightRead::Beat> beats = set_position_beats(points);
 
@@ -841,7 +843,7 @@ BOOST_AUTO_TEST_CASE(negative_video_lag_is_handled_correctly)
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_end.beat.value(), 0.74,
                       0.0001);
     BOOST_CHECK_CLOSE(std::next(points.cbegin(), 2)->position.beat.value(),
-                      2.033854, 0.0001);
+                      2.036458, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
@@ -860,7 +862,7 @@ BOOST_AUTO_TEST_CASE(positive_video_lag_is_handled_correctly)
     BOOST_CHECK_CLOSE(points.cbegin()->hit_window_end.beat.value(), 1.34,
                       0.0001);
     BOOST_CHECK_CLOSE(std::next(points.cbegin(), 2)->position.beat.value(),
-                      2.033854, 0.0001);
+                      2.036458, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(tick_points_are_not_multiplied_prematurely)

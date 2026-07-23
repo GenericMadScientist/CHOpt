@@ -131,7 +131,6 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
                            int chord_size, const SpTimeMap& time_map,
                            const Engine& engine, Point note_point)
 {
-    constexpr double HALF_RES_OFFSET = 0.5;
     const double float_res = resolution;
     double float_pos = position.value();
     double tick_gap = song_tick_gap(resolution, engine);
@@ -158,15 +157,13 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
                && sust_ticks > 0) {
             float_pos += tick_gap;
             float_sust_len -= tick_gap;
-            const SightRead::Beat beat {(float_pos - HALF_RES_OFFSET)
-                                        / float_res};
+            const SightRead::Beat beat {float_pos / float_res};
             const auto meas = time_map.to_sp_measures(beat);
             --sust_ticks;
             append_sustain_point(points, {beat, meas}, 1);
         }
         if (sust_ticks > 0) {
-            const SightRead::Beat beat {(float_pos + HALF_RES_OFFSET)
-                                        / float_res};
+            const SightRead::Beat beat {float_pos / float_res};
             const auto meas = time_map.to_sp_measures(beat);
             append_sustain_point(points, {beat, meas}, sust_ticks);
         }
@@ -221,6 +218,7 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
         break;
     }
     case SustainTicksMetric::OdBeat:
+        constexpr double HALF_RES_OFFSET = 0.5;
         constexpr double SP_BEATS_PER_MEASURE = 4.0;
         const double sustain_end = (position + sust_length).value();
         tick_gap /= SP_BEATS_PER_MEASURE * resolution;
