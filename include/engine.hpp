@@ -62,6 +62,7 @@ public:
     [[nodiscard]] virtual int max_multiplier() const = 0;
     [[nodiscard]] virtual bool merge_uneven_sustains() const = 0;
     [[nodiscard]] virtual bool overlaps() const = 0;
+    [[nodiscard]] virtual bool resolution_rounded_whammy() const = 0;
     [[nodiscard]] virtual bool round_tick_gap() const = 0;
     [[nodiscard]] virtual SightRead::Tick snap_gap() const = 0;
     [[nodiscard]] virtual SpEngineValues sp_engine_values() const = 0;
@@ -117,6 +118,10 @@ public:
     [[nodiscard]] int max_multiplier() const override { return 4; }
     [[nodiscard]] bool merge_uneven_sustains() const override { return false; }
     [[nodiscard]] bool overlaps() const override { return true; }
+    [[nodiscard]] bool resolution_rounded_whammy() const override
+    {
+        return true;
+    }
     [[nodiscard]] bool round_tick_gap() const override { return true; }
     [[nodiscard]] SightRead::Tick snap_gap() const override
     {
@@ -244,6 +249,10 @@ public:
     }
     [[nodiscard]] bool merge_uneven_sustains() const override { return true; }
     [[nodiscard]] bool overlaps() const override { return true; }
+    [[nodiscard]] bool resolution_rounded_whammy() const override
+    {
+        return false;
+    }
     [[nodiscard]] bool round_tick_gap() const override { return false; }
     [[nodiscard]] SightRead::Tick snap_gap() const override
     {
@@ -319,6 +328,10 @@ public:
     [[nodiscard]] int max_multiplier() const override { return 4; }
     [[nodiscard]] bool merge_uneven_sustains() const override { return true; }
     [[nodiscard]] bool overlaps() const override { return false; }
+    [[nodiscard]] bool resolution_rounded_whammy() const override
+    {
+        return false;
+    }
     [[nodiscard]] bool round_tick_gap() const override { return false; }
     [[nodiscard]] SightRead::Tick snap_gap() const override
     {
@@ -416,6 +429,10 @@ public:
     [[nodiscard]] int max_multiplier() const override { return 4; }
     [[nodiscard]] bool merge_uneven_sustains() const override { return false; }
     [[nodiscard]] bool overlaps() const override { return false; }
+    [[nodiscard]] bool resolution_rounded_whammy() const override
+    {
+        return false;
+    }
     [[nodiscard]] bool round_tick_gap() const override { return false; }
     [[nodiscard]] SightRead::Tick snap_gap() const override
     {
@@ -484,6 +501,10 @@ public:
     }
     [[nodiscard]] bool merge_uneven_sustains() const override { return true; }
     [[nodiscard]] bool overlaps() const override { return true; }
+    [[nodiscard]] bool resolution_rounded_whammy() const override
+    {
+        return false;
+    }
     [[nodiscard]] bool round_tick_gap() const override { return false; }
     [[nodiscard]] SightRead::Tick snap_gap() const override
     {
@@ -595,6 +616,10 @@ public:
     }
     [[nodiscard]] bool merge_uneven_sustains() const override { return false; }
     [[nodiscard]] bool overlaps() const override { return true; }
+    [[nodiscard]] bool resolution_rounded_whammy() const override
+    {
+        return false;
+    }
     [[nodiscard]] bool round_tick_gap() const override { return false; }
     [[nodiscard]] SightRead::Tick snap_gap() const override
     {

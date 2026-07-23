@@ -1494,7 +1494,10 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
                           true,
                           false};
     builder.add_sp_values(sp_data, ChGuitarEngine());
-    std::vector<double> expected_sp_values {3.14, 1.0};
+    // NOLINTBEGIN(modernize-use-std-numbers)
+    // The first value happens to be close to pi, but it's not pi.
+    std::vector<double> expected_sp_values {3.140625, 1.0};
+    // NOLINTEND(modernize-use-std-numbers)
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
         builder.sp_values().cbegin(), builder.sp_values().cend(),
@@ -1787,8 +1790,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                                   {.phrase_amount = 0.25,
                                    .unison_phrase_amount = 0.5,
                                    .minimum_to_activate = 0.5});
-    std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
-                                           0.5359166667, 0.49425};
+    std::vector<double> expected_percents {0.0, 0.25, 0.5276041667, 0.5359375,
+                                           0.4942708333};
 
     BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
                         expected_percents.size());
@@ -1827,8 +1830,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                                   {.phrase_amount = 0.25,
                                    .unison_phrase_amount = 0.5,
                                    .minimum_to_activate = 0.5});
-    std::vector<double> expected_percents {0.0, 0.25, 0.5275833333,
-                                           0.4025833333, 0.2775833333};
+    std::vector<double> expected_percents {0.0, 0.25, 0.5276041667,
+                                           0.4026041667, 0.2776041667};
 
     BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
                         expected_percents.size());
@@ -1877,8 +1880,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                                    .unison_phrase_amount = 0.5,
                                    .minimum_to_activate = 0.5});
     std::vector<double> expected_percents {
-        0.0,          0.25,         0.5275833333, 0.4025833333, 0.2775833333,
-        0.1525833333, 0.0275833333, 0.0,          0.5,          0.40625};
+        0.0,          0.25,         0.5276041667, 0.4026041667, 0.2776041667,
+        0.1526041667, 0.0276041667, 0.0,          0.5,          0.40625};
 
     BOOST_REQUIRE_EQUAL(builder.sp_percent_values().size(),
                         expected_percents.size());

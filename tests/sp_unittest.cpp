@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(works_correctly_over_three_four)
     BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_max(
                           {SightRead::Beat(-1.0), SpMeasure(-0.25)},
                           {SightRead::Beat(4.0), SpMeasure(4.0 / 3)}, 0.5),
-                      0.440083, 0.0001);
+                      0.440104, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(works_correctly_over_changing_time_signatures)
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE(works_even_if_some_of_the_range_isnt_whammyable)
     BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_max(
                           {SightRead::Beat(0.0), SpMeasure(0.0)},
                           {SightRead::Beat(12.0), SpMeasure(3.0)}, 0.5),
-                      0.496333, 0.0001);
+                      0.496354, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
@@ -391,7 +391,7 @@ BOOST_AUTO_TEST_CASE(handles_whammy_bursts)
     BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_max(
                           {SightRead::Beat(0.0), SpMeasure(0.0)},
                           {SightRead::Beat(5.0), SpMeasure(1.25)}, 0.5),
-                      0.41975, 0.0001);
+                      0.419792, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(handles_barely_overlapping)
@@ -409,7 +409,7 @@ BOOST_AUTO_TEST_CASE(handles_barely_overlapping)
     BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_max(
                           {SightRead::Beat(0.0), SpMeasure(0.0)},
                           {SightRead::Beat(18.0), SpMeasure(4.5)}, 0.5),
-                      0.008833333, 0.0001);
+                      0.008854167, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(handles_delaying_burst_to_end_of_chord_sustain)
@@ -484,7 +484,7 @@ BOOST_AUTO_TEST_CASE(micro_sustains_give_sp_mid_act)
     BOOST_CHECK_CLOSE(sp_data.propagate_sp_over_whammy_max(
                           {SightRead::Beat(0.0), SpMeasure(0.0)},
                           {SightRead::Beat(4.0), SpMeasure(1.0)}, 0.5),
-                      0.37984028, 0.0001);
+                      0.37986111, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(whammy_from_end_of_sustain_counted_when_starting_near_end)
@@ -563,7 +563,7 @@ BOOST_AUTO_TEST_CASE(max_early_whammy)
 
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(16.0)),
-        0.471333, 0.0001);
+        0.471354, 0.0001);
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(SightRead::Beat(10.0), SightRead::Beat(11.0)),
         0.0, 0.0001);
@@ -586,7 +586,7 @@ BOOST_AUTO_TEST_CASE(mid_early_whammy)
 
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(16.0)),
-        0.469, 0.0001);
+        0.469097, 0.0001);
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(SightRead::Beat(10.0), SightRead::Beat(11.0)),
         0.0, 0.0001);
@@ -673,7 +673,7 @@ BOOST_AUTO_TEST_CASE(chords_dont_give_double_whammy)
 
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(16.0)),
-        0.138, 0.0001);
+        0.1380208, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(
@@ -691,7 +691,7 @@ BOOST_AUTO_TEST_CASE(
 
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(16.0)),
-        0.138, 0.0001);
+        0.1380208, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(
@@ -726,7 +726,7 @@ BOOST_AUTO_TEST_CASE(whammy_bursts_are_included_for_ch)
 
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(16.0)),
-        0.251, 0.0001);
+        0.2510417, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(whammy_bursts_are_excluded_for_yarg)
@@ -760,7 +760,7 @@ BOOST_AUTO_TEST_CASE(whammy_bursts_dont_trigger_mid_split_chord)
 
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(16.0)),
-        0.138, 0.0001);
+        0.1380208, 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(whammy_bursts_dont_trigger_mid_extended_sustain)
@@ -796,6 +796,38 @@ BOOST_AUTO_TEST_CASE(whammy_bursts_dont_drop_whammy_mid_extended_sustain)
     BOOST_CHECK_CLOSE(
         sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(2.0)),
         0.06666667, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(resolution_rounded_whammy_present_on_ch)
+{
+    std::vector<SightRead::Note> notes {make_note(192, 768)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {3000}}};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
+    SpData sp_data {track, default_measure_mode_data(),
+                    default_guitar_pathing_settings()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(16.0)),
+        0.13802083, 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(resolution_rounded_whammy_not_present_on_yarg)
+{
+    std::vector<SightRead::Note> notes {make_note(192, 768)};
+    std::vector<SightRead::StarPower> phrases {
+        {.position = SightRead::Tick {0}, .length = SightRead::Tick {3000}}};
+    SightRead::NoteTrack track {notes, SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.sp_phrases(phrases);
+    SpData sp_data {track, default_measure_mode_data(),
+                    default_yarg_pathing_settings()};
+
+    BOOST_CHECK_CLOSE(
+        sp_data.available_whammy(SightRead::Beat(0.0), SightRead::Beat(16.0)),
+        0.138, 0.0001);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

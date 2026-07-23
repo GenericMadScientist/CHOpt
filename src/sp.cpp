@@ -104,6 +104,14 @@ public:
     }
 };
 
+SightRead::Beat round_back_to_resolution(SightRead::Beat position,
+                                         int resolution)
+{
+    auto position_resolution = position.value() * resolution;
+    position_resolution = std::floor(position_resolution);
+    return SightRead::Beat {position_resolution / resolution};
+}
+
 std::vector<SpSustain> sp_whammy_spans(const SightRead::NoteTrack& track,
                                        const PathingSettings& pathing_settings,
                                        const SpTimeMap& time_map)
@@ -145,8 +153,12 @@ std::vector<SpSustain> sp_whammy_spans(const SightRead::NoteTrack& track,
                     * pathing_settings.early_whammy;
             }
 
-            const auto whammy_start_beat = tempo_map.to_beats(
+            auto whammy_start_beat = tempo_map.to_beats(
                 tempo_map.to_seconds(note->position) - early_timing_window);
+            if (pathing_settings.engine->resolution_rounded_whammy()) {
+                whammy_start_beat = round_back_to_resolution(
+                    whammy_start_beat, track.global_data().resolution());
+            }
             const SpPosition whammy_start {
                 .beat = whammy_start_beat,
                 .sp_measure = time_map.to_sp_measures(whammy_start_beat)};

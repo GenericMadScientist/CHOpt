@@ -1,18 +1,17 @@
 [
   {
     "activations": [
-      "1(+2): 11th O (R)",
-      "1: 1st O (B)",
-      "1(+1): 2nd G",
-      "1(+1): 1st YO",
-      "1: 13th B",
-      "2(+1): 1st G (Y)",
-      "1(+1): 0.40 beats after 9th Y",
+      "1(+1): 14th B",
+      "2(+2): 6th Y (Y)",
+      "1(+1): 11th YB (RY)",
+      "1: 10th B (O)",
+      "2(+1): 3rd GR (YB)",
+      "1(+1): 0.36 beats after 9th Y",
       "2(+1): 9th Y"
     ],
-    "average_multiplier": 6.154,
+    "average_multiplier": 6.163,
     "no_sp_score": 447955,
-    "summary": "1(+2)-1-1(+1)-1(+1)-1-2(+1)-1(+1)-2(+1)",
-    "total_score": 673451
+    "summary": "1(+1)-2(+2)-1(+1)-1-2(+1)-1(+1)-2(+1)",
+    "total_score": 674451
   }
 ]
