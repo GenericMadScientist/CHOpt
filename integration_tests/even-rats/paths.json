@@ -2,7 +2,7 @@
   {
     "activations": [
       "2: 4th O (GY)",
-      "3: 6th G",
+      "3: 6th G (GR)",
       "3: 9th GY (B)",
       "2: 7th Y (Y)",
       "1: 5th G (YB)",
@@ -12,6 +12,6 @@
     "engine": "gh1",
     "no_sp_score": 281176,
     "summary": "2-3-3-2-1-1-1-S1",
-    "total_score": 350084
+    "total_score": 350080
   }
 ]

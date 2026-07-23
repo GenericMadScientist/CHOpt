@@ -153,17 +153,17 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
             sust_ticks *= chord_size;
         }
 
-        while (float_sust_len > engine.burst_size() * resolution
-               && sust_ticks > 0) {
-            float_pos += tick_gap;
-            float_sust_len -= tick_gap;
-            const SightRead::Beat beat {float_pos / float_res};
+        const double tick_burst_offset
+            = std::max(float_sust_len - engine.burst_size() * resolution, 0.0);
+        for (int i = 1; i * tick_gap < tick_burst_offset && sust_ticks > 0;
+             ++i, --sust_ticks) {
+            const SightRead::Beat beat {(float_pos + i * tick_gap) / float_res};
             const auto meas = time_map.to_sp_measures(beat);
-            --sust_ticks;
             append_sustain_point(points, {beat, meas}, 1);
         }
         if (sust_ticks > 0) {
-            const SightRead::Beat beat {float_pos / float_res};
+            const SightRead::Beat beat {(float_pos + tick_burst_offset)
+                                        / float_res};
             const auto meas = time_map.to_sp_measures(beat);
             append_sustain_point(points, {beat, meas}, sust_ticks);
         }
