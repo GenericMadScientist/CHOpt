@@ -91,9 +91,9 @@ struct SpPosition {
     SpMeasure sp_measure;
 };
 
-enum class SpGainMode { Beat, Fretbar };
+enum class SpGainMode : std::uint8_t { Beat, Fretbar };
 
-enum class SpMode { Measure, OdBeat };
+enum class SpMode : std::uint8_t { Measure, OdBeat };
 
 class SpTimeMap {
 private:
