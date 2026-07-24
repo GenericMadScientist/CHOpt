@@ -285,9 +285,8 @@ song_unison_phrases(const SightRead::Song& song,
 
     switch (unison_bonus_type) {
     case UnisonBonusType::RockBand3:
-        return song.rb3_unison_phrases();
     case UnisonBonusType::Yarg:
-        return song.yarg_unison_phrases();
+        return song.rb3_unison_phrases();
     case UnisonBonusType::None:
         return {};
     default:

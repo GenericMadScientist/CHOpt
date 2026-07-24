@@ -13,15 +13,14 @@
   },
   {
     "activations": [
-      "1: 1st RYB (YBO)",
-      "2: NN (Y)",
+      "2(+1): 3rd RYB (G)",
       "2: NN (B)",
       "2: NN (O)",
       "2: 12th GY (GRY)"
     ],
     "engine": "yarg",
     "no_sp_score": 282091,
-    "summary": "1-2-2-2-2",
-    "total_score": 399119
+    "summary": "2(+1)-2-2-2",
+    "total_score": 384719
   }
 ]
