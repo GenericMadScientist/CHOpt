@@ -16,7 +16,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.7.2
+          version: 6.10.*
 
       - name: Install other dependencies
         run: vcpkg install boost-container-hash boost-locale boost-test boost-unordered libpng
@@ -46,7 +46,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.7.2
+          version: 6.10.*
 
       - name: Install Boost
         run: |
@@ -80,7 +80,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: 6.6.*
+          version: 6.10.*
 
       - name: Install Boost dependencies
         run: vcpkg install boost-container-hash boost-locale boost-test boost-unordered
