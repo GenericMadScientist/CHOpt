@@ -193,9 +193,9 @@ jobs:
           strip -s chopt
           mv chopt cli-artifacts/CHOpt
           cp ../resources/CHOpt.sh cli-artifacts/CHOpt.sh
-          cp ${QT_ROOT_DIR}/lib/libicudata.so.56 cli-artifacts/libs/libicudata.so.56
-          cp ${QT_ROOT_DIR}/lib/libicui18n.so.56 cli-artifacts/libs/libicui18n.so.56
-          cp ${QT_ROOT_DIR}/lib/libicuuc.so.56 cli-artifacts/libs/libicuuc.so.56
+          cp ${QT_ROOT_DIR}/lib/libicudata.so.73 cli-artifacts/libs/libicudata.so.73
+          cp ${QT_ROOT_DIR}/lib/libicui18n.so.73 cli-artifacts/libs/libicui18n.so.73
+          cp ${QT_ROOT_DIR}/lib/libicuuc.so.73 cli-artifacts/libs/libicuuc.so.73
           cp ${QT_ROOT_DIR}/lib/libQt6Core.so.6 cli-artifacts/libs/libQt6Core.so.6
           cp ${QT_ROOT_DIR}/lib/libQt6DBus.so.6 cli-artifacts/libs/libQt6DBus.so.6
           cp ${QT_ROOT_DIR}/lib/libQt6Gui.so.6 cli-artifacts/libs/libQt6Gui.so.6
@@ -208,9 +208,9 @@ jobs:
           strip -s choptgui
           mv choptgui gui-artifacts/CHOpt
           cp ../resources/CHOpt.sh gui-artifacts/CHOpt.sh
-          cp ${QT_ROOT_DIR}/lib/libicudata.so.56 gui-artifacts/libs/libicudata.so.56
-          cp ${QT_ROOT_DIR}/lib/libicui18n.so.56 gui-artifacts/libs/libicui18n.so.56
-          cp ${QT_ROOT_DIR}/lib/libicuuc.so.56 gui-artifacts/libs/libicuuc.so.56
+          cp ${QT_ROOT_DIR}/lib/libicudata.so.73 gui-artifacts/libs/libicudata.so.73
+          cp ${QT_ROOT_DIR}/lib/libicui18n.so.73 gui-artifacts/libs/libicui18n.so.73
+          cp ${QT_ROOT_DIR}/lib/libicuuc.so.73 gui-artifacts/libs/libicuuc.so.73
           cp ${QT_ROOT_DIR}/lib/libQt6Core.so.6 gui-artifacts/libs/libQt6Core.so.6
           cp ${QT_ROOT_DIR}/lib/libQt6DBus.so.6 gui-artifacts/libs/libQt6DBus.so.6
           cp ${QT_ROOT_DIR}/lib/libQt6Gui.so.6 gui-artifacts/libs/libQt6Gui.so.6
