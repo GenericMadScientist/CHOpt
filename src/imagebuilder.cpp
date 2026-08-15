@@ -224,7 +224,8 @@ ImageBuilder build_with_engine_params(const SightRead::NoteTrack& track,
             settings.is_lefty_flip,
             settings.pathing_settings.engine->overlaps(),
             settings.pathing_settings.engine->sustain_ticks_metric()
-                == SustainTicksMetric::Fretbar};
+                == SustainTicksMetric::Fretbar,
+            settings.pathing_settings.engine->draw_hopos()};
 }
 
 std::vector<std::tuple<double, double>>
@@ -372,13 +373,14 @@ ImageBuilder::ImageBuilder(const SightRead::NoteTrack& track,
                            SightRead::Difficulty difficulty,
                            const SightRead::DrumSettings& drum_settings,
                            bool is_lefty_flip, bool is_overlap_engine,
-                           bool trim_sustains)
+                           bool trim_sustains, bool draw_hopos)
     : m_track_type {track.track_type()}
     , m_difficulty {difficulty}
     , m_is_lefty_flip {is_lefty_flip}
     , m_rows {drawn_rows(track)}
     , m_notes {drawn_notes(track, drum_settings, trim_sustains)}
     , m_overlap_engine {is_overlap_engine}
+    , m_draw_hopos {draw_hopos}
 {
     form_beat_lines(track.global_data().tempo_map());
 }

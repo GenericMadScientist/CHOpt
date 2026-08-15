@@ -149,7 +149,8 @@ BOOST_AUTO_TEST_CASE(five_fret_gets_the_right_track_type)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
 
     BOOST_CHECK_EQUAL(builder.track_type(), SightRead::TrackType::FiveFret);
 }
@@ -164,7 +165,8 @@ BOOST_AUTO_TEST_CASE(six_fret_gets_the_right_track_type)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
 
     BOOST_CHECK_EQUAL(builder.track_type(), SightRead::TrackType::SixFret);
 }
@@ -179,7 +181,8 @@ BOOST_AUTO_TEST_CASE(drums_gets_the_right_track_type)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
 
     BOOST_CHECK_EQUAL(builder.track_type(), SightRead::TrackType::Drums);
 }
@@ -199,7 +202,8 @@ BOOST_AUTO_TEST_CASE(non_sp_non_sustains_are_handled_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<DrawnNote> expected_notes {
         make_drawn_note(0), make_drawn_note(4, 0, SightRead::FIVE_FRET_RED)};
 
@@ -218,7 +222,8 @@ BOOST_AUTO_TEST_CASE(sustains_are_handled_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<DrawnNote> expected_notes {make_drawn_note(0, 0.5)};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -238,7 +243,8 @@ BOOST_AUTO_TEST_CASE(sp_notes_are_recorded)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<DrawnNote> expected_notes {make_drawn_note(0),
                                            make_drawn_sp_note(4)};
 
@@ -259,7 +265,8 @@ BOOST_AUTO_TEST_CASE(six_fret_notes_are_handled_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<DrawnNote> expected_notes {
         make_drawn_ghl_note(0),
         make_drawn_ghl_note(4, 0, SightRead::SIX_FRET_BLACK_HIGH)};
@@ -281,7 +288,8 @@ BOOST_AUTO_TEST_CASE(drum_notes_are_handled_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<DrawnNote> expected_notes {
         make_drawn_drum_note(0),
         make_drawn_drum_note(4, SightRead::DRUM_YELLOW,
@@ -301,6 +309,7 @@ BOOST_AUTO_TEST_CASE(trimmed_sustains_are_handled_correctly)
                           SightRead::Difficulty::Expert,
                           SightRead::DrumSettings::default_settings(),
                           false,
+                          true,
                           true,
                           true};
     std::vector<DrawnNote> expected_notes {make_drawn_note(0, 0.75)};
@@ -324,7 +333,8 @@ BOOST_AUTO_TEST_CASE(simple_four_four_is_handled_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<DrawnRow> expected_rows {{.start = 0.0, .end = 16.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -354,7 +364,8 @@ BOOST_AUTO_TEST_CASE(three_x_time_sigs_are_handled)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<DrawnRow> expected_rows {{.start = 0.0, .end = 12.5},
                                          {.start = 12.5, .end = 16.5}};
 
@@ -384,7 +395,8 @@ BOOST_AUTO_TEST_CASE(time_signature_changes_off_measure_are_coped_with)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<DrawnRow> expected_rows {{.start = 0.0, .end = 7.0}};
 
     BOOST_CHECK_EQUAL_COLLECTIONS(builder.rows().cbegin(),
@@ -409,7 +421,8 @@ BOOST_AUTO_TEST_CASE(x_four_for_x_gt_16_is_handled)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<DrawnRow> expected_rows {{.start = 0.0, .end = 16.0},
                                          {.start = 16.0, .end = 17.0}};
 
@@ -428,7 +441,8 @@ BOOST_AUTO_TEST_CASE(enough_rows_are_drawn_for_end_of_song_sustains)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
 
     BOOST_CHECK_EQUAL(builder.rows().size(), 2U);
 }
@@ -447,7 +461,8 @@ BOOST_AUTO_TEST_CASE(four_four_works_fine)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<double> expected_half_beat_lines {0.5, 1.5, 2.5, 3.5};
     std::vector<double> expected_beat_lines {1.0, 2.0, 3.0};
     std::vector<double> expected_measure_lines {0.0, 4.0};
@@ -480,7 +495,8 @@ BOOST_AUTO_TEST_CASE(four_eight_works_fine)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<double> expected_half_beat_lines {0.25, 0.75, 1.25, 1.75,
                                                   2.25, 2.75, 3.25, 3.75};
     std::vector<double> expected_beat_lines {0.5, 1.0, 1.5, 2.5, 3.0, 3.5};
@@ -515,7 +531,8 @@ BOOST_AUTO_TEST_CASE(combination_of_four_four_and_four_eight_works_fine)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     std::vector<double> expected_half_beat_lines {0.5,  1.5,  2.5,  3.5,
                                                   4.25, 4.75, 5.25, 5.75};
     std::vector<double> expected_beat_lines {1.0, 2.0, 3.0, 4.5, 5.0, 5.5};
@@ -554,7 +571,8 @@ BOOST_AUTO_TEST_CASE(normal_time_signatures_are_handled_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_time_sigs(tempo_map);
     std::vector<std::tuple<double, int, int>> expected_time_sigs {{0.0, 4, 4},
                                                                   {4.0, 4, 8}};
@@ -584,7 +602,8 @@ BOOST_AUTO_TEST_CASE(time_sig_changes_past_the_end_of_the_song_are_removed)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_time_sigs(tempo_map);
 
     BOOST_CHECK_EQUAL(builder.time_sigs().size(), 1U);
@@ -613,7 +632,8 @@ BOOST_AUTO_TEST_CASE(normal_tempos_are_handled_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_bpms(tempo_map);
     std::vector<std::tuple<double, double>> expected_bpms {
         {0.0, 150.0}, {2.0, 120.0}, {4.0, 200.0}};
@@ -641,7 +661,8 @@ BOOST_AUTO_TEST_CASE(tempo_changes_past_the_end_of_the_song_are_removed)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_bpms(tempo_map);
 
     BOOST_CHECK_EQUAL(builder.bpms().size(), 1U);
@@ -663,7 +684,8 @@ BOOST_AUTO_TEST_CASE(normal_speed)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
 
     builder.add_song_header(global_data);
 
@@ -688,7 +710,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_sp_phrases_are_added_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
@@ -710,7 +733,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_have_a_minimum_size)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_phrases(track, {}, Path {});
 
     std::vector<std::tuple<double, double>> expected_green_ranges {{4.0, 4.1}};
@@ -734,7 +758,8 @@ BOOST_AUTO_TEST_CASE(empty_phrases_are_ignored)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_phrases(track, {}, Path {});
 
     BOOST_CHECK(builder.green_ranges().empty());
@@ -754,7 +779,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_six_fret_sp_phrases_are_added_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.5}};
@@ -778,7 +804,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_for_drums_sp_phrases_are_added_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_phrases(track, {}, Path {});
     std::vector<std::tuple<double, double>> expected_green_ranges {{5.0, 5.1},
                                                                    {7.0, 7.1}};
@@ -802,7 +829,8 @@ BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           false,
-                          false};
+                          false,
+                          true};
     Path path {.activations = {{.act_start = points.cbegin() + 1,
                                 .act_end = points.cbegin() + 2,
                                 .whammy_end = SightRead::Beat {0.05},
@@ -828,7 +856,8 @@ BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_drum_fills(track);
 
     std::vector<std::tuple<double, double>> expected_fill_ranges {{1.0, 1.5}};
@@ -850,7 +879,8 @@ BOOST_AUTO_TEST_CASE(drum_fills_cannot_be_cancelled_by_a_kick)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_drum_fills(track);
 
     BOOST_CHECK_EQUAL(builder.fill_ranges().size(), 1U);
@@ -870,14 +900,16 @@ BOOST_AUTO_TEST_CASE(double_kicks_only_drawn_with_enable_double_kick)
                                      .pro_drums = false},
                                     false,
                                     true,
-                                    false};
+                                    false,
+                                    true};
     ImageBuilder double_builder {
         track,
         SightRead::Difficulty::Expert,
         {.enable_double_kick = true, .disable_kick = false, .pro_drums = false},
         false,
         true,
-        false};
+        false,
+        true};
 
     BOOST_CHECK_EQUAL(no_double_builder.notes().size(), 1U);
     BOOST_CHECK_EQUAL(double_builder.notes().size(), 2U);
@@ -896,7 +928,8 @@ BOOST_AUTO_TEST_CASE(single_kicks_disappear_with_disable_kick)
         {.enable_double_kick = true, .disable_kick = true, .pro_drums = false},
         false,
         true,
-        false};
+        false,
+        true};
 
     BOOST_CHECK_EQUAL(builder.notes().size(), 1U);
 }
@@ -915,7 +948,8 @@ BOOST_AUTO_TEST_CASE(unison_phrases_are_added_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_phrases(
         track,
         {{.position = SightRead::Tick {768}, .length = SightRead::Tick {384}}},
@@ -943,7 +977,8 @@ BOOST_AUTO_TEST_CASE(normal_path_is_drawn_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     Path path {.activations = {{.act_start = points.cbegin(),
                                 .act_end = points.cend() - 1,
                                 .whammy_end = SightRead::Beat {0.25},
@@ -982,7 +1017,8 @@ BOOST_AUTO_TEST_CASE(squeezes_are_only_drawn_when_required)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     Path path {.activations = {{.act_start = points.cbegin(),
                                 .act_end = points.cbegin() + 1,
                                 .whammy_end = SightRead::Beat {0.25},
@@ -1016,7 +1052,8 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_for_reverse_squeezes)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     Path path {.activations = {{.act_start = points.cbegin() + 1,
                                 .act_end = points.cbegin() + 2,
                                 .whammy_end = SightRead::Beat {5.0},
@@ -1043,7 +1080,8 @@ BOOST_AUTO_TEST_CASE(blue_ranges_are_cropped_by_the_end_of_the_song)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     Path path {.activations = {{.act_start = points.cbegin(),
                                 .act_end = points.cbegin(),
                                 .whammy_end = SightRead::Beat {0.0},
@@ -1072,7 +1110,8 @@ BOOST_AUTO_TEST_CASE(blue_and_red_ranges_are_shifted_by_video_lag)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     Path path {.activations = {{.act_start = points.cbegin(),
                                 .act_end = points.cbegin() + 1,
                                 .whammy_end = SightRead::Beat {0.25},
@@ -1118,7 +1157,8 @@ BOOST_AUTO_TEST_CASE(green_ranges_do_not_overlap_blue_for_no_overlap_engines)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           false,
-                          false};
+                          false,
+                          true};
     Path path {.activations = {{.act_start = points.cbegin() + 1,
                                 .act_end = points.cend() - 1,
                                 .whammy_end = SightRead::Beat {0.05},
@@ -1148,7 +1188,8 @@ BOOST_AUTO_TEST_CASE(almost_overlapped_green_ranges_remain)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           false,
-                          false};
+                          false,
+                          true};
     Path path {.activations = {{.act_start = points.cbegin() + 1,
                                 .act_end = points.cbegin() + 1,
                                 .whammy_end = SightRead::Beat {0.05},
@@ -1183,7 +1224,8 @@ BOOST_AUTO_TEST_CASE(
                           SightRead::DrumSettings::default_settings(),
                           false,
                           false,
-                          false};
+                          false,
+                          true};
     Path path {.activations = {{.act_start = points.cbegin() + 1,
                                 .act_end = points.cend() - 2,
                                 .whammy_end = SightRead::Beat {0.05},
@@ -1214,7 +1256,8 @@ BOOST_AUTO_TEST_CASE(yellow_ranges_do_not_overlap_blue_for_no_overlap_engines)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           false,
-                          false};
+                          false,
+                          true};
     Path path {.activations = {{.act_start = points.cbegin() + 1,
                                 .act_end = points.cend() - 1,
                                 .whammy_end = SightRead::Beat {0.05},
@@ -1248,7 +1291,8 @@ BOOST_AUTO_TEST_CASE(add_practice_sections_adds_correct_ranges)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_practice_sections(track.global_data().practice_sections(), {});
     std::vector<std::tuple<double, std::string>> expected_practice_sections {
         {1.0, "Intro"}};
@@ -1271,7 +1315,8 @@ BOOST_AUTO_TEST_CASE(add_practice_sections_ignores_trailing_sections)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_practice_sections(track.global_data().practice_sections(), {});
 
     BOOST_TEST(builder.practice_sections().empty());
@@ -1292,7 +1337,8 @@ BOOST_AUTO_TEST_CASE(add_solo_sections_adds_correct_ranges)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_solo_sections(
         track.solos(SightRead::DrumSettings::default_settings()), {});
     std::vector<std::tuple<double, double>> expected_solo_ranges {{1.0, 2.0}};
@@ -1317,7 +1363,8 @@ BOOST_AUTO_TEST_CASE(notes_with_no_activations_or_solos)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {52, 104};
@@ -1349,7 +1396,8 @@ BOOST_AUTO_TEST_CASE(solos_are_added)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_score_values {100, 252};
 
@@ -1376,7 +1424,8 @@ BOOST_AUTO_TEST_CASE(solos_ending_past_last_note_are_handled_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_score_values {102};
 
@@ -1403,7 +1452,8 @@ BOOST_AUTO_TEST_CASE(activations_are_added)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_score_values {206, 308};
 
@@ -1429,7 +1479,8 @@ BOOST_AUTO_TEST_CASE(video_lag_is_accounted_for)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_measure_values(points, {}, path);
     std::vector<int> expected_base_values {50, 50};
     std::vector<int> expected_score_values {52, 154};
@@ -1463,7 +1514,8 @@ BOOST_AUTO_TEST_CASE(ticks_close_to_the_end_of_a_measure_are_handled_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_measure_values(points, global_data->tempo_map(), path);
     std::vector<int> expected_base_values {50};
     std::vector<int> expected_score_values {52};
@@ -1492,7 +1544,8 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_values(sp_data, ChGuitarEngine());
     // NOLINTBEGIN(modernize-use-std-numbers)
     // The first value happens to be close to pi, but it's not pi.
@@ -1518,7 +1571,8 @@ BOOST_AUTO_TEST_CASE(add_sp_values_gives_correct_values_for_fortnite)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_values(sp_data, FortniteGuitarEngine());
     std::vector<double> expected_sp_values {0.0, 0.0};
 
@@ -1541,7 +1595,8 @@ BOOST_AUTO_TEST_CASE(set_total_score_sets_the_correct_value)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     Path path {.activations = {{.act_start = points.cbegin(),
                                 .act_end = points.cend() - 1,
                                 .whammy_end = SightRead::Beat {0.25},
@@ -1567,13 +1622,15 @@ BOOST_AUTO_TEST_CASE(difficulty_is_handled)
                                SightRead::DrumSettings::default_settings(),
                                false,
                                true,
-                               false};
+                               false,
+                               true};
     ImageBuilder expert_builder {track,
                                  SightRead::Difficulty::Expert,
                                  SightRead::DrumSettings::default_settings(),
                                  false,
                                  true,
-                                 false};
+                                 false,
+                                 true};
 
     BOOST_CHECK_EQUAL(hard_builder.difficulty(), SightRead::Difficulty::Hard);
     BOOST_CHECK_EQUAL(expert_builder.difficulty(),
@@ -1590,13 +1647,15 @@ BOOST_AUTO_TEST_CASE(lefty_flip_is_handled)
                                 SightRead::DrumSettings::default_settings(),
                                 true,
                                 true,
-                                false};
+                                false,
+                                true};
     ImageBuilder righty_builder {track,
                                  SightRead::Difficulty::Expert,
                                  SightRead::DrumSettings::default_settings(),
                                  false,
                                  true,
-                                 false};
+                                 false,
+                                 true};
 
     BOOST_TEST(lefty_builder.is_lefty_flip());
     BOOST_TEST(!righty_builder.is_lefty_flip());
@@ -1633,7 +1692,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
                                   {.phrase_amount = 0.25,
                                    .unison_phrase_amount = 0.5,
@@ -1667,7 +1727,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_rb_phrase_amounts)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
                                   {.phrase_amount = 0.251,
                                    .unison_phrase_amount = 0.502,
@@ -1701,7 +1762,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_unison_phrases)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
                                   {.phrase_amount = 0.251,
                                    .unison_phrase_amount = 0.502,
@@ -1745,7 +1807,8 @@ BOOST_AUTO_TEST_CASE(sp_percents_added_with_no_whammy_and_mid_act_gain)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
                                   {.phrase_amount = 0.25,
                                    .unison_phrase_amount = 0.5,
@@ -1785,7 +1848,8 @@ BOOST_AUTO_TEST_CASE(whammy_is_added)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
                                   {.phrase_amount = 0.25,
                                    .unison_phrase_amount = 0.5,
@@ -1825,7 +1889,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_is_accounted_for)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
                                   {.phrase_amount = 0.25,
                                    .unison_phrase_amount = 0.5,
@@ -1874,7 +1939,8 @@ BOOST_AUTO_TEST_CASE(forced_no_whammy_with_not_last_act_is_accounted_for)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
                                   {.phrase_amount = 0.25,
                                    .unison_phrase_amount = 0.5,
@@ -1918,7 +1984,8 @@ BOOST_AUTO_TEST_CASE(nearly_overlapped_phrases_are_handled_correctly)
                           SightRead::DrumSettings::default_settings(),
                           false,
                           true,
-                          false};
+                          false,
+                          true};
     builder.add_sp_percent_values(sp_data, {{}, SpMode::Measure}, points, path,
                                   {.phrase_amount = 0.25,
                                    .unison_phrase_amount = 0.5,

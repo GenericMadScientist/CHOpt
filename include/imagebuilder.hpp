@@ -79,6 +79,7 @@ private:
     float m_activation_opacity {0.33F};
     int m_total_score {0};
     bool m_overlap_engine {true};
+    bool m_draw_hopos {true};
 
     void form_beat_lines(const SightRead::TempoMap& tempo_map);
     static bool is_neutralised_phrase(SightRead::Beat note_pos,
@@ -91,8 +92,8 @@ public:
     ImageBuilder(const SightRead::NoteTrack& track,
                  SightRead::Difficulty difficulty,
                  const SightRead::DrumSettings& drum_settings,
-                 bool is_lefty_flip, bool is_overlap_engine,
-                 bool trim_sustains);
+                 bool is_lefty_flip, bool is_overlap_engine, bool trim_sustains,
+                 bool draw_hopos);
     void add_bpms(const SightRead::TempoMap& tempo_map);
     void add_bre(const SightRead::BigRockEnding& bre,
                  const SightRead::TempoMap& tempo_map);
@@ -144,6 +145,7 @@ public:
         return m_bre_ranges;
     }
     [[nodiscard]] const std::string& charter() const { return m_charter; }
+    [[nodiscard]] bool draw_hopos() const { return m_draw_hopos; }
     [[nodiscard]] const std::vector<std::tuple<double, double>>&
     fill_ranges() const
     {
