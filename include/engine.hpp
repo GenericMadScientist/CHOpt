@@ -50,6 +50,7 @@ public:
     [[nodiscard]] virtual bool chords_multiply_sustains() const = 0;
     [[nodiscard]] virtual int clean_play_bonus() const = 0;
     [[nodiscard]] virtual bool delayed_multiplier() const = 0;
+    [[nodiscard]] virtual bool draw_hopos() const = 0;
     [[nodiscard]] virtual double early_timing_window(double early_gap,
                                                      double late_gap) const = 0;
     [[nodiscard]] virtual bool has_bres() const = 0;
@@ -97,6 +98,7 @@ public:
         return false;
     }
     [[nodiscard]] bool delayed_multiplier() const override { return false; }
+    [[nodiscard]] bool draw_hopos() const override { return true; }
     [[nodiscard]] double early_timing_window(double early_gap,
                                              double late_gap) const override
     {
@@ -225,6 +227,7 @@ public:
     }
     [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool delayed_multiplier() const override { return true; }
+    [[nodiscard]] bool draw_hopos() const override { return false; }
     [[nodiscard]] double early_timing_window(double early_gap,
                                              double late_gap) const override
     {
@@ -311,6 +314,7 @@ public:
         return true;
     }
     [[nodiscard]] int clean_play_bonus() const override { return 0; }
+    [[nodiscard]] bool draw_hopos() const override { return false; }
     [[nodiscard]] bool has_bres() const override { return false; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
     [[nodiscard]] bool has_whammy_bursts() const override { return false; }
@@ -405,6 +409,7 @@ public:
     }
     [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool delayed_multiplier() const override { return false; }
+    [[nodiscard]] bool draw_hopos() const override { return false; }
     [[nodiscard]] double early_timing_window(double early_gap,
                                              double late_gap) const override
     {
@@ -478,6 +483,7 @@ public:
     }
     [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool delayed_multiplier() const override { return false; }
+    [[nodiscard]] bool draw_hopos() const override { return false; }
     [[nodiscard]] double early_timing_window(double early_gap,
                                              double late_gap) const override
     {
@@ -596,6 +602,7 @@ public:
     }
     [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool delayed_multiplier() const override { return false; }
+    [[nodiscard]] bool draw_hopos() const override { return true; }
     [[nodiscard]] double early_timing_window(double early_gap,
                                              double late_gap) const override
     {
