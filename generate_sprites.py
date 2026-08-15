@@ -2,15 +2,16 @@ from pathlib import Path
 
 from PIL import Image
 
+# Credit to DarkWolf for updated five fret sprites including HOPOs and taps.
 CIRCLE_TEMPLATE = [
     [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
     [0, 0, 1, 2, 2, 2, 2, 2, 1, 0, 0],
     [0, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1],
+    [1, 2, 2, 3, 3, 3, 3, 3, 2, 2, 1],
+    [1, 2, 2, 3, 3, 3, 3, 3, 2, 2, 1],
+    [1, 2, 2, 3, 3, 3, 3, 3, 2, 2, 1],
+    [1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 1],
     [0, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0],
     [0, 0, 1, 2, 2, 2, 2, 2, 1, 0, 0],
     [0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
@@ -18,7 +19,9 @@ CIRCLE_TEMPLATE = [
 
 OPEN_TEMPLATE = (
     [[0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0]]
-    + [[0, 0, 1, 2, 2, 2, 2, 2, 1, 0, 0]] * 65
+    + [[0, 0, 1, 2, 2, 2, 2, 2, 1, 0, 0]]
+    + [[0, 0, 1, 2, 3, 3, 3, 2, 1, 0, 0]] * 63
+    + [[0, 0, 1, 2, 2, 2, 2, 2, 1, 0, 0]]
     + [[0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0]]
 )
 
@@ -28,9 +31,9 @@ STAR_TEMPLATE = [
     [0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0],
     [0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0],
     [1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1],
-    [0, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0],
-    [0, 0, 1, 2, 2, 2, 2, 2, 1, 0, 0],
-    [0, 0, 0, 1, 2, 2, 2, 1, 0, 0, 0],
+    [0, 1, 2, 2, 3, 3, 3, 2, 2, 1, 0],
+    [0, 0, 1, 2, 3, 3, 3, 2, 1, 0, 0],
+    [0, 0, 0, 1, 3, 3, 3, 1, 0, 0, 0],
     [0, 0, 0, 1, 2, 1, 2, 1, 0, 0, 0],
     [0, 0, 1, 2, 1, 0, 1, 2, 1, 0, 0],
     [0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0],
@@ -58,12 +61,70 @@ def circle_image(index, orientation):
     img = Image.new("RGBA", (11, 71), "#00000000")
 
     colour_map = [
-        [(0, 0, 0), (0, 255, 0)],
-        [(0, 0, 0), (255, 0, 0)],
-        [(0, 0, 0), (255, 255, 0)],
-        [(0, 0, 0), (0, 0, 255)],
-        [(0, 0, 0), (255, 165, 0)],
-        [(0, 0, 0), (128, 0, 128, 128)],
+        [(0, 0, 0), (0, 255, 0), (0, 255, 0)],
+        [(0, 0, 0), (255, 0, 0), (255, 0, 0)],
+        [(0, 0, 0), (255, 255, 0), (255, 255, 0)],
+        [(0, 0, 0), (0, 0, 255), (0, 0, 255)],
+        [(0, 0, 0), (255, 165, 0), (255, 165, 0)],
+        [(0, 0, 0), (128, 0, 128, 128), (128, 0, 128, 128)],
+    ]
+    for colour in reversed(range(6)):
+        template = OPEN_TEMPLATE if colour == 5 else CIRCLE_TEMPLATE
+        if index & (1 << colour):
+            for i, row in enumerate(template):
+                if colour == 5:
+                    y_offset = 2
+                elif orientation == "lefty":
+                    y_offset = 15 * (4 - colour)
+                else:
+                    y_offset = 15 * colour
+
+                for j, pixel in enumerate(row):
+                    if pixel != 0:
+                        img.putpixel((j, y_offset + i), colour_map[colour][pixel - 1])
+
+    return img
+
+
+def circle_hopo_image(index, orientation):
+    img = Image.new("RGBA", (11, 71), "#00000000")
+
+    colour_map = [
+        [(0, 255, 0), (0, 255, 0), (255, 255, 255)],
+        [(255, 0, 0), (255, 0, 0), (255, 255, 255)],
+        [(255, 255, 0), (255, 255, 0), (255, 255, 255)],
+        [(0, 0, 255), (0, 0, 255), (255, 255, 255)],
+        [(255, 165, 0), (255, 165, 0), (255, 255, 255)],
+        [(128, 0, 128, 128), (128, 0, 128, 128), (212, 170, 212, 192)],
+    ]
+    for colour in reversed(range(6)):
+        template = OPEN_TEMPLATE if colour == 5 else CIRCLE_TEMPLATE
+        if index & (1 << colour):
+            for i, row in enumerate(template):
+                if colour == 5:
+                    y_offset = 2
+                elif orientation == "lefty":
+                    y_offset = 15 * (4 - colour)
+                else:
+                    y_offset = 15 * colour
+
+                for j, pixel in enumerate(row):
+                    if pixel != 0:
+                        img.putpixel((j, y_offset + i), colour_map[colour][pixel - 1])
+
+    return img
+
+
+def circle_tap_image(index, orientation):
+    img = Image.new("RGBA", (11, 71), "#00000000")
+
+    colour_map = [
+        [(0, 255, 0), (0, 255, 0), (0, 0, 0)],
+        [(255, 0, 0), (255, 0, 0), (0, 0, 0)],
+        [(255, 255, 0), (255, 255, 0), (0, 0, 0)],
+        [(0, 0, 255), (0, 0, 255), (0, 0, 0)],
+        [(255, 165, 0), (255, 165, 0), (0, 0, 0)],
+        [(128, 0, 128, 128), (128, 0, 128, 128), (212, 170, 212, 192)],
     ]
     for colour in reversed(range(6)):
         template = OPEN_TEMPLATE if colour == 5 else CIRCLE_TEMPLATE
@@ -87,12 +148,70 @@ def star_image(index, orientation):
     img = Image.new("RGBA", (11, 73), "#00000000")
 
     colour_map = [
-        [(0, 0, 0), (0, 255, 0)],
-        [(0, 0, 0), (255, 0, 0)],
-        [(0, 0, 0), (255, 255, 0)],
-        [(0, 0, 0), (0, 0, 255)],
-        [(0, 0, 0), (255, 165, 0)],
-        [(0, 0, 0), (128, 0, 128, 128)],
+        [(0, 0, 0), (0, 255, 0), (0, 255, 0)],
+        [(0, 0, 0), (255, 0, 0), (255, 0, 0)],
+        [(0, 0, 0), (255, 255, 0), (255, 255, 0)],
+        [(0, 0, 0), (0, 0, 255), (0, 0, 255)],
+        [(0, 0, 0), (255, 165, 0), (255, 165, 0)],
+        [(0, 0, 0), (128, 0, 128, 128), (128, 0, 128, 128)],
+    ]
+    for colour in reversed(range(6)):
+        template = OPEN_TEMPLATE if colour == 5 else STAR_TEMPLATE
+        if index & (1 << colour):
+            for i, row in enumerate(template):
+                if colour == 5:
+                    y_offset = 3
+                elif orientation == "lefty":
+                    y_offset = 15 * (4 - colour)
+                else:
+                    y_offset = 15 * colour
+
+                for j, pixel in enumerate(row):
+                    if pixel != 0:
+                        img.putpixel((j, y_offset + i), colour_map[colour][pixel - 1])
+
+    return img
+
+
+def star_hopo_image(index, orientation):
+    img = Image.new("RGBA", (11, 73), "#00000000")
+
+    colour_map = [
+        [(0, 255, 0), (0, 255, 0), (255, 255, 255)],
+        [(255, 0, 0), (255, 0, 0), (255, 255, 255)],
+        [(255, 255, 0), (255, 255, 0), (255, 255, 255)],
+        [(0, 0, 255), (0, 0, 255), (255, 255, 255)],
+        [(255, 165, 0), (255, 165, 0), (255, 255, 255)],
+        [(0, 0, 0), (128, 0, 128, 128), (128, 0, 128, 128)],
+    ]
+    for colour in reversed(range(6)):
+        template = OPEN_TEMPLATE if colour == 5 else STAR_TEMPLATE
+        if index & (1 << colour):
+            for i, row in enumerate(template):
+                if colour == 5:
+                    y_offset = 3
+                elif orientation == "lefty":
+                    y_offset = 15 * (4 - colour)
+                else:
+                    y_offset = 15 * colour
+
+                for j, pixel in enumerate(row):
+                    if pixel != 0:
+                        img.putpixel((j, y_offset + i), colour_map[colour][pixel - 1])
+
+    return img
+
+
+def star_tap_image(index, orientation):
+    img = Image.new("RGBA", (11, 73), "#00000000")
+
+    colour_map = [
+        [(0, 255, 0), (0, 255, 0), (0, 0, 0)],
+        [(255, 0, 0), (255, 0, 0), (0, 0, 0)],
+        [(255, 255, 0), (255, 255, 0), (0, 0, 0)],
+        [(0, 0, 255), (0, 0, 255), (0, 0, 0)],
+        [(255, 165, 0), (255, 165, 0), (0, 0, 0)],
+        [(0, 0, 0), (128, 0, 128, 128), (128, 0, 128, 128)],
     ]
     for colour in reversed(range(6)):
         template = OPEN_TEMPLATE if colour == 5 else STAR_TEMPLATE
@@ -116,12 +235,12 @@ def tom_image(index, orientation):
     img = Image.new("RGBA", (11, 71), "#00000000")
 
     colour_map = [
-        [(0, 0, 0), (255, 0, 0)],
-        [(0, 0, 0), (255, 255, 0)],
-        [(0, 0, 0), (0, 0, 255)],
-        [(0, 0, 0), (0, 255, 0)],
-        [(0, 0, 0), (255, 165, 0, 128)],
-        [(0, 0, 0), (255, 165, 0, 128)],
+        [(0, 0, 0), (255, 0, 0), (255, 0, 0)],
+        [(0, 0, 0), (255, 255, 0), (255, 255, 0)],
+        [(0, 0, 0), (0, 0, 255), (0, 0, 255)],
+        [(0, 0, 0), (0, 255, 0), (0, 255, 0)],
+        [(0, 0, 0), (255, 165, 0, 128), (255, 165, 0, 128)],
+        [(0, 0, 0), (255, 165, 0, 128), (255, 165, 0, 128)],
     ]
     template = OPEN_TEMPLATE if index >= 4 else CIRCLE_TEMPLATE
     for i, row in enumerate(template):
@@ -147,8 +266,8 @@ def cymbal_image(index, orientation):
         [(0, 0, 0), (255, 255, 0)],
         [(0, 0, 0), (0, 0, 255)],
         [(0, 0, 0), (0, 255, 0)],
-        [(0, 0, 0), (255, 165, 0, 128)],
-        [(0, 0, 0), (255, 165, 0, 128)],
+        [(0, 0, 0), (255, 165, 0, 128), (255, 165, 0, 128)],
+        [(0, 0, 0), (255, 165, 0, 128), (255, 165, 0, 128)],
     ]
     template = OPEN_TEMPLATE if index >= 4 else TRIANGLE_TEMPLATE
     for i, row in enumerate(template):
@@ -169,9 +288,9 @@ def cymbal_image(index, orientation):
 def ghl_image(index, orientation):
     img = Image.new("RGBA", (11, 71), "#00000000")
 
-    white_colours = [(0, 0, 0), (255, 255, 255)]
-    black_colours = [(0, 0, 0), (0, 0, 0)]
-    open_colours = [(0, 0, 0), (255, 255, 255, 128)]
+    white_colours = [(0, 0, 0), (255, 255, 255), (255, 255, 255), (255, 255, 255)]
+    black_colours = [(0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)]
+    open_colours = [(0, 0, 0), (255, 255, 255, 128), (255, 255, 255, 128)]
     if index & (1 << 6):
         for i, row in enumerate(OPEN_TEMPLATE):
             for j, pixel in enumerate(row):
@@ -205,13 +324,29 @@ sprites_dir.mkdir(exist_ok=True)
 for orientation in ["lefty", "righty"]:
     circle_dir = sprites_dir.joinpath(orientation, "circles")
     circle_dir.mkdir(parents=True, exist_ok=True)
+    circle_hopo_dir = sprites_dir.joinpath(orientation, "circle_hopos")
+    circle_hopo_dir.mkdir(parents=True, exist_ok=True)
+    circle_tap_dir = sprites_dir.joinpath(orientation, "circle_taps")
+    circle_tap_dir.mkdir(parents=True, exist_ok=True)
     star_dir = sprites_dir.joinpath(orientation, "stars")
     star_dir.mkdir(parents=True, exist_ok=True)
+    star_hopo_dir = sprites_dir.joinpath(orientation, "star_hopos")
+    star_hopo_dir.mkdir(parents=True, exist_ok=True)
+    star_tap_dir = sprites_dir.joinpath(orientation, "star_taps")
+    star_tap_dir.mkdir(parents=True, exist_ok=True)
     for i in range(1, 64):
         img = circle_image(i, orientation)
         img.save(circle_dir.joinpath(f"{i}.png"), optimize=True)
+        img = circle_hopo_image(i, orientation)
+        img.save(circle_hopo_dir.joinpath(f"{i}.png"), optimize=True)
+        img = circle_tap_image(i, orientation)
+        img.save(circle_tap_dir.joinpath(f"{i}.png"), optimize=True)
         img = star_image(i, orientation)
         img.save(star_dir.joinpath(f"{i}.png"), optimize=True)
+        img = star_hopo_image(i, orientation)
+        img.save(star_hopo_dir.joinpath(f"{i}.png"), optimize=True)
+        img = star_tap_image(i, orientation)
+        img.save(star_tap_dir.joinpath(f"{i}.png"), optimize=True)
 
     tom_dir = sprites_dir.joinpath(orientation, "drums")
     tom_dir.mkdir(parents=True, exist_ok=True)
@@ -240,7 +375,6 @@ with open("resources/resources.qrc", "w", encoding="utf-8", newline="\n") as f:
     f.write("<!DOCTYPE RCC>\n")
     f.write('<RCC version="1.0">\n')
     f.write("  <qresource>\n")
-    for r in resources:
-        f.write(f"    <file>{r}</file>\n")
+    f.writelines(f"    <file>{r}</file>\n" for r in resources)
     f.write("  </qresource>\n")
     f.write("</RCC>\n")
