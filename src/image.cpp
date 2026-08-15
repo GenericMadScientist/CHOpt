@@ -135,11 +135,28 @@ const char* shape_directory(const ImageBuilder& builder, const DrawnNote& note)
 {
     switch (builder.track_type()) {
     case SightRead::TrackType::FiveFret:
-    case SightRead::TrackType::FortniteFestival:
+    case SightRead::TrackType::FortniteFestival: {
+        const auto draw_tap = builder.draw_hopos()
+            && ((note.note_flags & SightRead::FLAGS_TAP) != 0);
+        const auto draw_hopo = builder.draw_hopos()
+            && ((note.note_flags & SightRead::FLAGS_HOPO) != 0);
         if (note.is_sp_note) {
+            if (draw_tap) {
+                return "star_taps/";
+            }
+            if (draw_hopo) {
+                return "star_hopos/";
+            }
             return "stars/";
         }
+        if (draw_tap) {
+            return "circle_taps/";
+        }
+        if (draw_hopo) {
+            return "circle_hopos/";
+        }
         return "circles/";
+    }
     case SightRead::TrackType::SixFret:
         return "ghl/";
     case SightRead::TrackType::Drums:
