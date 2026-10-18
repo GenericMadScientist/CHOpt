@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(phrases_are_counted_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong song {note_track, default_measure_mode_data(),
-                        default_guitar_pathing_settings()};
+                        default_guitar_pathing_settings(), 100};
     const auto& points = song.points();
 
     BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong song {note_track, default_measure_mode_data(),
-                        default_guitar_pathing_settings()};
+                        default_guitar_pathing_settings(), 100};
     const auto& points = song.points();
     auto result = song.total_available_sp(
         SightRead::Beat(4.0), points.cbegin() + 4, points.cbegin() + 5);
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(whammy_is_counted_correctly_even_started_mid_hold)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong song {note_track, default_measure_mode_data(),
-                        default_guitar_pathing_settings()};
+                        default_guitar_pathing_settings(), 100};
     const auto& points = song.points();
     auto result = song.total_available_sp(SightRead::Beat(4.5),
                                           points.cend() - 3, points.cend() - 3);
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(required_whammy_end_is_accounted_for)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong song {note_track, default_measure_mode_data(),
-                        default_guitar_pathing_settings()};
+                        default_guitar_pathing_settings(), 100};
     const auto& points = song.points();
     auto result
         = song.total_available_sp(SightRead::Beat(4.0), points.cbegin() + 4,
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(sp_does_not_exceed_full_bar)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong song {note_track, default_measure_mode_data(),
-                        default_guitar_pathing_settings()};
+                        default_guitar_pathing_settings(), 100};
     const auto& points = song.points();
 
     BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE(
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong song {note_track, default_measure_mode_data(),
-                        default_guitar_pathing_settings()};
+                        default_guitar_pathing_settings(), 100};
     const auto& points = song.points();
 
     BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.05),
@@ -226,7 +226,8 @@ BOOST_AUTO_TEST_CASE(unison_bonuses_are_taken_account_of)
                          .od_beats = {},
                          .unison_phrases = {{.position = SightRead::Tick {0},
                                              .length = SightRead::Tick {50}}}},
-                        default_rb3_pathing_settings()};
+                        default_rb3_pathing_settings(),
+                        100};
     const auto& points = song.points();
 
     BOOST_CHECK_EQUAL(song.total_available_sp(SightRead::Beat(0.0),
@@ -248,7 +249,7 @@ BOOST_AUTO_TEST_CASE(
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong song {note_track, default_measure_mode_data(),
-                        default_guitar_pathing_settings()};
+                        default_guitar_pathing_settings(), 100};
     const auto& points = song.points();
 
     const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
@@ -274,7 +275,8 @@ BOOST_AUTO_TEST_CASE(total_available_sp_with_earliest_pos_counts_unison_bonuses)
                          .unison_phrases = {SightRead::StarPower {
                              .position = SightRead::Tick {0},
                              .length = SightRead::Tick {100}}}},
-                        default_rb3_pathing_settings()};
+                        default_rb3_pathing_settings(),
+                        100};
     const auto& points = song.points();
 
     const auto& [sp_bar, pos] = song.total_available_sp_with_earliest_pos(
@@ -294,7 +296,7 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -320,7 +322,8 @@ BOOST_AUTO_TEST_CASE(full_bar_works_with_time_signatures)
                                 {.time_map = {tempo_map, SpMode::Measure},
                                  .od_beats = {},
                                  .unison_phrases = {}},
-                                default_guitar_pathing_settings()};
+                                default_guitar_pathing_settings(),
+                                100};
     const auto& second_points = second_track.points();
     ActivationCandidate second_candidate {
         .act_start = second_points.cbegin(),
@@ -348,7 +351,7 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -374,7 +377,8 @@ BOOST_AUTO_TEST_CASE(half_bar_works_with_time_signatures)
                                 {.time_map = {tempo_map, SpMode::Measure},
                                  .od_beats = {},
                                  .unison_phrases = {}},
-                                default_guitar_pathing_settings()};
+                                default_guitar_pathing_settings(),
+                                100};
     const auto& second_points = second_track.points();
     ActivationCandidate second_candidate {
         .act_start = second_points.cbegin(),
@@ -402,7 +406,7 @@ BOOST_AUTO_TEST_CASE(below_half_bar_never_works)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -427,7 +431,7 @@ BOOST_AUTO_TEST_CASE(check_next_point_needs_to_not_lie_in_activation)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -455,7 +459,7 @@ BOOST_AUTO_TEST_CASE(check_intermediate_sp_is_accounted_for)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -483,7 +487,7 @@ BOOST_AUTO_TEST_CASE(check_only_reached_intermediate_sp_is_accounted_for)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -511,7 +515,7 @@ BOOST_AUTO_TEST_CASE(last_notes_sp_status_is_not_ignored)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -540,7 +544,7 @@ BOOST_AUTO_TEST_CASE(sp_bar_does_not_exceed_full_bar)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -565,7 +569,7 @@ BOOST_AUTO_TEST_CASE(earliest_activation_point_is_considered)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -611,7 +615,8 @@ BOOST_AUTO_TEST_CASE(
                          {.time_map = {tempo_map, SpMode::Measure},
                           .od_beats = {},
                           .unison_phrases = {}},
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(),
+                         100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -651,7 +656,8 @@ BOOST_AUTO_TEST_CASE(mid_activation_unison_bonuses_are_accounted_for)
                           .unison_phrases = {SightRead::StarPower {
                               .position = SightRead::Tick {192},
                               .length = SightRead::Tick {1}}}},
-                         default_rb3_pathing_settings()};
+                         default_rb3_pathing_settings(),
+                         100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -684,7 +690,8 @@ BOOST_AUTO_TEST_CASE(last_note_unison_bonus_accounted_for_excess_sp)
                           .unison_phrases = {SightRead::StarPower {
                               .position = SightRead::Tick {192},
                               .length = SightRead::Tick {1}}}},
-                         default_rb3_pathing_settings()};
+                         default_rb3_pathing_settings(),
+                         100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -717,7 +724,7 @@ BOOST_AUTO_TEST_CASE(check_whammy_is_counted)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -746,7 +753,7 @@ BOOST_AUTO_TEST_CASE(check_whammy_from_end_of_sp_sustain_before_note_is_counted)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cend() - 2,
@@ -778,7 +785,7 @@ BOOST_AUTO_TEST_CASE(
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin() + 2,
@@ -806,7 +813,7 @@ BOOST_AUTO_TEST_CASE(check_compressed_activations_are_counted)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -836,7 +843,7 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_considered)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -861,7 +868,7 @@ BOOST_AUTO_TEST_CASE(lower_sp_is_only_considered_down_to_a_half_bar)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -890,7 +897,7 @@ BOOST_AUTO_TEST_CASE(
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -915,7 +922,7 @@ BOOST_AUTO_TEST_CASE(next_note_can_be_squeezed_late_to_avoid_going_too_far)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -943,7 +950,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_early)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -971,7 +978,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_can_be_hit_late)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1013,7 +1020,8 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_handles_very_high_bpm_sp_granting_notes)
                          {.time_map = {tempo_map, SpMode::Measure},
                           .od_beats = {},
                           .unison_phrases = {}},
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(),
+                         100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin() + 2,
@@ -1039,7 +1047,7 @@ BOOST_AUTO_TEST_CASE(front_end_and_back_end_are_restricted)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1069,7 +1077,7 @@ BOOST_AUTO_TEST_CASE(Intermediate_sp_front_end_is_restricted)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1099,7 +1107,7 @@ BOOST_AUTO_TEST_CASE(intermediate_sp_back_end_is_restricted)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1126,7 +1134,7 @@ BOOST_AUTO_TEST_CASE(next_note_back_end_is_restricted)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1152,7 +1160,7 @@ BOOST_AUTO_TEST_CASE(end_position_is_finite_if_activation_goes_past_last_note)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1185,7 +1193,7 @@ BOOST_AUTO_TEST_CASE(mid_act_phrases_not_collected)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_gh1_pathing_settings()};
+                         default_gh1_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1213,7 +1221,7 @@ BOOST_AUTO_TEST_CASE(end_of_act_phrase_not_collected)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_gh1_pathing_settings()};
+                         default_gh1_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1240,7 +1248,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_gh1_pathing_settings()};
+                         default_gh1_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1267,7 +1275,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_is_not_collected_for_end_calculation)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_gh1_pathing_settings()};
+                         default_gh1_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1301,7 +1309,7 @@ BOOST_AUTO_TEST_CASE(mid_act_whammy_around_sp_granting_note_doesnt_get_added)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_gh1_pathing_settings()};
+                         default_gh1_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1331,7 +1339,7 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_takes_into_account_forced_whammy)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1370,7 +1378,7 @@ BOOST_AUTO_TEST_CASE(
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cend() - 2,
@@ -1404,7 +1412,7 @@ BOOST_AUTO_TEST_CASE(
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin() + 2,
@@ -1447,7 +1455,8 @@ BOOST_AUTO_TEST_CASE(is_candidate_valid_correctly_clamps_low_sp)
                          {.time_map = {tempo_map, SpMode::Measure},
                           .od_beats = {},
                           .unison_phrases = {}},
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(),
+                         100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin() + 500,
@@ -1477,7 +1486,7 @@ BOOST_AUTO_TEST_CASE(
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1509,7 +1518,7 @@ BOOST_AUTO_TEST_CASE(
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1541,7 +1550,7 @@ BOOST_AUTO_TEST_CASE(
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1565,7 +1574,7 @@ BOOST_AUTO_TEST_CASE(adjusted_hit_window_functions_return_correct_values)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
 
     BOOST_CHECK_CLOSE(
@@ -1594,7 +1603,7 @@ BOOST_AUTO_TEST_CASE(effect_on_whammy_is_taken_account_of)
                                 std::make_shared<SightRead::SongGlobalData>()};
     track.sp_phrases(phrases);
     ProcessedSong song {track, default_measure_mode_data(),
-                        no_squeeze_negative_video_lag_settings()};
+                        no_squeeze_negative_video_lag_settings(), 100};
     const auto& points = song.points();
 
     auto result = song.total_available_sp(SightRead::Beat(0.0), points.cbegin(),
@@ -1623,7 +1632,8 @@ BOOST_AUTO_TEST_CASE(effect_on_notes_is_taken_account_of)
                         {.time_map = {tempo_map, SpMode::Measure},
                          .od_beats = {},
                          .unison_phrases = {}},
-                        no_squeeze_positive_video_lag_settings()};
+                        no_squeeze_positive_video_lag_settings(),
+                        100};
     const auto& points = song.points();
     ActivationCandidate candidate {
         .act_start = points.cbegin(),
@@ -1652,7 +1662,7 @@ BOOST_AUTO_TEST_CASE(false_for_guitar)
         SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_drums_pathing_settings()};
+                         default_drums_pathing_settings(), 100};
 
     BOOST_CHECK(!track.is_drums());
 }
@@ -1664,7 +1674,7 @@ BOOST_AUTO_TEST_CASE(true_for_drums)
         SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_drums_pathing_settings()};
+                         default_drums_pathing_settings(), 100};
 
     BOOST_TEST(track.is_drums());
 }
@@ -1692,7 +1702,7 @@ BOOST_AUTO_TEST_CASE(overlap_and_es_are_denoted_correctly)
     note_track.sp_phrases(phrases);
     note_track.solos(solos);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cbegin() + 2,
                                 .act_end = points.cbegin() + 3,
@@ -1729,7 +1739,7 @@ BOOST_AUTO_TEST_CASE(
     note_track.sp_phrases(phrases);
     note_track.solos(solos);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_gh1_pathing_settings()};
+                         default_gh1_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cbegin() + 2,
                                 .act_end = points.cbegin() + 3,
@@ -1767,7 +1777,7 @@ BOOST_AUTO_TEST_CASE(
     note_track.sp_phrases(phrases);
     note_track.solos(solos);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_gh1_pathing_settings()};
+                         default_gh1_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cbegin() + 2,
                                 .act_end = points.cbegin() + 3,
@@ -1798,7 +1808,7 @@ BOOST_AUTO_TEST_CASE(no_overlap_is_denoted_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cbegin() + 3,
                                 .act_end = points.cbegin() + 3,
@@ -1830,7 +1840,7 @@ BOOST_AUTO_TEST_CASE(no_es_is_denoted_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cbegin() + 4,
                                 .act_end = points.cbegin() + 4,
@@ -1861,7 +1871,7 @@ BOOST_AUTO_TEST_CASE(no_sp_is_denoted_correctly)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
@@ -1884,7 +1894,7 @@ BOOST_AUTO_TEST_CASE(sustains_handled_correctly_for_nn)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cend() - 1,
                                 .act_end = points.cend() - 1,
@@ -1913,7 +1923,7 @@ BOOST_AUTO_TEST_CASE(mid_sustain_activations_noted_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cbegin() + 3,
                                 .act_end = points.cend() - 1,
@@ -1943,7 +1953,7 @@ BOOST_AUTO_TEST_CASE(notes_of_different_colours_are_counted_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cend() - 1,
                                 .act_end = points.cend() - 1,
@@ -1974,7 +1984,7 @@ BOOST_AUTO_TEST_CASE(
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cend() - 1,
                                 .act_end = points.cend() - 1,
@@ -2002,7 +2012,7 @@ BOOST_AUTO_TEST_CASE(mid_sustain_act_before_notes_are_written_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cbegin() + 2,
                                 .act_end = points.cend() - 1,
@@ -2029,7 +2039,7 @@ BOOST_AUTO_TEST_CASE(zero_phrase_acts_are_handled)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cend() - 3,
                                 .act_end = points.cend() - 3,
@@ -2057,7 +2067,7 @@ BOOST_AUTO_TEST_CASE(average_multiplier_rounds_down)
         notes, SightRead::TrackType::FiveFret,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
@@ -2077,7 +2087,7 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_drums)
         notes, SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_pro_drums_pathing_settings()};
+                         default_pro_drums_pathing_settings(), 100};
     Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
@@ -2096,7 +2106,7 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_correct_for_zero_notes)
         notes, SightRead::TrackType::Drums,
         std::make_shared<SightRead::SongGlobalData>()};
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_pro_drums_pathing_settings()};
+                         default_pro_drums_pathing_settings(), 100};
     Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
@@ -2124,7 +2134,7 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_is_used_for_drums)
     note_track.sp_phrases(phrases);
     note_track.generate_drum_fills({});
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_pro_drums_pathing_settings()};
+                         default_pro_drums_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cbegin() + 2,
                                 .act_end = points.cbegin() + 2,
@@ -2161,7 +2171,7 @@ BOOST_AUTO_TEST_CASE(alternative_path_notation_l_and_e_are_used_for_drums)
     note_track.sp_phrases(phrases);
     note_track.generate_drum_fills({});
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_pro_drums_pathing_settings()};
+                         default_pro_drums_pathing_settings(), 100};
     const auto& points = track.points();
     Path path {.activations = {{.act_start = points.cbegin() + 2,
                                 .act_end = points.cbegin() + 2,
@@ -2194,12 +2204,73 @@ BOOST_AUTO_TEST_CASE(average_multiplier_is_ignored_with_rb)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.solos(solos);
     ProcessedSong track {note_track, default_od_beat_mode_data(),
-                         default_rb_pathing_settings()};
+                         default_rb_pathing_settings(), 100};
     Path path {.activations = {}, .score_boost = 0};
 
     const char* desired_path_output = "Path: None\n"
                                       "No SP score: 225\n"
                                       "Total score: 225";
+
+    BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
+}
+
+BOOST_AUTO_TEST_CASE(bres_are_included)
+{
+    std::vector<SightRead::Note> notes {make_note(0), make_note(960)};
+    std::vector<SightRead::BigRockEnding> bres {
+        {.start = SightRead::Tick {384}, .end = SightRead::Tick {768}}};
+    SightRead::NoteTrack note_track {
+        notes, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    note_track.bres(std::move(bres));
+    ProcessedSong track {note_track, default_od_beat_mode_data(),
+                         default_rb_pathing_settings(), 100};
+    Path path {.activations = {}, .score_boost = 0};
+
+    const char* desired_path_output = "Path: None\n"
+                                      "No SP score: 1275\n"
+                                      "Total score: 1275";
+
+    BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
+}
+
+// 200% speed in the next two tests means the original BPM is 60, not 120.
+BOOST_AUTO_TEST_CASE(sped_up_bres_give_less_points_on_rock_band)
+{
+    std::vector<SightRead::Note> notes {make_note(0), make_note(480)};
+    std::vector<SightRead::BigRockEnding> bres {
+        {.start = SightRead::Tick {192}, .end = SightRead::Tick {384}}};
+    SightRead::NoteTrack note_track {
+        notes, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    note_track.bres(std::move(bres));
+    ProcessedSong track {note_track, default_od_beat_mode_data(),
+                         default_rb_pathing_settings(), 200};
+    Path path {.activations = {}, .score_boost = 0};
+
+    const char* desired_path_output = "Path: None\n"
+                                      "No SP score: 1025\n"
+                                      "Total score: 1025";
+
+    BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
+}
+
+BOOST_AUTO_TEST_CASE(sped_up_bres_give_the_same_points_on_yarg)
+{
+    std::vector<SightRead::Note> notes {make_note(0), make_note(480)};
+    std::vector<SightRead::BigRockEnding> bres {
+        {.start = SightRead::Tick {192}, .end = SightRead::Tick {384}}};
+    SightRead::NoteTrack note_track {
+        notes, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    note_track.bres(std::move(bres));
+    ProcessedSong track {note_track, default_od_beat_mode_data(),
+                         default_yarg_pathing_settings(), 200};
+    Path path {.activations = {}, .score_boost = 0};
+
+    const char* desired_path_output = "Path: None\n"
+                                      "No SP score: 1300\n"
+                                      "Total score: 1300";
 
     BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
 }

@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_a_non_empty_path)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto& points = track.points();
     std::vector<Activation> optimal_acts {{.act_start = points.cbegin() + 2,
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_multiple_acts)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto& points = track.points();
     std::vector<Activation> optimal_acts {{.act_start = points.cbegin() + 2,
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_an_act_containing_more_than_one_note)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto& points = track.points();
     std::vector<Activation> optimal_acts {{.act_start = points.cbegin() + 2,
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_with_an_act_that_must_go_as_long_as_possible)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto& points = track.points();
     std::vector<Activation> optimal_acts {{.act_start = points.cbegin() + 2,
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_greedy_algorithm_fails)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto& points = track.points();
     std::vector<Activation> optimal_acts {{.act_start = points.cbegin() + 3,
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_a_phrase_must_be_hit_early)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto& points = track.points();
     std::vector<Activation> optimal_acts {
@@ -256,7 +256,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_activations_ending_late_matter)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto opt_path = optimiser.optimal_path();
 
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(early_whammy_at_start_of_an_sp_phrase_is_always_counted)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto opt_path = optimiser.optimal_path();
 
@@ -304,7 +304,7 @@ BOOST_AUTO_TEST_CASE(
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto opt_path = optimiser.optimal_path();
 
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(activation_right_after_a_sp_sustain_is_drawn_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto opt_path = optimiser.optimal_path();
 
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(songs_ending_in_es1_are_pathed_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto opt_path = optimiser.optimal_path();
 
@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_is_specified_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -403,7 +403,7 @@ BOOST_AUTO_TEST_CASE(acts_covering_the_last_note_do_not_compress_whammy)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -438,7 +438,7 @@ BOOST_AUTO_TEST_CASE(use_next_point_to_work_out_compressed_whammy)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -467,7 +467,7 @@ BOOST_AUTO_TEST_CASE(forbidden_squeeze_does_not_grant_extra_whammy_next_act)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -491,7 +491,7 @@ BOOST_AUTO_TEST_CASE(easier_activations_are_chosen_where_possible)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -516,7 +516,7 @@ BOOST_AUTO_TEST_CASE(
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -537,7 +537,7 @@ BOOST_AUTO_TEST_CASE(does_not_crash_with_positive_video_lag)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         positive_video_lag_settings()};
+                         positive_video_lag_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -561,7 +561,7 @@ BOOST_AUTO_TEST_CASE(whammy_delay_is_handled_correctly)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         whammy_delay_settings()};
+                         whammy_delay_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.1)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -592,7 +592,7 @@ BOOST_AUTO_TEST_CASE(act_end_is_constrained_by_next_act_start)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -625,7 +625,7 @@ BOOST_AUTO_TEST_CASE(whammy_delay_to_stop_early_halfbar_is_considered)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_guitar_pathing_settings()};
+                         default_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -654,7 +654,7 @@ BOOST_AUTO_TEST_CASE(drum_paths_can_only_activate_on_activation_notes)
     note_track.sp_phrases(phrases);
     note_track.drum_fills(fills);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_drums_pathing_settings()};
+                         default_drums_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -685,7 +685,7 @@ BOOST_AUTO_TEST_CASE(
     note_track.drum_fills(fills);
 
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_drums_pathing_settings()};
+                         default_drums_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -714,7 +714,7 @@ BOOST_AUTO_TEST_CASE(drum_reverse_squeezes_are_drawn_properly)
     note_track.sp_phrases(phrases);
     note_track.drum_fills(fills);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_drums_pathing_settings()};
+                         default_drums_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -742,7 +742,7 @@ BOOST_AUTO_TEST_CASE(
     note_track.drum_fills(fills);
 
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_drums_pathing_settings()};
+                         default_drums_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -774,7 +774,8 @@ BOOST_AUTO_TEST_CASE(drum_activation_delay_is_affected_by_speed)
                          {.time_map = {tempo_map, SpMode::Measure},
                           .od_beats = {},
                           .unison_phrases = {}},
-                         default_drums_pathing_settings()};
+                         default_drums_pathing_settings(),
+                         100};
     Optimiser optimiser {&track, &term_bool, 200, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();
@@ -802,7 +803,7 @@ BOOST_AUTO_TEST_CASE(simplest_song_where_overlap_matters)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_gh1_pathing_settings()};
+                         default_gh1_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto& points = track.points();
     std::vector<Activation> optimal_acts {{.act_start = points.cbegin() + 2,
@@ -844,7 +845,7 @@ BOOST_AUTO_TEST_CASE(partial_overlap_doesnt_work)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_gh1_pathing_settings()};
+                         default_gh1_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto& points = track.points();
     std::vector<Activation> optimal_acts {{.act_start = points.cbegin() + 2,
@@ -895,7 +896,7 @@ BOOST_AUTO_TEST_CASE(compressed_whammy_considered_even_with_maxable_sp)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         default_gh1_pathing_settings()};
+                         default_gh1_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto& points = track.points();
     std::vector<Activation> optimal_acts {{.act_start = points.cend() - 5,
@@ -928,7 +929,7 @@ BOOST_AUTO_TEST_CASE(quarter_bar_activations_are_possible_on_fortnite_engine)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_od_beat_mode_data(),
-                         default_fortnite_guitar_pathing_settings()};
+                         default_fortnite_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
     const auto& points = track.points();
     std::vector<Activation> optimal_acts {{.act_start = points.cbegin() + 1,
@@ -954,7 +955,7 @@ BOOST_AUTO_TEST_CASE(one_phrase_acts_use_ew_when_bigger_than_squeeze)
         std::make_shared<SightRead::SongGlobalData>()};
     note_track.sp_phrases(phrases);
     ProcessedSong track {note_track, default_measure_mode_data(),
-                         mid_squeeze_ch_guitar_pathing_settings()};
+                         mid_squeeze_ch_guitar_pathing_settings(), 100};
     Optimiser optimiser {&track, &term_bool, 100, SightRead::Second(0.0)};
 
     const auto opt_path = optimiser.optimal_path();

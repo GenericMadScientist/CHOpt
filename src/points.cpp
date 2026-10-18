@@ -527,8 +527,8 @@ std::vector<Point> unmultiplied_points(const SightRead::NoteTrack& track,
                 continue;
             }
         }
-        if (pathing_settings.engine->has_bres() && !bres.empty()
-            && p->position >= bres.back().start) {
+        if (pathing_settings.engine->bre_scoring() != BreScoring::None
+            && !bres.empty() && p->position >= bres.back().start) {
             break;
         }
         const auto search_start
@@ -786,4 +786,31 @@ int PointSet::range_score(PointPtr start, PointPtr end) const
         = static_cast<std::size_t>(std::distance(m_points.data(), end));
     return m_cumulative_score_totals.at(end_index)
         - m_cumulative_score_totals.at(start_index);
+}
+
+int bre_score(const SightRead::BigRockEnding& bre,
+              const SightRead::TempoMap& tempo_map, const Engine& engine,
+              int speed)
+{
+    constexpr double DEFAULT_SPEED = 100.0;
+    constexpr int INITIAL_BRE_VALUE = 750;
+    constexpr int BRE_VALUE_PER_SECOND = 500;
+
+    const auto seconds_start = tempo_map.to_seconds(bre.start);
+    const auto seconds_end = tempo_map.to_seconds(bre.end);
+    const auto seconds_gap = seconds_end - seconds_start;
+
+    switch (engine.bre_scoring()) {
+    case BreScoring::None:
+        return 0;
+    case BreScoring::SpeedDependent:
+        return static_cast<int>(INITIAL_BRE_VALUE
+                                + BRE_VALUE_PER_SECOND * seconds_gap.value());
+    case BreScoring::SpeedIndependent:
+        return static_cast<int>(INITIAL_BRE_VALUE
+                                + BRE_VALUE_PER_SECOND * seconds_gap.value()
+                                    * speed / DEFAULT_SPEED);
+    default:
+        throw std::runtime_error("Invalid bre_scoring type");
+    }
 }

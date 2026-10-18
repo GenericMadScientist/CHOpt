@@ -398,12 +398,10 @@ void ImageBuilder::add_bpms(const SightRead::TempoMap& tempo_map)
 }
 
 void ImageBuilder::add_bre(const SightRead::BigRockEnding& bre,
-                           const SightRead::TempoMap& tempo_map)
+                           const SightRead::TempoMap& tempo_map,
+                           const Engine& engine, int speed)
 {
-    const auto seconds_start = tempo_map.to_seconds(bre.start);
-    const auto seconds_end = tempo_map.to_seconds(bre.end);
-    const auto seconds_gap = seconds_end - seconds_start;
-    const auto bre_value = static_cast<int>(750 + 500 * seconds_gap.value());
+    const auto bre_value = bre_score(bre, tempo_map, engine, speed);
 
     m_total_score += bre_value;
     m_score_values.back() += bre_value;
@@ -776,8 +774,8 @@ ImageBuilder make_builder(SightRead::Song& song,
                                         = song.global_data().od_beats(),
                                         .unison_phrases = unison_phrases};
 
-    const ProcessedSong processed_track {new_track, duration_data,
-                                         settings.pathing_settings};
+    const ProcessedSong processed_track {
+        new_track, duration_data, settings.pathing_settings, settings.speed};
     Path path;
 
     if (!settings.blank) {
@@ -820,11 +818,10 @@ ImageBuilder make_builder(SightRead::Song& song,
             settings.pathing_settings.engine->sp_engine_values());
     }
     builder.set_total_score(processed_track.points(), solos, path);
-    if (settings.pathing_settings.engine->has_bres()) {
-        const auto& bres = new_track.bres();
-        if (!bres.empty()) {
-            builder.add_bre(bres.back(), tempo_map);
-        }
+    const auto& bres = new_track.bres();
+    if (!bres.empty()) {
+        builder.add_bre(bres.back(), tempo_map,
+                        *settings.pathing_settings.engine, settings.speed);
     }
 
     return builder;

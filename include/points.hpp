@@ -28,6 +28,7 @@
 #include <sightread/songparts.hpp>
 #include <sightread/time.hpp>
 
+#include "engine.hpp"
 #include "settings.hpp"
 #include "sptimemap.hpp"
 
@@ -78,8 +79,8 @@ public:
     [[nodiscard]] PointPtr next_sp_granting_note(PointPtr point) const;
     [[nodiscard]] std::string colour_set(PointPtr point) const
     {
-        return m_colours[static_cast<std::size_t>(
-            std::distance(m_points.data(), point))];
+        return m_colours.at(
+            static_cast<std::size_t>(std::distance(m_points.data(), point)));
     }
     // Get the combined score of all points that are >= start and < end.
     [[nodiscard]] int range_score(PointPtr start, PointPtr end) const;
@@ -90,5 +91,9 @@ public:
     }
     [[nodiscard]] SightRead::Second video_lag() const { return m_video_lag; }
 };
+
+int bre_score(const SightRead::BigRockEnding& bre,
+              const SightRead::TempoMap& tempo_map, const Engine& engine,
+              int speed);
 
 #endif

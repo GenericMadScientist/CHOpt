@@ -96,7 +96,8 @@ public:
                  bool draw_hopos);
     void add_bpms(const SightRead::TempoMap& tempo_map);
     void add_bre(const SightRead::BigRockEnding& bre,
-                 const SightRead::TempoMap& tempo_map);
+                 const SightRead::TempoMap& tempo_map, const Engine& engine,
+                 int speed);
     void add_drum_fills(const SightRead::NoteTrack& track);
     void add_measure_values(const PointSet& points,
                             const SightRead::TempoMap& tempo_map,

@@ -25,22 +25,15 @@
 #include "stringutil.hpp"
 
 namespace {
-int bre_boost(const SightRead::NoteTrack& track, const Engine& engine)
+int bre_boost(const SightRead::NoteTrack& track, const Engine& engine,
+              int speed)
 {
-    constexpr int INITIAL_BRE_VALUE = 750;
-    constexpr int BRE_VALUE_PER_SECOND = 500;
-
     const auto& bres = track.bres();
-    if (!engine.has_bres() || bres.empty()) {
+    if (bres.empty()) {
         return 0;
     }
-    const auto& bre = bres.back();
-    const auto& tempo_map = track.global_data().tempo_map();
-    const auto seconds_start = tempo_map.to_seconds(bre.start);
-    const auto seconds_end = tempo_map.to_seconds(bre.end);
-    const auto seconds_gap = seconds_end - seconds_start;
-    return static_cast<int>(INITIAL_BRE_VALUE
-                            + BRE_VALUE_PER_SECOND * seconds_gap.value());
+    return bre_score(bres.back(), track.global_data().tempo_map(), engine,
+                     speed);
 }
 
 int clean_play_boost(const PointSet& points)
@@ -157,12 +150,12 @@ SpBar ProcessedSong::sp_from_phrases(PointPtr begin, PointPtr end) const
 
 ProcessedSong::ProcessedSong(const SightRead::NoteTrack& track,
                              const SpDurationData& duration_data,
-                             const PathingSettings& pathing_settings)
+                             const PathingSettings& pathing_settings, int speed)
     : m_time_map {duration_data.time_map}
     , m_points {track, duration_data, pathing_settings}
     , m_sp_data {track, duration_data, pathing_settings}
     , m_sp_engine_values {pathing_settings.engine->sp_engine_values()}
-    , m_total_bre_boost {bre_boost(track, *pathing_settings.engine)}
+    , m_total_bre_boost {bre_boost(track, *pathing_settings.engine, speed)}
     , m_total_clean_play_boost {clean_play_boost(m_points)}
     , m_base_score {track.base_score(pathing_settings.drum_settings)}
     , m_ignore_average_multiplier {pathing_settings.engine

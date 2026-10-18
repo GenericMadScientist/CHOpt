@@ -27,6 +27,11 @@
 
 #include "sptimemap.hpp"
 
+// SpeedDependent means BREs give less points when the song is sped up.
+// SpeedIndependent is when BREs give the same amount of points on any speed
+// (YARG behaviour).
+enum class BreScoring : std::uint8_t { None, SpeedDependent, SpeedIndependent };
+
 enum class SustainRoundingPolicy : std::uint8_t { RoundUp, RoundToNearest };
 
 enum class SustainTicksMetric : std::uint8_t { Beat, Fretbar, OdBeat };
@@ -46,6 +51,7 @@ public:
     {
         return base_note_value();
     }
+    [[nodiscard]] virtual BreScoring bre_scoring() const = 0;
     [[nodiscard]] virtual double burst_size() const = 0;
     [[nodiscard]] virtual bool chords_multiply_sustains() const = 0;
     [[nodiscard]] virtual int clean_play_bonus() const = 0;
@@ -53,7 +59,6 @@ public:
     [[nodiscard]] virtual bool draw_hopos() const = 0;
     [[nodiscard]] virtual double early_timing_window(double early_gap,
                                                      double late_gap) const = 0;
-    [[nodiscard]] virtual bool has_bres() const = 0;
     [[nodiscard]] virtual bool has_early_whammy() const = 0;
     [[nodiscard]] virtual bool has_whammy_bursts() const = 0;
     [[nodiscard]] virtual bool is_rock_band() const = 0;
@@ -92,6 +97,10 @@ protected:
 public:
     [[nodiscard]] int base_cymbal_value() const override { return 65; }
     [[nodiscard]] int base_note_value() const override { return 50; }
+    [[nodiscard]] BreScoring bre_scoring() const override
+    {
+        return BreScoring::None;
+    }
     [[nodiscard]] double burst_size() const override { return 0.25; }
     [[nodiscard]] bool chords_multiply_sustains() const override
     {
@@ -104,7 +113,6 @@ public:
     {
         return timing_window(early_gap, late_gap);
     }
-    [[nodiscard]] bool has_bres() const override { return false; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
     [[nodiscard]] bool has_whammy_bursts() const override { return true; }
     [[nodiscard]] bool ignore_average_multiplier() const override
@@ -220,6 +228,10 @@ public:
 class BaseFortniteEngine : public Engine {
 public:
     [[nodiscard]] int base_note_value() const override { return 36; }
+    [[nodiscard]] BreScoring bre_scoring() const override
+    {
+        return BreScoring::None;
+    }
     [[nodiscard]] double burst_size() const override { return 0.0; }
     [[nodiscard]] bool chords_multiply_sustains() const override
     {
@@ -235,7 +247,6 @@ public:
         (void)late_gap;
         return 0.125;
     }
-    [[nodiscard]] bool has_bres() const override { return false; }
     [[nodiscard]] bool has_early_whammy() const override { return false; }
     [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool is_rock_band() const override { return false; }
@@ -311,6 +322,10 @@ private:
 
 public:
     [[nodiscard]] int base_note_value() const override { return 50; }
+    [[nodiscard]] BreScoring bre_scoring() const override
+    {
+        return BreScoring::None;
+    }
     [[nodiscard]] double burst_size() const override { return 0.0; }
     [[nodiscard]] bool chords_multiply_sustains() const override
     {
@@ -318,7 +333,6 @@ public:
     }
     [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool draw_hopos() const override { return false; }
-    [[nodiscard]] bool has_bres() const override { return false; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
     [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool ignore_average_multiplier() const override
@@ -405,6 +419,10 @@ private:
 
 public:
     [[nodiscard]] int base_note_value() const override { return 50; }
+    [[nodiscard]] BreScoring bre_scoring() const override
+    {
+        return BreScoring::None;
+    }
     [[nodiscard]] double burst_size() const override { return 0.0; }
     [[nodiscard]] bool chords_multiply_sustains() const override
     {
@@ -420,7 +438,6 @@ public:
         (void)late_gap;
         return 0.116;
     }
-    [[nodiscard]] bool has_bres() const override { return false; }
     [[nodiscard]] bool has_early_whammy() const override { return false; }
     [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool ignore_average_multiplier() const override
@@ -479,6 +496,10 @@ protected:
 
 public:
     [[nodiscard]] int base_note_value() const override { return 25; }
+    [[nodiscard]] BreScoring bre_scoring() const override
+    {
+        return BreScoring::SpeedDependent;
+    }
     [[nodiscard]] double burst_size() const override { return 0.0; }
     [[nodiscard]] bool chords_multiply_sustains() const override
     {
@@ -494,7 +515,6 @@ public:
         (void)late_gap;
         return base_timing_window();
     }
-    [[nodiscard]] bool has_bres() const override { return true; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
     [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool ignore_average_multiplier() const override
@@ -598,6 +618,10 @@ protected:
 public:
     [[nodiscard]] int base_cymbal_value() const override { return 50; }
     [[nodiscard]] int base_note_value() const override { return 50; }
+    [[nodiscard]] BreScoring bre_scoring() const override
+    {
+        return BreScoring::SpeedIndependent;
+    }
     [[nodiscard]] double burst_size() const override { return 0.25; }
     [[nodiscard]] bool chords_multiply_sustains() const override
     {
@@ -611,7 +635,6 @@ public:
     {
         return timing_window(early_gap, late_gap);
     }
-    [[nodiscard]] bool has_bres() const override { return true; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
     [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool ignore_average_multiplier() const override
