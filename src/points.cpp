@@ -793,8 +793,9 @@ int bre_score(const SightRead::BigRockEnding& bre,
               int speed)
 {
     constexpr double DEFAULT_SPEED = 100.0;
-    constexpr int INITIAL_BRE_VALUE = 750;
-    constexpr int BRE_VALUE_PER_SECOND = 500;
+    constexpr int INITIAL_POINTS_PER_LANE = 150;
+    constexpr int POINTS_PER_LANE_PER_SECOND = 100;
+    constexpr int NUMBER_OF_LANES = 5;
 
     const auto seconds_start = tempo_map.to_seconds(bre.start);
     const auto seconds_end = tempo_map.to_seconds(bre.end);
@@ -803,13 +804,19 @@ int bre_score(const SightRead::BigRockEnding& bre,
     switch (engine.bre_scoring()) {
     case BreScoring::None:
         return 0;
-    case BreScoring::SpeedDependent:
-        return static_cast<int>(INITIAL_BRE_VALUE
-                                + BRE_VALUE_PER_SECOND * seconds_gap.value());
-    case BreScoring::SpeedIndependent:
-        return static_cast<int>(INITIAL_BRE_VALUE
-                                + BRE_VALUE_PER_SECOND * seconds_gap.value()
-                                    * speed / DEFAULT_SPEED);
+    case BreScoring::SpeedDependent: {
+        const auto points_per_lane = static_cast<int>(
+            INITIAL_POINTS_PER_LANE
+            + POINTS_PER_LANE_PER_SECOND * seconds_gap.value());
+        return NUMBER_OF_LANES * points_per_lane;
+    }
+    case BreScoring::SpeedIndependent: {
+        const auto points_per_lane = static_cast<int>(
+            INITIAL_POINTS_PER_LANE
+            + POINTS_PER_LANE_PER_SECOND * seconds_gap.value() * speed
+                / DEFAULT_SPEED);
+        return NUMBER_OF_LANES * points_per_lane;
+    }
     default:
         throw std::runtime_error("Invalid bre_scoring type");
     }

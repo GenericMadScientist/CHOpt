@@ -2275,4 +2275,24 @@ BOOST_AUTO_TEST_CASE(sped_up_bres_give_the_same_points_on_yarg)
     BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
 }
 
+BOOST_AUTO_TEST_CASE(bres_give_points_in_multiplies_of_five)
+{
+    std::vector<SightRead::Note> notes {make_note(0), make_note(960)};
+    std::vector<SightRead::BigRockEnding> bres {
+        {.start = SightRead::Tick {384}, .end = SightRead::Tick {767}}};
+    SightRead::NoteTrack note_track {
+        notes, SightRead::TrackType::FiveFret,
+        std::make_shared<SightRead::SongGlobalData>()};
+    note_track.bres(std::move(bres));
+    ProcessedSong track {note_track, default_od_beat_mode_data(),
+                         default_rb_pathing_settings(), 100};
+    Path path {.activations = {}, .score_boost = 0};
+
+    const char* desired_path_output = "Path: None\n"
+                                      "No SP score: 1270\n"
+                                      "Total score: 1270";
+
+    BOOST_CHECK_EQUAL(track.path_summary(path), desired_path_output);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

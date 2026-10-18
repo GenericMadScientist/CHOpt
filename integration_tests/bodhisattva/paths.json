@@ -11,9 +11,9 @@
       "3(+1): 9th B (B)"
     ],
     "engine": "yarg",
-    "no_sp_score": 420391,
+    "no_sp_score": 420390,
     "summary": "1-2(+1)-2-2(+1)-2-2(+1)-1(+1)-3(+1)",
-    "total_score": 533229
+    "total_score": 533228
   },
   {
     "activations": [
@@ -28,9 +28,9 @@
       "3(+1): 9th B (O)"
     ],
     "engine": "yarg",
-    "no_sp_score": 420391,
+    "no_sp_score": 420390,
     "speed": 150,
     "summary": "1-1(+1)-1-2-2(+1)-2-2(+1)-1(+1)-3(+1)",
-    "total_score": 535415
+    "total_score": 535414
   }
 ]
