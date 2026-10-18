@@ -611,7 +611,7 @@ public:
     {
         return timing_window(early_gap, late_gap);
     }
-    [[nodiscard]] bool has_bres() const override { return false; }
+    [[nodiscard]] bool has_bres() const override { return true; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
     [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool ignore_average_multiplier() const override

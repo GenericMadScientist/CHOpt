@@ -1,0 +1,18 @@
+[
+  {
+    "activations": [
+      "1: 1st GY",
+      "2(+1): 11 beats after 1st RB (R)",
+      "2: 4th Y (G)",
+      "2(+1): 4th R (G)",
+      "2: 1st RY (G)",
+      "2(+1): 5th O (R)",
+      "1(+1): 2nd GR (B)",
+      "3(+1): 9th B (B)"
+    ],
+    "engine": "yarg",
+    "no_sp_score": 420391,
+    "summary": "1-2(+1)-2-2(+1)-2-2(+1)-1(+1)-3(+1)",
+    "total_score": 533229
+  }
+]
