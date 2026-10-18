@@ -4,6 +4,7 @@ Checks: >
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   cert-*,
+  -cert-dcl03-c,
   -clang-analyzer-optin.cplusplus.VirtualCall,
   concurrency-*,
   cppcoreguidelines-*,
@@ -14,13 +15,15 @@ Checks: >
   -misc-const-correctness,
   -misc-include-cleaner,
   -misc-no-recursion,
+  -misc-static-assert,
   modernize-*,
   -modernize-use-trailing-return-type,
   performance-*,
   portability-*,
   readability-*,
   -readability-identifier-length,
-  -readability-math-missing-parentheses
+  -readability-math-missing-parentheses,
+  -readability-trailing-comma
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle: none
