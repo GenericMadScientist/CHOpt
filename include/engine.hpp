@@ -288,16 +288,19 @@ public:
 };
 
 class FortniteGuitarEngine final : public BaseFortniteEngine {
+public:
     [[nodiscard]] int max_multiplier() const override { return 4; }
     [[nodiscard]] int sust_points_per_beat() const override { return 12; }
 };
 
 class FortniteBassEngine final : public BaseFortniteEngine {
+public:
     [[nodiscard]] int max_multiplier() const override { return 6; }
     [[nodiscard]] int sust_points_per_beat() const override { return 12; }
 };
 
 class FortniteVocalsEngine final : public BaseFortniteEngine {
+public:
     [[nodiscard]] int max_multiplier() const override { return 6; }
     [[nodiscard]] int sust_points_per_beat() const override { return 25; }
 };
