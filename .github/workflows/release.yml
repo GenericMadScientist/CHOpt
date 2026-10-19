@@ -10,7 +10,7 @@ permissions: {}
 
 jobs:
   determine-version:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       version: ${{ steps.determine-version.outputs.version }}
     steps:
@@ -150,7 +150,7 @@ jobs:
           path: build/gui-artifacts/**/*
 
   linux:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: determine-version
     steps:
       - name: Checkout
@@ -179,7 +179,7 @@ jobs:
         env:
           CMAKE_BUILD_TYPE: Release
           CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
-          CXX: g++-14
+          CXX: g++-15
         run: cmake -DENABLE_LTO=ON -DPACKAGE_TESTS=OFF ..
 
       - name: Build

@@ -6,7 +6,7 @@ permissions: {}
 
 jobs:
   clang-tidy:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -28,8 +28,8 @@ jobs:
 
       - name: Install clang-tidy 22
         run: |
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main"
+          curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor --output /etc/apt/keyrings/llvm-snapshot.gpg.key
+          echo "deb [signed-by=/etc/apt/keyrings/llvm-snapshot.gpg.key] http://apt.llvm.org/resolute/ llvm-toolchain-resolute-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update
           sudo apt-get install clang-tidy-22
 
@@ -40,7 +40,7 @@ jobs:
         working-directory: build
         env:
           CMAKE_TOOLCHAIN_FILE: /usr/local/share/vcpkg/scripts/buildsystems/vcpkg.cmake
-          CXX: g++-14
+          CXX: g++-15
         run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DPACKAGE_TESTS=ON ..
 
       - name: Build moc files
@@ -51,15 +51,15 @@ jobs:
         run: run-clang-tidy-22 -p=build/ -source-filter='^(?!.*(_autogen|extern)).*$' -hide-progress -quiet
 
   clang-format:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
       - name: Install clang-format 22
         run: |
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main"
+          curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor --output /etc/apt/keyrings/llvm-snapshot.gpg.key
+          echo "deb [signed-by=/etc/apt/keyrings/llvm-snapshot.gpg.key] http://apt.llvm.org/resolute/ llvm-toolchain-resolute-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update
           sudo apt-get install clang-format-22
 
