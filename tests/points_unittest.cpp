@@ -500,6 +500,20 @@ BOOST_AUTO_TEST_CASE(long_fortnite_sustains_are_handled_correctly)
     BOOST_CHECK_EQUAL(total_score, 136);
 }
 
+BOOST_AUTO_TEST_CASE(short_sustains_are_removed_for_gh3)
+{
+    SightRead::NoteTrack track {{make_note(0, 24)},
+                                SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    PointSet points {track, default_measure_mode_data(),
+                     default_gh3_pathing_settings()};
+    const auto total_score = std::accumulate(
+        points.cbegin(), points.cend(), 0,
+        [](const auto& a, const auto& b) { return a + b.value; });
+
+    BOOST_CHECK_EQUAL(total_score, 50);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(points_are_sorted)
@@ -1312,11 +1326,11 @@ BOOST_AUTO_TEST_CASE(returns_next_point_always_next_for_overlap_engine)
 // Nite.
 //
 // The problem is that first_after_current_phrase would not register the first
-// note of the third SP phrase as being part of the SP phrase, causing CHOpt
-// to suggest ending the first activation on that note.
+// note of the third SP phrase as being part of the SP phrase, causing CHOpt to
+// suggest ending the first activation on that note.
 //
-// This bug was caused by a rounding error putting the beat value for the note
-// a very tiny amount before the true position. The rounding error is caused by
+// This bug was caused by a rounding error putting the beat value for the note a
+// very tiny amount before the true position. The rounding error is caused by
 // the conversion from beat to second to beat needed for video lag calculations.
 // This test case is a simplified chart that triggers the bug before the fix.
 BOOST_AUTO_TEST_CASE(is_not_broken_by_floating_point_imprecision)

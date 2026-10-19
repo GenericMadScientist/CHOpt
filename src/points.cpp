@@ -167,7 +167,7 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
             const auto meas = time_map.to_sp_measures(beat);
             append_sustain_point(points, {beat, meas}, sust_ticks);
         }
-        break;
+        return;
     }
     case SustainTicksMetric::Fretbar: {
         const auto sust_start = time_map.to_fretbars(position);
@@ -183,6 +183,9 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
         const auto burst_size = time_map.to_seconds(SightRead::Fretbar {0.25});
         const auto burst_position
             = time_map.to_fretbars(time_map.to_seconds(sust_end) - burst_size);
+        if (sust_start > burst_position) {
+            return;
+        }
         const SightRead::Fretbar fretbar_tick_gap {
             1.0 / engine.sust_points_per_beat()};
 
@@ -215,7 +218,7 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
                 SpPosition {.beat = full_early_beat,
                             .sp_measure = full_early_meas});
         }
-        break;
+        return;
     }
     case SustainTicksMetric::OdBeat:
         constexpr double HALF_RES_OFFSET = 0.5;
@@ -235,7 +238,7 @@ void append_sustain_points(OutputIt points, SightRead::Tick position,
             append_sustain_point(points, {beat, meas}, 1);
         }
 
-        break;
+        return;
     }
 }
 

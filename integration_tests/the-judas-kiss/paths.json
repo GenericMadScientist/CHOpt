@@ -1,0 +1,18 @@
+[
+  {
+    "activations": [
+      "2: 8th G (RO)",
+      "3: 6th R (R)",
+      "3: 27th G (R)",
+      "2: NN (RB)",
+      "3: 16th G (B)",
+      "2: NN (B)",
+      "2: 11th Y (RB)",
+      "3: NN (Y)"
+    ],
+    "engine": "gh3",
+    "no_sp_score": 594900,
+    "summary": "2-3-3-2-3-S1-2-2-3",
+    "total_score": 721324
+  }
+]
