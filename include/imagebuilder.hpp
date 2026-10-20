@@ -80,6 +80,7 @@ private:
     int m_total_score {0};
     bool m_overlap_engine {true};
     bool m_draw_hopos {true};
+    bool m_trim_sustains {false};
 
     void form_beat_lines(const SightRead::TempoMap& tempo_map);
     static bool is_neutralised_phrase(SightRead::Beat note_pos,

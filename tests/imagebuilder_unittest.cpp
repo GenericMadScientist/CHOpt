@@ -842,6 +842,30 @@ BOOST_AUTO_TEST_CASE(neutralised_green_ranges_are_ommitted_on_non_overlap_games)
     BOOST_TEST(builder.green_ranges().empty());
 }
 
+BOOST_AUTO_TEST_CASE(green_range_endings_match_gh3_sustain_truncation)
+{
+    SightRead::NoteTrack track {{make_note(0), make_note(768, 192)},
+                                SightRead::TrackType::FiveFret,
+                                std::make_shared<SightRead::SongGlobalData>()};
+    track.sp_phrases(
+        {{.position = SightRead::Tick {768}, .length = SightRead::Tick {192}}});
+    PointSet points {track, default_measure_mode_data(),
+                     default_gh3_pathing_settings()};
+    ImageBuilder builder {track,
+                          SightRead::Difficulty::Expert,
+                          SightRead::DrumSettings::default_settings(),
+                          false,
+                          false,
+                          true,
+                          true};
+    builder.add_sp_phrases(track, {}, Path {});
+    std::vector<std::tuple<double, double>> expected_green_ranges {{4.0, 4.75}};
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        builder.green_ranges().cbegin(), builder.green_ranges().cend(),
+        expected_green_ranges.cbegin(), expected_green_ranges.cend());
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(drum_fills_are_drawn_with_add_drum_fills)

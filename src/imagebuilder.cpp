@@ -355,17 +355,31 @@ ImageBuilder::sp_phrase_bounds(const SightRead::StarPower& phrase,
         && is_neutralised_phrase(SightRead::Beat {start}, path)) {
         return {-1, -1};
     }
-    auto end = start;
-    while (p < track.notes().cend() && p->position < phrase_end) {
-        SightRead::Tick max_length {0};
+
+    SightRead::Tick latest_note_position {0};
+    SightRead::Tick latest_sustain_end {0};
+    for (; p < track.notes().cend() && p->position < phrase_end; ++p) {
+        latest_note_position = std::max(latest_note_position, p->position);
         for (auto length : p->lengths) {
-            max_length = std::max(max_length, length);
+            if (length > SightRead::Tick {0}) {
+                latest_sustain_end
+                    = std::max(latest_sustain_end, p->position + length);
+            }
         }
-        auto current_end = tempo_map.to_beats(p->position + max_length).value();
-        end = std::max(end, current_end);
-        ++p;
     }
-    end = std::max(end, start + MINIMUM_GREEN_RANGE_SIZE);
+
+    auto end = start + MINIMUM_GREEN_RANGE_SIZE;
+    end = std::max(end, tempo_map.to_beats(latest_note_position).value());
+    if (m_trim_sustains) {
+        const auto sustain_gap = tempo_map.to_seconds(
+            tempo_map.to_beats(SightRead::Fretbar {0.25}));
+        const auto sust_end_pos
+            = tempo_map.to_seconds(latest_sustain_end) - sustain_gap;
+        end = std::max(end, tempo_map.to_beats(sust_end_pos).value());
+    } else {
+        end = std::max(end, tempo_map.to_beats(latest_sustain_end).value());
+    }
+
     return {start, end};
 }
 
@@ -381,6 +395,7 @@ ImageBuilder::ImageBuilder(const SightRead::NoteTrack& track,
     , m_notes {drawn_notes(track, drum_settings, trim_sustains)}
     , m_overlap_engine {is_overlap_engine}
     , m_draw_hopos {draw_hopos}
+    , m_trim_sustains {trim_sustains}
 {
     form_beat_lines(track.global_data().tempo_map());
 }
