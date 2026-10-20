@@ -325,6 +325,8 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
         const auto next_note_seconds = time_map.to_seconds(next_note_beat);
         late_gap = (next_note_seconds - note_seconds).value();
     }
+    const auto is_strum
+        = (note->flags & (SightRead::FLAGS_HOPO | SightRead::FLAGS_TAP)) == 0;
 
     const SightRead::Second early_window {
         pathing_settings.engine->early_timing_window(early_gap, late_gap)
@@ -332,7 +334,8 @@ void append_note_points(std::vector<SightRead::Note>::const_iterator note,
     const SightRead::Second max_sqz_early_window {
         pathing_settings.engine->early_timing_window(early_gap, late_gap)};
     const SightRead::Second late_window {
-        pathing_settings.engine->late_timing_window(early_gap, late_gap)
+        pathing_settings.engine->late_timing_window(early_gap, late_gap,
+                                                    is_strum)
         * pathing_settings.squeeze};
 
     const auto early_beat = time_map.to_beats(note_seconds - early_window);

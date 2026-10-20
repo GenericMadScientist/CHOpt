@@ -64,7 +64,8 @@ public:
     [[nodiscard]] virtual bool is_rock_band() const = 0;
     [[nodiscard]] virtual bool ignore_average_multiplier() const = 0;
     [[nodiscard]] virtual double late_timing_window(double early_gap,
-                                                    double late_gap) const = 0;
+                                                    double late_gap,
+                                                    bool is_strum) const = 0;
     [[nodiscard]] virtual int max_multiplier() const = 0;
     [[nodiscard]] virtual bool merge_uneven_sustains() const = 0;
     [[nodiscard]] virtual bool overlaps() const = 0;
@@ -120,9 +121,10 @@ public:
         return false;
     }
     [[nodiscard]] bool is_rock_band() const override { return false; }
-    [[nodiscard]] double late_timing_window(double early_gap,
-                                            double late_gap) const override
+    [[nodiscard]] double late_timing_window(double early_gap, double late_gap,
+                                            bool is_strum) const override
     {
+        (void)is_strum;
         return timing_window(early_gap, late_gap);
     }
     [[nodiscard]] int max_multiplier() const override { return 4; }
@@ -254,11 +256,12 @@ public:
     {
         return true;
     }
-    [[nodiscard]] double late_timing_window(double early_gap,
-                                            double late_gap) const override
+    [[nodiscard]] double late_timing_window(double early_gap, double late_gap,
+                                            bool is_strum) const override
     {
         (void)early_gap;
         (void)late_gap;
+        (void)is_strum;
         return 0.125;
     }
     [[nodiscard]] bool merge_uneven_sustains() const override { return true; }
@@ -340,10 +343,11 @@ public:
         return true;
     }
     [[nodiscard]] bool is_rock_band() const override { return false; }
-    [[nodiscard]] double late_timing_window(double early_gap,
-                                            double late_gap) const override
+    [[nodiscard]] double late_timing_window(double early_gap, double late_gap,
+                                            bool is_strum) const override
     {
         (void)early_gap;
+        (void)is_strum;
         return std::min(0.1, late_gap / (2.0 + FUDGE_EPSILON));
     }
     [[nodiscard]] int max_multiplier() const override { return 4; }
@@ -445,11 +449,12 @@ public:
         return true;
     }
     [[nodiscard]] bool is_rock_band() const override { return false; }
-    [[nodiscard]] double late_timing_window(double early_gap,
-                                            double late_gap) const override
+    [[nodiscard]] double late_timing_window(double early_gap, double late_gap,
+                                            bool is_strum) const override
     {
         (void)early_gap;
-        return std::min(0.1, late_gap / (2.0 + FUDGE_EPSILON));
+        return std::min(is_strum ? 0.1 : 0.083,
+                        late_gap / (2.0 + FUDGE_EPSILON));
     }
     [[nodiscard]] int max_multiplier() const override { return 4; }
     [[nodiscard]] bool merge_uneven_sustains() const override { return false; }
@@ -522,10 +527,11 @@ public:
         return true;
     }
     [[nodiscard]] bool is_rock_band() const override { return true; }
-    [[nodiscard]] double late_timing_window(double early_gap,
-                                            double late_gap) const override
+    [[nodiscard]] double late_timing_window(double early_gap, double late_gap,
+                                            bool is_strum) const override
     {
         (void)early_gap;
+        (void)is_strum;
         return std::min(base_timing_window(), late_gap / 2);
     }
     [[nodiscard]] bool merge_uneven_sustains() const override { return true; }
@@ -642,9 +648,10 @@ public:
         return true;
     }
     [[nodiscard]] bool is_rock_band() const override { return false; }
-    [[nodiscard]] double late_timing_window(double early_gap,
-                                            double late_gap) const override
+    [[nodiscard]] double late_timing_window(double early_gap, double late_gap,
+                                            bool is_strum) const override
     {
+        (void)is_strum;
         return timing_window(early_gap, late_gap);
     }
     [[nodiscard]] bool merge_uneven_sustains() const override { return false; }
