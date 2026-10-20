@@ -430,7 +430,7 @@ public:
     }
     [[nodiscard]] int clean_play_bonus() const override { return 0; }
     [[nodiscard]] bool delayed_multiplier() const override { return false; }
-    [[nodiscard]] bool draw_hopos() const override { return false; }
+    [[nodiscard]] bool draw_hopos() const override { return true; }
     [[nodiscard]] double early_timing_window(double early_gap,
                                              double late_gap) const override
     {
