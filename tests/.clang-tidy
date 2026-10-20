@@ -3,6 +3,7 @@ Checks: >
   -boost-use-ranges,
   bugprone-*,
   -bugprone-easily-swappable-parameters,
+  -bugprone-signed-bitwise,
   cert-*,
   -cert-dcl03-c,
   -clang-analyzer-*,

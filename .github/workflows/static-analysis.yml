@@ -26,12 +26,12 @@ jobs:
       - name: Install Boost dependencies
         run: vcpkg install boost-container-hash boost-locale boost-test boost-unordered
 
-      - name: Install clang-tidy 22
+      - name: Install clang-tidy 23
         run: |
           curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor --output /etc/apt/keyrings/llvm-snapshot.gpg.key
-          echo "deb [signed-by=/etc/apt/keyrings/llvm-snapshot.gpg.key] http://apt.llvm.org/resolute/ llvm-toolchain-resolute-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          echo "deb [signed-by=/etc/apt/keyrings/llvm-snapshot.gpg.key] http://apt.llvm.org/resolute/ llvm-toolchain-resolute-23 main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update
-          sudo apt-get install clang-tidy-22
+          sudo apt-get install clang-tidy-23
 
       - name: Make build directory
         run: mkdir build
@@ -48,7 +48,7 @@ jobs:
         run: cmake --build . --target choptgui --verbose
 
       - name: Run clang tidy
-        run: run-clang-tidy-22 -p=build/ -source-filter='^(?!.*(_autogen|extern)).*$' -hide-progress -quiet
+        run: run-clang-tidy-23 -p=build/ -source-filter='^(?!.*(_autogen|extern)).*$' -hide-progress -quiet
 
   clang-format:
     runs-on: ubuntu-26.04
@@ -56,14 +56,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Install clang-format 22
+      - name: Install clang-format 23
         run: |
           curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor --output /etc/apt/keyrings/llvm-snapshot.gpg.key
-          echo "deb [signed-by=/etc/apt/keyrings/llvm-snapshot.gpg.key] http://apt.llvm.org/resolute/ llvm-toolchain-resolute-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          echo "deb [signed-by=/etc/apt/keyrings/llvm-snapshot.gpg.key] http://apt.llvm.org/resolute/ llvm-toolchain-resolute-23 main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update
-          sudo apt-get install clang-format-22
+          sudo apt-get install clang-format-23
 
       - name: Format
         run: |
-          clang-format-22 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp tests/*.hpp
+          clang-format-23 -i gui/*.hpp gui/*.cpp include/*.hpp src/*.cpp tests/*.cpp tests/*.hpp
           git diff --color --exit-code
