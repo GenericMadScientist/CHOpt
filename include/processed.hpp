@@ -100,6 +100,8 @@ private:
     [[nodiscard]] SpBar sp_from_phrases(PointPtr begin, PointPtr end) const;
     [[nodiscard]] std::vector<std::string>
     act_summaries(const Path& path) const;
+    [[nodiscard]] std::string drum_act_summary(const Point* start_point,
+                                               const Activation& act) const;
     [[nodiscard]] std::vector<std::string>
     drum_act_summaries(const Path& path) const;
     void append_activation(std::stringstream& stream,

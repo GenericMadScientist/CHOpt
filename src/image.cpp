@@ -527,9 +527,7 @@ void ImageImpl::colour_beat_range(const ImageBuilder& builder,
                                   const std::tuple<int, int>& y_range,
                                   float opacity)
 {
-    double start = std::numeric_limits<double>::quiet_NaN();
-    double end = std::numeric_limits<double>::quiet_NaN();
-    std::tie(start, end) = x_range;
+    auto [start, end] = x_range;
     // Required if a beat range ends after the end of a song (e.g., a solo
     // section)
     end = std::min(end, std::nextafter(builder.rows().back().end, 0.0));

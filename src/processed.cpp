@@ -535,52 +535,59 @@ std::vector<std::string> ProcessedSong::act_summaries(const Path& path) const
     return activation_summaries;
 }
 
+std::string ProcessedSong::drum_act_summary(const Point* start_point,
+                                            const Activation& act) const
+{
+    const SightRead::Second FILL_DELAY {2.0};
+
+    for (int sp_count = 0; sp_count < 2; ++start_point) {
+        if (start_point->is_sp_granting_note) {
+            ++sp_count;
+        }
+    }
+
+    const auto early_fill_point
+        = m_time_map.to_seconds(std::prev(start_point)->hit_window_start.beat)
+        + FILL_DELAY;
+    const auto late_fill_point
+        = m_time_map.to_seconds(std::prev(start_point)->hit_window_end.beat)
+        + FILL_DELAY;
+    const auto skipped_fills
+        = std::count_if(start_point, act.act_start, [&](const auto& p) {
+              return p.fill_start.has_value()
+                  && *p.fill_start >= early_fill_point;
+          });
+    const auto act_start_fill_start = act.act_start->fill_start;
+    assert(act_start_fill_start.has_value());
+
+    if (skipped_fills == 0) {
+        if (late_fill_point > act_start_fill_start) {
+            return "0(E)";
+        }
+        return "0";
+    }
+
+    while (!start_point->fill_start.has_value()) {
+        ++start_point;
+    }
+    const auto fill_start = start_point->fill_start;
+    assert(fill_start.has_value());
+
+    if (late_fill_point > *fill_start && early_fill_point < *fill_start) {
+        return std::to_string(skipped_fills - 1) + "(L)";
+    }
+    return std::to_string(skipped_fills);
+}
+
 std::vector<std::string>
 ProcessedSong::drum_act_summaries(const Path& path) const
 {
     std::vector<std::string> activation_summaries;
     const auto* start_point = m_points.cbegin();
-    for (const auto& act : path.activations) {
-        int sp_count = 0;
-        while (sp_count < 2) {
-            if (start_point->is_sp_granting_note) {
-                ++sp_count;
-            }
-            ++start_point;
-        }
-        const auto early_fill_point
-            = m_time_map.to_seconds(
-                  std::prev(start_point)->hit_window_start.beat)
-            + SightRead::Second(2.0);
-        const auto late_fill_point
-            = m_time_map.to_seconds(std::prev(start_point)->hit_window_end.beat)
-            + SightRead::Second(2.0);
-        const auto skipped_fills
-            = std::count_if(start_point, act.act_start, [&](const auto& p) {
-                  return p.fill_start.has_value()
-                      && *p.fill_start >= early_fill_point;
-              });
-        const auto act_start_fill_start = act.act_start->fill_start;
-        assert(act_start_fill_start.has_value());
-        if (skipped_fills == 0 && late_fill_point > *act_start_fill_start) {
-            activation_summaries.emplace_back("0(E)");
-        } else if (skipped_fills > 0) {
-            while (!start_point->fill_start.has_value()) {
-                ++start_point;
-            }
-            const auto fill_start = start_point->fill_start;
-            assert(fill_start.has_value());
-            if (late_fill_point > *fill_start
-                && early_fill_point < *fill_start) {
-                activation_summaries.push_back(std::to_string(skipped_fills - 1)
-                                               + "(L)");
-            } else {
-                activation_summaries.push_back(std::to_string(skipped_fills));
-            }
-        } else {
-            activation_summaries.push_back(std::to_string(skipped_fills));
-        }
-        start_point = std::next(act.act_end);
+
+    for (auto act = path.activations.cbegin(); act < path.activations.cend();
+         start_point = std::next(act->act_end), ++act) {
+        activation_summaries.emplace_back(drum_act_summary(start_point, *act));
     }
 
     return activation_summaries;

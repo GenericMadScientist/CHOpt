@@ -524,11 +524,10 @@ std::vector<Point> unmultiplied_points(const SightRead::NoteTrack& track,
     auto current_phrase = track.sp_phrases().cbegin();
 
     for (auto p = notes.cbegin(); p != notes.cend();) {
-        if (track.track_type() == SightRead::TrackType::Drums) {
-            if (p->is_skipped_kick(pathing_settings.drum_settings)) {
-                ++p;
-                continue;
-            }
+        if (track.track_type() == SightRead::TrackType::Drums
+            && p->is_skipped_kick(pathing_settings.drum_settings)) {
+            ++p;
+            continue;
         }
         if (pathing_settings.engine->bre_scoring() != BreScoring::None
             && !bres.empty() && p->position >= bres.back().start) {
