@@ -417,9 +417,12 @@ public:
     }
 };
 
-class Gh3Engine final : public Engine {
+class BaseNeversoftGhEngine : public Engine {
 private:
     static constexpr double FUDGE_EPSILON = 0.0001;
+
+protected:
+    [[nodiscard]] virtual double hopo_timing_window() const = 0;
 
 public:
     [[nodiscard]] int base_note_value() const override { return 50; }
@@ -453,7 +456,7 @@ public:
                                             bool is_strum) const override
     {
         (void)early_gap;
-        return std::min(is_strum ? 0.1 : 0.083,
+        return std::min(is_strum ? 0.1 : hopo_timing_window(),
                         late_gap / (2.0 + FUDGE_EPSILON));
     }
     [[nodiscard]] int max_multiplier() const override { return 4; }
@@ -493,6 +496,16 @@ public:
     {
         return UnisonBonusType::None;
     }
+};
+
+class Gh3Engine final : public BaseNeversoftGhEngine {
+protected:
+    [[nodiscard]] double hopo_timing_window() const override { return 0.083; }
+};
+
+class GhAerosmithEngine final : public BaseNeversoftGhEngine {
+protected:
+    [[nodiscard]] double hopo_timing_window() const override { return 0.116; }
 };
 
 class BaseRbEngine : public Engine {

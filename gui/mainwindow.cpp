@@ -49,11 +49,15 @@ private:
 
     static std::set<Game> song_file_games(const SongFile& song_file)
     {
-        const std::set<Game> all_games {
-            Game::CloneHero,       Game::FortniteFestival,
-            Game::GuitarHeroOne,   Game::GuitarHeroTwo,
-            Game::GuitarHeroThree, Game::RockBand,
-            Game::RockBandThree,   Game::Yarg};
+        const std::set<Game> all_games {Game::CloneHero,
+                                        Game::FortniteFestival,
+                                        Game::GuitarHeroOne,
+                                        Game::GuitarHeroTwo,
+                                        Game::GuitarHeroThree,
+                                        Game::GuitarHeroAerosmith,
+                                        Game::RockBand,
+                                        Game::RockBandThree,
+                                        Game::Yarg};
         std::set<Game> supported_games;
         for (const auto game : all_games) {
             try {
@@ -386,12 +390,13 @@ void MainWindow::populate_games(const std::set<Game>& games)
 {
     const auto previous_game = m_ui->engineComboBox->currentData();
     m_ui->engineComboBox->clear();
-    const std::array<std::pair<Game, QString>, 8> full_game_set {
+    const std::array<std::pair<Game, QString>, 9> full_game_set {
         {{Game::CloneHero, "Clone Hero"},
          {Game::FortniteFestival, "Fortnite Festival"},
          {Game::GuitarHeroOne, "Guitar Hero 1"},
          {Game::GuitarHeroTwo, "Guitar Hero 2"},
          {Game::GuitarHeroThree, "Guitar Hero 3"},
+         {Game::GuitarHeroAerosmith, "Guitar Hero Aerosmith"},
          {Game::RockBand, "Rock Band"},
          {Game::RockBandThree, "Rock Band 3"},
          {Game::Yarg, "YARG"}}};

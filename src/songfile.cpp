@@ -65,6 +65,7 @@ std::set<SightRead::Instrument> permitted_instruments(Game game)
                 SightRead::Instrument::FortniteProBass};
     case Game::GuitarHeroOne:
     case Game::GuitarHeroThree:
+    case Game::GuitarHeroAerosmith:
         return {SightRead::Instrument::Guitar};
     case Game::GuitarHeroTwo:
         return {SightRead::Instrument::Guitar, SightRead::Instrument::Bass,

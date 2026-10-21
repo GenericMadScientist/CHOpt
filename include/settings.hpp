@@ -38,6 +38,7 @@ enum class Game : std::uint8_t {
     GuitarHeroOne,
     GuitarHeroTwo,
     GuitarHeroThree,
+    GuitarHeroAerosmith,
     RockBand,
     RockBandThree,
     Yarg

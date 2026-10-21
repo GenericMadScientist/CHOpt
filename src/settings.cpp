@@ -104,10 +104,15 @@ SightRead::Instrument string_to_inst(std::string_view text, Game game)
 Game game_from_string(std::string_view game)
 {
     const std::map<std::string_view, Game> game_map {
-        {"ch", Game::CloneHero},        {"fnf", Game::FortniteFestival},
-        {"gh1", Game::GuitarHeroOne},   {"gh2", Game::GuitarHeroTwo},
-        {"gh3", Game::GuitarHeroThree}, {"rb", Game::RockBand},
-        {"rb3", Game::RockBandThree},   {"yarg", Game::Yarg}};
+        {"ch", Game::CloneHero},
+        {"fnf", Game::FortniteFestival},
+        {"gh1", Game::GuitarHeroOne},
+        {"gh2", Game::GuitarHeroTwo},
+        {"gh3", Game::GuitarHeroThree},
+        {"gha", Game::GuitarHeroAerosmith},
+        {"rb", Game::RockBand},
+        {"rb3", Game::RockBandThree},
+        {"yarg", Game::Yarg}};
     return game_map.at(game);
 }
 
@@ -164,8 +169,8 @@ std::unique_ptr<QCommandLineParser> arg_parser()
          {"no-pro-drums", "Disable pro drums."},
          {"enable-dynamics", "Deprecated, does nothing."},
          {"engine",
-          "Engine, options are ch, fnf, gh1, gh2, gh3, rb, rb3, yarg. Default "
-          "ch.",
+          "Engine, options are ch, fnf, gh1, gh2, gh3, gha, rb, rb3, yarg. "
+          "Default ch.",
           "engine", "ch"},
          {{"p", "precision-mode"}, "Turn on precision mode for CH or YARG."},
          {{"b", "blank"}, "Give a blank chart image."},
@@ -210,6 +215,8 @@ game_to_engine(Game game, SightRead::Instrument instrument, bool precision_mode)
         return std::make_unique<Gh2Engine>();
     case Game::GuitarHeroThree:
         return std::make_unique<Gh3Engine>();
+    case Game::GuitarHeroAerosmith:
+        return std::make_unique<GhAerosmithEngine>();
     case Game::RockBand:
         if (instrument == SightRead::Instrument::Bass) {
             return std::make_unique<RbBassEngine>();
