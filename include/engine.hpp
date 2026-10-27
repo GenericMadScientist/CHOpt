@@ -335,7 +335,7 @@ public:
         return true;
     }
     [[nodiscard]] int clean_play_bonus() const override { return 0; }
-    [[nodiscard]] bool draw_hopos() const override { return false; }
+    [[nodiscard]] bool draw_hopos() const override { return true; }
     [[nodiscard]] bool has_early_whammy() const override { return true; }
     [[nodiscard]] bool has_whammy_bursts() const override { return false; }
     [[nodiscard]] bool ignore_average_multiplier() const override
