@@ -114,6 +114,11 @@ bool use_sustain_cutoff_threshold(Game game)
 {
     return game == Game::CloneHero || game == Game::Yarg;
 }
+
+bool normalise_disjoint_sustains(Game game)
+{
+    return game == Game::GuitarHeroOne || game == Game::GuitarHeroTwo;
+}
 }
 
 SongFile::SongFile(const std::string& filename)
@@ -181,7 +186,8 @@ SightRead::Song SongFile::load_song(Game game) const
         parser.permit_instruments(permitted_instruments(game))
             .parse_solos(parse_solos(game))
             .allow_open_chords(allow_open_chords(game))
-            .use_sustain_cutoff_threshold(use_sustain_cutoff_threshold(game));
+            .use_sustain_cutoff_threshold(use_sustain_cutoff_threshold(game))
+            .normalise_disjoint_sustains(normalise_disjoint_sustains(game));
         return parser.parse(midi_buffer);
     }
     case FileType::QbMidi: {

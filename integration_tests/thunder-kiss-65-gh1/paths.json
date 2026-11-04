@@ -1,0 +1,18 @@
+[
+  {
+    "activations": [
+      "2: NN (G)",
+      "2: After 0.04 beats (G)",
+      "2: 5th R (R)",
+      "1: After 2.9 beats",
+      "3: After 0.04 beats (Y)",
+      "2: 8th G (G)",
+      "1: 3.2 beats after 3rd RY (Y)"
+    ],
+    "difficulty": "medium",
+    "engine": "gh1",
+    "no_sp_score": 125304,
+    "summary": "2-2-2-1-3-2-1",
+    "total_score": 170388
+  }
+]
