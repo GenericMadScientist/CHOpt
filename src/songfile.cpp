@@ -119,6 +119,11 @@ bool normalise_disjoint_sustains(Game game)
 {
     return game == Game::GuitarHeroOne || game == Game::GuitarHeroTwo;
 }
+
+bool consecutive_note_ons_cancel(Game game)
+{
+    return game == Game::GuitarHeroOne || game == Game::GuitarHeroTwo;
+}
 }
 
 SongFile::SongFile(const std::string& filename)
@@ -187,7 +192,8 @@ SightRead::Song SongFile::load_song(Game game) const
             .parse_solos(parse_solos(game))
             .allow_open_chords(allow_open_chords(game))
             .use_sustain_cutoff_threshold(use_sustain_cutoff_threshold(game))
-            .normalise_disjoint_sustains(normalise_disjoint_sustains(game));
+            .normalise_disjoint_sustains(normalise_disjoint_sustains(game))
+            .consecutive_note_ons_cancel(consecutive_note_ons_cancel(game));
         return parser.parse(midi_buffer);
     }
     case FileType::QbMidi: {
