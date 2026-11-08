@@ -99,11 +99,14 @@ getting an initial idea of Clone Hero's parsing behaviour.
 machines.
 * DarkWolf and Daze for helping with updated five fret sprites to add HOPOs and
 taps.
-* Various users for feedback and testing, including AddyMills, ArchWK, Blackett,
-Bromik, CyclopsDragon, DNelson, GHNerd, GiometriQ, Haggis, JarheadHME, Joel,
-Jpetersen5, Jrh, JUANPGP, Kyleruth, LightlessWalk, Littlejth, Lucretio,
-Miscellany, NicoBrenChan, Raine, RandomDays, RileyTheFox, SanicStudios, Taka,
-Tposejank, Venxm, xdhaqwen and Zantor.
+* Debr5836, Tma and SmugDuckling for creating the optimisers used by Slowhero and
+A Path Too Far, those sites have been invaluable points of comparison for the old
+Guitar Hero and Rock Band games.
+* Various users for feedback and testing, including aWiseMoose, AddyMills,
+ArchWK, Blackett, Bromik, CyclopsDragon, DNelson, GHNerd, GiometriQ, Haggis,
+JarheadHME, Joel, Jpetersen5, Jrh, JUANPGP, Kyleruth, LightlessWalk, Littlejth,
+Lucretio, Miscellany, NicoBrenChan, Raine, RandomDays, RileyTheFox,
+SanicStudios, Taka, Tposejank, Venxm, xdhaqwen and Zantor.
 
 ## Contact
 
