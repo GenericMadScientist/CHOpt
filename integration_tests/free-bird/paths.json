@@ -1,0 +1,19 @@
+[
+  {
+    "activations": [
+      "3: 0.68 beats after 25th G (R)",
+      "2: 0.96 beats after 7th Y (Y)",
+      "2: 7th Y (R)",
+      "2: After 0.56 beats (R)",
+      "2: 2nd G",
+      "3: NN (R)",
+      "2: 19th Y",
+      "3: After 1.8 beats"
+    ],
+    "difficulty": "easy",
+    "engine": "gh2",
+    "no_sp_score": 243266,
+    "summary": "3-2-2-2-2-3-S2-2-3",
+    "total_score": 314494
+  }
+]
